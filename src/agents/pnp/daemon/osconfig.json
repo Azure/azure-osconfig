@@ -1,0 +1,44 @@
+{
+  "ModelVersion": 5,  
+  "FullLogging": 0,
+  "Reported": [
+    {
+      "ComponentName": "CommandRunner",
+      "ObjectName": "CommandStatus"
+    },
+    {
+      "ComponentName": "Networking",
+      "ObjectName": "NetworkConfiguration"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "FirewallState"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "FirewallFingerprint"
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "Name"
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "Hosts"
+    },
+    {
+      "ComponentName": "Tpm",
+      "ObjectName": "TpmStatus"
+    },
+    {
+      "ComponentName": "Tpm",
+      "ObjectName": "TpmVersion"
+    },
+    {
+      "ComponentName": "Tpm",
+      "ObjectName": "TpmManufacturer"
+    }
+  ],
+  "ReportingIntervalSeconds": 30,
+  "LocalPriority": 0
+}

@@ -1,0 +1,47 @@
+{ 
+  "name": "TpmModel", 
+  "type": "MimModel",
+  "contents": [ 
+    { 
+      "name": "Tpm", 
+      "type": "MimComponent", 
+      "contents": [
+        { 
+          "name": "TpmStatus", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": {
+             "type": "enum",
+             "valueSchema": "integer",
+             "enumValues": [
+               { 
+                 "name": "Unknown",
+                 "enumValue": 0
+               },
+               {
+                 "name": "TpmDetected",
+                 "enumValue": 1
+               },
+               {
+                 "name": "TpmNotDetected",
+                 "enumValue": 2
+               }
+             ]
+           }
+        },
+        { 
+          "name": "TpmVersion", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": "string"
+        },
+        { 
+          "name": "TpmManufacturer", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "description": "Module Interface Model (MIM) JSON schema",
+  "$defs": {
+    "mimComponent": {
+      "$id": "#/$defs/mimComponent",
+      "type": "object",
+      "description": "A MIM component",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "MimComponent"
+          ]
+        },
+        "contents": {
+          "type": "array",
+          "description": "The list of MIM objects for a MIM component",
+          "items": {
+            "$ref": "#/$defs/mimObject"
+          }
+        }
+      }
+    },
+    "mimObject": {
+      "$id": "#/$defs/mimObject",
+      "type": "object",
+      "description": "A MIM Object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "MimObject"
+          ]
+        },
+        "desired": {
+          "description": "The desired or reported state of the MIM Object",
+          "type": "boolean",
+          "default": false
+        },
+        "schema": {
+          "description": "MIM Object settings",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "string",
+                "integer",
+                "boolean"
+              ]
+            },
+            {
+              "$ref": "#/$defs/enumSchema"
+            },
+            {
+              "$ref": "#/$defs/objectSchema"
+            }
+          ]
+        }
+      }
+    },
+    "enumSchema": {
+      "$id": "#/$defs/enumSchema",
+      "type": "object",
+      "description": "A schema describing an enumeration of integers",
+      "required": [
+        "type",
+        "valueSchema",
+        "enumValues"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "enum"
+          ]
+        },
+        "valueSchema": {
+          "type": "string",
+          "enum": [
+            "integer"
+          ]
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "enumValue": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "objectSchema": {
+      "$id": "#/$defs/objectSchema",
+      "type": "object",
+      "title": "Object Schema",
+      "description": "A schema describing the JSON object schema of a MIM Object",
+      "required": [
+        "fields"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "object"
+          ],
+          "default": "object"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "The list of MIM Setings for the MIM object",
+            "required": [
+              "name",
+              "schema"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "MIM setting name"
+              },
+              "schema": {
+                "type": [
+                  "string",
+                  "object"
+                ],
+                "description": "MIM setting schema",
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "string",
+                      "integer",
+                      "boolean"
+                    ]
+                  },
+                  {
+                    "$ref": "#/$defs/enumSchema"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "MIM name"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "MimModel"
+      ]
+    },
+    "contents": {
+      "type": "array",
+      "description": "List of MIM Components in the Model",
+      "items": {
+        "$ref": "#/$defs/mimComponent"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "contents"
+  ]
+}

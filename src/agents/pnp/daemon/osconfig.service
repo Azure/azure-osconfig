@@ -1,0 +1,21 @@
+[Unit]
+Description=OSConfig PnP Agent Daemon
+After=network-online.target
+Wants=network.target network-online.target nss-lookup.target
+# Allow restart up to 3 times every 16 minutes (3 times x 5 minutes + 1 minute)
+StartLimitIntervalSec=960
+StartLimitBurst=3
+
+[Service]
+# Uncomment and use next two lines to run osconfig with a manual connection string loaded from a file
+# Environment=CONN_STR="/etc/osconfig/osconfig.conn"
+# ExecStart=/usr/bin/osconfig $CONN_STR
+ExecStart=/usr/bin/osconfig
+Type=simple
+User=root
+Restart=always
+# Allow restart at 5 minutes intervals
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

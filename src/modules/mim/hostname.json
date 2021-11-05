@@ -1,0 +1,36 @@
+{
+  "name": "HostNameModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "HostName",
+      "type": "MimComponent",
+      "contents": [
+        {
+          "name": "DesiredName",
+          "type": "MimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "DesiredHosts",
+          "type": "MimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "Name",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "Hosts",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+}

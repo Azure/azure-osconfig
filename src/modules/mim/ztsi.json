@@ -1,0 +1,53 @@
+{ 
+  "name": "ZtsiModel", 
+  "type": "MimModel",
+  "contents": [ 
+    { 
+      "name": "ZtsiAgentConfiguration", 
+      "type": "MimComponent", 
+      "contents": [
+        { 
+          "name": "DesiredServiceUrl", 
+          "type": "MimObject", 
+          "desired": true,
+          "schema": "string"
+        },
+        { 
+          "name": "DesiredEnabled", 
+          "type": "MimObject", 
+          "desired": true,
+          "schema": "boolean"
+        },
+        { 
+          "name": "ServiceUrl", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": "string"
+        },
+        { 
+          "name": "Enabled", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": {
+             "type": "enum",
+             "valueSchema": "integer",
+             "enumValues": [
+               { 
+                 "name": "Unknown",
+                 "enumValue": 0
+               },
+               {
+                 "name": "Enabled",
+                 "enumValue": 1
+               },
+               {
+                 "name": "Disabled",
+                 "enumValue": 2
+               }
+             ]
+           }
+        }
+      ]
+    }
+  ]
+} 
