@@ -1,0 +1,46 @@
+# Test Environments tagged with environment: osconfig-e2etest should be removed daily
+# The 'osconfig-e2etest-debug' environment tag is used to persist the test infrastructure
+# "tags": {
+#       "environment": "osconfig-e2etest"
+#     }
+trigger: none
+
+parameters:
+- name: REMOVE_ALL
+  displayName: Remove all resources (including skipped teardown jobs)
+  type: boolean
+  default: false
+
+variables:
+  SERVICE_CONNECTION: OSConfig-ARM-TestInfra
+  REMOVE_ALL: ${{ parameters.REMOVE_ALL }}
+
+pool:
+  vmImage: 'ubuntu-20.04'
+
+steps:
+- task: AzureCLI@2
+  displayName: Cleanup Test Infrastructure
+  condition: eq(variables['REMOVE_ALL'], 'false')
+  inputs:
+    azureSubscription: $(SERVICE_CONNECTION)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      for rgname in `az group list --query "[?starts_with(name,'osconfig-')] | [?tags.environment=='osconfig-e2etest'].name" -o tsv`; do
+      echo Deleting ${rgname}
+      az group delete -n ${rgname} --yes --no-wait
+      done
+
+- task: AzureCLI@2
+  displayName: Cleanup All Test Infrastructure
+  condition: eq(variables['REMOVE_ALL'], 'true')
+  inputs:
+    azureSubscription: $(SERVICE_CONNECTION)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      for rgname in `az group list --query "[?starts_with(name,'osconfig-')].name" -o tsv`; do
+      echo Deleting ${rgname}
+      az group delete -n ${rgname} --yes --no-wait
+      done

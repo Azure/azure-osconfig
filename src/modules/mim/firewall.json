@@ -1,0 +1,41 @@
+{ 
+  "name": "FirewallModel", 
+  "type": "MimModel",
+  "contents": [ 
+    { 
+      "name": "Firewall", 
+      "type": "MimComponent", 
+      "contents": [
+        { 
+          "name": "FirewallState", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": {
+             "type": "enum",
+             "valueSchema": "integer",
+             "enumValues": [
+               { 
+                 "name": "Unknown",
+                 "enumValue": 0
+               },
+               {
+                 "name": "Enabled",
+                 "enumValue": 1
+               },
+               {
+                 "name": "Disabled",
+                 "enumValue": 2
+               }
+             ]
+           }
+        },
+        { 
+          "name": "FirewallFingerprint", 
+          "type": "MimObject", 
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+} 

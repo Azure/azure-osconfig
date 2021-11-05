@@ -1,0 +1,24 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json
+{
+	"name": "OSConfig",
+	"dockerComposeFile": ["docker-compose.yml"],
+	"workspaceFolder": "/AzOsConfig",
+	"service": "osconfig-devcontainer",
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash"
+	},
+	"overrideCommand": true,
+
+	"extensions": [
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+		"twxs.cmake",
+		"ms-dotnettools.csharp",
+		"ms-azuretools.vscode-azureterraform",
+		"ms-azure-devops.azure-pipelines",
+		"hashicorp.terraform",
+		"eamodio.gitlens"
+    ]
+}

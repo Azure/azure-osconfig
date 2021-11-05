@@ -1,0 +1,124 @@
+{
+  "name": "CommandRunnerModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "CommandRunner",
+      "type": "MimComponent",
+      "contents": [
+        {
+          "name": "CommandStatus",
+          "type": "MimObject",
+          "desired": false,
+          "schema": {
+            "fields": [
+              {
+                "name": "CommandId",
+                "schema": "string"
+              },
+              {
+                "name": "ResultCode",
+                "schema": "string"
+              },
+              {
+                "name": "TextResult",
+                "schema": "string"
+              },
+              {
+                "name": "CurrentState",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "Unknown",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "Running",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "Succeeded",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "Failed",
+                      "enumValue": 3
+                    },
+                    {
+                      "name": "TimedOut",
+                      "enumValue": 4
+                    },
+                    {
+                      "name": "Canceled",
+                      "enumValue": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "CommandArguments",
+          "type": "MimObject",
+          "desired": true,
+          "schema": {
+            "fields": [
+              {
+                "name": "CommandId",
+                "schema": "string"
+              },
+              {
+                "name": "Arguments",
+                "schema": "string"
+              },
+              {
+                "name": "Timeout",
+                "schema": "integer"
+              },
+              {
+                "name": "SingleLineTextResult",
+                "schema": "boolean"
+              },
+              {
+                "name": "Action",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "None",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "Reboot",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "Shutdown",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "RunCommand",
+                      "enumValue": 3
+                    },
+                    {
+                      "name": "RefreshCommandStatus",
+                      "enumValue": 4
+                    },
+                    {
+                      "name": "CancelCommand",
+                      "enumValue": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

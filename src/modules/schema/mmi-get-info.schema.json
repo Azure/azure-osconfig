@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "https://github.com/microsoft/json-schemas/osconfig/MmiGetInfoSchema.json",
+    "title": "MmiGetInfo JSON Schema",
+    "description": "Schema for the MmiGetInfo JSON payload response",
+    "type": "object",
+    "properties": {
+        "Name": {
+            "description": "Name of the module",
+            "type": "string"
+        },
+        "Description": {
+            "description": "Short description of the module",
+            "type": "string"
+        },
+        "Manufacturer": {
+            "description": "Name of the module manufacturer",
+            "type": "string"
+        },
+        "VersionMajor": {
+            "description": "Major (first) version of the module",
+            "type": "integer",
+            "minimum": 0
+        },
+        "VersionMinor": {
+            "description": "Minor (second) version of the module",
+            "type": "integer",
+            "minimum": 0
+        },
+        "VersionPatch": {
+            "description": "(optional) Patch (third) version number of the module",
+            "type": "integer",
+            "minimum": 0
+        },
+        "VersionTweak": {
+            "description": "(optional) Tweak (fourth) version number of the module",
+            "type": "integer",
+            "minimum": 0
+        },
+        "VersionInfo": {
+            "description": "The version of the module as a string (can contain more detailed version information than the major and minor numbers)",
+            "type": "string"
+        },
+        "Components": {
+            "description": "The names of the components supported by the module, same as used for the componentName argument for MmiGet and MmiSet. Modules are required to support at least one component.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "Lifetime": {
+            "description": "0 (Undefined). 1 (Long life/keep loaded forever): the module requires to be kept loaded by the client for as long as possible (for example when the module needs to monitor another component or Hardware). 2 (Short life): the module can be loaded and unloaded often, for example unloaded after a period of inactivity and re-loaded when a new request arrives.",
+            "type": "integer",
+            "default": 0,
+            "enum": [
+                0,
+                1,
+                2
+            ]
+        },
+        "LicenseUri": {
+            "description": "(optional) URI path for license of the module",
+            "type": "string"
+        },
+        "UserAccount": {
+            "description": "(optional) The user account the module needs to run as",
+            "type": "integer",
+            "default": 0
+        }
+    },
+    "required": [
+        "Name",
+        "Description",
+        "Manufacturer",
+        "VersionMajor",
+        "VersionMinor",
+        "VersionInfo",
+        "Components"
+    ]
+}
