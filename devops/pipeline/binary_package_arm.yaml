@@ -12,7 +12,7 @@ variables:
 trigger:
   branches:
     include:
-    - master
+    - main
 
 strategy:
   matrix:
