@@ -207,7 +207,7 @@ A MIM can be completely described by lists and tables as described in this secti
 
 A summary JSON representation of a MIM:
 
-```json
+```JSON
 {
   "name": "ModelName",
   "type": "MimModel",
@@ -246,8 +246,8 @@ A summary JSON representation of a MIM:
                       "enumValue": 0
                     },
                     {
-                      "name": "EnumValueN",
-                      "enumValue": N
+                      "name": "EnumValue1",
+                      "enumValue": 1
                     }
                   ]
                 }
@@ -308,7 +308,7 @@ true|false
 Example of serialized JSON payload for two CommandRunner.CommandArguments desired object instances plus one instance of Settings with its desired objects:
 
 ```JSON
-""desired":{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}},"CommandRunner":{"CommandArguments":{"CommandId":"B","Arguments":"ls","Action": 4}}}"
+{"desired":{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}},"CommandRunner":{"CommandArguments":{"CommandId":"B","Arguments":"ls","Action": 4}}}}
 ```
 
 # 4. Management Modules Interface (MMI)
@@ -451,19 +451,16 @@ For example, to add a MyComponent.MyReportedObject to the list to be reported:
 
 ```JSON
 {
-  ...
   "Reported": [
     {
       "ComponentName": "CommandRunner",
       "ObjectName": "CommandStatus"
     },
-    ...
     {
       "ComponentName": "MyComponent",
       "ObjectName": "MyReportedObject"
     }
   ]
-  ...
 }
 ```
 
