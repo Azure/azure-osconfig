@@ -40,7 +40,7 @@ variables:
 trigger:
   branches:
     include:
-    - master
+    - main
 
 stages:
 - stage: Terraform_iothub
