@@ -1,4 +1,5 @@
 trigger: none
+pr: none
 
 parameters:
 - name: BUILD_UBUNTU2004_AMD64

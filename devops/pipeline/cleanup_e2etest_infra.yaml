@@ -4,6 +4,7 @@
 #       "environment": "osconfig-e2etest"
 #     }
 trigger: none
+pr: none
 
 parameters:
 - name: REMOVE_ALL

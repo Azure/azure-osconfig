@@ -41,6 +41,7 @@ trigger:
   branches:
     include:
     - main
+pr: none
 
 stages:
 - stage: Terraform_iothub
