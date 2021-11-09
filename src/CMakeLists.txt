@@ -66,20 +66,6 @@ find_package(Git QUIET)
 string(TIMESTAMP _timestamp "%Y%m%d")
 if(DEFINED PRODUCTION_BUILD_PREFIX)
     set(CMAKE_PROJECT_VERSION_TWEAK "${PRODUCTION_BUILD_PREFIX}")
-elseif(Git_FOUND)
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        RESULT_VARIABLE result
-        OUTPUT_VARIABLE GIT_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if(result)
-        message(WARNING "Failed to get git hash: ${result}")
-    endif()
-
-    set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}${GIT_HASH}")
 else()
     set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 endif()
