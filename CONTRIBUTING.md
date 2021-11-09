@@ -21,6 +21,8 @@ Adding a new OSConfig Management Module with changes into the OSConfig Managemen
 Adding a new and/or changing an existing feature of the OSConfig Management Platform, the OSConfig Agent and/or the common libraries | /src/platform/, /src/agents/, /src/common/ | Generally not recommended. Such pull requests require special review and approval from the core team and may be approved on a case by case basis. If the proposed change follows the current [OSConfig North Star Architecture](architecture.md) and [OSConfig Roadmap](roadmap.md) that increases the chance of approval.
 Changing or adding to the documentation | *, /docs/ | Generally not recommended. Such pull requests require special review and approval from the core team and may be approved on a case by case basis.
 
+Pull requests with few exceptions must contain appropriate unit-tests. We cannot allow test coverage to go down. Pull requests containing code changes without accompanying unit tests may be rejected.
+
 Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com. When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
 # Contact
