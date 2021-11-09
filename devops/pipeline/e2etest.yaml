@@ -157,7 +157,7 @@ stages:
         inputs:
           source: 'specific'
           project: 'AzOsConfig'
-          pipeline: 1600
+          pipeline: $(package_pipeline)
           runVersion: 'latestFromBranch'
           runBranch: $(Build.SourceBranch)
           itemPattern: $(packagePattern)
