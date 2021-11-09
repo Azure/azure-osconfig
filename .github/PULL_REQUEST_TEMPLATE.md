@@ -4,7 +4,7 @@
 
 ## Checklist
 
-[x] I have read the [contribution guidelines](../CONTRIBUTING.md).
-[x] I added unit-tests to validate my changes. All unit tests are passing. 
-[x] I have merged the latest `main` branch prior to this PR submission.
-[x] I submitted this PR against the `main` branch. 
+- [ ] I have read the [contribution guidelines](../CONTRIBUTING.md).
+- [ ] I added unit-tests to validate my changes. All unit tests are passing. 
+- [ ] I have merged the latest `main` branch prior to this PR submission.
+- [ ] I submitted this PR against the `main` branch. 
