@@ -3,7 +3,7 @@
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 
-name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
 
 resources:
   containers:
@@ -86,21 +86,13 @@ steps:
   persistCredentials: true
   clean: true
 
-# Build the version string
-- script: |
-    echo Build number: $(Build.BuildNumber)
-    OSCONFIG_REVISION=`echo "$(Build.BuildNumber)" | rev | cut -d . -f 1 | rev`
-    echo Build prefix: $OSCONFIG_REVISION
-    echo "##vso[task.setvariable variable=OSCONFIG_REVISION;]$OSCONFIG_REVISION"
-  displayName: Build version string
-
 # Run CMake to generate Makefile
 - task: CMake@1
   displayName: 'Generate build'
   condition: eq(variables.coverage, false)
   inputs:
     workingDirectory: $(OSCONFIG_SRC)
-    cmakeArgs: '-DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -DPRODUCTION_BUILD_PREFIX=$(OSCONFIG_REVISION) -G Ninja -B$(Agent.BuildDirectory) -H.'
+    cmakeArgs: '-DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B$(Agent.BuildDirectory) -H.'
 
 # Run CMake to generate Makefile (With test coverage)
 - task: CMake@1
@@ -108,7 +100,7 @@ steps:
   condition: eq(variables.coverage, true)
   inputs:
     workingDirectory: $(OSCONFIG_SRC)
-    cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -DPRODUCTION_BUILD_PREFIX=$(OSCONFIG_REVISION) -G Ninja -B$(Agent.BuildDirectory) -H.'
+    cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B$(Agent.BuildDirectory) -H.'
 
 # Build project
 - task: Bash@3

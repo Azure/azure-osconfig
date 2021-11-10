@@ -3,7 +3,7 @@
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 
-name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
@@ -76,7 +76,7 @@ steps:
   displayName: Setup QEMU emulation
 
 - script: |
-    docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -DPRODUCTION_BUILD_PREFIX=$(OSCONFIG_REVISION) -G Ninja -B/AzOsConfig/build-$(arch) -H/AzOsConfig/src"
+    docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-$(arch) -H/AzOsConfig/src"
   displayName: Generate build
 
 - script: |

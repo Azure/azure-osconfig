@@ -2,7 +2,7 @@
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 
-name: Test_$(Rev:rr)_$(SourceBranchName)_$(Date:yyyyMMdd)
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
 
 resources:
   containers:
@@ -28,7 +28,6 @@ parameters:
   displayName: 'Shell script to execute after osconfig install'
   type: string
   default: ' '
-  
 
 variables:
   SERVICE_CONNECTION: OSconfig-arm
@@ -57,16 +56,16 @@ stages:
           sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
           sudo apt install terraform
         displayName: Installing Terraform
-      
+
       - script: 'terraform init'
         displayName: terraform init (IotHub)
         workingDirectory: $(Build.SourcesDirectory)/devops/terraform/iothub
-    
+
       - script: 'terraform apply -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve'
         displayName: terraform apply
         continueOnError: true
         workingDirectory: $(Build.SourcesDirectory)/devops/terraform/iothub
-  
+
       - script: |
           IOTHUB_NAME=`terraform output iothub_name`
           echo "##vso[task.setvariable variable=IOTHUB_NAME;isOutput=true]$IOTHUB_NAME"
@@ -90,13 +89,13 @@ stages:
         displayName: Retreive Resource Group Name
         continueOnError: true
         workingDirectory: $(Build.SourcesDirectory)/devops/terraform/iothub
-      
+
       - script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/terraform/iothub
           cp -R $(Build.SourcesDirectory)/devops/terraform/iothub/* $(Build.ArtifactStagingDirectory)/terraform/iothub
         displayName: Copy terraform state (iothub)
         continueOnError: true
-      
+
       - publish: '$(Build.ArtifactStagingDirectory)/terraform/iothub'
         displayName: 'Publish Terraform state for destroy stage (iothub)'
         continueOnError: true
@@ -150,7 +149,7 @@ stages:
             pre_script: >-
               wget https://github.com/Azure/azure-iotedge/releases/download/1.2.4/aziot-identity-service_1.2.3-1_ubuntu20.04_amd64.deb &&
               sudo apt install ./aziot-identity-service_1.2.3-1_ubuntu20.04_amd64.deb
-    
+
     steps:
       - task: DownloadPipelineArtifact@2
         displayName: Download OSConfig from pipeline
@@ -187,7 +186,7 @@ stages:
         displayName: terraform init (VM)
         continueOnError: true
         workingDirectory: $(Build.SourcesDirectory)/devops/terraform/host
-      
+
       - script: terraform apply -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr='$(DEVICE_CONN_STR)' -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var vm_name=$(distroName) -var image_offer=$(image_offer) -var image_publisher=$(image_publisher) -var image_sku=$(image_sku) -var image_version=$(image_version) -var sas_token="$(SAS_TOKEN)" -var vm_pre_osconfig_install_script="$(pre_script)" -var vm_post_osconfig_install_script="$(POST_SCRIPT)" -auto-approve
         displayName: terraform apply
         continueOnError: true
@@ -198,7 +197,7 @@ stages:
           cp -R $(Build.SourcesDirectory)/devops/terraform/host/* $(Build.ArtifactStagingDirectory)/terraform/host
         displayName: Copy terraform state (vm)
         continueOnError: true
-      
+
       - publish: '$(Build.ArtifactStagingDirectory)/terraform/host'
         displayName: 'Publish Terraform state for destroy stage (vm)'
         continueOnError: true
@@ -206,7 +205,7 @@ stages:
 
 - stage: Run_Test_Driver
   displayName: Execute E2E Test
-  dependsOn: 
+  dependsOn:
     - Terraform_iothub
     - Terraform_VM
   variables:
@@ -254,7 +253,7 @@ stages:
         displayName: Get OSConfig logs from blobstore
         condition: or(succeeded(), failed())
         continueOnError: true
-      
+
       - publish: '$(Build.ArtifactStagingDirectory)/logs/'
         displayName: 'Publish OSConfig Logs'
         condition: or(succeeded(), failed())
@@ -263,7 +262,7 @@ stages:
 
 - stage: Terraform_destroy_vm
   displayName: Tear down cloud resources (VMs)
-  dependsOn: 
+  dependsOn:
     - Terraform_iothub
     - Terraform_VM
     - Run_Test_Driver
@@ -293,7 +292,7 @@ stages:
           sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
           sudo apt install terraform
         displayName: Installing Terraform
-      
+
       - download: current
         artifact: terraformStateVM_$(distroName)
         displayName: Fetching terraform state (VM)
@@ -304,7 +303,7 @@ stages:
         workingDirectory: $(Pipeline.Workspace)/terraformStateVM_$(distroName)
         displayName: Destroy cloud resources (VM)
         continueOnError: true
-      
+
       - task: AzureCLI@2
         displayName: Get twin from IoTHub
         continueOnError: true
@@ -317,12 +316,12 @@ stages:
             az config set extension.use_dynamic_install=yes_without_prompt
             az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "72f988bf-86f1-41af-91ab-2d7cd011db47"
             az iot hub device-twin show --hub-name $(IOTHUB_NAME) --device-id $(device_id) > $(Build.ArtifactStagingDirectory)/$(device_id)_twin.json
-      
+
       - publish: '$(Build.ArtifactStagingDirectory)/$(device_id)_twin.json'
         displayName: 'Publish twin for $(device_id)'
         continueOnError: true
         artifact: DeviceTwin_$(distroName)
-      
+
 
 - stage: Terraform_destroy_iothub
   displayName: Tear down cloud resources (iothub)

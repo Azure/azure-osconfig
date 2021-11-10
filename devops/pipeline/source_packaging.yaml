@@ -1,3 +1,7 @@
+# Continuous Integration Pipeline
+
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
+
 resources:
   containers:
   - container: ubuntu20.04
@@ -11,11 +15,6 @@ resources:
 
 variables:
   OSCONFIG_SRC: $(Build.SourcesDirectory)/src
-  OSCONFIG_VERSION_MAJOR: 0
-  OSCONFIG_VERSION_MINOR: 4
-  OSCONFIG_VERSION_PATCH: 0
-  OSCONFIG_VERSION_TWEAK: $(Build.BuildID)
-  OSCONFIG_VERSION: $(OSCONFIG_VERSION_MAJOR).$(OSCONFIG_VERSION_MINOR).$(OSCONFIG_VERSION_PATCH).$(OSCONFIG_VERSION_TWEAK)
 
 pool:
     vmImage: 'ubuntu-20.04'
@@ -30,14 +29,6 @@ jobs:
   - checkout: self
     submodules: recursive
     clean: true
-
-  # Get Version
-  - task: Bash@3
-    displayName: 'Retreive version string'
-    inputs:
-      workingDirectory: $(Build.SourcesDirectory)
-      targetType: 'inline'
-      script: 'echo "##vso[task.setvariable variable=OSCONFIG_VERSION_BUILD;]$(OSCONFIG_VERSION).`date +"%m%d%y"`-`git rev-parse --short HEAD`"'
 
   # Run CMake to generate Makefile
   - task: CMake@1
