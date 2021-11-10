@@ -64,11 +64,7 @@ endif()
 
 find_package(Git QUIET)
 string(TIMESTAMP _timestamp "%Y%m%d")
-if(DEFINED PRODUCTION_BUILD_NUMBER)
-    set(CMAKE_PROJECT_VERSION "${PRODUCTION_BUILD_NUMBER}")
-else()
-    set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
-endif()
+set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 
 set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Microsoft Azure Device OS Configuration Agent")
