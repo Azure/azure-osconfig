@@ -15,7 +15,6 @@ resources:
 
 variables:
   OSCONFIG_SRC: $(Build.SourcesDirectory)/src
-  OSCONFIG_VERSION: $(MajorVersion).$(MinorVersion).$(PatchVersion)
 
 pool:
     vmImage: 'ubuntu-20.04'
