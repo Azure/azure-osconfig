@@ -1,6 +1,6 @@
 # Continuous Integration Pipeline
 
-name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
 
 resources:
   containers:
