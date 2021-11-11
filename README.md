@@ -1,6 +1,6 @@
 # OSConfig
 
-[![Build Status](https://mscodehub.visualstudio.com/AzOsConfig/_apis/build/status/OSConfig%20Continuous%20Integration?branchName=master)](https://mscodehub.visualstudio.com/AzOsConfig/_build/latest?definitionId=1441&branchName=master)
+[![Build Status](https://mscodehub.visualstudio.com/AzOsConfig/_apis/build/status/Continuous%20Integration?branchName=main)](https://mscodehub.visualstudio.com/AzOsConfig/_build/latest?definitionId=1842&branchName=main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
 Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
