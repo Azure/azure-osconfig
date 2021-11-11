@@ -40,6 +40,7 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_PRIORITY "LocalPriority"
+#define LOCAL_REPORTING "LocalReporting"
 
 #define DEFAULT_DEVICE_MODEL_ID 4
 #define MIN_DEVICE_MODEL_ID 3
@@ -123,6 +124,7 @@ static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
 static int g_localPriority = 0;
+static int g_localReporting = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -437,6 +439,11 @@ static int GetLocalPriorityFromJsonConfig(const char* jsonString)
     return g_localPriority = GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
 }
 
+static int GetLocalReportingFromJsonConfig(const char* jsonString)
+{
+    return g_localReporting = GetIntegerFromJsonConfig(LOCAL_REPORTING, jsonString, 0, 0, 1);
+}
+
 static int LoadReportedFromJsonConfig(const char* jsonString)
 {
     JSON_Value* rootValue = NULL;
@@ -585,6 +592,7 @@ int main(int argc, char *argv[])
         LoadReportedFromJsonConfig(jsonConfiguration);
         GetReportingIntervalFromJsonConfig(jsonConfiguration);
         GetLocalPriorityFromJsonConfig(jsonConfiguration);
+        GetLocalReportingFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -744,19 +752,23 @@ static void SaveReportedConfigurationToFile()
     char* payload = NULL;
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
-    int mpiResult = CallMpiGetReported(g_productInfo, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
-    if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
+    int mpiResult = MPI_OK;
+    if (g_localReporting)
     {
-        if (g_reportedHash != (payloadHash = HashString(payload)))
+        mpiResult = CallMpiGetReported(g_productInfo, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
-            if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes))
+            if (g_reportedHash != (payloadHash = HashString(payload)))
             {
-                RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-                g_reportedHash = payloadHash;
+                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes))
+                {
+                    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
+                    g_reportedHash = payloadHash;
+                }
             }
         }
+        CallMpiFree(payload);
     }
-    CallMpiFree(payload);
 }
 
 static void ReportProperties()
