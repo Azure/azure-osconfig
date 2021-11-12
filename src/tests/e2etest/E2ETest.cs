@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.ComponentModel.DataAnnotations;
 
 namespace e2etesting
 {
@@ -152,7 +151,7 @@ namespace e2etesting
                 Task.Delay(twinRefreshIntervalMs).Wait();
             }
             bool timeout = (DateTime.UtcNow - beforeUpdate).TotalSeconds >= twinTimeoutSeconds;
-            Console.WriteLine("[UpdateTwinBlockUntilUpdate] {0}! end:{1}, elapsed:{2} sec", timeout ? "TIMEOUT" : "Success", DateTime.UtcNow, (DateTime.UtcNow - beforeUpdate).TotalSeconds);
+            Console.WriteLine("[UpdateTwinBlockUntilUpdate] {0}! end:{1}, elapsed:{2} sec", timeout ? "Timeout" : "Success", DateTime.UtcNow, (DateTime.UtcNow - beforeUpdate).TotalSeconds);
 
             if (timeout)
             {
@@ -180,7 +179,7 @@ namespace e2etesting
             {
                 CommandId = random,
                 Arguments = command,
-                Action = CommandRunnerTests.Action.ActionRunCommand,
+                Action = CommandRunnerTests.Action.RunCommand,
                 Timeout = 60,
                 SingleLineTextResult = true
             };
@@ -188,7 +187,7 @@ namespace e2etesting
             {
                 CommandId = random,
                 Arguments = command,
-                Action = CommandRunnerTests.Action.ActionRefreshCommandStatus,
+                Action = CommandRunnerTests.Action.RefreshCommandStatus,
                 Timeout = 60,
                 SingleLineTextResult = true
             };
@@ -254,6 +253,11 @@ namespace e2etesting
         {
             string expectedJson = JsonSerializer.Serialize(expected);
             string actualJson = JsonSerializer.Serialize(actual);
+            if (!actualJson.StartsWith("\""))
+            {
+                actualJson = "\"" + actualJson + "\"";
+            }
+
             Regex expectedPattern = new Regex(@expectedJson);
             return expectedPattern.IsMatch(actualJson);
         }
@@ -262,7 +266,6 @@ namespace e2etesting
         {
             return refreshTwin ? GetNewTwin().Properties.Reported.Contains(componentName) : twin.Properties.Reported.Contains(componentName);
         }
-
         public bool UploadLogsToBlobStore()
         {
             return ((null != sas_token)  &&
