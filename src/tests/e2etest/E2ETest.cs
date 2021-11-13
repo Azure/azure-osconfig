@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace e2etesting
 {
@@ -140,8 +141,8 @@ namespace e2etesting
             var componentName = patchJson.Properties().First().Name;
 
             // If this is a new device (no reported properties will exist yet for that ComponentName)
-            Console.WriteLine("[UpdateTwinBlockUntilUpdate] beforeUpdate:{0}", beforeUpdate);
-            while ( ((IsComponentNameReported(componentName) && (twin.Properties.Reported[componentName].GetLastUpdated() < beforeUpdate))
+            Console.WriteLine("[UpdateTwinBlockUntilUpdate] start:{0}", beforeUpdate);
+            while ( ((IsComponentNameReported(componentName) && (twin.Properties.Reported[componentName].GetLastUpdated() < beforeUpdate)) 
                         || !IsComponentNameReported(componentName, false))
                      && ((DateTime.UtcNow - beforeUpdate).TotalSeconds < twinTimeoutSeconds))
             {
@@ -149,9 +150,10 @@ namespace e2etesting
                 Console.WriteLine("[UpdateTwinBlockUntilUpdate] waiting for twin...");
                 Task.Delay(twinRefreshIntervalMs).Wait();
             }
-            Console.WriteLine("[UpdateTwinBlockUntilUpdate] Done! time:{0}, elapsed:{1} sec", DateTime.UtcNow, (DateTime.UtcNow - beforeUpdate).TotalSeconds);
+            bool timeout = (DateTime.UtcNow - beforeUpdate).TotalSeconds >= twinTimeoutSeconds;
+            Console.WriteLine("[UpdateTwinBlockUntilUpdate] {0}! end:{1}, elapsed:{2} sec", timeout ? "Timeout" : "Success", DateTime.UtcNow, (DateTime.UtcNow - beforeUpdate).TotalSeconds);
 
-            if ((DateTime.UtcNow - beforeUpdate).TotalSeconds >= twinTimeoutSeconds)
+            if (timeout)
             {
                 return false;
             }
@@ -177,7 +179,7 @@ namespace e2etesting
             {
                 CommandId = random,
                 Arguments = command,
-                Action = CommandRunnerTests.Action.ActionRunCommand,
+                Action = CommandRunnerTests.Action.RunCommand,
                 Timeout = 60,
                 SingleLineTextResult = true
             };
@@ -185,7 +187,7 @@ namespace e2etesting
             {
                 CommandId = random,
                 Arguments = command,
-                Action = CommandRunnerTests.Action.ActionRefreshCommandStatus,
+                Action = CommandRunnerTests.Action.RefreshCommandStatus,
                 Timeout = 60,
                 SingleLineTextResult = true
             };
@@ -201,14 +203,14 @@ namespace e2etesting
 
             if (UpdateTwinBlockUntilUpdate(twinPatch))
             {
-                var deserializedTwin = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
+                var deserializedObject = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
                 // Wait until commandId is equivalent
                 DateTime startTime = DateTime.Now;
-                while(deserializedTwin.CommandId != random && (DateTime.Now - startTime).TotalSeconds < 30)
+                while(deserializedObject.CommandId != random && (DateTime.Now - startTime).TotalSeconds < 30)
                 {
                     Console.WriteLine("[PerformCommandViaCommandRunner] waiting for commandId to be equivalent...");
                     Task.Delay(twinRefreshIntervalMs).Wait();
-                    deserializedTwin = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetNewTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
+                    deserializedObject = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetNewTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
                 }
 
                 if ((DateTime.Now - startTime).TotalSeconds >= 30)
@@ -216,13 +218,13 @@ namespace e2etesting
                     return (false,"");
                 }
 
-                if (deserializedTwin.CurrentState != CommandRunnerTests.CommandState.Succeeded)
+                if (deserializedObject.CurrentState != CommandRunnerTests.CommandState.Succeeded)
                 {
-                    Console.WriteLine("[PerformCommandViaCommandRunner] Unable to execute commandId:{0}", deserializedTwin.CommandId);
+                    Console.WriteLine("[PerformCommandViaCommandRunner] Unable to execute commandId:{0}", deserializedObject.CommandId);
                     return (false,"");
                 }
 
-                return (true, deserializedTwin.TextResult);
+                return (true, deserializedObject.TextResult);
             }
             else
             {
@@ -247,11 +249,23 @@ namespace e2etesting
             Assert.AreEqual(expectedJson, actualJson);
         }
 
+        public static bool IsRegexMatch(object expected, object actual)
+        {
+            string expectedJson = JsonSerializer.Serialize(expected);
+            string actualJson = JsonSerializer.Serialize(actual);
+            if (!actualJson.StartsWith("\""))
+            {
+                actualJson = "\"" + actualJson + "\"";
+            }
+
+            Regex expectedPattern = new Regex(@expectedJson);
+            return expectedPattern.IsMatch(actualJson);
+        }
+
         private bool IsComponentNameReported(string componentName, bool refreshTwin = true)
         {
             return refreshTwin ? GetNewTwin().Properties.Reported.Contains(componentName) : twin.Properties.Reported.Contains(componentName);
         }
-
         public bool UploadLogsToBlobStore()
         {
             return ((null != sas_token)  &&
