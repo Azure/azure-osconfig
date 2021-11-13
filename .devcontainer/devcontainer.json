@@ -5,6 +5,7 @@
 	"workspaceFolder": "/AzOsConfig",
 	"mounts": ["source=${localWorkspaceFolder},target=/AzOsConfig,type=bind,consistency=cached"],
 	"overrideCommand": true,
+	"postCreateCommand": "git submodule update --init --recursive",
 
 	"extensions": [
 		"eamodio.gitlens",
