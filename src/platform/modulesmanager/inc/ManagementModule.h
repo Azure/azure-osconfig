@@ -5,9 +5,9 @@
 #define MANAGEMENTMODULE_H
 
 #include <string>
+#include <map>
 #include <memory>
 #include <sstream>
-#include <unordered_map>
 #include <Mmi.h>
 
 // MMI function definitions
@@ -63,6 +63,7 @@ public:
         Version version;
         std::string versionInfo;
         std::vector<std::string> components;
+        std::map<std::string, std::vector<std::string>> reportedObjects;
         Lifetime lifetime;
         std::string licenseUri;
         std::string projectUri;
@@ -92,13 +93,12 @@ public:
     // See MmiGetInfo Schema for property descriptions -> src/modules/schema/MmiGetInfoSchema.json
     Lifetime GetLifetime() const;
     const std::vector<std::string> GetSupportedComponents() const;
+    void AddReportedObject(const std::string& componentName, const std::string& objectName);
+    const std::vector<std::string> GetReportedObjects(const std::string& componentName) const;
     const Version GetVersion() const;
     const std::string GetName() const;
 
     const std::string GetModulePath() const;
-
-    // Hash of the last reported payload
-    std::unordered_map<std::string, size_t> payloadHashMap;
 
 private:
     void* handle;

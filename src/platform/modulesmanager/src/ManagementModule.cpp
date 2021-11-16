@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <algorithm>
 #include <dlfcn.h>
 #include <iostream>
 #include <rapidjson/document.h>
@@ -418,6 +419,29 @@ bool ManagementModule::IsLoaded() const
 const std::vector<std::string> ManagementModule::GetSupportedComponents() const
 {
     return info.components;
+}
+
+const std::vector<std::string> ManagementModule::GetReportedObjects(const std::string& componentName) const
+{
+    std::vector<std::string> objects;
+    if (info.reportedObjects.find(componentName) != info.reportedObjects.end())
+    {
+        objects = info.reportedObjects.at(componentName);
+    }
+    return objects;
+}
+
+void ManagementModule::AddReportedObject(const std::string& component, const std::string& object)
+{
+    if (info.reportedObjects.find(component) == info.reportedObjects.end())
+    {
+        info.reportedObjects[component] = std::vector<std::string>();
+    }
+
+    if (std::find(info.reportedObjects[component].begin(), info.reportedObjects[component].end(), object) == info.reportedObjects[component].end())
+    {
+        info.reportedObjects[component].push_back(object);
+    }
 }
 
 bool ManagementModule::IsExportingMmi(const std::string path)

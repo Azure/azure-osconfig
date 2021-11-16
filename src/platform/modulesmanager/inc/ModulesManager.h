@@ -11,7 +11,9 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <rapidjson/document.h>
 #include <vector>
+
 #include <ManagementModule.h>
 #include <CommonUtils.h>
 #include <Logging.h>
@@ -57,7 +59,7 @@ public:
     // Loads Management Modules (MMs) into the ModuleLoader from the default path (/usr/lib/osconfig)
     int LoadModules();
     // Loads Management Modules (MMs) into the ModuleLoader from the given path
-    int LoadModules(std::string modulePath);
+    int LoadModules(std::string modulePath, std::string configJson);
     // Perform an MpiSet operation
     int MpiSet(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes);
     // Perform an MpiGet operation
@@ -65,7 +67,7 @@ public:
     // Perform an MpiSetDesired operation
     int MpiSetDesired(const char* clientName, const char* payload, const int payloadSizeBytes);
     // Perform an MpiGetReported operation
-    int MpiGetReported(const char* clientName, const unsigned int mayPayloadSizeBytes, char** payload, int* payloadSizeBytes);
+    int MpiGetReported(const char* clientName, const unsigned int maxPayloadSizeBytes, char** payload, int* payloadSizeBytes);
     // Retreives the client of the ModulesManager
     std::string GetClientName();
     void UnloadAllModules();
@@ -81,8 +83,11 @@ private:
         bool operationInProgress;
     };
 
+    int SetReportedObjects(const std::string& configJson);
     int MpiSetInternal(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes);
     int MpiGetInternal(const char* componentName, const char* propertyName, char** payload, int* payloadSizeBytes);
+    int MpiSetDesiredInternal(rapidjson::Document& document);
+    int MpiGetReportedInternal(char** payload, int* payloadSizeBytes);
     ModuleMetadata* GetModuleMetadata(const char* componentName);
     void ScheduleUnloadModule(ModuleMetadata& mm);
 
