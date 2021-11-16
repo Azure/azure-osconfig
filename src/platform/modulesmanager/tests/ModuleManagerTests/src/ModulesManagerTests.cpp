@@ -98,7 +98,7 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, MpiSetDispatch)
     {
-        constexpr const char payload[] = R""""( {"testParameter": "testValue"} )"""";
+        constexpr const char payload[] = R""""( {"TestObject": "testValue"} )"""";
         ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
     }
 
@@ -108,7 +108,7 @@ namespace Tests
             [
                 {
                     "TestComponent1": {
-                        "testParameter": "testValue"
+                        "TestObject1": "testValue1"
                     }
                 }
             ])"""";
@@ -122,10 +122,13 @@ namespace Tests
             [
                 {
                     "TestComponent1": {
-                        "testParameter": "testValue"
+                        "TestObject1": "testValue"
                     },
                     "TestComponent2": {
-                        "testParameter": "testValue"
+                        "TestObject2": {
+                            "TestSetting1": "testValue1",
+                            "TestSetting2": "testValue2"
+                        }
                     }
                 }
             ])"""";
@@ -139,15 +142,18 @@ namespace Tests
             [
                 {
                     "TestComponent1": {
-                        "testParameter": "testValue"
+                        "TestObject1": "testValue"
                     }
                 },
                 {
                     "TestComponent1": {
-                        "testParameter": "testValue"
+                        "TestObject2": "testValue"
                     },
                     "TestComponent2": {
-                        "testParameter": "testValue"
+                        "TestObject3": {
+                            "TestSetting1": "testValue1",
+                            "TestSetting2": "testValue2"
+                        }
                     }
                 }
             ])"""";
@@ -215,7 +221,7 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, ModuleCleanup)
     {
-        constexpr const char payload[] = R""""( {"testParameter": "testValue"} )"""";
+        constexpr const char payload[] = R""""( {"TestObject": "testValue"} )"""";
         mm->SetDefaultCleanupTimespan(5);
         ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
         ASSERT_EQ(1, mm->modulesToUnload.size());
