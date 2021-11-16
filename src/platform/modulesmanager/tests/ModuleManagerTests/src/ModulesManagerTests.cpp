@@ -39,7 +39,12 @@ namespace Tests
 
         virtual void SetUp()
         {
-            ASSERT_EQ(0, mm->LoadModules(MODULE_TEST_PATH));
+            SetUp(OSCONFIG_JSON_NONE_REPORTED);
+        }
+
+        virtual void SetUp(std::string configFile)
+        {
+            ASSERT_EQ(0, mm->LoadModules(MODULE_TEST_PATH, configFile));
         }
 
         virtual void TearDown()
@@ -50,7 +55,19 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, LoadSomeInvalidDirectory)
     {
-        ASSERT_EQ(ENOENT, mm->LoadModules("/some/bad/path/blahblah"));
+        ASSERT_EQ(ENOENT, mm->LoadModules("/some/bad/path", OSCONFIG_JSON_NONE_REPORTED));
+    }
+
+    TEST_F(ModuleManagerTests, LoadValidConfigFiles)
+    {
+        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_NONE_REPORTED));
+        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_SINGLE_REPORTED));
+        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_MULTIPLE_REPORTED));
+    }
+
+    TEST_F(ModuleManagerTests, LoadSomeInvalidConfigFiles)
+    {
+        ASSERT_EQ(ENOENT, mm->LoadModules(MODULE_TEST_PATH, "/some/bad/path/osconfig.json"));
     }
 
     TEST_F(ModuleManagerTests, MpiGetDispatch)
@@ -62,7 +79,7 @@ namespace Tests
         std::string payloadStr(payload, szPayload);
 
         constexpr const char expectedStr[] = R""""( { "returnValue": "TestComponent1-MultiComponentModule" } )"""";
-        ASSERT_TRUE(JSON_EQ(expectedStr, payloadStr.c_str()));
+        ASSERT_TRUE(Tests::JSON_EQ(expectedStr, payloadStr.c_str()));
         delete[] payload;
     }
 
@@ -75,7 +92,7 @@ namespace Tests
         std::string payloadStr(payload, szPayload);
 
         constexpr const char expectedStr[] = R""""( {"returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"} )"""";
-        ASSERT_TRUE(JSON_EQ(expectedStr, payloadStr.c_str()));
+        ASSERT_TRUE(Tests::JSON_EQ(expectedStr, payloadStr.c_str()));
         delete[] payload;
     }
 
@@ -83,6 +100,117 @@ namespace Tests
     {
         constexpr const char payload[] = R""""( {"testParameter": "testValue"} )"""";
         ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
+    }
+
+    TEST_F(ModuleManagerTests, MpiSetDesiredSingleComponent)
+    {
+        constexpr const char payload[] = R""""(
+            [
+                {
+                    "TestComponent1": {
+                        "testParameter": "testValue"
+                    }
+                }
+            ])"""";
+
+        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    }
+
+    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleComponents)
+    {
+        constexpr const char payload[] = R""""(
+            [
+                {
+                    "TestComponent1": {
+                        "testParameter": "testValue"
+                    },
+                    "TestComponent2": {
+                        "testParameter": "testValue"
+                    }
+                }
+            ])"""";
+
+        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    }
+
+    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleConfigurations)
+    {
+        constexpr const char payload[] = R""""(
+            [
+                {
+                    "TestComponent1": {
+                        "testParameter": "testValue"
+                    }
+                },
+                {
+                    "TestComponent1": {
+                        "testParameter": "testValue"
+                    },
+                    "TestComponent2": {
+                        "testParameter": "testValue"
+                    }
+                }
+            ])"""";
+
+        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    }
+
+    TEST_F(ModuleManagerTests, MpiGetReportedWithInvalidConfig)
+    {
+        ASSERT_EQ(EINVAL, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_INVALID));
+
+        char* payload;
+        int payloadSize;
+        constexpr const char expected[] = "{}";
+
+        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
+        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
+    }
+
+    TEST_F(ModuleManagerTests, MpiGetReportedSingleReported)
+    {
+        SetUp(OSCONFIG_JSON_SINGLE_REPORTED);
+
+        char* payload;
+        int payloadSize;
+        constexpr const char expected[] = R"""(
+            {
+                "TestComponent1": {
+                    "TestObject1": {
+                        "returnValue": "TestComponent1-MultiComponentModule"
+                    }
+                }
+            })""";
+
+        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
+        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
+    }
+
+    TEST_F(ModuleManagerTests, MpiGetReportedMultipleReported)
+    {
+        SetUp(OSCONFIG_JSON_MULTIPLE_REPORTED);
+
+        char* payload;
+        int payloadSize;
+        constexpr const char expected[] = R"""(
+            {
+                "TestComponent1": {
+                    "TestObject1": {
+                        "returnValue": "TestComponent1-MultiComponentModule"
+                    }
+                },
+                "TestComponent2": {
+                    "TestObject2": {
+                        "returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"
+                    },
+                    "TestObject3": {
+                        "returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"
+                    }
+                }
+            })""";
+
+        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
+        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
     }
 
     TEST_F(ModuleManagerTests, ModuleCleanup)
@@ -186,6 +314,25 @@ namespace Tests
         ASSERT_STREQ("0.0.0.0", v1.ToString().c_str());
         ASSERT_STREQ("0.0.1.0", v2.ToString().c_str());
         ASSERT_STREQ("0.0.0.1", v3.ToString().c_str());
+    }
+
+    TEST(ManagementModuleTests, GetReportedObjectsTest)
+    {
+        std::string module_path = MODULE_TEST_PATH;
+        ManagementModule mm(clientName, module_path);
+        ASSERT_TRUE(mm.GetReportedObjects(componentName1).empty());
+        ASSERT_TRUE(mm.GetReportedObjects(componentName2).empty());
+
+        mm.AddReportedObject(componentName1, "TestObject1");
+        ASSERT_THAT(mm.GetReportedObjects(componentName1), ElementsAre("TestObject1"));
+
+        // Add duplicate object
+        mm.AddReportedObject(componentName1, "TestObject1");
+        ASSERT_THAT(mm.GetReportedObjects(componentName1), ElementsAre("TestObject1"));
+
+        mm.AddReportedObject(componentName2, "TestObject2");
+        mm.AddReportedObject(componentName2, "TestObject3");
+        ASSERT_THAT(mm.GetReportedObjects(componentName2), ElementsAre("TestObject2", "TestObject3"));
     }
 
 } // namespace Tests
