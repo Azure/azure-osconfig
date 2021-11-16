@@ -13,11 +13,12 @@ namespace e2etesting
     {
         public enum Action
         {
-            ActionNone = 0,
-            ActionReboot,
-            ActionShutdown,
-            ActionRunCommand,
-            ActionRefreshCommandStatus
+            None = 0,
+            Reboot,
+            Shutdown,
+            RunCommand,
+            RefreshCommandStatus,
+            CancelCommand
         }
 
         public enum CommandState
@@ -25,7 +26,9 @@ namespace e2etesting
             Unknown = 0,
             Running,
             Succeeded,
-            Failed
+            Failed,
+            TimeOut,
+            Canceled
         }
         public partial class CommandArguments
         {
@@ -40,28 +43,26 @@ namespace e2etesting
         {
             public string CommandId { get; set; }
             public long ResultCode { get; set; }
-            public long ExtendedResultCode { get; set; }
             public string TextResult { get; set; }
             public CommandState CurrentState { get; set; }
         }
 
         [Test]
-        public void CommandRunnerTest_ActionRunCommand_echo_HelloWorld()
+        public void CommandRunnerTest_RunCommand_echo_HelloWorld()
         {
             var random = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
             var desiredCommand = new CommandArguments
             {
                 CommandId = random,
                 Arguments = "echo HelloWorld",
-                Action = Action.ActionRunCommand,
+                Action = Action.RunCommand,
                 Timeout = 60,
                 SingleLineTextResult = true
             };
-            var expectedCommandStatus = new CommandStatus()
+            var expectedCommandStatus = new CommandStatus
             {
                 CommandId = random,
                 ResultCode = 0,
-                ExtendedResultCode = 0,
                 TextResult = "HelloWorld ",
                 CurrentState = CommandState.Succeeded,
             };
@@ -75,7 +76,7 @@ namespace e2etesting
                 DateTime startTime = DateTime.Now;
                 while(deserializedTwin.CommandId != random && (DateTime.Now - startTime).TotalSeconds < 30)
                 {
-                    Console.WriteLine("[CommandRunnerTests] waiting for commandId to be equivalent...");
+                    Console.WriteLine("[CommandRunnerTests] waiting for commandId to match...");
                     Task.Delay(twinRefreshIntervalMs).Wait();
                     deserializedTwin = JsonSerializer.Deserialize<CommandStatus>(GetNewTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
                 }
@@ -84,7 +85,7 @@ namespace e2etesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin - ActionRunCommand");
+                Assert.Fail("Timeout for updating twin - RunCommand");
             }
         }
     }

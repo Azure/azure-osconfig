@@ -1,6 +1,5 @@
 # OSConfig
 
-[![Build Status](https://mscodehub.visualstudio.com/AzOsConfig/_apis/build/status/OSConfig%20Continuous%20Integration?branchName=master)](https://mscodehub.visualstudio.com/AzOsConfig/_build/latest?definitionId=1441&branchName=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
 Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
@@ -144,6 +143,19 @@ To enable full logging for debugging purposes, edit the OSConfig general configu
 ```
 
 To disable full logging, set "FullLogging" to 0.
+
+### Enabling local reporting
+
+By default the reported configuration is not saved locally to `/etc/osconfig/osconfig_reported.json` (local reporting is disabled).
+
+To enable local reporting, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "LocalReporting" to a non zero value:
+
+```json
+{
+    "LocalReporting":1
+}
+```
+To disable local reporting, set "LocalReporting" to 0.
 
 ### Changing priority for local versus remote desired configuration
 

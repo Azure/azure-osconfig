@@ -214,11 +214,7 @@ int MmiSet(MMI_HANDLE clientSession, const char* componentName, const char* obje
             }
             else
             {
-                if (MMI_OK == status)
-                {
-                    OsConfigLogInfo(HostNameLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
-                }
-                else
+                if (MMI_OK != status)
                 {
                     OsConfigLogError(HostNameLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
                 }

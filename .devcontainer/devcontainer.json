@@ -1,24 +1,21 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json
 {
 	"name": "OSConfig",
-	"dockerComposeFile": ["docker-compose.yml"],
+	"dockerFile": "Dockerfile",
 	"workspaceFolder": "/AzOsConfig",
-	"service": "osconfig-devcontainer",
-
-	// Set *default* container specific settings.json values on container create.
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
-	},
+	"mounts": ["source=${localWorkspaceFolder},target=/AzOsConfig,type=bind,consistency=cached"],
 	"overrideCommand": true,
+	"postCreateCommand": "git submodule update --init --recursive",
 
 	"extensions": [
+		"eamodio.gitlens",
+		"GitHub.vscode-pull-request-github",
+		"hashicorp.terraform",
+		"ms-azure-devops.azure-pipelines",
+		"ms-azuretools.vscode-azureterraform",
+		"ms-dotnettools.csharp",
+		"twxs.cmake",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
-		"twxs.cmake",
-		"ms-dotnettools.csharp",
-		"ms-azuretools.vscode-azureterraform",
-		"ms-azure-devops.azure-pipelines",
-		"hashicorp.terraform",
-		"eamodio.gitlens"
     ]
 }
