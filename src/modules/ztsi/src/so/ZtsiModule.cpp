@@ -213,10 +213,6 @@ int MmiSet(
             {
                 OsConfigLogInfo(ZtsiLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
-            else
-            {
-                OsConfigLogInfo(ZtsiLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
-            }
         }
         else
         {
