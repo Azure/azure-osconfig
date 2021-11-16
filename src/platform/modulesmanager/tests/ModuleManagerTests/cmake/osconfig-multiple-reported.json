@@ -1,0 +1,16 @@
+{
+    "Reported": [
+        {
+            "ComponentName": "TestComponent1",
+            "ObjectName": "TestObject1"
+        },
+        {
+            "ComponentName": "TestComponent2",
+            "ObjectName": "TestObject2"
+        },
+        {
+            "ComponentName": "TestComponent2",
+            "ObjectName": "TestObject3"
+        }
+    ]
+}
