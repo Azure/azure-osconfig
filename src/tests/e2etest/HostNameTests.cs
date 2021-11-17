@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace e2etesting
 {
+    [TestFixture]
     public class HostNameTests : E2eTest
     {   
         string ComponentName = "HostName";
@@ -24,17 +25,26 @@ namespace e2etesting
             public string DesiredName { get; set; }
             public string DesiredHosts { get; set; }
         }
-
-        public partial class Connection
-        {
-            public string ConnectionState { get; set; }
-        }
         public partial class ExpectedHostNamePattern
         {
             public Regex NamePattern { get; set; }
             public Regex HostsPattern { get; set; }
         }
         HostName deserializedReportedObject;
+        private int m_twinTimeoutSeconds;
+
+        [SetUp]
+        public void TestSetUp()
+        {
+            m_twinTimeoutSeconds = base.twinTimeoutSeconds;
+            base.twinTimeoutSeconds = base.twinTimeoutSeconds * 2;
+        }
+
+        [TearDown]
+        public void TestTearDown()
+        {
+            base.twinTimeoutSeconds = m_twinTimeoutSeconds;
+        }
 
         [Test]      
         public void HostNameTest_Get()
@@ -47,7 +57,7 @@ namespace e2etesting
 
             if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
             {
-                Assert.Fail("Module is disconnected - HostNameTest_Get");
+                Assert.Fail("Module is disconnected or is disabled - HostNameTest_Get");
             }
 
             deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
@@ -59,12 +69,10 @@ namespace e2etesting
         [Test]
         public void HostNameTest_Set_Get()
         {
-            int extendedTimeoutSeconds = 70;
-            SetTwinTimeoutSeconds(extendedTimeoutSeconds);
             var desiredHostName = new DesiredHostName
             {
-                DesiredName = "hostmachine",
-                DesiredHosts = "127.0.0.1 localhost;127.0.1.1 hostmachine;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
+                DesiredName = "TestHost",
+                DesiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
             };
 
             var expectedHostName = new HostName
@@ -75,7 +83,7 @@ namespace e2etesting
 
             if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
             {
-                Assert.Fail("Module is disconnected - HostNameTest_Set_Get");
+                Assert.Fail("Module is disconnected or is disabled- HostNameTest_Set_Get");
             }
 
             Twin twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
@@ -96,7 +104,7 @@ namespace e2etesting
                     HostName reportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
                     // Wait until the reported properties are updated
                     DateTime startTime = DateTime.Now;
-                    while(reportedObject.Name != desiredHostName.DesiredName && (DateTime.Now - startTime).TotalSeconds < extendedTimeoutSeconds)
+                    while(reportedObject.Name != desiredHostName.DesiredName && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
                     {
                         Console.WriteLine("[HostTests] waiting for twin to be updated...");
                         Task.Delay(twinRefreshIntervalMs).Wait();

@@ -23,7 +23,7 @@ namespace e2etesting
         // private string _deviceId = "ubuntu2004";
         private string deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
         private readonly string moduleId = "osconfig";
-        private int twinTimeoutSeconds = 0;
+        protected int twinTimeoutSeconds = 0;
         private int twinTimeoutSecondsDefault = 45;
         public readonly int twinRefreshIntervalMs = 2000;
 
