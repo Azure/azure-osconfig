@@ -3,7 +3,7 @@
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 
-name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:.r)
+name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
