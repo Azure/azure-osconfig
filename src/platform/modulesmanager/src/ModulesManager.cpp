@@ -718,7 +718,7 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
 
                             if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
                             {
-                                OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), (int)buffer.GetSize(), moduleMetadata.module.get()->GetName().c_str(), moduleStatus);
+                                OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), moduleMetadata.module.get()->GetName().c_str(), moduleStatus);
                             }
                         }
                     }
