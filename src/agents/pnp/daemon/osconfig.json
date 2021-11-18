@@ -1,5 +1,5 @@
 {
-  "ModelVersion": 5,  
+  "ModelVersion": 5,
   "FullLogging": 0,
   "Reported": [
     {
@@ -37,6 +37,14 @@
     {
       "ComponentName": "Tpm",
       "ObjectName": "TpmManufacturer"
+    },
+    {
+      "ComponentName": "Ztsi",
+      "ObjectName": "Enabled"
+    },
+    {
+      "ComponentName": "Ztsi",
+      "ObjectName": "ServiceUrl"
     }
   ],
   "ReportingIntervalSeconds": 30,
