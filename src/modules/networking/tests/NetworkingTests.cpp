@@ -94,75 +94,15 @@ namespace OSConfig::Platform::Tests
     "2 eth0             ether              no-carrier  configuring\n";
 
     std::string g_testIpData =
-	"[{\"ifindex\":1,"
-        "\"ifname\":\"docker0\","
-        "\"flags\":[\"BROADCAST\",\"UP\",\"LOWER_UP\"],"
-        "\"mtu\":65536,"
-        "\"qdisc\":\"noqueue\","
-        "\"operstate\":\"UP\","
-        "\"group\":\"default\","
-        "\"txqlen\":1000,"
-        "\"link_type\":\"bridge\","
-        "\"address\":\"0a:25:3g:6v:2f:89\","
-        "\"broadcast\":\"00:00:00:00:00:00\","
-        "\"addr_info\":[{"
-            "\"family\":\"inet\","
-            "\"local\":\"172.32.233.234\","
-            "\"prefixlen\":8,"
-            "\"scope\":\"host\","
-            "\"dynamic\":true,"
-            "\"label\":\"docker0\","
-            "\"valid_life_time\":4294967295,"
-            "\"preferred_life_time\":4294967295"
-        "},{"
-            "\"family\":\"inet6\","
-            "\"local\":\"::1\","
-            "\"prefixlen\":128,"
-            "\"scope\":\"host\","
-            "\"valid_life_time\":4294967295,"
-            "\"preferred_life_time\":4294967295"
-        "}]"
-    "},{"
-        "\"ifindex\":2,"
-        "\"ifname\":\"eth0\","
-        "\"flags\":[\"BROADCAST\",\"MULTICAST\",\"DOWN\"],"
-        "\"mtu\":1500,"
-        "\"qdisc\":\"mq\","
-        "\"operstate\":\"DOWN\","
-        "\"group\":\"default\","
-        "\"txqlen\":1000,"
-        "\"link_type\":\"ether\","
-        "\"address\":\"00:15:5d:26:cf:89\","
-        "\"broadcast\":\"ff:ff:ff:ff:ff:ff\","
-        "\"addr_info\":[{"
-            "\"family\":\"inet\","
-            "\"local\":\"172.27.181.213\","
-            "\"prefixlen\":20,"
-            "\"broadcast\":\"192.168.239.255\","
-            "\"scope\":\"global\","
-            "\"noprefixroute\":true,"
-            "\"label\":\"eth0\","
-            "\"valid_life_time\":85902,"
-            "\"preferred_life_time\":85902"
-        "},{"
-            "\"family\":\"inet\","
-            "\"local\":\"10.1.1.2\","
-            "\"prefixlen\":16,"
-            "\"broadcast\":\"192.168.239.255\","
-            "\"scope\":\"global\","
-            "\"noprefixroute\":true,"
-            "\"label\":\"eth0\","
-            "\"valid_life_time\":85902,"
-            "\"preferred_life_time\":85902"
-        "},{"
-            "\"family\":\"inet6\","
-            "\"local\":\"fe80::5e42:4bf7:dddd:9b0f\","
-            "\"prefixlen\":64,"
-            "\"scope\":\"link\","
-            "\"valid_life_time\":4294967295,"
-            "\"preferred_life_time\":4294967295"
-        "}]"
-    "}]";
+    "1: docker0: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
+    " link/bridge 0a:25:3g:6v:2f:89 brd 00:00:00:00:00:00\n"
+    " inet 172.32.233.234/8 scope global dynamic noprefixroute docker0 valid_lft forever preferred_lft forever\n"
+    " inet6 ::1/128 scope host valid_lft forever preferred_lft forever\n"
+    "2: eth0: <BROADCAST,UP> mtu 65536 qdisc noqueue state DOWN group default qlen 1000\n"
+    " link/ether 00:15:5d:26:cf:89 brd 00:00:00:00:00:00\n"
+    " inet 172.27.181.213/20 scope noprefixroute valid_lft forever preferred_lft forever\n"
+    " inet 10.1.1.2/16 scope global eth0\n"
+    " inet6 fe80::5e42:4bf7:dddd:9b0f/64 scope link noprefixroute";
 
     std::string g_testCommandOutputDefaultGateways =
     "default via 172.17.128.1 dev docker0 proto\n"
@@ -202,10 +142,10 @@ namespace OSConfig::Platform::Tests
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
         "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 
@@ -220,12 +160,76 @@ namespace OSConfig::Platform::Tests
         std::string resultString(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpected);
 
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+    }
+
+    TEST(NetworkingTests, Get_Success_Mangled_Names)
+    {
+        const char* payloadExpected =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
+        "\"Enabled\":\"docker0=true;eth0=false\","
+        "\"Connected\":\"docker0=true;eth0=false\"}";
+
+        std::string testIpDataMangledNames =
+        "1: docker0@if123: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
+        " link/bridge 0a:25:3g:6v:2f:89 brd 00:00:00:00:00:00\n"
+        " inet 172.32.233.234/8 scope global dynamic noprefixroute docker0 valid_lft forever preferred_lft forever\n"
+        " inet6 ::1/128 scope host valid_lft forever preferred_lft forever\n"
+        "2: eth0@if456: <BROADCAST,UP> mtu 65536 qdisc noqueue state DOWN group default qlen 1000\n"
+        " link/ether 00:15:5d:26:cf:89 brd 00:00:00:00:00:00\n"
+        " inet 172.27.181.213/20 scope noprefixroute valid_lft forever preferred_lft forever\n"
+        " inet 10.1.1.2/16 scope global eth0\n"
+        " inet6 fe80::5e42:4bf7:dddd:9b0f/64 scope link noprefixroute";
+
+        MMI_JSON_STRING payload;
+        int payloadSizeBytes;
+        NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
+
+        testModule.returnValues = g_returnValues;
+        testModule.returnValues[2] = testIpDataMangledNames;
+        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        std::string resultString(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpected);
+
+        EXPECT_NE(payload, nullptr);
         delete payload;
     }
 
     TEST(NetworkingTests, Get_InterfaceTypes)
     {
-        std::string testCommandOutputNmcliInterfaceTypesDataMissing =
+        const char* payloadNmcliInterfaceTypesDataMissing =
+        "{\"InterfaceTypes\":\"\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
+        "\"Enabled\":\"docker0=true;eth0=false\","
+        "\"Connected\":\"docker0=true;eth0=false\"}";
+
+        const char* payloadNmcliNotInstalled =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ether\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
+        "\"Enabled\":\"docker0=true;eth0=false\","
+        "\"Connected\":\"docker0=true;eth0=false\"}";
+
+        std::string testCommandOutputInterfaceTypesNmcliNoData =
         "GENERAL.DEVICE:                         docker0\n"
         "GENERAL.TYPE:                           --\n"
         "GENERAL.HWADDR:                         02:42:65:B3:AC:5A\n"
@@ -240,33 +244,11 @@ namespace OSConfig::Platform::Tests
         "GENERAL.STATE:                          100 (connected)\n"
         "GENERAL.CONNECTION:                     Wired connection 1\n";
 
-        const char* payloadNmcliInterfaceTypesDataMissing =
-        "{\"InterfaceTypes\":\"\","
-        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
-        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
-        "\"Enabled\":\"docker0=true;eth0=false\","
-        "\"Connected\":\"docker0=true;eth0=false\"}";
-
-        const char* payloadNmcliNotInstalled =
-        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ether\","
-        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
-        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
-        "\"Enabled\":\"docker0=true;eth0=false\","
-        "\"Connected\":\"docker0=true;eth0=false\"}";
-
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        testModule.returnValues[1] = testCommandOutputNmcliInterfaceTypesDataMissing;
+        testModule.returnValues[1] = testCommandOutputInterfaceTypesNmcliNoData;
         int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
@@ -292,6 +274,17 @@ namespace OSConfig::Platform::Tests
 
     TEST(NetworkingTests, Get_DnsServers)
     {
+        const char* payloadExpected =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=172.29.64.1\","
+        "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+
         std::string testCommandOutputNamesDnsServers = "br-1234\ndocker0\nveth\neth0";
 
         std::string testCommandOutputDnsServers =
@@ -336,17 +329,6 @@ namespace OSConfig::Platform::Tests
                 "DNS Servers: 172.29.64.1\n"
                 "DNS Domain: mshome.net\n";
 
-        const char* payloadExpected =
-        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
-        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-        "\"DnsServers\":\"docker0=8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=unknown;veth=unknown\","
-        "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-        "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
-
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
@@ -367,94 +349,14 @@ namespace OSConfig::Platform::Tests
 
     TEST(NetworkingTests, Get_Success_Multiple_Calls)
     {
-        std::string testIpDataDocker0AddedAddress =
-        "[{\"ifindex\":1,"
-            "\"ifname\":\"docker0\","
-            "\"flags\":[\"BROADCAST\",\"UP\",\"LOWER_UP\"],"
-            "\"mtu\":65536,"
-            "\"qdisc\":\"noqueue\","
-            "\"operstate\":\"UP\","
-            "\"group\":\"default\","
-            "\"txqlen\":1000,"
-            "\"link_type\":\"bridge\","
-            "\"address\":\"0a:25:3g:6v:2f:89\","
-            "\"broadcast\":\"00:00:00:00:00:00\","
-            "\"addr_info\":[{"
-                "\"family\":\"inet\","
-                "\"local\":\"172.32.233.234\","
-                "\"prefixlen\":8,"
-                "\"scope\":\"host\","
-                "\"dynamic\":true,"
-                "\"label\":\"docker0\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "},{"
-                "\"family\":\"inet\","
-                "\"local\":\"10.1.1.1\","
-                "\"prefixlen\":16,"
-                "\"scope\":\"host\","
-                "\"dynamic\":true,"
-                "\"label\":\"docker0\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "},{"
-                "\"family\":\"inet6\","
-                "\"local\":\"::1\","
-                "\"prefixlen\":128,"
-                "\"scope\":\"host\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "}]"
-        "},{"
-            "\"ifindex\":2,"
-            "\"ifname\":\"eth0\","
-            "\"flags\":[\"BROADCAST\",\"MULTICAST\",\"DOWN\"],"
-            "\"mtu\":1500,"
-            "\"qdisc\":\"mq\","
-            "\"operstate\":\"DOWN\","
-            "\"group\":\"default\","
-            "\"txqlen\":1000,"
-            "\"link_type\":\"ether\","
-            "\"address\":\"00:15:5d:26:cf:89\","
-            "\"broadcast\":\"ff:ff:ff:ff:ff:ff\","
-            "\"addr_info\":[{"
-                "\"family\":\"inet\","
-                "\"local\":\"172.27.181.213\","
-                "\"prefixlen\":20,"
-                "\"broadcast\":\"192.168.239.255\","
-                "\"scope\":\"global\","
-                "\"noprefixroute\":true,"
-                "\"label\":\"eth0\","
-                "\"valid_life_time\":85902,"
-                "\"preferred_life_time\":85902"
-            "},{"
-                "\"family\":\"inet\","
-                "\"local\":\"10.1.1.2\","
-                "\"prefixlen\":16,"
-                "\"broadcast\":\"192.168.239.255\","
-                "\"scope\":\"global\","
-                "\"noprefixroute\":true,"
-                "\"label\":\"eth0\","
-                "\"valid_life_time\":85902,"
-                "\"preferred_life_time\":85902"
-            "},{"
-                "\"family\":\"inet6\","
-                "\"local\":\"fe80::5e42:4bf7:dddd:9b0f\","
-                "\"prefixlen\":64,"
-                "\"scope\":\"link\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "}]"
-        "}]";
-
         const char* payloadExpected =
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
         "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 
@@ -462,12 +364,24 @@ namespace OSConfig::Platform::Tests
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,10.1.1.1,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,16,128;eth0=20,16,64\","
+        "\"SubnetMasks\":\"docker0=/8,/16,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
         "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
+
+        std::string testIpDataDocker0AddedAddress =
+        "1: docker0: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
+        " link/bridge 0a:25:3g:6v:2f:89 brd 00:00:00:00:00:00\n"
+        " inet 172.32.233.234/8 scope global dynamic noprefixroute docker0 valid_lft forever preferred_lft forever\n"
+        " inet 10.1.1.1/16 scope global dynamic noprefixroute docker0 valid_lft forever preferred_lft forever\n"
+        " inet6 ::1/128 scope host valid_lft forever preferred_lft forever\n"
+        "2: eth0: <BROADCAST,UP> mtu 65536 qdisc noqueue state DOWN group default qlen 1000\n"
+        " link/ether 00:15:5d:26:cf:89 brd 00:00:00:00:00:00\n"
+        " inet 172.27.181.213/20 scope noprefixroute valid_lft forever preferred_lft forever\n"
+        " inet 10.1.1.2/16 scope global eth0\n"
+        " inet6 fe80::5e42:4bf7:dddd:9b0f/64 scope link noprefixroute";
 
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
@@ -499,7 +413,6 @@ namespace OSConfig::Platform::Tests
 
     TEST(NetworkingTests, Get_Success_EmptyData_InterfaceNames)
     {
-        std::string testCommandOutputNamesEmpty = "";
         const char* payloadExpected =
         "{\"InterfaceTypes\":\"\","
         "\"MacAddresses\":\"\","
@@ -511,6 +424,7 @@ namespace OSConfig::Platform::Tests
         "\"Enabled\":\"\","
         "\"Connected\":\"\"}";
 
+        std::string testCommandOutputNamesEmpty = "";
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = {testCommandOutputNamesEmpty};
         MMI_JSON_STRING payload;
@@ -528,6 +442,17 @@ namespace OSConfig::Platform::Tests
 
     TEST(NetworkingTests, Get_Success_EmptyData_Eth0)
     {
+        const char* payloadExpected =
+        "{\"InterfaceTypes\":\"docker0=bridge\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1\","
+        "\"SubnetMasks\":\"docker0=/8,/128\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
+        "\"Enabled\":\"docker0=true;eth0=unknown\","
+        "\"Connected\":\"docker0=true;eth0=false\"}";
+
         std::string testInterfaceTypesDataEth0Empty =
         "GENERAL.DEVICE:                         docker0\n"
         "GENERAL.TYPE:                           bridge\n"
@@ -538,35 +463,11 @@ namespace OSConfig::Platform::Tests
         "GENERAL.DEVICE:                         eth0\n";
 
         std::string testIpDataEth0Empty =
-        "[{\"ifindex\":1,"
-            "\"ifname\":\"docker0\","
-            "\"flags\":[\"BROADCAST\",\"UP\",\"LOWER_UP\"],"
-            "\"mtu\":65536,"
-            "\"qdisc\":\"noqueue\","
-            "\"operstate\":\"UP\","
-            "\"group\":\"default\","
-            "\"txqlen\":1000,"
-            "\"link_type\":\"bridge\","
-            "\"address\":\"0a:25:3g:6v:2f:89\","
-            "\"broadcast\":\"00:00:00:00:00:00\","
-            "\"addr_info\":[{"
-                "\"family\":\"inet\","
-                "\"local\":\"172.32.233.234\","
-                "\"prefixlen\":8,"
-                "\"scope\":\"host\","
-                "\"dynamic\":true,"
-                "\"label\":\"docker0\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "},{"
-                "\"family\":\"inet6\","
-                "\"local\":\"::1\","
-                "\"prefixlen\":128,"
-                "\"scope\":\"host\","
-                "\"valid_life_time\":4294967295,"
-                "\"preferred_life_time\":4294967295"
-            "}]"
-        "}]";
+        "1: docker0: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
+        " link/bridge 0a:25:3g:6v:2f:89 brd 00:00:00:00:00:00\n"
+        " inet 172.32.233.234/8 scope global dynamic noprefixroute docker0 valid_lft forever preferred_lft forever\n"
+        " inet6 ::1/128 scope host valid_lft forever preferred_lft forever\n"
+        "2: eth0: ";
 
         std::string testCommandOutputDefaultGatewaysEth0Empty =
         "default via 172.17.128.1 dev docker0 proto\n"
@@ -594,20 +495,9 @@ namespace OSConfig::Platform::Tests
             "DNSSEC setting: no\n"
             "DNSSEC supported: no\n";
 
-        const char* payloadExpected =
-        "{\"InterfaceTypes\":\"docker0=bridge\","
-        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89\","
-        "\"IpAddresses\":\"docker0=172.32.233.234,::1\","
-        "\"SubnetMasks\":\"docker0=8,128\","
-        "\"DefaultGateways\":\"docker0=172.17.128.1\","
-        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
-        "\"Enabled\":\"docker0=true;eth0=unknown\","
-        "\"Connected\":\"docker0=true;eth0=unknown\"}";
-
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        testModule.returnValues[1] = testInterfaceTypesDataEth0Empty;
+        testModule.returnValues[1] = testInterfaceTypesDataEth0Empty; 
         testModule.returnValues[2] = testIpDataEth0Empty;
         testModule.returnValues[3] = testCommandOutputDefaultGatewaysEth0Empty;
         testModule.returnValues[4] = testCommandOutputDnsServersEth0Empty;
@@ -689,10 +579,10 @@ namespace OSConfig::Platform::Tests
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
         "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 
@@ -701,7 +591,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_NE(payload, nullptr);
         delete payload;
     }
-
+    
     TEST(NetworkingTests, MmiGetInfo)
     {
         MMI_JSON_STRING payload = nullptr;
@@ -747,10 +637,10 @@ namespace OSConfig::Platform::Tests
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-        "\"SubnetMasks\":\"docker0=8,128;eth0=20,16,64\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
         "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-        "\"DhcpEnabled\":\"docker0=true;eth0=unknown\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 

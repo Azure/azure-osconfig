@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <Logging.h>
 #include <Mmi.h>
@@ -15,27 +14,27 @@
 
 class NetworkingLog
 {
-    public:
-        static OSCONFIG_LOG_HANDLE Get()
-        {
-            return m_logNetworking;
-        }
+public:
+    static OSCONFIG_LOG_HANDLE Get()
+    {
+        return m_logNetworking;
+    }
 
-        static void OpenLog()
-        {
-            m_logNetworking = ::OpenLog(NETWORKING_LOGFILE, NETWORKING_ROLLEDLOGFILE);
-        }
+    static void OpenLog()
+    {
+        m_logNetworking = ::OpenLog(NETWORKING_LOGFILE, NETWORKING_ROLLEDLOGFILE);
+    }
 
-        static void CloseLog()
-        {
-            ::CloseLog(&m_logNetworking);
-        }
+    static void CloseLog()
+    {
+        ::CloseLog(&m_logNetworking);
+    }
 
-    private:
-        static OSCONFIG_LOG_HANDLE m_logNetworking;
+private:
+    static OSCONFIG_LOG_HANDLE m_logNetworking;
 };
 
-struct NetworkingData
+struct NetworkingSettings
 {
     std::string interfaceTypes;
     std::string macAddresses;
@@ -63,49 +62,50 @@ enum class NetworkingSettingType
 
 class NetworkingObjectBase
 {
-    public:
-        virtual ~NetworkingObjectBase() {};
-        virtual std::string RunCommand(const char* command) = 0;
+public:
+    virtual ~NetworkingObjectBase() {};
+    virtual std::string RunCommand(const char* command) = 0;
 
-        int Get(
-            MMI_HANDLE clientSession,
-            const char* componentName,
-            const char* objectName,
-            MMI_JSON_STRING* payload,
-            int* payloadSizeBytes);
+    int Get(
+        MMI_HANDLE clientSession,
+        const char* componentName,
+        const char* objectName,
+        MMI_JSON_STRING* payload,
+        int* payloadSizeBytes);
 
-        int TruncateValueStrings(std::vector<std::pair<std::string, std::string>> &fieldValueVector);
+    int TruncateValueStrings(std::vector<std::pair<std::string, std::string>>& fieldValueVector);
 
-        unsigned int m_maxPayloadSizeBytes;
+    unsigned int m_maxPayloadSizeBytes;
 
-    private:
-        void GenerateInterfaceSettingsString(std::vector<std::string> interfaceSettings, std::string& interfaceSettingsString);
-        void ParseMacAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseIpAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseSubnetMasks(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseDhcpEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseConnected(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
-        void ParseCommandOutput(const std::string& interfaceName, NetworkingSettingType networkingSettingType, std::string& interfaceSettingsString);
-        void GetInterfaceNames(std::vector<std::string>& interfaceNames);
-        const char* NetworkingSettingTypeToString(NetworkingSettingType networkingSettingType);
-        void GenerateNetworkingSettingsString(std::vector<std::tuple<std::string, std::string>> networkingSettings, std::string& networkingSettingsString);
-        void GetData(NetworkingSettingType networkingSettingType, std::string& networkingSettingsString);
-        bool IsInterfaceName(std::string name);
-        void GenerateInterfaceTypesMap();
-        void GenerateIpData();
-        void GenerateDefaultGatewaysMap();
-        void GenerateDnsServersMap();
-        void GenerateNetworkingData();
-        virtual int WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer>* writer, const char* key, const char* value) = 0;
+private:
+    void ParseInterfaceDataForSettings(bool labeled, const char* flag, std::stringstream& data, std::vector<std::string>& settings);
+    void GetInterfaceTypes(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetMacAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetIpAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetSubnetMasks(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetDefaultGateways(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetDnsServers(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetDhcpEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GetConnected(const std::string& interfaceName, std::vector<std::string>& interfaceSettings);
+    void GenerateInterfaceSettingsString(const std::string& interfaceName, NetworkingSettingType settingType, std::string& interfaceSettingsString);
+    void UpdateSettingsString(NetworkingSettingType settingType, std::string& settingsString);
+    void GenerateInterfaceTypesMap();
+    void GenerateIpSettingsMap();
+    void GenerateDefaultGatewaysMap();
+    void GenerateDnsServersMap();
+    void RefreshInterfaceNames(std::vector<std::string>& interfaceNames);
+    void RefreshInterfaceData();
+    void RefreshSettingsStrings();
+    bool IsKnownInterfaceName(std::string str);
+    virtual int WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer>* writer, const char* key, const char* value) = 0;
 
-        std::vector<std::string> m_interfaceNames;
-        std::map<std::string, std::string> m_interfaceTypesMap;
-        std::map<std::string, std::vector<std::string>> m_defaultGatewaysMap;
-        std::map<std::string, std::vector<std::string>> m_dnsServersMap;
-        
-        NetworkingData m_networkingData;    
-        rapidjson::Document m_document;
+    NetworkingSettings m_settings;
+    std::vector<std::string> m_interfaceNames;
+    std::map<std::string, std::string> m_interfaceTypesMap;
+    std::map<std::string, std::string> m_ipSettingsMap;
+    std::map<std::string, std::vector<std::string>> m_defaultGatewaysMap;
+    std::map<std::string, std::vector<std::string>> m_dnsServersMap;
 };
 
 class NetworkingObject : public NetworkingObjectBase
