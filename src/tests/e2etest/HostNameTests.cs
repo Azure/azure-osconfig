@@ -16,10 +16,12 @@ namespace e2etesting
     public class HostNameTests : E2eTest
     {   
         string ComponentName = "HostName";
+        const int reposonseCodeSuccess = 200;
         public partial class ExpectedDesiredProperty
         {
             public string value { get; set; }
             public int ac { get; set; }
+            [JsonIgnore]
             public string ad { get; set; }
             [JsonIgnore]
             public int av { get; set; }
@@ -91,15 +93,13 @@ namespace e2etesting
              var expectedDesiredName = new ExpectedDesiredProperty
             {
                 value = desiredHostName.DesiredName,
-                ac = 200,
-                ad = "-"
+                ac = reposonseCodeSuccess
             };
 
             var expectedDesiredHosts = new ExpectedDesiredProperty
             {
                 value = desiredHostName.DesiredHosts,
-                ac = 200,
-                ad = "-"
+                ac = reposonseCodeSuccess
             };
 
             var expectedHostName = new HostName
@@ -141,7 +141,7 @@ namespace e2etesting
                         Task.Delay(twinRefreshIntervalMs).Wait();
                         reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                     }
-    
+
                     AreEqualByJson(expectedHostName, reportedObject);
                 }
                 else
