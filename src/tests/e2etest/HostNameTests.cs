@@ -20,7 +20,7 @@ namespace e2etesting
         public partial class ExpectedDesiredProperty
         {
             public string value { get; set; }
-            public int ac { get; set; }
+            public int ac { internal get; set; }
             [JsonIgnore]
             public string ad { get; set; }
             [JsonIgnore]
@@ -76,7 +76,6 @@ namespace e2etesting
             }
 
             deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
-
             Assert.True(IsRegexMatch(expectedHostNamePattern.NamePattern, deserializedReportedObject.Name));
             Assert.True(IsRegexMatch(expectedHostNamePattern.HostsPattern, deserializedReportedObject.Hosts));
         }
@@ -93,13 +92,11 @@ namespace e2etesting
              var expectedDesiredName = new ExpectedDesiredProperty
             {
                 value = desiredHostName.DesiredName,
-                ac = reposonseCodeSuccess
             };
 
             var expectedDesiredHosts = new ExpectedDesiredProperty
             {
                 value = desiredHostName.DesiredHosts,
-                ac = reposonseCodeSuccess
             };
 
             var expectedHostName = new HostName
@@ -142,6 +139,8 @@ namespace e2etesting
                         reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                     }
 
+                    Assert.True(deserializedReportedObject.DesiredName.ac == reposonseCodeSuccess);
+                    Assert.True(deserializedReportedObject.DesiredHosts.ac == reposonseCodeSuccess);
                     AreEqualByJson(expectedHostName, reportedObject);
                 }
                 else
