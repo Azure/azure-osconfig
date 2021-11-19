@@ -63,7 +63,7 @@ namespace e2etesting
 
             if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
             {
-                Assert.Fail("Module is disconnected or is disabled - HostNameTest_Get");
+                Assert.Fail("Module is disconnected or is disabled");
             }
 
             deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
@@ -89,7 +89,7 @@ namespace e2etesting
 
             if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
             {
-                Assert.Fail("Module is disconnected or is disabled- HostNameTest_Set_Get");
+                Assert.Fail("Module is disconnected or is disabled");
             }
 
             Twin twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
@@ -112,7 +112,7 @@ namespace e2etesting
                     DateTime startTime = DateTime.Now;
                     while(reportedObject.Name != desiredHostName.DesiredName && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
                     {
-                        Console.WriteLine("[HostTests] waiting for twin to be updated...");
+                        Console.WriteLine("[HostNameTests] waiting for twin to be updated...");
                         Task.Delay(twinRefreshIntervalMs).Wait();
                         reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                     }
@@ -128,7 +128,7 @@ namespace e2etesting
                 }
                 else
                 {
-                    Assert.Fail("Timeout for updating twin - HostNameTest_Set_Get");
+                    Assert.Fail("Timeout for updating twin");
                 }
             }
         }
