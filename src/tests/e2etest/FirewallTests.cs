@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 using System.Text.Json;
 using System;
 using System.Threading.Tasks;
-
+using System.Text.RegularExpressions;
 namespace e2etesting
 {
     public class FirewallTests : E2eTest
@@ -25,8 +25,8 @@ namespace e2etesting
         }
         public partial class ExpectedFirewallPattern
         {
-            public string FirewallState { get; set; }
-            public string FirewallFingerprint { get; set; }
+            public Regex FirewallState { get; set; }
+            public Regex FirewallFingerprint { get; set; }
         }
 
         [Test]
@@ -34,8 +34,8 @@ namespace e2etesting
         {
             var expectedFirewallPattern = new ExpectedFirewallPattern
             {
-                FirewallState = "[0-2]",
-                FirewallFingerprint = "[0-9a-z]{64}"
+                FirewallState = new Regex(@"[0-2]"),
+                FirewallFingerprint = new Regex(@"[0-9a-z]{64}")
             };
             var deserializedReportedObject = JsonSerializer.Deserialize<Firewall>(GetTwin().Properties.Reported[ComponentName].ToString());
             Assert.True(IsRegexMatch(expectedFirewallPattern.FirewallState, deserializedReportedObject.FirewallState));

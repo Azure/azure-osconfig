@@ -15,12 +15,6 @@ option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(COVERAGE "Enable code coverage" OFF)
 
-option(ENABLE_PAYLOAD_LOGGING "Enables value payloads logging." OFF)
-if (ENABLE_PAYLOAD_LOGGING)
-    message(WARNING "WARNING: value payloads logging enabled, this can expose confidential data!")
-    add_definitions(-DLOG_VALUE_PAYLOAD)
-endif()
-
 option(COMPILE_WITH_STRICTNESS "Builds with additional strict compiler options." ON)
 if (COMPILE_WITH_STRICTNESS)
     message(STATUS "Compiling with additional strictness")
