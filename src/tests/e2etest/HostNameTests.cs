@@ -36,7 +36,6 @@ namespace e2etesting
             public Regex NamePattern { get; set; }
             public Regex HostsPattern { get; set; }
         }
-        HostName deserializedReportedObject;
         private int m_twinTimeoutSeconds;
 
         [SetUp]
@@ -66,7 +65,7 @@ namespace e2etesting
                 Assert.Fail("Module is disconnected or is disabled");
             }
 
-            deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
+            HostName deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
 
             Assert.True(IsRegexMatch(expectedHostNamePattern.NamePattern, deserializedReportedObject.Name));
             Assert.True(IsRegexMatch(expectedHostNamePattern.HostsPattern, deserializedReportedObject.Hosts));
@@ -91,6 +90,8 @@ namespace e2etesting
             {
                 Assert.Fail("Module is disconnected or is disabled");
             }
+
+            HostName deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
 
             Twin twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
             int count = 2;
