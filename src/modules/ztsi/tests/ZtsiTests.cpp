@@ -312,12 +312,12 @@ namespace OSConfig::Platform::Tests
         char dateNow[DATE_FORMAT_LENGTH] = {0};
         strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
 
-        int monthNow, dayNow, yearNow;
-        sscanf(dateNow, SSCANF_DATE_FORMAT, &monthNow, &dayNow, &yearNow);
+        int yearNow, monthNow, dayNow;
+        sscanf(dateNow, SSCANF_DATE_FORMAT, &yearNow, &monthNow, &dayNow);
 
-        std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(monthNow + 1) + std::to_string(dayNow) + std::to_string(yearNow);
-        std::string clientNameWithDayAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(monthNow) + std::to_string(dayNow + 1) + std::to_string(yearNow);
-        std::string clientNameWithYearAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(monthNow) + std::to_string(dayNow) + std::to_string(yearNow + 1);
+        std::string clientNameWithYearAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow + 1) + std::to_string(monthNow) + std::to_string(dayNow);
+        std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow + 1) + std::to_string(dayNow);
+        std::string clientNameWithDayAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow) + std::to_string(dayNow + 1);
 
         ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate));
         ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate));

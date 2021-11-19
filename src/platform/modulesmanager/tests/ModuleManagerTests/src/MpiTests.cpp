@@ -32,7 +32,7 @@ namespace Tests
             h = MpiOpen(clientName, maxPayloadsize);
             ASSERT_TRUE(0 != h);
             // By default uses /usr/lib/osconfig -- must override to test module path
-            static_cast<ModulesManager*>(h)->LoadModules(MODULE_TEST_PATH);
+            static_cast<ModulesManager*>(h)->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_SINGLE_REPORTED);
         }
 
         virtual void SetUp(std::string testCaseName)
@@ -106,5 +106,43 @@ namespace Tests
         ASSERT_TRUE(szPayload > 0);
         std::string payloadStr(payload, szPayload);
         ASSERT_TRUE(Tests::JSON_EQ(expectedPayload, payloadStr.c_str()));
+    }
+
+    TEST_F(MpiTests, MpiSetDesired)
+    {
+        std::string clientName = "MpiTests.MpiSetDesired";
+        char payload[] = R""""(
+            [
+                {
+                    "TestComponent1": {
+                        "testParameter": "testValue"
+                    }
+                }
+            ])"""";
+
+        SetUp(clientName);
+        ASSERT_EQ(MPI_OK, MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    }
+
+    TEST_F(MpiTests, MpiGetReported)
+    {
+        int payloadSize;
+        MMI_JSON_STRING payload;
+        std::string clientName = "MpiTests.MpiGetReported";
+        constexpr const char expected[] = R"""(
+            {
+                "TestComponent1": {
+                    "TestObject1": {
+                        "returnValue": "TestComponent1-MultiComponentModule"
+                    }
+                }
+            })""";
+
+        SetUp(clientName);
+        ASSERT_EQ(MPI_OK, MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
+        ASSERT_TRUE(payloadSize > 0);
+
+        std::string payloadStr(payload, payloadSize);
+        ASSERT_TRUE(Tests::JSON_EQ(expected, payloadStr.c_str()));
     }
 }

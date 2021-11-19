@@ -4,23 +4,39 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
-#include <CommonUtils.h>
 #include <condition_variable>
 #include <cstring>
 #include <dirent.h>
+#include <fstream>
 #include <future>
-#include <Logging.h>
-#include <ModulesManager.h>
-#include <Mpi.h>
 #include <mutex>
-#include <ScopeGuard.h>
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 #include <thread>
 #include <tuple>
 #include <vector>
 
-constexpr unsigned int DefaultModuleCleanup = 60 * 30; // 30 minutes
-const std::string ModuleDir = "/usr/lib/osconfig";
-const std::string ModuleExtension = ".so";
+#include <CommonUtils.h>
+#include <Logging.h>
+#include <ModulesManager.h>
+#include <Mpi.h>
+#include <ScopeGuard.h>
+
+constexpr unsigned int g_defaultModuleCleanup = 60 * 30; // 30 minutes
+const std::string g_moduleDir = "/usr/lib/osconfig";
+const std::string g_moduleExtension = ".so";
+
+const char* g_configJson = "/etc/osconfig/osconfig.json";
+const char* g_configReported = "Reported";
+const char* g_configComponentName = "ComponentName";
+const char* g_configObjectName = "ObjectName";
+
+// The local desired and reported configuration files
+const std::string g_desiredFile = "/etc/osconfig/osconfig_desired.json";
+const std::string g_reportedFile = "/etc/osconfig/osconfig_reported.json";
 
 // Manager mapping clientName <-> ModulesManager
 std::map<std::string, std::weak_ptr<ModulesManager>> manMap;
@@ -215,7 +231,7 @@ void MpiDoWork()
     }
 }
 
-ModulesManager::ModulesManager(std::string client) : cleanupTimespan(DefaultModuleCleanup), clientName(client), maxPayloadSizeBytes(0)
+ModulesManager::ModulesManager(std::string client) : cleanupTimespan(g_defaultModuleCleanup), clientName(client), maxPayloadSizeBytes(0)
 {
 }
 
@@ -226,10 +242,10 @@ ModulesManager::~ModulesManager()
 
 int ModulesManager::LoadModules()
 {
-    return LoadModules(ModuleDir);
+    return LoadModules(g_moduleDir, g_configJson);
 }
 
-int ModulesManager::LoadModules(std::string modulePath)
+int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
 {
     DIR* dir;
     struct dirent* ent;
@@ -243,7 +259,7 @@ int ModulesManager::LoadModules(std::string modulePath)
         {
             std::string filename = modulePath + "/" + ent->d_name;
             // Find all .so's
-            if (filename.length() > ModuleExtension.length() && (0 == filename.compare(filename.length() - ModuleExtension.length(), ModuleExtension.length(), ModuleExtension.c_str())))
+            if (filename.length() > g_moduleExtension.length() && (0 == filename.compare(filename.length() - g_moduleExtension.length(), g_moduleExtension.length(), g_moduleExtension.c_str())))
             {
                 fileList.push_back(filename);
             }
@@ -292,7 +308,79 @@ int ModulesManager::LoadModules(std::string modulePath)
         }
     }
 
-    return 0;
+    return SetReportedObjects(configJson);
+}
+
+int ModulesManager::SetReportedObjects(const std::string& configJson)
+{
+    int status = MPI_OK;
+    std::ifstream ifs(configJson);
+
+    if (!ifs.good())
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "Unable to open configuration file: %s", configJson.c_str());
+        return ENOENT;
+    }
+
+    rapidjson::IStreamWrapper isw(ifs);
+    rapidjson::Document document;
+    if (document.ParseStream(isw).HasParseError())
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "Unable to parse configuration file: %s", configJson.c_str());
+        status = EINVAL;
+    }
+    else if (!document.IsObject())
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "Root configuration JSON is not an object: %s", configJson.c_str());
+        status = EINVAL;
+    }
+    else if (!document.HasMember(g_configReported))
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "No valid %s array in configuration: %s", g_configReported, configJson.c_str());
+        status = EINVAL;
+    }
+    else if (!document[g_configReported].IsArray())
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "%s is not an array in configuration: %s", g_configReported, configJson.c_str());
+        status = EINVAL;
+    }
+    else
+    {
+        int index = 0;
+        for (auto& reported : document[g_configReported].GetArray())
+        {
+            if (reported.IsObject())
+            {
+                if (reported.HasMember(g_configComponentName) && reported.HasMember(g_configObjectName))
+                {
+                    std::string componentName = reported[g_configComponentName].GetString();
+                    std::string objectName = reported[g_configObjectName].GetString();
+                    if (modMap.end() != modMap.find(componentName))
+                    {
+                        modMap[componentName].module->AddReportedObject(componentName, objectName);
+                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found reported object %s for component %s", objectName.c_str(), componentName.c_str());
+                    }
+                    else
+                    {
+                        OsConfigLogError(ModulesManagerLog::Get(), "Found reported object %s for component %s, but no module has been loaded", objectName.c_str(), componentName.c_str());
+                        status = EINVAL;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(ModulesManagerLog::Get(), "'%s' or '%s' missing at index %d", g_configComponentName, g_configObjectName, index);
+                    status = EINVAL;
+                }
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "%s array element %d is not an object: %s", g_configReported, index, configJson.c_str());
+                status = EINVAL;
+            }
+        }
+    }
+
+    return status;
 }
 
 void ModulesManager::ScheduleUnloadModule(ModuleMetadata &moduleMetadata)
@@ -541,21 +629,266 @@ ModulesManager::ModuleMetadata* ModulesManager::GetModuleMetadata(const char* co
 
 int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, int payloadSizeBytes)
 {
-    UNUSED(clientName);
-    UNUSED(payload);
-    UNUSED(payloadSizeBytes);
+    int status = MPI_OK;
 
-    return MPI_OK;
+    ScopeGuard sg{[&]()
+    {
+        if (IsFullLoggingEnabled())
+        {
+            if (MPI_OK == status)
+            {
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSetDesired(%s, %.*s, %d) returned %d", clientName, payloadSizeBytes, payload, payloadSizeBytes, status);
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%s, %.*s, %d) returned %d", clientName, payloadSizeBytes, payload, payloadSizeBytes, status);
+            }
+        }
+    }};
+
+    if (nullptr == clientName)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid clientName: %s", clientName);
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payload);
+        status = EINVAL;
+    }
+    else if (0 == payloadSizeBytes)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payloadSizeBytes: %d", payloadSizeBytes);
+        status = EINVAL;
+    }
+    else
+    {
+        std::string payloadString(payload, payloadSizeBytes);
+        rapidjson::Document document;
+        document.Parse(payloadString.c_str());
+
+        if (document.HasParseError())
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payloadString.c_str());
+            status = EINVAL;
+        }
+        else if (!document.IsArray())
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payloadString.c_str());
+            status = EINVAL;
+        }
+        else
+        {
+            status = MpiSetDesiredInternal(document);
+        }
+    }
+
+    return status;
+}
+
+int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
+{
+    int status = MPI_OK;
+
+    for (auto& desired : document.GetArray())
+    {
+        if (desired.IsObject())
+        {
+            for (auto& component : desired.GetObject())
+            {
+                if (component.value.IsObject())
+                {
+                    std::string componentName = component.name.GetString();
+                    if (modMap.end() != modMap.find(componentName))
+                    {
+                        ModulesManager::ModuleMetadata& moduleMetadata = modMap[componentName];
+                        for (auto& object : component.value.GetObject())
+                        {
+                            int moduleStatus = MMI_OK;
+                            std::string objectName = object.name.GetString();
+
+                            rapidjson::StringBuffer buffer;
+                            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                            object.value.Accept(writer);
+
+                            moduleMetadata.operationInProgress = true;
+                            moduleMetadata.lastOperation = std::chrono::system_clock::now();
+                            moduleStatus = moduleMetadata.module->MmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
+                            moduleMetadata.operationInProgress = false;
+
+                            if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
+                            {
+                                OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), moduleMetadata.module.get()->GetName().c_str(), moduleStatus);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        status = EINVAL;
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogError(ModulesManagerLog::Get(), "Unable to find component %s in module map", componentName.c_str());
+                        }
+                    }
+                }
+                else
+                {
+                    status = EINVAL;
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(ModulesManagerLog::Get(), "Component value is not an object");
+                    }
+                }
+            }
+        }
+        else
+        {
+            status = EINVAL;
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "Desired configuration array element is not an object");
+            }
+        }
+    }
+
+    return status;
 }
 
 int ModulesManager::MpiGetReported(const char* clientName, const unsigned int mayPayloadSizeBytes, char** payload, int* payloadSizeBytes)
 {
-    UNUSED(clientName);
-    UNUSED(mayPayloadSizeBytes);
-    UNUSED(payload);
-    UNUSED(payloadSizeBytes);
+    int status = MPI_OK;
 
-    return MPI_OK;
+    ScopeGuard sg{[&]()
+    {
+        if (IsFullLoggingEnabled())
+        {
+            if (MPI_OK == status)
+            {
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGetReported(%s, %d, %p, %p) returned %d", clientName, mayPayloadSizeBytes, payload, payloadSizeBytes, status);
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%s, %d, %p, %p) returned %d", clientName, mayPayloadSizeBytes, payload, payloadSizeBytes, status);
+            }
+        }
+    }};
+
+    if (nullptr == clientName)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported invalid clientName: %s", clientName);
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported invalid payload: %p", payload);
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported invalid payloadSizeBytes: %p", payloadSizeBytes);
+        status = EINVAL;
+    }
+    else
+    {
+        *payload = nullptr;
+        *payloadSizeBytes = 0;
+        status = MpiGetReportedInternal(payload, payloadSizeBytes);
+    }
+
+    return status;
+}
+
+int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes)
+{
+    int status = MPI_OK;
+    rapidjson::Document document;
+    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+    document.SetObject();
+
+    for (auto& mod : modMap)
+    {
+        std::string componentName = mod.first;
+        ModulesManager::ModuleMetadata& moduleMetadata = mod.second;
+        std::vector<std::string> objectNames = moduleMetadata.module->GetReportedObjects(componentName);
+        if (!objectNames.empty())
+        {
+            rapidjson::Value component(rapidjson::kObjectType);
+            for (auto& objectName : objectNames)
+            {
+                char* objectPayload = nullptr;
+                int objectPayloadSizeBytes = 0;
+                int mmiGetStatus = MMI_OK;
+
+                moduleMetadata.operationInProgress = true;
+                moduleMetadata.lastOperation = std::chrono::system_clock::now();
+                moduleMetadata.module->MmiGet(componentName.c_str(), objectName.c_str(), &objectPayload, &objectPayloadSizeBytes);
+                moduleMetadata.operationInProgress = false;
+
+                if ((MMI_OK == mmiGetStatus) && (nullptr != objectPayload) && (0 < objectPayloadSizeBytes))
+                {
+                    std::string objectPayloadString(objectPayload, objectPayloadSizeBytes);
+                    rapidjson::Document objectDocument;
+                    objectDocument.Parse(objectPayloadString.c_str());
+
+                    if (!objectDocument.HasParseError())
+                    {
+                        rapidjson::Value object(rapidjson::kObjectType);
+                        object.CopyFrom(objectDocument, allocator);
+                        component.AddMember(rapidjson::Value(objectName.c_str(), allocator), object, allocator);
+                    }
+                    else if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(ModulesManagerLog::Get(), "MmiGet(%s, %s) returned invalid payload: %s", componentName.c_str(), objectName.c_str(), objectPayloadString.c_str());
+                    }
+                }
+                else if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogError(ModulesManagerLog::Get(), "MmiGet(%s, %s) returned %d", componentName.c_str(), objectName.c_str(), mmiGetStatus);
+                }
+            }
+            document.AddMember(rapidjson::Value(componentName.c_str(), allocator), component, allocator);
+        }
+    }
+
+    try
+    {
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        writer.SetIndent(' ', 2);
+        document.Accept(writer);
+
+        *payloadSizeBytes = buffer.GetSize();
+        *payload = new (std::nothrow) char[*payloadSizeBytes];
+        if (nullptr == *payload)
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported unable to allocate %d bytes", *payloadSizeBytes);
+            status = ENOMEM;
+        }
+        else
+        {
+            std::fill(*payload, *payload + buffer.GetSize() + 1, 0);
+            std::memcpy(*payload, buffer.GetString(), buffer.GetSize() + 1);
+            *payloadSizeBytes = buffer.GetSize() + 1;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "Could not allocate payload: %s", e.what());
+        status = EINTR;
+
+        if (nullptr != *payload)
+        {
+            delete[] * payload;
+            *payload = nullptr;
+        }
+
+        if (nullptr != payloadSizeBytes)
+        {
+            *payloadSizeBytes = 0;
+        }
+    }
+
+    return status;
 }
 
 void ModulesManager::SetDefaultCleanupTimespan(unsigned int timespan)
