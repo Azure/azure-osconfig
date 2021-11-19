@@ -5,10 +5,10 @@ using NUnit.Framework;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+
 
 namespace e2etesting
 {
@@ -16,29 +16,20 @@ namespace e2etesting
     public class HostNameTests : E2eTest
     {   
         string ComponentName = "HostName";
-        const int reposonseCodeSuccess = 200;
-        public partial class ExpectedDesiredProperty
-        {
-            public string value { get; set; }
-            public int ac { internal get; set; }
-            [JsonIgnore]
-            public string ad { get; set; }
-            [JsonIgnore]
-            public int av { get; set; }
-        }
         public partial class HostName
         {
-            [JsonIgnore]
-            public string __t { get; set; }
             public string Name { get; set; }
             public string Hosts { get; set; }
-            public ExpectedDesiredProperty DesiredName { get; set; }
-            public ExpectedDesiredProperty DesiredHosts { get; set; }
         }
         public partial class DesiredHostName
         {
             public string DesiredName { get; set; }
             public string DesiredHosts { get; set; }
+        }
+
+        public partial class ResponseCode
+        {
+            public int ac { get; set; }
         }
         public partial class ExpectedHostNamePattern
         {
@@ -76,6 +67,7 @@ namespace e2etesting
             }
 
             deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
+
             Assert.True(IsRegexMatch(expectedHostNamePattern.NamePattern, deserializedReportedObject.Name));
             Assert.True(IsRegexMatch(expectedHostNamePattern.HostsPattern, deserializedReportedObject.Hosts));
         }
@@ -89,22 +81,10 @@ namespace e2etesting
                 DesiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
             };
 
-             var expectedDesiredName = new ExpectedDesiredProperty
-            {
-                value = desiredHostName.DesiredName,
-            };
-
-            var expectedDesiredHosts = new ExpectedDesiredProperty
-            {
-                value = desiredHostName.DesiredHosts,
-            };
-
             var expectedHostName = new HostName
             {
                 Name = desiredHostName.DesiredName,
-                Hosts = desiredHostName.DesiredHosts,
-                DesiredName = expectedDesiredName,
-                DesiredHosts = expectedDesiredHosts
+                Hosts = desiredHostName.DesiredHosts
             };
 
             if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
@@ -122,8 +102,6 @@ namespace e2etesting
                     desiredHostName.DesiredHosts = deserializedReportedObject.Hosts;
                     expectedHostName.Name = desiredHostName.DesiredName;
                     expectedHostName.Hosts = desiredHostName.DesiredHosts;
-                    expectedHostName.DesiredName.value = desiredHostName.DesiredName;
-                    expectedHostName.DesiredHosts.value = desiredHostName.DesiredHosts;
                     twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
                 }
 
@@ -132,16 +110,21 @@ namespace e2etesting
                     HostName reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                     // Wait until the reported properties are updated
                     DateTime startTime = DateTime.Now;
-                    while(reportedObject.Name != expectedHostName.Name && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
+                    while(reportedObject.Name != desiredHostName.DesiredName && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
                     {
-                        Console.WriteLine("[HostNameTests] waiting for twin to be updated...");
+                        Console.WriteLine("[HostTests] waiting for twin to be updated...");
                         Task.Delay(twinRefreshIntervalMs).Wait();
                         reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                     }
 
-                    Assert.True(deserializedReportedObject.DesiredName.ac == reposonseCodeSuccess);
-                    Assert.True(deserializedReportedObject.DesiredHosts.ac == reposonseCodeSuccess);
                     AreEqualByJson(expectedHostName, reportedObject);
+                    string desiredName = "DesiredName";
+                    string desiredHosts = "DesiredHosts";
+                    int responseCodeSuccess = 200;
+                    var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredName].ToString());
+                    Assert.True(responseObject.ac == responseCodeSuccess);
+                    responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredHosts].ToString());
+                    Assert.True(responseObject.ac == responseCodeSuccess);
                 }
                 else
                 {
