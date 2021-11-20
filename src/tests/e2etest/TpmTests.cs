@@ -12,7 +12,7 @@ namespace e2etesting
 {
     public class TpmTests : E2eTest
     {
-        string ComponentName = "Tpm";
+        readonly string ComponentName = "Tpm";
         public enum TpmStatusCode
         {
             Unknown = 0,
@@ -37,8 +37,8 @@ namespace e2etesting
         {
             var expectedTpmPattern = new ExpectedTpmPattern
             {
-                TpmVersionPattern = new Regex(@"((\d+)\.)?((\d+)\.)?((\d+)\.(\*|\d+))"),
-                TpmManufacturerPattern = new Regex(@"[A-Za-z]([0-9a-zA-Z\-]+)(\s){0,1}([0-9a-zA-Z\-]+)?"),
+                TpmVersionPattern = new Regex(@"((\d+)\.)?((\d+))"),
+                TpmManufacturerPattern = new Regex(@"^[A-Za-z]([0-9a-zA-Z\s]+)?[^\s]$"),
                 TpmStatusPattern = new Regex(@"[0-2]")
             };
             var deserializedReportedObject = JsonSerializer.Deserialize<Tpm>(GetTwin().Properties.Reported[ComponentName].ToString());
@@ -48,9 +48,9 @@ namespace e2etesting
                 Assert.Fail("Module is disconnected or is disabled");
             }
 
-           Assert.True(IsRegexMatch(expectedTpmPattern.TpmStatusPattern, deserializedReportedObject.TpmStatus));
-           Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmVersion) || IsRegexMatch(expectedTpmPattern.TpmVersionPattern, deserializedReportedObject.TpmVersion));
-           Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmVersion) || IsRegexMatch(expectedTpmPattern.TpmManufacturerPattern, deserializedReportedObject.TpmManufacturer));
+            Assert.True(IsRegexMatch(expectedTpmPattern.TpmStatusPattern, deserializedReportedObject.TpmStatus));
+            Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmVersion) || IsRegexMatch(expectedTpmPattern.TpmVersionPattern, deserializedReportedObject.TpmVersion));
+            Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmManufacturer) || IsRegexMatch(expectedTpmPattern.TpmManufacturerPattern, deserializedReportedObject.TpmManufacturer));
         }
     }
 }
