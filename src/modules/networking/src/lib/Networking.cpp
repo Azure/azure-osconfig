@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <iostream>
 #include <rapidjson/document.h>
-#include <rapidjson/error/en.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -15,44 +14,33 @@
 #include <Networking.h>
 #include <CommonUtils.h>
 
-const char* g_interfaceNamesCommand = "ls -A /sys/class/net";
+std::string g_interfaceTypes = "InterfaceTypes";
+std::string g_macAddresses = "MacAddresses";
+std::string g_ipAddresses = "IpAddresses";
+std::string g_subnetMasks = "SubnetMasks";
+std::string g_defaultGateways = "DefaultGateways";
+std::string g_dnsServers = "DnsServers";
+std::string g_dhcpEnabled = "DhcpEnabled";
+std::string g_enabled = "Enabled";
+std::string g_connected = "Connected";
 
-const char* g_interfaceTypesQueryNmcli = "nmcli device show";
-const char* g_interfaceTypesQueryNetworkctl = "networkctl --no-legend";
+const char* g_getInterfaceNames = "ls -A /sys/class/net";
+const char* g_getInterfaceTypesNmcli = "nmcli device show";
+const char* g_getInterfaceTypesNetworkctl = "networkctl --no-legend";
+const char* g_getIpAddressDetails = "ip addr";
+const char* g_getDefaultGateways = "ip route";
+const char* g_getDnsServers = "systemd-resolve --status";
 
-const char* g_ipAddressQuery = "ip -j addr";
-const char* g_ipRouteQuery = "ip route";
-const char* g_systemdResolveQuery = "systemd-resolve --status";
+const char* g_macAddressesPrefix = "link/";
+const char* g_ipAddressesPrefix = "inet";
+const char* g_subnetMasksPrefix = "inet";
+const char* g_enabledPrefix = "state";
 
-const char* g_ifname = "ifname";
-const char* g_addrInfo = "addr_info";
+const char* g_dhcpEnabledFlag = "dynamic";
+const char* g_connectedFlag = "LOWER_UP";
 
-const char* g_interfaceTypesString = "InterfaceTypes";
-
-const char* g_macAddressesString = "MacAddresses";
-const char* g_address = "address";
-
-const char* g_ipAddressesString = "IpAddresses";
-const char* g_local = "local";
-
-const char* g_subnetMasksString = "SubnetMasks";
-const char* g_prefixlen = "prefixlen";
-
-const char* g_defaultGatewaysString = "DefaultGateways";
-const char* g_dnsServersString = "DnsServers";
-
-const char* g_dhcpEnabledString = "DhcpEnabled";
-const char* g_dynamic = "dynamic";
-
-const char* g_enabledString = "Enabled";
-const char* g_operstate = "operstate";
-
-const char* g_up = "UP";
-const char* g_down = "DOWN";
-
-const char* g_connectedString = "Connected";
-const char* g_lowerUp = "LOWER_UP";
-const char* g_flags = "flags";
+const char* g_enabledFlag = "UP";
+const char* g_disabledFlag = "DOWN";
 
 const char* g_true = "true";
 const char* g_false = "false";
@@ -68,9 +56,6 @@ const unsigned int g_numFields = g_fields.size();
 const unsigned int g_twoDotsSize = strlen(g_twoDots);
 const unsigned int g_templateWithDotsSize = strlen(g_templateWithDots);
 const unsigned int g_templateSize = (g_templateWithDotsSize > (g_numFields * g_twoDotsSize)) ? (g_templateWithDotsSize - (g_numFields * g_twoDotsSize)) : 0;
-
-const bool g_labeledData = true;
-const bool g_nonLabeledData = false;
 
 OSCONFIG_LOG_HANDLE NetworkingLog::m_logNetworking = nullptr;
 
@@ -103,386 +88,263 @@ std::string NetworkingObject::RunCommand(const char* command)
     return commandOutputToReturn;
 }
 
-void NetworkingObjectBase::GenerateInterfaceSettingsString(std::vector<std::string> interfaceSettings, std::string& interfaceSettingsString)
+void NetworkingObjectBase::ParseInterfaceDataForSettings(bool hasPrefix, const char* flag, std::stringstream& data, std::vector<std::string>& settings)
 {
-    size_t interfaceSettingsSize = interfaceSettings.size();
-    for (size_t i = 0; i < interfaceSettingsSize; ++i)
+    std::string token = "";
+    while (std::getline(data, token, ' '))
+    {
+        if (token.find(flag) != std::string::npos)
+        {
+            if (hasPrefix)
+            {
+                std::getline(data, token, ' ');
+            }
+            if (!token.empty())
+            {
+                token.erase(std::remove(token.begin(), token.end(), '\n'), token.end());
+                settings.push_back(token);
+            }
+        }
+    }
+}
+
+void NetworkingObjectBase::GetInterfaceTypes(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_interfaceTypesMap.find(interfaceName) != this->m_interfaceTypesMap.end())
+    {
+        interfaceSettings.push_back(this->m_interfaceTypesMap[interfaceName]);
+    }
+}
+
+void NetworkingObjectBase::GetMacAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(true, g_macAddressesPrefix, ipSettingsData, interfaceSettings);
+    }
+}
+
+void NetworkingObjectBase::GetIpAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(true, g_ipAddressesPrefix, ipSettingsData, interfaceSettings);  
+        size_t size = interfaceSettings.size();
+        for (size_t i = 0; i < size; i++)
+        {
+            size_t subnetMasksDelimiter = interfaceSettings[i].find("/");
+            if (subnetMasksDelimiter != std::string::npos)
+            {
+                interfaceSettings[i] = interfaceSettings[i].substr(0, subnetMasksDelimiter);
+            }
+            else
+            {
+                interfaceSettings.erase(interfaceSettings.begin() + i);
+            }
+        }
+    }
+}
+
+void NetworkingObjectBase::GetSubnetMasks(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(true, g_subnetMasksPrefix, ipSettingsData, interfaceSettings);
+        size_t size = interfaceSettings.size();
+        for (size_t i = 0; i < size; i++)
+        {
+            size_t subnetMasksDelimiter = interfaceSettings[i].find("/");
+            if (subnetMasksDelimiter != std::string::npos)
+            {
+                interfaceSettings[i] = interfaceSettings[i].substr(subnetMasksDelimiter);
+            }
+            else
+            {
+                interfaceSettings.erase(interfaceSettings.begin() + i);
+            }
+        }
+    }
+}
+
+void NetworkingObjectBase::GetDefaultGateways(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_defaultGatewaysMap.find(interfaceName) != this->m_defaultGatewaysMap.end())
+    {
+        for (size_t i = 0; i < this->m_defaultGatewaysMap[interfaceName].size(); i++)
+        {
+            interfaceSettings.push_back((this->m_defaultGatewaysMap[interfaceName]).at(i));
+        }
+    }
+}
+
+void NetworkingObjectBase::GetDnsServers(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_dnsServersMap.find(interfaceName) != this->m_dnsServersMap.end())
+    {
+        for (size_t i = 0; i < this->m_dnsServersMap[interfaceName].size(); i++)
+        {
+            interfaceSettings.push_back((this->m_dnsServersMap[interfaceName]).at(i));
+        }
+    }
+}
+
+void NetworkingObjectBase::GetDhcpEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(false, g_dhcpEnabledFlag, ipSettingsData, interfaceSettings);
+        if (!interfaceSettings.empty())
+        {
+            interfaceSettings.clear();
+            interfaceSettings.push_back(g_true);
+        }
+        else
+        {
+            interfaceSettings.push_back(g_false);
+        }
+    }
+    else
+    {
+        interfaceSettings.push_back(g_unknown);
+    }
+}
+
+void NetworkingObjectBase::GetEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(true, g_enabledPrefix, ipSettingsData, interfaceSettings);
+        if (!interfaceSettings.empty())
+        {
+            std::string data(interfaceSettings.front());
+            interfaceSettings.clear();
+            if (data == g_enabledFlag)
+            {
+                interfaceSettings.push_back(g_true);
+            }
+            else if (data == g_disabledFlag)
+            {
+                interfaceSettings.push_back(g_false);
+            }
+        }
+    }
+    
+    if (interfaceSettings.empty())
+    {
+        interfaceSettings.push_back(g_unknown);
+    }
+}
+
+void NetworkingObjectBase::GetConnected(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+{
+    if (this->m_ipSettingsMap.find(interfaceName) != this->m_ipSettingsMap.end())
+    {
+        std::stringstream ipSettingsData(this->m_ipSettingsMap[interfaceName]);
+        ParseInterfaceDataForSettings(false, g_connectedFlag, ipSettingsData, interfaceSettings);
+        if (!interfaceSettings.empty())
+        {
+            interfaceSettings.clear();
+            interfaceSettings.push_back(g_true);
+        }
+        else
+        {
+            interfaceSettings.push_back(g_false);
+        }
+    }
+    else
+    {
+        interfaceSettings.push_back(g_unknown);
+    }
+}
+
+void NetworkingObjectBase::GenerateInterfaceSettingsString(const std::string& interfaceName, NetworkingSettingType settingType, std::string& interfaceSettingsString)
+{   
+    std::vector<std::string> interfaceSettings;
+    switch (settingType)
+    {
+        case NetworkingSettingType::InterfaceTypes:
+            GetInterfaceTypes(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::MacAddresses:
+            GetMacAddresses(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::IpAddresses:
+            GetIpAddresses(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::SubnetMasks:
+            GetSubnetMasks(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::DefaultGateways:
+            GetDefaultGateways(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::DnsServers:
+            GetDnsServers(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::DhcpEnabled:
+            GetDhcpEnabled(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::Enabled:
+            GetEnabled(interfaceName, interfaceSettings);
+            break;
+        case NetworkingSettingType::Connected:
+            GetConnected(interfaceName, interfaceSettings);
+            break;
+    }
+
+    size_t size = interfaceSettings.size();
+    for (size_t i = 0; i < size; i++)
     {
         if (i > 0)
         {
             interfaceSettingsString += ",";
         }
-
         interfaceSettingsString += interfaceSettings[i];
     }
 }
 
-void NetworkingObjectBase::ParseMacAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
+void NetworkingObjectBase::UpdateSettingsString(NetworkingSettingType settingType, std::string& settingsString)
 {
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) &&
-                    (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_address)) &&
-                        (this->m_document[i][g_address].IsString()))
-                    {
-                        interfaceSettings.push_back(this->m_document[i][g_address].GetString());
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void NetworkingObjectBase::ParseIpAddresses(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
-{
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) &&
-                    (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_addrInfo)) &&
-                        (this->m_document[i][g_addrInfo].IsArray()))
-                    {
-                        for (rapidjson::SizeType j = 0; j < this->m_document[i][g_addrInfo].Size(); ++j)
-                        {
-                            if ((this->m_document[i][g_addrInfo][j].HasMember(g_local)) &&
-                                (this->m_document[i][g_addrInfo][j][g_local].IsString()))
-                            {
-                                interfaceSettings.push_back(this->m_document[i][g_addrInfo][j][g_local].GetString());
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void NetworkingObjectBase::ParseSubnetMasks(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
-{
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) &&
-                    (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_addrInfo)) &&
-                        (this->m_document[i][g_addrInfo].IsArray()))
-                    {
-                        for (rapidjson::SizeType j = 0; j < this->m_document[i][g_addrInfo].Size(); ++j)
-                        {
-                            if ((this->m_document[i][g_addrInfo][j].HasMember(g_prefixlen)) &&
-                                (this->m_document[i][g_addrInfo][j][g_prefixlen].IsInt()))
-                            {
-                                interfaceSettings.push_back(std::to_string(this->m_document[i][g_addrInfo][j][g_prefixlen].GetInt()));
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void NetworkingObjectBase::ParseDhcpEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
-{
-    std::string result (g_unknown);
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) &&
-                    (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_addrInfo)) &&
-                        (this->m_document[i][g_addrInfo].IsArray()))
-                    {
-                        for (rapidjson::SizeType j = 0; j < this->m_document[i][g_addrInfo].Size(); ++j)
-                        {
-                            if ((this->m_document[i][g_addrInfo][j].HasMember(g_dynamic)) &&
-                                (this->m_document[i][g_addrInfo][j][g_dynamic].IsBool()))
-                            {
-                                if (this->m_document[i][g_addrInfo][j][g_dynamic].GetBool())
-                                {
-                                    result = g_true;
-                                }
-                                else
-                                {
-                                    result = g_false;
-                                }
-                            }
-                            break;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    interfaceSettings.push_back(result);
-}
-
-void NetworkingObjectBase::ParseEnabled(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
-{
-    std::string result (g_unknown);
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) &&
-                    (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_operstate)) &&
-                        (this->m_document[i][g_operstate].IsString()))
-                    {
-                        if (std::strcmp(this->m_document[i][g_operstate].GetString(), g_up) == 0)
-                        {
-                            result = g_true;
-                        }
-                        else if (std::strcmp(this->m_document[i][g_operstate].GetString(), g_down) == 0)
-                        {
-                            result = g_false;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    interfaceSettings.push_back(result);
-}
-
-void NetworkingObjectBase::ParseConnected(const std::string& interfaceName, std::vector<std::string>& interfaceSettings)
-{
-    std::string result (g_unknown);
-    if (!this->m_document.HasParseError())
-    {
-        if (this->m_document.IsArray())
-        {
-            for (rapidjson::SizeType i = 0; i < this->m_document.Size(); ++i)
-            {
-                if ((this->m_document[i].HasMember(g_ifname)) && (this->m_document[i][g_ifname].IsString()))
-                {
-                    if ((std::strcmp(this->m_document[i][g_ifname].GetString(), interfaceName.c_str()) == 0) &&
-                        (this->m_document[i].HasMember(g_flags)) &&
-                        (this->m_document[i][g_flags].IsArray()))
-                    {
-                        for (rapidjson::SizeType j = 0; j < this->m_document[i][g_flags].Size(); ++j)
-                        {
-                            std::string data(this->m_document[i][g_flags][j].GetString());
-                            if (data == g_lowerUp)
-                            {
-                                result = g_true;
-                                break;
-                            }
-                        }
-                        if (result != g_true)
-                        {
-                            result = g_false;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    interfaceSettings.push_back(result);
-}
-
-void NetworkingObjectBase::ParseCommandOutput(const std::string& interfaceName, NetworkingSettingType networkingSettingType, std::string& interfaceSettingsString)
-{
-    std::vector<std::string> interfaceSettings;
-    switch (networkingSettingType)
-    {
-        case NetworkingSettingType::InterfaceTypes:
-            if (this->m_interfaceTypesMap.find(interfaceName) != this->m_interfaceTypesMap.end())
-            {
-                interfaceSettings.push_back(this->m_interfaceTypesMap[interfaceName]);
-            }
-            break;
-
-        case NetworkingSettingType::MacAddresses:
-            ParseMacAddresses(interfaceName, interfaceSettings);
-            break;
-
-        case NetworkingSettingType::IpAddresses:
-            ParseIpAddresses(interfaceName, interfaceSettings);
-            break;
-
-        case NetworkingSettingType::SubnetMasks:
-            ParseSubnetMasks(interfaceName, interfaceSettings);
-            break;
-
-        case NetworkingSettingType::DefaultGateways:
-            if (this->m_defaultGatewaysMap.find(interfaceName) != this->m_defaultGatewaysMap.end())
-            {
-                for (size_t i = 0; i < this->m_defaultGatewaysMap[interfaceName].size(); ++i)
-                {
-                    interfaceSettings.push_back((this->m_defaultGatewaysMap[interfaceName]).at(i));
-                }
-            }
-            break;
-
-        case NetworkingSettingType::DnsServers:
-            if (this->m_dnsServersMap.find(interfaceName) != this->m_dnsServersMap.end())
-            {
-                for (size_t i = 0; i < this->m_dnsServersMap[interfaceName].size(); ++i)
-                {
-                    interfaceSettings.push_back((this->m_dnsServersMap[interfaceName]).at(i));
-                }
-            }
-            break;
-
-        case NetworkingSettingType::DhcpEnabled:
-            ParseDhcpEnabled(interfaceName, interfaceSettings);
-            break;
-
-        case NetworkingSettingType::Enabled:
-            ParseEnabled(interfaceName, interfaceSettings);
-            break;
-
-        case NetworkingSettingType::Connected:
-            ParseConnected(interfaceName, interfaceSettings);
-            break;
-    }
-
-    GenerateInterfaceSettingsString(interfaceSettings, interfaceSettingsString);
-}
-
-void NetworkingObjectBase::GetInterfaceNames(std::vector<std::string>& interfaceNames)
-{
-    std::string commandOutput = RunCommand(g_interfaceNamesCommand);
-    std::vector<std::string> interfaceNamesAccumulator;
-    if (!commandOutput.empty())
-    {
-        std::stringstream commandOutputStream(commandOutput);
-        std::string token = "";
-        while (std::getline(commandOutputStream, token))
-        {
-            interfaceNamesAccumulator.push_back(token);
-        }
-    }
-
-    interfaceNames = interfaceNamesAccumulator;
-}
-
-const char* NetworkingObjectBase::NetworkingSettingTypeToString(NetworkingSettingType networkingSettingType)
-{
-    switch (networkingSettingType)
-    {
-        case NetworkingSettingType::InterfaceTypes:
-            return g_interfaceTypesString;
-        case NetworkingSettingType::MacAddresses:
-            return g_macAddressesString;
-        case NetworkingSettingType::IpAddresses:
-            return g_ipAddressesString;
-        case NetworkingSettingType::SubnetMasks:
-            return g_subnetMasksString;
-        case NetworkingSettingType::DefaultGateways:
-            return g_defaultGatewaysString;
-        case NetworkingSettingType::DnsServers:
-            return g_dnsServersString;
-        case NetworkingSettingType::DhcpEnabled:
-            return g_dhcpEnabledString;
-        case NetworkingSettingType::Enabled:
-            return g_enabledString;
-        case NetworkingSettingType::Connected:
-            return g_connectedString;
-        default:
-            return nullptr;
-    }
-
-    return nullptr;
-}
-
-void NetworkingObjectBase::GenerateNetworkingSettingsString(std::vector<std::tuple<std::string, std::string>> networkingSettings, std::string& networkingSettingsString)
-{
-    std::string networkingSettingsAccumulator;
-    if (!networkingSettings.empty())
-    {
-        sort(networkingSettings.begin(), networkingSettings.end());
-        int networkingSettingsSize = networkingSettings.size();
-        for (int i = 0; i < networkingSettingsSize; ++i)
-        {
-            if (!std::get<1>(networkingSettings[i]).empty())
-            {
-                if (!networkingSettingsAccumulator.empty())
-                {
-                    networkingSettingsAccumulator += ";";
-                }
-                networkingSettingsAccumulator += std::get<0>(networkingSettings[i]) + "=" + std::get<1>(networkingSettings[i]);
-            }
-        }
-    }
-
-    networkingSettingsString = networkingSettingsAccumulator;
-}
-
-void NetworkingObjectBase::GetData(NetworkingSettingType networkingSettingType, std::string& networkingSettingsString)
-{
-    std::vector<std::tuple<std::string, std::string>> networkingSettings;
-    for (size_t i = 0; i < this->m_interfaceNames.size(); ++i)
+    settingsString.clear();
+    std::vector<std::tuple<std::string, std::string>> settings; 
+    for (size_t i = 0; i < this->m_interfaceNames.size(); i++)
     {
         std::string interfaceSettingsString;
-        ParseCommandOutput(this->m_interfaceNames[i], networkingSettingType, interfaceSettingsString);
-
-        networkingSettings.push_back(make_tuple(this->m_interfaceNames[i], interfaceSettingsString));
+        GenerateInterfaceSettingsString(this->m_interfaceNames[i], settingType, interfaceSettingsString);
+        settings.push_back(make_tuple(this->m_interfaceNames[i], interfaceSettingsString));
     }
 
-    GenerateNetworkingSettingsString(networkingSettings, networkingSettingsString);
-}
-
-bool NetworkingObjectBase::IsInterfaceName(std::string name)
-{
-    for (size_t i = 0; i < this->m_interfaceNames.size(); ++i)
+    if (!settings.empty())
     {
-        if (name == this->m_interfaceNames[i])
+        sort(settings.begin(), settings.end());
+        size_t size = settings.size();
+        for (size_t i = 0; i < size; i++)
         {
-            return true;
+            if (!std::get<1>(settings[i]).empty())
+            {
+                if (!settingsString.empty())
+                {
+                    settingsString += ";";
+                }
+                settingsString += std::get<0>(settings[i]) + "=" + std::get<1>(settings[i]);
+            }
         }
     }
-
-    return false;
 }
 
 void NetworkingObjectBase::GenerateInterfaceTypesMap()
 {
+    this->m_interfaceTypesMap.clear();
     bool usingNetworkManager = false;
-    std::string interfaceTypesData;
-    std::string interfaceData;
-    std::string interfaceName;
-    std::string interfaceType;
     std::map<std::string, std::string>::iterator interfaceTypesMapIterator;
+    std::string interfaceTypesData, interfaceData, interfaceName, interfaceType;
 
-    interfaceTypesData = RunCommand(g_interfaceTypesQueryNmcli);
+    interfaceTypesData = RunCommand(g_getInterfaceTypesNmcli);
+
     std::regex interfaceNamePrefixPatternNmcli("GENERAL.DEVICE:\\s+");
     std::smatch interfaceNamePrefixMatchNmcli;
     while (std::regex_search(interfaceTypesData, interfaceNamePrefixMatchNmcli, interfaceNamePrefixPatternNmcli))
@@ -490,10 +352,9 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
         usingNetworkManager = true;
         std::string interfaceNamePrefix = interfaceNamePrefixMatchNmcli.str(0);
         interfaceData = interfaceNamePrefixMatchNmcli.suffix().str();
-        std::string nextData = interfaceData;
+        std::string nextDataToProcess = interfaceData;
 
-        size_t interfaceNameSuffixFront = interfaceData.find("\n", 0);
-
+        size_t interfaceNameSuffixFront = interfaceData.find("\n");
         if (interfaceNameSuffixFront != std::string::npos)
         {
             interfaceName = interfaceData.substr(0, interfaceNameSuffixFront);
@@ -501,16 +362,15 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
 
         interfaceData = std::regex_search(interfaceData, interfaceNamePrefixMatchNmcli, interfaceNamePrefixPatternNmcli) ? interfaceData.substr(0, interfaceNamePrefixMatchNmcli.position(0)) : interfaceData;
 
-        if (IsInterfaceName(interfaceName))
+        if (IsKnownInterfaceName(interfaceName))
         {
             std::regex interfaceTypePrefixPattern("GENERAL.TYPE:\\s+");
             std::smatch interfaceTypePrefixMatch;
-
             if (std::regex_search(interfaceData, interfaceTypePrefixMatch, interfaceTypePrefixPattern))
             {
                 interfaceType = interfaceTypePrefixMatch.suffix().str();
 
-                size_t interfaceTypeSuffixFront = interfaceType.find("\n", 0);
+                size_t interfaceTypeSuffixFront = interfaceType.find("\n");
                 if (interfaceTypeSuffixFront != std::string::npos)
                 {
                     interfaceType = interfaceType.substr(0, interfaceTypeSuffixFront);
@@ -534,12 +394,12 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
         interfaceData.clear();
         interfaceName.clear();
         interfaceType.clear();
-        interfaceTypesData = nextData;
+        interfaceTypesData = nextDataToProcess;
     }
 
     if (!usingNetworkManager)
     {
-        interfaceTypesData = RunCommand(g_interfaceTypesQueryNetworkctl);
+        interfaceTypesData = RunCommand(g_getInterfaceTypesNetworkctl);
         std::stringstream interfaceTypesDataStream(interfaceTypesData);
         while(std::getline(interfaceTypesDataStream, interfaceData))
         {
@@ -550,7 +410,7 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
                 std::string data;
                 while (std::getline(interfaceDataStream, data, ' '))
                 {
-                    if (IsInterfaceName(data))
+                    if (IsKnownInterfaceName(data))
                     {
                         interfaceName = data;
                         do
@@ -559,8 +419,7 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
                         }
                         while(data.empty());
 
-                        interfaceType = data;
-
+                        interfaceType = data;          
                         if ((!interfaceName.empty()) && (!interfaceType.empty()))
                         {
                             interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
@@ -583,17 +442,47 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
     }
 }
 
-void NetworkingObjectBase::GenerateIpData()
+void NetworkingObjectBase::GenerateIpSettingsMap()
 {
-    std::string ipJson = RunCommand(g_ipAddressQuery);
-    if (!ipJson.empty())
+    this->m_ipSettingsMap.clear();
+    std::string ipData = RunCommand(g_getIpAddressDetails);
+    std::regex interfaceDataPrefixPattern("[0-9]+:\\s+.*:\\s+");
+    std::smatch interfaceDataPrefixMatch;
+    while (std::regex_search(ipData, interfaceDataPrefixMatch, interfaceDataPrefixPattern)) 
     {
-        this->m_document.Parse<0>(ipJson.c_str());
-        if (this->m_document.HasParseError())
+        std::string interfaceDataPrefix = interfaceDataPrefixMatch.str(0);
+        size_t interfaceNamePrefixBack = interfaceDataPrefix.find(" ");
+        size_t interfaceDataPrefixBack = interfaceDataPrefix.find_last_of(":");
+
+        ipData = interfaceDataPrefixMatch.suffix().str();
+
+        std::string interfaceName;
+        if ((interfaceNamePrefixBack != std::string::npos) && (interfaceDataPrefixBack != std::string::npos))
         {
-            OsConfigLogError(NetworkingLog::Get(), "Parse operation failed with error: %s (offset: %u)\n",
-                GetParseError_En(this->m_document.GetParseError()),
-                (unsigned)this->m_document.GetErrorOffset());
+            interfaceName = interfaceDataPrefix.substr(interfaceNamePrefixBack + 1, interfaceDataPrefixBack - interfaceNamePrefixBack - 1);
+        }
+
+        if (!IsKnownInterfaceName(interfaceName))
+        {
+            size_t interfaceNameSuffixFront = interfaceName.find("@");
+            if (interfaceNameSuffixFront != std::string::npos)
+            {
+                interfaceName = interfaceName.substr(0, interfaceNameSuffixFront);
+            }
+        }
+
+        if (IsKnownInterfaceName(interfaceName))
+        {
+            std::string interfaceData = std::regex_search(ipData, interfaceDataPrefixMatch, interfaceDataPrefixPattern) ? ipData.substr(0, interfaceDataPrefixMatch.position(0)) : ipData;
+            std::map<std::string, std::string>::iterator ipDataMapIterator = this->m_ipSettingsMap.find(interfaceName);
+            if (ipDataMapIterator != this->m_ipSettingsMap.end())
+            {
+                ipDataMapIterator->second = interfaceData;
+            }
+            else
+            {
+                this->m_ipSettingsMap.insert(std::pair<std::string, std::string>(interfaceName, interfaceData));
+            }
         }
     }
 }
@@ -601,8 +490,7 @@ void NetworkingObjectBase::GenerateIpData()
 void NetworkingObjectBase::GenerateDefaultGatewaysMap()
 {
     this->m_defaultGatewaysMap.clear();
-
-    std::string defaultGatewaysData = RunCommand(g_ipRouteQuery);
+    std::string defaultGatewaysData = RunCommand(g_getDefaultGateways);
     std::regex interfaceNamePrefixPattern("default\\s+via\\s+.*\\s+dev\\s+");
     std::smatch interfaceNamePrefixMatch;
 
@@ -610,7 +498,7 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
     {
         std::string interfaceNamePrefix = interfaceNamePrefixMatch.str(0);
         std::string interfaceNameData = interfaceNamePrefixMatch.suffix().str();
-        size_t interfaceNameSuffixFront = interfaceNameData.find(" ", 0);
+        size_t interfaceNameSuffixFront = interfaceNameData.find(" ");
 
         std::string interfaceName;
         if (interfaceNameSuffixFront != std::string::npos)
@@ -618,7 +506,7 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
             interfaceName = interfaceNameData.substr(0, interfaceNameSuffixFront);
         }
 
-        if (IsInterfaceName(interfaceName))
+        if (IsKnownInterfaceName(interfaceName))
         {
             std::string defaultGateway;
             std::regex defaultGatewayPrefixPattern("default\\s+via\\s+");
@@ -628,7 +516,7 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
             {
                 defaultGateway = defaultGatewayPrefixMatch.suffix().str();
 
-                size_t defaultGatewaySuffixFront = defaultGateway.find(" ", 0);
+                size_t defaultGatewaySuffixFront = defaultGateway.find(" ");
                 if (defaultGatewaySuffixFront != std::string::npos)
                 {
                     defaultGateway = defaultGateway.substr(0, defaultGatewaySuffixFront);
@@ -657,8 +545,7 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
 void NetworkingObjectBase::GenerateDnsServersMap()
 {
     this->m_dnsServersMap.clear();
-
-    std::string dnsServersData = RunCommand(g_systemdResolveQuery);
+    std::string dnsServersData = RunCommand(g_getDnsServers);
     std::regex interfaceNamePrefixPattern("Link\\s+[0-9]+\\s+\\(");
     std::smatch interfaceNamePrefixMatch;
 
@@ -666,7 +553,7 @@ void NetworkingObjectBase::GenerateDnsServersMap()
     {
         std::string interfaceNamePrefix = interfaceNamePrefixMatch.str(0);
         std::string interfaceNameData = interfaceNamePrefixMatch.suffix().str();
-        size_t interfaceNameSuffixFront = interfaceNameData.find(")", 0);
+        size_t interfaceNameSuffixFront = interfaceNameData.find(")");
 
         std::string interfaceName;
         if (interfaceNameSuffixFront != std::string::npos)
@@ -675,9 +562,9 @@ void NetworkingObjectBase::GenerateDnsServersMap()
         }
 
         dnsServersData = interfaceNameData;
-        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, interfaceNamePrefixPattern) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData;
+        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, interfaceNamePrefixPattern) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData; 
 
-        if (IsInterfaceName(interfaceName))
+        if (IsKnownInterfaceName(interfaceName))
         {
             std::string dnsServer;
             std::regex dnsServerPrefixPattern("DNS\\s+Servers:\\s+");
@@ -688,11 +575,11 @@ void NetworkingObjectBase::GenerateDnsServersMap()
                 std::stringstream dnsServerStream(dnsServerPrefixMatch.suffix().str());
                 std::regex ipv4Pattern("(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])");
                 std::regex ipv6Pattern("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}"
-                    ":[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}"
-                    "|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}"
-                    ":((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}"
-                    "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}"
-                    ":((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
+                ":[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}"
+                "|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}"
+                ":((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}"
+                "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}"
+                ":((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
 
                 while(std::getline(dnsServerStream, dnsServer) && ((std::regex_match(dnsServer, ipv4Pattern)) || (std::regex_match(dnsServer, ipv6Pattern))))
                 {
@@ -714,25 +601,58 @@ void NetworkingObjectBase::GenerateDnsServersMap()
     }
 }
 
-void NetworkingObjectBase::GenerateNetworkingData()
+void NetworkingObjectBase::RefreshInterfaceNames(std::vector<std::string>& interfaceNames)
 {
-    GetInterfaceNames(this->m_interfaceNames);
+    interfaceNames.clear();
+    std::string interfaceNamesData = RunCommand(g_getInterfaceNames);
+    if (!interfaceNamesData.empty())
+    {
+        std::stringstream interfaceNamesStream(interfaceNamesData);
+        std::string token = "";
+        while (std::getline(interfaceNamesStream, token))
+        {
+            interfaceNames.push_back(token);
+        }
+    }
+}
+
+void NetworkingObjectBase::RefreshInterfaceData()
+{
+    GenerateInterfaceTypesMap();
+    GenerateIpSettingsMap();
+    GenerateDefaultGatewaysMap();
+    GenerateDnsServersMap();
+}
+
+void NetworkingObjectBase::RefreshSettingsStrings()
+{
+    RefreshInterfaceNames(this->m_interfaceNames);
     if (this->m_interfaceNames.size() > 0)
     {
-        GenerateInterfaceTypesMap();
-        GenerateIpData();
-        GenerateDefaultGatewaysMap();
-        GenerateDnsServersMap();
-        GetData(NetworkingSettingType::InterfaceTypes, this->m_networkingData.interfaceTypes);
-        GetData(NetworkingSettingType::MacAddresses, this->m_networkingData.macAddresses);
-        GetData(NetworkingSettingType::IpAddresses, this->m_networkingData.ipAddresses);
-        GetData(NetworkingSettingType::SubnetMasks, this->m_networkingData.subnetMasks);
-        GetData(NetworkingSettingType::DefaultGateways, this->m_networkingData.defaultGateways);
-        GetData(NetworkingSettingType::DnsServers, this->m_networkingData.dnsServers);
-        GetData(NetworkingSettingType::DhcpEnabled, this->m_networkingData.dhcpEnabled);
-        GetData(NetworkingSettingType::Enabled, this->m_networkingData.enabled);
-        GetData(NetworkingSettingType::Connected, this->m_networkingData.connected);
+        RefreshInterfaceData();
+        UpdateSettingsString(NetworkingSettingType::InterfaceTypes, this->m_settings.interfaceTypes);
+        UpdateSettingsString(NetworkingSettingType::MacAddresses, this->m_settings.macAddresses);
+        UpdateSettingsString(NetworkingSettingType::IpAddresses, this->m_settings.ipAddresses);
+        UpdateSettingsString(NetworkingSettingType::SubnetMasks, this->m_settings.subnetMasks);
+        UpdateSettingsString(NetworkingSettingType::DefaultGateways, this->m_settings.defaultGateways);
+        UpdateSettingsString(NetworkingSettingType::DnsServers, this->m_settings.dnsServers);
+        UpdateSettingsString(NetworkingSettingType::DhcpEnabled, this->m_settings.dhcpEnabled);
+        UpdateSettingsString(NetworkingSettingType::Enabled, this->m_settings.enabled);
+        UpdateSettingsString(NetworkingSettingType::Connected, this->m_settings.connected);
     }
+}
+
+bool NetworkingObjectBase::IsKnownInterfaceName(std::string str)
+{
+    for (size_t i = 0; i < this->m_interfaceNames.size(); i++)
+    {
+        if (str == this->m_interfaceNames[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 int NetworkingObject::WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer>* writer, const char* key, const char* value)
@@ -751,7 +671,7 @@ int NetworkingObject::WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer
     return result;
 }
 
-int NetworkingObjectBase::TruncateValueStrings(std::vector<std::pair<std::string, std::string>> &fieldValueVector)
+int NetworkingObjectBase::TruncateValueStrings(std::vector<std::pair<std::string, std::string>>& fieldValueVector)
 {
     // If m_maxPayloadSizeBytes is zero or a negative number, or too small we do not truncate
     if ((m_maxPayloadSizeBytes <= 0) || (m_maxPayloadSizeBytes <= g_templateWithDotsSize))
@@ -838,19 +758,18 @@ int NetworkingObjectBase::Get(
 
     int status = MMI_OK;
 
-    GenerateNetworkingData();
+    RefreshSettingsStrings();
 
     std::vector<std::pair<std::string, std::string>> fieldValueVector;
-
-    fieldValueVector.push_back(make_pair(std::string(g_interfaceTypesString), m_networkingData.interfaceTypes));
-    fieldValueVector.push_back(make_pair(std::string(g_macAddressesString), m_networkingData.macAddresses));
-    fieldValueVector.push_back(make_pair(std::string(g_ipAddressesString), m_networkingData.ipAddresses));
-    fieldValueVector.push_back(make_pair(std::string(g_subnetMasksString), m_networkingData.subnetMasks));
-    fieldValueVector.push_back(make_pair(std::string(g_defaultGatewaysString), m_networkingData.defaultGateways));
-    fieldValueVector.push_back(make_pair(std::string(g_dnsServersString), m_networkingData.dnsServers));
-    fieldValueVector.push_back(make_pair(std::string(g_dhcpEnabledString), m_networkingData.dhcpEnabled));
-    fieldValueVector.push_back(make_pair(std::string(g_enabledString), m_networkingData.enabled));
-    fieldValueVector.push_back(make_pair(std::string(g_connectedString), m_networkingData.connected));
+    fieldValueVector.push_back(make_pair(g_interfaceTypes, m_settings.interfaceTypes));
+    fieldValueVector.push_back(make_pair(g_macAddresses, m_settings.macAddresses));
+    fieldValueVector.push_back(make_pair(g_ipAddresses, m_settings.ipAddresses));
+    fieldValueVector.push_back(make_pair(g_subnetMasks, m_settings.subnetMasks));
+    fieldValueVector.push_back(make_pair(g_defaultGateways, m_settings.defaultGateways));
+    fieldValueVector.push_back(make_pair(g_dnsServers, m_settings.dnsServers));
+    fieldValueVector.push_back(make_pair(g_dhcpEnabled, m_settings.dhcpEnabled));
+    fieldValueVector.push_back(make_pair(g_enabled, m_settings.enabled));
+    fieldValueVector.push_back(make_pair(g_connected, m_settings.connected));
 
     status = TruncateValueStrings(fieldValueVector);
     rapidjson::StringBuffer sb;
@@ -883,11 +802,11 @@ int NetworkingObjectBase::Get(
     *payload = new (std::nothrow) char[*payloadSizeBytes];
     if (nullptr == *payload)
     {
-        status = ENOMEM;
-        if ((IsFullLoggingEnabled()) && (nullptr != payloadSizeBytes))
+        if (nullptr != payloadSizeBytes)
         {
             OsConfigLogError(NetworkingLog::Get(), "Networking::Get insufficient buffer space available to allocate %d bytes", *payloadSizeBytes);
         }
+        status = ENOMEM;
     }
     else
     {
