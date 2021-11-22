@@ -165,7 +165,10 @@ steps:
   inputs:
     testRunner: cTest
     testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
-    failTaskOnFailedTests: ${{ not(variables.ignoreTestFailures) }}
+    ${{ if eq( variables['ignoreTestFailures'], 'true' ) }}:
+      failTaskOnFailedTests: false
+    ${{ if ne( variables['ignoreTestFailures'], 'true' ) }}:
+      failTaskOnFailedTests: true
     testRunTitle: $(variant)
     platform: $(arch)
 
