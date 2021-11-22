@@ -145,12 +145,12 @@ steps:
 # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
 - script: |
     docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log"
-  condition: eq($(ignoreTestFailures), false)
+  condition: eq(variables.ignoreTestFailures, false)
   displayName: Run tests
 
 - script: |
     docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log || true"
-  condition: eq($(ignoreTestFailures), true)
+  condition: eq(variables.ignoreTestFailures, true)
   displayName: Run tests (ignore failures)
 
 - publish: $(Build.SourcesDirectory)/build-$(arch)/TestOutput.log
