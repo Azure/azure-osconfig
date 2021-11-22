@@ -23,60 +23,70 @@ strategy:
       containerImage: ubuntu20.04-dev-amd64:latest
       platform: linux/amd64
       coverage: true
+      ignoreTestFailures: false
     Packaging ubuntu2004-amd64:
       variant: ubuntu20.04
       arch: amd64
       containerImage: ubuntu20.04-dev-amd64:latest
       platform: linux/amd64
       coverage: false
+      ignoreTestFailures: false
     Packaging ubuntu2004-arm:
       variant: ubuntu20.04
       arch: arm
       containerImage: ubuntu20.04-dev-arm:latest
       platform: linux/arm/v7
       coverage: false
+      ignoreTestFailures: true
     Packaging ubuntu2004-arm64:
       variant: ubuntu20.04
       arch: arm64
       containerImage: ubuntu20.04-dev-arm64:latest
       platform: linux/arm64/v8
       coverage: false
+      ignoreTestFailures: false
     Packaging ubuntu1804-amd64:
       variant: ubuntu18.04
       arch: amd64
       containerImage: ubuntu18.04-dev-amd64:latest
       platform: linux/amd64
       coverage: false
+      ignoreTestFailures: false
     Packaging ubuntu1804-arm:
       variant: ubuntu18.04
       arch: arm
       containerImage: ubuntu18.04-dev-arm:latest
       platform: linux/arm/v7
       coverage: false
+      ignoreTestFailures: false
     Packaging ubuntu18-arm64:
       variant: ubuntu18.04
       arch: arm64
       containerImage: ubuntu18.04-dev-arm64:latest
       platform: linux/arm64/v8
       coverage: false
+      ignoreTestFailures: false
     Packaging debian9-amd64:
       variant: debian9
       arch: amd64
       containerImage: debian9-dev-amd64:latest
       platform: linux/amd64
       coverage: false
+      ignoreTestFailures: false
     Packaging debian9-arm:
       variant: debian9
       arch: arm
       containerImage: debian9-dev-arm:latest
       platform: linux/arm/v7
       coverage: false
+      ignoreTestFailures: false
     Packaging debian9-arm64:
       variant: debian9
       arch: arm64
       containerImage: debian9-dev-arm64:latest
       platform: linux/arm64/v8
       coverage: false
+      ignoreTestFailures: false
 
 pool:
   vmImage: 'ubuntu-20.04'
@@ -135,7 +145,13 @@ steps:
 # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
 - script: |
     docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log"
+  condition: eq($(ignoreTestFailures), false)
   displayName: Run tests
+
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log || true"
+  condition: eq($(ignoreTestFailures), true)
+  displayName: Run tests (ignore failures)
 
 - publish: $(Build.SourcesDirectory)/build-$(arch)/TestOutput.log
   displayName: Publishing test outputs

@@ -299,7 +299,7 @@ stages:
 
       - script: |
           terraform init
-          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr="null" -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var sas_token="NULL" -auto-approve | true
+          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr="null" -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var sas_token="NULL" -auto-approve || true
         workingDirectory: $(Pipeline.Workspace)/terraformStateVM_$(distroName)
         displayName: Destroy cloud resources (VM)
         continueOnError: true
@@ -345,6 +345,6 @@ stages:
 
       - script: |
           terraform init
-          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)"  -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve | true
+          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)"  -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve || true
         workingDirectory: $(Pipeline.Workspace)/terraformStateIoTHub
         displayName: Destroy cloud resources (IoTHub)
