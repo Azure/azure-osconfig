@@ -165,7 +165,7 @@ steps:
   inputs:
     testRunner: cTest
     testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
-    failTaskOnFailedTests: true
+    failTaskOnFailedTests: ${{ not(variables.ignoreTestFailures) }}
     testRunTitle: $(variant)
     platform: $(arch)
 
