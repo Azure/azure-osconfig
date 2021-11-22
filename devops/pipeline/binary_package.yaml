@@ -1,42 +1,13 @@
-# Packaging pipeline - produces amd64 packages for:
+# Packaging pipeline for the following distros - produces amd64/arm/arm64 packages for:
 #  - Debian 9
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
-resources:
-  containers:
-  - container: ubuntu18.04
-    type: ACR
-    azureSubscription: OSConfig-ACR
-    endpoint: OSConfig-ACR
-    resourceGroup: osconfig
-    registry: osconfig
-    repository: ubuntu18.04-dev
-    image: osconfig.azurecr.io/ubuntu18.04-dev
-
-  - container: ubuntu20.04
-    type: ACR
-    azureSubscription: OSConfig-ACR
-    endpoint: OSConfig-ACR
-    resourceGroup: osconfig
-    registry: osconfig.azurecr.io
-    repository: ubuntu20.04-dev
-    image: osconfig.azurecr.io/ubuntu20.04-dev
-
-  - container: debian9
-    type: ACR
-    azureSubscription: OSConfig-ACR
-    endpoint: OSConfig-ACR
-    resourceGroup: osconfig
-    registry: osconfig.azurecr.io
-    repository: debian9-dev
-    image: osconfig.azurecr.io/debian9-dev
-
 variables:
-  OSCONFIG_SRC: $(Build.SourcesDirectory)/src
-  OSCONFIG_VERSION: $(MajorVersion).$(MinorVersion).$(PatchVersion)
+  SERVICE_CONNECTION: OSConfig-ACR
+  CONTAINER_REGISTRY: osconfig.azurecr.io
 
 trigger:
   branches:
@@ -48,115 +19,128 @@ strategy:
   matrix:
     Code Coverage:
       variant: ubuntu20.04
-      arch: amd64
-      poolName:
-      vmImage: 'ubuntu-20.04'
+      arch: amd64_debug
+      containerImage: ubuntu20.04-dev-amd64:latest
+      platform: linux/amd64
       coverage: true
-    Packaging ubuntu20-amd64:
+    Packaging ubuntu2004-amd64:
       variant: ubuntu20.04
       arch: amd64
-      poolName:
-      vmImage: 'ubuntu-20.04'
+      containerImage: ubuntu20.04-dev-amd64:latest
+      platform: linux/amd64
       coverage: false
-    Packaging ubuntu18-amd64:
+    Packaging ubuntu2004-arm:
+      variant: ubuntu20.04
+      arch: arm
+      containerImage: ubuntu20.04-dev-arm:latest
+      platform: linux/arm/v7
+      coverage: false
+    Packaging ubuntu2004-arm64:
+      variant: ubuntu20.04
+      arch: arm64
+      containerImage: ubuntu20.04-dev-arm64:latest
+      platform: linux/arm64/v8
+      coverage: false
+    Packaging ubuntu1804-amd64:
       variant: ubuntu18.04
       arch: amd64
-      poolName:
-      vmImage: 'ubuntu-20.04'
+      containerImage: ubuntu18.04-dev-amd64:latest
+      platform: linux/amd64
+      coverage: false
+    Packaging ubuntu1804-arm:
+      variant: ubuntu18.04
+      arch: arm
+      containerImage: ubuntu18.04-dev-arm:latest
+      platform: linux/arm/v7
+      coverage: false
+    Packaging ubuntu18-arm64:
+      variant: ubuntu18.04
+      arch: arm64
+      containerImage: ubuntu18.04-dev-arm64:latest
+      platform: linux/arm64/v8
       coverage: false
     Packaging debian9-amd64:
       variant: debian9
       arch: amd64
-      poolName:
-      vmImage: 'ubuntu-20.04'
+      containerImage: debian9-dev-amd64:latest
+      platform: linux/amd64
+      coverage: false
+    Packaging debian9-arm:
+      variant: debian9
+      arch: arm
+      containerImage: debian9-dev-arm:latest
+      platform: linux/arm/v7
+      coverage: false
+    Packaging debian9-arm64:
+      variant: debian9
+      arch: arm64
+      containerImage: debian9-dev-arm64:latest
+      platform: linux/arm64/v8
       coverage: false
 
 pool:
-  name: $(poolName)
-  vmImage: $(vmImage)
-
-container: $[ variables['variant'] ]
-
-workspace:
-  clean: all
+  vmImage: 'ubuntu-20.04'
 
 steps:
+
 - checkout: self
   submodules: recursive
-  persistCredentials: true
   clean: true
 
-# Run CMake to generate Makefile
-- task: CMake@1
-  displayName: 'Generate build'
-  condition: eq(variables.coverage, false)
+- task: Docker@2
+  displayName: Login to ACR
   inputs:
-    workingDirectory: $(OSCONFIG_SRC)
-    cmakeArgs: '-DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B$(Agent.BuildDirectory) -H.'
+    command: login
+    containerRegistry: $(SERVICE_CONNECTION)
 
-# Run CMake to generate Makefile (With test coverage)
-- task: CMake@1
-  displayName: 'Generate build (with coverage)'
+- script: |
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    CONTAINER_ID=`docker run -di -v $(Build.SourcesDirectory):/AzOsConfig --platform=$(platform) $(CONTAINER_REGISTRY)/$(containerImage)`
+    echo CONTAINER_ID=$CONTAINER_ID
+    echo "##vso[task.setvariable variable=CONTAINER_ID]$CONTAINER_ID"
+  displayName: Setup QEMU emulation
+
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-$(arch) -H/AzOsConfig/src"
+  displayName: Generate build
+  condition: eq(variables.coverage, false)
+
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-$(arch) -H/AzOsConfig/src"
+  displayName: Generate build (with coverage)
   condition: eq(variables.coverage, true)
-  inputs:
-    workingDirectory: $(OSCONFIG_SRC)
-    cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B$(Agent.BuildDirectory) -H.'
 
-# Build project
-- task: Bash@3
-  displayName: 'Build osconfig'
-  inputs:
-    workingDirectory: $(Agent.BuildDirectory)
-    targetType: 'inline'
-    script: 'cmake --build .'
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build-$(arch)"
+  displayName: Build osconfig
 
-# Create the Deb binary package (.deb)
-# Uses CTest to generate Debian package
-- task: Bash@3
-  displayName: 'Create Deb package'
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && cpack -G DEB"
+  displayName: Create Deb package
   condition: eq(variables.coverage, false)
-  inputs:
-    workingDirectory: $(Agent.BuildDirectory)
-    targetType: 'inline'
-    script: 'cpack -G DEB'
 
-# Stage the debian and hash as artifacts in a staging directory
-- task: Bash@3
-  displayName: 'Stage Deb package'
+- script: |
+    cp $(Build.SourcesDirectory)/build-$(arch)/osconfig_* $(Build.ArtifactStagingDirectory)
+  displayName: Stage Deb package
   condition: eq(variables.coverage, false)
-  inputs:
-    workingDirectory: $(Agent.BuildDirectory)
-    targetType: 'inline'
-    script: 'cp osconfig_* $(Build.ArtifactStagingDirectory)'
 
-# Published the Deb package
 - publish: $(Build.ArtifactStagingDirectory)
-  displayName: 'Publishing deb package for $(variant)-$(arch)'
-  condition: eq(variables.coverage, false)
+  displayName: Publishing deb package for $(variant)_$(arch)
   artifact: OSConfig_$(Build.BuildNumber)_$(variant)_$(arch)
+  condition: eq(variables.coverage, false)
 
 # Runs ctest in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
 # Tests by loading a CTestTestfile.cmake from the build tree and executing the defined tests.
 # Record the output and result of each test
 # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
-- task: Bash@3
-  displayName: 'Run tests'
-  inputs:
-    workingDirectory: $(Agent.BuildDirectory)
-    targetType: 'inline'
-    script: 'ctest -T test --verbose > TestOutput.log'
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log"
+  displayName: Run tests
 
-# Published the test output from tests - test results above do not contain logs
-- publish: $(Agent.BuildDirectory)/TestOutput.log
-  condition: and(succeededOrFailed(), eq(variables.coverage, false))
-  displayName: 'Publishing TestOutput.log'
-  artifact: Test Logs - $(variant)_$(arch)
-
-# Published the test output from tests - test results above do not contain logs
-- publish: $(Agent.BuildDirectory)/TestOutput.log
-  condition: and(succeededOrFailed(), eq(variables.coverage, true))
-  displayName: 'Publishing TestOutput.log'
-  artifact: Test Logs - Code Coverage Job
+- publish: $(Build.SourcesDirectory)/build-$(arch)/TestOutput.log
+  displayName: Publishing test outputs
+  condition: succeededOrFailed()
+  artifact: Test_Logs_$(variant)_$(arch)
 
 # Publishes the results of the ctest test pass to be used in the ADO dashboard
 - task: PublishTestResults@2
@@ -164,23 +148,20 @@ steps:
   condition: and(succeededOrFailed(), eq(variables.coverage, false))
   inputs:
     testRunner: cTest
-    testResultsFiles: '$(Agent.BuildDirectory)/Testing/*/Test.xml'
+    testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
     failTaskOnFailedTests: true
-    testRunTitle: $(variant) $(arch)
+    testRunTitle: $(variant)
     platform: $(arch)
 
-# Generates Cobertura styled code coverage results to be consumed below (See `PublishCodeCoverageResults`)
-- task: Bash@3
-  displayName: 'Run code coverage'
+- script: |
+    docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-$(arch)/coverage.xml"
+  displayName: Run code coverage
   condition: eq(variables.coverage, true)
-  inputs:
-    workingDirectory: $(Agent.BuildDirectory)
-    targetType: 'inline'
-    script: 'gcovr -r $(Build.SourcesDirectory)/src . -e $(Build.SourcesDirectory)/src/agents/pnp/azure-iot-sdk-c/ -e $(Build.SourcesDirectory)/src/agents/pnp/tracelogging/ --xml coverage.xml'
+  workingDirectory: $(Agent.BuildDirectory)
 
 # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
 - task: UseDotNet@2
-  displayName: 'Use .NET Core sdk'
+  displayName: Use .NET Core sdk
   condition: eq(variables.coverage, true)
   inputs:
     packageType: sdk
@@ -189,16 +170,10 @@ steps:
 
 # Publish code coverage results
 - task: PublishCodeCoverageResults@1
-  displayName: 'Publish code coverage results'
+  displayName: Publish code coverage results
   condition: eq(variables.coverage, true)
   inputs:
     codeCoverageTool: 'Cobertura'
-    summaryFileLocation: $(Agent.BuildDirectory)/coverage.xml
+    summaryFileLocation: $(Build.SourcesDirectory)/build-$(arch)/coverage.xml
     pathToSources: $(Build.SourcesDirectory)/src
     #failIfCoverageEmpty: false # Optional
-
-# Delete files - (Necessary for self-hosted agents)
-- script: |
-    rm -rf $(Build.SourcesDirectory)/*
-  displayName: Removing sources
-  continueOnError: true
