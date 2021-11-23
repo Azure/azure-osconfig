@@ -161,14 +161,21 @@ steps:
 # Publishes the results of the ctest test pass to be used in the ADO dashboard
 - task: PublishTestResults@2
   displayName: 'Publish test results'
-  condition: and(succeededOrFailed(), eq(variables.coverage, false))
+  condition: and(succeededOrFailed(), eq(variables.coverage, false), eq(variables.ignoreTestFailures, false))
   inputs:
     testRunner: cTest
     testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
-    ${{ if eq( variables['ignoreTestFailures'], 'true' ) }}:
-      failTaskOnFailedTests: false
-    ${{ if ne( variables['ignoreTestFailures'], 'true' ) }}:
-      failTaskOnFailedTests: true
+    failTaskOnFailedTests: true
+    testRunTitle: $(variant)
+    platform: $(arch)
+
+- task: PublishTestResults@2
+  displayName: 'Publish test results (ignore failures)'
+  condition: and(succeededOrFailed(), eq(variables.coverage, false), eq(variables.ignoreTestFailures, true))
+  inputs:
+    testRunner: cTest
+    testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
+    failTaskOnFailedTests: false
     testRunTitle: $(variant)
     platform: $(arch)
 
