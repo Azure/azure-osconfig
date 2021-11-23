@@ -176,7 +176,7 @@ steps:
     testRunner: cTest
     testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
     failTaskOnFailedTests: false
-    testRunTitle: $(variant)
+    testRunTitle: $(variant)-$(arch)
     platform: $(arch)
 
 - script: |
