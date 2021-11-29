@@ -77,33 +77,6 @@ namespace e2etesting
             base.twinTimeoutSeconds = m_twinTimeoutSeconds;
         }
 
-        [Test]      
-        public void SettingsTest_Get()
-        {
-            if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
-            Regex expectedDeviceHealthTelemetryConfigurationPattern = new Regex(@"[0-2]");
-            var expectedDeliveryOptimizationPoliciesPattern = new DeliveryOptimizationPoliciesPattern
-            {
-                PercentageDownloadThrottlePattern = new Regex(@"[\d]{1,2}"),
-                CacheHostSourcePattern = new Regex(@"[0-3]"),
-                CacheHostPattern = new Regex(@""),
-                CacheHostFallbackPattern = new Regex(@"[\d]{1,3}")
-            };
-
-            ReportedConfiguration reportedConfigurationObject = JsonSerializer.Deserialize<ReportedConfiguration>(GetNewTwin().Properties.Reported[ComponentName][ConfigurationProperty].ToString());
-            Assert.True(IsRegexMatch(expectedDeviceHealthTelemetryConfigurationPattern, reportedConfigurationObject.value));
-            ReportedPolicies reportedPoliciesObject = JsonSerializer.Deserialize<ReportedPolicies>(GetNewTwin().Properties.Reported[ComponentName][PoliciesProperty].ToString());
-            Assert.True(IsRegexMatch(expectedDeliveryOptimizationPoliciesPattern.PercentageDownloadThrottlePattern, reportedPoliciesObject.value.PercentageDownloadThrottle));
-            Assert.True(IsRegexMatch(expectedDeliveryOptimizationPoliciesPattern.CacheHostSourcePattern, reportedPoliciesObject.value.CacheHostSource));
-            System.Net.IPAddress ipAddress = null;
-            Assert.True(System.Net.IPAddress.TryParse(reportedPoliciesObject.value.CacheHost, out ipAddress));
-            Assert.True(IsRegexMatch(expectedDeliveryOptimizationPoliciesPattern.CacheHostFallbackPattern, reportedPoliciesObject.value.CacheHostFallback));
-        }
-
         [Test]
         public void SettingsTest_Set_Get()
         {
