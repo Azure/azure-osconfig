@@ -87,7 +87,7 @@ namespace e2etesting
                 Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
                 // Wait until the reported properties are updated
                 DateTime startTime = DateTime.Now;
-                while(reportedObject.ServiceUrl != desiredZtsi.DesiredServiceUrl && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
+                while(((reportedObject.Enabled != expectedZtsi.Enabled) || (reportedObject.ServiceUrl != expectedZtsi.ServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
                 {
                     Console.WriteLine("[ZtsiTests] waiting for twin to be updated...");
                     Task.Delay(twinRefreshIntervalMs).Wait();
