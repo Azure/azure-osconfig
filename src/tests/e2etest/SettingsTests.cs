@@ -16,9 +16,9 @@ namespace e2etesting
     [TestFixture]
     public class SettingsTests : E2eTest
     {   
-        string ComponentName = "Settings";
-        string ConfigurationProperty = "DeviceHealthTelemetryConfiguration";
-        string PoliciesProperty = "DeliveryOptimizationPolicies";
+        const string ComponentName = "Settings";
+        const string ConfigurationProperty = "DeviceHealthTelemetryConfiguration";
+        const string PoliciesProperty = "DeliveryOptimizationPolicies";
         public partial class DeliveryOptimizationPolicies
         {
             public int PercentageDownloadThrottle { get; set; }
