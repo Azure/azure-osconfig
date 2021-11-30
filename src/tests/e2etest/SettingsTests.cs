@@ -64,19 +64,6 @@ namespace e2etesting
             return reportedObject;
         }
 
-        [SetUp]
-        public void TestSetUp()
-        {
-            m_twinTimeoutSeconds = base.twinTimeoutSeconds;
-            base.twinTimeoutSeconds = base.twinTimeoutSeconds * 2;
-        }
-
-        [TearDown]
-        public void TestTearDown()
-        {
-            base.twinTimeoutSeconds = m_twinTimeoutSeconds;
-        }
-
         [Test]
         public void SettingsTest_Set_Get()
         {
@@ -105,6 +92,7 @@ namespace e2etesting
             if (UpdateTwinBlockUntilUpdate(twinPatch))
             {
                 reportedObject = GetSettingsReportObject();
+                AreEqualByJson(reportedObject, desiredSettings);
             }
             else
             {
