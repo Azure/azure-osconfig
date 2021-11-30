@@ -105,14 +105,6 @@ namespace e2etesting
             if (UpdateTwinBlockUntilUpdate(twinPatch))
             {
                 reportedObject = GetSettingsReportObject();
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while(!IsSameByJson(desiredSettings, reportedObject) && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
-                {
-                    Console.WriteLine("[SettingsTests] waiting for twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = GetSettingsReportObject();
-                }
             }
             else
             {
