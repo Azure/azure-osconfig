@@ -118,7 +118,7 @@ Example of an array MIM object:
 
 ```JSON
 {
-  "name": "FirewallRules",  
+  "name": "FirewallRules",
   "type": "MimObject",
   "desired": "true",
   "schema": {
@@ -236,7 +236,7 @@ Example of a MIM seting of array of strings type:
 
 ```JSON
 {
-  "name": "FirewallFingerprints",  
+  "name": "FirewallFingerprints",
   "schema": {
     "type": "Array",
     "elementSchema": "string"
@@ -260,7 +260,7 @@ Example of a MIM seting of map of strings type:
       "schema": "string"
     }
   } 
-} 
+}
 ```
 
 ## 3.2. Describing the Module Interface Model (MIM)
