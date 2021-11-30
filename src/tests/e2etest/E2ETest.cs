@@ -262,13 +262,6 @@ namespace e2etesting
             Assert.AreEqual(expectedJson, actualJson);
         }
 
-        public static bool IsSameByJson(object expected, object actual)
-        {
-            var expectedJson = JsonSerializer.Serialize(expected);
-            var actualJson = JsonSerializer.Serialize(actual);
-            return expectedJson == actualJson;
-        }
-
         public static bool IsRegexMatch(Regex expected, object actual)
         {
             string actualJson = JsonSerializer.Serialize(actual);
