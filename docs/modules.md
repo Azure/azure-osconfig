@@ -120,35 +120,35 @@ Example of an array MIM object:
 {
   "name": "FirewallRules",
   "type": "MimObject",
-  "desired": true,
-  "schema": {
-    "type": "Array",
-    "elementSchema": {
-      "type": "Object",
-      "fields": [
-        {
-          "name": "Direction",
-          "schema": "string"
-        },
-        {
-          "name": "Target",
-          "schema": "string"
-        },
-        {
-          "name": "Protocol",
-          "schema": "string"
-        },
-        {
-          "name": "IpAddress",
-          "schema": "string"
-        },
-        {
-          "name": "Port",
-          "schema": "string"
-        }
-      ]
-    }
-  }
+  "desired": true,
+  "schema": {
+    "type": "Array",
+    "elementSchema": {
+      "type": "Object",
+      "fields": [
+        {
+          "name": "Direction",
+          "schema": "string"
+        },
+        {
+          "name": "Target",
+          "schema": "string"
+        },
+        {
+          "name": "Protocol",
+          "schema": "string"
+        },
+        {
+          "name": "IpAddress",
+          "schema": "string"
+        },
+        {
+          "name": "Port",
+          "schema": "string"
+        }
+      ]
+    }
+  }
 }
 ```
 
@@ -238,9 +238,9 @@ Example of a MIM seting of array of strings type:
 {
   "name": "FirewallFingerprints",
   "schema": {
-    "type": "Array",
-    "elementSchema": "string"
-  }
+    "type": "Array",
+    "elementSchema": "string"
+  }
 }
 ```
 
