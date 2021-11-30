@@ -120,7 +120,7 @@ Example of an array MIM object:
 {
   "name": "FirewallRules",
   "type": "MimObject",
-  "desired": "true",
+  "desired": true,
   "schema": {
     "type": "Array",
     "elementSchema": {
@@ -237,7 +237,7 @@ Example of a MIM seting of array of strings type:
 ```JSON
 {
   "name": "FirewallFingerprints",
-  "schema": {
+  "schema": {
     "type": "Array",
     "elementSchema": "string"
   }
