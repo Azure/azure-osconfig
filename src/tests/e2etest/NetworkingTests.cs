@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
-namespace e2etesting
+namespace E2eTesting
 {
     public class NetworkingTests : E2eTest
     {
-        string ComponentName = "Networking";
-        string PropertyName = "NetworkConfiguration";
+        const string ComponentName = "Networking";
+        const string PropertyName = "NetworkConfiguration";
         public partial class Networking
         {
             public string InterfaceTypes { get; set; }
@@ -39,11 +39,11 @@ namespace e2etesting
             }
         }
 
-        public void RegexTest_Properties(string testString, string piecePatternString, string smallPatternString)
+        public void RegexTest_Properties(string testString, string delimiterPatternString, string smallPatternString)
         {
             string interfaceDelimiter = ";";
             string propertyDelimiter = ",";
-            Regex regexPattern = new Regex(@piecePatternString);
+            Regex regexPattern = new Regex(@delimiterPatternString);
             Regex smallRegexPattern = new Regex(@smallPatternString);
             string[] result = Regex.Split(testString, interfaceDelimiter);
             foreach (string piece in result)
@@ -72,25 +72,25 @@ namespace e2etesting
             string patternString = @"([A-Za-z0-9]+)\=([A-Za-z0-9]+)";
             RegexTest_SingletonInterfaceProperties(deserializedReportedObject.InterfaceTypes, patternString);
 
-            string piecePatternString = @"[A-Za-z0-9]+\=(.*)";
+            string delimiterPatternString = @"[A-Za-z0-9]+\=(.*)";
             // Test MacAddresses
             string macAddressesPatternString = @"^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}-){5}[0-9a-fA-F]{2}|(?:[0-9a-fA-F]{2}){5}[0-9a-fA-F]{2}$";
-            RegexTest_Properties(deserializedReportedObject.MacAddresses, piecePatternString, macAddressesPatternString);
+            RegexTest_Properties(deserializedReportedObject.MacAddresses, delimiterPatternString, macAddressesPatternString);
             // Test IpAddresses
             string ipv4Ipv6PatternString = @"((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))";
-            RegexTest_Properties(deserializedReportedObject.IpAddresses, piecePatternString, ipv4Ipv6PatternString);
+            RegexTest_Properties(deserializedReportedObject.IpAddresses, delimiterPatternString, ipv4Ipv6PatternString);
 
             // Test SubnetMasks
             string subnetMaskPatternString = @"[\d]+";
-            RegexTest_Properties(deserializedReportedObject.SubnetMasks, piecePatternString, subnetMaskPatternString);
+            RegexTest_Properties(deserializedReportedObject.SubnetMasks, delimiterPatternString, subnetMaskPatternString);
 
             // Test DefaultGateways
-            RegexTest_Properties(deserializedReportedObject.DefaultGateways, piecePatternString, ipv4Ipv6PatternString); 
+            RegexTest_Properties(deserializedReportedObject.DefaultGateways, delimiterPatternString, ipv4Ipv6PatternString); 
 
             // Test DnsServers
             if (!String.IsNullOrEmpty(deserializedReportedObject.DnsServers))
             {
-                RegexTest_Properties(deserializedReportedObject.DnsServers, piecePatternString, ipv4Ipv6PatternString);
+                RegexTest_Properties(deserializedReportedObject.DnsServers, delimiterPatternString, ipv4Ipv6PatternString);
             }
             string statePatternString = @"^[A-Za-z0-9]+\=true|false|unknown$";
             // Test DhcpEnabled

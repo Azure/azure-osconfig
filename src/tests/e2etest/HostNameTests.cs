@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
 
-namespace e2etesting
+namespace E2eTesting
 {
     [TestFixture]
     public class HostNameTests : E2eTest

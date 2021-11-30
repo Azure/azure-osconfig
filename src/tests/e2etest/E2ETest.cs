@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace e2etesting
+namespace E2eTesting
 {
     [TestFixture]
     public class E2eTest
@@ -260,6 +260,13 @@ namespace e2etesting
             var expectedJson = JsonSerializer.Serialize(expected);
             var actualJson = JsonSerializer.Serialize(actual);
             Assert.AreEqual(expectedJson, actualJson);
+        }
+
+        public static bool IsSameByJson(object expected, object actual)
+        {
+            var expectedJson = JsonSerializer.Serialize(expected);
+            var actualJson = JsonSerializer.Serialize(actual);
+            return expectedJson == actualJson;
         }
 
         public static bool IsRegexMatch(Regex expected, object actual)

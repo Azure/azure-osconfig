@@ -7,7 +7,7 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 
-namespace e2etesting
+namespace E2eTesting
 {
     public class CommandRunnerTests : E2eTest
     {
