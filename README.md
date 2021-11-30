@@ -138,7 +138,7 @@ To enable full logging for debugging purposes, edit the OSConfig general configu
 
 ```json
 {
-    "FullLogging":1
+    "FullLogging": 1
 }
 ```
 
@@ -152,7 +152,7 @@ To enable local reporting, edit the OSConfig general configuration file `/etc/os
 
 ```json
 {
-    "LocalReporting":1
+    "LocalReporting": 1
 }
 ```
 To disable local reporting, set "LocalReporting" to 0.
@@ -165,7 +165,7 @@ To enable local priority, edit the OSConfig general configuration file `/etc/osc
 
 ```json
 {
-    "LocalPriority":1
+    "LocalPriority": 1
 }
 ```
 To configure for remote priority, set "LocalPriority" to 0.
