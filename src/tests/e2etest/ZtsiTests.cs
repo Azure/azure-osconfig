@@ -9,12 +9,12 @@ using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace e2etesting
+namespace E2eTesting
 {
     [TestFixture]
     public class ZtsiTests : E2eTest
     {   
-        string ComponentName = "Ztsi";
+        const string ComponentName = "Ztsi";
         public partial class Ztsi
         {
             public int Enabled { get; set; }
@@ -79,7 +79,7 @@ namespace e2etesting
 
             if (UpdateTwinBlockUntilUpdate(twinPatch))
             {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
                 // Wait until the reported properties are updated
                 DateTime startTime = DateTime.Now;
                 while((reportedObject.ServiceUrl != expectedZtsi.ServiceUrl) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
