@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace e2etesting
+namespace E2eTesting
 {
     [TestFixture]
     public class E2eTest

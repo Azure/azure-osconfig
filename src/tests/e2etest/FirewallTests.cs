@@ -7,7 +7,7 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-namespace e2etesting
+namespace E2eTesting
 {
     public class FirewallTests : E2eTest
     {
