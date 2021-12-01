@@ -573,6 +573,8 @@ A summary JSON representation of a MIM:
 
 The full MIM JSON schema is at [src/modules/schema/mim.schema.json](../src/modules/schema/mim.schema.json)
 
+The MIM JSON files for existing modules are stored at [src/modules/mim/](../src/modules/mim/).
+
 Examples of MIM JSON:
 - CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
@@ -903,7 +905,7 @@ Following functions are global for all sessions:
 
 Following functions are session specific. They cast the session handle to obtain the ModuleObject and then on that object invoke the corresponding method:
 
-- MmiGet:  calls ((ModuleObject)clientSession)->Get
+- MmiGet: calls ((ModuleObject)clientSession)->Get
 - MmiSet: calls ((ModuleObject)clientSession)->Set
 - ModuleObject::Get has same arguments and return as MmiGet
 - ModuleObject::Set has same arguments and return as MmiSet
@@ -920,7 +922,7 @@ The command line module utility app will load a module and provide it with an ex
 
 # 14.1. Introduction
 
-Modules can work invoked by any client over their MMI. When a module works with the rest of the OSConfig stack and in particular with the OSConfig PnP Agent, in order to allow remote management over Azure and IoT Hub, the module needs to have one or more PnP interfaces (one for each MIM component) published via the public [OSConfig DTDL Model](https://github.com/Azure/iot-plugandplay-models/tree/main/dtmi/osconfig). This allows applications such as [Azure IoT Explorer](https://github.com/Azure/azure-iot-explorer) to display personalized user interface to help the operator request desired and reported configuration with the respective module at the other end. 
+Modules can work invoked by any client over their MMI. When a module works with the rest of the OSConfig stack and in particular with the OSConfig PnP Agent, in order to allow remote management over Azure and IoT Hub, the module needs to have one or more PnP interfaces (one for each MIM component) published via the public [OSConfig DTDL Model](https://github.com/Azure/iot-plugandplay-models/tree/main/dtmi/osconfig). This allows applications such as [Azure IoT Explorer](https://github.com/Azure/azure-iot-explorer) to display personalized user interface to help the operator request desired and reported configuration with the respective module at the other end.
 
 # 14.2. Translating MIM to DTDL
 
@@ -933,7 +935,10 @@ Complex MIM object (containing multiple MIM settings) | Complex PnP property of 
 Simple MIM object (containing a single MIM setting) | Simple PnP property | Each simple MIM object can be translated to a simple [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example Tpm.TpmVersion in [Tpm MIM](../src/modules/mim/tpm.json) and [Tpm PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/tpm-1.json).
 Desired MIM object | Writeable (also called read-write) PnP property | Each desired MIM object can be translated to a writeable (read-write) [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property).
 Reported MIM object | Read-only PnP property | Each desired MIM object can be translated to a read-only [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property). 
-MIM setting | PnP property value | Each MIM setting can be translated to a PnP property value with the same name and value type. 
+MIM setting | PnP property value | Each MIM setting can be translated to a PnP property value with the same name and value type.
+MIM enum | DTDL enum | MIM enums of integers (for MIM Settings) can be translated to [DTDL enums](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#enum) of the same type.
+MIM array | DTDL array | MIM arrays of strings and integers (for MIM Settings) or objects (for MIM Objects) can be translated to [DTDL arrays](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#array) of the same types.
+MIM map | DTDL map | MIM maps of string and integers (for MIM Settings) can be translated to [DTDL maps](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#map) of the same types.
 
 # 14.3. Editing the public OSConfig DTDL Model
 
