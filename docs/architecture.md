@@ -127,7 +127,7 @@ For more about MpiGetReported and MpiSetDesired see the next section.
 In addition to the common MpiGet and MpiSet an additional pair of MpiGetReported and MpiSetDesired MPI calls are provided so local management authorities such as OOBE can contact the OSConfig Management Platform directly exchanging full or partial desired and reported payload like it happens for the Digital Twins in the following JSON format, including one or many MIM components and MIM objects:  
 
 ```
-{"desired|reported":{"ComponentName":{"ObjectName":{"StringSettingName":"string","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":M}},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}}
+{"desired|reported":{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}} 
 ```
 
 Example:
