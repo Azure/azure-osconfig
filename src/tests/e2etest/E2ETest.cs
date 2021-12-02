@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace e2etesting
+namespace E2eTesting
 {
     [TestFixture]
     public class E2eTest
@@ -23,7 +23,7 @@ namespace e2etesting
         // private string _deviceId = "ubuntu2004";
         private string deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
         private readonly string moduleId = "osconfig";
-        private int twinTimeoutSeconds = 0;
+        protected int twinTimeoutSeconds = 0;
         private int twinTimeoutSecondsDefault = 45;
         public readonly int twinRefreshIntervalMs = 2000;
 
@@ -39,6 +39,11 @@ namespace e2etesting
         public String DeviceId
         {
             get { return deviceId; }
+        }
+
+        public void SetTwinTimeoutSeconds(int seconds)
+        {
+            twinTimeoutSeconds = seconds;
         }
 
         [OneTimeSetUp]
@@ -232,6 +237,14 @@ namespace e2etesting
                 return (false, "");
             }
         }
+
+        protected static Twin CreateTwinPatch(string componentName, object propertyValue)
+        {
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[componentName] = propertyValue;
+            return twinPatch;
+        }
+
         protected static Twin CreateCommandArgumentsPropertyPatch(string componentName, object propertyValue)
         {
             var twinPatch = new Twin();
@@ -249,17 +262,10 @@ namespace e2etesting
             Assert.AreEqual(expectedJson, actualJson);
         }
 
-        public static bool IsRegexMatch(object expected, object actual)
+        public static bool IsRegexMatch(Regex expected, object actual)
         {
-            string expectedJson = JsonSerializer.Serialize(expected);
             string actualJson = JsonSerializer.Serialize(actual);
-            if (!actualJson.StartsWith("\""))
-            {
-                actualJson = "\"" + actualJson + "\"";
-            }
-
-            Regex expectedPattern = new Regex(@expectedJson);
-            return expectedPattern.IsMatch(actualJson);
+            return expected.IsMatch(actualJson);
         }
 
         private bool IsComponentNameReported(string componentName, bool refreshTwin = true)
