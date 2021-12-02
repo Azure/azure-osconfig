@@ -16,8 +16,8 @@
 #include "CommonUtils.h"
 #include "Ztsi.h"
 
-static const char g_configPropertyEnabled[] = "enabled";
-static const char g_configPropertyServiceUrl[] = "serviceUrl";
+static const char g_configurationPropertyEnabled[] = "enabled";
+static const char g_configurationPropertyServiceUrl[] = "serviceUrl";
 
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const bool g_defaultEnabled = false;
@@ -25,7 +25,7 @@ static const std::string g_defaultServiceUrl = "";
 
 static const std::string g_urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
 
-// Block for a maximum of (20 millis x 5 retries) 100ms
+// Block for a maximum of (20 milliseconds x 5 retries) 100ms
 static const unsigned int g_lockWaitMillis = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
@@ -108,10 +108,10 @@ OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
 
 Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
 {
-    m_agentConfigFile = filePath;
-    m_agentConfigDir = filePath.substr(0, filePath.find_last_of("/"));
+    m_agentConfigurationFile = filePath;
+    m_agentConfigurationDir = filePath.substr(0, filePath.find_last_of("/"));
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    m_lastAvailableConfig = {g_defaultServiceUrl, g_defaultEnabled};
+    m_lastAvailableConfiguration = {g_defaultServiceUrl, g_defaultEnabled};
 }
 
 unsigned int Ztsi::GetMaxPayloadSizeBytes()
@@ -121,37 +121,37 @@ unsigned int Ztsi::GetMaxPayloadSizeBytes()
 
 Ztsi::EnabledState Ztsi::GetEnabledState()
 {
-    AgentConfig config = {g_defaultServiceUrl, g_defaultEnabled};
-    return (0 == ReadAgentConfig(config)) ? (config.enabled ? EnabledState::Enabled : EnabledState::Disabled) : g_defaultEnabledState;
+    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
+    return (0 == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : g_defaultEnabledState;
 }
 
 std::string Ztsi::GetServiceUrl()
 {
-    AgentConfig config = {g_defaultServiceUrl, g_defaultEnabled};
-    return (0 == ReadAgentConfig(config)) ? config.serviceUrl : g_defaultServiceUrl;
+    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
+    return (0 == ReadAgentConfiguration(configuration)) ? configuration.serviceUrl : g_defaultServiceUrl;
 }
 
 int Ztsi::SetEnabled(bool enabled)
 {
     int status = 0;
-    AgentConfig config = {g_defaultServiceUrl, g_defaultEnabled};
+    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
 
-    status = ReadAgentConfig(config);
+    status = ReadAgentConfiguration(configuration);
     if ((0 == status) || (EINVAL == status))
     {
         // Check if the state is already set to the desired state
-        if (enabled != config.enabled)
+        if (enabled != configuration.enabled)
         {
-            config.enabled = enabled;
-            status = WriteAgentConfig(config);
+            configuration.enabled = enabled;
+            status = WriteAgentConfiguration(configuration);
         }
     }
     else if (ENOENT == status)
     {
-        // If the config file doesn't exist, create it with the desired enabled state
-        config.enabled = enabled;
-        config.serviceUrl = g_defaultServiceUrl;
-        status = CreateConfigFile(config);
+        // If the configuration file doesn't exist, create it with the desired enabled state
+        configuration.enabled = enabled;
+        configuration.serviceUrl = g_defaultServiceUrl;
+        status = CreateConfigurationFile(configuration);
     }
 
     return status;
@@ -160,42 +160,42 @@ int Ztsi::SetEnabled(bool enabled)
 int Ztsi::SetServiceUrl(const std::string& serviceUrl)
 {
     int status = 0;
-    AgentConfig config = {g_defaultServiceUrl, g_defaultEnabled};
+    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
 
-    status = ReadAgentConfig(config);
+    status = ReadAgentConfiguration(configuration);
     if ((0 == status) || (EINVAL == status))
     {
-        if (serviceUrl != config.serviceUrl)
+        if (serviceUrl != configuration.serviceUrl)
         {
-            config.serviceUrl = serviceUrl;
-            status = WriteAgentConfig(config);
+            configuration.serviceUrl = serviceUrl;
+            status = WriteAgentConfiguration(configuration);
         }
     }
     else if (ENOENT == status)
     {
-        // If the config file doesn't exist, create it with the desired serviceUrl
-        config.enabled = g_defaultEnabledState;
-        config.serviceUrl = serviceUrl;
-        status = CreateConfigFile(config);
+        // If the configuration file doesn't exist, create it with the desired serviceUrl
+        configuration.enabled = g_defaultEnabledState;
+        configuration.serviceUrl = serviceUrl;
+        status = CreateConfigurationFile(configuration);
     }
 
     return status;
 }
 
-bool Ztsi::IsValidConfig(const Ztsi::AgentConfig& config)
+bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
     bool isValid = true;
 
-    if (config.serviceUrl.empty() && config.enabled)
+    if (configuration.serviceUrl.empty() && configuration.enabled)
     {
         OsConfigLogError(ZtsiLog::Get(), "ServiceUrl is empty and enabled is true");
         isValid = false;
     }
 
     std::regex urlPattern(g_urlRegex);
-    if (!config.serviceUrl.empty() && !regex_match(config.serviceUrl, urlPattern))
+    if (!configuration.serviceUrl.empty() && !regex_match(configuration.serviceUrl, urlPattern))
     {
-        OsConfigLogError(ZtsiLog::Get(), "Invalid serviceUrl '%s'", config.serviceUrl.c_str());
+        OsConfigLogError(ZtsiLog::Get(), "Invalid serviceUrl '%s'", configuration.serviceUrl.c_str());
         isValid = false;
     }
 
@@ -213,17 +213,17 @@ std::FILE* Ztsi::LockFile(const char* mode)
     int fd = -1;
     std::FILE* fp = nullptr;
 
-    if (FileExists(m_agentConfigFile) && (nullptr != (fp = fopen(m_agentConfigFile.c_str(), mode))))
+    if (FileExists(m_agentConfigurationFile) && (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode))))
     {
         if (0 == (fd = fileno(fp)))
         {
-            OsConfigLogError(ZtsiLog::Get(), "Failed to get file descriptor for %s", m_agentConfigFile.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Failed to get file descriptor for %s", m_agentConfigurationFile.c_str());
         }
         else if (0 != flock(fd, LOCK_EX | LOCK_NB))
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(ZtsiLog::Get(), "Failed to lock file %s", m_agentConfigFile.c_str());
+                OsConfigLogError(ZtsiLog::Get(), "Failed to lock file %s", m_agentConfigurationFile.c_str());
             }
             fclose(fp);
             fp = nullptr;
@@ -260,16 +260,16 @@ void Ztsi::UnlockFile(std::FILE* fp)
     }
 }
 
-int Ztsi::ReadAgentConfig(AgentConfig& config)
+int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
 {
     int status = 0;
-    std::string configJson;
+    std::string configurationJson;
     std::FILE* fp = nullptr;
     long fileSize = 0;
     size_t bytesRead = 0;
     char* buffer = nullptr;
 
-    if (FileExists(m_agentConfigFile))
+    if (FileExists(m_agentConfigurationFile))
     {
         if (nullptr != (fp = LockFile("r")))
         {
@@ -284,17 +284,17 @@ int Ztsi::ReadAgentConfig(AgentConfig& config)
                 if ((0 < fileSize) && (bytesRead == static_cast<unsigned>(fileSize)))
                 {
                     buffer[fileSize] = '\0';
-                    configJson = buffer;
+                    configurationJson = buffer;
 
-                    if (0 == (status = ParseAgentConfig(configJson, config)))
+                    if (0 == (status = ParseAgentConfiguration(configurationJson, configuration)))
                     {
                         // Cache the last available agent configuration
-                        m_lastAvailableConfig = config;
+                        m_lastAvailableConfiguration = configuration;
                     }
                 }
                 else
                 {
-                    OsConfigLogError(ZtsiLog::Get(), "Failed to read config file %s", m_agentConfigFile.c_str());
+                    OsConfigLogError(ZtsiLog::Get(), "Failed to read configuration file %s", m_agentConfigurationFile.c_str());
                     status = EIO;
                 }
 
@@ -302,20 +302,20 @@ int Ztsi::ReadAgentConfig(AgentConfig& config)
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Failed to allocate memory for config file %s", m_agentConfigFile.c_str());
+                OsConfigLogError(ZtsiLog::Get(), "Failed to allocate memory for configuration file %s", m_agentConfigurationFile.c_str());
                 status = ENOMEM;
             }
 
 
-            m_lastAvailableConfig = config;
+            m_lastAvailableConfiguration = configuration;
 
             UnlockFile(fp);
         }
         else
         {
             // The file is temporarily unavailable (locked) by another process
-            // Return the last available config, with success status
-            config = m_lastAvailableConfig;
+            // Return the last available configuration, with success status
+            configuration = m_lastAvailableConfiguration;
             status = 0;
         }
     }
@@ -327,54 +327,54 @@ int Ztsi::ReadAgentConfig(AgentConfig& config)
     return status;
 }
 
-int Ztsi::ParseAgentConfig(const std::string& configJson, Ztsi::AgentConfig& config)
+int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::AgentConfiguration& configuration)
 {
     int status = 0;
     rapidjson::Document document;
 
-    if (document.Parse(configJson.c_str()).HasParseError())
+    if (document.Parse(configurationJson.c_str()).HasParseError())
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ZtsiLog::Get(), "Failed to parse JSON %s", configJson.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Failed to parse JSON %s", configurationJson.c_str());
         }
         status = EINVAL;
     }
     else
     {
-        if (document.HasMember(g_configPropertyEnabled))
+        if (document.HasMember(g_configurationPropertyEnabled))
         {
-            if (document[g_configPropertyEnabled].IsBool())
+            if (document[g_configurationPropertyEnabled].IsBool())
             {
-                config.enabled = document[g_configPropertyEnabled].GetBool();
+                configuration.enabled = document[g_configurationPropertyEnabled].GetBool();
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configPropertyEnabled);
+                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyEnabled);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configPropertyEnabled, m_agentConfigFile.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyEnabled, m_agentConfigurationFile.c_str());
             status = EINVAL;
         }
 
-        if (document.HasMember(g_configPropertyServiceUrl))
+        if (document.HasMember(g_configurationPropertyServiceUrl))
         {
-            if (document[g_configPropertyServiceUrl].IsString())
+            if (document[g_configurationPropertyServiceUrl].IsString())
             {
-                config.serviceUrl = document[g_configPropertyServiceUrl].GetString();
+                configuration.serviceUrl = document[g_configurationPropertyServiceUrl].GetString();
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configPropertyServiceUrl);
+                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyServiceUrl);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configPropertyServiceUrl, m_agentConfigFile.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyServiceUrl, m_agentConfigurationFile.c_str());
             status = EINVAL;
         }
     }
@@ -382,27 +382,27 @@ int Ztsi::ParseAgentConfig(const std::string& configJson, Ztsi::AgentConfig& con
     return status;
 }
 
-int Ztsi::WriteAgentConfig(const Ztsi::AgentConfig& config)
+int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
     int status = 0;
     std::FILE* fp = nullptr;
 
-    if (Ztsi::IsValidConfig(config))
+    if (Ztsi::IsValidConfiguration(configuration))
     {
         if (nullptr != (fp = LockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
         {
-            std::string configJson = BuildConfigJson(config);
+            std::string configurationJson = BuildConfigurationJson(configuration);
 
-            int rc = std::fwrite(configJson.c_str(), 1, configJson.length(), fp);
+            int rc = std::fwrite(configurationJson.c_str(), 1, configurationJson.length(), fp);
             if ((0 > rc) || (EOF == rc))
             {
-                OsConfigLogError(ZtsiLog::Get(), "Failed to write to file %s", m_agentConfigFile.c_str());
+                OsConfigLogError(ZtsiLog::Get(), "Failed to write to file %s", m_agentConfigurationFile.c_str());
                 status = errno ? errno : EINVAL;
             }
             else
             {
                 ftruncate(fileno(fp), rc);
-                m_lastAvailableConfig = config;
+                m_lastAvailableConfiguration = configuration;
             }
 
             UnlockFile(fp);
@@ -420,43 +420,43 @@ int Ztsi::WriteAgentConfig(const Ztsi::AgentConfig& config)
     return status;
 }
 
-int Ztsi::CreateConfigFile(const AgentConfig& config)
+int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
 {
     int status = 0;
     struct stat sb;
 
-    if (IsValidConfig(config))
+    if (IsValidConfiguration(configuration))
     {
         // Create /etc/ztsi/ if it does not exist
-        if (0 != stat(m_agentConfigDir.c_str(), &sb))
+        if (0 != stat(m_agentConfigurationDir.c_str(), &sb))
         {
-            if (0 == mkdir(m_agentConfigDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR))
+            if (0 == mkdir(m_agentConfigurationDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR))
             {
-                RestrictFileAccessToCurrentAccountOnly(m_agentConfigDir.c_str());
+                RestrictFileAccessToCurrentAccountOnly(m_agentConfigurationDir.c_str());
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Failed to create directory %s", m_agentConfigDir.c_str());
+                OsConfigLogError(ZtsiLog::Get(), "Failed to create directory %s", m_agentConfigurationDir.c_str());
                 status = errno;
             }
         }
 
         // Create /etc/ztsi/agent.conf if it does not exist
-        if (0 != stat(m_agentConfigFile.c_str(), &sb))
+        if (0 != stat(m_agentConfigurationFile.c_str(), &sb))
         {
-            std::ofstream newFile(m_agentConfigFile, std::ios::out | std::ios::trunc);
+            std::ofstream newFile(m_agentConfigurationFile, std::ios::out | std::ios::trunc);
             if (newFile.good())
             {
-                std::string configJson = BuildConfigJson(config);
-                newFile << configJson;
+                std::string configurationJson = BuildConfigurationJson(configuration);
+                newFile << configurationJson;
                 newFile.close();
-                RestrictFileAccessToCurrentAccountOnly(m_agentConfigFile.c_str());
+                RestrictFileAccessToCurrentAccountOnly(m_agentConfigurationFile.c_str());
 
-                m_lastAvailableConfig = config;
+                m_lastAvailableConfiguration = configuration;
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Failed to create file %s", m_agentConfigFile.c_str());
+                OsConfigLogError(ZtsiLog::Get(), "Failed to create file %s", m_agentConfigurationFile.c_str());
                 status = errno;
             }
         }
@@ -469,18 +469,18 @@ int Ztsi::CreateConfigFile(const AgentConfig& config)
     return status;
 }
 
-std::string Ztsi::BuildConfigJson(const AgentConfig& config)
+std::string Ztsi::BuildConfigurationJson(const AgentConfiguration& configuration)
 {
     rapidjson::StringBuffer buffer;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
 
     writer.StartObject();
 
-    writer.Key(g_configPropertyEnabled);
-    writer.Bool(config.enabled);
+    writer.Key(g_configurationPropertyEnabled);
+    writer.Bool(configuration.enabled);
 
-    writer.Key(g_configPropertyServiceUrl);
-    writer.String(config.serviceUrl.c_str());
+    writer.Key(g_configurationPropertyServiceUrl);
+    writer.String(configuration.serviceUrl.c_str());
 
     writer.EndObject();
 

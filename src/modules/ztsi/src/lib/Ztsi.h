@@ -44,7 +44,7 @@ public:
         Disabled
     };
 
-    struct AgentConfig
+    struct AgentConfiguration
     {
         std::string serviceUrl;
         bool enabled;
@@ -60,19 +60,19 @@ public:
     virtual int SetServiceUrl(const std::string& serviceUrl);
 
 private:
-    static bool IsValidConfig(const AgentConfig& config);
+    static bool IsValidConfiguration(const AgentConfiguration& configuration);
     virtual std::FILE* LockFile(const char* mode);
-    virtual std::FILE* LockFile(const char* mode, unsigned int millis, int count);
+    virtual std::FILE* LockFile(const char* mode, unsigned int milliseconds, int count);
     virtual void UnlockFile(std::FILE* fp);
     static bool FileExists(const std::string& filePath);
-    virtual int ReadAgentConfig(AgentConfig& config);
-    virtual int WriteAgentConfig(const AgentConfig& config);
-    virtual int CreateConfigFile(const AgentConfig& config);
-    virtual int ParseAgentConfig(const std::string& configJson, AgentConfig& config);
-    virtual std::string BuildConfigJson(const AgentConfig& config);
+    virtual int ReadAgentConfiguration(AgentConfiguration& configuration);
+    virtual int WriteAgentConfiguration(const AgentConfiguration& configuration);
+    virtual int CreateConfigurationFile(const AgentConfiguration& configuration);
+    virtual int ParseAgentConfiguration(const std::string& configurationJson, AgentConfiguration& configuration);
+    virtual std::string BuildConfigurationJson(const AgentConfiguration& configuration);
 
-    std::string m_agentConfigDir;
-    std::string m_agentConfigFile;
+    std::string m_agentConfigurationDir;
+    std::string m_agentConfigurationFile;
     unsigned int m_maxPayloadSizeBytes;
-    AgentConfig m_lastAvailableConfig;
+    AgentConfiguration m_lastAvailableConfiguration;
 };

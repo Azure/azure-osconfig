@@ -74,7 +74,7 @@ namespace OSConfig::Platform::Tests
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
 
-    TEST_F(ZtsiTests, GetWithoutConfigFile)
+    TEST_F(ZtsiTests, GetWithoutConfigurationFile)
     {
         // Defaults are returned when no configuration file exists
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
@@ -83,9 +83,9 @@ namespace OSConfig::Platform::Tests
         ASSERT_FALSE(ZtsiTests::FileExists());
     }
 
-    TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigFile)
+    TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigurationFile)
     {
-        // Enabled can only be set to true when no config file exists since serviceUrl is empty string by default
+        // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
         // No file is created for invalid configurations
         ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_FALSE(ZtsiTests::FileExists());
@@ -95,7 +95,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
     }
 
-    TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigFile)
+    TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigurationFile)
     {
         ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
         ASSERT_TRUE(ZtsiTests::FileExists());
@@ -108,7 +108,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(expected.c_str(), actual.c_str());
     }
 
-    TEST_F(ZtsiTests, SetServiceUrlWithoutConfigFile)
+    TEST_F(ZtsiTests, SetServiceUrlWithoutConfigurationFile)
     {
         std::string serviceUrl = "https://www.example.com/";
 
