@@ -61,11 +61,18 @@ public:
 
 private:
     static bool IsValidConfig(const AgentConfig& config);
-    virtual int ConfigFileExists();
+    virtual std::FILE* LockFile(const char* mode);
+    virtual std::FILE* LockFile(const char* mode, unsigned int millis, int count);
+    virtual void UnlockFile(std::FILE* fp);
+    static bool FileExists(const std::string& filePath);
     virtual int ReadAgentConfig(AgentConfig& config);
     virtual int WriteAgentConfig(const AgentConfig& config);
+    virtual int CreateConfigFile(const AgentConfig& config);
+    virtual int ParseAgentConfig(const std::string& configJson, AgentConfig& config);
+    virtual std::string BuildConfigJson(const AgentConfig& config);
 
     std::string m_agentConfigDir;
     std::string m_agentConfigFile;
     unsigned int m_maxPayloadSizeBytes;
+    AgentConfig m_lastAvailableConfig;
 };
