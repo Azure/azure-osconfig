@@ -61,9 +61,9 @@ public:
 
 private:
     static bool IsValidConfiguration(const AgentConfiguration& configuration);
-    virtual std::FILE* LockFile(const char* mode);
-    virtual std::FILE* LockFile(const char* mode, unsigned int milliseconds, int count);
-    virtual void UnlockFile(std::FILE* fp);
+    virtual std::FILE* OpenAndLockFile(const char* mode);
+    virtual std::FILE* OpenAndLockFile(const char* mode, unsigned int milliseconds, int count);
+    virtual void CloseAndUnlockFile(std::FILE* fp);
     static bool FileExists(const std::string& filePath);
     virtual int ReadAgentConfiguration(AgentConfiguration& configuration);
     virtual int WriteAgentConfiguration(const AgentConfiguration& configuration);

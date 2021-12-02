@@ -208,7 +208,7 @@ bool Ztsi::FileExists(const std::string& filePath)
     return (0 == stat(filePath.c_str(), &sb) && S_ISREG(sb.st_mode));
 }
 
-std::FILE* Ztsi::LockFile(const char* mode)
+std::FILE* Ztsi::OpenAndLockFile(const char* mode)
 {
     int fd = -1;
     std::FILE* fp = nullptr;
@@ -233,7 +233,7 @@ std::FILE* Ztsi::LockFile(const char* mode)
     return fp;
 }
 
-std::FILE* Ztsi::LockFile(const char* mode, unsigned int milliseconds, int count)
+std::FILE* Ztsi::OpenAndLockFile(const char* mode, unsigned int milliseconds, int count)
 {
     int i = 0;
     time_t seconds = milliseconds / 1000;
@@ -241,7 +241,7 @@ std::FILE* Ztsi::LockFile(const char* mode, unsigned int milliseconds, int count
     struct timespec lockTimeToSleep = {seconds, nanoseconds};
     std::FILE* fp = nullptr;
 
-    while ((nullptr == (fp = LockFile(mode))) && (i < count))
+    while ((nullptr == (fp = OpenAndLockFile(mode))) && (i < count))
     {
         nanosleep(&lockTimeToSleep, nullptr);
         i++;
@@ -250,7 +250,7 @@ std::FILE* Ztsi::LockFile(const char* mode, unsigned int milliseconds, int count
     return fp;
 }
 
-void Ztsi::UnlockFile(std::FILE* fp)
+void Ztsi::CloseAndUnlockFile(std::FILE* fp)
 {
     if ((nullptr != fp))
     {
@@ -271,7 +271,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
 
     if (FileExists(m_agentConfigurationFile))
     {
-        if (nullptr != (fp = LockFile("r")))
+        if (nullptr != (fp = OpenAndLockFile("r")))
         {
             fseek(fp, 0, SEEK_END);
             fileSize = ftell (fp);
@@ -309,7 +309,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
 
             m_lastAvailableConfiguration = configuration;
 
-            UnlockFile(fp);
+            CloseAndUnlockFile(fp);
         }
         else
         {
@@ -389,7 +389,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
 
     if (Ztsi::IsValidConfiguration(configuration))
     {
-        if (nullptr != (fp = LockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
+        if (nullptr != (fp = OpenAndLockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
         {
             std::string configurationJson = BuildConfigurationJson(configuration);
 
@@ -405,7 +405,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
                 m_lastAvailableConfiguration = configuration;
             }
 
-            UnlockFile(fp);
+            CloseAndUnlockFile(fp);
         }
         else
         {
