@@ -178,7 +178,7 @@ stages:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
             az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "$(TENANT_ID)"
-            az iot hub device-identity create --device-id "$(device_id)" --hub-name $(IOTHUB_NAME)
+            az iot hub device-identity create --device-id "$(device_id)" --hub-name $(IOTHUB_NAME) --output none
             DEVICE_CONN_STR=`az iot hub device-identity connection-string show --hub-name $(IOTHUB_NAME) --device-id $(device_id) --output tsv`
             echo "##vso[task.setvariable variable=DEVICE_CONN_STR;issecret=true]$DEVICE_CONN_STR"
 
@@ -299,7 +299,7 @@ stages:
 
       - script: |
           terraform init
-          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr="null" -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var sas_token="NULL" -auto-approve | true
+          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr="null" -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var sas_token="NULL" -auto-approve || true
         workingDirectory: $(Pipeline.Workspace)/terraformStateVM_$(distroName)
         displayName: Destroy cloud resources (VM)
         continueOnError: true
@@ -345,6 +345,6 @@ stages:
 
       - script: |
           terraform init
-          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)"  -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve | true
+          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)"  -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve || true
         workingDirectory: $(Pipeline.Workspace)/terraformStateIoTHub
         displayName: Destroy cloud resources (IoTHub)
