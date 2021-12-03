@@ -32,14 +32,14 @@ namespace E2eTesting
         }
         private int m_twinTimeoutSeconds;
 
-        [SetUp]
+        [OneTimeSetUp]
         public void TestSetUp()
         {
             m_twinTimeoutSeconds = base.twinTimeoutSeconds;
             base.twinTimeoutSeconds = base.twinTimeoutSeconds * 2;
         }
 
-        [TearDown]
+        [OneTimeTearDown]
         public void TestTearDown()
         {
             base.twinTimeoutSeconds = m_twinTimeoutSeconds;
@@ -48,28 +48,25 @@ namespace E2eTesting
         [Test]      
         public void ZtsiTest_Get()
         {
-            if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
+            CheckModuleConnection();
             Ztsi deserializedReportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
             Assert.True(IsRegexMatch(new Regex(@"[0-2]"), deserializedReportedObject.Enabled));
             Assert.True(deserializedReportedObject.ServiceUrl is string);
         }
 
         [Test]
-        public void ZtsiTest_Set_Get_ServiceUrl_Enabled()
+        [TestCase("https://ztsiendpoint.com", true)]
+        [TestCase("", true)]
+        [TestCase("https://www.test.com/", false)]
+        [TestCase("https:", false)]
+        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(string serviceUrl, bool enabled)
         {
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
+            CheckModuleConnection();
             // Set ServiceUrl first then Enabled
             // Test Set Get ServiceUrl
             var desiredZtsi = new DesiredZtsi
             {
-                DesiredServiceUrl = "https://ztsiendpoint.com"
+                DesiredServiceUrl = serviceUrl
             };
             var expectedZtsi = new Ztsi
             {
@@ -96,18 +93,18 @@ namespace E2eTesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin");
+                Assert.Fail("Timeout for updating module twin");
             }
 
             // Test Set Get Enabled
             desiredZtsi = new DesiredZtsi
             {
-                DesiredEnabled = true
+                DesiredEnabled = enabled
             };
 
             expectedZtsi = new Ztsi
             {
-                Enabled = 1
+                Enabled = enabled ? 1 : 2
             };
 
             twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
@@ -131,27 +128,27 @@ namespace E2eTesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin");
+                Assert.Fail("Timeout for updating module twin");
             }
         }
 
         [Test]
-        public void ZtsiTest_Set_Get_Enabled_ServiceUrl()
+        [TestCase("https://ztsiendpoint.com", true)]
+        [TestCase("", true)]
+        [TestCase("https://www.test.com/", false)]
+        [TestCase("https:", false)]
+        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(string serviceUrl, bool enabled)
         {
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
+            CheckModuleConnection();
             // Set Enabled first then ServiceUrl
             // Test Set Get Enabled
             var desiredZtsi = new DesiredZtsi
             {
-                DesiredEnabled = false
+                DesiredEnabled = enabled
             };
             var expectedZtsi = new Ztsi
             {
-                Enabled = 2
+                Enabled = enabled ? 1 : 2
             };
             Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
             if (UpdateTwinBlockUntilUpdate(twinPatch))
@@ -173,13 +170,13 @@ namespace E2eTesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin");
+                Assert.Fail("Timeout for updating module twin");
             }
 
             // Test Set Get ServiceUrl
             desiredZtsi = new DesiredZtsi
             {
-                DesiredServiceUrl = ""
+                DesiredServiceUrl = serviceUrl
             };
             expectedZtsi = new Ztsi
             {
@@ -205,28 +202,28 @@ namespace E2eTesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin");
+                Assert.Fail("Timeout for updating module twin");
             }
         }
 
         [Test]
-        public void ZtsiTest_Set_Get()
+        [TestCase("https://ztsiendpoint.com", true)]
+        [TestCase("", true)]
+        [TestCase("https://www.test.com/", false)]
+        [TestCase("https:", false)]
+        public void ZtsiTest_Set_Get(string serviceUrl, bool enabled)
         {
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
+            CheckModuleConnection();
             // Set Enabled and ServiceUrl at the same time
             var desiredZtsi = new DesiredZtsi
             {
-                DesiredEnabled = true,
-                DesiredServiceUrl = "https://ztsiendpoint.com"
-
+                DesiredEnabled = enabled,
+                DesiredServiceUrl = serviceUrl
             };
             var expectedZtsi = new Ztsi
             {
-                Enabled = 1,
-                ServiceUrl = "https://ztsiendpoint.com"
+                Enabled = enabled ? 1 : 2,
+                ServiceUrl = serviceUrl
             };
             Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
             if (UpdateTwinBlockUntilUpdate(twinPatch))
@@ -252,7 +249,7 @@ namespace E2eTesting
             }
             else
             {
-                Assert.Fail("Timeout for updating twin");
+                Assert.Fail("Timeout for updating module twin");
             }
         }
     }

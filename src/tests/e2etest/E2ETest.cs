@@ -46,7 +46,15 @@ namespace E2eTesting
             twinTimeoutSeconds = seconds;
         }
 
-        [OneTimeSetUp]
+        public void CheckModuleConnection()
+        {
+            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
+            {
+                Assert.Fail("Module is disconnected or is disabled");
+            }
+        }
+
+    [OneTimeSetUp]
         public void Setup()
         {
             Console.WriteLine("[Setup] Setting up connection to IoTHub");
@@ -86,7 +94,7 @@ namespace E2eTesting
         [OneTimeTearDown]
         public void TearDown()
         {
-            Console.WriteLine("[TearDown] UploadLogsToBlobStore():{0}", UploadLogsToBlobStore());
+            Console.WriteLine("[OneTimeTearDown] UploadLogsToBlobStore():{0}", UploadLogsToBlobStore());
             if (UploadLogsToBlobStore())
             {
                 string fileName = String.Format("{0}-{1}.tar.gz", resource_group_name, deviceId);
