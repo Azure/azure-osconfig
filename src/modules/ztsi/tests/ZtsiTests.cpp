@@ -2,10 +2,11 @@
 // Licensed under the MIT License.
 
 #include <fstream>
+#include <gtest/gtest.h>
 #include <list>
 #include <sstream>
 #include <string>
-#include <gtest/gtest.h>
+#include <sys/file.h>
 
 #include <Ztsi.h>
 
@@ -73,7 +74,7 @@ namespace OSConfig::Platform::Tests
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
 
-    TEST_F(ZtsiTests, GetWithoutConfigFile)
+    TEST_F(ZtsiTests, GetWithoutConfigurationFile)
     {
         // Defaults are returned when no configuration file exists
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
@@ -82,9 +83,9 @@ namespace OSConfig::Platform::Tests
         ASSERT_FALSE(ZtsiTests::FileExists());
     }
 
-    TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigFile)
+    TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigurationFile)
     {
-        // Enabled can only be set to true when no config file exists since serviceUrl is empty string by default
+        // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
         // No file is created for invalid configurations
         ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_FALSE(ZtsiTests::FileExists());
@@ -94,7 +95,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
     }
 
-    TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigFile)
+    TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigurationFile)
     {
         ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
         ASSERT_TRUE(ZtsiTests::FileExists());
@@ -107,7 +108,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(expected.c_str(), actual.c_str());
     }
 
-    TEST_F(ZtsiTests, SetServiceUrlWithoutConfigFile)
+    TEST_F(ZtsiTests, SetServiceUrlWithoutConfigurationFile)
     {
         std::string serviceUrl = "https://www.example.com/";
 
@@ -256,9 +257,58 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(expected.c_str(), actual.c_str());
     }
 
+    TEST_F(ZtsiTests, GetAfterModifiedValidData)
+    {
+        std::string serviceUrl1 = "https://www.example.com/";
+        std::string serviceUrl2 = "https://www.test.com/";
+
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
+        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_TRUE(ZtsiTests::FileExists());
+
+        std::string expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
+        std::string actual = ZtsiTests::ReadFileContents();
+        ASSERT_STREQ(expected.c_str(), actual.c_str());
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(serviceUrl1.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+
+        // Modify JSON contents with valid data
+        std::ofstream file(ZtsiTests::filename);
+        file << ZtsiTests::BuildFileContents(false, serviceUrl2);
+        file.close();
+
+        // Get should return the new contents
+        ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(serviceUrl2.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+    }
+
+    TEST_F(ZtsiTests, GetAfterModifiedInvalidData)
+    {
+        std::string serviceUrl = "https://www.example.com/";
+
+        // Overwrite with valid data
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+
+        std::string expected = ZtsiTests::BuildFileContents(true, serviceUrl);
+        std::string actual = ZtsiTests::ReadFileContents();
+        ASSERT_STREQ(expected.c_str(), actual.c_str());
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+
+        // Modify JSON contents with invalid data
+        std::ofstream file2(ZtsiTests::filename);
+        file2 << "invalid json";
+        file2.close();
+
+        // Get should return the default contents
+        ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+    }
+
     TEST_F(ZtsiTests, ValidClientName)
     {
-
         std::list<std::string> validClientNames = {
             "Azure OSConfig 5;0.0.0.20210927",
             "Azure OSConfig 5;1.1.1.20210927",
