@@ -75,4 +75,5 @@ private:
     std::string m_agentConfigurationFile;
     unsigned int m_maxPayloadSizeBytes;
     AgentConfiguration m_lastAvailableConfiguration;
+    bool m_lastEnabledState;
 };
