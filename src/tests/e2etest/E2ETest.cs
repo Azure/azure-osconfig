@@ -54,7 +54,7 @@ namespace E2eTesting
             }
         }
 
-    [OneTimeSetUp]
+        [OneTimeSetUp]
         public void Setup()
         {
             Console.WriteLine("[Setup] Setting up connection to IoTHub");
@@ -94,7 +94,7 @@ namespace E2eTesting
         [OneTimeTearDown]
         public void TearDown()
         {
-            Console.WriteLine("[OneTimeTearDown] UploadLogsToBlobStore():{0}", UploadLogsToBlobStore());
+            Console.WriteLine("[TearDown] UploadLogsToBlobStore():{0}", UploadLogsToBlobStore());
             if (UploadLogsToBlobStore())
             {
                 string fileName = String.Format("{0}-{1}.tar.gz", resource_group_name, deviceId);
