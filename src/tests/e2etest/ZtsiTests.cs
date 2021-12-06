@@ -36,20 +36,6 @@ namespace E2eTesting
         {
             public int ac { get; set; }
         }
-        private int m_twinTimeoutSeconds;
-
-        [OneTimeSetUp]
-        public void TestSetUp()
-        {
-            m_twinTimeoutSeconds = base.twinTimeoutSeconds;
-            base.twinTimeoutSeconds = base.twinTimeoutSeconds * 2;
-        }
-
-        [OneTimeTearDown]
-        public void TestTearDown()
-        {
-            base.twinTimeoutSeconds = m_twinTimeoutSeconds;
-        }
 
         public void RemoveConfigurationFile()
         {
@@ -81,7 +67,10 @@ namespace E2eTesting
                 Task.Delay(twinRefreshIntervalMs).Wait();
                 reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
             }
-            Assert.True(reportedObject.ServiceUrl == expectedServiceUrl);
+            if (reportedObject.ServiceUrl != expectedServiceUrl)
+            {
+                Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
+            }
             string desiredServiceUrl = "DesiredServiceUrl";
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
             Assert.True(responseObject.ac == responseStatus);
@@ -111,7 +100,10 @@ namespace E2eTesting
                 Task.Delay(twinRefreshIntervalMs).Wait();
                 reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
             }
-            Assert.True(reportedObject.Enabled == expectedEnabled);
+            if (reportedObject.Enabled != expectedEnabled)
+            {
+                Assert.Fail("Timeout for updating reported Enabled in module twin");
+            }
             string desiredEnabled = "DesiredEnabled";
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
             Assert.True(responseObject.ac == enabledResponseCode);
@@ -145,8 +137,16 @@ namespace E2eTesting
                 Task.Delay(twinRefreshIntervalMs).Wait();
                 reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
             }
-            Assert.True(reportedObject.Enabled == expectedEnabled);
-            Assert.True(reportedObject.ServiceUrl == expectedServiceUrl);
+            if (reportedObject.Enabled != expectedEnabled)
+            {
+                Assert.Fail("Timeout for updating reported Enabled in module twin");
+            }
+
+            if (reportedObject.ServiceUrl != expectedServiceUrl)
+            {
+                Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
+            }
+
             string desiredEnabled = "DesiredEnabled";
             string desiredServiceUrl = "DesiredServiceUrl";
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
