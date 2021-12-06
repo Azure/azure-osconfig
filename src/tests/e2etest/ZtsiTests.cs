@@ -8,13 +8,19 @@ using System.Text.Json;
 using System;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-
+using System.IO;
 namespace E2eTesting
 {
     [TestFixture]
     public class ZtsiTests : E2eTest
-    {   
+    {
         const string ComponentName = "Ztsi";
+        const string removeFileCommand = "rm /etc/ztsi/config.json";
+        const string urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
+
+        const int responseStatusSuccess = 200;
+        const int responseStatusFailed = 400;
+
         public partial class Ztsi
         {
             public int Enabled { get; set; }
@@ -45,7 +51,111 @@ namespace E2eTesting
             base.twinTimeoutSeconds = m_twinTimeoutSeconds;
         }
 
-        [Test]      
+        public void RemoveConfigurationFile()
+        {
+            PerformCommandViaCommandRunner(removeFileCommand);
+        }
+
+        public void Set_ServiceUrl(string serviceUrl)
+        {
+            CheckModuleConnection();
+            // Test Set Get ServiceUrl
+            var desiredZtsi = new DesiredZtsi
+            {
+                DesiredServiceUrl = serviceUrl
+            };
+            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
+            if (!UpdateTwinBlockUntilUpdate(twinPatch))
+            {
+                Assert.Fail("Timeout for updating module twin");
+            }
+        }
+
+        public void Get_ServiceUrl(string expectedServiceUrl, int responseStatus)
+        {
+            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
+            DateTime startTime = DateTime.Now;
+            while ((reportedObject.ServiceUrl != expectedServiceUrl) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            {
+                Console.WriteLine("[ZtsiTest_Get_ServiceUrl] waiting for module twin to be updated...");
+                Task.Delay(twinRefreshIntervalMs).Wait();
+                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+            }
+            Assert.True(reportedObject.ServiceUrl == expectedServiceUrl);
+            string desiredServiceUrl = "DesiredServiceUrl";
+            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
+            Assert.True(responseObject.ac == responseStatus);
+        }
+        public void Set_Enabled(bool enabled)
+        {
+            CheckModuleConnection();
+            var desiredZtsi = new DesiredZtsi
+            {
+                DesiredEnabled = enabled
+            };
+            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
+            if (!UpdateTwinBlockUntilUpdate(twinPatch))
+            {
+                Assert.Fail("Timeout for updating module twin");
+            }
+        }
+
+        public void Get_Enabled(int expectedEnabled, int enabledResponseCode)
+        {
+            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+            // Wait until the reported properties are updated
+            DateTime startTime = DateTime.Now;
+            while ((reportedObject.Enabled != expectedEnabled) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            {
+                Console.WriteLine("[ZtsiTest_Get_Enabled] waiting for module twin to be updated...");
+                Task.Delay(twinRefreshIntervalMs).Wait();
+                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+            }
+            Assert.True(reportedObject.Enabled == expectedEnabled);
+            string desiredEnabled = "DesiredEnabled";
+            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
+            Assert.True(responseObject.ac == enabledResponseCode);
+        }
+
+        public void Set_Both(string serviceUrl, bool enabled)
+        {
+            CheckModuleConnection();
+            // Set Enabled and ServiceUrl at the same time
+            var desiredZtsi = new DesiredZtsi
+            {
+                DesiredEnabled = enabled,
+                DesiredServiceUrl = serviceUrl
+            };
+            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
+            if (!UpdateTwinBlockUntilUpdate(twinPatch))
+            {
+                Assert.Fail("Timeout for updating module twin");
+            }
+        }
+
+        public void Get_Both(string expectedServiceUrl,  int serviceUrlReponseCode, int expectedEnabled, int enabledResponseCode)
+        {
+            // Get Enabled and ServiceUrl at the same time
+            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+            DateTime startTime = DateTime.Now;
+            // Wait until the reported properties are updated
+            while (((reportedObject.Enabled != expectedEnabled) || (reportedObject.ServiceUrl != expectedServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            {
+                Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
+                Task.Delay(twinRefreshIntervalMs).Wait();
+                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+            }
+            Assert.True(reportedObject.Enabled == expectedEnabled);
+            Assert.True(reportedObject.ServiceUrl == expectedServiceUrl);
+            string desiredEnabled = "DesiredEnabled";
+            string desiredServiceUrl = "DesiredServiceUrl";
+            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
+            Assert.True(responseObject.ac == enabledResponseCode);
+            responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
+            Assert.True(responseObject.ac == serviceUrlReponseCode);
+        }
+
+        [Test]
         public void ZtsiTest_Get()
         {
             CheckModuleConnection();
@@ -55,202 +165,64 @@ namespace E2eTesting
         }
 
         [Test]
-        [TestCase("https://ztsiendpoint.com", true)]
-        [TestCase("", true)]
-        [TestCase("https://www.test.com/", false)]
-        [TestCase("https:", false)]
-        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(string serviceUrl, bool enabled)
+        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
+        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
+        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
+        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode,int expectedEnabled, int enabledResponseCode)
         {
-            CheckModuleConnection();
-            // Set ServiceUrl first then Enabled
-            // Test Set Get ServiceUrl
-            var desiredZtsi = new DesiredZtsi
+            if (!ConfigurationFileExits)
             {
-                DesiredServiceUrl = serviceUrl
-            };
-            var expectedZtsi = new Ztsi
-            {
-                ServiceUrl = desiredZtsi.DesiredServiceUrl
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while((reportedObject.ServiceUrl != expectedZtsi.ServiceUrl) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
-                {
-                    Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                }
-                Assert.True(reportedObject.ServiceUrl == expectedZtsi.ServiceUrl);
-                string desiredServiceUrl = "DesiredServiceUrl";
-                int responseCodeSuccess = 200;
-                var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
-            }
-            else
-            {
-                Assert.Fail("Timeout for updating module twin");
+                RemoveConfigurationFile();
             }
 
-            // Test Set Get Enabled
-            desiredZtsi = new DesiredZtsi
-            {
-                DesiredEnabled = enabled
-            };
-
-            expectedZtsi = new Ztsi
-            {
-                Enabled = enabled ? 1 : 2
-            };
-
-            twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while((reportedObject.Enabled != expectedZtsi.Enabled) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
-                {
-                    Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                }
-                Assert.True(reportedObject.Enabled == expectedZtsi.Enabled);
-                string desiredEnabled = "DesiredEnabled";
-                int responseCodeSuccess = 200;
-                var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
-            }
-            else
-            {
-                Assert.Fail("Timeout for updating module twin");
-            }
+            Set_Enabled(enabled);
+            Get_Enabled(expectedEnabled, enabledResponseCode);
+            Set_ServiceUrl(serviceUrl);
+            Get_ServiceUrl(expectedServiceUrl, serviceUrlReponseCode);
         }
 
         [Test]
-        [TestCase("https://ztsiendpoint.com", true)]
-        [TestCase("", true)]
-        [TestCase("https://www.test.com/", false)]
-        [TestCase("https:", false)]
-        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(string serviceUrl, bool enabled)
+        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 0, responseStatusSuccess)]
+        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 1, responseStatusSuccess)]
+        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
+        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
+        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode,int expectedEnabled, int enabledResponseCode)
         {
-            CheckModuleConnection();
-            // Set Enabled first then ServiceUrl
-            // Test Set Get Enabled
-            var desiredZtsi = new DesiredZtsi
+            if (!ConfigurationFileExits)
             {
-                DesiredEnabled = enabled
-            };
-            var expectedZtsi = new Ztsi
-            {
-                Enabled = enabled ? 1 : 2
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while((reportedObject.Enabled != expectedZtsi.Enabled) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
-                {
-                    Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                }
-                Assert.True(reportedObject.Enabled == expectedZtsi.Enabled);
-                string desiredEnabled = "DesiredEnabled";
-                int responseCodeSuccess = 200;
-                var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
-            }
-            else
-            {
-                Assert.Fail("Timeout for updating module twin");
+                RemoveConfigurationFile();
             }
 
-            // Test Set Get ServiceUrl
-            desiredZtsi = new DesiredZtsi
-            {
-                DesiredServiceUrl = serviceUrl
-            };
-            expectedZtsi = new Ztsi
-            {
-                ServiceUrl = desiredZtsi.DesiredServiceUrl
-            };
-            twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while((reportedObject.ServiceUrl != expectedZtsi.ServiceUrl) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
-                {
-                    Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                }
-                Assert.True(reportedObject.ServiceUrl == expectedZtsi.ServiceUrl);
-                string desiredServiceUrl = "DesiredServiceUrl";
-                int responseCodeSuccess = 200;
-                var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
-            }
-            else
-            {
-                Assert.Fail("Timeout for updating module twin");
-            }
+            Set_ServiceUrl(serviceUrl);
+            Get_ServiceUrl(expectedServiceUrl, serviceUrlReponseCode);
+            Set_Enabled(enabled);
+            Get_Enabled(expectedEnabled, enabledResponseCode);
         }
 
         [Test]
-        [TestCase("https://ztsiendpoint.com", true)]
-        [TestCase("", true)]
-        [TestCase("https://www.test.com/", false)]
-        [TestCase("https:", false)]
-        public void ZtsiTest_Set_Get(string serviceUrl, bool enabled)
+        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
+        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 2, responseStatusFailed)]
+        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
+        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
+        public void ZtsiTest_Set_Get_Both(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode, int expectedEnabled, int enabledResponseCode)
         {
-            CheckModuleConnection();
-            // Set Enabled and ServiceUrl at the same time
-            var desiredZtsi = new DesiredZtsi
+            if (!ConfigurationFileExits)
             {
-                DesiredEnabled = enabled,
-                DesiredServiceUrl = serviceUrl
-            };
-            var expectedZtsi = new Ztsi
-            {
-                Enabled = enabled ? 1 : 2,
-                ServiceUrl = serviceUrl
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                // Wait until the reported properties are updated
-                DateTime startTime = DateTime.Now;
-                while(((reportedObject.Enabled != expectedZtsi.Enabled) || (reportedObject.ServiceUrl != expectedZtsi.ServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
-                {
-                    Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                }
-                Assert.True(reportedObject.Enabled == expectedZtsi.Enabled);
-                Assert.True(reportedObject.ServiceUrl == expectedZtsi.ServiceUrl);
-                string desiredEnabled = "DesiredEnabled";
-                string desiredServiceUrl = "DesiredServiceUrl";
-                int responseCodeSuccess = 200;
-                var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
-                responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-                Assert.True(responseObject.ac == responseCodeSuccess);
+                RemoveConfigurationFile();
             }
-            else
-            {
-                Assert.Fail("Timeout for updating module twin");
-            }
+
+            Set_Both(serviceUrl, enabled);
+            Get_Both(expectedServiceUrl, serviceUrlReponseCode, expectedEnabled, enabledResponseCode);
         }
     }
 }
