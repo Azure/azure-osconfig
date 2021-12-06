@@ -112,6 +112,7 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_agentConfigurationDir = filePath.substr(0, filePath.find_last_of("/"));
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
     m_lastAvailableConfiguration = {g_defaultServiceUrl, g_defaultEnabled};
+    m_lastEnabledState = false;
 }
 
 unsigned int Ztsi::GetMaxPayloadSizeBytes()
@@ -135,6 +136,7 @@ int Ztsi::SetEnabled(bool enabled)
 {
     int status = 0;
     AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
+    m_lastEnabledState = enabled;
 
     status = ReadAgentConfiguration(configuration);
     if ((0 == status) || (EINVAL == status))
@@ -167,6 +169,7 @@ int Ztsi::SetServiceUrl(const std::string& serviceUrl)
     {
         if (serviceUrl != configuration.serviceUrl)
         {
+            configuration.enabled = m_lastEnabledState;
             configuration.serviceUrl = serviceUrl;
             status = WriteAgentConfiguration(configuration);
         }
@@ -174,7 +177,7 @@ int Ztsi::SetServiceUrl(const std::string& serviceUrl)
     else if (ENOENT == status)
     {
         // If the configuration file doesn't exist, create it with the desired serviceUrl
-        configuration.enabled = g_defaultEnabledState;
+        configuration.enabled = m_lastEnabledState;
         configuration.serviceUrl = serviceUrl;
         status = CreateConfigurationFile(configuration);
     }
@@ -198,7 +201,6 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
         OsConfigLogError(ZtsiLog::Get(), "Invalid serviceUrl '%s'", configuration.serviceUrl.c_str());
         isValid = false;
     }
-
     return isValid;
 }
 
@@ -213,7 +215,7 @@ std::FILE* Ztsi::OpenAndLockFile(const char* mode)
     int fd = -1;
     std::FILE* fp = nullptr;
 
-    if (FileExists(m_agentConfigurationFile) && (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode))))
+    if (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode)))
     {
         if (0 == (fd = fileno(fp)))
         {
@@ -305,9 +307,6 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
                 OsConfigLogError(ZtsiLog::Get(), "Failed to allocate memory for configuration file %s", m_agentConfigurationFile.c_str());
                 status = ENOMEM;
             }
-
-
-            m_lastAvailableConfiguration = configuration;
 
             CloseAndUnlockFile(fp);
         }
