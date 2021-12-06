@@ -307,6 +307,44 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
     }
 
+    TEST_F(ZtsiTests, CachedEnabledBeforeSetServiceUrl)
+    {
+        std::string serviceUrl = "https://www.example.com/";
+
+        // Should cache enabled state
+        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+        ASSERT_FALSE(ZtsiTests::FileExists());
+
+        // Should return serviceUrl and cached enabled state
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+        ASSERT_TRUE(ZtsiTests::FileExists());
+
+        // Modify JSON contents with default JSON values
+        std::string defaultJson = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
+        std::ofstream file(ZtsiTests::filename);
+        file << defaultJson;
+        file.close();
+        ASSERT_STREQ(defaultJson.c_str(), ZtsiTests::ReadFileContents().c_str());
+
+        // Get should return the JSON contents
+        ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+
+        // Should cache enabled state
+        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+
+        // Should return serviceUrl and cached enabled state
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+    }
+
     TEST_F(ZtsiTests, ValidClientName)
     {
         std::list<std::string> validClientNames = {
