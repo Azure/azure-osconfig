@@ -87,7 +87,7 @@ namespace OSConfig::Platform::Tests
     {
         // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
         // No file is created for invalid configurations
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_FALSE(ZtsiTests::FileExists());
 
         // Default values are returned
@@ -240,7 +240,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(expected.c_str(), actual.c_str());
 
         // Cannot enable when serviceUrl is empty
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
         actual = ZtsiTests::ReadFileContents();
         ASSERT_STREQ(expected.c_str(), actual.c_str());
 
@@ -312,7 +312,7 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl = "https://www.example.com/";
 
         // Should cache enabled state
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
         ASSERT_FALSE(ZtsiTests::FileExists());
@@ -335,7 +335,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
 
         // Should cache enabled state
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
 
