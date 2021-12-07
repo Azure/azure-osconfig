@@ -47,6 +47,13 @@ struct NetworkingSettings
     std::string connected;
 };
 
+enum class NetworkManagementService
+{
+    Unknown,
+    NetworkManager,
+    SystemdNetworkd
+};
+
 enum class NetworkingSettingType
 {
     InterfaceTypes,
@@ -76,6 +83,7 @@ public:
     int TruncateValueStrings(std::vector<std::pair<std::string, std::string>>& fieldValueVector);
 
     unsigned int m_maxPayloadSizeBytes;
+    NetworkManagementService m_networkManagementService;
 
 private:
     void ParseInterfaceDataForSettings(bool labeled, const char* flag, std::stringstream& data, std::vector<std::string>& settings);
@@ -101,6 +109,7 @@ private:
     virtual int WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer>* writer, const char* key, const char* value) = 0;
 
     NetworkingSettings m_settings;
+
     std::vector<std::string> m_interfaceNames;
     std::map<std::string, std::string> m_interfaceTypesMap;
     std::map<std::string, std::string> m_ipSettingsMap;
