@@ -400,7 +400,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
         std::string configurationJson = BuildConfigurationJson(configuration);
 
         int rc = std::fwrite(configurationJson.c_str(), 1, configurationJson.length(), fp);
-        if ((MMI_OK > rc) || (EOF == rc))
+        if ((0 > rc) || (EOF == rc))
         {
             OsConfigLogError(ZtsiLog::Get(), "Failed to write to file %s", m_agentConfigurationFile.c_str());
             status = errno ? errno : EINVAL;
