@@ -285,9 +285,39 @@ namespace OSConfig::Platform::Tests
         "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
         "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
 
-        std::string testCommandOutputNamesDnsServers = "br-1234\ndocker0\nveth\neth0";
+        const char* payloadExpectedGlobalDnsServers =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"br-1234=8.8.8.8,1.1.1.1;docker0=fe80::215:5dff:fe26:cf91,8.8.8.8,1.1.1.1;eth0=172.29.64.1,8.8.8.8,1.1.1.1;veth=8.8.8.8,1.1.1.1\","
+        "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+
+        const char* payloadExpectedOnlyGlobalDnsServers =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"br-1234=8.8.8.8,1.1.1.1;docker0=8.8.8.8,1.1.1.1;eth0=8.8.8.8,1.1.1.1;veth=8.8.8.8,1.1.1.1\","
+        "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+        "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+
+        std::string testCommandOutputInterfaceNames = "br-1234\ndocker0\nveth\neth0";
 
         std::string testCommandOutputDnsServers =
+        "Global\n"
+            "LLMNR setting: no\n"                  
+            "MulticastDNS setting: no\n"                  
+            "DNSOverTLS setting: no\n"                  
+            "DNSSEC setting: no\n"                  
+            "DNSSEC supported: no\n"           
+            "DNSSEC NTA: 10.in-addr.arpa\n"
+        "\n"
         "Link 1 (br-1234)\n"
             "Current Scopes: none\n"
             "LLMNR setting: yes\n"
@@ -306,7 +336,7 @@ namespace OSConfig::Platform::Tests
             "DNSSEC supported: no\n"
         "Current DNS Server: 8.8.8.8\n"
                 "DNS Servers: 8.8.8.8\n"
-                            "fe80::215:5dff:fe26:cf91\n"
+                             "fe80::215:5dff:fe26:cf91\n"
                 "DNS Domain: mshome.net\n"
         "\n"
         "Link 3 (veth)\n"
@@ -329,11 +359,111 @@ namespace OSConfig::Platform::Tests
                 "DNS Servers: 172.29.64.1\n"
                 "DNS Domain: mshome.net\n";
 
+        std::string testCommandOutputGlobalDnsServers =
+        "Global\n"
+            "LLMNR setting: no\n"                  
+            "MulticastDNS setting: no\n"                  
+            "DNSOverTLS setting: no\n"                  
+            "DNSSEC setting: no\n"                  
+            "DNSSEC supported: no\n"                  
+            "Current DNS Server: 1.1.1.1\n"         
+                "DNS Servers: 1.1.1.1\n"
+                            "8.8.8.8\n"           
+                "DNSSEC NTA: 10.in-addr.arpa\n"
+        "\n"
+        "Link 1 (br-1234)\n"
+            "Current Scopes: none\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "\n"
+        "Link 2 (docker0)\n"
+            "Current Scopes: DNS\n"
+        "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "Current DNS Server: 8.8.8.8\n"
+                "DNS Servers: 8.8.8.8\n"
+                             "fe80::215:5dff:fe26:cf91\n"
+                "DNS Domain: mshome.net\n"
+        "\n"
+        "Link 3 (veth)\n"
+            "Current Scopes: none\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "\n"
+        "Link 4 (eth0)\n"
+            "Current Scopes: DNS\n"
+        "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "Current DNS Server: 172.29.64.1\n"
+                "DNS Servers: 172.29.64.1\n"
+                "DNS Domain: mshome.net\n";
+        
+        std::string testCommandOutputOnlyGlobalsDnsServers =
+        "Global\n"
+            "LLMNR setting: no\n"                  
+            "MulticastDNS setting: no\n"                  
+            "DNSOverTLS setting: no\n"                  
+            "DNSSEC setting: no\n"                  
+            "DNSSEC supported: no\n"                  
+            "Current DNS Server: 1.1.1.1\n"         
+                "DNS Servers: 1.1.1.1\n"
+                             "8.8.8.8\n"          
+                "DNSSEC NTA: 10.in-addr.arpa\n"
+        "Link 1 (br-1234)\n"
+            "Current Scopes: none\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "\n"
+        "Link 2 (docker0)\n"
+            "Current Scopes: DNS\n"
+        "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "DNS Domain: mshome.net\n"
+        "\n"
+        "Link 3 (veth)\n"
+            "Current Scopes: none\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+        "\n"
+        "Link 4 (eth0)\n"
+            "Current Scopes: DNS\n"
+        "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+        "MulticastDNS setting: no\n"
+        "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "DNS Domain: mshome.net\n";
+
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        testModule.returnValues[0] = testCommandOutputNamesDnsServers;
+        testModule.returnValues[0] = testCommandOutputInterfaceNames;
         testModule.returnValues[4] = testCommandOutputDnsServers;
 
         int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
@@ -342,6 +472,32 @@ namespace OSConfig::Platform::Tests
 
         std::string resultString(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpected);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+
+        testModule.runCommandCount = 0;
+        testModule.returnValues[4] = testCommandOutputGlobalDnsServers;
+
+        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        std::string resultString(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpectedGlobalDnsServers);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+
+        testModule.runCommandCount = 0;
+        testModule.returnValues[4] = testCommandOutputOnlyGlobalDnsServers;
+
+        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        std::string resultString(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpectedOnlyGlobalDnsServers);
 
         EXPECT_NE(payload, nullptr);
         delete payload;

@@ -578,7 +578,7 @@ void NetworkingObjectBase::GenerateDnsServersMap()
     std::string dnsServersData = RunCommand(g_getDnsServers);
 
     std::vector<std::string> globalDnsServers;
-    std::regex globalDnsServersSectionPattern("Global\\s+\n");
+    std::regex globalDnsServersSectionPattern("Global\\s*\n");
     std::smatch globalDnsServersSectionMatch;
     while (std::regex_search(dnsServersData, globalDnsServersSectionMatch, globalDnsServersSectionPattern))
     {
@@ -654,6 +654,7 @@ void NetworkingObjectBase::GenerateDnsServersMap()
 
             if (!globalDnsServers.empty())
             {
+                dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
                 if (dnsServersMapIterator != this->m_dnsServersMap.end())
                 {
                     (dnsServersMapIterator->second).insert((dnsServersMapIterator->second).end(), globalDnsServers.begin(), globalDnsServers.end());
