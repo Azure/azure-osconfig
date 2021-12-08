@@ -47,29 +47,29 @@ struct NetworkingSettings
     std::string connected;
 };
 
-enum class NetworkManagementService
-{
-    Unknown,
-    NetworkManager,
-    SystemdNetworkd
-};
-
-enum class NetworkingSettingType
-{
-    InterfaceTypes,
-    MacAddresses,
-    IpAddresses,
-    SubnetMasks,
-    DefaultGateways,
-    DnsServers,
-    DhcpEnabled,
-    Enabled,
-    Connected
-};
-
 class NetworkingObjectBase
 {
 public:
+    enum class NetworkManagementService
+    {
+        Unknown,
+        NetworkManager,
+        SystemdNetworkd
+    };
+
+    enum class NetworkingSettingType
+    {
+        InterfaceTypes,
+        MacAddresses,
+        IpAddresses,
+        SubnetMasks,
+        DefaultGateways,
+        DnsServers,
+        DhcpEnabled,
+        Enabled,
+        Connected
+    };
+
     virtual ~NetworkingObjectBase() {};
     virtual std::string RunCommand(const char* command) = 0;
 
@@ -104,7 +104,7 @@ private:
     void GenerateDnsServersMap();
     void GetInterfaceTypesFromSystemdNetworkd();
     void GetInterfaceTypesFromNetworkManager();
-    void GetGlobalDnsServers(std::vector<std::string>& globalDnsServers, std::string dnsServersData);
+    void GetGlobalDnsServers(std::string dnsServersData, std::vector<std::string>& globalDnsServers);
     void RefreshInterfaceNames(std::vector<std::string>& interfaceNames);
     void RefreshInterfaceData();
     void RefreshSettingsStrings();
