@@ -11,10 +11,12 @@ using System.Text.RegularExpressions;
 using System.IO;
 namespace E2eTesting
 {
-    [TestFixture]
+    [TestFixture, Category("Ztsi")]
     public class ZtsiTests : E2eTest
     {
         const string ComponentName = "Ztsi";
+        const string desiredEnabled = "DesiredEnabled";
+        const string desiredServiceUrl = "DesiredServiceUrl";
         const string removeFileCommand = "rm /etc/ztsi/config.json";
         const string urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
 
@@ -36,7 +38,6 @@ namespace E2eTesting
         {
             public int ac { get; set; }
         }
-
         public void RemoveConfigurationFile()
         {
             PerformCommandViaCommandRunner(removeFileCommand);
@@ -57,7 +58,7 @@ namespace E2eTesting
             }
         }
 
-        public void Get_ServiceUrl(string expectedServiceUrl, int responseStatus)
+        public void Get_ServiceUrl(string expectedServiceUrl, int serviceUrlResponseCode)
         {
             Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
             DateTime startTime = DateTime.Now;
@@ -71,9 +72,9 @@ namespace E2eTesting
             {
                 Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
             }
-            string desiredServiceUrl = "DesiredServiceUrl";
+
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-            Assert.True(responseObject.ac == responseStatus);
+            Assert.True(responseObject.ac == serviceUrlResponseCode);
         }
         public void Set_Enabled(bool enabled)
         {
@@ -104,7 +105,6 @@ namespace E2eTesting
             {
                 Assert.Fail("Timeout for updating reported Enabled in module twin");
             }
-            string desiredEnabled = "DesiredEnabled";
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
             Assert.True(responseObject.ac == enabledResponseCode);
         }
@@ -125,7 +125,7 @@ namespace E2eTesting
             }
         }
 
-        public void Get_Both(string expectedServiceUrl,  int serviceUrlReponseCode, int expectedEnabled, int enabledResponseCode)
+        public void Get_Both(string expectedServiceUrl,  int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
         {
             // Get Enabled and ServiceUrl at the same time
             Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
@@ -133,7 +133,7 @@ namespace E2eTesting
             // Wait until the reported properties are updated
             while (((reportedObject.Enabled != expectedEnabled) || (reportedObject.ServiceUrl != expectedServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
             {
-                Console.WriteLine("[ZtsiTests] waiting for module twin to be updated...");
+                Console.WriteLine("[ZtsiTests_Get_Both] waiting for module twin to be updated...");
                 Task.Delay(twinRefreshIntervalMs).Wait();
                 reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
             }
@@ -147,12 +147,10 @@ namespace E2eTesting
                 Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
             }
 
-            string desiredEnabled = "DesiredEnabled";
-            string desiredServiceUrl = "DesiredServiceUrl";
             var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
             Assert.True(responseObject.ac == enabledResponseCode);
             responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-            Assert.True(responseObject.ac == serviceUrlReponseCode);
+            Assert.True(responseObject.ac == serviceUrlResponseCode);
         }
 
         [Test]
@@ -165,14 +163,14 @@ namespace E2eTesting
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
-        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusSuccess)]
+        [TestCase(false, "", false, "", responseStatusSuccess, 2, responseStatusSuccess)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
         [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 0, responseStatusSuccess)]
         [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
         [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode,int expectedEnabled, int enabledResponseCode)
+        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
         {
             if (!ConfigurationFileExits)
             {
@@ -182,18 +180,18 @@ namespace E2eTesting
             Set_Enabled(enabled);
             Get_Enabled(expectedEnabled, enabledResponseCode);
             Set_ServiceUrl(serviceUrl);
-            Get_ServiceUrl(expectedServiceUrl, serviceUrlReponseCode);
+            Get_ServiceUrl(expectedServiceUrl, serviceUrlResponseCode);
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusSuccess)]
         [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
         [TestCase(false, "Invalid url", false, "", responseStatusFailed, 0, responseStatusSuccess)]
         [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 1, responseStatusSuccess)]
         [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
         [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode,int expectedEnabled, int enabledResponseCode)
+        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode,int expectedEnabled, int enabledResponseCode)
         {
             if (!ConfigurationFileExits)
             {
@@ -201,20 +199,20 @@ namespace E2eTesting
             }
 
             Set_ServiceUrl(serviceUrl);
-            Get_ServiceUrl(expectedServiceUrl, serviceUrlReponseCode);
+            Get_ServiceUrl(expectedServiceUrl, serviceUrlResponseCode);
             Set_Enabled(enabled);
             Get_Enabled(expectedEnabled, enabledResponseCode);
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusFailed)]
+        [TestCase(false, "", true, "", responseStatusFailed, 0, responseStatusSuccess)]
         [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusFailed)]
+        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
         [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 2, responseStatusFailed)]
+        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 1, responseStatusSuccess)]
         [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
         [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_Both(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlReponseCode, int expectedEnabled, int enabledResponseCode)
+        public void ZtsiTest_Set_Get_Both(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
         {
             if (!ConfigurationFileExits)
             {
@@ -222,7 +220,7 @@ namespace E2eTesting
             }
 
             Set_Both(serviceUrl, enabled);
-            Get_Both(expectedServiceUrl, serviceUrlReponseCode, expectedEnabled, enabledResponseCode);
+            Get_Both(expectedServiceUrl, serviceUrlResponseCode, expectedEnabled, enabledResponseCode);
         }
     }
 }
