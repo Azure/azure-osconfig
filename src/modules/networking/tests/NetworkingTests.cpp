@@ -207,7 +207,7 @@ namespace OSConfig::Platform::Tests
 
     TEST(NetworkingTests, Get_InterfaceTypes)
     {
-        const char* payloadNmcliInterfaceTypesDataMissing =
+        const char* payloadInterfaceTypesDataMissing =
         "{\"InterfaceTypes\":\"\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
@@ -218,7 +218,18 @@ namespace OSConfig::Platform::Tests
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 
-        const char* payloadNmcliNotInstalled =
+        const char* payloadNetworkManagerEnabled =
+        "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+        "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+        "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+        "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+        "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+        "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+        "\"DhcpEnabled\":\"docker0=true;eth0=false\","
+        "\"Enabled\":\"docker0=true;eth0=false\","
+        "\"Connected\":\"docker0=true;eth0=false\"}";
+
+        const char* payloadSystemdNetworkdEnabled =
         "{\"InterfaceTypes\":\"docker0=bridge;eth0=ether\","
         "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
@@ -229,7 +240,7 @@ namespace OSConfig::Platform::Tests
         "\"Enabled\":\"docker0=true;eth0=false\","
         "\"Connected\":\"docker0=true;eth0=false\"}";
 
-        std::string testCommandOutputInterfaceTypesNmcliNoData =
+        std::string testCommandOutputInterfaceTypesNmcliDataMissing =
         "GENERAL.DEVICE:                         docker0\n"
         "GENERAL.TYPE:                           --\n"
         "GENERAL.HWADDR:                         02:42:65:B3:AC:5A\n"
@@ -244,29 +255,44 @@ namespace OSConfig::Platform::Tests
         "GENERAL.STATE:                          100 (connected)\n"
         "GENERAL.CONNECTION:                     Wired connection 1\n";
 
+        std::vector<std::string> returnValuesDataMissing = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, "", g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
-        testModule.returnValues = g_returnValues;
-        testModule.returnValues[1] = testCommandOutputInterfaceTypesNmcliNoData;
+        testModule.returnValues = returnValuesDataMissing;
         int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
         std::string resultString(payload, payloadSizeBytes);
-        EXPECT_STREQ(resultString.c_str(), payloadNmcliInterfaceTypesDataMissing);
+        EXPECT_STREQ(resultString.c_str(), payloadInterfaceTypesDataMissing);
 
         EXPECT_NE(payload, nullptr);
         delete payload;
 
+        std::vector<std::string> returnValuesNetworkManagerEnabled = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
         testModule.runCommandCount = 0;
-        testModule.returnValues = { g_testCommandOutputNames, "", g_testCommandOutputInterfaceTypesNetworkctl, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers };
+        testModule.returnValues = returnValuesNetworkManagerEnabled;
         result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
         resultString = std::string(payload, payloadSizeBytes);
-        EXPECT_STREQ(resultString.c_str(), payloadNmcliNotInstalled);
+        EXPECT_STREQ(resultString.c_str(), payloadNetworkManagerEnabled);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+
+        std::vector<std::string> returnValuesSystemdNetworkdEnabled = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, g_testCommandOutputInterfaceTypesNetworkctl, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+        testModule.runCommandCount = 0;
+        testModule.returnValues = returnValuesSystemdNetworkdEnabled;
+        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        resultString = std::string(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadSystemdNetworkdEnabled);
 
         EXPECT_NE(payload, nullptr);
         delete payload;
@@ -291,7 +317,7 @@ namespace OSConfig::Platform::Tests
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
         "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-        "\"DnsServers\":\"br-1234=8.8.8.8,1.1.1.1;docker0=fe80::215:5dff:fe26:cf91,8.8.8.8,1.1.1.1;eth0=172.29.64.1,8.8.8.8,1.1.1.1;veth=8.8.8.8,1.1.1.1\","
+        "\"DnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=1.1.1.1,172.29.64.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
         "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
         "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
         "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
@@ -302,7 +328,7 @@ namespace OSConfig::Platform::Tests
         "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
         "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
         "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-        "\"DnsServers\":\"br-1234=8.8.8.8,1.1.1.1;docker0=8.8.8.8,1.1.1.1;eth0=8.8.8.8,1.1.1.1;veth=8.8.8.8,1.1.1.1\","
+        "\"DnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8;eth0=1.1.1.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
         "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
         "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
         "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
@@ -412,7 +438,7 @@ namespace OSConfig::Platform::Tests
                 "DNS Servers: 172.29.64.1\n"
                 "DNS Domain: mshome.net\n";
         
-        std::string testCommandOutputOnlyGlobalsDnsServers =
+        std::string testCommandOutputOnlyGlobalDnsServers =
         "Global\n"
             "LLMNR setting: no\n"                  
             "MulticastDNS setting: no\n"                  
@@ -479,11 +505,11 @@ namespace OSConfig::Platform::Tests
         testModule.runCommandCount = 0;
         testModule.returnValues[4] = testCommandOutputGlobalDnsServers;
 
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
-        std::string resultString(payload, payloadSizeBytes);
+        resultString = std::string(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpectedGlobalDnsServers);
 
         EXPECT_NE(payload, nullptr);
@@ -492,11 +518,11 @@ namespace OSConfig::Platform::Tests
         testModule.runCommandCount = 0;
         testModule.returnValues[4] = testCommandOutputOnlyGlobalDnsServers;
 
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
-        std::string resultString(payload, payloadSizeBytes);
+        resultString = std::string(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpectedOnlyGlobalDnsServers);
 
         EXPECT_NE(payload, nullptr);

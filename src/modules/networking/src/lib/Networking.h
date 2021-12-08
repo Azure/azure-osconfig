@@ -102,6 +102,9 @@ private:
     void GenerateIpSettingsMap();
     void GenerateDefaultGatewaysMap();
     void GenerateDnsServersMap();
+    void GetInterfaceTypesFromSystemdNetworkd();
+    void GetInterfaceTypesFromNetworkManager();
+    void GetGlobalDnsServers(std::vector<std::string>& globalDnsServers, std::string dnsServersData);
     void RefreshInterfaceNames(std::vector<std::string>& interfaceNames);
     void RefreshInterfaceData();
     void RefreshSettingsStrings();
