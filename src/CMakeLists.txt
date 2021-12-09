@@ -13,6 +13,7 @@ option(BUILD_AGENTS "Build OSConfig PnP Agent" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
+option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
 option(COMPILE_WITH_STRICTNESS "Builds with additional strict compiler options." ON)
