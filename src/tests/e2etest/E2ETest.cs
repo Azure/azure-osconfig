@@ -46,7 +46,7 @@ namespace E2eTesting
             twinTimeoutSeconds = seconds;
         }
 
-        public void CheckModuleConnection()
+        public void AssertModuleConnected()
         {
             if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
             {

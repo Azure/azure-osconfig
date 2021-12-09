@@ -45,7 +45,7 @@ namespace E2eTesting
 
         public void Set_ServiceUrl(string serviceUrl)
         {
-            CheckModuleConnection();
+            AssertModuleConnected();
             // Test Set Get ServiceUrl
             var desiredZtsi = new DesiredZtsi
             {
@@ -78,7 +78,7 @@ namespace E2eTesting
         }
         public void Set_Enabled(bool enabled)
         {
-            CheckModuleConnection();
+            AssertModuleConnected();
             var desiredZtsi = new DesiredZtsi
             {
                 DesiredEnabled = enabled
@@ -109,9 +109,9 @@ namespace E2eTesting
             Assert.True(responseObject.ac == enabledResponseCode);
         }
 
-        public void Set_Both(string serviceUrl, bool enabled)
+        public void Set_ServiceUrl_Enabled(string serviceUrl, bool enabled)
         {
-            CheckModuleConnection();
+            AssertModuleConnected();
             // Set Enabled and ServiceUrl at the same time
             var desiredZtsi = new DesiredZtsi
             {
@@ -125,7 +125,7 @@ namespace E2eTesting
             }
         }
 
-        public void Get_Both(string expectedServiceUrl,  int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
+        public void Get_ServiceUrl_Enabled(string expectedServiceUrl,  int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
         {
             // Get Enabled and ServiceUrl at the same time
             Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
@@ -133,7 +133,7 @@ namespace E2eTesting
             // Wait until the reported properties are updated
             while (((reportedObject.Enabled != expectedEnabled) || (reportedObject.ServiceUrl != expectedServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
             {
-                Console.WriteLine("[ZtsiTests_Get_Both] waiting for module twin to be updated...");
+                Console.WriteLine("[ZtsiTests_Get_ServiceUrl_Enabled] waiting for module twin to be updated...");
                 Task.Delay(twinRefreshIntervalMs).Wait();
                 reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
             }
@@ -156,7 +156,7 @@ namespace E2eTesting
         [Test]
         public void ZtsiTest_Get()
         {
-            CheckModuleConnection();
+            AssertModuleConnected();
             Ztsi deserializedReportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
             Assert.True(IsRegexMatch(new Regex(@"[0-2]"), deserializedReportedObject.Enabled));
             Assert.True(deserializedReportedObject.ServiceUrl is string);
@@ -219,8 +219,8 @@ namespace E2eTesting
                 RemoveConfigurationFile();
             }
 
-            Set_Both(serviceUrl, enabled);
-            Get_Both(expectedServiceUrl, serviceUrlResponseCode, expectedEnabled, enabledResponseCode);
+            Set_ServiceUrl_Enabled(serviceUrl, enabled);
+            Get_ServiceUrl_Enabled(expectedServiceUrl, serviceUrlResponseCode, expectedEnabled, enabledResponseCode);
         }
     }
 }
