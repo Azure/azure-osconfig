@@ -46,7 +46,6 @@ namespace E2eTesting
         public void Set_ServiceUrl(string serviceUrl)
         {
             AssertModuleConnected();
-            // Test Set Get ServiceUrl
             var desiredZtsi = new DesiredZtsi
             {
                 DesiredServiceUrl = serviceUrl
