@@ -233,7 +233,7 @@ namespace E2eTesting
             AssertModuleConnected();
             // Run a long running command
             (CommandArguments desiredCommand, CommandStatus expectedCommandStatus) = GenerateLongRunningCommand();
-            desiredCommand.Timeout = 10;
+            desiredCommand.Timeout = 5;
             UpdateDesiredProperties(ComponentName, desiredCommand);
             // Verify the long running command status (should be Timeout)
             expectedCommandStatus.ResultCode = 62;
@@ -254,31 +254,6 @@ namespace E2eTesting
             UpdateDesiredProperties(ComponentName, desiredCommand);
             // Verify the command status (should be failed)
             AreReportedPropertiesUpdated(expectedCommandStatus, responseStatusFailed, false);
-        }
-
-        [Test]
-        public void CommandRunnerTest_RefreshCommandStatus()
-        {
-            AssertModuleConnected();
-            string[] commandArguments = { "echo Hello", "date", "ls", "ip route get 1.1.1.1 | awk '{print $7}'", "ls -a", "ping -c 4 example.com", "ip address", "curl -l -s https://example.com", "pwd", "clear" };
-            string commandIdPrefix = GenerateCommandId();
-            ArrayList commandList = new ArrayList();
-            for (int i = 0; i < commandArguments.Length; i++)
-            {
-                // Run ten commands
-                string commandId = commandIdPrefix + i.ToString();
-                CommandArguments desiredCommand = GenerateCommandArgumentsObject(commandId, commandArguments[i]);
-                commandList.Add(desiredCommand);
-                UpdateDesiredProperties(ComponentName, desiredCommand);
-            }
-            foreach (CommandArguments command in commandList)
-            {
-                // Refresh command status should work for the last ten commands
-                command.Action = Action.RefreshCommandStatus;
-                UpdateDesiredProperties(ComponentName, command);
-                CommandStatus expectedCommandStatus = GenerateCommandStatusObject(command.CommandId);
-                AreReportedPropertiesUpdated(expectedCommandStatus, responseStatusSuccess, true);
-            }
         }
     }
 }
