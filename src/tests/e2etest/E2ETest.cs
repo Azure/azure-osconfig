@@ -270,6 +270,13 @@ namespace E2eTesting
             Assert.AreEqual(expectedJson, actualJson);
         }
 
+        public static bool AreJsonObjectsEqual(object expected, object actual)
+        {
+            string expectedJson = JsonSerializer.Serialize(expected);
+            string actualJson = JsonSerializer.Serialize(actual);
+            return string.Equals(expectedJson, actualJson);
+        }
+
         public static bool IsRegexMatch(Regex expected, object actual)
         {
             string actualJson = JsonSerializer.Serialize(actual);
