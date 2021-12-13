@@ -3,16 +3,10 @@
 
 #include <cstdio>
 #include <cstring>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 
 #include <Sample.h>
 #include <ScopeGuard.h>
 #include <Mmi.h>
-
-static const std::string g_componentName = "SampleComponent";
-static const std::string g_objectName = "SampleObject";
 
 void __attribute__((constructor)) InitModule()
 {
@@ -218,97 +212,11 @@ int MmiSet(
     {
         OsConfigLogError(SampleLog::Get(), "MmiSet called with null clientSession");
         status = EINVAL;
-        return status;
-    }
-
-    rapidjson::Document document;
-    if (document.Parse(payload).HasParseError())
-    {
-        OsConfigLogError(SampleLog::Get(), "MmiSet unabled to parse JSON payload");
-        status = EINVAL;
-        return status;
-    }
-
-    session = reinterpret_cast<Sample*>(clientSession);
-
-    // Dispatch the request to the appropriate handler for the given component and object
-    if (0 == g_componentName.compare(componentName))
-    {
-        if (0 == g_objectName.compare(objectName))
-        {
-            // Get the required data from the payload and dispatch the request to the client session
-            if (document.IsString())
-            {
-                status = session->SetValue(document.GetString());
-            }
-            else
-            {
-                OsConfigLogError(SampleLog::Get(), "MmiSet JSON payload is not a string");
-                status = EINVAL;
-            }
-        }
-        else
-        {
-            OsConfigLogError(SampleLog::Get(), "MmiSet called with invalid objectName: %s", objectName);
-            status = EINVAL;
-        }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "MmiSet called with invalid componentName: %s", componentName);
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-// A helper method for serializing a JSON document to a payload string
-int SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
-{
-    int status = MMI_OK;
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
-
-    if (buffer.GetSize() > maxPayloadSizeBytes)
-    {
-        OsConfigLogError(SampleLog::Get(), "Failed to serialize JSON object to buffer");
-        status = E2BIG;
-    }
-    else
-    {
-        try
-        {
-            *payload = new (std::nothrow) char[buffer.GetSize()];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
-                status = ENOMEM;
-            }
-            else
-            {
-                std::fill(*payload, *payload + buffer.GetSize(), 0);
-                std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
-                *payloadSizeBytes = buffer.GetSize();
-            }
-        }
-        catch (const std::exception& e)
-        {
-            OsConfigLogError(SampleLog::Get(), "Could not allocate payload: %s", e.what());
-            status = EINTR;
-
-            if (nullptr != *payload)
-            {
-                delete[] * payload;
-                *payload = nullptr;
-            }
-
-            if (nullptr != payloadSizeBytes)
-            {
-                *payloadSizeBytes = 0;
-            }
-        }
+        session = reinterpret_cast<Sample*>(clientSession);
+        status = session->Set(componentName, objectName, payload, payloadSizeBytes);
     }
 
     return status;
@@ -322,6 +230,7 @@ int MmiGet(
     int* payloadSizeBytes)
 {
     int status = MMI_OK;
+    Sample* session = nullptr;
 
     ScopeGuard sg{[&]()
     {
@@ -342,45 +251,11 @@ int MmiGet(
     {
         OsConfigLogError(SampleLog::Get(), "MmiGet called with null clientSession");
         status = EINVAL;
-        return status;
-    }
-
-    if (nullptr == payloadSizeBytes)
-    {
-        OsConfigLogError(SampleLog::Get(), "MmiGet called with null payloadSizeBytes");
-        status = EINVAL;
-        return status;
-    }
-
-    *payload = nullptr;
-    *payloadSizeBytes = 0;
-
-    Sample* session = reinterpret_cast<Sample*>(clientSession);
-
-    unsigned int maxPayloadSizeBytes = session->GetMaxPayloadSizeBytes();
-    rapidjson::Document document;
-
-    // Dispatch the get request to the appropriate handler for the given component and object
-    if (0 == g_componentName.compare(componentName))
-    {
-        if (0 == g_objectName.compare(objectName))
-        {
-            std::string value = session->GetValue();
-            document.SetString(value.c_str(), document.GetAllocator());
-
-            // Serialize the JSON object to the payload buffer
-            status = SerializeJsonPayload(document, payload, payloadSizeBytes, maxPayloadSizeBytes);
-        }
-        else
-        {
-            OsConfigLogError(SampleLog::Get(), "MmiGet called with invalid objectName: %s", objectName);
-            status = EINVAL;
-        }
     }
     else
     {
-        OsConfigLogError(SampleLog::Get(), "MmiGet called with invalid componentName: %s", componentName);
-        status = EINVAL;
+        session = reinterpret_cast<Sample*>(clientSession);
+        status = session->Get(componentName, objectName, payload, payloadSizeBytes);
     }
 
     return status;
