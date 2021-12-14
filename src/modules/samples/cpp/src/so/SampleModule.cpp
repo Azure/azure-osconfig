@@ -27,17 +27,6 @@ int MmiGetInfo(
 {
     int status = MMI_OK;
 
-    constexpr const char ret[] = R""""({
-        "Name": "C++ Sample",
-        "Description": "A sample module written in C++",
-        "Manufacturer": "Microsoft",
-        "VersionMajor": 1,
-        "VersionMinor": 0,
-        "VersionInfo": "",
-        "Components": ["SampleComponent"],
-        "Lifetime": 1,
-        "UserAccount": 0})"""";
-
     ScopeGuard sg{[&]()
     {
         if (MMI_OK == status)
@@ -64,55 +53,8 @@ int MmiGetInfo(
         }
     }};
 
-    if (nullptr == clientName)
-    {
-        OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null clientName");
-        status = EINVAL;
-    }
-    else if (nullptr == payload)
-    {
-        OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null payload");
-        status = EINVAL;
-    }
-    else if (nullptr == payloadSizeBytes)
-    {
-        OsConfigLogError(SampleLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
-        status = EINVAL;
-    }
-    else
-    {
-        try
-        {
-            std::size_t len = ARRAY_SIZE(ret) - 1;
-            *payload = new (std::nothrow) char[len];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(SampleLog::Get(), "MmiGetInfo failed to allocate memory");
-                status = ENOMEM;
-            }
-            else
-            {
-                std::memcpy(*payload, ret, len);
-                *payloadSizeBytes = len;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            OsConfigLogError(SampleLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
-            status = EINTR;
-
-            if (nullptr != *payload)
-            {
-                delete[] * payload;
-                *payload = nullptr;
-            }
-
-            if (nullptr != payloadSizeBytes)
-            {
-                *payloadSizeBytes = 0;
-            }
-        }
-    }
+    // Get the static information from the Sample module
+    status = Sample::GetInfo(clientName, payload, payloadSizeBytes);
 
     return status;
 }
@@ -215,6 +157,7 @@ int MmiSet(
     }
     else
     {
+        // Cast the MMI_HANDLE to an instance of Sample class session and call Set()
         session = reinterpret_cast<Sample*>(clientSession);
         status = session->Set(componentName, objectName, payload, payloadSizeBytes);
     }
@@ -254,6 +197,7 @@ int MmiGet(
     }
     else
     {
+        // Cast the MMI_HANDLE to an instance of Sample class session and call Get()
         session = reinterpret_cast<Sample*>(clientSession);
         status = session->Get(componentName, objectName, payload, payloadSizeBytes);
     }

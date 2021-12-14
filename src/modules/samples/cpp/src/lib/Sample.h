@@ -40,6 +40,7 @@ public:
     Sample(unsigned int maxPayloadSizeBytes);
     virtual ~Sample() = default;
 
+    static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual unsigned int GetMaxPayloadSizeBytes();
