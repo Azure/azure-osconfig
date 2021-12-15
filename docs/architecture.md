@@ -154,7 +154,7 @@ The Orchestrator receives management requests from agents over the Management Pl
 
 The Orchestrator can be implemented as a Linux Static Library (.a) either alone or combined with the MPI and linked into the platform's main binary.
 
-<img src="assets/orchestration.png" alt="Orchestrator" width="600"/>
+<img src="assets/orchestration.png" alt="Orchestrator" width="500"/>
 
 What the Orchestrator does:
 
@@ -181,7 +181,7 @@ The Modules Manager receives serialized MPI C API requests from the Orchestrator
 
 The Modules Manager is implemented as a Linux Static Library (.a) exporting the MPI C API. 
 
-<img src="assets/modulesmanager.png" alt="Modules Manager" width="400"/>
+<img src="assets/modulesmanager.png" alt="Modules Manager" width="500"/>
 
 What the Module Manager does:
 
@@ -207,7 +207,7 @@ The Module Host is a thin executable shell provided by OSConfig that wraps (load
 
 If the modules are loaded directly in the parent OSConfig process they can communicate with each other with ease (for good and wrong), but also: one module can invade the privacy of other modules (and of the parent), and one module can crash and bring down the entire process. 
 
-<img src="assets/modulehost.png" alt="Module Host" width="400"/>
+<img src="assets/modulehost.png" alt="Module Host" width="500"/>
 
 Isolating the modules into their own processes makes it harder for them to inter-communicate but also makes them more secure.  The restriction for inter-module communication with the Module Host is compensated by the modules ability to contain multiple MIM components. For example, the Wi-Fi Configuration needs Wi-Fi Certificate Management, and these can be made into two MIM components hosted in the same Wi-Fi Module. 
 

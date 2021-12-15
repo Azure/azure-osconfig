@@ -63,7 +63,7 @@ The Management Platform runs in its own process, separate of the PnP Agent, and 
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Modules Manager loads these libraries in-proc.
 - Other Management Modules appear (not shown in diagram).
 
-<img src="assets/4_platform.png" alt="Copper" width="750"/>
+<img src="assets/4_platform.png" alt="Copper" width="700"/>
   
 # 5. Isolated Modules - the current North Star (codename Zinc)
 
@@ -75,4 +75,4 @@ Main target scenario: OSConfig Management Modules run isolated in their own proc
 - New Storage and Downloader utility libraries are introduced for Platform and Modules to use.
 - Other new Management Modules appear (not shown in diagram).
 
-<img src="assets/osconfig.png" alt="Zinc" width="800"/>
+<img src="assets/osconfig.png" alt="Zinc" width="700"/>

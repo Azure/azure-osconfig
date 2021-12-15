@@ -641,7 +641,7 @@ Example of serialized JSON payload for two CommandRunner.CommandArguments desire
 
 A simplified diagram shows the desired and reported configuration requests exchanged between Digital Twin in Azure via the local OSConfig and module over the Management Module Interface (MMI): 
 
-<img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width="600"/>
+<img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width="700"/>
  
 Each module must be a Linux Dynamically Linked Shared Object library (.so) implementing the MMI. The MMI transports the MIM object payloads of settings for the module component(s). 
 
@@ -916,7 +916,7 @@ To facilitate development disconnected from Azure IoT and rest of OSConfig stack
 
 The command line module utility app will load a module and provide it with an executable layer, allowing the module to be invoked locally over its MMI and MIM in a Linux environment, without the need of rest of OSConfig stack, PnP, IoT Hub, Azure Portal,  etc. 
 
-<img src="assets/moduleutility.png" alt="OSConfig Module Utility" width="400"/>
+<img src="assets/moduleutility.png" alt="OSConfig Module Utility" width="500"/>
 
 # 14. Publishing DTDL for the module
 
