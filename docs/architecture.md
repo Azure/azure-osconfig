@@ -35,7 +35,7 @@ The main way of contributing to and extending OSConfig is via developing new [OS
 
 This diagram shows the current North Star architecture of OSConfig. In this diagram and all other diagrams throughout this document the blue areas represents processes. Each component shown in this diagram is summarized in one of following sections of this document: 
 
-<img src="assets/osconfig.png" alt="OSConfig North Star" width="800"/>
+<img src="assets/osconfig.png" alt="OSConfig North Star" width="700"/>
 
 # 3. OSConfig PnP Agent
 
@@ -47,7 +47,7 @@ The agent relies on the [Azure Identity Services (AIS)](https://azure.github.io/
 
 The agent communicates with the lower Management Platform over the Management Platform Interface (MPI) IPC REST API.
 
-<img src="assets/pnpagent.png" alt="OSConfig PnP Agent" width="600"/>
+<img src="assets/pnpagent.png" alt="OSConfig PnP Agent" width="500"/>
 
 The agent is completely decoupled from the platform and the modules. A new module can be installed, and necessary PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use the respective module, without the need to recompile the agent or the platform.
 

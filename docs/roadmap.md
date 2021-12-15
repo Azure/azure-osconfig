@@ -23,7 +23,7 @@ Main target scenarios: apply policy settings and execute reboot and other comman
 - The PnP Agent writes telemetry events and traces to its own and to system logs.
 - The remote operator uses Azure IoT Explorer and/or Azure Portal or Azure Command Line INterface (CLI) to configure the device.
 
-<img src="assets/1_monolith.png" alt="Iron" width="500"/>
+<img src="assets/1_monolith.png" alt="Iron" width="600"/>
  
 # 2. Detached Modules (codename Cobalt)
 

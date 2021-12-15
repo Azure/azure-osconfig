@@ -18,7 +18,7 @@ For more information on OSConfig see the [OSConfig North Star Architecture](arch
 
 # 2. Architecture Overview
 
-<img src="assets/osconfig.png" alt="OSConfig North Star" width="800"/>
+<img src="assets/osconfig.png" alt="OSConfig North Star" width="700"/>
 
 This diagram shows the overall OSConfig North Star architecture. Not all components shown in this diagram are currently available. 
 
@@ -641,7 +641,7 @@ Example of serialized JSON payload for two CommandRunner.CommandArguments desire
 
 A simplified diagram shows the desired and reported configuration requests exchanged between Digital Twin in Azure via the local OSConfig and module over the Management Module Interface (MMI): 
 
-<img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width="800"/>
+<img src="assets/desiredreported.png" alt="OSConfig Configuration Data" width="600"/>
  
 Each module must be a Linux Dynamically Linked Shared Object library (.so) implementing the MMI. The MMI transports the MIM object payloads of settings for the module component(s). 
 
