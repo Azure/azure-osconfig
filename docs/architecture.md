@@ -47,7 +47,7 @@ The agent relies on the [Azure Identity Services (AIS)](https://azure.github.io/
 
 The agent communicates with the lower Management Platform over the Management Platform Interface (MPI) IPC REST API.
 
-<img src="assets/pnpagent.png" alt="OSConfig PnP Agent" width="700"/>
+<img src="assets/pnpagent.png" alt="OSConfig PnP Agent" width="500"/>
 
 The agent is completely decoupled from the platform and the modules. A new module can be installed, and necessary PnP interface(s) published as part of the OSConfig Model and that will be enough to make OSConfig use the respective module, without the need to recompile the agent or the platform.
 
@@ -79,7 +79,7 @@ The OSConfig Management Platform runs in its own daemon process. The platform co
 
 The platform communicates to the lower modules layer over the Management Modules Interface (MMI) REST API.
 
-<img src="assets/platform.png" alt="OSConfig Management Platform" width="700"/>
+<img src="assets/platform.png" alt="OSConfig Management Platform" width="680"/>
  
 The platform includes the following main components:
 
@@ -154,7 +154,7 @@ The Orchestrator receives management requests from agents over the Management Pl
 
 The Orchestrator can be implemented as a Linux Static Library (.a) either alone or combined with the MPI and linked into the platform's main binary.
 
-<img src="assets/orchestration.png" alt="Orchestrator" width="700"/>
+<img src="assets/orchestration.png" alt="Orchestrator" width="400"/>
 
 What the Orchestrator does:
 
@@ -181,7 +181,7 @@ The Modules Manager receives serialized MPI C API requests from the Orchestrator
 
 The Modules Manager is implemented as a Linux Static Library (.a) exporting the MPI C API. 
 
-<img src="assets/modulesmanager.png" alt="Modules Manager" width="700"/>
+<img src="assets/modulesmanager.png" alt="Modules Manager" width="400"/>
 
 What the Module Manager does:
 
@@ -207,7 +207,7 @@ The Module Host is a thin executable shell provided by OSConfig that wraps (load
 
 If the modules are loaded directly in the parent OSConfig process they can communicate with each other with ease (for good and wrong), but also: one module can invade the privacy of other modules (and of the parent), and one module can crash and bring down the entire process. 
 
-<img src="assets/modulehost.png" alt="Module Host" width="700"/>
+<img src="assets/modulehost.png" alt="Module Host" width="400"/>
 
 Isolating the modules into their own processes makes it harder for them to inter-communicate but also makes them more secure.  The restriction for inter-module communication with the Module Host is compensated by the modules ability to contain multiple MIM components. For example, the Wi-Fi Configuration needs Wi-Fi Certificate Management, and these can be made into two MIM components hosted in the same Wi-Fi Module. 
 
@@ -237,7 +237,7 @@ For more details on the MMI C API including MmiGetInfo see the see the [OSConfig
 
 For requests that involve big data, instead of the actual data being transmitted over the MPI and MMI, download URI paths could be transmitted, pointing to desired configuration files uploaded (for example, on Azure Storage) by a Composer App (editor app for the desired configuration files).
 
-<img src="assets/downloader.png" alt="Downloader" width="700"/> 
+<img src="assets/downloader.png" alt="Downloader" width="680"/> 
  
 The Downloader can be a Dynamically Linked Shared Object library (.so) provided by OSConfig for benefit of both OSConfig Management Platform (when downloads go into platform - see B) and (where this is mostly expected to be needed - see A) for Management Modules. The modules would load this dynamic Downloader library in their Module Host processes and invoke the Downloader API.
 
@@ -265,7 +265,7 @@ Not shown in diagrams is monitoring for device configuration changes. One way mo
 
 Each Management Module typically implements one OS configuration function. OSConfig isolates the module from the [PnP](https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play) and the [Digital Twins Definition Language (DTDL)](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md) protocols and from the Edge authentication with the IoT Hub. OSConfig communicates with the Module over a Module Interface Model (MIM) and the Management Module Interface (MMI) that each module implements. The module developer is not required to learn Azure IoT technologies like PnP,  DTDL, DPS, AIS, etc. and instead can focus on designing the PnP-agnostic MIM and the module implementation.
 
-<img src="assets/modules.png" alt="Management Modules" width="700"/> 
+<img src="assets/modules.png" alt="Management Modules" width="900"/> 
 
 Modules are implemented as Dynamically Linked Shared Object libraries (.so). Each Module runs loaded into its own Module Host process, isolated from the other modules.  The Module Hosts implement the Management Module Interface (MMI) as an IPC REST API and make MMI C API calls into their hosted modules.
 
