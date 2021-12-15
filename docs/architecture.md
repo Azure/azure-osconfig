@@ -16,7 +16,7 @@ Azure Device OS Configuration (OSConfig) is a modular services stack running on 
 
 3:
 
-<img src="assets/bigpicture.png" alt="OSConfig" width=30%>
+<img src="assets/bigpicture.png" alt="OSConfig" width=80%>
 
 This document describes the North Star architecture of this project. Its prime target is to guide the people who develop OSConfig. The doc can be also useful to anyone who is interested to learn about this project.
  
