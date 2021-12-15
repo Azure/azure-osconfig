@@ -23,7 +23,7 @@ Main target scenarios: apply policy settings and execute reboot and other comman
 - The PnP Agent writes telemetry events and traces to its own and to system logs.
 - The remote operator uses Azure IoT Explorer and/or Azure Portal or Azure Command Line INterface (CLI) to configure the device.
 
-<img src="assets/1_monolith.png" alt="Iron" width="600"/>
+<img src="assets/1_monolith.png" alt="Iron" width=60%/>
  
 # 2. Detached Modules (codename Cobalt)
 
@@ -38,7 +38,7 @@ The modules become detached Shared Object (.so) libraries, partners can develop 
 - New reusable logging library that all OSConfig components can use.
 - The Modules Manager is introduced as a static library linked into the agent process.
 
-<img src="assets/2_modules.png" alt="Cobalt" width="600"/>
+<img src="assets/2_modules.png" alt="Cobalt" width=60%/>
  
 # 3. Detached Agent & Local Management Authorities (codename Nickel)
 
@@ -51,7 +51,7 @@ OSConfig continues to run as a monolithic process and can accept requests from a
 - Tpm and other new Management Modules can appear (not shown in diagram).
 - The agent becomes completely detached from PnP interfaces, MIMs and modules.
 
-<img src="assets/3_watcher.png" alt="Nickel" width="700"/>
+<img src="assets/3_watcher.png" alt="Nickel" width=70%/>
  
 # 4. Detached Platform (codename Copper)
 
@@ -63,7 +63,7 @@ The Management Platform runs in its own process, separate of the PnP Agent, and 
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Modules Manager loads these libraries in-proc.
 - Other Management Modules appear (not shown in diagram).
 
-<img src="assets/4_platform.png" alt="Copper" width="700"/>
+<img src="assets/4_platform.png" alt="Copper" width=70%/>
   
 # 5. Isolated Modules - the current North Star (codename Zinc)
 
@@ -75,4 +75,4 @@ Main target scenario: OSConfig Management Modules run isolated in their own proc
 - New Storage and Downloader utility libraries are introduced for Platform and Modules to use.
 - Other new Management Modules appear (not shown in diagram).
 
-<img src="assets/osconfig.png" alt="Zinc" width="700"/>
+<img src="assets/osconfig.png" alt="Zinc" width=70%/>
