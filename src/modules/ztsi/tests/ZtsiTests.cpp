@@ -8,6 +8,7 @@
 #include <string>
 #include <sys/file.h>
 
+#include <Mmi.h>
 #include <Ztsi.h>
 
 #define MAX_PAYLOAD_SIZE 256
@@ -87,7 +88,7 @@ namespace OSConfig::Platform::Tests
     {
         // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
         // No file is created for invalid configurations
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_FALSE(ZtsiTests::FileExists());
 
         // Default values are returned
@@ -97,7 +98,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigurationFile)
     {
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
         ASSERT_TRUE(ZtsiTests::FileExists());
 
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
@@ -112,7 +113,7 @@ namespace OSConfig::Platform::Tests
     {
         std::string serviceUrl = "https://www.example.com/";
 
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
         ASSERT_TRUE(ZtsiTests::FileExists());
 
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
@@ -133,25 +134,25 @@ namespace OSConfig::Platform::Tests
 
         for (int i = 0; i < 10; i++)
         {
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
             ASSERT_TRUE(ZtsiTests::FileExists());
             expected = ZtsiTests::BuildFileContents(false, serviceUrl1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
             ASSERT_TRUE(ZtsiTests::FileExists());
             expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl2));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl2));
             ASSERT_TRUE(ZtsiTests::FileExists());
             expected = ZtsiTests::BuildFileContents(true, serviceUrl2);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
             ASSERT_TRUE(ZtsiTests::FileExists());
             expected = ZtsiTests::BuildFileContents(false, serviceUrl2);
             actual = ZtsiTests::ReadFileContents();
@@ -167,9 +168,9 @@ namespace OSConfig::Platform::Tests
 
         for (int i = 0; i < 10; i++)
         {
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
             ASSERT_TRUE(ZtsiTests::FileExists());
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
             ASSERT_TRUE(ZtsiTests::FileExists());
 
             expected = ZtsiTests::BuildFileContents(true, serviceUrl);
@@ -180,7 +181,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, ValidServiceUrl)
     {
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
 
         std::list<std::string> validServiceUrls = {
             "",
@@ -197,7 +198,7 @@ namespace OSConfig::Platform::Tests
 
         for (const auto& validServiceUrl : validServiceUrls)
         {
-            ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(validServiceUrl));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(validServiceUrl));
             std::string expected = ZtsiTests::BuildFileContents(false, validServiceUrl);
             std::string actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
@@ -206,7 +207,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, InvalidServiceUrl)
     {
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
 
         std::string expected = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
         std::list<std::string> invalidServiceUrls = {
@@ -233,20 +234,20 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, InvalidConfiguration)
     {
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(g_defaultServiceUrl));
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(false));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(g_defaultServiceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
         std::string expected = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
         std::string actual = ZtsiTests::ReadFileContents();
         ASSERT_STREQ(expected.c_str(), actual.c_str());
 
         // Cannot enable when serviceUrl is empty
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         actual = ZtsiTests::ReadFileContents();
         ASSERT_STREQ(expected.c_str(), actual.c_str());
 
         std::string serviceUrl = "https://www.example.com/";
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         expected = ZtsiTests::BuildFileContents(true, serviceUrl);
         actual = ZtsiTests::ReadFileContents();
         ASSERT_STREQ(expected.c_str(), actual.c_str());
@@ -262,9 +263,9 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl1 = "https://www.example.com/";
         std::string serviceUrl2 = "https://www.test.com/";
 
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
         ASSERT_TRUE(ZtsiTests::FileExists());
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_TRUE(ZtsiTests::FileExists());
 
         std::string expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
@@ -288,8 +289,8 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl = "https://www.example.com/";
 
         // Overwrite with valid data
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
 
         std::string expected = ZtsiTests::BuildFileContents(true, serviceUrl);
         std::string actual = ZtsiTests::ReadFileContents();
@@ -312,13 +313,13 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl = "https://www.example.com/";
 
         // Should cache enabled state
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
         ASSERT_FALSE(ZtsiTests::FileExists());
 
         // Should return serviceUrl and cached enabled state
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
         ASSERT_TRUE(ZtsiTests::FileExists());
@@ -335,12 +336,12 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
 
         // Should cache enabled state
-        ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetEnabled(true));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
 
         // Should return serviceUrl and cached enabled state
-        ASSERT_EQ(0, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
+        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
     }
