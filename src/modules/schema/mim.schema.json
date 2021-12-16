@@ -63,10 +63,23 @@
               "$ref": "#/$defs/objectSchema"
             },
             {
-              "$ref": "#/$defs/arraySchema"
-            },
-            {
-              "$ref": "#/$defs/mapSchema"
+              "type": "object",
+              "description": "A list of MIM settings repeated a variable number of times",
+              "required": [
+                "type",
+                "elementSchema"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "array"
+                  ]
+                },
+                "elementSchma": {
+                  "$ref": "#/$defs/objectSchema"
+                }
+              }
             }
           ]
         }
@@ -141,10 +154,6 @@
                 "description": "MIM setting name"
               },
               "schema": {
-                "type": [
-                  "string",
-                  "object"
-                ],
                 "description": "MIM setting schema",
                 "oneOf": [
                   {
@@ -157,6 +166,12 @@
                   },
                   {
                     "$ref": "#/$defs/enumSchema"
+                  },
+                  {
+                    "$ref": "#/$defs/arraySchema"
+                  },
+                  {
+                    "$ref": "#/$defs/mapSchema"
                   }
                 ]
               }
@@ -168,7 +183,7 @@
     "arraySchema": {
       "$id": "#/$defs/arraySchema",
       "type": "object",
-      "description": "A schema describing the JSON array schema of a MIM Object",
+      "description": "A schema describing an array setting",
       "required": [
         "type",
         "elementSchema"
@@ -180,7 +195,7 @@
             "array"
           ]
         },
-        "elementSchma": {
+        "elementSchema": {
           "type": "string",
           "enum": [
             "string",
@@ -192,7 +207,7 @@
     "mapSchema": {
       "$id": "#/$defs/mapSchema",
       "type": "object",
-      "description": "A schema describing the JSON map schema of a MIM Object",
+      "description": "A schema describing a map setting",
       "required": [
         "type",
         "mapKey",
