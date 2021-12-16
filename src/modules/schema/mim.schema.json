@@ -61,6 +61,12 @@
             },
             {
               "$ref": "#/$defs/objectSchema"
+            },
+            {
+              "$ref": "#/$defs/arraySchema"
+            },
+            {
+              "$ref": "#/$defs/mapSchema"
             }
           ]
         }
@@ -154,6 +160,77 @@
                   }
                 ]
               }
+            }
+          }
+        }
+      }
+    },
+    "arraySchema": {
+      "$id": "#/$defs/arraySchema",
+      "type": "object",
+      "description": "A schema describing the JSON array schema of a MIM Object",
+      "required": [
+        "type",
+        "elementSchema"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "array"
+          ]
+        },
+        "elementSchma": {
+          "type": "string",
+          "enum": [
+            "string",
+            "integer"
+          ]
+        }
+      }
+    },
+    "mapSchema": {
+      "$id": "#/$defs/mapSchema",
+      "type": "object",
+      "description": "A schema describing the JSON map schema of a MIM Object",
+      "required": [
+        "type",
+        "mapKey",
+        "mapValue"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "map"
+          ]
+        },
+        "mapKey": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "schema": {
+              "type": "string",
+              "enum": [
+                "string"
+              ]
+            }
+          }
+        },
+        "mapValue": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "schema": {
+              "type": "string",
+              "enum": [
+                "string",
+                "integer"
+              ]
             }
           }
         }
