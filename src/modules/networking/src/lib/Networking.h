@@ -47,22 +47,29 @@ struct NetworkingSettings
     std::string connected;
 };
 
-enum class NetworkingSettingType
-{
-    InterfaceTypes,
-    MacAddresses,
-    IpAddresses,
-    SubnetMasks,
-    DefaultGateways,
-    DnsServers,
-    DhcpEnabled,
-    Enabled,
-    Connected
-};
-
 class NetworkingObjectBase
 {
 public:
+    enum class NetworkManagementService
+    {
+        Unknown,
+        NetworkManager,
+        SystemdNetworkd
+    };
+
+    enum class NetworkingSettingType
+    {
+        InterfaceTypes,
+        MacAddresses,
+        IpAddresses,
+        SubnetMasks,
+        DefaultGateways,
+        DnsServers,
+        DhcpEnabled,
+        Enabled,
+        Connected
+    };
+
     virtual ~NetworkingObjectBase() {};
     virtual std::string RunCommand(const char* command) = 0;
 
@@ -76,6 +83,7 @@ public:
     int TruncateValueStrings(std::vector<std::pair<std::string, std::string>>& fieldValueVector);
 
     unsigned int m_maxPayloadSizeBytes;
+    NetworkManagementService m_networkManagementService;
 
 private:
     void ParseInterfaceDataForSettings(bool labeled, const char* flag, std::stringstream& data, std::vector<std::string>& settings);
@@ -94,6 +102,9 @@ private:
     void GenerateIpSettingsMap();
     void GenerateDefaultGatewaysMap();
     void GenerateDnsServersMap();
+    void GetInterfaceTypesFromSystemdNetworkd();
+    void GetInterfaceTypesFromNetworkManager();
+    void GetGlobalDnsServers(std::string dnsServersData, std::vector<std::string>& globalDnsServers);
     void RefreshInterfaceNames(std::vector<std::string>& interfaceNames);
     void RefreshInterfaceData();
     void RefreshSettingsStrings();
@@ -101,6 +112,7 @@ private:
     virtual int WriteJsonElement(rapidjson::Writer<rapidjson::StringBuffer>* writer, const char* key, const char* value) = 0;
 
     NetworkingSettings m_settings;
+
     std::vector<std::string> m_interfaceNames;
     std::map<std::string, std::string> m_interfaceTypesMap;
     std::map<std::string, std::string> m_ipSettingsMap;
