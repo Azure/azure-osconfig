@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.2)
 
 project(osconfig)
 
-set(MAJOR_VERSION "0" CACHE STRING "Major version to use")
-set(MINOR_VERSION "4" CACHE STRING "Minor version to use")
-set(PATCH_VERSION "1" CACHE STRING "Patch version to use")
+set(MAJOR_VERSION "1" CACHE STRING "Major version to use")
+set(MINOR_VERSION "0" CACHE STRING "Minor version to use")
+set(PATCH_VERSION "0" CACHE STRING "Patch version to use")
 
 option(BUILD_AGENTS "Build OSConfig PnP Agent" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
