@@ -111,6 +111,8 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     }
 
     OSCONFIG_LOG* whatLog = (OSCONFIG_LOG*)log;
+    struct stat fileState = {0};
+    int fileSize = 0;
 
     whatLog->trimLogCount += (whatLog->trimLogCount >= MAX_LOG_SIZE) ? 0 : 1;
 
@@ -118,7 +120,9 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     if ((NULL != whatLog->log) && (whatLog->trimLogCount > 0) && (0 == (whatLog->trimLogCount % 10)))
     {
         // In append mode the file pointer will always be at end of file:
-        if (ftell(whatLog->log) > MAX_LOG_SIZE)
+        fileSize = (-1 == stat(whatLog->logFileName, &fileState)) ? ftell(whatLog->log) : fileState.st_size;
+        
+        if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
             fclose(whatLog->log);
 
