@@ -54,8 +54,8 @@ OSCONFIG_LOG_HANDLE OpenLog(const char* logFileName, const char* bakLogFileName)
 
     if (NULL != newLog->logFileName)
     {
-        RestrictAccessToRootOnly(newLog->logFileName);
         newLog->log = fopen(newLog->logFileName, "a");
+        RestrictAccessToRootOnly(newLog->logFileName);
     }
 
     if (NULL != newLog->backLogFileName)
@@ -138,6 +138,10 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
 
             // Reopen the log in append mode:
             whatLog->log = fopen(whatLog->logFileName, "a");
+            
+            // Reapply restrictions once the file is recreated (also for backup, if any):
+            RestrictAccessToRootOnly(whatLog->logFileName);
+            RestrictAccessToRootOnly(whatLog->backLogFileName);
         }
     }
 }
