@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include "Logging.h"
 
+#define MAX_LOG_TRIM 1000
+
 static bool g_fullLoggingEnabled = false;
 
 typedef struct OSCONFIG_LOG
@@ -105,22 +107,22 @@ char* GetFormattedTime()
 // Checks and rolls the log over if larger than MAX_LOG_SIZE
 void TrimLog(OSCONFIG_LOG_HANDLE log)
 {
-    if (!log)
+    OSCONFIG_LOG* whatLog = NULL;
+    int fileSize = 0;
+
+    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
     {
         return;
     }
 
-    OSCONFIG_LOG* whatLog = (OSCONFIG_LOG*)log;
-    struct stat fileState = {0};
-    int fileSize = 0;
+    // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
+    whatLog->trimLogCount = (whatLog->trimLogCount < MAX_LOG_TRIM) ? (whatLog->trimLogCount + 1) : 1;
 
-    whatLog->trimLogCount += (whatLog->trimLogCount >= MAX_LOG_SIZE) ? 0 : 1;
-
-    // Check every 10 traces:
-    if ((NULL != whatLog->log) && (whatLog->trimLogCount > 0) && (0 == (whatLog->trimLogCount % 10)))
+    // Check every 10 calls:
+    if (0 == (whatLog->trimLogCount % 10))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = (-1 == stat(whatLog->logFileName, &fileState)) ? ftell(whatLog->log) : fileState.st_size;
+        fileSize = ftell(whatLog->log);
         
         if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
