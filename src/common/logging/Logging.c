@@ -110,16 +110,12 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     OSCONFIG_LOG* whatLog = NULL;
     int fileSize = 0;
 
-    if (NULL == log)
+    if ((NULL == log) || (NULL == (whatLog = (OSCONFIG_LOG*)log)))
     {
         return;
     }
 
-    if (NULL == (whatLog = (OSCONFIG_LOG*)log))
-    {
-        return;
-    }
-
+    // Loop incrementing the trim log counter from 0 to MAX_LOG_TRIM
     whatLog->trimLogCount = (whatLog->trimLogCount < MAX_LOG_TRIM) ? (whatLog->trimLogCount + 1) : 1;
 
     // Check every 10 calls:
