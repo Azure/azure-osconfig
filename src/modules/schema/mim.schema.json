@@ -63,6 +63,9 @@
               "$ref": "#/$defs/objectSchema"
             },
             {
+              "$ref": "#/$defs/mapSchema"
+            },
+            {
               "type": "object",
               "description": "A list of MIM settings repeated a variable number of times",
               "required": [
@@ -241,10 +244,17 @@
               "type": "string"
             },
             "schema": {
-              "type": "string",
-              "enum": [
-                "string",
-                "integer"
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "integer"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/objectSchema"
+                }
               ]
             }
           }
