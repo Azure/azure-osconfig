@@ -62,7 +62,7 @@ string(TIMESTAMP _timestamp "%Y%m%d")
 set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 
 set(OsConfigProjectName "osconfig")
-set(OsConfigProjectLongName "Microsoft Azure Device OS Configuration Agent")
+set(OsConfigProjectLongName "Azure OSConfig")
 set(OsConfigProjectVendor "Microsoft")
 set(OsConfigProjectEmail "osconfigsupport@microsoft.com")
 set(OsConfigHashAlgorithm "SHA256")
