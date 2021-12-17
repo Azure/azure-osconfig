@@ -136,6 +136,8 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
 
             // Reopen the log in append mode:
             whatLog->log = fopen(whatLog->logFileName, "a");
+            
+            whatLog->trimLogCount = 0;
         }
     }
 }
