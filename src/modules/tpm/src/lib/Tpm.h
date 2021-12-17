@@ -3,7 +3,6 @@
 
 #include <rapidjson/writer.h>
 #include <string>
-
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
@@ -18,43 +17,43 @@
 
 class TpmLog
 {
-    public:
-        static OSCONFIG_LOG_HANDLE Get()
-        {
-            return m_logTpm;
-        }
+public:
+    static OSCONFIG_LOG_HANDLE Get()
+    {
+        return m_logTpm;
+    }
 
-        static void OpenLog()
-        {
-            m_logTpm = ::OpenLog(TPM_LOGFILE, TPM_ROLLEDLOGFILE);
-        }
+    static void OpenLog()
+    {
+        m_logTpm = ::OpenLog(TPM_LOGFILE, TPM_ROLLEDLOGFILE);
+    }
 
-        static void CloseLog()
-        {
-            ::CloseLog(&m_logTpm);
-        }
+    static void CloseLog()
+    {
+        ::CloseLog(&m_logTpm);
+    }
 
-    private:
-        static OSCONFIG_LOG_HANDLE m_logTpm;
+private:
+    static OSCONFIG_LOG_HANDLE m_logTpm;
 };
 
 class Tpm
 {
-    public:
-        enum Status { Unknown, TpmDetected, TpmNotDetected };
+public:
+    enum Status { Unknown, TpmDetected, TpmNotDetected };
 
-        Tpm(int maxPayloadSizeBytes);
-        virtual ~Tpm();
-        virtual std::string RunCommand(const char* command);
+    Tpm(const unsigned int maxPayloadSizeBytes);
+    virtual ~Tpm();
+    virtual std::string RunCommand(const char* command);
 
-        void Trim(std::string& s);
-        unsigned char Decode(char c);
-        void HexToText(std::string& s);
+    int Get(const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    void GetStatus(std::string& status);
+    void GetVersionFromCapabilitiesFile(std::string& version);
+    void GetManufacturerFromCapabilitiesFile(std::string& manufacturer);
+    void HexToText(std::string& s);
+    void Trim(std::string& s);
+    unsigned char Decode(char c);
 
-        int Get(const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-        void GetStatus(std::string& status);
-        void GetVersion(std::string& version);
-        void GetManufacturer(std::string& manufacturer);
-
-        int m_maxPayloadSizeBytes;
+    const unsigned int m_maxPayloadSizeBytes;
+    bool m_hasCapabilitiesFile;
 };

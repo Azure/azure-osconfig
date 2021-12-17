@@ -46,9 +46,46 @@ const char* g_true = "true";
 const char* g_false = "false";
 const char* g_unknown = "unknown";
 
-const char* g_templateWithDots = R"""({"InterfaceTypes":"..","MacAddresses":"..","IpAddresses":"..","SubnetMasks":"..","DefaultGateways":"..","DnsServers":"..","DhcpEnabled":"..","Enabled":"..","Connected":".."})""";
-const char* g_emptyValue = "";
+const char* g_emptyString = "";
+const char* g_comma = ",";
+const char* g_colon = ":";
+const char* g_semiColon = ";";
+const char* g_dash = "-";
+const char* g_doubleDash = "--";
+const char* g_slash = "/";
+const char* g_equals = "=";
+const char* g_closeParenthesis = ")";
+const char* g_at = "@";
 const char* g_twoDots = "..";
+
+const char g_spaceCharacter = ' ';
+const std::string g_spaceString = " ";
+
+const char* g_templateWithDots = R"""({"InterfaceTypes":"..","MacAddresses":"..","IpAddresses":"..","SubnetMasks":"..","DefaultGateways":"..","DnsServers":"..","DhcpEnabled":"..","Enabled":"..","Connected":".."})""";
+
+const char* g_ipv4 = "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
+const char* g_ipv6 =  
+    "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}"
+    ":[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}"
+    "|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}"
+    ":((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}"
+    "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}"
+    ":((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))";
+
+const char* g_interfaceNamePrefixNmcli = "GENERAL.DEVICE:\\s+";
+const char* g_interfaceNamePrefixSystemdResolve = "Link\\s+[0-9]+\\s+\\(";
+const char* g_dnsServersPrefix = "DNS\\s+Servers:\\s+";
+const char* g_interfaceTypePrefix = "GENERAL.TYPE:\\s+";
+const char* g_interfaceTypesPrefixNetworkctl = "^\\s*[0-9]+\\s+.*$";
+const char* g_interfaceDataPrefix = "[0-9]+:\\s+.*:\\s+";
+const char* g_interfaceNamePrefixDefaultGateways = "default\\s+via\\s+.*\\s+dev\\s+";
+const char* g_defaultGatewaysPrefix = "default\\s+via\\s+";
+const char* g_globalDnsServers = "Global\\s*\n";
+
+std::regex g_ipv4Pattern(g_ipv4);
+std::regex g_ipv6Pattern(g_ipv6);
+std::regex g_interfaceNamePrefixPatternDnsServers(g_interfaceNamePrefixSystemdResolve);
+std::regex g_dnsServersPrefixPattern(g_dnsServersPrefix);
 
 const std::vector<std::string> g_fields = {"InterfaceTypes", "MacAddresses", "IpAddresses", "SubnetMasks","DefaultGateways","DnsServers", "DhcpEnabled", "Enabled", "Connected"};
 
@@ -62,6 +99,7 @@ OSCONFIG_LOG_HANDLE NetworkingLog::m_logNetworking = nullptr;
 NetworkingObject::NetworkingObject(unsigned int maxPayloadSizeBytes)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
+    m_networkManagementService = NetworkManagementService::Unknown;
 }
 
 NetworkingObject::~NetworkingObject() {}
@@ -70,14 +108,14 @@ std::string NetworkingObject::RunCommand(const char* command)
 {
     char* textResult = nullptr;
     int status = ExecuteCommand(nullptr, command, false, false, 0, 0, &textResult, nullptr, NetworkingLog::Get());
-    std::string commandOutputToReturn = "";
+    std::string commandOutputToReturn = g_emptyString;
     if (MMI_OK == status)
     {
-        commandOutputToReturn = (nullptr != textResult) ? std::string(textResult) : "";
+        commandOutputToReturn = (nullptr != textResult) ? std::string(textResult) : g_emptyString;
     }
     else if (IsFullLoggingEnabled())
     {
-        OsConfigLogError(NetworkingLog::Get(), "Failed to execute command '%s': %d, '%s'", command, status, (nullptr != textResult) ? textResult : "-");
+        OsConfigLogError(NetworkingLog::Get(), "Failed to execute command '%s': %d, '%s'", command, status, (nullptr != textResult) ? textResult : g_dash);
     }
 
     if (nullptr != textResult)
@@ -90,14 +128,14 @@ std::string NetworkingObject::RunCommand(const char* command)
 
 void NetworkingObjectBase::ParseInterfaceDataForSettings(bool hasPrefix, const char* flag, std::stringstream& data, std::vector<std::string>& settings)
 {
-    std::string token = "";
-    while (std::getline(data, token, ' '))
+    std::string token = g_emptyString;
+    while (std::getline(data, token, g_spaceCharacter))
     {
         if (token.find(flag) != std::string::npos)
         {
             if (hasPrefix)
             {
-                std::getline(data, token, ' ');
+                std::getline(data, token, g_spaceCharacter);
             }
             if (!token.empty())
             {
@@ -134,7 +172,7 @@ void NetworkingObjectBase::GetIpAddresses(const std::string& interfaceName, std:
         size_t size = interfaceSettings.size();
         for (size_t i = 0; i < size; i++)
         {
-            size_t subnetMasksDelimiter = interfaceSettings[i].find("/");
+            size_t subnetMasksDelimiter = interfaceSettings[i].find(g_slash);
             if (subnetMasksDelimiter != std::string::npos)
             {
                 interfaceSettings[i] = interfaceSettings[i].substr(0, subnetMasksDelimiter);
@@ -156,7 +194,7 @@ void NetworkingObjectBase::GetSubnetMasks(const std::string& interfaceName, std:
         size_t size = interfaceSettings.size();
         for (size_t i = 0; i < size; i++)
         {
-            size_t subnetMasksDelimiter = interfaceSettings[i].find("/");
+            size_t subnetMasksDelimiter = interfaceSettings[i].find(g_slash);
             if (subnetMasksDelimiter != std::string::npos)
             {
                 interfaceSettings[i] = interfaceSettings[i].substr(subnetMasksDelimiter);
@@ -263,7 +301,7 @@ void NetworkingObjectBase::GetConnected(const std::string& interfaceName, std::v
 }
 
 void NetworkingObjectBase::GenerateInterfaceSettingsString(const std::string& interfaceName, NetworkingSettingType settingType, std::string& interfaceSettingsString)
-{   
+{
     std::vector<std::string> interfaceSettings;
     switch (settingType)
     {
@@ -301,7 +339,7 @@ void NetworkingObjectBase::GenerateInterfaceSettingsString(const std::string& in
     {
         if (i > 0)
         {
-            interfaceSettingsString += ",";
+            interfaceSettingsString += g_comma;
         }
         interfaceSettingsString += interfaceSettings[i];
     }
@@ -328,32 +366,31 @@ void NetworkingObjectBase::UpdateSettingsString(NetworkingSettingType settingTyp
             {
                 if (!settingsString.empty())
                 {
-                    settingsString += ";";
+                    settingsString += g_semiColon;
                 }
-                settingsString += std::get<0>(settings[i]) + "=" + std::get<1>(settings[i]);
+                settingsString += std::get<0>(settings[i]) + g_equals + std::get<1>(settings[i]);
             }
         }
     }
 }
 
-void NetworkingObjectBase::GenerateInterfaceTypesMap()
+void NetworkingObjectBase::GetInterfaceTypesFromNetworkManager()
 {
-    this->m_interfaceTypesMap.clear();
-    bool usingNetworkManager = false;
-    std::map<std::string, std::string>::iterator interfaceTypesMapIterator;
-    std::string interfaceTypesData, interfaceData, interfaceName, interfaceType;
-
-    interfaceTypesData = RunCommand(g_getInterfaceTypesNmcli);
-
-    std::regex interfaceNamePrefixPatternNmcli("GENERAL.DEVICE:\\s+");
+    std::string interfaceTypesData = RunCommand(g_getInterfaceTypesNmcli);
+    std::regex interfaceNamePrefixPatternNmcli(g_interfaceNamePrefixNmcli);
     std::smatch interfaceNamePrefixMatchNmcli;
     while (std::regex_search(interfaceTypesData, interfaceNamePrefixMatchNmcli, interfaceNamePrefixPatternNmcli))
     {
-        usingNetworkManager = true;
+        if (this->m_networkManagementService == NetworkManagementService::Unknown)
+        {
+            this->m_networkManagementService = NetworkManagementService::NetworkManager;
+        }
+
         std::string interfaceNamePrefix = interfaceNamePrefixMatchNmcli.str(0);
-        interfaceData = interfaceNamePrefixMatchNmcli.suffix().str();
+        std::string interfaceData = interfaceNamePrefixMatchNmcli.suffix().str();
         std::string nextDataToProcess = interfaceData;
 
+        std::string interfaceName;
         size_t interfaceNameSuffixFront = interfaceData.find("\n");
         if (interfaceNameSuffixFront != std::string::npos)
         {
@@ -364,7 +401,8 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
 
         if (IsKnownInterfaceName(interfaceName))
         {
-            std::regex interfaceTypePrefixPattern("GENERAL.TYPE:\\s+");
+            std::string interfaceType;
+            std::regex interfaceTypePrefixPattern(g_interfaceTypePrefix);
             std::smatch interfaceTypePrefixMatch;
             if (std::regex_search(interfaceData, interfaceTypePrefixMatch, interfaceTypePrefixPattern))
             {
@@ -377,9 +415,9 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
                 }
             }
 
-            if ((!interfaceName.empty()) && (!interfaceType.empty()) && (interfaceType != "--"))
+            if ((!interfaceName.empty()) && (!interfaceType.empty()) && (interfaceType != g_doubleDash))
             {
-                interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
+                std::map<std::string, std::string>::iterator interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
                 if (interfaceTypesMapIterator != this->m_interfaceTypesMap.end())
                 {
                     interfaceTypesMapIterator->second = interfaceType;
@@ -391,53 +429,84 @@ void NetworkingObjectBase::GenerateInterfaceTypesMap()
             }
         }
 
-        interfaceData.clear();
-        interfaceName.clear();
-        interfaceType.clear();
         interfaceTypesData = nextDataToProcess;
     }
 
-    if (!usingNetworkManager)
+    if ((this->m_interfaceTypesMap.empty()) && (this->m_networkManagementService == NetworkManagementService::NetworkManager))
     {
-        interfaceTypesData = RunCommand(g_getInterfaceTypesNetworkctl);
-        std::stringstream interfaceTypesDataStream(interfaceTypesData);
-        while(std::getline(interfaceTypesDataStream, interfaceData))
-        {
-            std::regex interfaceTypesDataPatternNetworkctl("^\\s*[0-9]+\\s+.*$");
-            if (std::regex_match(interfaceData.begin(), interfaceData.end(), interfaceTypesDataPatternNetworkctl))
-            {
-                std::stringstream interfaceDataStream(interfaceData);
-                std::string data;
-                while (std::getline(interfaceDataStream, data, ' '))
-                {
-                    if (IsKnownInterfaceName(data))
-                    {
-                        interfaceName = data;
-                        do
-                        {
-                            std::getline(interfaceDataStream, data, ' ');
-                        }
-                        while(data.empty());
+        this->m_networkManagementService = NetworkManagementService::Unknown;
+    }
+}
 
-                        interfaceType = data;          
-                        if ((!interfaceName.empty()) && (!interfaceType.empty()))
+void NetworkingObjectBase::GetInterfaceTypesFromSystemdNetworkd()
+{
+    std::string interfaceTypesData = RunCommand(g_getInterfaceTypesNetworkctl);
+    std::stringstream interfaceTypesStream(interfaceTypesData);
+    std::string line;
+    while(std::getline(interfaceTypesStream, line))
+    {
+        if (this->m_networkManagementService == NetworkManagementService::Unknown)
+        {
+            this->m_networkManagementService = NetworkManagementService::SystemdNetworkd;
+        }
+
+        std::regex interfaceTypesPatternNetworkctl(g_interfaceTypesPrefixNetworkctl);
+        if (std::regex_match(line.begin(), line.end(), interfaceTypesPatternNetworkctl))
+        {
+            std::string token;
+            std::stringstream interfaceDataStream(line);
+            while (std::getline(interfaceDataStream, token, g_spaceCharacter))
+            {
+                if (IsKnownInterfaceName(token))
+                {
+                    std::string interfaceName = token;
+                    do
+                    {
+                        std::getline(interfaceDataStream, token, g_spaceCharacter);
+                    }
+                    while(token.empty());
+
+                    std::string interfaceType = token;        
+                    if ((!interfaceName.empty()) && (!interfaceType.empty()))
+                    {
+                        std::map<std::string, std::string>::iterator interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
+                        if (interfaceTypesMapIterator != this->m_interfaceTypesMap.end())
                         {
-                            interfaceTypesMapIterator = this->m_interfaceTypesMap.find(interfaceName);
-                            if (interfaceTypesMapIterator != this->m_interfaceTypesMap.end())
-                            {
-                                interfaceTypesMapIterator->second = interfaceType;
-                            }
-                            else
-                            {
-                                this->m_interfaceTypesMap.insert(std::pair<std::string, std::string>(interfaceName, interfaceType));
-                            }
+                            interfaceTypesMapIterator->second = interfaceType;
+                        }
+                        else
+                        {
+                            this->m_interfaceTypesMap.insert(std::pair<std::string, std::string>(interfaceName, interfaceType));
                         }
                     }
                 }
             }
+        }
+    }
 
-            interfaceName.clear();
-            interfaceType.clear();
+    if ((this->m_interfaceTypesMap.empty()) && (this->m_networkManagementService == NetworkManagementService::SystemdNetworkd))
+    {
+        this->m_networkManagementService = NetworkManagementService::Unknown;
+    }
+}
+
+void NetworkingObjectBase::GenerateInterfaceTypesMap()
+{
+    this->m_interfaceTypesMap.clear();
+
+    if ((this->m_networkManagementService == NetworkManagementService::NetworkManager) || (this->m_networkManagementService == NetworkManagementService::Unknown))
+    {
+        GetInterfaceTypesFromNetworkManager();
+    }
+    if ((this->m_networkManagementService == NetworkManagementService::SystemdNetworkd) || (this->m_networkManagementService == NetworkManagementService::Unknown))
+    {
+        GetInterfaceTypesFromSystemdNetworkd();
+    }
+    if (this->m_networkManagementService == NetworkManagementService::Unknown)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(NetworkingLog::Get(), "Network interface management service not found");
         }
     }
 }
@@ -446,13 +515,13 @@ void NetworkingObjectBase::GenerateIpSettingsMap()
 {
     this->m_ipSettingsMap.clear();
     std::string ipData = RunCommand(g_getIpAddressDetails);
-    std::regex interfaceDataPrefixPattern("[0-9]+:\\s+.*:\\s+");
+    std::regex interfaceDataPrefixPattern(g_interfaceDataPrefix);
     std::smatch interfaceDataPrefixMatch;
     while (std::regex_search(ipData, interfaceDataPrefixMatch, interfaceDataPrefixPattern)) 
     {
         std::string interfaceDataPrefix = interfaceDataPrefixMatch.str(0);
-        size_t interfaceNamePrefixBack = interfaceDataPrefix.find(" ");
-        size_t interfaceDataPrefixBack = interfaceDataPrefix.find_last_of(":");
+        size_t interfaceNamePrefixBack = interfaceDataPrefix.find(g_spaceString);
+        size_t interfaceDataPrefixBack = interfaceDataPrefix.find_last_of(g_colon);
 
         ipData = interfaceDataPrefixMatch.suffix().str();
 
@@ -464,7 +533,7 @@ void NetworkingObjectBase::GenerateIpSettingsMap()
 
         if (!IsKnownInterfaceName(interfaceName))
         {
-            size_t interfaceNameSuffixFront = interfaceName.find("@");
+            size_t interfaceNameSuffixFront = interfaceName.find(g_at);
             if (interfaceNameSuffixFront != std::string::npos)
             {
                 interfaceName = interfaceName.substr(0, interfaceNameSuffixFront);
@@ -491,32 +560,31 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
 {
     this->m_defaultGatewaysMap.clear();
     std::string defaultGatewaysData = RunCommand(g_getDefaultGateways);
-    std::regex interfaceNamePrefixPattern("default\\s+via\\s+.*\\s+dev\\s+");
+    std::regex interfaceNamePrefixPatternDefaultGateways(g_interfaceNamePrefixDefaultGateways);
     std::smatch interfaceNamePrefixMatch;
-
-    while (std::regex_search(defaultGatewaysData, interfaceNamePrefixMatch, interfaceNamePrefixPattern))
+    while (std::regex_search(defaultGatewaysData, interfaceNamePrefixMatch, interfaceNamePrefixPatternDefaultGateways))
     {
         std::string interfaceNamePrefix = interfaceNamePrefixMatch.str(0);
-        std::string interfaceNameData = interfaceNamePrefixMatch.suffix().str();
-        size_t interfaceNameSuffixFront = interfaceNameData.find(" ");
+        std::string interfaceData = interfaceNamePrefixMatch.suffix().str();
+        size_t interfaceNameSuffixFront = interfaceData.find(g_spaceString);
 
         std::string interfaceName;
         if (interfaceNameSuffixFront != std::string::npos)
         {
-            interfaceName = interfaceNameData.substr(0, interfaceNameSuffixFront);
+            interfaceName = interfaceData.substr(0, interfaceNameSuffixFront);
         }
 
         if (IsKnownInterfaceName(interfaceName))
         {
             std::string defaultGateway;
-            std::regex defaultGatewayPrefixPattern("default\\s+via\\s+");
+            std::regex defaultGatewayPrefixPattern(g_defaultGatewaysPrefix);
             std::smatch defaultGatewayPrefixMatch;
 
             if (std::regex_search(defaultGatewaysData, defaultGatewayPrefixMatch, defaultGatewayPrefixPattern))
             {
                 defaultGateway = defaultGatewayPrefixMatch.suffix().str();
 
-                size_t defaultGatewaySuffixFront = defaultGateway.find(" ");
+                size_t defaultGatewaySuffixFront = defaultGateway.find(g_spaceString);
                 if (defaultGatewaySuffixFront != std::string::npos)
                 {
                     defaultGateway = defaultGateway.substr(0, defaultGatewaySuffixFront);
@@ -542,18 +610,57 @@ void NetworkingObjectBase::GenerateDefaultGatewaysMap()
     }
 }
 
+void RemoveDuplicates(std::vector<std::string>& vec)
+{
+    std::sort(vec.begin(), vec.end());
+    vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+}
+
+void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::vector<std::string>& globalDnsServers)
+{
+    std::regex globalDnsServersPattern(g_globalDnsServers);
+    std::smatch globalDnsServersPrefixMatch;
+    while (std::regex_search(dnsServersData, globalDnsServersPrefixMatch, globalDnsServersPattern))
+    {
+        dnsServersData = globalDnsServersPrefixMatch.suffix().str();
+        std::smatch globalDnsServersSuffixMatch;
+        std::string globalDnsServersData = std::regex_search(dnsServersData, globalDnsServersSuffixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, globalDnsServersSuffixMatch.position(0)) : dnsServersData; 
+
+        std::smatch dnsServersPrefixMatch;
+        if (std::regex_search(globalDnsServersData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
+        {
+            std::string dnsServer;
+            std::stringstream globalDnsServersStream(dnsServersPrefixMatch.suffix().str());
+            while(std::getline(globalDnsServersStream, dnsServer))
+            {
+                dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                {
+                    globalDnsServers.push_back(dnsServer);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
+
 void NetworkingObjectBase::GenerateDnsServersMap()
 {
     this->m_dnsServersMap.clear();
     std::string dnsServersData = RunCommand(g_getDnsServers);
-    std::regex interfaceNamePrefixPattern("Link\\s+[0-9]+\\s+\\(");
-    std::smatch interfaceNamePrefixMatch;
 
-    while (std::regex_search(dnsServersData, interfaceNamePrefixMatch, interfaceNamePrefixPattern))
+    std::vector<std::string> globalDnsServers;
+    GetGlobalDnsServers(dnsServersData, globalDnsServers);
+
+    std::smatch interfaceNamePrefixMatch;
+    while (std::regex_search(dnsServersData, interfaceNamePrefixMatch, g_interfaceNamePrefixPatternDnsServers))
     {
         std::string interfaceNamePrefix = interfaceNamePrefixMatch.str(0);
         std::string interfaceNameData = interfaceNamePrefixMatch.suffix().str();
-        size_t interfaceNameSuffixFront = interfaceNameData.find(")");
+        size_t interfaceNameSuffixFront = interfaceNameData.find(g_closeParenthesis);
 
         std::string interfaceName;
         if (interfaceNameSuffixFront != std::string::npos)
@@ -562,39 +669,50 @@ void NetworkingObjectBase::GenerateDnsServersMap()
         }
 
         dnsServersData = interfaceNameData;
-        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, interfaceNamePrefixPattern) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData; 
+        std::string interfaceData = std::regex_search(dnsServersData, interfaceNamePrefixMatch, g_interfaceNamePrefixPatternDnsServers) ? dnsServersData.substr(0, interfaceNamePrefixMatch.position(0)) : dnsServersData; 
 
         if (IsKnownInterfaceName(interfaceName))
         {
+            std::map<std::string, std::vector<std::string>>::iterator dnsServersMapIterator;
             std::string dnsServer;
-            std::regex dnsServerPrefixPattern("DNS\\s+Servers:\\s+");
-            std::smatch dnsServerPrefixMatch;
-
-            if (std::regex_search(interfaceData, dnsServerPrefixMatch, dnsServerPrefixPattern))
+            std::smatch dnsServersPrefixMatch;
+            if (std::regex_search(interfaceData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
             {
-                std::stringstream dnsServerStream(dnsServerPrefixMatch.suffix().str());
-                std::regex ipv4Pattern("(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])");
-                std::regex ipv6Pattern("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}"
-                ":[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}"
-                "|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}"
-                ":((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}"
-                "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}"
-                ":((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
-
-                while(std::getline(dnsServerStream, dnsServer) && ((std::regex_match(dnsServer, ipv4Pattern)) || (std::regex_match(dnsServer, ipv6Pattern))))
+                std::stringstream dnsServerStream(dnsServersPrefixMatch.suffix().str());
+                while(std::getline(dnsServerStream, dnsServer))
                 {
-                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), ' '), dnsServer.end());
-
-                    std::map<std::string, std::vector<std::string>>::iterator dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
-                    if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                    if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
                     {
-                        (dnsServersMapIterator->second).push_back(dnsServer);
+                        dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
+                        if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                        {
+                            (dnsServersMapIterator->second).push_back(dnsServer);
+                        }
+                        else
+                        {
+                            std::vector<std::string> dnsServers{ dnsServer };
+                            this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                        }
                     }
                     else
                     {
-                        std::vector<std::string> dnsServers{ dnsServer };
-                        this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                        break;
                     }
+                }
+            }
+
+            if (!globalDnsServers.empty())
+            {
+                dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
+                if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                {
+                    (dnsServersMapIterator->second).insert((dnsServersMapIterator->second).end(), globalDnsServers.begin(), globalDnsServers.end());
+                    RemoveDuplicates(dnsServersMapIterator->second);
+                }
+                else
+                {
+                    this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, globalDnsServers));
                 }
             }
         }
@@ -608,7 +726,7 @@ void NetworkingObjectBase::RefreshInterfaceNames(std::vector<std::string>& inter
     if (!interfaceNamesData.empty())
     {
         std::stringstream interfaceNamesStream(interfaceNamesData);
-        std::string token = "";
+        std::string token = g_emptyString;
         while (std::getline(interfaceNamesStream, token))
         {
             interfaceNames.push_back(token);
