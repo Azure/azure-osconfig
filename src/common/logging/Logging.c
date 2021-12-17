@@ -120,7 +120,7 @@ void TrimLog(OSCONFIG_LOG_HANDLE log)
     if ((NULL != whatLog->log) && (0 == (whatLog->trimLogCount % 10)))
     {
         // In append mode the file pointer will always be at end of file:
-        fileSize = (-1 == stat(whatLog->logFileName, &fileState)) ? ftell(whatLog->log) : fileState.st_size;
+        fileSize = ftell(whatLog->log);
         
         if ((fileSize >= MAX_LOG_SIZE) || (-1 == fileSize))
         {
