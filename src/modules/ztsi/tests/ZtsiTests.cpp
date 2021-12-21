@@ -13,6 +13,12 @@
 
 #define MAX_PAYLOAD_SIZE 256
 
+static const char g_componentName[] = "Ztsi";
+static const char g_desiredServiceUrl[] = "DesiredServiceUrl";
+static const char g_desiredEnabled[] = "DesiredEnabled";
+static const char g_reportedServiceUrl[] = "ServiceUrl";
+static const char g_reportedEnabled[] = "Enabled";
+
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const std::string g_defaultServiceUrl = "";
 
@@ -74,6 +80,34 @@ namespace OSConfig::Platform::Tests
 
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
+
+    TEST_F(ZtsiTests, GetSetServiceUrl)
+    {
+        char serviceUrl[] = "\"https://localhost:8080/\"";
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredServiceUrl, serviceUrl, sizeof(serviceUrl)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedServiceUrl, &payload, &payloadSizeBytes));
+
+        std::string payloadStr(payload, payloadSizeBytes);
+        ASSERT_STREQ(serviceUrl, payloadStr.c_str());
+        ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
+    }
+
+    TEST_F(ZtsiTests, GetSetEnabled)
+    {
+        char enabled[] = "false";
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredEnabled, enabled, sizeof(enabled)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedEnabled, &payload, &payloadSizeBytes));
+
+        std::string payloadStr(payload, payloadSizeBytes);
+        ASSERT_STREQ("2", payloadStr.c_str());
+        ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
+    }
 
     TEST_F(ZtsiTests, GetWithoutConfigurationFile)
     {

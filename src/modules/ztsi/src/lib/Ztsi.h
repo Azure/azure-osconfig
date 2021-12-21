@@ -53,26 +53,38 @@ public:
     Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes = 0);
     virtual ~Ztsi() = default;
 
-    virtual unsigned int GetMaxPayloadSizeBytes();
+    static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+
     virtual EnabledState GetEnabledState();
     virtual std::string GetServiceUrl();
     virtual int SetEnabled(bool enabled);
     virtual int SetServiceUrl(const std::string& serviceUrl);
+    virtual unsigned int GetMaxPayloadSizeBytes();
 
 private:
     static bool IsValidConfiguration(const AgentConfiguration& configuration);
+
     virtual std::FILE* OpenAndLockFile(const char* mode);
     virtual std::FILE* OpenAndLockFile(const char* mode, unsigned int milliseconds, int count);
     virtual void CloseAndUnlockFile(std::FILE* fp);
-    static bool FileExists(const std::string& filePath);
+
     virtual int ReadAgentConfiguration(AgentConfiguration& configuration);
     virtual int WriteAgentConfiguration(const AgentConfiguration& configuration);
     virtual int CreateConfigurationFile(const AgentConfiguration& configuration);
     virtual int ParseAgentConfiguration(const std::string& configurationJson, AgentConfiguration& configuration);
     virtual std::string BuildConfigurationJson(const AgentConfiguration& configuration);
 
+    static const std::string m_componentName;
+    static const std::string m_desiredServiceUrl;
+    static const std::string m_desiredEnabled;
+    static const std::string m_reportedServiceUrl;
+    static const std::string m_reportedEnabled;
+
     std::string m_agentConfigurationDir;
     std::string m_agentConfigurationFile;
+
     unsigned int m_maxPayloadSizeBytes;
     AgentConfiguration m_lastAvailableConfiguration;
     bool m_lastEnabledState;
