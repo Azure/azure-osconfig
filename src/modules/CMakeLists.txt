@@ -4,6 +4,7 @@
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
 
+add_subdirectory(aptinstall)
 add_subdirectory(commandrunner)
 add_subdirectory(firewall)
 add_subdirectory(networking)
