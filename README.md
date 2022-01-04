@@ -32,6 +32,12 @@ Add the dependencies necessary to build *TraceLogging* as described at [github.c
 
 Install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
+If you are working on a Windows machine, you may need to enable long paths to successfully clone the repository and all its submodules. Run the following command with admin rights:
+
+```bash
+git config --system core.longpaths true
+```
+
 ### Build
 
 Create a folder build folder under the repo root /build
