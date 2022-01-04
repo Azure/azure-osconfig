@@ -27,7 +27,7 @@ Most contributions require you to agree to a Contributor License Agreement (CLA)
 
 ## Submitting a PR
 
-1. Create a GitHub account if you do not have one yet: [Join GitHub](https://github.com/join). [Learn more about GitHub](https://docs.microsoft.com/learn/modules/intro-to-git/).
+1. Create a GitHub account if you do not have one yet: [Join GitHub](https://github.com/join).
 2. Fork the public GitHub repo: [https://github.com/Azure/azure-osconfig](https://github.com/Azure/azure-osconfig). [Learn more about forking a repo](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo).
 3. Clone the forked repo. Optionally create a new branch to keep your changes isolated from the `main` branch. By forking and cloning the public GitHub repo, a copy of repo will be created in your GitHub account and a local copy will be locally created in your clone. Use this local copy to make modifications.
 4. Commit the changes locally and push to your fork.
