@@ -109,6 +109,27 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
     }
 
+    TEST_F(ZtsiTests, InvalidSet)
+    {
+        char payload[] = "invalid payload";
+
+        // Set with invalid arguments
+        ASSERT_EQ(EINVAL, ztsi->Set("invalid component", g_desiredServiceUrl, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, "invalid component", payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, -1));
+    }
+
+    TEST_F(ZtsiTests, InvalidGet)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        // Get with invalid arguments
+        ASSERT_EQ(EINVAL, ztsi->Get("invalid component", g_desiredServiceUrl, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, ztsi->Get(g_componentName, "invalid object", &payload, &payloadSizeBytes));
+    }
+
     TEST_F(ZtsiTests, GetWithoutConfigurationFile)
     {
         // Defaults are returned when no configuration file exists
