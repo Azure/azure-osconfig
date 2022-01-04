@@ -20,11 +20,8 @@
 static const char g_configurationPropertyEnabled[] = "enabled";
 static const char g_configurationPropertyServiceUrl[] = "serviceUrl";
 
-static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const bool g_defaultEnabled = false;
 static const std::string g_defaultServiceUrl = "";
-
-static const std::string g_urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
 static const unsigned int g_lockWaitMillis = 20;
@@ -36,34 +33,34 @@ const std::string Ztsi::m_desiredEnabled = "DesiredEnabled";
 const std::string Ztsi::m_reportedServiceUrl = "ServiceUrl";
 const std::string Ztsi::m_reportedEnabled = "Enabled";
 
-// Regex for validating client name 'Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>'
-static const std::string g_clientNameRegex = "^((Azure OSConfig )[1-9];(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$";
-static const std::string g_clientNamePrefix = "Azure OSConfig ";
-static const std::string g_modelVersionDelimiter = ";";
-static const std::string g_semanticVersionDelimeter = ".";
-
-// DTDL version 5 published with ZTSI on September 27, 2021
-static const int g_initialModelVersion = 5;
-static const int g_initialReleaseDay = 27;
-static const int g_initialReleaseMonth = 9;
-static const int g_initialReleaseYear = 2021;
-
-#define STRFTIME_DATE_FORMAT "%Y%m%d"
-#define SSCANF_DATE_FORMAT "%4d%2d%2d"
-#define DATE_FORMAT_LENGTH 9
 
 bool IsValidClientName(const std::string& clientName)
 {
     bool isValid = true;
 
-    std::regex pattern(g_clientNameRegex);
+    const std::string clientNamePrefix = "Azure OSConfig ";
+    const std::string modelVersionDelimiter = ";";
+    const std::string semanticVersionDelimeter = ".";
+
+    // DTDL version 5 published with ZTSI on September 27, 2021
+    const int initialModelVersion = 5;
+    const int initialReleaseDay = 27;
+    const int initialReleaseMonth = 9;
+    const int initialReleaseYear = 2021;
+
+    // String length of date string yyyymmmdd
+    int dateLength = 9;
+
+    // Regex for validating client name 'Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>'
+    std::regex pattern("^((Azure OSConfig )[1-9];(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$");
+
     if (!clientName.empty() && std::regex_match(clientName, pattern))
     {
-        std::string versionInfo = clientName.substr(g_clientNamePrefix.length());
-        std::string modelVersion = versionInfo.substr(0, versionInfo.find(g_modelVersionDelimiter));
+        std::string versionInfo = clientName.substr(clientNamePrefix.length());
+        std::string modelVersion = versionInfo.substr(0, versionInfo.find(modelVersionDelimiter));
 
         int modelVersionNumber = std::stoi(modelVersion);
-        if (modelVersionNumber < g_initialModelVersion)
+        if (modelVersionNumber < initialModelVersion)
         {
             isValid = false;
         }
@@ -72,10 +69,10 @@ bool IsValidClientName(const std::string& clientName)
         int position = 0;
         for (int i = 0; i < 3; i++)
         {
-            position = versionInfo.find(g_semanticVersionDelimeter, position + 1);
+            position = versionInfo.find(semanticVersionDelimeter, position + 1);
         }
 
-        std::string buildDate = versionInfo.substr(position + 1, position + DATE_FORMAT_LENGTH);
+        std::string buildDate = versionInfo.substr(position + 1, position + dateLength);
         int year = std::stoi(buildDate.substr(0, 4));
         int month = std::stoi(buildDate.substr(4, 2));
         int day = std::stoi(buildDate.substr(6, 2));
@@ -85,11 +82,11 @@ bool IsValidClientName(const std::string& clientName)
             isValid = false;
         }
 
-        char dateNow[DATE_FORMAT_LENGTH] = {0};
+        char dateNow[dateLength] = {0};
         int monthNow, dayNow, yearNow;
         time_t t = time(0);
-        strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
-        sscanf(dateNow, SSCANF_DATE_FORMAT, &yearNow, &monthNow, &dayNow);
+        strftime(dateNow, dateLength, "%Y%m%d", localtime(&t));
+        sscanf(dateNow, "%4d%2d%2d", &yearNow, &monthNow, &dayNow);
 
         // Check if the build date is in the future
         if ((yearNow < year) || ((yearNow == year) && ((monthNow < month) || ((monthNow == month) && (dayNow < day)))))
@@ -98,7 +95,7 @@ bool IsValidClientName(const std::string& clientName)
         }
 
         // Check if the build date is before the initial release date
-        if ((year < g_initialReleaseYear) || ((year == g_initialReleaseYear) && ((month < g_initialReleaseMonth) || ((month == g_initialReleaseMonth) && (day < g_initialReleaseDay)))))
+        if ((year < initialReleaseYear) || ((year == initialReleaseYear) && ((month < initialReleaseMonth) || ((month == initialReleaseMonth) && (day < initialReleaseDay)))))
         {
             isValid = false;
         }
@@ -148,7 +145,7 @@ int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigne
 
             if (nullptr != *payload)
             {
-                delete[] * payload;
+                delete[] *payload;
                 *payload = nullptr;
             }
 
@@ -201,6 +198,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
     }
     else if (!IsValidClientName(clientName))
     {
+        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with invalid clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
@@ -237,7 +235,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
 
             if (nullptr != *payload)
             {
-                delete[] * payload;
+                delete[] *payload;
                 *payload = nullptr;
             }
 
@@ -379,7 +377,7 @@ unsigned int Ztsi::GetMaxPayloadSizeBytes()
 Ztsi::EnabledState Ztsi::GetEnabledState()
 {
     AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
-    return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : g_defaultEnabledState;
+    return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : EnabledState::Unknown;
 }
 
 std::string Ztsi::GetServiceUrl()
@@ -455,7 +453,7 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
         isValid = false;
     }
 
-    std::regex urlPattern(g_urlRegex);
+    std::regex urlPattern("((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
     if (!configuration.serviceUrl.empty() && !regex_match(configuration.serviceUrl, urlPattern))
     {
         if (IsFullLoggingEnabled())
