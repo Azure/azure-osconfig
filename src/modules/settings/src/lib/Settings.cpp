@@ -10,6 +10,7 @@
 #include "ScopeGuard.h"
 #include <fstream>
 #include <exception>
+#include "CommonUtils.h"
 
 using namespace std;
 
@@ -28,11 +29,6 @@ OSCONFIG_LOG_HANDLE SettingsLog::m_logSettings = nullptr;
 Settings::Settings(unsigned int maxSizeInBytes)
 {
     maxPayloadSizeInBytes = maxSizeInBytes;
-}
-
-bool Settings::FileExists(const char* name)
-{
-    return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
 int Settings::SetDeviceHealthTelemetryConfiguration(std::string payload, const char* fileName, bool &configurationChanged)
@@ -58,7 +54,7 @@ int Settings::SetDeviceHealthTelemetryConfiguration(std::string payload, const c
         return EINVAL;
     }
 
-    if (!FileExists(fileName))
+    if (!::FileExists(fileName))
     {
         OsConfigLogError(SettingsLog::Get(), "Argument fileName %s not found", fileName);
         return ENOENT;
@@ -101,7 +97,7 @@ int Settings::SetDeliveryOptimizationPolicies(Settings::DeliveryOptimization del
         return EINVAL;
     }
 
-    if (!FileExists(fileName))
+    if (!::FileExists(fileName))
     {
         OsConfigLogError(SettingsLog::Get(), "Argument fileName %s not found", fileName);
         return ENOENT;

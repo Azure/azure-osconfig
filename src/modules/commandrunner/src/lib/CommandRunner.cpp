@@ -19,12 +19,6 @@ static const std::string TMP_FILE_PREFIX = "~osconfig-";
 
 OSCONFIG_LOG_HANDLE CommandRunnerLog::m_log = nullptr;
 
-bool FileExists(const std::string& fileName)
-{
-    struct stat buffer;
-    return (stat(fileName.c_str(), &buffer) == 0);
-}
-
 CommandRunner::CommandRunner(std::string name, std::function<int()> persistentCacheFunction, unsigned int maxSizeInBytes) : curIndexCommandBuffer(0)
 {
     clientName = name;
@@ -134,10 +128,10 @@ int CommandRunner::CommandExecutionCallback(void* context)
     int result = 0;
     if (nullptr != context)
     {
-        std::string tmpFilePath(reinterpret_cast<char*>(context));
-        if (FileExists(tmpFilePath))
+        char* name = reinterpret_cast<char*>(context);
+        if (FileExists(name))
         {
-            remove(tmpFilePath.c_str());
+            remove(name);
             result = 1;
         }
     }
@@ -155,7 +149,7 @@ int CommandRunner::Cancel(std::string commandId)
         UpdatePartialCommandStatus(commandId, ECANCELED, CommandState::Canceled);
 
         std::string tmpFilePath = GetTmpFilePath(commandStatus->GetUniqueId());
-        if (!FileExists(tmpFilePath))
+        if (!FileExists(tmpFilePath.c_str()))
         {
             // Create empty temporary file
             std::ofstream output(tmpFilePath);
@@ -429,7 +423,8 @@ bool CommandRunner::IsCanceled(std::string commandId)
     if (CommandExists(commandId))
     {
         CommandStatus* commandStatus = GetCommandStatus(commandId);
-        return FileExists(GetTmpFilePath(commandStatus->GetUniqueId()));
+        std::string name = GetTmpFilePath(commandStatus->GetUniqueId());
+        return FileExists(name.c_str());
     }
     return false;
 }

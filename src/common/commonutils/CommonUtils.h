@@ -30,7 +30,11 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
+bool FileExists(const char* name);
+
 size_t HashString(const char* source);
+
+bool IsValidClientName(const char* name);
 
 #ifdef __cplusplus
 }
