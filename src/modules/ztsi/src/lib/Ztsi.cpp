@@ -446,7 +446,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
     size_t bytesRead = 0;
     char* buffer = nullptr;
 
-    if (::FileExists(m_agentConfigurationFile.c_str()))
+    if (FileExists(m_agentConfigurationFile.c_str()))
     {
         if (nullptr != (fp = OpenAndLockFile("r")))
         {

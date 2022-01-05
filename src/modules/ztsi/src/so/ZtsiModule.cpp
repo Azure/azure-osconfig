@@ -88,7 +88,7 @@ MMI_HANDLE MmiOpen(
         OsConfigLogError(ZtsiLog::Get(), "MmiOpen called with null clientName");
         status = EINVAL;
     }
-    else if (!IsValidClientName(clientName))
+    else if (!::IsValidClientName(clientName))
     {
         status = EINVAL;
     }
