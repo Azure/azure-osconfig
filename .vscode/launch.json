@@ -5,16 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Build & Debug",
+            "name": "Debug OSConfig",
             "type": "cppdbg",
             "request": "launch",
             "program": "/usr/bin/osconfig",
+            //"args": ["/etc/osconfig/osconfig.conn"], // <- enable if you want to provide a connection string manually
             "cwd": "${workspaceFolder}",
             "stopAtEntry": true,
             "MIMode": "gdb",
             "miDebuggerPath": "${workspaceFolder}/.vscode/debug.sh",
-            "targetArchitecture": "arm64",
-            "preLaunchTask": "build"
+            "targetArchitecture": "arm64"
         }
     ]
 }

@@ -24,3 +24,4 @@ RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
 RUN apt update && apt install -y dotnet-sdk-5.0
 
 RUN apt install -y gdb
+RUN apt install -y sudo
