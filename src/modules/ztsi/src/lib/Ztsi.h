@@ -10,8 +10,6 @@
 #define ZTSI_LOGFILE "/var/log/osconfig_ztsi.log"
 #define ZTSI_ROLLEDLOGFILE "/var/log/osconfig_ztsi.bak"
 
-bool IsValidClientName(const std::string& clientName);
-
 class ZtsiLog
 {
 public:

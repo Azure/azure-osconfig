@@ -24,7 +24,7 @@ static const bool g_defaultEnabled = false;
 static const std::string g_defaultServiceUrl = "";
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
-static const unsigned int g_lockWaitMilliseconds = 20;
+static const unsigned int g_lockWaitMillis = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
 const std::string Ztsi::m_componentName = "Ztsi";
@@ -561,7 +561,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
     int status = MMI_OK;
     std::FILE* fp = nullptr;
 
-    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWaitMilliseconds, g_lockWaitMaxRetries)))
+    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
     {
         std::string configurationJson = BuildConfigurationJson(configuration);
 
