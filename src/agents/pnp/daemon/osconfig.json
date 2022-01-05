@@ -45,6 +45,10 @@
     {
       "ComponentName": "Ztsi",
       "ObjectName": "ServiceUrl"
+    },
+    {
+      "ComponentName": "AptInstall",
+      "ObjectName": "AptInstallObject"
     }
   ],
   "ReportingIntervalSeconds": 30,

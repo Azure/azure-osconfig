@@ -9,17 +9,17 @@
 #include "Mmi.h"
 #include "AptInstall.h"
 
-static const std::string g_componentName = "AptInstallComponent";
+static const std::string g_componentName = "AptInstall";
 static const std::string g_objectName = "AptInstallObject";
 
 constexpr const char ret[] = R""""({
-    "Name": "AptInstall Module,
+    "Name": "AptInstall Module",
     "Description": "Module designed to install DEB-packages using APT",
     "Manufacturer": "Microsoft",
     "VersionMajor": 1,
     "VersionMinor": 0,
     "VersionInfo": "",
-    "Components": ["AptInstallComponent"],
+    "Components": ["AptInstall"],
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
