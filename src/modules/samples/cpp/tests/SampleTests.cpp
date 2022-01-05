@@ -67,4 +67,25 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(EINVAL, session->Set(componentName, objectName, validPayload, strlen(validPayload) - 1));
         ASSERT_EQ(EINVAL, session->Set(componentName, objectName, invalidPayload, strlen(invalidPayload)));
     }
+
+    TEST_F(CppSampleTests, InvalidSet)
+    {
+        char payload[] = "invalid payload";
+
+        // Set with invalid arguments
+        ASSERT_EQ(EINVAL, session->Set("invalid component", objectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, "invalid component", payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, payload, -1));
+    }
+
+    TEST_F(CppSampleTests, InvalidGet)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        // Get with invalid arguments
+        ASSERT_EQ(EINVAL, session->Get("invalid component", objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get(componentName, "invalid object", &payload, &payloadSizeBytes));
+    }
 }
