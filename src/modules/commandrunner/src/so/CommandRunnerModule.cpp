@@ -322,11 +322,11 @@ MMI_HANDLE MmiOpenInternal(
         // No CommandRunner found for clientName or expired CommandRunner, create new one
         OsConfigLogInfo(CommandRunnerLog::Get(), "Initializing %s for clientName: %s", ComponentName.c_str(), clientName);
         maxPayloadSizeBytes = maxPayloadSize;
-        auto cr = std::shared_ptr<CommandRunner>(new CommandRunner(clientName, PersistCommandResults, maxPayloadSizeBytes));
-        MMI_HANDLE mmiHandle = reinterpret_cast<MMI_HANDLE>(cr.get());
-        commandRunnerMap[clientName] = cr;
-        mmiMap[mmiHandle] = cr;
-        LoadLastCommandResults(clientName, cr);
+        auto commandRunner = std::shared_ptr<CommandRunner>(new CommandRunner(clientName, PersistCommandResults, maxPayloadSizeBytes));
+        MMI_HANDLE mmiHandle = reinterpret_cast<MMI_HANDLE>(commandRunner.get());
+        commandRunnerMap[clientName] = commandRunner;
+        mmiMap[mmiHandle] = commandRunner;
+        LoadLastCommandResults(clientName, commandRunner);
         handle = mmiHandle;
     }
     else if (!(commandRunnerMap[clientName].expired()))
@@ -359,17 +359,14 @@ void MmiClose(MMI_HANDLE clientSession)
     if (mmiMap.end() != mmiMap.find(clientSession))
     {
         std::string clientName = mmiMap[clientSession].get()->GetClientName();
-        rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-
         mmiMap[clientSession]->CancelAll();
-        PersistCommandResults();
-        mmiMap[clientSession].reset();
 
-        if (MMI_OK != WriteToCache(sb))
+        if (MMI_OK != PersistCommandResults())
         {
             OsConfigLogError(CommandRunnerLog::Get(), "MmiClose: error writing to cache");
         }
+
+        mmiMap[clientSession].reset();
     }
     else
     {
