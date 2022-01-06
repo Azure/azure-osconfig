@@ -120,7 +120,7 @@ int WriteToCache(rapidjson::StringBuffer& sb)
         std::fclose(file);
     }
 
-    return MMI_OK;
+    return 0;
 }
 
 int PersistCommandResults()
@@ -361,7 +361,7 @@ void MmiClose(MMI_HANDLE clientSession)
         std::string clientName = mmiMap[clientSession].get()->GetClientName();
         mmiMap[clientSession]->CancelAll();
 
-        if (MMI_OK != PersistCommandResults())
+        if (0 != PersistCommandResults())
         {
             OsConfigLogError(CommandRunnerLog::Get(), "MmiClose: error writing to cache");
         }
