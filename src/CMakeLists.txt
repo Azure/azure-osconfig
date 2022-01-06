@@ -23,8 +23,7 @@ if (COMPILE_WITH_STRICTNESS)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCC)
-    add_compile_options("-fPIC")
-    add_compile_options("-Wno-psabi")
+    add_compile_options("-Wno-psabi;-fPIC")
 endif()
 
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)
