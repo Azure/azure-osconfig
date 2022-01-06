@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Mmi.h>
-#include "Settings.h"
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
-#include "ConfigFileUtils.h"
-#include "ScopeGuard.h"
 #include <fstream>
 #include <exception>
-#include "CommonUtils.h"
+#include <ScopeGuard.h>
+#include <Mmi.h>
+#include <CommonUtils.h>
+#include <ConfigFileUtils.h>
+#include <Settings.h>
 
 using namespace std;
 
@@ -54,7 +54,7 @@ int Settings::SetDeviceHealthTelemetryConfiguration(std::string payload, const c
         return EINVAL;
     }
 
-    if (!::FileExists(fileName))
+    if (!FileExists(fileName))
     {
         OsConfigLogError(SettingsLog::Get(), "Argument fileName %s not found", fileName);
         return ENOENT;
@@ -97,7 +97,7 @@ int Settings::SetDeliveryOptimizationPolicies(Settings::DeliveryOptimization del
         return EINVAL;
     }
 
-    if (!::FileExists(fileName))
+    if (!FileExists(fileName))
     {
         OsConfigLogError(SettingsLog::Get(), "Argument fileName %s not found", fileName);
         return ENOENT;
