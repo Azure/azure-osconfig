@@ -22,9 +22,8 @@ if (COMPILE_WITH_STRICTNESS)
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wreorder;-Wall;-Wextra;-Werror;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
 endif()
 
-# Ignore diagnostic notes/warnings when using GCC
 if (CMAKE_COMPILER_IS_GNUCC)
-    add_compile_options("-Wno-psabi")
+    add_compile_options("-Wno-psabi;-fPIC")
 endif()
 
 # Defaults to /usr/local - systemd requires binaries in /usr/(bin)
