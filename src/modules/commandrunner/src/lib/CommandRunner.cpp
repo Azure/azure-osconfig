@@ -267,10 +267,7 @@ int CommandRunner::Execute(CommandRunner& instance, CommandRunner::Action action
     {
         // Update command status with results from ExecuteCommand()
         instance.UpdateCommandStatus(commandId, status, results, CommandStateFromStatusCode(status));
-        if (ECANCELED != status)
-        {
-            instance.SetCommandIdToRefresh(commandId);
-        }
+        instance.SetCommandIdToRefresh(commandId);
 
         if ((nullptr != instance.cacheFunction) && (0 != (status = instance.cacheFunction())))
         {
