@@ -91,21 +91,22 @@ void CommandRunner::CommandWorkerThread(CommandRunner& commandRunnerInstance, st
         {
             case CommandRunner::Action::Reboot:
                 OsConfigLogInfo(CommandRunnerLog::Get(), "Attempting to reboot");
-                CommandRunner::Execute(commandRunnerInstance, command.commandId, "shutdown -r now", CommandState::Succeeded, 0, true);
+                CommandRunner::Execute(commandRunnerInstance, command.action, command.commandId, "shutdown -r now", CommandState::Succeeded, 0, true);
                 break;
 
             case CommandRunner::Action::Shutdown:
                 OsConfigLogInfo(CommandRunnerLog::Get(), "Attempting to shutdown");
-                CommandRunner::Execute(commandRunnerInstance, command.commandId, "shutdown now", CommandState::Succeeded, 0, true);
+                CommandRunner::Execute(commandRunnerInstance, command.action, command.commandId, "shutdown now", CommandState::Succeeded, 0, true);
                 break;
 
             case CommandRunner::Action::RunCommand:
-                CommandRunner::Execute(commandRunnerInstance, command.commandId, command.arguments, CommandState::Running, command.timeout, command.singleLineTextResult);
+                CommandRunner::Execute(commandRunnerInstance, command.action, command.commandId, command.arguments, CommandState::Running, command.timeout, command.singleLineTextResult);
                 break;
 
             default:
                 OsConfigLogError(CommandRunnerLog::Get(), "Invalid action: %d", command.action);
         }
+
         commandArgumentsBuffer.pop();
     }
     OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner worker thread finished. No more commands to process");
@@ -200,7 +201,7 @@ CommandRunner::CommandState CommandRunner::CommandStateFromStatusCode(int status
     return state;
 }
 
-int CommandRunner::Execute(CommandRunner& instance, std::string commandId, std::string command, CommandState initialState, unsigned int timeoutSeconds, bool replaceEol)
+int CommandRunner::Execute(CommandRunner& instance, CommandRunner::Action action, std::string commandId, std::string command, CommandState initialState, unsigned int timeoutSeconds, bool replaceEol)
 {
     int status = EINVAL;
     char* textResult = nullptr;
@@ -214,16 +215,13 @@ int CommandRunner::Execute(CommandRunner& instance, std::string commandId, std::
     OsConfigLogInfo(CommandRunnerLog::Get(), "Running command '%s'", commandId.c_str());
     instance.SetCommandIdToRefresh(commandId);
     instance.UpdatePartialCommandStatus(commandId, 0, initialState);
-    if (instance.cacheFunction)
+
+    if ((nullptr != instance.cacheFunction) && (0 != (status = instance.cacheFunction())))
     {
-        if (0 != (status = instance.cacheFunction()))
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Unable to persist to cache, skipping command '%s' with %d", commandId.c_str(), status);
-            return status;
-        }
+        OsConfigLogError(CommandRunnerLog::Get(), "Unable to persist to cache, skipping command '%s' with %d", commandId.c_str(), status);
+        return status;
     }
 
-    const char* commandCharPtr = command.c_str();
     unsigned int maxTextResultBytes = 0;
     unsigned int maxPayloadSizeInBytes = static_cast<unsigned int>(instance.GetMaxPayloadSizeInBytes());
     if (maxPayloadSizeInBytes > 0)
@@ -241,11 +239,11 @@ int CommandRunner::Execute(CommandRunner& instance, std::string commandId, std::
         context = reinterpret_cast<void*>(const_cast<char*>(tmpFilePath.c_str()));
     }
 
-    status = ExecuteCommand(context, commandCharPtr, replaceEol, true, maxTextResultBytes, timeoutSeconds, &textResult, &(CommandRunner::CommandExecutionCallback), CommandRunnerLog::Get());
+    status = ExecuteCommand(context, command.c_str(), replaceEol, true, maxTextResultBytes, timeoutSeconds, &textResult, &(CommandRunner::CommandExecutionCallback), CommandRunnerLog::Get());
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' ('%s') completed with %d and '%s'", commandId.c_str(), commandCharPtr, status, textResult ? textResult : "no text result");
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' ('%s') completed with %d and '%s'", commandId.c_str(), command.c_str(), status, textResult ? textResult : "no text result");
     }
     else
     {
@@ -259,24 +257,18 @@ int CommandRunner::Execute(CommandRunner& instance, std::string commandId, std::
         free(textResult);
     }
 
-    // Update command status with results from ExecuteCommand()
-    instance.UpdateCommandStatus(commandId, status, results, CommandStateFromStatusCode(status));
-    if (ECANCELED != status)
+    if ((CommandRunner::Action::Reboot != action) && (CommandRunner::Action::Shutdown != action))
     {
+        // Update command status with results from ExecuteCommand()
+        instance.UpdateCommandStatus(commandId, status, results, CommandStateFromStatusCode(status));
         instance.SetCommandIdToRefresh(commandId);
-    }
 
-    if (instance.cacheFunction)
-    {
-        if ((0 == status) && (0 != (status = instance.cacheFunction())))
+        if ((nullptr != instance.cacheFunction) && (0 != (status = instance.cacheFunction())))
         {
-            // Post operation failed, return error downstream
             OsConfigLogError(CommandRunnerLog::Get(), "Post command operation failed for command '%s' with %d", commandId.c_str(), status);
-            return status;
         }
     }
 
-    // The command was executed and the command's result was saved to be reported via CommandStatus
     return status;
 }
 

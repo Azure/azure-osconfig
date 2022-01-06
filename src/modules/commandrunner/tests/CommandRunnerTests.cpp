@@ -17,11 +17,6 @@ using ::testing::Invoke;
 
 #define LIMITED_PAYLOAD_SIZE 83
 
-class CommandRunnerMock : public CommandRunner
-{
-public:
-    MOCK_METHOD5(Execute, int(std::string commandId, std::string command, CommandRunner::CommandStatus cmdStatus, std::function<int()> pre, std::function<int()> post));
-};
 namespace OSConfig::Platform::Tests
 {
     TEST(CommandRunnerTests, Execute)
@@ -29,7 +24,7 @@ namespace OSConfig::Platform::Tests
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::Execute", nullptr);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
+        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
         auto cmdStatus = cmdRunner.GetCommandStatus("1");
         ASSERT_NE(nullptr, cmdStatus);
         ASSERT_STREQ(cmdArgs.commandId.c_str(), cmdStatus->commandId.c_str());
@@ -44,7 +39,7 @@ namespace OSConfig::Platform::Tests
         // Run 1st command
         CommandRunner::CommandArguments cmdArgs1{ "1", "echo test1", CommandRunner::Action::RunCommand, 0, true };
         cmdRunner.AddCommandStatus(cmdArgs1.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, cmdArgs1.commandId, cmdArgs1.arguments, CommandRunner::CommandState::Unknown, cmdArgs1.timeout, true));
+        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs1.commandId, cmdArgs1.arguments, CommandRunner::CommandState::Unknown, cmdArgs1.timeout, true));
         auto cmdStatus1 = cmdRunner.GetCommandStatus("1");
         ASSERT_NE(nullptr, cmdStatus1);
         ASSERT_STREQ(cmdArgs1.commandId.c_str(), cmdStatus1->commandId.c_str());
@@ -54,7 +49,7 @@ namespace OSConfig::Platform::Tests
         // Run 2nd command
         CommandRunner::CommandArguments cmdArgs2{ "2", "echo test2", CommandRunner::Action::RunCommand, 0, true };
         cmdRunner.AddCommandStatus(cmdArgs2.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, cmdArgs2.commandId, cmdArgs2.arguments, CommandRunner::CommandState::Unknown, cmdArgs2.timeout, true));
+        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs2.commandId, cmdArgs2.arguments, CommandRunner::CommandState::Unknown, cmdArgs2.timeout, true));
         auto cmdStatus2 = cmdRunner.GetCommandStatus("2");
         ASSERT_NE(nullptr, cmdStatus2);
         ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdStatus2->commandId.c_str());
@@ -69,7 +64,7 @@ namespace OSConfig::Platform::Tests
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::ExecuteCommandLimitedPayload", nullptr, LIMITED_PAYLOAD_SIZE);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
+        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
         auto cmdStatus = cmdRunner.GetCommandStatus("1");
         ASSERT_NE(nullptr, cmdStatus);
         ASSERT_STREQ(cmdArgs.commandId.c_str(), cmdStatus->commandId.c_str());
@@ -82,7 +77,7 @@ namespace OSConfig::Platform::Tests
         CommandRunner::CommandArguments cmdArgs{ "1", "echo 1", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::CachedCommandStatus", nullptr, LIMITED_PAYLOAD_SIZE);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
+        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
 
         auto status = cmdRunner.GetCommandStatusToPersist();
 
@@ -105,7 +100,7 @@ namespace OSConfig::Platform::Tests
             ASSERT_GT(size, 0);
             commandArgumentList[i] = { commandId, command, CommandRunner::Action::RunCommand, 0, true };
             cmdRunner.AddCommandStatus(commandId, true);
-            ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, commandArgumentList[i].commandId, commandArgumentList[i].arguments, CommandRunner::CommandState::Unknown, commandArgumentList[i].timeout, true));
+            ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, commandArgumentList[i].commandId, commandArgumentList[i].arguments, CommandRunner::CommandState::Unknown, commandArgumentList[i].timeout, true));
         }
 
         // 1st element should no longer be present in the buffer
