@@ -393,7 +393,7 @@ std::string ParseStringFromPayload(rapidjson::Document& jsonDoc, std::string pro
 
 int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArguments* commandArgs)
 {
-    int status = MMI_OK;
+    int status = 0;
 
     if (jsonDoc.HasMember(Action.c_str()))
     {
@@ -413,7 +413,7 @@ int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArgu
         status = EINVAL;
     }
 
-    if (MMI_OK == status)
+    if (0 == status)
     {
         // Set default values
         commandArgs->commandId = "";
@@ -492,7 +492,7 @@ int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArgu
 
             case CommandRunner::Action::None:
             default:
-                status = MMI_OK;
+                status = 0;
         }
     }
 
@@ -559,7 +559,7 @@ int MmiSetInternal(
         {
             // Populate CommandArguments struct from parsed JSON
             CommandRunner::CommandArguments commandargs;
-            if (MMI_OK != (status = ParseDesiredPayload(jsonDoc, &commandargs)))
+            if (0 != (status = ParseDesiredPayload(jsonDoc, &commandargs)))
             {
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiSet unable to validate JSON payload");
             }
