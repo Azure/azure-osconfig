@@ -24,7 +24,7 @@ static const bool g_defaultEnabled = false;
 static const std::string g_defaultServiceUrl = "";
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
-static const unsigned int g_lockWaitMillis = 20;
+static const unsigned int g_lockWait = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
 const std::string Ztsi::m_componentName = "Ztsi";
@@ -32,81 +32,6 @@ const std::string Ztsi::m_desiredServiceUrl = "DesiredServiceUrl";
 const std::string Ztsi::m_desiredEnabled = "DesiredEnabled";
 const std::string Ztsi::m_reportedServiceUrl = "ServiceUrl";
 const std::string Ztsi::m_reportedEnabled = "Enabled";
-
-
-bool IsValidClientName(const std::string& clientName)
-{
-    bool isValid = true;
-
-    const std::string clientNamePrefix = "Azure OSConfig ";
-    const std::string modelVersionDelimiter = ";";
-    const std::string semanticVersionDelimeter = ".";
-
-    // DTDL version 5 published with ZTSI on September 27, 2021
-    const int initialModelVersion = 5;
-    const int initialReleaseDay = 27;
-    const int initialReleaseMonth = 9;
-    const int initialReleaseYear = 2021;
-
-    // String length of date string yyyymmmdd
-    int dateLength = 9;
-
-    // Regex for validating client name 'Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>'
-    std::regex pattern("^((Azure OSConfig )[1-9];(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$");
-
-    if (!clientName.empty() && std::regex_match(clientName, pattern))
-    {
-        std::string versionInfo = clientName.substr(clientNamePrefix.length());
-        std::string modelVersion = versionInfo.substr(0, versionInfo.find(modelVersionDelimiter));
-
-        int modelVersionNumber = std::stoi(modelVersion);
-        if (modelVersionNumber < initialModelVersion)
-        {
-            isValid = false;
-        }
-
-        // Get build date from versionInfo
-        int position = 0;
-        for (int i = 0; i < 3; i++)
-        {
-            position = versionInfo.find(semanticVersionDelimeter, position + 1);
-        }
-
-        std::string buildDate = versionInfo.substr(position + 1, position + dateLength);
-        int year = std::stoi(buildDate.substr(0, 4));
-        int month = std::stoi(buildDate.substr(4, 2));
-        int day = std::stoi(buildDate.substr(6, 2));
-
-        if ((month < 1) || (month > 12) || (day < 1) || (day > 31))
-        {
-            isValid = false;
-        }
-
-        char dateNow[dateLength] = {0};
-        int monthNow, dayNow, yearNow;
-        time_t t = time(0);
-        strftime(dateNow, dateLength, "%Y%m%d", localtime(&t));
-        sscanf(dateNow, "%4d%2d%2d", &yearNow, &monthNow, &dayNow);
-
-        // Check if the build date is in the future
-        if ((yearNow < year) || ((yearNow == year) && ((monthNow < month) || ((monthNow == month) && (dayNow < day)))))
-        {
-            isValid = false;
-        }
-
-        // Check if the build date is before the initial release date
-        if ((year < initialReleaseYear) || ((year == initialReleaseYear) && ((month < initialReleaseMonth) || ((month == initialReleaseMonth) && (day < initialReleaseDay)))))
-        {
-            isValid = false;
-        }
-    }
-    else
-    {
-        isValid = false;
-    }
-
-    return isValid;
-}
 
 int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
@@ -157,12 +82,6 @@ int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigne
     }
 
     return status;
-}
-
-bool FileExists(const std::string& filePath)
-{
-    struct stat sb;
-    return (0 == stat(filePath.c_str(), &sb) && S_ISREG(sb.st_mode));
 }
 
 OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
@@ -527,7 +446,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
     size_t bytesRead = 0;
     char* buffer = nullptr;
 
-    if (FileExists(m_agentConfigurationFile))
+    if (FileExists(m_agentConfigurationFile.c_str()))
     {
         if (nullptr != (fp = OpenAndLockFile("r")))
         {
@@ -642,7 +561,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
     int status = MMI_OK;
     std::FILE* fp = nullptr;
 
-    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
+    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWait, g_lockWaitMaxRetries)))
     {
         std::string configurationJson = BuildConfigurationJson(configuration);
 
