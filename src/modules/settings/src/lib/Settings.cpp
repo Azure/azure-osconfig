@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Mmi.h>
-#include "Settings.h"
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
-#include "ConfigFileUtils.h"
-#include "ScopeGuard.h"
 #include <fstream>
 #include <exception>
+#include <ScopeGuard.h>
+#include <Mmi.h>
+#include <CommonUtils.h>
+#include <ConfigFileUtils.h>
+#include <Settings.h>
 
 using namespace std;
 
@@ -28,11 +29,6 @@ OSCONFIG_LOG_HANDLE SettingsLog::m_logSettings = nullptr;
 Settings::Settings(unsigned int maxSizeInBytes)
 {
     maxPayloadSizeInBytes = maxSizeInBytes;
-}
-
-bool Settings::FileExists(const char* name)
-{
-    return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
 int Settings::SetDeviceHealthTelemetryConfiguration(std::string payload, const char* fileName, bool &configurationChanged)

@@ -456,3 +456,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
+
+bool FileExists(const char* name)
+{
+    return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
+}

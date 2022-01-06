@@ -53,6 +53,5 @@ class Settings
         int SetDeliveryOptimizationPolicies(Settings::DeliveryOptimization deliveryoptimization, const char* fileName, bool &configurationChanged);
 
     private:
-        bool FileExists(const char* name);
         unsigned int maxPayloadSizeInBytes;
 };
