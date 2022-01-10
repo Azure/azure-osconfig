@@ -25,16 +25,35 @@ namespace OSConfig::Platform::Tests
         static Sample* session;
 
         static const char* componentName;
+
         static const char* desiredStringObjectName;
         static const char* reportedStringObjectName;
+        static const char* desiredIntegerObjectName;
+        static const char* reportedIntegerObjectName;
+        static const char* desiredBooleanObjectName;
+        static const char* reportedBooleanObjectName;
+        static const char* desiredObjectName;
+        static const char* reportedObjectName;
+        static const char* desiredArrayObjectName;
+        static const char* reportedArrayObjectName;
     };
 
     Sample* CppSampleTests::session;
-    const char* CppSampleTests::componentName = "SampleComponentName";
-    const char* CppSampleTests::desiredStringObjectName = "DesiredStringObjectName";
-    const char* CppSampleTests::reportedStringObjectName = "ReportedStringObjectName";
 
-    TEST_F(CppSampleTests, ValidGetSet)
+    const char* CppSampleTests::componentName = "SampleComponent";
+
+    const char* CppSampleTests::desiredStringObjectName = "DesiredStringObject";
+    const char* CppSampleTests::reportedStringObjectName = "ReportedStringObject";
+    const char* CppSampleTests::desiredIntegerObjectName = "DesiredIntegerObject";
+    const char* CppSampleTests::reportedIntegerObjectName = "ReportedIntegerObject";
+    const char* CppSampleTests::desiredBooleanObjectName = "DesiredBooleanObject";
+    const char* CppSampleTests::reportedBooleanObjectName = "ReportedBooleanObject";
+    const char* CppSampleTests::desiredObjectName = "DesiredObject";
+    const char* CppSampleTests::reportedObjectName = "ReportedObject";
+    const char* CppSampleTests::desiredArrayObjectName = "DesiredArrayObject";
+    const char* CppSampleTests::reportedArrayObjectName = "ReportedArrayObject";
+
+    TEST_F(CppSampleTests, GetSetStringObject)
     {
         char jsonPayload[] = "\"C++ Sample Module\"";
         int payloadSizeBytes = 0;
@@ -42,6 +61,90 @@ namespace OSConfig::Platform::Tests
 
         ASSERT_EQ(MMI_OK, session->Set(componentName, desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
         ASSERT_EQ(MMI_OK, session->Get(componentName, reportedStringObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetIntegerObject)
+    {
+        char jsonPayload[] = "12345";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredIntegerObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedIntegerObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetBooleanObject)
+    {
+        char jsonPayload[] = "true";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredBooleanObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedBooleanObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetObject)
+    {
+        char jsonPayload[] = "{"
+            "\"StringSetting\":\"C++ Sample Module\","
+            "\"BooleanSetting\":true,"
+            "\"IntegerSetting\":12345,"
+            "\"IntegerEnumerationSetting\":0,"
+            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"IntegerArraySetting\":[1,2,3,4,5],"
+            "\"StringMapSetting\":{"
+                "\"Key1\":\"C++ Sample Module 1\","
+                "\"Key2\":\"C++ Sample Module 2\""
+            "},"
+            "\"IntegerMapSetting\":{"
+                "\"Key1\":1,"
+                "\"Key2\":2"
+            "}}";
+
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetArrayObject)
+    {
+        char jsonPayload[] = "["
+            "{"
+                "\"StringSetting\":\"C++ Sample Module\","
+                "\"BooleanSetting\":true,"
+                "\"IntegerSetting\":12345,"
+                "\"IntegerEnumerationSetting\":0,"
+                "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+                "\"IntegerArraySetting\":[1,2,3,4,5],"
+                "\"StringMapSetting\":{"
+                    "\"Key1\":\"C++ Sample Module 1\","
+                    "\"Key2\":\"C++ Sample Module 2\""
+                "},"
+                "\"IntegerMapSetting\":{"
+                    "\"Key1\":1,"
+                    "\"Key2\":2"
+                "}"
+            "}]";
+
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredArrayObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedArrayObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());

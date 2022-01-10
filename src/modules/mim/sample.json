@@ -3,20 +3,382 @@
   "type": "MimModel",
   "contents": [
     {
-      "name": "SampleComponentName",
+      "name": "SampleComponent",
       "type": "MimComponent",
       "contents": [
         {
-          "name": "DesiredStringObjectName",
+          "name": "DesiredStringObject",
           "type": "MimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "ReportedStringObjectName",
+          "name": "ReportedStringObject",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
+        },
+        {
+          "name": "DesiredIntegerObject",
+          "type": "MimObject",
+          "desired": true,
+          "schema": "integer"
+        },
+        {
+          "name": "ReportedIntegerObject",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "integer"
+        },
+        {
+          "name": "DesiredBooleanObject",
+          "type": "MimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
+          "name": "ReportedBooleanObject",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "DesiredObject",
+          "type": "MimObject",
+          "desired": true,
+          "schema": {
+            "type": "object",
+            "fields": [
+              {
+                "name": "StringSetting",
+                "schema": "string"
+              },
+              {
+                "name": "IntegerSetting",
+                "schema": "integer"
+              },
+              {
+                "name": "BooleanSetting",
+                "schema": "boolean"
+              },
+              {
+                "name": "IntegerEnumerationSetting",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "None",
+                      "enumValue":  0
+                    },
+                    {
+                      "name": "EnumValue1",
+                      "enumValue":  1
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "StringsArraySetting",
+                "schema": {
+                  "type": "Array",
+                  "elementSchema": "string"
+                }
+              },
+              {
+                "name": "IntegerArraySetting",
+                "schema":  {
+                  "type": "Array",
+                  "elementSchema": "integer"
+                }
+              },
+              {
+                "name": "StringMapSetting",
+                "schema": {
+                  "type": "Map",
+                  "mapKey":  {
+                    "name": "KeyName",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "MapValue",
+                    "schema": "string"
+                  }
+                }
+              },
+              {
+                "name": "IntegerMapSetting",
+                "schema": {
+                  "type": "Map",
+                  "mapKey":  {
+                    "name": "KeyName",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "MapValue",
+                    "schema": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "ReportedObject",
+          "type": "MimObject",
+          "desired": false,
+          "schema": {
+            "type": "object",
+            "fields": [
+              {
+                "name": "StringSetting",
+                "schema": "string"
+              },
+              {
+                "name": "IntegerSetting",
+                "schema": "integer"
+              },
+              {
+                "name": "BooleanSetting",
+                "schema": "boolean"
+              },
+              {
+                "name": "IntegerEnumerationSetting",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "None",
+                      "enumValue":  0
+                    },
+                    {
+                      "name": "EnumValue1",
+                      "enumValue":  1
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "StringsArraySetting",
+                "schema": {
+                  "type": "Array",
+                  "elementSchema": "string"
+                }
+              },
+              {
+                "name": "IntegerArraySetting",
+                "schema":  {
+                  "type": "Array",
+                  "elementSchema": "integer"
+                }
+              },
+              {
+                "name": "StringMapSetting",
+                "schema": {
+                  "type": "Map",
+                  "mapKey":  {
+                    "name": "KeyName",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "MapValue",
+                    "schema": "string"
+                  }
+                }
+              },
+              {
+                "name": "IntegerMapSetting",
+                "schema": {
+                  "type": "Map",
+                  "mapKey":  {
+                    "name": "KeyName",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "MapValue",
+                    "schema": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "DesiredArrayObject",
+          "type": "MimObject",
+          "desired": true,
+          "schema": {
+            "type": "Array",
+            "elementSchema": {
+              "type": "Object",
+              "fields": [
+                {
+                  "name": "StringSetting",
+                  "schema": "string"
+                },
+                {
+                  "name": "IntegerSetting",
+                  "schema": "integer"
+                },
+                {
+                  "name": "BooleanSetting",
+                  "schema": "boolean"
+                },
+                {
+                  "name": "IntegerEnumerationSetting",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "None",
+                        "enumValue": 0
+                      },
+                      {
+                        "name": "Value1",
+                        "enumValue": 1
+                      },
+                      {
+                        "name": "Value2",
+                        "enumValue": 2
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "StringsArraySetting",
+                  "schema": {
+                    "type": "Array",
+                    "elementSchema": "string"
+                }
+                },
+                {
+                  "name": "IntegerArraySetting",
+                  "schema":  {
+                    "type": "Array",
+                    "elementSchema": "integer"
+                  }
+                },
+                {
+                  "name": "StringMapSetting",
+                  "schema": {
+                    "type": "Map",
+                    "mapKey":  {
+                      "name": "KeyName",
+                      "schema": "string"
+                    },
+                    "mapValue": {
+                      "name": "MapValue",
+                      "schema": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "IntegerMapSetting",
+                  "schema": {
+                    "type": "Map",
+                    "mapKey":  {
+                      "name": "KeyName",
+                      "schema": "string"
+                    },
+                    "mapValue": {
+                      "name": "MapValue",
+                      "schema": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+        {
+          "name": "ReportedArrayObject",
+          "type": "MimObject",
+          "desired": false,
+          "schema": {
+            "type": "Array",
+            "elementSchema": {
+              "type": "Object",
+              "fields": [
+                {
+                  "name": "StringSetting",
+                  "schema": "string"
+                },
+                {
+                  "name": "IntegerSetting",
+                  "schema": "integer"
+                },
+                {
+                  "name": "BooleanSetting",
+                  "schema": "boolean"
+                },
+                {
+                  "name": "IntegerEnumerationSetting",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "None",
+                        "enumValue": 0
+                      },
+                      {
+                        "name": "EnumValue1",
+                        "enumValue": 1
+                      },
+                      {
+                        "name": "EnumValue2",
+                        "enumValue": 2
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "StringsArraySetting",
+                  "schema": {
+                    "type": "Array",
+                    "elementSchema": "string"
+                }
+                },
+                {
+                  "name": "IntegerArraySetting",
+                  "schema":  {
+                    "type": "Array",
+                    "elementSchema": "integer"
+                  }
+                },
+                {
+                  "name": "StringMapSetting",
+                  "schema": {
+                    "type": "Map",
+                    "mapKey":  {
+                      "name": "KeyName",
+                      "schema": "string"
+                    },
+                    "mapValue": {
+                      "name": "MapValue",
+                      "schema": "string"
+                    }
+                  }
+                },
+                {
+                  "name": "IntegerMapSetting",
+                  "schema": {
+                    "type": "Map",
+                    "mapKey":  {
+                      "name": "KeyName",
+                      "schema": "string"
+                    },
+                    "mapValue": {
+                      "name": "MapValue",
+                      "schema": "integer"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         }
       ]
     }
