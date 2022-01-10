@@ -10,9 +10,28 @@
 #include "Sample.h"
 
 static const std::string g_componentName = "SampleComponent";
-static const std::string g_objectName = "SampleObject";
 
-constexpr const char ret[] = R""""({
+static const std::string g_desiredStringObjectName = "DesiredStringObject";
+static const std::string g_reportedStringObjectName = "ReportedStringObject";
+static const std::string g_desiredIntegerObjectName = "DesiredIntegerObject";
+static const std::string g_reportedIntegerObjectName = "ReportedIntegerObject";
+static const std::string g_desiredBooleanObjectName = "DesiredBooleanObject";
+static const std::string g_reportedBooleanObjectName = "ReportedBooleanObject";
+static const std::string g_desiredObjectName = "DesiredObject";
+static const std::string g_reportedObjectName = "ReportedObject";
+static const std::string g_desiredArrayObjectName = "DesiredArrayObject";
+static const std::string g_reportedArrayObjectName = "ReportedArrayObject";
+
+static const std::string g_stringSettingName = "StringSetting";
+static const std::string g_integerSettingName = "IntegerSetting";
+static const std::string g_booleanSettingName = "BooleanSetting";
+static const std::string g_integerEnumerationSettingName = "IntegerEnumerationSetting";
+static const std::string g_stringArraySettingName = "StringsArraySetting";
+static const std::string g_integerArraySettingName = "IntegerArraySetting";
+static const std::string g_stringMapSettingName = "StringMapSetting";
+static const std::string g_integerMapSettingName = "IntegerMapSetting";
+
+constexpr const char info[] = R""""({
     "Name": "C++ Sample",
     "Description": "A sample module written in C++",
     "Manufacturer": "Microsoft",
@@ -53,7 +72,7 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
     {
         try
         {
-            std::size_t len = ARRAY_SIZE(ret) - 1;
+            std::size_t len = ARRAY_SIZE(info) - 1;
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
@@ -62,7 +81,7 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
             }
             else
             {
-                std::memcpy(*payload, ret, len);
+                std::memcpy(*payload, info, len);
                 *payloadSizeBytes = len;
             }
         }
@@ -102,13 +121,14 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
         // Dispatch the request to the appropriate method for the given component and object
         if (0 == g_componentName.compare(componentName))
         {
-            if (0 == g_objectName.compare(objectName))
+            if (0 == g_desiredStringObjectName.compare(objectName))
             {
-                // Get the required data from the payload and dispatch the request to the client session
+                // Parse the string from the payload
                 if (document.IsString())
                 {
-                    // Apply the payload data
-                    m_value = document.GetString();
+                    // Do something with the string
+                    std::string value = document.GetString();
+                    m_stringValue = value;
                     status = MMI_OK;
                 }
                 else
@@ -117,15 +137,93 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
                     status = EINVAL;
                 }
             }
+            else if (0 == g_desiredBooleanObjectName.compare(objectName))
+            {
+                if (document.IsBool())
+                {
+                    // Do something with the boolean
+                    bool value = document.GetBool();
+                    m_booleanValue = value;
+                    status = MMI_OK;
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "JSON payload is not a boolean");
+                    status = EINVAL;
+                }
+            }
+            else if (0 == g_desiredIntegerObjectName.compare(objectName))
+            {
+                if (document.IsInt())
+                {
+                    // Do something with the integer
+                    int value = document.GetInt();
+                    m_integerValue = value;
+                    status = MMI_OK;
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "JSON payload is not an integer");
+                    status = EINVAL;
+                }
+            }
+            else if (0 == g_desiredObjectName.compare(objectName))
+            {
+                if (document.IsObject())
+                {
+                    // Deserialize the object
+                    Sample::Object object;
+                    if (0 == DeserializeObject(document, object))
+                    {
+                        // Do something with the object
+                        m_objectValue = object;
+                        status = MMI_OK;
+                    }
+                    else
+                    {
+                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize object");
+                        status = EINVAL;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "JSON payload is not an object");
+                    status = EINVAL;
+                }
+            }
+            else if (0 == g_desiredArrayObjectName.compare(objectName))
+            {
+                if (document.IsArray())
+                {
+                    // Deserialize the array of objects
+                    std::vector<Sample::Object> objects;
+                    if (0 == DeserializeObjectArray(document, objects))
+                    {
+                        // Do something with the objects
+                        m_objectArrayValue = objects;
+                        status = MMI_OK;
+                    }
+                    else
+                    {
+                        OsConfigLogError(SampleLog::Get(), "Failed to deserialize array of objects");
+                        status = EINVAL;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "JSON payload is not an array");
+                    status = EINVAL;
+                }
+            }
             else
             {
-                OsConfigLogError(SampleLog::Get(), "Invalid objectName: %s", objectName);
+                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "Invalid componentName: %s", componentName);
+            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
             status = EINVAL;
         }
     }
@@ -153,24 +251,396 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
         // Dispatch the get request to the appropriate method for the given component and object
         if (0 == g_componentName.compare(componentName))
         {
-            if (0 == g_objectName.compare(objectName))
+            if (0 == g_reportedStringObjectName.compare(objectName))
             {
-                std::string value = m_value;
+                // Get the string value to report
+                std::string value = m_stringValue;
                 document.SetString(value.c_str(), document.GetAllocator());
 
                 // Serialize the JSON object to the payload buffer
                 status = Sample::SerializeJsonPayload(document, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
+            else if (0 == g_reportedBooleanObjectName.compare(objectName))
+            {
+                // Get the boolean value to report
+                bool value = m_booleanValue;
+                document.SetBool(value);
+
+                // Serialize the JSON object to the payload buffer
+                status = Sample::SerializeJsonPayload(document, payload, payloadSizeBytes, maxPayloadSizeBytes);
+            }
+            else if (0 == g_reportedIntegerObjectName.compare(objectName))
+            {
+                // Get the integer value to report
+                int value = m_integerValue;
+                document.SetInt(value);
+
+                // Serialize the JSON object to the payload buffer
+                status = Sample::SerializeJsonPayload(document, payload, payloadSizeBytes, maxPayloadSizeBytes);
+            }
+            else if (0 == g_reportedObjectName.compare(objectName))
+            {
+                // Get the object value to report
+                Object object = m_objectValue;
+
+                // Serialize the object
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+                if (0 == Sample::SerializeObject(writer, object))
+                {
+                    status = Sample::CopyJsonPayload(buffer, payload, payloadSizeBytes);
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Failed to serialize object");
+                    status = EINVAL;
+                }
+            }
+            else if (0 == g_reportedArrayObjectName.compare(objectName))
+            {
+                // Get the objects array to report
+                std::vector<Object> objects = m_objectArrayValue;
+
+                // Serialize the array of objects
+                rapidjson::StringBuffer buffer;
+                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+                if (0 == Sample::SerializeObjectArray(writer, objects))
+                {
+                    status = Sample::CopyJsonPayload(buffer, payload, payloadSizeBytes);
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Failed to serialize array of objects");
+                    status = EINVAL;
+                }
+            }
             else
             {
-                OsConfigLogError(SampleLog::Get(), "Invalid objectName: %s", objectName);
+                OsConfigLogError(SampleLog::Get(), "Invalid object name: %s", objectName);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(SampleLog::Get(), "Invalid componentName: %s", componentName);
+            OsConfigLogError(SampleLog::Get(), "Invalid component name: %s", componentName);
             status = EINVAL;
+        }
+    }
+
+    return status;
+}
+
+int Sample::SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Sample::Object& object)
+{
+    int status = 0;
+
+    writer.StartObject();
+
+    // Object string setting
+    writer.Key(g_stringSettingName.c_str());
+    writer.String(object.stringSetting.c_str());
+
+    // Object boolean setting
+    writer.Key(g_booleanSettingName.c_str());
+    writer.Bool(object.booleanSetting);
+
+    // Object integer setting
+    writer.Key(g_integerSettingName.c_str());
+    writer.Int(object.integerSetting);
+
+    // Object enumeration setting
+    writer.Key(g_integerEnumerationSettingName.c_str());
+    writer.Int(static_cast<int>(object.enumerationSetting));
+
+    // Object string array setting
+    writer.Key(g_stringArraySettingName.c_str());
+    writer.StartArray();
+
+    for (auto& string : object.stringArraySetting)
+    {
+        writer.String(string.c_str());
+    }
+
+    writer.EndArray();
+
+    // Object integer array setting
+    writer.Key(g_integerArraySettingName.c_str());
+    writer.StartArray();
+
+    for (auto& integer : object.integerArraySetting)
+    {
+        writer.Int(integer);
+    }
+
+    writer.EndArray();
+
+    // Object string map setting
+    writer.Key(g_stringMapSettingName.c_str());
+    writer.StartObject();
+
+    for (auto& pair : object.stringMapSetting)
+    {
+        writer.Key(pair.first.c_str());
+        writer.String(pair.second.c_str());
+    }
+
+    writer.EndObject();
+
+    // Object integer map setting
+    writer.Key(g_integerMapSettingName.c_str());
+    writer.StartObject();
+
+    for (auto& pair : object.integerMapSetting)
+    {
+        writer.Key(pair.first.c_str());
+        writer.Int(pair.second);
+    }
+
+    writer.EndObject();
+
+    writer.EndObject();
+
+    return status;
+}
+
+int Sample::SerializeObjectArray(rapidjson::Writer<rapidjson::StringBuffer>& writer, const std::vector<Sample::Object>& objects)
+{
+    int status = 0;
+
+    writer.StartArray();
+
+    for (auto& object : objects)
+    {
+        Sample::SerializeObject(writer, object);
+    }
+
+    writer.EndArray();
+
+    return status;
+}
+
+int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
+{
+    int status = 0;
+
+    // Deserialize a string setting
+    if (document.HasMember(g_stringSettingName.c_str()))
+    {
+        if (document[g_stringSettingName.c_str()].IsString())
+        {
+            object.stringSetting = document[g_stringSettingName.c_str()].GetString();
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not a string", g_stringSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string setting");
+        status = EINVAL;
+    }
+
+    // Deserialize a boolean setting
+    if (document.HasMember(g_booleanSettingName.c_str()))
+    {
+        if (document[g_booleanSettingName.c_str()].IsBool())
+        {
+            object.booleanSetting = document[g_booleanSettingName.c_str()].GetBool();
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not a boolean", g_booleanSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a boolean setting");
+        status = EINVAL;
+    }
+
+    // Deserialize an integer setting
+    if (document.HasMember(g_integerSettingName.c_str()))
+    {
+        if (document[g_integerSettingName.c_str()].IsInt())
+        {
+            object.integerSetting = document[g_integerSettingName.c_str()].GetInt();
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an integer", g_integerSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer setting");
+        status = EINVAL;
+    }
+
+    // Deserialize an enumeration setting
+    if (document.HasMember(g_integerEnumerationSettingName.c_str()))
+    {
+        if (document[g_integerEnumerationSettingName.c_str()].IsInt())
+        {
+            object.enumerationSetting = static_cast<Sample::IntegerEnumeration>(document[g_integerEnumerationSettingName.c_str()].GetInt());
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an integer", g_integerEnumerationSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer enumeration setting");
+        status = EINVAL;
+    }
+
+    // Deserialize an string array setting
+    if (document.HasMember(g_stringArraySettingName.c_str()))
+    {
+        if (document[g_stringArraySettingName.c_str()].IsArray())
+        {
+            for (rapidjson::SizeType i = 0; i < document[g_stringArraySettingName.c_str()].Size(); ++i)
+            {
+                if (document[g_stringArraySettingName.c_str()][i].IsString())
+                {
+                    object.stringArraySetting.push_back(document[g_stringArraySettingName.c_str()][i].GetString());
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string array at position %d", i);
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an array", g_stringArraySettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string array setting");
+        status = EINVAL;
+    }
+
+    // Deserialize an integer array setting
+    if (document.HasMember(g_integerArraySettingName.c_str()))
+    {
+        if (document[g_integerArraySettingName.c_str()].IsArray())
+        {
+            for (rapidjson::SizeType i = 0; i < document[g_integerArraySettingName.c_str()].Size(); ++i)
+            {
+                if (document[g_integerArraySettingName.c_str()][i].IsInt())
+                {
+                    object.integerArraySetting.push_back(document[g_integerArraySettingName.c_str()][i].GetInt());
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Invalid integer in JSON object integer array at position %d", i);
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an array", g_integerArraySettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain an integer array setting");
+        status = EINVAL;
+    }
+
+    // Deserialize a map of strings to strings
+    if (document.HasMember(g_stringMapSettingName.c_str()))
+    {
+        if (document[g_stringMapSettingName.c_str()].IsObject())
+        {
+            for(auto& member : document[g_stringMapSettingName.c_str()].GetObject())
+            {
+                if (member.value.IsString())
+                {
+                    object.stringMapSetting[member.name.GetString()] = member.value.GetString();
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an object", g_stringMapSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string map setting");
+        status = EINVAL;
+    }
+
+    // Deserialize a map of strings to integers
+    if (document.HasMember(g_integerMapSettingName.c_str()))
+    {
+        if (document[g_integerMapSettingName.c_str()].IsObject())
+        {
+            for (auto& member : document[g_integerMapSettingName.c_str()].GetObject())
+            {
+                if (member.value.IsInt())
+                {
+                    object.integerMapSetting[member.name.GetString()] = member.value.GetInt();
+                }
+                else
+                {
+                    OsConfigLogError(SampleLog::Get(), "Invalid integer in JSON object integer map at key %s", member.name.GetString());
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not an object", g_integerMapSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string integer map setting");
+        status = EINVAL;
+    }
+
+    return status;
+}
+
+int Sample::DeserializeObjectArray(rapidjson::Document& document, std::vector<Object>& objects)
+{
+    int status = 0;
+
+    for (rapidjson::Value::ConstValueIterator arrayItem = document.Begin(); arrayItem != document.End(); ++arrayItem)
+    {
+        Object object;
+        rapidjson::Document objectDocument;
+        objectDocument.CopyFrom(*arrayItem, objectDocument.GetAllocator());
+        if (objectDocument.IsObject() && (0 == (status = DeserializeObject(objectDocument, object))))
+        {
+            objects.push_back(object);
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "Failed to deserialize object");
+            break;
         }
     }
 
@@ -193,36 +663,45 @@ int Sample::SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING*
     }
     else
     {
-        try
+        status = Sample::CopyJsonPayload(buffer, payload, payloadSizeBytes);
+    }
+
+    return status;
+}
+
+int Sample::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+{
+    int status = MMI_OK;
+
+    try
+    {
+        *payload = new (std::nothrow) char[buffer.GetSize()];
+        if (nullptr == *payload)
         {
-            *payload = new (std::nothrow) char[buffer.GetSize()];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
-                status = ENOMEM;
-            }
-            else
-            {
-                std::fill(*payload, *payload + buffer.GetSize(), 0);
-                std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
-                *payloadSizeBytes = buffer.GetSize();
-            }
+            OsConfigLogError(SampleLog::Get(), "Unable to allocate memory for payload");
+            status = ENOMEM;
         }
-        catch (const std::exception& e)
+        else
         {
-            OsConfigLogError(SampleLog::Get(), "Could not allocate payload: %s", e.what());
-            status = EINTR;
+            std::fill(*payload, *payload + buffer.GetSize(), 0);
+            std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
+            *payloadSizeBytes = buffer.GetSize();
+        }
+    }
+    catch (const std::exception& e)
+    {
+        OsConfigLogError(SampleLog::Get(), "Could not allocate payload: %s", e.what());
+        status = EINTR;
 
-            if (nullptr != *payload)
-            {
-                delete[] * payload;
-                *payload = nullptr;
-            }
+        if (nullptr != *payload)
+        {
+            delete[] *payload;
+            *payload = nullptr;
+        }
 
-            if (nullptr != payloadSizeBytes)
-            {
-                *payloadSizeBytes = 0;
-            }
+        if (nullptr != payloadSizeBytes)
+        {
+            *payloadSizeBytes = 0;
         }
     }
 
