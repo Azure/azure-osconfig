@@ -25,12 +25,14 @@ namespace OSConfig::Platform::Tests
         static Sample* session;
 
         static const char* componentName;
-        static const char* objectName;
+        static const char* desiredStringObjectName;
+        static const char* reportedStringObjectName;
     };
 
     Sample* CppSampleTests::session;
-    const char* CppSampleTests::componentName = "SampleComponent";
-    const char* CppSampleTests::objectName = "SampleObject";
+    const char* CppSampleTests::componentName = "SampleComponentName";
+    const char* CppSampleTests::desiredStringObjectName = "DesiredStringObjectName";
+    const char* CppSampleTests::reportedStringObjectName = "ReportedStringObjectName";
 
     TEST_F(CppSampleTests, ValidGetSet)
     {
@@ -38,8 +40,8 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(MMI_OK, session->Set(componentName, objectName, jsonPayload, strlen(jsonPayload)));
-        ASSERT_EQ(MMI_OK, session->Get(componentName, objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedStringObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
@@ -52,10 +54,10 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), objectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
         ASSERT_EQ(EINVAL, session->Set(componentName, invalidName.c_str(), jsonPayload, strlen(jsonPayload)));
 
-        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), reportedStringObjectName, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, session->Get(componentName, invalidName.c_str(), &payload, &payloadSizeBytes));
     }
 
@@ -64,8 +66,8 @@ namespace OSConfig::Platform::Tests
         char validPayload[] = "\"C++ Sample Module\"";
         char invalidPayload[] = "C++ Sample Module";
 
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, validPayload, strlen(validPayload) - 1));
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, invalidPayload, strlen(invalidPayload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, validPayload, strlen(validPayload) - 1));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, invalidPayload, strlen(invalidPayload)));
     }
 
     TEST_F(CppSampleTests, InvalidSet)
@@ -73,10 +75,10 @@ namespace OSConfig::Platform::Tests
         char payload[] = "invalid payload";
 
         // Set with invalid arguments
-        ASSERT_EQ(EINVAL, session->Set("invalid component", objectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set("invalid component", desiredStringObjectName, payload, sizeof(payload)));
         ASSERT_EQ(EINVAL, session->Set(componentName, "invalid component", payload, sizeof(payload)));
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, payload, sizeof(payload)));
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, payload, -1));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, payload, -1));
     }
 
     TEST_F(CppSampleTests, InvalidGet)
@@ -85,7 +87,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
 
         // Get with invalid arguments
-        ASSERT_EQ(EINVAL, session->Get("invalid component", objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get("invalid component", reportedStringObjectName, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, session->Get(componentName, "invalid object", &payload, &payloadSizeBytes));
     }
 }

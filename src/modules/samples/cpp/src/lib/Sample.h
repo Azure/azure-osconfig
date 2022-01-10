@@ -48,6 +48,6 @@ public:
 private:
     static int SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
 
-    std::string m_value;
+    std::string m_stringObject;
     unsigned int m_maxPayloadSizeBytes;
 };

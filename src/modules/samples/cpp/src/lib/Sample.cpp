@@ -9,8 +9,9 @@
 #include "Mmi.h"
 #include "Sample.h"
 
-static const std::string g_componentName = "SampleComponent";
-static const std::string g_objectName = "SampleObject";
+static const std::string g_componentName = "SampleComponentName";
+static const std::string g_desiredStringObjectName = "DesiredStringObjectName";
+static const std::string g_reportedStringObjectName = "ReportedStringObjectName";
 
 constexpr const char ret[] = R""""({
     "Name": "C++ Sample",
@@ -102,13 +103,14 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
         // Dispatch the request to the appropriate method for the given component and object
         if (0 == g_componentName.compare(componentName))
         {
-            if (0 == g_objectName.compare(objectName))
+            // Get the required data from the payload and dispatch the request to the client session
+            if (0 == g_desiredStringObjectName.compare(objectName))
             {
-                // Get the required data from the payload and dispatch the request to the client session
+                // Parse the string from the payload
                 if (document.IsString())
                 {
                     // Apply the payload data
-                    m_value = document.GetString();
+                    m_stringObject = document.GetString();
                     status = MMI_OK;
                 }
                 else
@@ -153,9 +155,9 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
         // Dispatch the get request to the appropriate method for the given component and object
         if (0 == g_componentName.compare(componentName))
         {
-            if (0 == g_objectName.compare(objectName))
+            if (0 == g_reportedStringObjectName.compare(objectName))
             {
-                std::string value = m_value;
+                std::string value = m_stringObject;
                 document.SetString(value.c_str(), document.GetAllocator());
 
                 // Serialize the JSON object to the payload buffer
