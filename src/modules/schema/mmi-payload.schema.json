@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Module Interface Model (MIM) JSON payload schema",
+  "type": "object",
+  "$defs": {
+    "string": {
+      "type": "string"
+    },
+    "integer": {
+      "type": "integer"
+    },
+    "boolean": {
+      "type": "boolean"
+    },
+    "integerEnumeration": {
+      "type": "integer"
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "integerArray": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "integerMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "object": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/string"
+          },
+          {
+            "$ref": "#/$defs/integer"
+          },
+          {
+            "$ref": "#/$defs/boolean"
+          },
+          {
+            "$ref": "#/$defs/integerEnumeration"
+          },
+          {
+            "$ref": "#/$defs/stringArray"
+          },
+          {
+            "$ref": "#/$defs/integerArray"
+          },
+          {
+            "$ref": "#/$defs/stringMap"
+          },
+          {
+            "$ref": "#/$defs/integerMap"
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": {
+    "anyOf": [
+      {
+        "$ref": "#/$defs/string"
+      },
+      {
+        "$ref": "#/$defs/integer"
+      },
+      {
+        "$ref": "#/$defs/boolean"
+      },
+      {
+        "$ref": "#/$defs/integerEnumeration"
+      },
+      {
+        "$ref": "#/$defs/stringArray"
+      },
+      {
+        "$ref": "#/$defs/integerArray"
+      },
+      {
+        "$ref": "#/$defs/stringMap"
+      },
+      {
+        "$ref": "#/$defs/integerMap"
+      },
+      {
+        "$ref": "#/$defs/object"
+      }
+    ]
+  }
+}
