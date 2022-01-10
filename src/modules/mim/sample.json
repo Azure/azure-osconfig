@@ -1,0 +1,24 @@
+{
+  "name": "SampleModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "SampleComponentName",
+      "type": "MimComponent",
+      "contents": [
+        {
+          "name": "DesiredStringObjectName",
+          "type": "MimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "ReportedStringObjectName",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+}
