@@ -13,7 +13,7 @@ static const std::string g_componentName = "SampleComponentName";
 static const std::string g_desiredStringObjectName = "DesiredStringObjectName";
 static const std::string g_reportedStringObjectName = "ReportedStringObjectName";
 
-constexpr const char ret[] = R""""({
+constexpr const char info[] = R""""({
     "Name": "C++ Sample",
     "Description": "A sample module written in C++",
     "Manufacturer": "Microsoft",
@@ -54,7 +54,7 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
     {
         try
         {
-            std::size_t len = ARRAY_SIZE(ret) - 1;
+            std::size_t len = ARRAY_SIZE(info) - 1;
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
@@ -63,7 +63,7 @@ int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* paylo
             }
             else
             {
-                std::memcpy(*payload, ret, len);
+                std::memcpy(*payload, info, len);
                 *payloadSizeBytes = len;
             }
         }
@@ -103,7 +103,6 @@ int Sample::Set(const char* componentName, const char* objectName, const MMI_JSO
         // Dispatch the request to the appropriate method for the given component and object
         if (0 == g_componentName.compare(componentName))
         {
-            // Get the required data from the payload and dispatch the request to the client session
             if (0 == g_desiredStringObjectName.compare(objectName))
             {
                 // Parse the string from the payload
