@@ -30,6 +30,8 @@ This section describes the PnP/DTDL-agnostic Module Interface Model (MIM).
 
 The MIM describes the device configuration the module can perform and defines the valid payload for Management Module Interface (MMI) Get/Set API calls.  
 
+Each module must have its own MIM. Typically development of a new mlodule starts with the MIM. Once the MIM is complete the module can be implemented to follow that MIM.
+
 The MIM is composed by one or more MIM components, each component containing one or more MIM objects, each object being either desired or reported and containing one or several MIM settings. In other words a MIM can be described as lists of components, objects and settings.
 
 MIM can be directly translated to DTDL: MIM components can be translated to PnP interfaces, MIM objects can be translated to PnP properties, MIM settings can be translated to PnP property values. Such DTDL (obtained from MIM translation) is guaranteed to be supported by OSConfig. In general, MIM can always be translated to DTDL but DTDL cannot always be translated to MIM. 
@@ -41,7 +43,7 @@ This model assumes a declarative style of communication between the upper layers
 - Declarative style: the model describes the desired state (what), the platform decides how to get there. 
 - Procedural style: the model relies on programmatic step-by-step negotiation of what and how. 
 
-For PnP, the Twins start empty and gradually get filled in with content (desired, from the remote operator and reported, from the device). When the OSConfig starts, it receives the full desired Twin and dispatches that to Modules. From there on, incremental changes of the desired Twin are communicated to OSConfig (and the Modules), one (possibly partial, just the changed settings) object at a time. In the opposite direction, OSConfig periodically updates the reported Twin with one MIM object at a time, reading from the Modules. Modules can also have their own MIM-specified actions to request the update of a reported MIM object (example: RefreshCommandStatus Action for CommandRunner.CommandArguments to update CommandRunner.CommandStatus for a particular command).
+For PnP, the Twins start empty and gradually get filled in with content (desired, from the remote operator and reported, from the device). When the OSConfig starts, it receives the full desired Twin and dispatches that to modules. From there on, incremental changes of the desired Twin are communicated to OSConfig (and the Modules), one (possibly partial, just the changed settings) object at a time. In the opposite direction, OSConfig periodically updates the reported Twin with one MIM object at a time, reading from the modules. Modules can also have their own MIM-specified actions to request the update of a reported MIM object (example: RefreshCommandStatus Action for CommandRunner.CommandArguments to update CommandRunner.CommandStatus for a particular command).
 
 ### 3.1.1. MIM Components 
 
@@ -379,11 +381,15 @@ Links two objects | No
 Relation to other settings | None
 Required | Yes
 
-A MIM can be completely described by lists and tables as described in this section. An optional JSON MIM representation (that may also require additional textual description for dependencies between settings, etc.) is also possible.
+A MIM can be completely described by lists and tables as described in this section and also in JSON.
 
 ### 3.2.2.  MIM JSON 
 
-A summary JSON representation of a MIM:
+Each module must have its own MIM JSON saved to the [src/modules/mim/](../src/modules/mim/) in a JSON file with the same name as the module SO binary.
+
+The MIM JSON schema is at [src/modules/schema/mim.schema.json](../src/modules/schema/mim.schema.json).
+
+Sample MIM JSON:
 
 ```JSON
 {
@@ -571,11 +577,7 @@ A summary JSON representation of a MIM:
 }
 ```
 
-The full MIM JSON schema is at [src/modules/schema/mim.schema.json](../src/modules/schema/mim.schema.json)
-
-The MIM JSON files for existing modules are stored at [src/modules/mim/](../src/modules/mim/).
-
-Examples of MIM JSON:
+MIM JSON examples:
 - CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
@@ -715,6 +717,8 @@ void MmiClose(MMI_HANDLE clientSession);
 
 MmiSet takes as input arguments a handle returned by MmiOpen, the name of the component (for OSConfig this will be the name of the PnP interface/component, e.g. "CommandRunner"), the name of the object (for OSConfig this will be the be PnP property name, e.g. "CommandArguments"), the desired object payload formatted as JSON and not null terminated UTF-8 character string  and the length (size) in bytes of the JSON payload (without null terminator). The module can use the clientSession handle (module specific, could be a C structure or C++ class) to give context to the call or can ignore it. 
 
+The objectName and payload must must match a desired MIM object from the componentName MIM component and present in the module's MIM. There can only be one single MIM object per MmiSet call. Modules must not accept MmiSet calls that are not following their MIM precisely.
+
 ```C
 int MmiSet(
     MMI_HANDLE clientSession,
@@ -745,6 +749,8 @@ The maximum size of payload will be limited to the size specified via MmiOpen if
 ## 4.5. MmiGet
 
 MmiGet takes as input arguments a handle returned by MmiOpen, the name of the component, the name of the object, and returns via output arguments the reported object payload formatted as JSON (same format as for MmiSet), the size of value size and MMI_OK if success, NULL, 0 and an error code defined in errno.h if failure. On success, the caller requests the module to free the memory for the JSON payload with MmiFree.
+
+The objectName and payload must must match a reported MIM object from the componentName MIM component and present in the module's MIM. There can only be one single MIM object per MmiGet call. Modules must not return to MmiGet payloads that are not following their MIM precisely.
 
 ```C
 int MmiGet(
