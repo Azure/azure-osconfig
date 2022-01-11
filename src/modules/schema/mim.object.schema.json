@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "MIM object payload JSON schema",
+  "description": "Management Module Interface (MMI) JSON payload schema",
   "definitions": {
     "string": {
       "type": "string"
@@ -91,6 +91,18 @@
     },
     {
       "$ref": "#/definitions/objectArray"
+    },
+    {
+      "$ref": "#/definitions/stringArray"
+    },
+    {
+      "$ref": "#/definitions/integerArray"
+    },
+    {
+      "$ref": "#/definitions/stringMap"
+    },
+    {
+      "$ref": "#/definitions/integerMap"
     }
   ]
 }
