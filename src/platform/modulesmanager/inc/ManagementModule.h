@@ -124,7 +124,6 @@ private:
     MmiSet_ptr mmiSet;
     MmiGet_ptr mmiGet;
     MmiClose_ptr mmiClose;
-
 };
 
 #endif // MANAGEMENTMODULE_H
