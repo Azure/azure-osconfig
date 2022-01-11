@@ -608,11 +608,8 @@ bool ManagementModule::IsValidMmiPayload(const char* payload, const int payloadS
     rapidjson::Document sd;
     sd.Parse(schemaJson);
     rapidjson::SchemaDocument schema(sd);
-
-    std::string payloadString = std::string(payload, payloadSizeBytes);
-    OsConfigLogInfo(ModulesManagerLog::Get(), "%s", payloadString.c_str());
-
     rapidjson::Document document;
+
     if (document.Parse(payload, payloadSizeBytes).HasParseError()) {
         OsConfigLogError(ModulesManagerLog::Get(), "Invalid JSON payload");
         isValid = false;
@@ -622,18 +619,16 @@ bool ManagementModule::IsValidMmiPayload(const char* payload, const int payloadS
         rapidjson::SchemaValidator validator(schema);
         if (!document.Accept(validator))
         {
-            rapidjson::StringBuffer sb;
-            std::string invalidDocumentPointer;
-            std::string invalidSchemaPointer;
-
-            validator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
-            invalidDocumentPointer = sb.GetString();
-            sb.Clear();
-            validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
-            invalidSchemaPointer = sb.GetString();
-
             // Input JSON is invalid according to the schema
-            OsConfigLogError(ModulesManagerLog::Get(), "Payload JSON at '%s' is invalid according to the schema '%s/%s'", invalidDocumentPointer.c_str(), invalidSchemaPointer.c_str(), validator.GetInvalidSchemaKeyword());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "JSON payload is invalid according to the schema: %.*s", payloadSizeBytes, payload);
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "JSON payload is invalid according to the schema");
+            }
+
             isValid = false;
         }
         else
