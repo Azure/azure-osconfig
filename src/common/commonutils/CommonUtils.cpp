@@ -9,6 +9,10 @@
 
 #include <CommonUtils.h>
 
+#include <rapidjson/document.h>
+#include <rapidjson/schema.h>
+#include <rapidjson/stringbuffer.h>
+
 #define OSCONFIG_NAME_PREFIX "Azure OSConfig "
 #define OSCONFIG_MODEL_VERSION_DELIMITER ";"
 #define OSCONFIG_SEMANTIC_VERSION_DELIMITER "."
