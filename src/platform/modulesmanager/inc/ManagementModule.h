@@ -84,7 +84,7 @@ public:
     // Sends a payload to the respective component
     int MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     // Receive a payload to the respective component
-    int MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING *payload, int *payloadSize);
+    int MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
     // Is the module defining the valid MMI?
     static bool IsExportingMmi(const std::string path);
@@ -99,6 +99,8 @@ public:
     const std::string GetName() const;
 
     const std::string GetModulePath() const;
+
+    static bool IsValidMmiPayload(const char* payload, const int payloadSizeBytes);
 
 private:
     void* handle;
@@ -122,6 +124,7 @@ private:
     MmiSet_ptr mmiSet;
     MmiGet_ptr mmiGet;
     MmiClose_ptr mmiClose;
+
 };
 
 #endif // MANAGEMENTMODULE_H

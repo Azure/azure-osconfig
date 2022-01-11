@@ -9,10 +9,11 @@
 #include <rapidjson/stringbuffer.h>
 #include <vector>
 #include <unordered_set>
-#include <ScopeGuard.h>
+
 #include <Logging.h>
 #include <ManagementModule.h>
 #include <ModulesManager.h>
+#include <ScopeGuard.h>
 
 const std::string MmiFuncMmiGetInfo = "MmiGetInfo";
 const std::string MmiFuncMmiOpen = "MmiOpen";
@@ -313,7 +314,6 @@ ManagementModule::ManagementModule(const std::string clientName, const std::stri
         info.licenseUri = json[GETMMIINFO_LICENSEURI.c_str()].GetString();
     }
 
-
     if (json.HasMember(GETMMIINFO_PROJECTURI.c_str()) && json[GETMMIINFO_PROJECTURI.c_str()].IsString())
     {
         info.projectUri = json[GETMMIINFO_PROJECTURI.c_str()].GetString();
@@ -471,14 +471,179 @@ bool ManagementModule::IsExportingMmi(const std::string path)
 
 int ManagementModule::MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    LoadModule();
-    return mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+    int status = MMI_OK;
+
+    // Validate payload before calling MmiSet
+    if (ManagementModule::IsValidMmiPayload(payload, payloadSizeBytes))
+    {
+        LoadModule();
+        status = mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+    }
+    else
+    {
+        status = EINVAL;
+    }
+
+
+    return status;
 }
 
-int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSize)
+int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
+    int status = MMI_OK;
+
     LoadModule();
-    return mmiGet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSize);
+    status = mmiGet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+
+    if (MMI_OK == status)
+    {
+        // Validate payload from MmiGet
+        status = (ManagementModule::IsValidMmiPayload(*payload, *payloadSizeBytes) ? MMI_OK : EINVAL);
+    }
+
+    return status;
+}
+
+bool ManagementModule::IsValidMmiPayload(const char* payload, const int payloadSizeBytes)
+{
+    bool isValid = true;
+
+    const char schemaJson[] = R"""({
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "description": "Management Module Interface (MMI) JSON payload schema",
+        "definitions": {
+            "string": {
+                "type": "string"
+            },
+            "integer": {
+                "type": "integer"
+            },
+            "boolean": {
+                "type": "boolean"
+            },
+            "integerEnumeration": {
+                "type": "integer"
+            },
+            "stringArray": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "integerArray": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "stringMap": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                }
+            },
+            "integerMap": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "integer"
+                }
+            },
+            "object": {
+                "type": "object",
+                "additionalProperties": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/string"
+                        },
+                        {
+                            "$ref": "#/definitions/integer"
+                        },
+                        {
+                            "$ref": "#/definitions/boolean"
+                        },
+                        {
+                            "$ref": "#/definitions/integerEnumeration"
+                        },
+                        {
+                            "$ref": "#/definitions/stringArray"
+                        },
+                        {
+                            "$ref": "#/definitions/integerArray"
+                        },
+                        {
+                            "$ref": "#/definitions/stringMap"
+                        },
+                        {
+                            "$ref": "#/definitions/integerMap"
+                        }
+                    ]
+                }
+            },
+            "objectArray": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/object"
+                }
+            }
+        },
+        "anyOf": [
+            {
+                "$ref": "#/definitions/string"
+            },
+            {
+                "$ref": "#/definitions/integer"
+            },
+            {
+                "$ref": "#/definitions/boolean"
+            },
+            {
+                "$ref": "#/definitions/object"
+            },
+            {
+                "$ref": "#/definitions/objectArray"
+            }
+        ]
+    })""";
+
+    rapidjson::Document sd;
+    sd.Parse(schemaJson);
+    rapidjson::SchemaDocument schema(sd);
+
+    std::string payloadString = std::string(payload, payloadSizeBytes);
+    OsConfigLogInfo(ModulesManagerLog::Get(), "%s", payloadString.c_str());
+
+    rapidjson::Document document;
+    if (document.Parse(payload, payloadSizeBytes).HasParseError()) {
+        OsConfigLogError(ModulesManagerLog::Get(), "Invalid JSON payload");
+        isValid = false;
+    }
+    else
+    {
+        rapidjson::SchemaValidator validator(schema);
+        if (!document.Accept(validator))
+        {
+            rapidjson::StringBuffer sb;
+            std::string invalidDocumentPointer;
+            std::string invalidSchemaPointer;
+
+            validator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
+            invalidDocumentPointer = sb.GetString();
+            sb.Clear();
+            validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
+            invalidSchemaPointer = sb.GetString();
+
+            // Input JSON is invalid according to the schema
+            OsConfigLogError(ModulesManagerLog::Get(), "Payload JSON at '%s' is invalid according to the schema '%s/%s'", invalidDocumentPointer.c_str(), invalidSchemaPointer.c_str(), validator.GetInvalidSchemaKeyword());
+            isValid = false;
+        }
+        else
+        {
+            // Input JSON is valid according to the schema
+            isValid = true;
+        }
+    }
+
+    return isValid;
 }
 
 const ManagementModule::Version ManagementModule::GetVersion() const

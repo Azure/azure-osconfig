@@ -1,8 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Module Interface Model (MIM) JSON payload schema",
-  "type": "object",
-  "$defs": {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Management Module Interface (MMI) JSON payload schema",
+  "definitions": {
     "string": {
       "type": "string"
     },
@@ -44,62 +43,54 @@
       "additionalProperties": {
         "anyOf": [
           {
-            "$ref": "#/$defs/string"
+            "$ref": "#/definitions/string"
           },
           {
-            "$ref": "#/$defs/integer"
+            "$ref": "#/definitions/integer"
           },
           {
-            "$ref": "#/$defs/boolean"
+            "$ref": "#/definitions/boolean"
           },
           {
-            "$ref": "#/$defs/integerEnumeration"
+            "$ref": "#/definitions/integerEnumeration"
           },
           {
-            "$ref": "#/$defs/stringArray"
+            "$ref": "#/definitions/stringArray"
           },
           {
-            "$ref": "#/$defs/integerArray"
+            "$ref": "#/definitions/integerArray"
           },
           {
-            "$ref": "#/$defs/stringMap"
+            "$ref": "#/definitions/stringMap"
           },
           {
-            "$ref": "#/$defs/integerMap"
+            "$ref": "#/definitions/integerMap"
           }
         ]
       }
+    },
+    "objectArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/object"
+      }
     }
   },
-  "additionalProperties": {
-    "anyOf": [
-      {
-        "$ref": "#/$defs/string"
-      },
-      {
-        "$ref": "#/$defs/integer"
-      },
-      {
-        "$ref": "#/$defs/boolean"
-      },
-      {
-        "$ref": "#/$defs/integerEnumeration"
-      },
-      {
-        "$ref": "#/$defs/stringArray"
-      },
-      {
-        "$ref": "#/$defs/integerArray"
-      },
-      {
-        "$ref": "#/$defs/stringMap"
-      },
-      {
-        "$ref": "#/$defs/integerMap"
-      },
-      {
-        "$ref": "#/$defs/object"
-      }
-    ]
-  }
+  "anyOf": [
+    {
+      "$ref": "#/definitions/string"
+    },
+    {
+      "$ref": "#/definitions/integer"
+    },
+    {
+      "$ref": "#/definitions/boolean"
+    },
+    {
+      "$ref": "#/definitions/object"
+    },
+    {
+      "$ref": "#/definitions/objectArray"
+    }
+  ]
 }
