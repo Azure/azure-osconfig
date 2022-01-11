@@ -341,4 +341,64 @@ namespace Tests
         ASSERT_THAT(mm.GetReportedObjects(componentName2), ElementsAre("TestObject2", "TestObject3"));
     }
 
+    TEST(ManagementModuleTests, MmiPayloadValidation)
+    {
+        // Valid payloads
+        const char stringPayload[] = R"""("string")""";
+        const char integerPayload[] = R"""(1)""";
+        const char booleanPayload[] = R"""(true)""";
+        const char objectPayload[] = R"""({
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        })""";
+        const char arrayObjectPayload[] = R"""([
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "stringArray": ["value1", "value2"],
+                "integerArray": [1, 2],
+                "stringMap": {"key1": "value1", "key2": "value2"},
+                "integerMap": {"key1": 1, "key2": 2}
+            },
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "stringArray": ["value1", "value2"],
+                "integerArray": [1, 2],
+                "stringMap": {"key1": "value1", "key2": "value2"},
+                "integerMap": {"key1": 1, "key2": 2}
+            }
+        ])""";
+
+        ASSERT_TRUE(ManagementModule::IsValidMmiPayload(stringPayload, sizeof(stringPayload)));
+        ASSERT_TRUE(ManagementModule::IsValidMmiPayload(integerPayload, sizeof(integerPayload)));
+        ASSERT_TRUE(ManagementModule::IsValidMmiPayload(booleanPayload, sizeof(booleanPayload)));
+        ASSERT_TRUE(ManagementModule::IsValidMmiPayload(objectPayload, sizeof(objectPayload)));
+        ASSERT_TRUE(ManagementModule::IsValidMmiPayload(arrayObjectPayload, sizeof(arrayObjectPayload)));
+
+        // Invalid payloads
+        const char invalidJson[] = R"""(invalid)""";
+        const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
+        const char invalidIntegerArrayPayload[] = R"""({"integerArray": [1, "value1"]})""";
+        const char invalidStringMapPayload[] = R"""({"stringMap": {"key1": "value1", "key2": 1}})""";
+        const char invalidIntegerMapPayload[] = R"""({"integerMap": {"key1": 1, "key2": "value1"}})""";
+
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(nullptr, 0));
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(invalidJson, sizeof(invalidJson)));
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(invalidstringArrayPayload, sizeof(invalidstringArrayPayload)));
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(invalidIntegerArrayPayload, sizeof(invalidIntegerArrayPayload)));
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(invalidStringMapPayload, sizeof(invalidStringMapPayload)));
+        ASSERT_FALSE(ManagementModule::IsValidMmiPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload)));
+    }
+
 } // namespace Tests
