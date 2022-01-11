@@ -115,94 +115,106 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         "description": "Management Module Interface (MMI) JSON payload schema",
         "definitions": {
             "string": {
-                "type": "string"
+            "type": "string"
             },
             "integer": {
-                "type": "integer"
+            "type": "integer"
             },
             "boolean": {
-                "type": "boolean"
+            "type": "boolean"
             },
             "integerEnumeration": {
-                "type": "integer"
+            "type": "integer"
             },
             "stringArray": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
             },
             "integerArray": {
-                "type": "array",
-                "items": {
-                    "type": "integer"
-                }
+            "type": "array",
+            "items": {
+                "type": "integer"
+            }
             },
             "stringMap": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "string"
-                }
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
             },
             "integerMap": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "integer"
-                }
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer"
+            }
             },
             "object": {
-                "type": "object",
-                "additionalProperties": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/string"
-                        },
-                        {
-                            "$ref": "#/definitions/integer"
-                        },
-                        {
-                            "$ref": "#/definitions/boolean"
-                        },
-                        {
-                            "$ref": "#/definitions/integerEnumeration"
-                        },
-                        {
-                            "$ref": "#/definitions/stringArray"
-                        },
-                        {
-                            "$ref": "#/definitions/integerArray"
-                        },
-                        {
-                            "$ref": "#/definitions/stringMap"
-                        },
-                        {
-                            "$ref": "#/definitions/integerMap"
-                        }
-                    ]
+            "type": "object",
+            "additionalProperties": {
+                "anyOf": [
+                {
+                    "$ref": "#/definitions/string"
+                },
+                {
+                    "$ref": "#/definitions/integer"
+                },
+                {
+                    "$ref": "#/definitions/boolean"
+                },
+                {
+                    "$ref": "#/definitions/integerEnumeration"
+                },
+                {
+                    "$ref": "#/definitions/stringArray"
+                },
+                {
+                    "$ref": "#/definitions/integerArray"
+                },
+                {
+                    "$ref": "#/definitions/stringMap"
+                },
+                {
+                    "$ref": "#/definitions/integerMap"
                 }
+                ]
+            }
             },
             "objectArray": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/definitions/object"
-                }
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/object"
+            }
             }
         },
         "anyOf": [
             {
-                "$ref": "#/definitions/string"
+            "$ref": "#/definitions/string"
             },
             {
-                "$ref": "#/definitions/integer"
+            "$ref": "#/definitions/integer"
             },
             {
-                "$ref": "#/definitions/boolean"
+            "$ref": "#/definitions/boolean"
             },
             {
-                "$ref": "#/definitions/object"
+            "$ref": "#/definitions/object"
             },
             {
-                "$ref": "#/definitions/objectArray"
+            "$ref": "#/definitions/objectArray"
+            },
+            {
+            "$ref": "#/definitions/stringArray"
+            },
+            {
+            "$ref": "#/definitions/integerArray"
+            },
+            {
+            "$ref": "#/definitions/stringMap"
+            },
+            {
+            "$ref": "#/definitions/integerMap"
             }
         ]
     })""";

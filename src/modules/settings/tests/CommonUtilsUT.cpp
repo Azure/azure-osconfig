@@ -563,10 +563,10 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
             "integerMap": {"key1": 1, "key2": 2}
         }
     ])""";
-    const char stringArrayPayload[] = R"""("["value1", "value2"]))""";
-    const char integerArrayPayload[] = R"""("[1, 2]))""";
-    const char stringMap[] = R"""("{"key1": "value1", "key2" : "value2"}))""";
-    const char integerMap[] = R"""("{"key1": 1, "key2" : 2}))""";
+    const char stringArrayPayload[] = R"""(["value1", "value2"])""";
+    const char integerArrayPayload[] = R"""([1, 2])""";
+    const char stringMap[] = R"""({"key1": "value1", "key2" : "value2"})""";
+    const char integerMap[] = R"""({"key1": 1, "key2" : 2})""";
 
     ASSERT_TRUE(IsValidMimObjectPayload(stringPayload, sizeof(stringPayload), nullptr));
     ASSERT_TRUE(IsValidMimObjectPayload(integerPayload, sizeof(integerPayload), nullptr));

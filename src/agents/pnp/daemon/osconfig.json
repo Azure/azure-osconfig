@@ -1,51 +1,7 @@
 {
   "ModelVersion": 5,
-  "FullLogging": 0,
+  "FullLogging": 1,
   "Reported": [
-    {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus"
-    },
-    {
-      "ComponentName": "Networking",
-      "ObjectName": "NetworkConfiguration"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "FirewallState"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "FirewallFingerprint"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "Name"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "Hosts"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "TpmStatus"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "TpmVersion"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "TpmManufacturer"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "Enabled"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "ServiceUrl"
-    }
   ],
   "ReportingIntervalSeconds": 30,
   "LocalPriority": 0,
