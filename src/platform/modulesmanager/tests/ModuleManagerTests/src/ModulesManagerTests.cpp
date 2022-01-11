@@ -388,7 +388,7 @@ namespace Tests
 
         // Invalid payloads
         const char invalidJson[] = R"""(invalid)""";
-        const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1],})""";
+        const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
         const char invalidIntegerArrayPayload[] = R"""({"integerArray": [1, "value1"]})""";
         const char invalidStringMapPayload[] = R"""({"stringMap": {"key1": "value1", "key2": 1}})""";
         const char invalidIntegerMapPayload[] = R"""({"integerMap": {"key1": 1, "key2": "value1"}})""";
