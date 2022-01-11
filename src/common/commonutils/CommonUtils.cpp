@@ -6,9 +6,8 @@
 #include <cstring>
 #include <string>
 #include <regex>
-
+#include <Logging.h>
 #include <CommonUtils.h>
-
 #include <rapidjson/document.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/stringbuffer.h>
@@ -215,7 +214,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError()) 
     {
-        OsConfigLogError(log, "MIM object payload JSON parser error");
+        OsConfigLogError(log, "MIM object JSON payload parser error");
         isValid = false;
     }
     else
@@ -223,15 +222,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         rapidjson::SchemaValidator validator(schema);
         if (!document.Accept(validator))
         {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(log, "MIM object JSON payload at '%s' is invalid according to the schema '%s/%s'", 
-                    invalidDocumentPointer.c_str(), invalidSchemaPointer.c_str(), validator.GetInvalidSchemaKeyword());
-            }
-            else
-            {
-                OsConfigLogError(log, "MIM object JSON payload is invalid according to the schema");
-            }
+            OsConfigLogError(log, "MIM object JSON payload is invalid according to the schema");
             isValid = false;
         }
     }
