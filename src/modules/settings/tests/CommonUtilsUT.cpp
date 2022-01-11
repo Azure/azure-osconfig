@@ -524,3 +524,63 @@ TEST_F(CommonUtilsTest, InvalidClientName)
     ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate.c_str()));
     ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate.c_str()));
 }
+
+TEST(CommonUtilsTest, ValidateMimObjectPayload)
+{
+    // Valid payloads
+    const char stringPayload[] = R"""("string")""";
+    const char integerPayload[] = R"""(1)""";
+    const char booleanPayload[] = R"""(true)""";
+    const char objectPayload[] = R"""({
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        })""";
+    const char arrayObjectPayload[] = R"""([
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        },
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        }
+    ])""";
+
+    ASSERT_TRUE(IsValidMimObjectPayload(stringPayload, sizeof(stringPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(integerPayload, sizeof(integerPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(booleanPayload, sizeof(booleanPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(objectPayload, sizeof(objectPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(arrayObjectPayload, sizeof(arrayObjectPayload), nullptr));
+
+    // Invalid payloads
+    const char invalidJson[] = R"""(invalid)""";
+    const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
+    const char invalidIntegerArrayPayload[] = R"""({"integerArray": [1, "value1"]})""";
+    const char invalidStringMapPayload[] = R"""({"stringMap": {"key1": "value1", "key2": 1}})""";
+    const char invalidIntegerMapPayload[] = R"""({"integerMap": {"key1": 1, "key2": "value1"}})""";
+
+    ASSERT_FALSE(IsValidMimObjectPayload(nullptr, 0, nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidJson, sizeof(invalidJson), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidstringArrayPayload, sizeof(invalidstringArrayPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerArrayPayload, sizeof(invalidIntegerArrayPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidStringMapPayload, sizeof(invalidStringMapPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
+}

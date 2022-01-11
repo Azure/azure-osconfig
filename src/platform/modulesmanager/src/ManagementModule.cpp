@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include <Logging.h>
+#include <CommonUtils.h>
 #include <ManagementModule.h>
 #include <ModulesManager.h>
 #include <ScopeGuard.h>
@@ -474,7 +475,7 @@ int ManagementModule::MmiSet(std::string componentName, std::string objectName, 
     int status = MMI_OK;
 
     // Validate payload before calling MmiSet
-    if (ManagementModule::IsValidMmiPayload(payload, payloadSizeBytes))
+    if (IsValidMimObjectPayload(payload, payloadSizeBytes, ModulesManagerLog::Get()))
     {
         LoadModule();
         status = mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
@@ -498,147 +499,10 @@ int ManagementModule::MmiGet(std::string componentName, std::string objectName, 
     if (MMI_OK == status)
     {
         // Validate payload from MmiGet
-        status = (ManagementModule::IsValidMmiPayload(*payload, *payloadSizeBytes) ? MMI_OK : EINVAL);
+        status = IsValidMimObjectPayload(*payload, *payloadSizeBytes, ModulesManagerLog::Get()) ? MMI_OK : EINVAL;
     }
 
     return status;
-}
-
-bool ManagementModule::IsValidMmiPayload(const char* payload, const int payloadSizeBytes)
-{
-    bool isValid = true;
-
-    const char schemaJson[] = R"""({
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "description": "Management Module Interface (MMI) JSON payload schema",
-        "definitions": {
-            "string": {
-                "type": "string"
-            },
-            "integer": {
-                "type": "integer"
-            },
-            "boolean": {
-                "type": "boolean"
-            },
-            "integerEnumeration": {
-                "type": "integer"
-            },
-            "stringArray": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            },
-            "integerArray": {
-                "type": "array",
-                "items": {
-                    "type": "integer"
-                }
-            },
-            "stringMap": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "string"
-                }
-            },
-            "integerMap": {
-                "type": "object",
-                "additionalProperties": {
-                    "type": "integer"
-                }
-            },
-            "object": {
-                "type": "object",
-                "additionalProperties": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/definitions/string"
-                        },
-                        {
-                            "$ref": "#/definitions/integer"
-                        },
-                        {
-                            "$ref": "#/definitions/boolean"
-                        },
-                        {
-                            "$ref": "#/definitions/integerEnumeration"
-                        },
-                        {
-                            "$ref": "#/definitions/stringArray"
-                        },
-                        {
-                            "$ref": "#/definitions/integerArray"
-                        },
-                        {
-                            "$ref": "#/definitions/stringMap"
-                        },
-                        {
-                            "$ref": "#/definitions/integerMap"
-                        }
-                    ]
-                }
-            },
-            "objectArray": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/definitions/object"
-                }
-            }
-        },
-        "anyOf": [
-            {
-                "$ref": "#/definitions/string"
-            },
-            {
-                "$ref": "#/definitions/integer"
-            },
-            {
-                "$ref": "#/definitions/boolean"
-            },
-            {
-                "$ref": "#/definitions/object"
-            },
-            {
-                "$ref": "#/definitions/objectArray"
-            }
-        ]
-    })""";
-
-    rapidjson::Document sd;
-    sd.Parse(schemaJson);
-    rapidjson::SchemaDocument schema(sd);
-    rapidjson::Document document;
-
-    if (document.Parse(payload, payloadSizeBytes).HasParseError()) {
-        OsConfigLogError(ModulesManagerLog::Get(), "Invalid JSON payload");
-        isValid = false;
-    }
-    else
-    {
-        rapidjson::SchemaValidator validator(schema);
-        if (!document.Accept(validator))
-        {
-            // Input JSON is invalid according to the schema
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "JSON payload is invalid according to the schema: %.*s", payloadSizeBytes, payload);
-            }
-            else
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "JSON payload is invalid according to the schema");
-            }
-
-            isValid = false;
-        }
-        else
-        {
-            // Input JSON is valid according to the schema
-            isValid = true;
-        }
-    }
-
-    return isValid;
 }
 
 const ManagementModule::Version ManagementModule::GetVersion() const

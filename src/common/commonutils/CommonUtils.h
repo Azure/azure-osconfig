@@ -36,6 +36,8 @@ size_t HashString(const char* source);
 
 bool IsValidClientName(const char* name);
 
+bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log);
+
 #ifdef __cplusplus
 }
 #endif

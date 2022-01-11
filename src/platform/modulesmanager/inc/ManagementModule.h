@@ -100,8 +100,6 @@ public:
 
     const std::string GetModulePath() const;
 
-    static bool IsValidMmiPayload(const char* payload, const int payloadSizeBytes);
-
 private:
     void* handle;
     MMI_HANDLE mmiHandle;

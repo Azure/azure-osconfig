@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "Management Module Interface (MMI) JSON payload schema",
+  "description": "MIM object payload JSON schema",
   "definitions": {
     "string": {
       "type": "string"
