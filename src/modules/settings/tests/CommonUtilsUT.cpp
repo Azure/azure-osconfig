@@ -3,10 +3,18 @@
 
 #include <fstream>
 #include <iostream>
+#include <cstdio>
+#include <string>
+#include <list>
+#include <time.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
 
 using namespace std;
+
+#define STRFTIME_DATE_FORMAT "%Y%m%d"
+#define SSCANF_DATE_FORMAT "%4d%2d%2d"
+#define DATE_FORMAT_LENGTH 9
 
 static void SignalDoWork(int signal)
 {
@@ -439,4 +447,148 @@ TEST_F(CommonUtilsTest, RestrictFileAccess)
     EXPECT_NE(0, RestrictFileAccessToCurrentAccountOnly(nullptr));
     EXPECT_NE(0, RestrictFileAccessToCurrentAccountOnly(""));
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, FileExists)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_TRUE(FileExists(m_path));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_FALSE(FileExists(m_path));
+    EXPECT_FALSE(FileExists("This file does not exist"));
+}
+
+TEST_F(CommonUtilsTest, ValidClientName)
+{
+    std::list<std::string> validClientNames = {
+        "Azure OSConfig 5;0.0.0.20210927",
+        "Azure OSConfig 5;1.1.1.20210927",
+        "Azure OSConfig 5;11.11.11.20210927",
+        "Azure OSConfig 6;0.0.0.20210927",
+        "Azure OSConfig 5;0.0.0.20210927abc123"
+    };
+
+    for (const auto& validClientName : validClientNames)
+    {
+        ASSERT_TRUE(IsValidClientName(validClientName.c_str()));
+    }
+
+    time_t t = time(0);
+    char dateNow[DATE_FORMAT_LENGTH] = {0};
+    strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
+
+    std::string clientNameWithCurrentDate = "Azure OSConfig 5;0.0.0." + std::string(dateNow);
+    ASSERT_TRUE(IsValidClientName(clientNameWithCurrentDate.c_str()));
+}
+
+TEST_F(CommonUtilsTest, InvalidClientName)
+{
+    std::list<std::string> invalidClientNames = {
+        "AzureOSConfig 5;0.0.0.20210927",
+        "Azure OSConfig5;0.0.0.20210927",
+        "azure osconfig 5;0.0.0.20210927",
+        "AzureOSConfig 5;0.0.0.20210927",
+        "Azure  OSConfig5;0.0.0.20210927",
+        "Azure OSConfig  5;0.0.0.20210927",
+        "Azure OSConfig 5:0.0.0.20210927",
+        "Azure OSConfig 5;0,0,0,20210927",
+        "Azure OSConfig 5;0.0.0.2021927",
+        "Azure OSConfig -5;-1.-1.-1.20210927",
+        "Azure OSConfig 1;0.0.0.20210927",
+        "Azure OSConfig 2;0.0.0.20210927",
+        "Azure OSConfig 3;0.0.0.20210927",
+        "Azure OSConfig 4;0.0.0.20210927",
+        "Azure OSConfig 5;0.0.0.20210827",
+        "Azure OSConfig 5;0.0.0.20210926",
+        "Azure OSConfig 5;0.0.0.20200927"
+        "Azure OSConfig 5;0.0.0.20200927"
+    };
+
+    for (const auto& invalidClientName : invalidClientNames)
+    {
+        ASSERT_FALSE(IsValidClientName(invalidClientName.c_str()));
+    }
+
+    time_t t = time(0);
+    char dateNow[DATE_FORMAT_LENGTH] = {0};
+    strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
+
+    int yearNow, monthNow, dayNow;
+    sscanf(dateNow, SSCANF_DATE_FORMAT, &yearNow, &monthNow, &dayNow);
+
+    std::string clientNameWithYearAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow + 1) + std::to_string(monthNow) + std::to_string(dayNow);
+    std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow + 1) + std::to_string(dayNow);
+    std::string clientNameWithDayAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow) + std::to_string(dayNow + 1);
+
+    ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate.c_str()));
+    ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate.c_str()));
+    ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate.c_str()));
+}
+
+TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
+{
+    // Valid payloads
+    const char stringPayload[] = R"""("string")""";
+    const char integerPayload[] = R"""(1)""";
+    const char booleanPayload[] = R"""(true)""";
+    const char objectPayload[] = R"""({
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        })""";
+    const char arrayObjectPayload[] = R"""([
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        },
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "stringArray": ["value1", "value2"],
+            "integerArray": [1, 2],
+            "stringMap": {"key1": "value1", "key2": "value2"},
+            "integerMap": {"key1": 1, "key2": 2}
+        }
+    ])""";
+    const char stringArrayPayload[] = R"""(["value1", "value2"])""";
+    const char integerArrayPayload[] = R"""([1, 2])""";
+    const char stringMap[] = R"""({"key1": "value1", "key2" : "value2"})""";
+    const char integerMap[] = R"""({"key1": 1, "key2" : 2})""";
+
+    ASSERT_TRUE(IsValidMimObjectPayload(stringPayload, sizeof(stringPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(integerPayload, sizeof(integerPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(booleanPayload, sizeof(booleanPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(objectPayload, sizeof(objectPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(arrayObjectPayload, sizeof(arrayObjectPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(stringArrayPayload, sizeof(stringArrayPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(integerArrayPayload, sizeof(integerArrayPayload), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(stringMap, sizeof(stringMap), nullptr));
+    ASSERT_TRUE(IsValidMimObjectPayload(integerMap, sizeof(integerMap), nullptr));
+    
+    // Invalid payloads
+    const char invalidJson[] = R"""(invalid)""";
+    const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
+    const char invalidIntegerArrayPayload[] = R"""({"integerArray": [1, "value1"]})""";
+    const char invalidStringMapPayload[] = R"""({"stringMap": {"key1": "value1", "key2": 1}})""";
+    const char invalidIntegerMapPayload[] = R"""({"integerMap": {"key1": 1, "key2": "value1"}})""";
+
+    ASSERT_FALSE(IsValidMimObjectPayload(nullptr, 0, nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidJson, sizeof(invalidJson), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidstringArrayPayload, sizeof(invalidstringArrayPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerArrayPayload, sizeof(invalidIntegerArrayPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidStringMapPayload, sizeof(invalidStringMapPayload), nullptr));
+    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
 }

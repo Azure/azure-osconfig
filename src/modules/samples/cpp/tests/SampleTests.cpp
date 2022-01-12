@@ -25,21 +25,126 @@ namespace OSConfig::Platform::Tests
         static Sample* session;
 
         static const char* componentName;
-        static const char* objectName;
+
+        static const char* desiredStringObjectName;
+        static const char* reportedStringObjectName;
+        static const char* desiredIntegerObjectName;
+        static const char* reportedIntegerObjectName;
+        static const char* desiredBooleanObjectName;
+        static const char* reportedBooleanObjectName;
+        static const char* desiredObjectName;
+        static const char* reportedObjectName;
+        static const char* desiredArrayObjectName;
+        static const char* reportedArrayObjectName;
     };
 
     Sample* CppSampleTests::session;
-    const char* CppSampleTests::componentName = "SampleComponent";
-    const char* CppSampleTests::objectName = "SampleObject";
 
-    TEST_F(CppSampleTests, ValidGetSet)
+    const char* CppSampleTests::componentName = "SampleComponent";
+
+    const char* CppSampleTests::desiredStringObjectName = "DesiredStringObject";
+    const char* CppSampleTests::reportedStringObjectName = "ReportedStringObject";
+    const char* CppSampleTests::desiredIntegerObjectName = "DesiredIntegerObject";
+    const char* CppSampleTests::reportedIntegerObjectName = "ReportedIntegerObject";
+    const char* CppSampleTests::desiredBooleanObjectName = "DesiredBooleanObject";
+    const char* CppSampleTests::reportedBooleanObjectName = "ReportedBooleanObject";
+    const char* CppSampleTests::desiredObjectName = "DesiredObject";
+    const char* CppSampleTests::reportedObjectName = "ReportedObject";
+    const char* CppSampleTests::desiredArrayObjectName = "DesiredArrayObject";
+    const char* CppSampleTests::reportedArrayObjectName = "ReportedArrayObject";
+
+    TEST_F(CppSampleTests, GetSetStringObject)
     {
         char jsonPayload[] = "\"C++ Sample Module\"";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(MMI_OK, session->Set(componentName, objectName, jsonPayload, strlen(jsonPayload)));
-        ASSERT_EQ(MMI_OK, session->Get(componentName, objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedStringObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetIntegerObject)
+    {
+        char jsonPayload[] = "12345";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredIntegerObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedIntegerObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetBooleanObject)
+    {
+        char jsonPayload[] = "true";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredBooleanObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedBooleanObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetObject)
+    {
+        char jsonPayload[] = "{"
+            "\"StringSetting\":\"C++ Sample Module\","
+            "\"BooleanSetting\":true,"
+            "\"IntegerSetting\":12345,"
+            "\"IntegerEnumerationSetting\":0,"
+            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"IntegerArraySetting\":[1,2,3,4,5],"
+            "\"StringMapSetting\":{"
+                "\"Key1\":\"C++ Sample Module 1\","
+                "\"Key2\":\"C++ Sample Module 2\""
+            "},"
+            "\"IntegerMapSetting\":{"
+                "\"Key1\":1,"
+                "\"Key2\":2"
+            "}}";
+
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(CppSampleTests, GetSetArrayObject)
+    {
+        char jsonPayload[] = "["
+            "{"
+                "\"StringSetting\":\"C++ Sample Module\","
+                "\"BooleanSetting\":true,"
+                "\"IntegerSetting\":12345,"
+                "\"IntegerEnumerationSetting\":0,"
+                "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+                "\"IntegerArraySetting\":[1,2,3,4,5],"
+                "\"StringMapSetting\":{"
+                    "\"Key1\":\"C++ Sample Module 1\","
+                    "\"Key2\":\"C++ Sample Module 2\""
+                "},"
+                "\"IntegerMapSetting\":{"
+                    "\"Key1\":1,"
+                    "\"Key2\":2"
+                "}"
+            "}]";
+
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredArrayObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedArrayObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
@@ -52,10 +157,10 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), objectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), desiredStringObjectName, jsonPayload, strlen(jsonPayload)));
         ASSERT_EQ(EINVAL, session->Set(componentName, invalidName.c_str(), jsonPayload, strlen(jsonPayload)));
 
-        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), reportedStringObjectName, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, session->Get(componentName, invalidName.c_str(), &payload, &payloadSizeBytes));
     }
 
@@ -64,7 +169,28 @@ namespace OSConfig::Platform::Tests
         char validPayload[] = "\"C++ Sample Module\"";
         char invalidPayload[] = "C++ Sample Module";
 
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, validPayload, strlen(validPayload) - 1));
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, invalidPayload, strlen(invalidPayload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, validPayload, strlen(validPayload) - 1));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, invalidPayload, strlen(invalidPayload)));
+    }
+
+    TEST_F(CppSampleTests, InvalidSet)
+    {
+        char payload[] = "invalid payload";
+
+        // Set with invalid arguments
+        ASSERT_EQ(EINVAL, session->Set("invalid component", desiredStringObjectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, "invalid component", payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredStringObjectName, payload, -1));
+    }
+
+    TEST_F(CppSampleTests, InvalidGet)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        // Get with invalid arguments
+        ASSERT_EQ(EINVAL, session->Get("invalid component", reportedStringObjectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get(componentName, "invalid object", &payload, &payloadSizeBytes));
     }
 }

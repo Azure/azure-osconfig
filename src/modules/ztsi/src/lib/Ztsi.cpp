@@ -20,89 +20,68 @@
 static const char g_configurationPropertyEnabled[] = "enabled";
 static const char g_configurationPropertyServiceUrl[] = "serviceUrl";
 
-static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const bool g_defaultEnabled = false;
 static const std::string g_defaultServiceUrl = "";
 
-static const std::string g_urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
-
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
-static const unsigned int g_lockWaitMillis = 20;
+static const unsigned int g_lockWait = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
-// Regex for validating client name 'Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>'
-static const std::string g_clientNameRegex = "^((Azure OSConfig )[1-9];(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$";
-static const std::string g_clientNamePrefix = "Azure OSConfig ";
-static const std::string g_modelVersionDelimiter = ";";
-static const std::string g_semanticVersionDelimeter = ".";
+const std::string Ztsi::m_componentName = "Ztsi";
+const std::string Ztsi::m_desiredServiceUrl = "DesiredServiceUrl";
+const std::string Ztsi::m_desiredEnabled = "DesiredEnabled";
+const std::string Ztsi::m_reportedServiceUrl = "ServiceUrl";
+const std::string Ztsi::m_reportedEnabled = "Enabled";
 
-// DTDL version 5 published with ZTSI on September 27, 2021
-static const int g_initialModelVersion = 5;
-static const int g_initialReleaseDay = 27;
-static const int g_initialReleaseMonth = 9;
-static const int g_initialReleaseYear = 2021;
-
-#define STRFTIME_DATE_FORMAT "%Y%m%d"
-#define SSCANF_DATE_FORMAT "%4d%2d%2d"
-#define DATE_FORMAT_LENGTH 9
-
-bool IsValidClientName(const std::string& clientName)
+int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
-    bool isValid = true;
+    int status = MMI_OK;
 
-    std::regex pattern(g_clientNameRegex);
-    if (!clientName.empty() && std::regex_match(clientName, pattern))
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    if (buffer.GetSize() > maxPayloadSizeBytes)
     {
-        std::string versionInfo = clientName.substr(g_clientNamePrefix.length());
-        std::string modelVersion = versionInfo.substr(0, versionInfo.find(g_modelVersionDelimiter));
-
-        int modelVersionNumber = std::stoi(modelVersion);
-        if (modelVersionNumber < g_initialModelVersion)
-        {
-            isValid = false;
-        }
-
-        // Get build date from versionInfo
-        int position = 0;
-        for (int i = 0; i < 3; i++)
-        {
-            position = versionInfo.find(g_semanticVersionDelimeter, position + 1);
-        }
-
-        std::string buildDate = versionInfo.substr(position + 1, position + DATE_FORMAT_LENGTH);
-        int year = std::stoi(buildDate.substr(0, 4));
-        int month = std::stoi(buildDate.substr(4, 2));
-        int day = std::stoi(buildDate.substr(6, 2));
-
-        if ((month < 1) || (month > 12) || (day < 1) || (day > 31))
-        {
-            isValid = false;
-        }
-
-        char dateNow[DATE_FORMAT_LENGTH] = {0};
-        int monthNow, dayNow, yearNow;
-        time_t t = time(0);
-        strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
-        sscanf(dateNow, SSCANF_DATE_FORMAT, &yearNow, &monthNow, &dayNow);
-
-        // Check if the build date is in the future
-        if ((yearNow < year) || ((yearNow == year) && ((monthNow < month) || ((monthNow == month) && (dayNow < day)))))
-        {
-            isValid = false;
-        }
-
-        // Check if the build date is before the initial release date
-        if ((year < g_initialReleaseYear) || ((year == g_initialReleaseYear) && ((month < g_initialReleaseMonth) || ((month == g_initialReleaseMonth) && (day < g_initialReleaseDay)))))
-        {
-            isValid = false;
-        }
+        OsConfigLogError(ZtsiLog::Get(), "Failed to serialize JSON object to buffer");
+        status = E2BIG;
     }
     else
     {
-        isValid = false;
+        try
+        {
+            *payload = new (std::nothrow) char[buffer.GetSize()];
+            if (nullptr == *payload)
+            {
+                OsConfigLogError(ZtsiLog::Get(), "Unable to allocate memory for payload");
+                status = ENOMEM;
+            }
+            else
+            {
+                std::fill(*payload, *payload + buffer.GetSize(), 0);
+                std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
+                *payloadSizeBytes = buffer.GetSize();
+            }
+        }
+        catch (const std::exception& e)
+        {
+            OsConfigLogError(ZtsiLog::Get(), "Could not allocate payload: %s", e.what());
+            status = EINTR;
+
+            if (nullptr != *payload)
+            {
+                delete[] *payload;
+                *payload = nullptr;
+            }
+
+            if (nullptr != payloadSizeBytes)
+            {
+                *payloadSizeBytes = 0;
+            }
+        }
     }
 
-    return isValid;
+    return status;
 }
 
 OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
@@ -116,6 +95,199 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_lastEnabledState = false;
 }
 
+int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+{
+    int status = MMI_OK;
+
+    constexpr const char info[] = R""""({
+        "Name": "Ztsi",
+        "Description": "Provides functionality to remotely configure the ZTSI Agent on device",
+        "Manufacturer": "Microsoft",
+        "VersionMajor": 1,
+        "VersionMinor": 0,
+        "VersionInfo": "Nickel",
+        "Components": ["Ztsi"],
+        "Lifetime": 1,
+        "UserAccount": 0})"""";
+
+    if (nullptr == clientName)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null clientName");
+        status = EINVAL;
+    }
+    else if (!IsValidClientName(clientName))
+    {
+        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with invalid clientName");
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null payload");
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null payloadSizeBytes");
+        status = EINVAL;
+    }
+    else
+    {
+        try
+        {
+            std::size_t len = ARRAY_SIZE(info) - 1;
+            *payload = new (std::nothrow) char[len];
+            if (nullptr == *payload)
+            {
+                OsConfigLogError(ZtsiLog::Get(), "GetInfo failed to allocate memory");
+                status = ENOMEM;
+            }
+            else
+            {
+                std::memcpy(*payload, info, len);
+                *payloadSizeBytes = len;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            OsConfigLogError(ZtsiLog::Get(), "GetInfo exception thrown: %s", e.what());
+            status = EINTR;
+
+            if (nullptr != *payload)
+            {
+                delete[] *payload;
+                *payload = nullptr;
+            }
+
+            if (nullptr != payloadSizeBytes)
+            {
+                *payloadSizeBytes = 0;
+            }
+        }
+    }
+
+    return status;
+}
+
+int Ztsi::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+{
+    int status = MMI_OK;
+
+    if (nullptr == componentName)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Get called with null componentName");
+        status = EINVAL;
+    }
+    else if (nullptr == objectName)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Get called with null objectName");
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Get called with null payloadSizeBytes");
+        status = EINVAL;
+    }
+    else
+    {
+        *payload = nullptr;
+        *payloadSizeBytes = 0;
+
+        unsigned int maxPayloadSizeBytes = GetMaxPayloadSizeBytes();
+        rapidjson::Document document;
+        if (0 == Ztsi::m_componentName.compare(componentName))
+        {
+            if (0 == Ztsi::m_reportedEnabled.compare(objectName))
+            {
+                Ztsi::EnabledState enabledState = GetEnabledState();
+                document.SetInt(static_cast<int>(enabledState));
+                status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
+            }
+            else if (0 == Ztsi::m_reportedServiceUrl.compare(objectName))
+            {
+                std::string serviceUrl = GetServiceUrl();
+                document.SetString(serviceUrl.c_str(), document.GetAllocator());
+                status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
+            }
+            else
+            {
+                OsConfigLogError(ZtsiLog::Get(), "Invalid objectName: %s", objectName);
+                status = EINVAL;
+            }
+        }
+        else
+        {
+            OsConfigLogError(ZtsiLog::Get(), "Invalid componentName: %s", componentName);
+            status = EINVAL;
+        }
+    }
+
+    return status;
+}
+
+int Ztsi::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+{
+    int status = MMI_OK;
+    rapidjson::Document document;
+
+    if (nullptr == componentName)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Set called with null componentName");
+        status = EINVAL;
+    }
+    else if (nullptr == objectName)
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Set called with null objectName");
+        status = EINVAL;
+    }
+    else if (document.Parse(payload, payloadSizeBytes).HasParseError())
+    {
+        OsConfigLogError(ZtsiLog::Get(), "Unabled to parse JSON payload");
+        status = EINVAL;
+    }
+    else
+    {
+        if (0 == Ztsi::m_componentName.compare(componentName))
+        {
+            if (0 == Ztsi::m_desiredEnabled.compare(objectName))
+            {
+                if (document.IsBool())
+                {
+                    status = SetEnabled(document.GetBool());
+                }
+                else
+                {
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type boolean", Ztsi::m_desiredEnabled.c_str());
+                    status = EINVAL;
+                }
+            }
+            else if (0 == Ztsi::m_desiredServiceUrl.compare(objectName))
+            {
+                if (document.IsString())
+                {
+                    status = SetServiceUrl(document.GetString());
+                }
+                else
+                {
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type string", Ztsi::m_desiredServiceUrl.c_str());
+                    status = EINVAL;
+                }
+            }
+            else
+            {
+                OsConfigLogError(ZtsiLog::Get(), "Invalid objectName: %s", objectName);
+                status = EINVAL;
+            }
+        }
+        else
+        {
+            OsConfigLogError(ZtsiLog::Get(), "Invalid componentName: %s", componentName);
+            status = EINVAL;
+        }
+    }
+
+    return status;
+}
+
 unsigned int Ztsi::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
@@ -124,7 +296,7 @@ unsigned int Ztsi::GetMaxPayloadSizeBytes()
 Ztsi::EnabledState Ztsi::GetEnabledState()
 {
     AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
-    return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : g_defaultEnabledState;
+    return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : EnabledState::Unknown;
 }
 
 std::string Ztsi::GetServiceUrl()
@@ -200,7 +372,7 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
         isValid = false;
     }
 
-    std::regex urlPattern(g_urlRegex);
+    std::regex urlPattern("((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
     if (!configuration.serviceUrl.empty() && !regex_match(configuration.serviceUrl, urlPattern))
     {
         if (IsFullLoggingEnabled())
@@ -211,12 +383,6 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
         isValid = false;
     }
     return isValid;
-}
-
-bool Ztsi::FileExists(const std::string& filePath)
-{
-    struct stat sb;
-    return (0 == stat(filePath.c_str(), &sb) && S_ISREG(sb.st_mode));
 }
 
 std::FILE* Ztsi::OpenAndLockFile(const char* mode)
@@ -280,7 +446,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
     size_t bytesRead = 0;
     char* buffer = nullptr;
 
-    if (FileExists(m_agentConfigurationFile))
+    if (FileExists(m_agentConfigurationFile.c_str()))
     {
         if (nullptr != (fp = OpenAndLockFile("r")))
         {
@@ -395,7 +561,7 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
     int status = MMI_OK;
     std::FILE* fp = nullptr;
 
-    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWaitMillis, g_lockWaitMaxRetries)))
+    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWait, g_lockWaitMaxRetries)))
     {
         std::string configurationJson = BuildConfigurationJson(configuration);
 
@@ -446,10 +612,10 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
         std::ofstream newFile(m_agentConfigurationFile, std::ios::out | std::ios::trunc);
         if (newFile.good())
         {
+            RestrictFileAccessToCurrentAccountOnly(m_agentConfigurationFile.c_str());
             std::string configurationJson = BuildConfigurationJson(configuration);
             newFile << configurationJson;
             newFile.close();
-            RestrictFileAccessToCurrentAccountOnly(m_agentConfigurationFile.c_str());
 
             m_lastAvailableConfiguration = configuration;
         }

@@ -111,7 +111,7 @@ public:
     virtual void CancelAll();
     static void CommandWorkerThread(CommandRunner& commandRunnerInstance, std::queue<CommandArguments>& commandArgumentsBuffer);
     virtual CommandStatus* GetCommandStatus(std::string commandId);
-    static int Execute(CommandRunner& commandRunnerInstance, std::string commandId, std::string command, CommandState initialState, unsigned int timeoutSeconds, bool replaceEol);
+    static int Execute(CommandRunner& commandRunnerInstance, CommandRunner::Action action, std::string commandId, std::string command, CommandState initialState, unsigned int timeoutSeconds, bool replaceEol);
     virtual const std::string& GetCommandIdToRefresh();
     virtual int SetCommandIdToRefresh(std::string commandId);
     virtual void WaitForCommandResults();

@@ -9,10 +9,12 @@
 #include <rapidjson/stringbuffer.h>
 #include <vector>
 #include <unordered_set>
-#include <ScopeGuard.h>
+
 #include <Logging.h>
+#include <CommonUtils.h>
 #include <ManagementModule.h>
 #include <ModulesManager.h>
+#include <ScopeGuard.h>
 
 const std::string MmiFuncMmiGetInfo = "MmiGetInfo";
 const std::string MmiFuncMmiOpen = "MmiOpen";
@@ -313,7 +315,6 @@ ManagementModule::ManagementModule(const std::string clientName, const std::stri
         info.licenseUri = json[GETMMIINFO_LICENSEURI.c_str()].GetString();
     }
 
-
     if (json.HasMember(GETMMIINFO_PROJECTURI.c_str()) && json[GETMMIINFO_PROJECTURI.c_str()].IsString())
     {
         info.projectUri = json[GETMMIINFO_PROJECTURI.c_str()].GetString();
@@ -471,14 +472,37 @@ bool ManagementModule::IsExportingMmi(const std::string path)
 
 int ManagementModule::MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    LoadModule();
-    return mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+    int status = MMI_OK;
+
+    // Validate payload before calling MmiSet
+    if (IsValidMimObjectPayload(payload, payloadSizeBytes, ModulesManagerLog::Get()))
+    {
+        LoadModule();
+        status = mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+    }
+    else
+    {
+        status = EINVAL;
+    }
+
+
+    return status;
 }
 
-int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSize)
+int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
+    int status = MMI_OK;
+
     LoadModule();
-    return mmiGet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSize);
+    status = mmiGet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+
+    if (MMI_OK == status)
+    {
+        // Validate payload from MmiGet
+        status = IsValidMimObjectPayload(*payload, *payloadSizeBytes, ModulesManagerLog::Get()) ? MMI_OK : EINVAL;
+    }
+
+    return status;
 }
 
 const ManagementModule::Version ManagementModule::GetVersion() const

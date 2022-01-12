@@ -120,7 +120,7 @@ int WriteToCache(rapidjson::StringBuffer& sb)
         std::fclose(file);
     }
 
-    return MMI_OK;
+    return 0;
 }
 
 int PersistCommandResults()
@@ -322,11 +322,11 @@ MMI_HANDLE MmiOpenInternal(
         // No CommandRunner found for clientName or expired CommandRunner, create new one
         OsConfigLogInfo(CommandRunnerLog::Get(), "Initializing %s for clientName: %s", ComponentName.c_str(), clientName);
         maxPayloadSizeBytes = maxPayloadSize;
-        auto cr = std::shared_ptr<CommandRunner>(new CommandRunner(clientName, PersistCommandResults, maxPayloadSizeBytes));
-        MMI_HANDLE mmiHandle = reinterpret_cast<MMI_HANDLE>(cr.get());
-        commandRunnerMap[clientName] = cr;
-        mmiMap[mmiHandle] = cr;
-        LoadLastCommandResults(clientName, cr);
+        auto commandRunner = std::shared_ptr<CommandRunner>(new CommandRunner(clientName, PersistCommandResults, maxPayloadSizeBytes));
+        MMI_HANDLE mmiHandle = reinterpret_cast<MMI_HANDLE>(commandRunner.get());
+        commandRunnerMap[clientName] = commandRunner;
+        mmiMap[mmiHandle] = commandRunner;
+        LoadLastCommandResults(clientName, commandRunner);
         handle = mmiHandle;
     }
     else if (!(commandRunnerMap[clientName].expired()))
@@ -359,17 +359,14 @@ void MmiClose(MMI_HANDLE clientSession)
     if (mmiMap.end() != mmiMap.find(clientSession))
     {
         std::string clientName = mmiMap[clientSession].get()->GetClientName();
-        rapidjson::StringBuffer sb;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-
         mmiMap[clientSession]->CancelAll();
-        PersistCommandResults();
-        mmiMap[clientSession].reset();
 
-        if (MMI_OK != WriteToCache(sb))
+        if (0 != PersistCommandResults())
         {
             OsConfigLogError(CommandRunnerLog::Get(), "MmiClose: error writing to cache");
         }
+
+        mmiMap[clientSession].reset();
     }
     else
     {
@@ -396,7 +393,7 @@ std::string ParseStringFromPayload(rapidjson::Document& jsonDoc, std::string pro
 
 int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArguments* commandArgs)
 {
-    int status = MMI_OK;
+    int status = 0;
 
     if (jsonDoc.HasMember(Action.c_str()))
     {
@@ -416,7 +413,7 @@ int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArgu
         status = EINVAL;
     }
 
-    if (MMI_OK == status)
+    if (0 == status)
     {
         // Set default values
         commandArgs->commandId = "";
@@ -495,7 +492,7 @@ int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArgu
 
             case CommandRunner::Action::None:
             default:
-                status = MMI_OK;
+                status = 0;
         }
     }
 
@@ -562,7 +559,7 @@ int MmiSetInternal(
         {
             // Populate CommandArguments struct from parsed JSON
             CommandRunner::CommandArguments commandargs;
-            if (MMI_OK != (status = ParseDesiredPayload(jsonDoc, &commandargs)))
+            if (0 != (status = ParseDesiredPayload(jsonDoc, &commandargs)))
             {
                 OsConfigLogError(CommandRunnerLog::Get(), "MmiSet unable to validate JSON payload");
             }

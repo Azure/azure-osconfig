@@ -8,10 +8,17 @@
 #include <string>
 #include <sys/file.h>
 
+#include <CommonUtils.h>
 #include <Mmi.h>
 #include <Ztsi.h>
 
 #define MAX_PAYLOAD_SIZE 256
+
+static const char g_componentName[] = "Ztsi";
+static const char g_desiredServiceUrl[] = "DesiredServiceUrl";
+static const char g_desiredEnabled[] = "DesiredEnabled";
+static const char g_reportedServiceUrl[] = "ServiceUrl";
+static const char g_reportedEnabled[] = "Enabled";
 
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const std::string g_defaultServiceUrl = "";
@@ -25,12 +32,6 @@ namespace OSConfig::Platform::Tests
     class ZtsiTests : public testing::Test
     {
     public:
-        static bool FileExists()
-        {
-            std::ifstream ifile(ZtsiTests::filename);
-            return ifile.good();
-        }
-
         static std::string BuildFileContents(bool enabled, const std::string& serviceUrl)
         {
             std::stringstream expected;
@@ -75,13 +76,62 @@ namespace OSConfig::Platform::Tests
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
 
+    TEST_F(ZtsiTests, GetSetServiceUrl)
+    {
+        char serviceUrl[] = "\"https://localhost:8080/\"";
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredServiceUrl, serviceUrl, sizeof(serviceUrl)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedServiceUrl, &payload, &payloadSizeBytes));
+
+        std::string payloadStr(payload, payloadSizeBytes);
+        ASSERT_STREQ(serviceUrl, payloadStr.c_str());
+        ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
+    }
+
+    TEST_F(ZtsiTests, GetSetEnabled)
+    {
+        char enabled[] = "false";
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredEnabled, enabled, sizeof(enabled)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedEnabled, &payload, &payloadSizeBytes));
+
+        std::string payloadStr(payload, payloadSizeBytes);
+        ASSERT_STREQ("2", payloadStr.c_str());
+        ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
+    }
+
+    TEST_F(ZtsiTests, InvalidSet)
+    {
+        char payload[] = "invalid payload";
+
+        // Set with invalid arguments
+        ASSERT_EQ(EINVAL, ztsi->Set("invalid component", g_desiredServiceUrl, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, "invalid component", payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, -1));
+    }
+
+    TEST_F(ZtsiTests, InvalidGet)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        // Get with invalid arguments
+        ASSERT_EQ(EINVAL, ztsi->Get("invalid component", g_desiredServiceUrl, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, ztsi->Get(g_componentName, "invalid object", &payload, &payloadSizeBytes));
+    }
+
     TEST_F(ZtsiTests, GetWithoutConfigurationFile)
     {
         // Defaults are returned when no configuration file exists
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_EQ(g_defaultServiceUrl, ZtsiTests::ztsi->GetServiceUrl());
 
-        ASSERT_FALSE(ZtsiTests::FileExists());
+        ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
     }
 
     TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigurationFile)
@@ -89,7 +139,7 @@ namespace OSConfig::Platform::Tests
         // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
         // No file is created for invalid configurations
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-        ASSERT_FALSE(ZtsiTests::FileExists());
+        ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
 
         // Default values are returned
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
@@ -99,7 +149,7 @@ namespace OSConfig::Platform::Tests
     TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigurationFile)
     {
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
-        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
@@ -114,7 +164,7 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl = "https://www.example.com/";
 
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
-        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
@@ -135,25 +185,25 @@ namespace OSConfig::Platform::Tests
         for (int i = 0; i < 10; i++)
         {
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
             expected = ZtsiTests::BuildFileContents(false, serviceUrl1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
             expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl2));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
             expected = ZtsiTests::BuildFileContents(true, serviceUrl2);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
             expected = ZtsiTests::BuildFileContents(false, serviceUrl2);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
@@ -169,9 +219,9 @@ namespace OSConfig::Platform::Tests
         for (int i = 0; i < 10; i++)
         {
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-            ASSERT_TRUE(ZtsiTests::FileExists());
+            ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
             expected = ZtsiTests::BuildFileContents(true, serviceUrl);
             actual = ZtsiTests::ReadFileContents();
@@ -264,9 +314,9 @@ namespace OSConfig::Platform::Tests
         std::string serviceUrl2 = "https://www.test.com/";
 
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
-        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         std::string expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
         std::string actual = ZtsiTests::ReadFileContents();
@@ -316,13 +366,13 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
-        ASSERT_FALSE(ZtsiTests::FileExists());
+        ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
 
         // Should return serviceUrl and cached enabled state
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
-        ASSERT_TRUE(ZtsiTests::FileExists());
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         // Modify JSON contents with default JSON values
         std::string defaultJson = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
@@ -358,7 +408,7 @@ namespace OSConfig::Platform::Tests
 
         for (const auto& validClientName : validClientNames)
         {
-            ASSERT_TRUE(IsValidClientName(validClientName));
+            ASSERT_TRUE(IsValidClientName(validClientName.c_str()));
         }
 
         time_t t = time(0);
@@ -366,7 +416,7 @@ namespace OSConfig::Platform::Tests
         strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
 
         std::string clientNameWithCurrentDate = "Azure OSConfig 5;0.0.0." + std::string(dateNow);
-        ASSERT_TRUE(IsValidClientName(clientNameWithCurrentDate));
+        ASSERT_TRUE(IsValidClientName(clientNameWithCurrentDate.c_str()));
     }
 
     TEST_F(ZtsiTests, InvalidClientName)
@@ -394,7 +444,7 @@ namespace OSConfig::Platform::Tests
 
         for (const auto& invalidClientName : invalidClientNames)
         {
-            ASSERT_FALSE(IsValidClientName(invalidClientName));
+            ASSERT_FALSE(IsValidClientName(invalidClientName.c_str()));
         }
 
         time_t t = time(0);
@@ -408,8 +458,8 @@ namespace OSConfig::Platform::Tests
         std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow + 1) + std::to_string(dayNow);
         std::string clientNameWithDayAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow) + std::to_string(dayNow + 1);
 
-        ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate));
-        ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate));
-        ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate));
+        ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate.c_str()));
+        ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate.c_str()));
+        ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate.c_str()));
     }
 }

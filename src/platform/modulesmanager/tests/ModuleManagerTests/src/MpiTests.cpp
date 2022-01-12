@@ -31,7 +31,9 @@ namespace Tests
             const char* clientName = testCaseName.c_str();
             h = MpiOpen(clientName, maxPayloadsize);
             ASSERT_TRUE(0 != h);
-            // By default uses /usr/lib/osconfig -- must override to test module path
+
+            // By default MpiOpen uses /usr/lib/osconfig to load modules. Unload default modules and load test modules.
+            static_cast<ModulesManager*>(h)->UnloadAllModules();
             static_cast<ModulesManager*>(h)->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_SINGLE_REPORTED);
         }
 

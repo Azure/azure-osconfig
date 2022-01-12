@@ -30,7 +30,13 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
+bool FileExists(const char* name);
+
 size_t HashString(const char* source);
+
+bool IsValidClientName(const char* name);
+
+bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log);
 
 #ifdef __cplusplus
 }
