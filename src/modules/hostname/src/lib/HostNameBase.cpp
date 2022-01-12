@@ -87,7 +87,7 @@ int HostNameBase::Set(
 
     if (!IsValidObjectName(objectName, true))
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Set", !objectName ? "-" : objectName, g_propertyName, g_propertyHosts);
+        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Set", !objectName ? "-" : objectName, g_propertyDesiredName, g_propertyDesiredHosts);
         return EINVAL;
     }
 
