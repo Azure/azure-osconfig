@@ -30,23 +30,6 @@
                     {
                       "name": "Version",
                       "schema": "string"
-                    },
-                    {
-                      "name": "State",
-                      "schema": {
-                        "type": "enum",
-                        "valueSchema": "integer",
-                        "enumValues": [
-                          {
-                            "name": "Installed",
-                            "enumValue":  0
-                          },
-                          {
-                            "name": "Removed",
-                            "enumValue":  1
-                          }
-                        ]
-                      }
                     }
                   ]
                 }
