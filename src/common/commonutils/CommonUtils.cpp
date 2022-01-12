@@ -6,8 +6,11 @@
 #include <cstring>
 #include <string>
 #include <regex>
-
+#include <Logging.h>
 #include <CommonUtils.h>
+#include <rapidjson/document.h>
+#include <rapidjson/schema.h>
+#include <rapidjson/stringbuffer.h>
 
 #define OSCONFIG_NAME_PREFIX "Azure OSConfig "
 #define OSCONFIG_MODEL_VERSION_DELIMITER ";"
@@ -98,6 +101,142 @@ bool IsValidClientName(const char* name)
     else
     {
         isValid = false;
+    }
+
+    return isValid;
+}
+
+bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log)
+{
+    bool isValid = true;
+
+    const char schemaJson[] = R"""({
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "description": "MIM object JSON payload schema",
+      "definitions": {
+        "string": {
+          "type": "string"
+        },
+        "integer": {
+          "type": "integer"
+        },
+        "boolean": {
+          "type": "boolean"
+        },
+        "integerEnumeration": {
+          "type": "integer"
+        },
+        "stringArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integerArray": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "stringMap": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "integerMap": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "object": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/string"
+              },
+              {
+                "$ref": "#/definitions/integer"
+              },
+              {
+                "$ref": "#/definitions/boolean"
+              },
+              {
+                "$ref": "#/definitions/integerEnumeration"
+              },
+              {
+                "$ref": "#/definitions/stringArray"
+              },
+              {
+                "$ref": "#/definitions/integerArray"
+              },
+              {
+                "$ref": "#/definitions/stringMap"
+              },
+              {
+                "$ref": "#/definitions/integerMap"
+              }
+            ]
+          }
+        },
+        "objectArray": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/object"
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "$ref": "#/definitions/string"
+        },
+        {
+          "$ref": "#/definitions/integer"
+        },
+        {
+          "$ref": "#/definitions/boolean"
+        },
+        {
+          "$ref": "#/definitions/object"
+        },
+        {
+          "$ref": "#/definitions/objectArray"
+        },
+        {
+          "$ref": "#/definitions/stringArray"
+        },
+        {
+          "$ref": "#/definitions/integerArray"
+        },
+        {
+          "$ref": "#/definitions/stringMap"
+        },
+        {
+          "$ref": "#/definitions/integerMap"
+        }
+      ]
+    })""";
+
+    rapidjson::Document sd;
+    sd.Parse(schemaJson);
+    rapidjson::SchemaDocument schema(sd);
+    rapidjson::Document document;
+
+    if (document.Parse(payload, payloadSizeBytes).HasParseError()) 
+    {
+        OsConfigLogError(log, "MIM object JSON payload parser error");
+        isValid = false;
+    }
+    else
+    {
+        rapidjson::SchemaValidator validator(schema);
+        if (!document.Accept(validator))
+        {
+            OsConfigLogError(log, "MIM object JSON payload is invalid according to the schema");
+            isValid = false;
+        }
     }
 
     return isValid;

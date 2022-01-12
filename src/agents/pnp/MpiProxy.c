@@ -62,7 +62,15 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiSet", componentName, propertyName);
 
-    result = MpiSet(g_mpiHandle, componentName, propertyName, payload, payloadSizeBytes);
+    if (IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
+    {
+        result = MpiSet(g_mpiHandle, componentName, propertyName, payload, payloadSizeBytes);
+    }
+    else
+    {
+        // Error is logged by IsValidMimObjectPayload
+        result = EINVAL;
+    }
 
     if (IsFullLoggingEnabled())
     {
@@ -114,6 +122,16 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "MpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, result);
+    }
+
+    if (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()))
+    {
+        // Error is logged by IsValidMimObjectPayload
+        result = EINVAL;
+
+        CallMpiFree(*payload);
+        *payload = NULL;
+        *payloadSizeBytes = 0;
     }
 
     memset(g_mpiCall, 0, sizeof(g_mpiCall));
