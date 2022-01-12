@@ -113,17 +113,61 @@ namespace Tests
     TEST_F(MpiTests, MpiSetDesired)
     {
         std::string clientName = "MpiTests.MpiSetDesired";
-        char payload[] = R""""(
-            [
-                {
-                    "TestComponent1": {
-                        "testParameter": "testValue"
-                    }
+        char payload1[] = R""""(
+            {
+                "TestComponent1": {
+                    "TestObject": "testValue"
+                },
+                "TestComponent2": {
+                    "TestObject": 1
+                },
+                "TestComponent3": {
+                    "TestObject": true
                 }
-            ])"""";
+            })"""";
+        char payload2[] = R""""(
+            {
+                "TestComponent1": {
+                    "TestObject": {
+                        "string": "value",
+                        "integer": 1,
+                        "boolean": true,
+                        "integerEnum": 1,
+                        "stringArray": ["value1", "value2"],
+                        "integerArray": [1, 2],
+                        "stringMap": {"key1": "value1", "key2": "value2"},
+                        "integerMap": {"key1": 1, "key2": 2}
+                    }
+                },
+                "TestComponent2": {
+                    "TestObject": [
+                        {
+                            "string": "value",
+                            "integer": 1,
+                            "boolean": true,
+                            "integerEnum": 1,
+                            "stringArray": ["value1", "value2"],
+                            "integerArray": [1, 2],
+                            "stringMap": {"key1": "value1", "key2": "value2"},
+                            "integerMap": {"key1": 1, "key2": 2}
+                        },
+                        {
+                            "string": "value",
+                            "integer": 1,
+                            "boolean": true,
+                            "integerEnum": 1,
+                            "stringArray": ["value1", "value2"],
+                            "integerArray": [1, 2],
+                            "stringMap": {"key1": "value1", "key2": "value2"},
+                            "integerMap": {"key1": 1, "key2": 2}
+                        }
+                    ]
+                }
+            })"""";
 
         SetUp(clientName);
-        ASSERT_EQ(MPI_OK, MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+        ASSERT_EQ(MPI_OK, MpiSetDesired(clientName.c_str(), payload1, ARRAY_SIZE(payload1)));
+        ASSERT_EQ(MPI_OK, MpiSetDesired(clientName.c_str(), payload2, ARRAY_SIZE(payload2)));
     }
 
     TEST_F(MpiTests, MpiGetReported)
