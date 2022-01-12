@@ -114,13 +114,11 @@ namespace Tests
     {
         std::string clientName = "MpiTests.MpiSetDesired";
         char payload[] = R""""(
-            [
-                {
-                    "TestComponent1": {
-                        "testParameter": "testValue"
-                    }
+            {
+                "TestComponent1": {
+                    "testParameter": "testValue"
                 }
-            ])"""";
+            })"""";
 
         SetUp(clientName);
         ASSERT_EQ(MPI_OK, MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
