@@ -111,112 +111,112 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
     bool isValid = true;
 
     const char schemaJson[] = R"""({
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "description": "Management Module Interface (MMI) JSON payload schema",
-        "definitions": {
-            "string": {
-            "type": "string"
-            },
-            "integer": {
-            "type": "integer"
-            },
-            "boolean": {
-            "type": "boolean"
-            },
-            "integerEnumeration": {
-            "type": "integer"
-            },
-            "stringArray": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-            },
-            "integerArray": {
-            "type": "array",
-            "items": {
-                "type": "integer"
-            }
-            },
-            "stringMap": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "string"
-            }
-            },
-            "integerMap": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "integer"
-            }
-            },
-            "object": {
-            "type": "object",
-            "additionalProperties": {
-                "anyOf": [
-                {
-                    "$ref": "#/definitions/string"
-                },
-                {
-                    "$ref": "#/definitions/integer"
-                },
-                {
-                    "$ref": "#/definitions/boolean"
-                },
-                {
-                    "$ref": "#/definitions/integerEnumeration"
-                },
-                {
-                    "$ref": "#/definitions/stringArray"
-                },
-                {
-                    "$ref": "#/definitions/integerArray"
-                },
-                {
-                    "$ref": "#/definitions/stringMap"
-                },
-                {
-                    "$ref": "#/definitions/integerMap"
-                }
-                ]
-            }
-            },
-            "objectArray": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/object"
-            }
-            }
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "description": "MIM object JSON payload schema",
+      "definitions": {
+        "string": {
+          "type": "string"
         },
-        "anyOf": [
-            {
-            "$ref": "#/definitions/string"
-            },
-            {
-            "$ref": "#/definitions/integer"
-            },
-            {
-            "$ref": "#/definitions/boolean"
-            },
-            {
+        "integer": {
+          "type": "integer"
+        },
+        "boolean": {
+          "type": "boolean"
+        },
+        "integerEnumeration": {
+          "type": "integer"
+        },
+        "stringArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "integerArray": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "stringMap": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "integerMap": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "object": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/string"
+              },
+              {
+                "$ref": "#/definitions/integer"
+              },
+              {
+                "$ref": "#/definitions/boolean"
+              },
+              {
+                "$ref": "#/definitions/integerEnumeration"
+              },
+              {
+                "$ref": "#/definitions/stringArray"
+              },
+              {
+                "$ref": "#/definitions/integerArray"
+              },
+              {
+                "$ref": "#/definitions/stringMap"
+              },
+              {
+                "$ref": "#/definitions/integerMap"
+              }
+            ]
+          }
+        },
+        "objectArray": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/object"
-            },
-            {
-            "$ref": "#/definitions/objectArray"
-            },
-            {
-            "$ref": "#/definitions/stringArray"
-            },
-            {
-            "$ref": "#/definitions/integerArray"
-            },
-            {
-            "$ref": "#/definitions/stringMap"
-            },
-            {
-            "$ref": "#/definitions/integerMap"
-            }
-        ]
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "$ref": "#/definitions/string"
+        },
+        {
+          "$ref": "#/definitions/integer"
+        },
+        {
+          "$ref": "#/definitions/boolean"
+        },
+        {
+          "$ref": "#/definitions/object"
+        },
+        {
+          "$ref": "#/definitions/objectArray"
+        },
+        {
+          "$ref": "#/definitions/stringArray"
+        },
+        {
+          "$ref": "#/definitions/integerArray"
+        },
+        {
+          "$ref": "#/definitions/stringMap"
+        },
+        {
+          "$ref": "#/definitions/integerMap"
+        }
+      ]
     })""";
 
     rapidjson::Document sd;
