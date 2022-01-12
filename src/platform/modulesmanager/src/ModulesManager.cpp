@@ -672,10 +672,6 @@ int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, i
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
             }
-            else
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload");
-            }
 
             status = EINVAL;
         }
@@ -684,10 +680,6 @@ int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, i
             if (IsFullLoggingEnabled())
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
-            }
-            else
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload");
             }
 
             status = EINVAL;
