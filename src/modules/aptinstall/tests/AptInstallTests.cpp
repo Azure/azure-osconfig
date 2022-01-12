@@ -29,7 +29,7 @@ namespace OSConfig::Platform::Tests
     };
 
     AptInstall* AptInstallTests::session;
-    const char* AptInstallTests::componentName = "AptInstallComponent";
+    const char* AptInstallTests::componentName = "AptInstall";
     const char* AptInstallTests::objectName = "AptInstallObject";
 
     TEST_F(AptInstallTests, ValidGetSet)

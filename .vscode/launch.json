@@ -28,6 +28,14 @@
             "miDebuggerPath": "${workspaceFolder}/.vscode/debug.sh",
             "targetArchitecture": "arm64",
             "preLaunchTask": "build"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Build & Test",
+            "preLaunchTask": "run-tests",
+            "cwd": "${workspaceFolder}",
+            "program": ""
         }
     ]
 }
