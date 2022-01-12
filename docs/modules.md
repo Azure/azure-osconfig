@@ -583,16 +583,16 @@ MIM JSON examples:
 
 ### 3.2.3 Serialized MIM payload at run-time
 
-The following would be the payload serialized at runtime for the entire MIM (wrapping the object values that the MMI handles): 
+The following would be the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles): 
 
 ```
-{"desired|reported":{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}} 
+{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}
 ```
 
 MmiSet and MmiGet only use the object portions of this payload. Such as:
 
 ```
-{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]} 
+{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]}
 ```
 
 or:
@@ -636,7 +636,7 @@ Etc.
 Example of serialized JSON payload for two CommandRunner.CommandArguments desired object instances plus one instance of Settings with its desired objects:
 
 ```JSON
-{"desired":{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}},"CommandRunner":{"CommandArguments":{"CommandId":"B","Arguments":"ls","Action": 4}}}}
+{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}},"CommandRunner":{"CommandArguments":{"CommandId":"B","Arguments":"ls","Action": 4}}}
 ```
 
 # 4. Management Modules Interface (MMI)

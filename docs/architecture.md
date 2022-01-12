@@ -127,16 +127,16 @@ For more about MpiGetReported and MpiSetDesired see the next section.
 In addition to the common MpiGet and MpiSet an additional pair of MpiGetReported and MpiSetDesired MPI calls are provided so local management authorities such as OOBE can contact the OSConfig Management Platform directly exchanging full or partial desired and reported payload like it happens for the Digital Twins in the following JSON format, including one or many MIM components and MIM objects:  
 
 ```
-{"desired|reported":{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}} 
+{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}} 
 ```
 
 Example:
 
 ```json
-{"desired":{"CommandRunner":{"CommandArguments":{"CommandId":"726","Arguments":"ls", "Action":4}}, "Settings":{"DeviceHealthTelemetryConfiguration":2, "DeliveryOptimizationPolicies":{"PercentageDownloadThrottle":90,"CacheHostSource":2, "CacheHost":"Test cache host","CacheHostFallback":2021}}}} 
+{"CommandRunner":{"CommandArguments":{"CommandId":"726","Arguments":"ls", "Action":4}}, "Settings":{"DeviceHealthTelemetryConfiguration":2, "DeliveryOptimizationPolicies":{"PercentageDownloadThrottle":90,"CacheHostSource":2, "CacheHost":"Test cache host","CacheHostFallback":2021}}} 
 ```
 
-The RC/DC JSON format follows the MIM JSON format described in the [OSConfig Management Modules](modules.md) specification: one or several MIM JSONs being combined into one "desired"{...} or "reported"{...} JSON envelope. The JSON schema is TBD.
+This format is follwing the MIM JSON payload schema described in the [OSConfig Management Modules](modules.md) specification.
 
 ## 4.3. Watcher
 
