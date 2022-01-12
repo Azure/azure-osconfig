@@ -1,0 +1,123 @@
+{
+  "name": "AptInstallModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "AptInstall",
+      "type": "MimComponent",
+      "contents": [
+        {
+          "name": "State",
+          "type": "MimObject",
+          "desired": true,
+          "schema": {
+            "type": "Object",
+            "fields": [
+              {
+                "name": "StateId",
+                "schema": "string"
+              },
+              {
+                "name": "Packages",
+                "type": "Array",
+                "elementSchema": {
+                  "type": "Object",
+                  "fields": [
+                    {
+                      "name": "Package",
+                      "schema": "string"
+                    },
+                    {
+                      "name": "Version",
+                      "schema": "string"
+                    },
+                    {
+                      "name": "State",
+                      "schema": {
+                        "type": "enum",
+                        "valueSchema": "integer",
+                        "enumValues": [
+                          {
+                            "name": "Installed",
+                            "enumValue":  0
+                          },
+                          {
+                            "name": "Removed",
+                            "enumValue":  1
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "Repositories",
+                "type": "Array",
+                "elementSchema": {
+                  "type": "Object",
+                  "fields": [
+                    {
+                      "name": "Name",
+                      "schema": "string"
+                    },
+                    {
+                      "name": "Entry",
+                      "schema": "string"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "State",
+          "type": "MimObject",
+          "desired": false,
+          "schema": {
+            "fields": [
+              {
+                "name": "StateId",
+                "schema": "string"
+              },
+              {
+                "name": "PackagesFingerprint",
+                "schema": "string"
+              },
+              {
+                "name": "RepositoriesFingerprint",
+                "schema": "string"
+              },
+              {
+                "name": "ExecutionState",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "Unknown",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "Ready",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "Busy",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "Failed",
+                      "enumValue": 3
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
