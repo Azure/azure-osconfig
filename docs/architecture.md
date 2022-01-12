@@ -136,7 +136,7 @@ Example:
 {"CommandRunner":{"CommandArguments":{"CommandId":"726","Arguments":"ls", "Action":4}}, "Settings":{"DeviceHealthTelemetryConfiguration":2, "DeliveryOptimizationPolicies":{"PercentageDownloadThrottle":90,"CacheHostSource":2, "CacheHost":"Test cache host","CacheHostFallback":2021}}} 
 ```
 
-This format is follwing the MIM JSON payload schema described in the [OSConfig Management Modules](modules.md) specification.
+This format is following the MIM JSON payload schema described in the [OSConfig Management Modules](modules.md) specification.
 
 ## 4.3. Watcher
 
