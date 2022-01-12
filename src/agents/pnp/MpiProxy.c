@@ -62,7 +62,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiSet", componentName, propertyName);
 
-    if (IsValidMimObjectPayload(payload, payloadSizeBytes, (GetLog())))
+    if (IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
     {
         result = MpiSet(g_mpiHandle, componentName, propertyName, payload, payloadSizeBytes);
     }
@@ -124,7 +124,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         OsConfigLogInfo(GetLog(), "MpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, result);
     }
 
-    if (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, (GetLog())))
+    if (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()))
     {
         // Error is logged by IsValidMimObjectPayload
         result = EINVAL;
