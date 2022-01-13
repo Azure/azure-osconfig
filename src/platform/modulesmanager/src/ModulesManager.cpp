@@ -663,18 +663,25 @@ int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, i
     }
     else
     {
-        std::string payloadString(payload, payloadSizeBytes);
         rapidjson::Document document;
-        document.Parse(payloadString.c_str());
+        document.Parse(payload, payloadSizeBytes);
 
         if (document.HasParseError())
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payloadString.c_str());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
+            }
+
             status = EINVAL;
         }
-        else if (!document.IsArray())
+        else if (!document.IsObject())
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payloadString.c_str());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
+            }
+
             status = EINVAL;
         }
         else
@@ -690,54 +697,40 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
 {
     int status = MPI_OK;
 
-    for (auto& desired : document.GetArray())
+    for (auto& component : document.GetObject())
     {
-        if (desired.IsObject())
+        if (component.value.IsObject())
         {
-            for (auto& component : desired.GetObject())
+            std::string componentName = component.name.GetString();
+            if (modMap.end() != modMap.find(componentName))
             {
-                if (component.value.IsObject())
+                ModulesManager::ModuleMetadata& moduleMetadata = modMap[componentName];
+                for (auto& object : component.value.GetObject())
                 {
-                    std::string componentName = component.name.GetString();
-                    if (modMap.end() != modMap.find(componentName))
+                    int moduleStatus = MMI_OK;
+                    std::string objectName = object.name.GetString();
+
+                    rapidjson::StringBuffer buffer;
+                    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                    object.value.Accept(writer);
+
+                    moduleMetadata.operationInProgress = true;
+                    moduleMetadata.lastOperation = std::chrono::system_clock::now();
+                    moduleStatus = moduleMetadata.module->MmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
+                    moduleMetadata.operationInProgress = false;
+
+                    if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
                     {
-                        ModulesManager::ModuleMetadata& moduleMetadata = modMap[componentName];
-                        for (auto& object : component.value.GetObject())
-                        {
-                            int moduleStatus = MMI_OK;
-                            std::string objectName = object.name.GetString();
-
-                            rapidjson::StringBuffer buffer;
-                            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                            object.value.Accept(writer);
-
-                            moduleMetadata.operationInProgress = true;
-                            moduleMetadata.lastOperation = std::chrono::system_clock::now();
-                            moduleStatus = moduleMetadata.module->MmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
-                            moduleMetadata.operationInProgress = false;
-
-                            if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
-                            {
-                                OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), moduleMetadata.module.get()->GetName().c_str(), moduleStatus);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        status = EINVAL;
-                        if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogError(ModulesManagerLog::Get(), "Unable to find component %s in module map", componentName.c_str());
-                        }
+                        OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), moduleMetadata.module.get()->GetName().c_str(), moduleStatus);
                     }
                 }
-                else
+            }
+            else
+            {
+                status = EINVAL;
+                if (IsFullLoggingEnabled())
                 {
-                    status = EINVAL;
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(ModulesManagerLog::Get(), "Component value is not an object");
-                    }
+                    OsConfigLogError(ModulesManagerLog::Get(), "Unable to find component %s in module map", componentName.c_str());
                 }
             }
         }
@@ -746,7 +739,7 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
             status = EINVAL;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Desired configuration array element is not an object");
+                OsConfigLogError(ModulesManagerLog::Get(), "Component value is not an object");
             }
         }
     }
