@@ -88,6 +88,7 @@ endif()
 
 if (BUILD_TESTS)
     enable_testing()
+    add_definitions("-D_TEST_")
 endif()
 
 add_subdirectory(common)

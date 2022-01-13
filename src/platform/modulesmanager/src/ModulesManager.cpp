@@ -79,8 +79,9 @@ MPI_HANDLE MpiOpen(
         MPI_HANDLE mpiHandle = reinterpret_cast<MPI_HANDLE>(modulesManager.get());
         manMap[clientName] = modulesManager;
         mpiMap[mpiHandle] = modulesManager;
-        modulesManager->SetMaxPayloadSize(maxPayloadSizeBytes);
+#ifndef _TEST_
         modulesManager->LoadModules();
+#endif
         handle = mpiHandle;
     }
     else if (!manMap[clientName].expired())
