@@ -470,7 +470,7 @@ bool ManagementModule::IsExportingMmi(const std::string path)
     return true;
 }
 
-int ManagementModule::MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int ManagementModule::CallMmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -489,7 +489,7 @@ int ManagementModule::MmiSet(std::string componentName, std::string objectName, 
     return status;
 }
 
-int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int ManagementModule::CallMmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 

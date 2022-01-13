@@ -506,7 +506,7 @@ int ModulesManager::MpiSetInternal(const char* componentName, const char* proper
     }
     ModuleMetadata &moduleMetadata = modMap[componentName];
     moduleMetadata.lastOperation = std::chrono::system_clock::now();
-    int ret = moduleMetadata.module->MmiSet(componentName, propertyName, (MMI_JSON_STRING)payload, payloadSizeBytes);
+    int ret = moduleMetadata.module->CallMmiSet(componentName, propertyName, (MMI_JSON_STRING)payload, payloadSizeBytes);
     moduleMetadata.operationInProgress = false;
 
     if (MMI_OK == ret)
@@ -610,7 +610,7 @@ int ModulesManager::MpiGetInternal(const char* componentName, const char* proper
         }
     }};
 
-    ret = moduleMetadata.module->MmiGet(componentName, propertyName, payload, payloadSizeBytes);
+    ret = moduleMetadata.module->CallMmiGet(componentName, propertyName, payload, payloadSizeBytes);
     moduleMetadata.operationInProgress = false;
 
     return ret;
@@ -716,7 +716,7 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
 
                     moduleMetadata.operationInProgress = true;
                     moduleMetadata.lastOperation = std::chrono::system_clock::now();
-                    moduleStatus = moduleMetadata.module->MmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
+                    moduleStatus = moduleMetadata.module->CallMmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
                     moduleMetadata.operationInProgress = false;
 
                     if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
@@ -814,7 +814,7 @@ int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes
 
                 moduleMetadata.operationInProgress = true;
                 moduleMetadata.lastOperation = std::chrono::system_clock::now();
-                moduleMetadata.module->MmiGet(componentName.c_str(), objectName.c_str(), &objectPayload, &objectPayloadSizeBytes);
+                moduleMetadata.module->CallMmiGet(componentName.c_str(), objectName.c_str(), &objectPayload, &objectPayloadSizeBytes);
                 moduleMetadata.operationInProgress = false;
 
                 if ((MMI_OK == mmiGetStatus) && (nullptr != objectPayload) && (0 < objectPayloadSizeBytes))

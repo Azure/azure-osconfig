@@ -82,9 +82,9 @@ public:
     // Loads the Management Module (MM) - Opens the MMI and .so handles
     void LoadModule();
     // Sends a payload to the respective component
-    int MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    int CallMmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     // Receive a payload to the respective component
-    int MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
+    int CallMmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
     // Is the module defining the valid MMI?
     static bool IsExportingMmi(const std::string path);
