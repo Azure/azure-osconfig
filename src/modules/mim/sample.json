@@ -291,7 +291,7 @@
               ]
             }
           }
-        }
+        },
         {
           "name": "ReportedArrayObject",
           "type": "MimObject",

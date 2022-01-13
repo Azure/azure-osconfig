@@ -9,54 +9,6 @@
         {
           "name": "State",
           "type": "MimObject",
-          "desired": true,
-          "schema": {
-            "type": "Object",
-            "fields": [
-              {
-                "name": "StateId",
-                "schema": "string"
-              },
-              {
-                "name": "Packages",
-                "type": "Array",
-                "elementSchema": {
-                  "type": "Object",
-                  "fields": [
-                    {
-                      "name": "Package",
-                      "schema": "string"
-                    },
-                    {
-                      "name": "Version",
-                      "schema": "string"
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "Repositories",
-                "type": "Array",
-                "elementSchema": {
-                  "type": "Object",
-                  "fields": [
-                    {
-                      "name": "Name",
-                      "schema": "string"
-                    },
-                    {
-                      "name": "Entry",
-                      "schema": "string"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "name": "State",
-          "type": "MimObject",
           "desired": false,
           "schema": {
             "fields": [
@@ -69,11 +21,11 @@
                 "schema": "string"
               },
               {
-                "name": "RepositoriesFingerprint",
+                "name": "SourcesFingerprint",
                 "schema": "string"
               },
               {
-                "name": "ExecutionState",
+                "name": "CurrentState",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
@@ -83,11 +35,11 @@
                       "enumValue": 0
                     },
                     {
-                      "name": "Ready",
+                      "name": "Running",
                       "enumValue": 1
                     },
                     {
-                      "name": "Busy",
+                      "name": "Succeeded",
                       "enumValue": 2
                     },
                     {
@@ -95,6 +47,36 @@
                       "enumValue": 3
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "DesiredPackages",
+          "type": "MimObject",
+          "desired": true,
+          "schema": {
+            "fields": [
+              {
+                "name": "Packages",
+                "schema": {
+                  "type": "Array",
+                  "elementSchema": "string"
+                }
+              },
+              {
+                "name": "Sources",
+                "schema": {
+                  "type": "Map",
+                  "mapKey":  {
+                    "name": "Id",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "Entry",
+                    "schema": "string"
+                  }
                 }
               }
             ]
