@@ -11,12 +11,12 @@
 #include <Mmi.h>
 
 // MMI function definitions
-using MmiGetInfo_ptr = int (*)(const char *, MMI_JSON_STRING *, int *);
-using MmiFree_ptr = void (*)(MMI_JSON_STRING);
-using MmiOpen_ptr = MMI_HANDLE (*)(const char *, const unsigned int);
-using MmiSet_ptr = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING, const int);
-using MmiGet_ptr = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING *, int *);
-using MmiClose_ptr = void (*)(MMI_HANDLE);
+using Mmi_GetInfo = int (*)(const char *, MMI_JSON_STRING *, int *);
+using Mmi_Free = void (*)(MMI_JSON_STRING);
+using Mmi_Open = MMI_HANDLE (*)(const char *, const unsigned int);
+using Mmi_Set = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING, const int);
+using Mmi_Get = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING *, int *);
+using Mmi_Close = void (*)(MMI_HANDLE);
 
 class ManagementModule
 {
@@ -116,12 +116,12 @@ private:
     Info info;
 
     // Management Module Interface (MMI) imported functions
-    MmiGetInfo_ptr mmiGetInfo;
-    MmiFree_ptr mmiFree;
-    MmiOpen_ptr mmiOpen;
-    MmiSet_ptr mmiSet;
-    MmiGet_ptr mmiGet;
-    MmiClose_ptr mmiClose;
+    Mmi_GetInfo mmiGetInfo;
+    Mmi_Free mmiFree;
+    Mmi_Open mmiOpen;
+    Mmi_Set mmiSet;
+    Mmi_Get mmiGet;
+    Mmi_Close mmiClose;
 };
 
 #endif // MANAGEMENTMODULE_H

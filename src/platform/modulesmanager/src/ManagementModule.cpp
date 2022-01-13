@@ -58,8 +58,8 @@ ManagementModule::ManagementModule(const std::string clientName, const std::stri
     }
 
     // Get the Management Module info and validate schema
-    MmiGetInfo_ptr mmiGetInfo = reinterpret_cast<MmiGetInfo_ptr>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
-    MmiFree_ptr mmiFree = reinterpret_cast<MmiFree_ptr>(dlsym(handle, MmiFuncMmiFree.c_str()));
+    Mmi_GetInfo mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
+    Mmi_Free mmiFree = reinterpret_cast<Mmi_Free>(dlsym(handle, MmiFuncMmiFree.c_str()));
     MMI_JSON_STRING retJson = nullptr;
     int retJsonSize = 0;
     int retMmiGetInfo = MMI_OK;
@@ -375,12 +375,12 @@ void ManagementModule::LoadModule()
             return;
         }
 
-        mmiOpen = reinterpret_cast<MmiOpen_ptr>(dlsym(handle, MmiFuncMmiOpen.c_str()));
-        mmiGetInfo = reinterpret_cast<MmiGetInfo_ptr>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
-        mmiClose = reinterpret_cast<MmiClose_ptr>(dlsym(handle, MmiFuncMmiClose.c_str()));
-        mmiSet = reinterpret_cast<MmiSet_ptr>(dlsym(handle, MmiFuncMmiSet.c_str()));
-        mmiGet = reinterpret_cast<MmiGet_ptr>(dlsym(handle, MmiFuncMmiGet.c_str()));
-        mmiFree = reinterpret_cast<MmiFree_ptr>(dlsym(handle, MmiFuncMmiFree.c_str()));
+        mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(handle, MmiFuncMmiOpen.c_str()));
+        mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
+        mmiClose = reinterpret_cast<Mmi_Close>(dlsym(handle, MmiFuncMmiClose.c_str()));
+        mmiSet = reinterpret_cast<Mmi_Set>(dlsym(handle, MmiFuncMmiSet.c_str()));
+        mmiGet = reinterpret_cast<Mmi_Get>(dlsym(handle, MmiFuncMmiGet.c_str()));
+        mmiFree = reinterpret_cast<Mmi_Free>(dlsym(handle, MmiFuncMmiFree.c_str()));
 
         if ((nullptr == mmiOpen) || (nullptr == mmiGetInfo) || (nullptr == mmiClose) || (nullptr == mmiSet) || (nullptr == mmiGet) || (nullptr == mmiFree))
         {
