@@ -628,7 +628,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
     },
     {
       "type": "MimObject",
-      "name": "FirewallFigerprintMap",
+      "name": "FirewallFingerprintMap",
       "schema": {
         "type": "Map",
           "mapKey": {
