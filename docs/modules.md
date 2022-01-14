@@ -587,7 +587,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
     {
       "type": "MimObject",
       "name": "FirewallRulesArray",
-      "writable": true,
+      "desired": true,
       "schema": {
         "type": "Array",
         "elementSchema": {
@@ -624,7 +624,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
         "type": "Array",
         "elementSchema": "string"
       },
-      "writable": true
+      "desired": true
     },
     {
       "type": "MimObject",
@@ -640,7 +640,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
             "schema": "string"
           }
         },
-        "writable": true
+        "desired": true
     }
   ]
 }
