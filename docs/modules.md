@@ -632,7 +632,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       "schema": {
         "type": "Map",
           "mapKey": {
-            "name": "FigerprintName",
+            "name": "FingerprintName",
             "schema": "string"
           },
           "mapValue": {
