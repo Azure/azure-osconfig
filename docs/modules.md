@@ -577,7 +577,76 @@ Sample MIM JSON:
 }
 ```
 
-MIM JSON examples:
+A partial MIM JSON example of a fictional firewall configuration component including an array object, an array of strings and a map of strings simple objects:
+
+```JSON
+{
+  "name": "Firewall",
+  "type": "MimComponent",
+  "contents": [
+    {
+      "type": "MimObject",
+      "name": "FirewallRulesArray",
+      "writable": true,
+      "schema": {
+        "type": "Array",
+        "elementSchema": {
+          "type": "Object",
+          "fields": [
+            {
+              "name": "Direction",
+              "schema": "string"
+            },
+            {
+              "name": "Target",
+              "schema": "string"
+            },
+            {
+              "name": "Protocol",
+              "schema": "string"
+            },
+            {
+              "name": "IpAddress",
+              "schema": "string"
+            },
+            {
+              "name": "Port",
+              "schema": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFingerprintArray",
+      "schema": {
+        "type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": true
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFigerprintMap",
+      "schema": {
+        "type": "Map",
+          "mapKey": {
+            "name": "FigerprintName",
+            "schema": "string"
+          },
+          "mapValue": {
+            "name": "FingerprintValue",
+            "schema": "string"
+          }
+        },
+        "writable": true
+    }
+  ]
+}
+```
+
+Other MIM JSON examples:
 - CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
