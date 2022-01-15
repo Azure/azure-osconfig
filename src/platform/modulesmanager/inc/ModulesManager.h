@@ -72,7 +72,6 @@ public:
     std::string GetClientName();
     void UnloadAllModules();
     void UnloadModules();
-    void SetMaxPayloadSize(unsigned int maxSize);
     void DoWork();
 
 private:

@@ -890,11 +890,6 @@ void ModulesManager::SetDefaultCleanupTimespan(unsigned int timespan)
     cleanupTimespan = timespan;
 }
 
-void ModulesManager::SetMaxPayloadSize(unsigned int maxSize)
-{
-    maxPayloadSizeBytes = maxSize;
-}
-
 std::string ModulesManager::GetClientName()
 {
     return clientName;
