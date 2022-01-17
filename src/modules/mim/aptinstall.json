@@ -61,14 +61,14 @@
               {
                 "name": "Packages",
                 "schema": {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
                 "name": "Sources",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "Id",
                     "schema": "string"
