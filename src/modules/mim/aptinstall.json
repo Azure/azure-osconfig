@@ -57,7 +57,12 @@
           "type": "MimObject",
           "desired": true,
           "schema": {
+            "type": "object",
             "fields": [
+              {
+                "name": "StateId",
+                "schema": "string"
+              },
               {
                 "name": "Packages",
                 "schema": {
