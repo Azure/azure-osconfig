@@ -102,64 +102,64 @@ namespace Tests
         ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDesiredSingleComponent)
-    {
-        constexpr const char payload[] = R""""(
-            [
-                {
-                    "TestComponent1": {
-                        "TestObject1": "testValue1"
-                    }
-                }
-            ])"""";
+    // TEST_F(ModuleManagerTests, MpiSetDesiredSingleComponent)
+    // {
+    //     constexpr const char payload[] = R""""(
+    //         [
+    //             {
+    //                 "TestComponent1": {
+    //                     "TestObject1": "testValue1"
+    //                 }
+    //             }
+    //         ])"""";
 
-        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    }
+    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    // }
 
-    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleComponents)
-    {
-        constexpr const char payload[] = R""""(
-            [
-                {
-                    "TestComponent1": {
-                        "TestObject1": "testValue"
-                    },
-                    "TestComponent2": {
-                        "TestObject2": {
-                            "TestSetting1": "testValue1",
-                            "TestSetting2": "testValue2"
-                        }
-                    }
-                }
-            ])"""";
+    // TEST_F(ModuleManagerTests, MpiSetDesiredMultipleComponents)
+    // {
+    //     constexpr const char payload[] = R""""(
+    //         [
+    //             {
+    //                 "TestComponent1": {
+    //                     "TestObject1": "testValue"
+    //                 },
+    //                 "TestComponent2": {
+    //                     "TestObject2": {
+    //                         "TestSetting1": "testValue1",
+    //                         "TestSetting2": "testValue2"
+    //                     }
+    //                 }
+    //             }
+    //         ])"""";
 
-        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    }
+    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    // }
 
-    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleConfigurations)
-    {
-        constexpr const char payload[] = R""""(
-            [
-                {
-                    "TestComponent1": {
-                        "TestObject1": "testValue"
-                    }
-                },
-                {
-                    "TestComponent1": {
-                        "TestObject2": "testValue"
-                    },
-                    "TestComponent2": {
-                        "TestObject3": {
-                            "TestSetting1": "testValue1",
-                            "TestSetting2": "testValue2"
-                        }
-                    }
-                }
-            ])"""";
+    // TEST_F(ModuleManagerTests, MpiSetDesiredMultipleConfigurations)
+    // {
+    //     constexpr const char payload[] = R""""(
+    //         [
+    //             {
+    //                 "TestComponent1": {
+    //                     "TestObject1": "testValue"
+    //                 }
+    //             },
+    //             {
+    //                 "TestComponent1": {
+    //                     "TestObject2": "testValue"
+    //                 },
+    //                 "TestComponent2": {
+    //                     "TestObject3": {
+    //                         "TestSetting1": "testValue1",
+    //                         "TestSetting2": "testValue2"
+    //                     }
+    //                 }
+    //             }
+    //         ])"""";
 
-        ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    }
+    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
+    // }
 
     TEST_F(ModuleManagerTests, MpiGetReportedWithInvalidConfig)
     {
