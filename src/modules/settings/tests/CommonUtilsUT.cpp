@@ -249,7 +249,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     char* textResult = nullptr;
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_STREQ("sh: 1: hh: not found\n", textResult);
+    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found\n"));
 
     if (nullptr != textResult)
     {
@@ -257,7 +257,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
-    EXPECT_STREQ("sh: 1: blah: not found ", textResult);
+    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found "));
 
     if (nullptr != textResult)
     {
