@@ -43,7 +43,7 @@ stages:
       displayName: Generate build
 
     - script: |
-        docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build --target dist && cp -r /AzOsConfig/SPECS/osconfig/* /staging"
+        docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build --target dist && cp -r /AzOsConfig/build/dist/* /staging"
       displayName: Build & Stage Source Package
 
     - publish: $(Build.ArtifactStagingDirectory)

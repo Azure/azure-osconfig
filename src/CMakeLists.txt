@@ -153,6 +153,6 @@ include(GenerateSourceDistribution)
 generate_source_distribution(
     NAME ${OsConfigProjectName}
     LONG_NAME ${OsConfigProjectLongName}
-    OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../SPECS/osconfig
+    OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/dist
     SOURCES
         "${OsConfigProjectSourceArchiveFile}")
