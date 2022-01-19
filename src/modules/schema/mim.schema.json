@@ -29,7 +29,7 @@
     "mimObject": {
       "$id": "#/$defs/mimObject",
       "type": "object",
-      "description": "A MIM Object",
+      "description": "A MIM object",
       "properties": {
         "name": {
           "type": "string"
@@ -41,12 +41,12 @@
           ]
         },
         "desired": {
-          "description": "The desired or reported state of the MIM Object",
+          "description": "The MIM object type (desired or reported)",
           "type": "boolean",
           "default": false
         },
         "schema": {
-          "description": "MIM Object settings",
+          "description": "MIM settings",
           "oneOf": [
             {
               "type": "string",
@@ -67,7 +67,7 @@
             },
             {
               "type": "object",
-              "description": "A list of MIM settings repeated a variable number of times",
+              "description": "Same MIM settings repeated a variable number of times",
               "required": [
                 "type",
                 "elementSchema"
@@ -129,8 +129,8 @@
     "objectSchema": {
       "$id": "#/$defs/objectSchema",
       "type": "object",
-      "title": "Object Schema",
-      "description": "A schema describing the JSON object schema of a MIM Object",
+      "title": "MIM object schema",
+      "description": "A schema describing the JSON object schema of a MIM object",
       "required": [
         "fields"
       ],
@@ -146,7 +146,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "description": "The list of MIM Setings for the MIM object",
+            "description": "The list of MIM settings for the MIM object",
             "required": [
               "name",
               "schema"
@@ -275,7 +275,7 @@
     },
     "contents": {
       "type": "array",
-      "description": "List of MIM Components in the Model",
+      "description": "List of MIM components in the model",
       "items": {
         "$ref": "#/$defs/mimComponent"
       }
