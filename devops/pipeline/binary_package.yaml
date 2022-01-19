@@ -207,7 +207,7 @@ stages:
         testRunner: cTest
         testResultsFiles: $(Build.SourcesDirectory)/build-$(arch)/Testing/*/Test.xml
         failTaskOnFailedTests: true
-        testRunTitle: $(variant)
+        testRunTitle: $(variant)-$(arch)
         platform: $(arch)
 
     - task: PublishTestResults@2
