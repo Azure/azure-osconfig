@@ -8,11 +8,9 @@ cmake_minimum_required(VERSION 3.2.0)
 include(CTest)
 find_package(GTest REQUIRED)
 
-if(NOT(BUILD_MODULES))
-    message(FATAL_ERROR "ModulesManagerTests requires modules to be built. Enable 'BUILD_MODULES' option.")
-endif()
+set(TEST_MODULES_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-set(MODULE_TEST_PATH ${TEST_MODULE_STAGING_DIR})
+add_subdirectory(modules)
 
 set(TEST_CONFIG_DIR ${CMAKE_CURRENT_BINARY_DIR}/osconfig CACHE FILEPATH "Directory used for test configuration files")
 set(OSCONFIG_JSON_INVALID ${TEST_CONFIG_DIR}/osconfig-invalid.json)
@@ -45,8 +43,15 @@ configure_file(
     ${OSCONFIG_JSON_MULTIPLE_REPORTED}
     COPYONLY)
 
-add_executable(modulesmanagertests src/ModulesManagerTests.cpp src/MpiTests.cpp src/CommonTests.cpp)
+add_executable(modulesmanagertests
+    src/CommonTests.cpp
+    src/ManagementModuleTests.cpp
+    src/MockManagementModule.cpp
+    src/MockModulesManager.cpp
+    src/ModulesManagerTests.cpp
+    src/MpiTests.cpp)
+
 target_link_libraries(modulesmanagertests gtest gtest_main gmock gmock_main pthread modulesmanager commonutils)
 target_include_directories(modulesmanagertests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../inc/")
 
-gtest_discover_tests(modulesmanagertests)
+gtest_add_tests(TARGET modulesmanagertests)
