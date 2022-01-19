@@ -26,6 +26,7 @@
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
+static const char g_commandTerminator[] = " 2>&1";
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol)
 {
@@ -342,7 +343,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         // Append a random number to the results file to prevent parallel commands overwriting each other results
         snprintf(commandTextResultFile, sizeof(commandTextResultFile), g_commandTextResultFileTemplate, rand());
 
-        commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile);
+        commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) ;
     }
 
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
@@ -372,7 +373,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     }
     else
     {
-        snprintf(commandLine, commandLineLength, "%s%s%s", command, g_commandSeparator, commandTextResultFile);
+        snprintf(commandLine, commandLineLength, "%s%s%s%s", command, g_commandSeparator, commandTextResultFile, g_commandTerminator);
     }
 
     // Execute the command with the requested timeout: error ETIME (62) means the command timed out

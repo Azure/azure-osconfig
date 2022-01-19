@@ -81,21 +81,21 @@
               {
                 "name": "StringsArraySetting",
                 "schema": {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
                 "name": "IntegerArraySetting",
                 "schema":  {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "integer"
                 }
               },
               {
                 "name": "StringMapSetting",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -109,7 +109,7 @@
               {
                 "name": "IntegerMapSetting",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -162,21 +162,21 @@
               {
                 "name": "StringsArraySetting",
                 "schema": {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
                 "name": "IntegerArraySetting",
                 "schema":  {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "integer"
                 }
               },
               {
                 "name": "StringMapSetting",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -190,7 +190,7 @@
               {
                 "name": "IntegerMapSetting",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -209,7 +209,7 @@
           "type": "MimObject",
           "desired": true,
           "schema": {
-            "type": "Array",
+            "type": "array",
             "elementSchema": {
               "type": "Object",
               "fields": [
@@ -249,21 +249,21 @@
                 {
                   "name": "StringsArraySetting",
                   "schema": {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "string"
                 }
                 },
                 {
                   "name": "IntegerArraySetting",
                   "schema":  {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "integer"
                   }
                 },
                 {
                   "name": "StringMapSetting",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -277,7 +277,7 @@
                 {
                   "name": "IntegerMapSetting",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -297,7 +297,7 @@
           "type": "MimObject",
           "desired": false,
           "schema": {
-            "type": "Array",
+            "type": "array",
             "elementSchema": {
               "type": "Object",
               "fields": [
@@ -337,21 +337,21 @@
                 {
                   "name": "StringsArraySetting",
                   "schema": {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "string"
                 }
                 },
                 {
                   "name": "IntegerArraySetting",
                   "schema":  {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "integer"
                   }
                 },
                 {
                   "name": "StringMapSetting",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -365,7 +365,7 @@
                 {
                   "name": "IntegerMapSetting",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"

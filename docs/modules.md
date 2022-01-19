@@ -124,7 +124,7 @@ Example of an array MIM object:
   "type": "MimObject",
   "desired": true,
   "schema": {
-    "type": "Array",
+    "type": "array",
     "elementSchema": {
       "type": "Object",
       "fields": [
@@ -240,7 +240,7 @@ Example of a MIM seting of array of strings type:
 {
   "name": "FirewallFingerprints",
   "schema": {
-    "type": "Array",
+    "type": "array",
     "elementSchema": "string"
   }
 }
@@ -250,11 +250,11 @@ Example of a MIM seting of map of strings type:
 
 ```JSON
 {
-  "name": "FirewallFigerprins",
+  "name": "FirewallFingerprins",
   "schema": {
-    "type": "Map",
+    "type": "map",
     "mapKey": {
-      "name": "FigerprintName",
+      "name": "FingerprintName",
       "schema": "string"
     },
     "mapValue": {
@@ -439,21 +439,21 @@ Sample MIM JSON:
               {
                 "name": "StringsArraySettingName",
                 "schema": { 
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "string"  
                 }
               },
               {
                 "name": "IntegerArraySettingName",
                 "schema":  {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "integer"  
                 }
               },
               {
                 "name": "StringMapSettingName",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -467,7 +467,7 @@ Sample MIM JSON:
               {
                 "name": "IntegerMapSettingName",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -486,9 +486,9 @@ Sample MIM JSON:
           "type": "MimObject",
           "desired": [true,  false],
           "schema": {
-            "type": "Array",
+            "type": "array",
             "elementSchema": {
-              "type": "Object",
+              "type": "object",
               "fields": [
                 {
                   "name": "StringSettingName",
@@ -522,21 +522,21 @@ Sample MIM JSON:
                 {
                   "name": "StringsArraySettingName",
                   "schema": { 
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "string"
                 }
                 },
                 {
                   "name": "IntegerArraySettingName",
                   "schema":  {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "integer" 
                   }
                 },
                 {
                   "name": "StringMapSettingName",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -550,7 +550,7 @@ Sample MIM JSON:
                 {
                   "name": "IntegerMapSettingName",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -577,7 +577,76 @@ Sample MIM JSON:
 }
 ```
 
-MIM JSON examples:
+A partial MIM JSON example of a fictional firewall configuration component including an array object, an array of strings and a map of strings simple objects:
+
+```JSON
+{
+  "name": "Firewall",
+  "type": "MimComponent",
+  "contents": [
+    {
+      "type": "MimObject",
+      "name": "FirewallRulesArray",
+      "desired": true,
+      "schema": {
+        "type": "array",
+        "elementSchema": {
+          "type": "object",
+          "fields": [
+            {
+              "name": "Direction",
+              "schema": "string"
+            },
+            {
+              "name": "Target",
+              "schema": "string"
+            },
+            {
+              "name": "Protocol",
+              "schema": "string"
+            },
+            {
+              "name": "IpAddress",
+              "schema": "string"
+            },
+            {
+              "name": "Port",
+              "schema": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFingerprintArray",
+      "schema": {
+        "type": "array",
+        "elementSchema": "string"
+      },
+      "desired": true
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFingerprintMap",
+      "schema": {
+        "type": "map",
+          "mapKey": {
+            "name": "FingerprintName",
+            "schema": "string"
+          },
+          "mapValue": {
+            "name": "FingerprintValue",
+            "schema": "string"
+          }
+        },
+        "desired": true
+    }
+  ]
+}
+```
+
+Other MIM JSON examples:
 - CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 

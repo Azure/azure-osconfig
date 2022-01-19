@@ -244,6 +244,27 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithNullArgument)
     EXPECT_EQ(-1, ExecuteCommand(nullptr, nullptr, false, false, 0, 0, nullptr, nullptr, nullptr));
 }
 
+TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(127, ExecuteCommand(nullptr, "hh", false, true, 100, 0, &textResult, nullptr, nullptr));
+    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: hh: not found\n"));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+
+    EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
+    EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found "));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+}
+
 TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
 {
     char* textResult = nullptr;
