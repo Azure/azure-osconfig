@@ -577,22 +577,91 @@ Sample MIM JSON:
 }
 ```
 
-MIM JSON examples:
+A partial MIM JSON example of a fictional firewall configuration component including an array object, an array of strings and a map of strings simple objects:
+
+```JSON
+{
+  "name": "Firewall",
+  "type": "MimComponent",
+  "contents": [
+    {
+      "type": "MimObject",
+      "name": "FirewallRulesArray",
+      "desired": true,
+      "schema": {
+        "type": "Array",
+        "elementSchema": {
+          "type": "Object",
+          "fields": [
+            {
+              "name": "Direction",
+              "schema": "string"
+            },
+            {
+              "name": "Target",
+              "schema": "string"
+            },
+            {
+              "name": "Protocol",
+              "schema": "string"
+            },
+            {
+              "name": "IpAddress",
+              "schema": "string"
+            },
+            {
+              "name": "Port",
+              "schema": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFingerprintArray",
+      "schema": {
+        "type": "Array",
+        "elementSchema": "string"
+      },
+      "desired": true
+    },
+    {
+      "type": "MimObject",
+      "name": "FirewallFingerprintMap",
+      "schema": {
+        "type": "Map",
+          "mapKey": {
+            "name": "FingerprintName",
+            "schema": "string"
+          },
+          "mapValue": {
+            "name": "FingerprintValue",
+            "schema": "string"
+          }
+        },
+        "desired": true
+    }
+  ]
+}
+```
+
+Other MIM JSON examples:
 - CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
 ### 3.2.3 Serialized MIM payload at run-time
 
-The following would be the payload serialized at runtime for the entire MIM (wrapping the object values that the MMI handles): 
+The following would be the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles): 
 
 ```
-{"desired|reported":{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}} 
+{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}
 ```
 
 MmiSet and MmiGet only use the object portions of this payload. Such as:
 
 ```
-{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]} 
+{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]}
 ```
 
 or:
@@ -633,10 +702,10 @@ or:
 
 Etc.
 
-Example of serialized JSON payload for two CommandRunner.CommandArguments desired object instances plus one instance of Settings with its desired objects:
+Example of serialized JSON payload for CommandRunner.CommandArguments and Settings:
 
 ```JSON
-{"desired":{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}},"CommandRunner":{"CommandArguments":{"CommandId":"B","Arguments":"ls","Action": 4}}}}
+{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}}}
 ```
 
 # 4. Management Modules Interface (MMI)
