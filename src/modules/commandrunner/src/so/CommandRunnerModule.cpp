@@ -170,7 +170,7 @@ void LoadLastCommandResults(const std::string& clientName, std::shared_ptr<Comma
 
     if (!jsonDoc.IsArray())
     {
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file JSON is not an array.");
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file JSON is not an array");
         return;
     }
 
@@ -442,39 +442,28 @@ int ParseDesiredPayload(rapidjson::Document& jsonDoc, CommandRunner::CommandArgu
                     commandArgs->arguments = ParseStringFromPayload(jsonDoc, Arguments);
                     if (!commandArgs->arguments.empty())
                     {
-                        if (jsonDoc.HasMember(Timeout.c_str()))
+                        // Timeout is an optional field
+                        if (jsonDoc.HasMember(Timeout.c_str()) && jsonDoc[Timeout.c_str()].IsUint())
                         {
-                            if (jsonDoc[Timeout.c_str()].IsUint())
-                            {
-                                commandArgs->timeout = jsonDoc[Timeout.c_str()].GetUint();
-                                if (jsonDoc.HasMember(SingleLineTextResult.c_str()))
-                                {
-                                    if (jsonDoc[SingleLineTextResult.c_str()].IsBool())
-                                    {
-                                        commandArgs->singleLineTextResult = jsonDoc[SingleLineTextResult.c_str()].GetBool();
-                                    }
-                                    else
-                                    {
-                                        OsConfigLogError(CommandRunnerLog::Get(), "CommandArguments.SingleLineText result must be of type 'bool'");
-                                        status = EINVAL;
-                                    }
-                                }
-                                else
-                                {
-                                    OsConfigLogError(CommandRunnerLog::Get(), "CommandArguments.SingleLineTextResult not received for commandId: %s", commandArgs->commandId.c_str());
-                                    status = EINVAL;
-                                }
-                            }
-                            else
-                            {
-                                OsConfigLogError(CommandRunnerLog::Get(), "CommandArguments.Timeout must be of type 'unsigned integer'");
-                                status = EINVAL;
-                            }
+                            commandArgs->timeout = jsonDoc[Timeout.c_str()].GetUint();
                         }
                         else
                         {
-                            OsConfigLogError(CommandRunnerLog::Get(), "CommandArguments.Timeout not received for commandId: %s", commandArgs->commandId.c_str());
-                            status = EINVAL;
+                            // Assume default of no timeout
+                            commandArgs->timeout = 0;
+                            OsConfigLogInfo(CommandRunnerLog::Get(), "CommandArguments.Timeout assumed 0 (no timeout) for commandId: %s", commandArgs->commandId.c_str());
+                        }
+                        
+                        // SingleLineTextResult is an optional field
+                        if (jsonDoc.HasMember(SingleLineTextResult.c_str()) && jsonDoc[SingleLineTextResult.c_str()].IsBool())
+                        {
+                            commandArgs->singleLineTextResult = jsonDoc[SingleLineTextResult.c_str()].GetBool();
+                        }
+                        else
+                        {
+                            // Assume default of true (text result as a single line)
+                            commandArgs->singleLineTextResult = true;
+                            OsConfigLogInfo(CommandRunnerLog::Get(), "CommandArguments.SingleLineTextResult assumed true for commandId: %s", commandArgs->commandId.c_str());
                         }
                     }
                     else
