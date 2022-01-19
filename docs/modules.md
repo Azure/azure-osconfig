@@ -124,7 +124,7 @@ Example of an array MIM object:
   "type": "MimObject",
   "desired": true,
   "schema": {
-    "type": "Array",
+    "type": "array",
     "elementSchema": {
       "type": "Object",
       "fields": [
@@ -240,7 +240,7 @@ Example of a MIM seting of array of strings type:
 {
   "name": "FirewallFingerprints",
   "schema": {
-    "type": "Array",
+    "type": "array",
     "elementSchema": "string"
   }
 }
@@ -252,7 +252,7 @@ Example of a MIM seting of map of strings type:
 {
   "name": "FirewallFigerprins",
   "schema": {
-    "type": "Map",
+    "type": "map",
     "mapKey": {
       "name": "FigerprintName",
       "schema": "string"
@@ -439,21 +439,21 @@ Sample MIM JSON:
               {
                 "name": "StringsArraySettingName",
                 "schema": { 
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "string"  
                 }
               },
               {
                 "name": "IntegerArraySettingName",
                 "schema":  {
-                  "type": "Array",
+                  "type": "array",
                   "elementSchema": "integer"  
                 }
               },
               {
                 "name": "StringMapSettingName",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -467,7 +467,7 @@ Sample MIM JSON:
               {
                 "name": "IntegerMapSettingName",
                 "schema": {
-                  "type": "Map",
+                  "type": "map",
                   "mapKey":  {
                     "name": "KeyName",
                     "schema": "string"
@@ -486,9 +486,9 @@ Sample MIM JSON:
           "type": "MimObject",
           "desired": [true,  false],
           "schema": {
-            "type": "Array",
+            "type": "array",
             "elementSchema": {
-              "type": "Object",
+              "type": "object",
               "fields": [
                 {
                   "name": "StringSettingName",
@@ -522,21 +522,21 @@ Sample MIM JSON:
                 {
                   "name": "StringsArraySettingName",
                   "schema": { 
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "string"
                 }
                 },
                 {
                   "name": "IntegerArraySettingName",
                   "schema":  {
-                    "type": "Array",
+                    "type": "array",
                     "elementSchema": "integer" 
                   }
                 },
                 {
                   "name": "StringMapSettingName",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -550,7 +550,7 @@ Sample MIM JSON:
                 {
                   "name": "IntegerMapSettingName",
                   "schema": {
-                    "type": "Map",
+                    "type": "map",
                     "mapKey":  {
                       "name": "KeyName",
                       "schema": "string"
@@ -589,9 +589,9 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       "name": "FirewallRulesArray",
       "desired": true,
       "schema": {
-        "type": "Array",
+        "type": "array",
         "elementSchema": {
-          "type": "Object",
+          "type": "object",
           "fields": [
             {
               "name": "Direction",
@@ -621,7 +621,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       "type": "MimObject",
       "name": "FirewallFingerprintArray",
       "schema": {
-        "type": "Array",
+        "type": "array",
         "elementSchema": "string"
       },
       "desired": true
@@ -630,7 +630,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       "type": "MimObject",
       "name": "FirewallFingerprintMap",
       "schema": {
-        "type": "Map",
+        "type": "map",
           "mapKey": {
             "name": "FingerprintName",
             "schema": "string"
