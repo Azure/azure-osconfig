@@ -250,11 +250,11 @@ Example of a MIM seting of map of strings type:
 
 ```JSON
 {
-  "name": "FirewallFigerprins",
+  "name": "FirewallFingerprins",
   "schema": {
     "type": "map",
     "mapKey": {
-      "name": "FigerprintName",
+      "name": "FingerprintName",
       "schema": "string"
     },
     "mapValue": {
