@@ -1,11 +1,68 @@
 #ifndef MODULESMANAGERTESTS_H
 #define MODULESMANAGERTESTS_H
 
-#define MODULE_TEST_PATH "@MODULE_TEST_PATH@"
+// Path to the test modules directory
+const char g_moduleDir[] = "@TEST_MODULES_DIR@";
 
-#define OSCONFIG_JSON_INVALID "@OSCONFIG_JSON_INVALID@"
-#define OSCONFIG_JSON_NONE_REPORTED "@OSCONFIG_JSON_NONE_REPORTED@"
-#define OSCONFIG_JSON_SINGLE_REPORTED "@OSCONFIG_JSON_SINGLE_REPORTED@"
-#define OSCONFIG_JSON_MULTIPLE_REPORTED "@OSCONFIG_JSON_MULTIPLE_REPORTED@"
+// Path to each test module
+const char g_validModulePathV1[] = "@VALID_MODULE_V1_PATH@";
+const char g_validModulePathV2[] = "@VALID_MODULE_V2_PATH@";
+const char g_invalidModulePath[] = "@INVALID_MODULE_PATH@";
+const char g_invalidGetInfoModulePath[] = "@INVALIDGETINFO_MODULE_PATH@";
+
+// Component names used by all valid modules
+const char g_testModuleComponent1[] = "TestModule_Component_1";
+const char g_testModuleComponent2[] = "TestModule_Component_2";
+
+const char g_configJsonInvalid[] = "@OSCONFIG_JSON_INVALID@";
+const char g_configJsonNoneReported[] = "@OSCONFIG_JSON_NONE_REPORTED@";
+const char g_configJsonSingleReported[] = "@OSCONFIG_JSON_SINGLE_REPORTED@";
+const char g_configJsonMultipleReported[] = "@OSCONFIG_JSON_MULTIPLE_REPORTED@";
+
+// Payload for testing MpiSetDesired() and MpiGetReported()
+const char g_localPayload[] = R"""({
+    "TestModule_Component_1": {
+        "string": "string",
+        "integer": 123,
+        "boolean": true,
+        "integerEnum": 1,
+        "integerArray": [1, 2, 3],
+        "stringArray": ["a", "b", "c"],
+        "integerMap": { "key1": 1, "key2": 2 },
+        "stringMap": { "key1": "a", "key2": "b" },
+        "object": {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "integerArray": [1, 2, 3],
+            "stringArray": ["a", "b", "c"],
+            "integerMap": { "key1": 1, "key2": 2 },
+            "stringMap": { "key1": "a", "key2": "b" }
+        },
+        "objectArray": [
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "integerArray": [1, 2, 3],
+                "stringArray": ["a", "b", "c"],
+                "integerMap": { "key1": 1, "key2": 2 },
+                "stringMap": { "key1": "a", "key2": "b" }
+            },
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "integerArray": [1, 2, 3],
+                "stringArray": ["a", "b", "c"],
+                "integerMap": { "key1": 1, "key2": 2 },
+                "stringMap": { "key1": "a", "key2": "b" }
+            }
+        ]
+    }
+})""";
 
 #endif // MODULESMANAGERTESTS_H

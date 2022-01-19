@@ -1,8 +1,8 @@
 {
     "Reported": [
         {
-            "ComponentName": "TestComponent1",
-            "ObjectName": "TestObject1"
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "string"
         }
     ]
 }
