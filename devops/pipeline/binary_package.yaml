@@ -228,7 +228,7 @@ stages:
 
     # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
     - task: UseDotNet@2
-      displayName: Use .NET Core sdk
+      displayName: Use .NET Core SDK
       condition: eq(variables.coverage, true)
       inputs:
         packageType: sdk
