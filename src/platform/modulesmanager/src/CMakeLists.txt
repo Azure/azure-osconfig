@@ -22,3 +22,4 @@ target_include_directories(modulesmanager
         ${MODULES_INCLUDE_DIR}
         ${PLATFORM_INC_DIR}
 )
+
