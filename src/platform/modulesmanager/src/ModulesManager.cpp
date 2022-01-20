@@ -512,6 +512,11 @@ int ModulesManager::MpiSet(const char* componentName, const char* objectName, co
         OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payloadSizeBytes: %d", payloadSizeBytes);
         status = EINVAL;
     }
+    else if (modMap.end() == modMap.find(componentName))
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet componentName %s not found", componentName);
+        status = EINVAL;
+    }
     else
     {
         ModuleMetadata& moduleMetadata = modMap[componentName];
@@ -523,7 +528,7 @@ int ModulesManager::MpiSet(const char* componentName, const char* objectName, co
         moduleMetadata.operationInProgress = false;
 
         // Schedule the module to be unloaded
-        if ((ManagementModule::Lifetime::KeepAlive != moduleMetadata.module->GetLifetime()))
+        if (ManagementModule::Lifetime::KeepAlive != moduleMetadata.module->GetLifetime())
         {
             ScheduleUnloadModule(moduleMetadata);
         }
@@ -572,6 +577,11 @@ int ModulesManager::MpiGet(const char* componentName, const char* objectName, MP
     else if (nullptr == payloadSizeBytes)
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payloadSizeBytes");
+        status = EINVAL;
+    }
+    else if (modMap.end() == modMap.find(componentName))
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet componentName %s not found", componentName);
         status = EINVAL;
     }
     else
