@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <string>
 #include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+#include <vector>
 
 #include <CommonUtils.h>
 #include <Logging.h>
@@ -37,6 +40,17 @@ private:
 class AptInstall
 {
 public:
+    struct DesiredPackages
+    {
+        std::string stateId;
+        std::vector<std::string> packages;
+    };
+
+    struct State
+    {
+        std::string stateId;
+    };
+
     AptInstall(unsigned int maxPayloadSizeBytes);
     virtual ~AptInstall() = default;
 
@@ -46,8 +60,15 @@ public:
     virtual unsigned int GetMaxPayloadSizeBytes();
 
 private:
-    static int SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
+    static int SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
+    static int DeserializeDesiredPackages(rapidjson::Document& document, DesiredPackages& object);
+    static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    int ExecuteUpdate(const std::string& value);
+    int ExecuteUpdates(const std::vector<std::string> packages);
+    int RunCommand(const char* command, bool replaceEol);
 
-    std::string m_value;
+    // Store desired settings for reporting
+    std::string m_stateId;
+
     unsigned int m_maxPayloadSizeBytes;
 };

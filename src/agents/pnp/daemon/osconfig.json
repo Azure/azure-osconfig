@@ -48,7 +48,7 @@
     },
     {
       "ComponentName": "AptInstall",
-      "ObjectName": "AptInstallObject"
+      "ObjectName": "State"
     }
   ],
   "ReportingIntervalSeconds": 30,

@@ -25,46 +25,52 @@ namespace OSConfig::Platform::Tests
         static AptInstall* session;
 
         static const char* componentName;
-        static const char* objectName;
+        static const char* desiredObjectName;
+        static const char* reportedObjectName;
+        static char validJsonPayload[];
+        static const char *invalidJsonPayload;        
     };
 
     AptInstall* AptInstallTests::session;
     const char* AptInstallTests::componentName = "AptInstall";
-    const char* AptInstallTests::objectName = "AptInstallObject";
+    const char* AptInstallTests::desiredObjectName = "DesiredPackages";
+    const char* AptInstallTests::reportedObjectName = "State";
+    char AptInstallTests::validJsonPayload[] = "{\"StateId\":\"my-id-1\",\"Packages\":[\"cowsay\",\"sl\"]}";
+
 
     TEST_F(AptInstallTests, ValidGetSet)
     {
-        char jsonPayload[] = "\"C++ AptInstall Module\"";
+        char reportedJsonPayload[] = "{\"StateId\":\"my-id-1\"}";
+
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(MMI_OK, session->Set(componentName, objectName, jsonPayload, strlen(jsonPayload)));
-        ASSERT_EQ(MMI_OK, session->Get(componentName, objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
 
         std::string payloadString(payload, payloadSizeBytes);
-        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+        ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
     }
 
     TEST_F(AptInstallTests, InvalidComponentObjectName)
     {
         std::string invalidName = "invalid";
-        char jsonPayload[] = "\"C++ AptInstall Module\"";
+
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), objectName, jsonPayload, strlen(jsonPayload)));
-        ASSERT_EQ(EINVAL, session->Set(componentName, invalidName.c_str(), jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(EINVAL, session->Set(invalidName.c_str(), desiredObjectName, validJsonPayload, strlen(validJsonPayload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, invalidName.c_str(), validJsonPayload, strlen(validJsonPayload)));
 
-        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), objectName, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->Get(invalidName.c_str(), desiredObjectName, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, session->Get(componentName, invalidName.c_str(), &payload, &payloadSizeBytes));
     }
 
     TEST_F(AptInstallTests, SetInvalidPayloadString)
     {
-        char validPayload[] = "\"C++ AptInstall Module\"";
         char invalidPayload[] = "C++ AptInstall Module";
 
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, validPayload, strlen(validPayload) - 1));
-        ASSERT_EQ(EINVAL, session->Set(componentName, objectName, invalidPayload, strlen(invalidPayload)));
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload) - 1)); //test invalid length
+        ASSERT_EQ(EINVAL, session->Set(componentName, desiredObjectName, invalidPayload, strlen(invalidPayload))); //test invalid payload
     }
 }
