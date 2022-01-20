@@ -35,7 +35,6 @@ const char* g_configReported = "Reported";
 const char* g_configComponentName = "ComponentName";
 const char* g_configObjectName = "ObjectName";
 
-// Temporary map used by MpiDoWork() while the Platform is still attatched to the Agent
 // Manager mapping MPI_HANDLE <-> ModulesManager
 std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>> mpiMap;
 

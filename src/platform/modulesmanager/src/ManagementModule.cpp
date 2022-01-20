@@ -414,7 +414,7 @@ bool ManagementModule::IsValid() const
 
 bool ManagementModule::IsLoaded() const
 {
-    return nullptr != mmiHandle;
+    return mmiHandle ? true : false;
 }
 
 const std::vector<std::string> ManagementModule::GetSupportedComponents() const

@@ -11,11 +11,11 @@
 #include <Mmi.h>
 
 // MMI function definitions
-using Mmi_GetInfo = int (*)(const char *, MMI_JSON_STRING *, int *);
+using Mmi_GetInfo = int (*)(const char*, MMI_JSON_STRING*, int*);
 using Mmi_Free = void (*)(MMI_JSON_STRING);
-using Mmi_Open = MMI_HANDLE (*)(const char *, const unsigned int);
-using Mmi_Set = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING, const int);
-using Mmi_Get = int (*)(MMI_HANDLE, const char *, const char *, MMI_JSON_STRING *, int *);
+using Mmi_Open = MMI_HANDLE (*)(const char*, const unsigned int);
+using Mmi_Set = int (*)(MMI_HANDLE, const char*, const char*, const MMI_JSON_STRING, const int);
+using Mmi_Get = int (*)(MMI_HANDLE, const char*, const char*, MMI_JSON_STRING*, int*);
 using Mmi_Close = void (*)(MMI_HANDLE);
 
 class ManagementModule
@@ -76,16 +76,14 @@ public:
 
     // Is a valid Management Module (MM) eg. exposes the MM interface
     bool IsValid() const;
+
     // Is the Management Module (MM) loaded eg. MM handles open
     bool IsLoaded() const;
 
-    // Loads the Management Module (MM) - Opens the MMI and .so handles
     virtual void LoadModule();
-    // Unloads the Management Module (MM) - Closes MMI and .so handles
     virtual void UnloadModule();
-    // Sends a payload to the respective component
+
     virtual int CallMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
-    // Receive a payload to the respective component
     virtual int CallMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
     virtual bool IsExportingMmi(const std::string path);
@@ -105,12 +103,13 @@ public:
 protected:
     void* handle;
     MMI_HANDLE mmiHandle;
+
     // Is a valid MM eg. exposes the MM interface (MMI)
     bool isValid;
-    // The client name of the MM
+
     const std::string clientName;
-    // Path of the MM
     const std::string modulePath;
+
     // The maximum payload size
     int maxPayloadSizeBytes;
 
