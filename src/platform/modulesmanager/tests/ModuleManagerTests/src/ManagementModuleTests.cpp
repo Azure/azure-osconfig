@@ -316,7 +316,7 @@ namespace Tests
 
     TEST(ManagementModuleVersionTests, VersionString)
     {
-        ManagementModule::Version v = { 1,2,3,4 };
+        ManagementModule::Version v = {1,2,3,4};
         ManagementModule::Version v1 = {0};
         ManagementModule::Version v2 = {0,0,1};
         ManagementModule::Version v3 = {0,0,0,1};
