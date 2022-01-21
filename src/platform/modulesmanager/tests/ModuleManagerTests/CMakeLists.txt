@@ -43,15 +43,21 @@ configure_file(
     ${OSCONFIG_JSON_MULTIPLE_REPORTED}
     COPYONLY)
 
-add_executable(modulesmanagertests
+add_library(modulesmanagermocks
     src/CommonTests.cpp
-    src/ManagementModuleTests.cpp
     src/MockManagementModule.cpp
-    src/MockModulesManager.cpp
-    src/ModulesManagerTests.cpp
-    src/MpiTests.cpp)
+    src/MockModulesManager.cpp)
+target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread modulesmanager commonutils)
+target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../inc/")
 
-target_link_libraries(modulesmanagertests gtest gtest_main gmock gmock_main pthread modulesmanager commonutils)
-target_include_directories(modulesmanagertests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../inc/")
+add_executable(managementmoduletests src/ManagementModuleTests.cpp)
+target_link_libraries(managementmoduletests modulesmanagermocks)
+gtest_discover_tests(managementmoduletests)
 
-gtest_add_tests(TARGET modulesmanagertests)
+add_executable(modulesmanagertests src/ModulesManagerTests.cpp)
+target_link_libraries(modulesmanagertests modulesmanagermocks)
+gtest_discover_tests(modulesmanagertests)
+
+add_executable(mpitests src/MpiTests.cpp)
+target_link_libraries(mpitests modulesmanagermocks)
+gtest_discover_tests(mpitests)
