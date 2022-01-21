@@ -11,6 +11,7 @@
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
 
+using ::testing::Combine;
 using ::testing::Values;
 
 namespace Tests
@@ -61,39 +62,9 @@ namespace Tests
         std::pair<std::string, std::string>{"stringArray", "[\"a\", \"b\", \"c\"]"},
         std::pair<std::string, std::string>{"integerMap", "{\"key1\": 1, \"key2\": 2}"},
         std::pair<std::string, std::string>{"stringMap", "{\"key1\": \"a\", \"key2\": \"b\"}"},
-        std::pair<std::string, std::string>{"object", R"""({
-                "string": "value",
-                "integer": 1,
-                "boolean": true,
-                "integerEnum": 1,
-                "integerArray": [1, 2, 3],
-                "stringArray": ["a", "b", "c"],
-                "integerMap": { "key1": 1, "key2": 2 },
-                "stringMap": { "key1": "a", "key2": "b" }
-            })"""},
-        std::pair<std::string, std::string>{"objectArray", R"""([
-                {
-                    "string": "value",
-                    "integer": 1,
-                    "boolean": true,
-                    "integerEnum": 1,
-                    "integerArray": [1, 2, 3],
-                    "stringArray": ["a", "b", "c"],
-                    "integerMap": { "key1": 1, "key2": 2 },
-                    "stringMap": { "key1": "a", "key2": "b" }
-                },
-                {
-                    "string": "value",
-                    "integer": 1,
-                    "boolean": true,
-                    "integerEnum": 1,
-                    "integerArray": [1, 2, 3],
-                    "stringArray": ["a", "b", "c"],
-                    "integerMap": { "key1": 1, "key2": 2 },
-                    "stringMap": { "key1": "a", "key2": "b" }
-                }
-            ])"""}
-    ));
+        std::pair<std::string, std::string>{"object", "{\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}"},
+        std::pair<std::string, std::string>{"objectArray", "[{\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}, {\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}]"}));
+
 
     TEST_F(MpiTests, MpiOpen)
     {
@@ -109,19 +80,6 @@ namespace Tests
     TEST_F(MpiTests, MpiOpen_InvalidClientName)
     {
         ASSERT_EQ(nullptr, MpiOpen(nullptr, 0));
-    }
-
-    TEST_P(MpiPayloadValidation, MpiSet)
-    {
-        MPI_HANDLE handle = nullptr;
-        ModulesManager* modulesManager = new ModulesManager(defaultClient, 0);
-        const char* objectName = GetParam().first.c_str();
-        const char* payload = GetParam().second.c_str();
-
-        modulesManager->LoadModules(g_moduleDir, g_configJsonNoneReported);
-        handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
-
-        ASSERT_EQ(MPI_OK, MpiSet(handle, g_testModuleComponent1, objectName, (MPI_JSON_STRING)payload, strlen(payload)));
     }
 
     TEST_F(MpiTests, MpiSet_InvalidClientSession)
@@ -144,21 +102,23 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiSet(handle, defaultComponent, defaultObject, nullptr, 1));
     }
 
-    TEST_P(MpiPayloadValidation, MpiGet)
+    TEST_P(MpiPayloadValidation, ObjectTypes)
     {
         MPI_HANDLE handle = nullptr;
         ModulesManager* modulesManager = new ModulesManager(defaultClient, 0);
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
-        const char* objectName = GetParam().first.c_str();
-        const char* expectedPayload = GetParam().second.c_str();
+        const char* objectName = std::get<0>(GetParam()).c_str();
+        const char* validPayload = std::get<1>(GetParam()).c_str();
 
         modulesManager->LoadModules(g_moduleDir, g_configJsonNoneReported);
         handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
 
+        ASSERT_EQ(MPI_OK, MpiSet(handle, g_testModuleComponent1, objectName, (MPI_JSON_STRING)validPayload, strlen(validPayload)));
         ASSERT_EQ(MPI_OK, MpiGet(handle, g_testModuleComponent1, objectName, &payload, &payloadSizeBytes));
+
         std::string jsonPayload(payload, payloadSizeBytes);
-        ASSERT_TRUE(JSON_EQ(expectedPayload, jsonPayload));
+        ASSERT_TRUE(JSON_EQ(validPayload, jsonPayload));
     }
 
     TEST_F(MpiTests, MpiGet_InvalidClientSession)
