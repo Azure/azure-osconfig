@@ -31,8 +31,6 @@ namespace Tests
         void TearDown() override;
     };
 
-    class MpiPayloadValidation : public MpiTests, public ::testing::WithParamInterface<std::pair<std::string, std::string>> {};
-
     const char MpiTests::defaultClient[] = "Default_MpiTest_Client";
     const char MpiTests::defaultComponent[] = "Default_MpiTest_Component";
     const char MpiTests::defaultObject[] = "Default_MpiTest_Object";
@@ -53,18 +51,6 @@ namespace Tests
         ASSERT_NE(nullptr, modulesManager);
         delete modulesManager;
     }
-
-    INSTANTIATE_TEST_SUITE_P(MpiTests, MpiPayloadValidation, Values(
-        std::pair<std::string, std::string>{"string", "\"string\""},
-        std::pair<std::string, std::string>{"integer", "123"},
-        std::pair<std::string, std::string>{"boolean", "true"},
-        std::pair<std::string, std::string>{"integerArray", "[1, 2, 3]"},
-        std::pair<std::string, std::string>{"stringArray", "[\"a\", \"b\", \"c\"]"},
-        std::pair<std::string, std::string>{"integerMap", "{\"key1\": 1, \"key2\": 2}"},
-        std::pair<std::string, std::string>{"stringMap", "{\"key1\": \"a\", \"key2\": \"b\"}"},
-        std::pair<std::string, std::string>{"object", "{\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}"},
-        std::pair<std::string, std::string>{"objectArray", "[{\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}, {\"string\": \"value\",\"integer\": 1,\"boolean\": true,\"integerEnum\": 1,\"integerArray\": [1, 2, 3],\"stringArray\": [\"a\", \"b\", \"c\"],\"integerMap\": { \"key1\": 1, \"key2\": 2 },\"stringMap\": { \"key1\": \"a\", \"key2\": \"b\" }}]"}));
-
 
     TEST_F(MpiTests, MpiOpen)
     {
@@ -119,6 +105,40 @@ namespace Tests
 
         std::string jsonPayload(payload, payloadSizeBytes);
         ASSERT_TRUE(JSON_EQ(validPayload, jsonPayload));
+    }
+
+    TEST_F(MpiTests, PayloadValidation)
+    {
+        MPI_HANDLE handle = nullptr;
+        ModulesManager* modulesManager = new ModulesManager(defaultClient, 0);
+        std::vector<std::pair<std::string, std::string>> objects = {
+            {g_string, g_stringPayload},
+            {g_integer, g_integerPayload},
+            {g_boolean, g_booleanPayload},
+            {g_integerArray, g_integerArrayPayload},
+            {g_stringArray, g_stringArrayPayload},
+            {g_integerMap, g_integerMapPayload},
+            {g_stringMap, g_stringMapPayload},
+            {g_object, g_objectPayload},
+            {g_objectArray, g_objectArrayPayload}
+        };
+
+        modulesManager->LoadModules(g_moduleDir, g_configJsonNoneReported);
+        handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
+
+        for (auto object : objects)
+        {
+            MMI_JSON_STRING payload = nullptr;
+            int payloadSizeBytes = 0;
+            const char* objectName = object.first.c_str();
+            const char* validPayload = object.second.c_str();
+
+            EXPECT_EQ(MPI_OK, MpiSet(handle, g_testModuleComponent1, objectName, (MPI_JSON_STRING)validPayload, strlen(validPayload)));
+            EXPECT_EQ(MPI_OK, MpiGet(handle, g_testModuleComponent1, objectName, &payload, &payloadSizeBytes));
+
+            std::string jsonPayload(payload, payloadSizeBytes);
+            EXPECT_TRUE(JSON_EQ(validPayload, jsonPayload));
+        }
     }
 
     TEST_F(MpiTests, MpiGet_InvalidClientSession)

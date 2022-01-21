@@ -32,8 +32,6 @@ namespace Tests
         void TearDown() override;
     };
 
-    class ManagementModulePayloadValidation : public ManagementModuleTests, public ::testing::WithParamInterface<std::string> {};
-
     const char ManagementModuleTests::defaultClient[] = "Default_ManagementModuleTest_Client";
     const char ManagementModuleTests::defaultComponent[] = "Default_ManagementModuleTest_Component";
     const char ManagementModuleTests::defaultObject[] = "Default_ManagementModuleTest_Object";
@@ -207,10 +205,20 @@ namespace Tests
         ASSERT_EQ(strlen(expectedPayload), payloadSize);
     }
 
-    TEST_P(ManagementModulePayloadValidation, JsonPayload)
+    TEST_F(ManagementModuleTests, PayloadValidation)
     {
         MockManagementModule module(defaultClient);
-        const char* payload = GetParam().c_str();
+        std::vector<std::pair<std::string, std::string>> objects = {
+            {g_string, g_stringPayload},
+            {g_integer, g_integerPayload},
+            {g_boolean, g_booleanPayload},
+            {g_integerArray, g_integerArrayPayload},
+            {g_stringArray, g_stringArrayPayload},
+            {g_integerMap, g_integerMapPayload},
+            {g_stringMap, g_stringMapPayload},
+            {g_object, g_objectPayload},
+            {g_objectArray, g_objectArrayPayload}
+        };
 
         module.MmiSet(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
@@ -224,58 +232,22 @@ namespace Tests
                 return MMI_OK;
             });
 
-        // Delegate mock call to parent class and call mmiSet function pointer
-        EXPECT_CALL(module, CallMmiSet(defaultComponent, defaultObject, (MMI_JSON_STRING)payload, strlen(payload))).Times(1).WillOnce(
-            [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
-            {
-                return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
-            });
+        for (auto object : objects)
+        {
+            const char* objectName = object.first.c_str();
+            const char* payload = object.second.c_str();
+            // Delegate mock call to parent class and call mmiSet function pointer
+            EXPECT_CALL(module, CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload))).Times(1).WillOnce(
+                [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
+                {
+                    return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
+                });
 
-        EXPECT_CALL(module, LoadModule()).Times(1);
-        ASSERT_EQ(MMI_OK, module.CallMmiSet(defaultComponent, defaultObject, (MMI_JSON_STRING)payload, strlen(payload)));
+            EXPECT_CALL(module, LoadModule()).Times(1);
+            ASSERT_EQ(MMI_OK, module.CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
+        }
+
     }
-
-    INSTANTIATE_TEST_SUITE_P(ManagementModuleTests, ManagementModulePayloadValidation, Values(
-        "\"string\"",
-        "123",
-        "true",
-        "[1, 2, 3]",
-        "[\"a\", \"b\", \"c\"]",
-        "{\"key\": 1, \"key2\": 2}",
-        "{\"key\": \"a\", \"key2\": \"b\"}",
-        R"""({
-                "string": "value",
-                "integer": 1,
-                "boolean": true,
-                "integerEnum": 1,
-                "integerArray": [1, 2, 3],
-                "stringArray": ["a", "b", "c"],
-                "integerMap": { "key1": 1, "key2": 2 },
-                "stringMap": { "key1": "a", "key2": "b" }
-            })""",
-        R"""([
-                {
-                    "string": "value",
-                    "integer": 1,
-                    "boolean": true,
-                    "integerEnum": 1,
-                    "integerArray": [1, 2, 3],
-                    "stringArray": ["a", "b", "c"],
-                    "integerMap": { "key1": 1, "key2": 2 },
-                    "stringMap": { "key1": "a", "key2": "b" }
-                },
-                {
-                    "string": "value",
-                    "integer": 1,
-                    "boolean": true,
-                    "integerEnum": 1,
-                    "integerArray": [1, 2, 3],
-                    "stringArray": ["a", "b", "c"],
-                    "integerMap": { "key1": 1, "key2": 2 },
-                    "stringMap": { "key1": "a", "key2": "b" }
-                }
-            ])"""
-    ));
 
     TEST(ManagementModuleVersionTests, Version)
     {
