@@ -88,25 +88,6 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiSet(handle, defaultComponent, defaultObject, nullptr, 1));
     }
 
-    TEST_P(MpiPayloadValidation, ObjectTypes)
-    {
-        MPI_HANDLE handle = nullptr;
-        ModulesManager* modulesManager = new ModulesManager(defaultClient, 0);
-        MMI_JSON_STRING payload = nullptr;
-        int payloadSizeBytes = 0;
-        const char* objectName = std::get<0>(GetParam()).c_str();
-        const char* validPayload = std::get<1>(GetParam()).c_str();
-
-        modulesManager->LoadModules(g_moduleDir, g_configJsonNoneReported);
-        handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
-
-        ASSERT_EQ(MPI_OK, MpiSet(handle, g_testModuleComponent1, objectName, (MPI_JSON_STRING)validPayload, strlen(validPayload)));
-        ASSERT_EQ(MPI_OK, MpiGet(handle, g_testModuleComponent1, objectName, &payload, &payloadSizeBytes));
-
-        std::string jsonPayload(payload, payloadSizeBytes);
-        ASSERT_TRUE(JSON_EQ(validPayload, jsonPayload));
-    }
-
     TEST_F(MpiTests, PayloadValidation)
     {
         MPI_HANDLE handle = nullptr;
