@@ -14,9 +14,10 @@
 #include <rapidjson/document.h>
 #include <vector>
 
-#include <ManagementModule.h>
 #include <CommonUtils.h>
 #include <Logging.h>
+#include <ManagementModule.h>
+#include <Mpi.h>
 
 #define MODULESMANAGER_LOGFILE "/var/log/osconfig_platform.log"
 #define MODULESMANAGER_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
@@ -51,31 +52,29 @@ public:
 class ModulesManager
 {
 public:
-    ModulesManager(std::string clientName);
-    ~ModulesManager();
+    ModulesManager(std::string clientName, const unsigned int maxPayloadSizeBytes = 0);
+    virtual ~ModulesManager();
 
-    // Set the default cleanup timespan in seconds for Management Modules (MMs), unloads the MM if Lifespan is "Short" after
-    void SetDefaultCleanupTimespan(unsigned int timespan);
-    // Loads Management Modules (MMs) into the ModuleLoader from the default path (/usr/lib/osconfig)
-    int LoadModules();
-    // Loads Management Modules (MMs) into the ModuleLoader from the given path
-    int LoadModules(std::string modulePath, std::string configJson);
-    // Perform an MpiSet operation
-    int MpiSet(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes);
-    // Perform an MpiGet operation
-    int MpiGet(const char* componentName, const char* propertyName, char** payload, int* payloadSizeBytes);
-    // Perform an MpiSetDesired operation
-    int MpiSetDesired(const char* clientName, const char* payload, const int payloadSizeBytes);
-    // Perform an MpiGetReported operation
-    int MpiGetReported(const char* clientName, const unsigned int maxPayloadSizeBytes, char** payload, int* payloadSizeBytes);
-    // Retreives the client of the ModulesManager
     std::string GetClientName();
-    void UnloadAllModules();
+
+    // Set the default cleanup timespan in seconds for Management Modules (MMs), unloads the MM if Lifespan is "Short"
+    void SetDefaultCleanupTimespan(unsigned int timespan);
+
+    // Loads Management Modules (MMs) into the Modules Manager
+    int LoadModules();
+    int LoadModules(std::string modulePath);
+    int LoadModules(std::string modulePath, std::string configJson);
+
+    int MpiSet(const char* componentName, const char* objectName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
+    int MpiGet(const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSizeBytes);
+    int MpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes);
+    int MpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes);
+
     void UnloadModules();
-    void SetMaxPayloadSize(unsigned int maxSize);
+    void UnloadAllModules();
     void DoWork();
 
-private:
+protected:
     struct ModuleMetadata
     {
         std::shared_ptr<ManagementModule> module;
@@ -83,29 +82,26 @@ private:
         bool operationInProgress;
     };
 
-    int SetReportedObjects(const std::string& configJson);
-    int MpiSetInternal(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes);
-    int MpiGetInternal(const char* componentName, const char* propertyName, char** payload, int* payloadSizeBytes);
-    int MpiSetDesiredInternal(rapidjson::Document& document);
-    int MpiGetReportedInternal(char** payload, int* payloadSizeBytes);
-    ModuleMetadata* GetModuleMetadata(const char* componentName);
-    void ScheduleUnloadModule(ModuleMetadata& mm);
-
     // Module mapping componentName <-> ModuleMetadata
     std::map<std::string, ModuleMetadata> modMap;
-    // Vector of modules to unload
     std::vector<ModuleMetadata> modulesToUnload;
-    std::hash<std::string> hashString;
+
+private:
+    static std::string moduleDirectory;
+    static std::string configurationJsonFile;
+
+    std::string clientName;
+    unsigned int maxPayloadSizeBytes;
 
     // Timespan in seconds in order to unload loaded MMs, eg. unload module after x secs
     unsigned int cleanupTimespan;
-    // The name of the client using the module manager
-    std::string clientName;
-    // The maximum payload size
-    int maxPayloadSizeBytes;
 
-    friend class Tests::ModuleManagerTests;
-    friend class Tests::ModuleManagerTests_ModuleCleanup_Test;
+    int SetReportedObjects(const std::string& configJson);
+
+    int MpiSetDesiredInternal(rapidjson::Document& document);
+    int MpiGetReportedInternal(char** payload, int* payloadSizeBytes);
+
+    void ScheduleUnloadModule(ModuleMetadata& mm);
 };
 
 #endif // MODULESMANAGER_H

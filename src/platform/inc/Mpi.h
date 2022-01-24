@@ -43,8 +43,6 @@ int MpiGetReported(
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes);
 void MpiFree(MPI_JSON_STRING payload);
-
-// MpiDoWork is temporary while the Platform is still attached to the Agent
 void MpiDoWork(void);
 
 #ifdef __cplusplus

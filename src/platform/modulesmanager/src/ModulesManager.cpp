@@ -26,20 +26,15 @@
 #include <ScopeGuard.h>
 
 constexpr unsigned int g_defaultModuleCleanup = 60 * 30; // 30 minutes
+
 const std::string g_moduleDir = "/usr/lib/osconfig";
 const std::string g_moduleExtension = ".so";
 
-const char* g_configJson = "/etc/osconfig/osconfig.json";
+const std::string g_configJson = "/etc/osconfig/osconfig.json";
 const char* g_configReported = "Reported";
 const char* g_configComponentName = "ComponentName";
 const char* g_configObjectName = "ObjectName";
 
-// The local desired and reported configuration files
-const std::string g_desiredFile = "/etc/osconfig/osconfig_desired.json";
-const std::string g_reportedFile = "/etc/osconfig/osconfig_reported.json";
-
-// Manager mapping clientName <-> ModulesManager
-std::map<std::string, std::weak_ptr<ModulesManager>> manMap;
 // Manager mapping MPI_HANDLE <-> ModulesManager
 std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>> mpiMap;
 
@@ -64,36 +59,28 @@ MPI_HANDLE MpiOpen(
         }
     }};
 
-    ModulesManagerLog::OpenLog();
-
-    if (nullptr == clientName)
+    if (0 == mpiMap.size())
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen called without a clientName.");
-        return nullptr;
+        ModulesManagerLog::OpenLog();
     }
 
-    if (manMap.end() == manMap.find(clientName))
+    if (nullptr != clientName)
     {
-        // No manager found for clientName, create manager
-        auto modulesManager = std::shared_ptr<ModulesManager>(new ModulesManager(clientName));
-        MPI_HANDLE mpiHandle = reinterpret_cast<MPI_HANDLE>(modulesManager.get());
-        manMap[clientName] = modulesManager;
-        mpiMap[mpiHandle] = modulesManager;
-        modulesManager->SetMaxPayloadSize(maxPayloadSizeBytes);
-        modulesManager->LoadModules();
-        handle = mpiHandle;
-    }
-    else if (!manMap[clientName].expired())
-    {
-        handle = reinterpret_cast<MMI_HANDLE>(manMap[clientName].lock().get());
-        if (nullptr == handle)
+        auto modulesManager = std::shared_ptr<ModulesManager>(new ModulesManager(clientName, maxPayloadSizeBytes));
+        if (nullptr != modulesManager)
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen already called for %s, but handle is nullptr", clientName);
+            modulesManager->LoadModules();
+            handle = reinterpret_cast<MPI_HANDLE>(modulesManager.get());
+            mpiMap[handle] = modulesManager;
         }
         else
         {
-            OsConfigLogInfo(ModulesManagerLog::Get(), "MpiOpen already called for %s, returning original handle %p", clientName, handle);
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen(%s, %u) failed to allocate a ModulesManager", clientName, maxPayloadSizeBytes);
         }
+    }
+    else
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen(%s, %u) called without an invalid client name", clientName, maxPayloadSizeBytes);
     }
 
     return handle;
@@ -101,15 +88,10 @@ MPI_HANDLE MpiOpen(
 
 void MpiClose(MPI_HANDLE clientSession)
 {
-    OsConfigLogInfo(ModulesManagerLog::Get(), "MpiClose(%p)", clientSession);
     if (mpiMap.end() != mpiMap.find(clientSession))
     {
-        mpiMap[clientSession]->UnloadAllModules();
-        mpiMap[clientSession].reset();
-    }
-    else
-    {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiClose invalid MPI_HANDLE. handle=%p", clientSession);
+        mpiMap[clientSession]->UnloadModules();
+        mpiMap.erase(clientSession);
     }
 
     if (0 == mpiMap.size())
@@ -128,15 +110,17 @@ int MpiSet(
     int status = MPI_OK;
     std::string clientName;
 
-    if (mpiMap.end() == mpiMap.find(clientSession))
+    if (nullptr == clientSession)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet called with an invalid clientSession: %p, return: %d", clientSession, EINVAL);
-        return EINVAL;
+        status = EINVAL;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet called invalid client session '%p' returned %d", clientSession, status);
     }
-
-    auto handle = mpiMap[clientSession];
-    clientName = handle->GetClientName();
-    status = handle->MpiSet(componentName, objectName, payload, payloadSizeBytes);
+    else
+    {
+        ModulesManager* handle = reinterpret_cast<ModulesManager*>(clientSession);
+        clientName = handle->GetClientName();
+        status = handle->MpiSet(componentName, objectName, payload, payloadSizeBytes);
+    }
 
     return status;
 }
@@ -149,18 +133,17 @@ int MpiGet(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    std::string clientName;
 
-    if (mpiMap.end() == mpiMap.find(clientSession))
+    if (nullptr == clientSession)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGet called with an invalid clientSession: %p", clientSession);
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGet called invalid client session '%p' returned: %d", clientSession, EINVAL);
         status = EINVAL;
-        return status;
     }
-
-    auto handle = mpiMap[clientSession];
-    clientName = handle->GetClientName();
-    status = handle->MpiGet(componentName, objectName, payload, payloadSizeBytes);
+    else
+    {
+        ModulesManager* handle = reinterpret_cast<ModulesManager*>(clientSession);
+        status = handle->MpiGet(componentName, objectName, payload, payloadSizeBytes);
+    }
 
     return status;
 }
@@ -171,47 +154,69 @@ int MpiSetDesired(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
+    ModulesManager* modulesManager = nullptr;
 
-    if (manMap.end() == manMap.find(clientName))
+    if (nullptr != clientName)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired called with an invalid clientName: %s, return: %d", clientName, EINVAL);
-        return EINVAL;
-    }
+        modulesManager = new (std::nothrow) ModulesManager(clientName);
+        if (nullptr != modulesManager)
+        {
+            if (0 == (status = modulesManager->LoadModules()))
+            {
+                status = modulesManager->MpiSetDesired(payload, payloadSizeBytes);
+            }
 
-    auto handle = manMap[clientName].lock();
-    if (nullptr == handle)
+            modulesManager->UnloadAllModules();
+            delete modulesManager;
+        }
+        else
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired failed to allocate a ModulesManager for %s", clientName);
+            status = ENOMEM;
+        }
+    }
+    else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired called with an invalid clientName: %s, return: %d", clientName, EINVAL);
-        return EINVAL;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired called without an invalid client name");
+        status = EINVAL;
     }
-
-    status = handle->MpiSetDesired(clientName, payload, payloadSizeBytes);
 
     return status;
 }
 
 int MpiGetReported(
     const char* clientName,
-    const unsigned int mayPayloadSizeBytes,
+    const unsigned int maxPayloadSizeBytes,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
+    ModulesManager* modulesManager = nullptr;
 
-    if (manMap.end() == manMap.find(clientName))
+    if (nullptr != clientName)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported called with an invalid clientName: %s, return: %d", clientName, EINVAL);
-        return EINVAL;
-    }
+        modulesManager = new (std::nothrow) ModulesManager(clientName, maxPayloadSizeBytes);
+        if (nullptr != modulesManager)
+        {
+            if (0 == (status = modulesManager->LoadModules()))
+            {
+                status = modulesManager->MpiGetReported(payload, payloadSizeBytes);
+            }
 
-    auto handle = manMap[clientName].lock();
-    if (nullptr == handle)
+            modulesManager->UnloadAllModules();
+            delete modulesManager;
+        }
+        else
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported failed to allocate a ModulesManager for %s", clientName);
+            status = ENOMEM;
+        }
+    }
+    else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported called with an invalid clientName: %s, return: %d", clientName, EINVAL);
-        return EINVAL;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported called without an invalid client name");
+        status = EINVAL;
     }
-
-    status = handle->MpiGetReported(clientName, mayPayloadSizeBytes, payload, payloadSizeBytes);
 
     return status;
 }
@@ -231,7 +236,7 @@ void MpiDoWork()
     }
 }
 
-ModulesManager::ModulesManager(std::string client) : cleanupTimespan(g_defaultModuleCleanup), clientName(client), maxPayloadSizeBytes(0)
+ModulesManager::ModulesManager(std::string client, unsigned int maxPayloadSizeBytes) : clientName(client), maxPayloadSizeBytes(maxPayloadSizeBytes), cleanupTimespan(g_defaultModuleCleanup)
 {
 }
 
@@ -240,12 +245,17 @@ ModulesManager::~ModulesManager()
     UnloadAllModules();
 }
 
+std::string ModulesManager::GetClientName()
+{
+    return clientName;
+}
+
 int ModulesManager::LoadModules()
 {
     return LoadModules(g_moduleDir, g_configJson);
 }
 
-int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
+int ModulesManager::LoadModules(std::string modulePath)
 {
     DIR* dir;
     struct dirent* ent;
@@ -308,7 +318,19 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
         }
     }
 
-    return SetReportedObjects(configJson);
+    return 0;
+}
+
+int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
+{
+    int status = 0;
+
+    if (0 == (status = LoadModules(modulePath)))
+    {
+        status = SetReportedObjects(configJson);
+    }
+
+    return status;
 }
 
 int ModulesManager::SetReportedObjects(const std::string& configJson)
@@ -440,194 +462,149 @@ void ModulesManager::UnloadAllModules()
     modMap.clear();
 }
 
-int ModulesManager::MpiSet(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes)
+int ModulesManager::MpiSet(const char* componentName, const char* objectName, const MPI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    ModuleMetadata* moduleMetadata = GetModuleMetadata(componentName);
-    int retValue = ETIME;
-    if (manMap.end() == manMap.find(GetClientName()))
-    {
-        OsConfigLogError(ModulesManagerLog::Get(), "Cannot find ClientSession for %s", GetClientName().c_str());
-    }
-    auto mpiHandle = manMap[GetClientName()].lock().get();
+    int status = MPI_OK;
+
     ScopeGuard sg{[&]()
     {
-        if (MPI_OK == retValue)
+        if (MPI_OK == status)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSet(%p, %s, %s, %.*s, %d) returned %d", mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, retValue);
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSet(%p, %s, %s, -, %d) returned %d", mpiHandle, componentName, propertyName, payloadSizeBytes, retValue);
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
             }
         }
         else
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSet(%p, %s, %s, %.*s, %d) returned %d", mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, retValue);
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSet(%p, %s, %s, -, %d) returned %d", mpiHandle, componentName, propertyName, payloadSizeBytes, retValue);
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
             }
         }
     }};
 
-    if (nullptr == moduleMetadata)
+    if (nullptr == componentName)
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid componentName: %s", componentName);
-        retValue = ENOENT;
-        return retValue;
+        status = EINVAL;
     }
-
-    bool timeout = ManagementModule::Lifetime::KeepAlive != moduleMetadata->module->GetLifetime();
-    moduleMetadata->operationInProgress = true;
-
-    retValue = MpiSetInternal(componentName, propertyName, payload, payloadSizeBytes);
-
-    // Schedule an unload module if theres a timeout allowed
-    if (timeout)
+    else if (nullptr == objectName)
     {
-        ScheduleUnloadModule(*moduleMetadata);
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid objectName: %s", objectName);
+        status = EINVAL;
     }
-
-    return retValue;
-}
-
-int ModulesManager::MpiSetInternal(const char* componentName, const char* propertyName, const char* payload, const int payloadSizeBytes)
-{
-    // Dispatch call to the right module
-    if (modMap.end() == modMap.find(componentName))
+    else if (nullptr == payload)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Unable to find %s in module map", componentName);
-        return EINVAL;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payload");
+        status = EINVAL;
     }
-    ModuleMetadata &moduleMetadata = modMap[componentName];
-    moduleMetadata.lastOperation = std::chrono::system_clock::now();
-    int ret = moduleMetadata.module->MmiSet(componentName, propertyName, (MMI_JSON_STRING)payload, payloadSizeBytes);
-    moduleMetadata.operationInProgress = false;
-
-    if (MMI_OK == ret)
+    else if (0 >= payloadSizeBytes)
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(ModulesManagerLog::Get(), "MmiSet(%s, %s, %.*s, %d) to %s returned %d", componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
-        }
-        else
-        {
-            OsConfigLogInfo(ModulesManagerLog::Get(), "MmiSet(%s, %s, -, %d) to %s returned %d", componentName, propertyName, payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
-        }
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payloadSizeBytes: %d", payloadSizeBytes);
+        status = EINVAL;
+    }
+    else if (modMap.end() == modMap.find(componentName))
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet componentName %s not found", componentName);
+        status = EINVAL;
     }
     else
     {
-        if (IsFullLoggingEnabled())
+        ModuleMetadata& moduleMetadata = modMap[componentName];
+
+        moduleMetadata.operationInProgress = true;
+        moduleMetadata.lastOperation = std::chrono::system_clock::now();
+
+        status = moduleMetadata.module->CallMmiSet(componentName, objectName, (MMI_JSON_STRING)payload, payloadSizeBytes);
+        moduleMetadata.operationInProgress = false;
+
+        // Schedule the module to be unloaded
+        if (ManagementModule::Lifetime::KeepAlive != moduleMetadata.module->GetLifetime())
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, %.*s, %d) to %s returned %d", componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
-        }
-        else
-        {
-            OsConfigLogError(ModulesManagerLog::Get(), "MmiSet(%s, %s, -, %d) to %s returned %d", componentName, propertyName, payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
+            ScheduleUnloadModule(moduleMetadata);
         }
     }
 
-    return ret;
+    return status;
 }
 
-int ModulesManager::MpiGet(const char* componentName, const char* propertyName, char** payload, int* payloadSizeBytes)
+int ModulesManager::MpiGet(const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    ModuleMetadata* moduleMetadata = GetModuleMetadata(componentName);
-    int retValue = ETIMEDOUT;
-    auto mpiHandle = manMap[GetClientName()].lock().get();
+    int status = MPI_OK;
 
     ScopeGuard sg{[&]()
     {
-        if ((MMI_OK == retValue) && (nullptr != *payload) && (nullptr != payloadSizeBytes) && (0 != *payloadSizeBytes))
+        if ((MMI_OK == status) && (nullptr != *payload) && (nullptr != payloadSizeBytes) && (0 != *payloadSizeBytes))
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGet(%p, %s, %s, %.*s, %d) returned %d", mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, retValue);
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
         else
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiGet(%p, %s, %s, %.*s, %d) returned %d", mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, retValue);
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
     }};
 
-    if (nullptr == moduleMetadata)
+    if (nullptr == componentName)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGet invalid componentName: %s", componentName);
-        return ENOENT;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid componentName: %s", componentName);
+        status = EINVAL;
     }
-
-    bool timeout = ManagementModule::Lifetime::KeepAlive != moduleMetadata->module->GetLifetime();
-    moduleMetadata->operationInProgress = true;
-
-    retValue = MpiGetInternal(componentName, propertyName, payload, payloadSizeBytes);
-
-    // Schedule an unload module if theres a timeout allowed
-    if (timeout)
+    else if (nullptr == objectName)
     {
-        ScheduleUnloadModule(*moduleMetadata);
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid objectName: %s", objectName);
+        status = EINVAL;
     }
-
-    return retValue;
-}
-
-int ModulesManager::MpiGetInternal(const char* componentName, const char* propertyName, char** payload, int* payloadSizeBytes)
-{
-    // Dispatch call to the right module
-    if (modMap.end() == modMap.find(componentName))
+    else if (nullptr == payload)
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Unable to find %s in module map", componentName);
-        return EINVAL;
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payload");
+        status = EINVAL;
     }
-
-    auto &moduleMetadata = modMap[componentName];
-    moduleMetadata.lastOperation = std::chrono::system_clock::now();
-
-    int ret = MMI_OK;
-    ScopeGuard sg{[&]()
+    else if (nullptr == payloadSizeBytes)
     {
-        if ((MMI_OK == ret) && (nullptr != *payload) && (nullptr != payloadSizeBytes) && (0 != *payloadSizeBytes))
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet invalid payloadSizeBytes");
+        status = EINVAL;
+    }
+    else if (modMap.end() == modMap.find(componentName))
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSet componentName %s not found", componentName);
+        status = EINVAL;
+    }
+    else
+    {
+        ModuleMetadata& moduleMetadata = modMap[componentName];
+
+        moduleMetadata.operationInProgress = true;
+        moduleMetadata.lastOperation = std::chrono::system_clock::now();
+
+        status = moduleMetadata.module->CallMmiGet(componentName, objectName, payload, payloadSizeBytes);
+        moduleMetadata.operationInProgress = false;
+
+        // Schedule the module to be unloaded
+        if (ManagementModule::Lifetime::KeepAlive != moduleMetadata.module->GetLifetime())
         {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MmiGet(%s, %s, %.*s, %d) to %s returned %d", componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
-            }
+            ScheduleUnloadModule(moduleMetadata);
         }
-        else
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "MmiGet(%s, %s, %.*s, %d) to %s returned %d", componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, moduleMetadata.module.get()->GetName().c_str(), ret);
-            }
-        }
-    }};
-
-    ret = moduleMetadata.module->MmiGet(componentName, propertyName, payload, payloadSizeBytes);
-    moduleMetadata.operationInProgress = false;
-
-    return ret;
-}
-
-ModulesManager::ModuleMetadata* ModulesManager::GetModuleMetadata(const char* componentName)
-{
-    if (modMap.end() == modMap.find(componentName))
-    {
-        OsConfigLogError(ModulesManagerLog::Get(), "Unable to find %s in module map", componentName);
-        return nullptr;
     }
 
-    return &modMap[componentName];
+    return status;
 }
 
-int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, int payloadSizeBytes)
+int ModulesManager::MpiSetDesired(const MPI_JSON_STRING payload, int payloadSizeBytes)
 {
     int status = MPI_OK;
 
@@ -637,21 +614,16 @@ int ModulesManager::MpiSetDesired(const char* clientName, const char* payload, i
         {
             if (MPI_OK == status)
             {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSetDesired(%s, %.*s, %d) returned %d", clientName, payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%s, %.*s, %d) returned %d", clientName, payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
             }
         }
     }};
 
-    if (nullptr == clientName)
-    {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid clientName: %s", clientName);
-        status = EINVAL;
-    }
-    else if (nullptr == payload)
+    if (nullptr == payload)
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired invalid payload: %s", payload);
         status = EINVAL;
@@ -716,7 +688,7 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
 
                     moduleMetadata.operationInProgress = true;
                     moduleMetadata.lastOperation = std::chrono::system_clock::now();
-                    moduleStatus = moduleMetadata.module->MmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
+                    moduleStatus = moduleMetadata.module->CallMmiSet(componentName.c_str(), objectName.c_str(), (MMI_JSON_STRING)buffer.GetString(), buffer.GetSize());
                     moduleMetadata.operationInProgress = false;
 
                     if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
@@ -747,7 +719,7 @@ int ModulesManager::MpiSetDesiredInternal(rapidjson::Document& document)
     return status;
 }
 
-int ModulesManager::MpiGetReported(const char* clientName, const unsigned int mayPayloadSizeBytes, char** payload, int* payloadSizeBytes)
+int ModulesManager::MpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MPI_OK;
 
@@ -757,21 +729,16 @@ int ModulesManager::MpiGetReported(const char* clientName, const unsigned int ma
         {
             if (MPI_OK == status)
             {
-                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGetReported(%s, %d, %p, %p) returned %d", clientName, mayPayloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%s, %d, %p, %p) returned %d", clientName, mayPayloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
             }
         }
     }};
 
-    if (nullptr == clientName)
-    {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported invalid clientName: %s", clientName);
-        status = EINVAL;
-    }
-    else if (nullptr == payload)
+    if (nullptr == payload)
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported invalid payload: %p", payload);
         status = EINVAL;
@@ -814,7 +781,7 @@ int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes
 
                 moduleMetadata.operationInProgress = true;
                 moduleMetadata.lastOperation = std::chrono::system_clock::now();
-                moduleMetadata.module->MmiGet(componentName.c_str(), objectName.c_str(), &objectPayload, &objectPayloadSizeBytes);
+                moduleMetadata.module->CallMmiGet(componentName.c_str(), objectName.c_str(), &objectPayload, &objectPayloadSizeBytes);
                 moduleMetadata.operationInProgress = false;
 
                 if ((MMI_OK == mmiGetStatus) && (nullptr != objectPayload) && (0 < objectPayloadSizeBytes))
@@ -887,16 +854,6 @@ int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes
 void ModulesManager::SetDefaultCleanupTimespan(unsigned int timespan)
 {
     cleanupTimespan = timespan;
-}
-
-void ModulesManager::SetMaxPayloadSize(unsigned int maxSize)
-{
-    maxPayloadSizeBytes = maxSize;
-}
-
-std::string ModulesManager::GetClientName()
-{
-    return clientName;
 }
 
 void ModulesManager::DoWork()

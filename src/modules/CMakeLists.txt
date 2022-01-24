@@ -12,11 +12,6 @@ add_subdirectory(hostname)
 add_subdirectory(tpm)
 add_subdirectory(ztsi)
 
-if (BUILD_TESTS)
-    set(TEST_MODULE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE FILEPATH "Directory used for staging test Management Modules")
-    add_subdirectory(test)
-endif()
-
 if (BUILD_SAMPLES)
     add_subdirectory(samples)
 endif()

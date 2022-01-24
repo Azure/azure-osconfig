@@ -5,340 +5,404 @@
 #include <gmock/gmock.h>
 #include <rapidjson/document.h>
 
-#include <CommonUtils.h>
 #include <CommonTests.h>
+#include <CommonUtils.h>
 #include <ManagementModule.h>
-#include <ModulesManager.h>
+#include <MockModulesManager.h>
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
 
-const std::string clientName;
-
-const std::string libInvalidModuleSo = "libinvalidmodule.so";
-const std::string libGoodModuleSo = "libgoodmodule.so";
-const std::string libInvalidSchemaModuleSo = "libinvalidschemamodule.so";
-const std::string libMultiComponentModuleSo = "libmulticomponentmodule.so";
-
-const std::string componentNameLongRunningModule = "LongRunningModule";
-const std::string componentName1 = "TestComponent1";
-const std::string componentName2 = "TestComponent2";
-
-using testing::AtLeast;
+using testing::_;
 using testing::ElementsAre;
+using testing::DoAll;
+using testing::InSequence;
+using testing::Return;
+using testing::SetArgPointee;
+using testing::StrEq;
+using ::testing::StrictMock;
 
 namespace Tests
 {
     class ModuleManagerTests : public ::testing::Test
     {
     protected:
-        std::unique_ptr<ModulesManager> mm;
-        ModuleManagerTests()
-        {
-            mm.reset(new ModulesManager("ModuleManagerTests"));
-        }
+        std::shared_ptr<StrictMock<MockModulesManager>> moduleManager;
+        std::shared_ptr<StrictMock<MockManagementModule>> defaultModule;
 
-        virtual void SetUp()
-        {
-            SetUp(OSCONFIG_JSON_NONE_REPORTED);
-        }
+        static const char defaultClient[];
+        static const char defaultComponent[];
+        static const char defaultObject[];
+        static char defaultPayload[];
+        static const int defaultPayloadSize;
 
-        virtual void SetUp(std::string configFile)
-        {
-            ASSERT_EQ(0, mm->LoadModules(MODULE_TEST_PATH, configFile));
-        }
-
-        virtual void TearDown()
-        {
-            mm.reset();
-        }
+        void SetUp() override;
+        void TearDown() override;
     };
 
-    TEST_F(ModuleManagerTests, LoadSomeInvalidDirectory)
+    const char ModuleManagerTests::defaultClient[] = "Default_ModuleManagerTest_Client";
+    const char ModuleManagerTests::defaultComponent[] = "Default_ModuleManagerTest_Component";
+    const char ModuleManagerTests::defaultObject[] = "Default_ModuleManagerTest_Object";
+    char ModuleManagerTests::defaultPayload[] = "Default_ModuleManagerTest_Payload";
+    const int ModuleManagerTests::defaultPayloadSize = ARRAY_SIZE(ModuleManagerTests::defaultPayload) - 1;
+
+    void ModuleManagerTests::SetUp()
     {
-        ASSERT_EQ(ENOENT, mm->LoadModules("/some/bad/path", OSCONFIG_JSON_NONE_REPORTED));
+        moduleManager.reset(new StrictMock<MockModulesManager>(defaultClient, 0));
+        ASSERT_NE(nullptr, moduleManager);
+
+        this->defaultModule = moduleManager->CreateModule(defaultComponent);
     }
 
-    TEST_F(ModuleManagerTests, LoadValidConfigFiles)
+    void ModuleManagerTests::TearDown()
     {
-        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_NONE_REPORTED));
-        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_SINGLE_REPORTED));
-        ASSERT_EQ(MPI_OK, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_MULTIPLE_REPORTED));
+        moduleManager.reset();
+        defaultModule.reset();
     }
 
-    TEST_F(ModuleManagerTests, LoadSomeInvalidConfigFiles)
+    TEST_F(ModuleManagerTests, MpiSet)
     {
-        ASSERT_EQ(ENOENT, mm->LoadModules(MODULE_TEST_PATH, "/some/bad/path/osconfig.json"));
+        EXPECT_CALL(*defaultModule, CallMmiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize)).Times(1).WillOnce(Return(MMI_OK));
+        ASSERT_EQ(MPI_OK, moduleManager->MpiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetDispatch)
+    TEST_F(ModuleManagerTests, MpiSet_InvalidComponentName)
     {
-        int szPayload;
-        MMI_JSON_STRING payload;
-        ASSERT_EQ(MMI_OK, mm->MpiGet(componentName1.c_str(), "", &payload, &szPayload));
-        ASSERT_TRUE(szPayload > 0);
-        std::string payloadStr(payload, szPayload);
-
-        constexpr const char expectedStr[] = R""""( { "returnValue": "TestComponent1-MultiComponentModule" } )"""";
-        ASSERT_TRUE(Tests::JSON_EQ(expectedStr, payloadStr.c_str()));
-        delete[] payload;
+        ASSERT_EQ(EINVAL, moduleManager->MpiSet(nullptr, defaultObject, defaultPayload, defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetDispatchOverrideComponent)
+    TEST_F(ModuleManagerTests, MpiSet_InvalidObjectName)
     {
-        int szPayload;
-        MMI_JSON_STRING payload;
-        ASSERT_EQ(MMI_OK, mm->MpiGet(componentName2.c_str(), "", &payload, &szPayload));
-        ASSERT_TRUE(szPayload > 0);
-        std::string payloadStr(payload, szPayload);
-
-        constexpr const char expectedStr[] = R""""( {"returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"} )"""";
-        ASSERT_TRUE(Tests::JSON_EQ(expectedStr, payloadStr.c_str()));
-        delete[] payload;
+        ASSERT_EQ(EINVAL, moduleManager->MpiSet(defaultComponent, nullptr, defaultPayload, defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDispatch)
+    TEST_F(ModuleManagerTests, MpiSet_InvalidPayload)
     {
-        constexpr const char payload[] = R""""( {"TestObject": "testValue"} )"""";
-        ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
+        ASSERT_EQ(EINVAL, moduleManager->MpiSet(defaultComponent, defaultObject, nullptr, 0));
     }
 
-    // TEST_F(ModuleManagerTests, MpiSetDesiredSingleComponent)
-    // {
-    //     constexpr const char payload[] = R""""(
-    //         [
-    //             {
-    //                 "TestComponent1": {
-    //                     "TestObject1": "testValue1"
-    //                 }
-    //             }
-    //         ])"""";
-
-    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    // }
-
-    // TEST_F(ModuleManagerTests, MpiSetDesiredMultipleComponents)
-    // {
-    //     constexpr const char payload[] = R""""(
-    //         [
-    //             {
-    //                 "TestComponent1": {
-    //                     "TestObject1": "testValue"
-    //                 },
-    //                 "TestComponent2": {
-    //                     "TestObject2": {
-    //                         "TestSetting1": "testValue1",
-    //                         "TestSetting2": "testValue2"
-    //                     }
-    //                 }
-    //             }
-    //         ])"""";
-
-    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    // }
-
-    // TEST_F(ModuleManagerTests, MpiSetDesiredMultipleConfigurations)
-    // {
-    //     constexpr const char payload[] = R""""(
-    //         [
-    //             {
-    //                 "TestComponent1": {
-    //                     "TestObject1": "testValue"
-    //                 }
-    //             },
-    //             {
-    //                 "TestComponent1": {
-    //                     "TestObject2": "testValue"
-    //                 },
-    //                 "TestComponent2": {
-    //                     "TestObject3": {
-    //                         "TestSetting1": "testValue1",
-    //                         "TestSetting2": "testValue2"
-    //                     }
-    //                 }
-    //             }
-    //         ])"""";
-
-    //     ASSERT_EQ(MPI_OK, mm->MpiSetDesired(clientName.c_str(), payload, ARRAY_SIZE(payload)));
-    // }
-
-    TEST_F(ModuleManagerTests, MpiGetReportedWithInvalidConfig)
+    TEST_F(ModuleManagerTests, MpiGet)
     {
-        ASSERT_EQ(EINVAL, mm->LoadModules(MODULE_TEST_PATH, OSCONFIG_JSON_INVALID));
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+        char expected[] = "\"expected\"";
 
-        char* payload;
-        int payloadSize;
-        constexpr const char expected[] = "{}";
+        EXPECT_CALL(*defaultModule, CallMmiGet(defaultComponent, defaultObject, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(expected), SetArgPointee<3>(strlen(expected)), Return(MMI_OK)));
 
-        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
-        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
+        EXPECT_EQ(MPI_OK, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, &payloadSizeBytes));
+        EXPECT_STREQ(expected, payload);
+        EXPECT_EQ(strlen(expected), payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReportedSingleReported)
+    TEST_F(ModuleManagerTests, MpiGet_InvalidComponentName)
     {
-        SetUp(OSCONFIG_JSON_SINGLE_REPORTED);
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
 
-        char* payload;
-        int payloadSize;
-        constexpr const char expected[] = R"""(
+        EXPECT_EQ(EINVAL, moduleManager->MpiGet(nullptr, defaultObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(nullptr, payload);
+        EXPECT_EQ(0, payloadSizeBytes);
+    }
+
+    TEST_F(ModuleManagerTests, MpiGet_InvalidObjectName)
+    {
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, nullptr, &payload, &payloadSizeBytes));
+        EXPECT_EQ(nullptr, payload);
+        EXPECT_EQ(0, payloadSizeBytes);
+    }
+
+    TEST_F(ModuleManagerTests, MpiGet_InvalidPayload)
+    {
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, defaultObject, nullptr, &payloadSizeBytes));
+        EXPECT_EQ(0, payloadSizeBytes);
+    }
+
+    TEST_F(ModuleManagerTests, MpiGet_InvalidPayloadSize)
+    {
+        MMI_JSON_STRING payload = nullptr;
+
+        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, nullptr));
+        EXPECT_EQ(nullptr, payload);
+    }
+
+    TEST_F(ModuleManagerTests, MpiSetDesired)
+    {
+        const char componentName[] = "component";
+        const char objectName[] = "object";
+        char value[] = "\"value\"";
+        char payload[] = R""""(
             {
-                "TestComponent1": {
-                    "TestObject1": {
-                        "returnValue": "TestComponent1-MultiComponentModule"
-                    }
+                "component": {
+                    "object": "value"
                 }
-            })""";
+            })"""";
 
-        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
-        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+
+        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName), StrEq(value), strlen(value))).Times(1).WillOnce(Return(MMI_OK));
+        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReportedMultipleReported)
+    TEST_F(ModuleManagerTests, MpiSetDesired_MultipleComponents)
     {
-        SetUp(OSCONFIG_JSON_MULTIPLE_REPORTED);
-
-        char* payload;
-        int payloadSize;
-        constexpr const char expected[] = R"""(
+        const char componentName_1[] = "component_1";
+        const char componentName_2[] = "component_2";
+        const char objectName_1[] = "object_1";
+        const char objectName_2[] = "object_2";
+        char value_1[] = "\"value_1\"";
+        char value_2[] = "\"value_2\"";
+        char payload[] = R""""(
             {
-                "TestComponent1": {
-                    "TestObject1": {
-                        "returnValue": "TestComponent1-MultiComponentModule"
-                    }
+                "component_1": {
+                    "object_1": "value_1"
                 },
-                "TestComponent2": {
-                    "TestObject2": {
-                        "returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"
-                    },
-                    "TestObject3": {
-                        "returnValue": "TestComponent2-MultiComponentTheLargestVersionModule"
-                    }
+                "component_2": {
+                    "object_2": "value_2"
                 }
-            })""";
+            })"""";
 
-        ASSERT_EQ(MMI_OK, mm->MpiGetReported(clientName.c_str(), 0, &payload, &payloadSize));
-        ASSERT_TRUE(Tests::JSON_EQ(expected, payload));
+        std::shared_ptr<MockManagementModule> mockModule_1 = moduleManager->CreateModule(componentName_1);
+        std::shared_ptr<MockManagementModule> mockModule_2 = moduleManager->CreateModule(componentName_2);
+
+        EXPECT_CALL(*mockModule_1, CallMmiSet(StrEq(componentName_1), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
+        EXPECT_CALL(*mockModule_2, CallMmiSet(StrEq(componentName_2), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+
+        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
     }
 
-    TEST_F(ModuleManagerTests, ModuleCleanup)
+    TEST_F(ModuleManagerTests, MpiSetDesired_MultipleObjects)
     {
-        constexpr const char payload[] = R""""( {"TestObject": "testValue"} )"""";
-        mm->SetDefaultCleanupTimespan(5);
-        ASSERT_EQ(MMI_OK, mm->MpiSet(componentName1.c_str(), "", payload, ARRAY_SIZE(payload)));
-        ASSERT_EQ(1, mm->modulesToUnload.size());
-        mm->DoWork();
-        ASSERT_EQ(1, mm->modulesToUnload.size());
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-        mm->DoWork();
-        ASSERT_EQ(0, mm->modulesToUnload.size());
+        const char componentName[] = "component";
+        const char objectName_1[] = "object_1";
+        const char objectName_2[] = "object_2";
+        char value_1[] = "\"value_1\"";
+        char value_2[] = "\"value_2\"";
+        char payload[] = R""""(
+            {
+                "component": {
+                    "object_1": "value_1",
+                    "object_2": "value_2"
+                }
+            })"""";
+
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+
+        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
+        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+
+        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
     }
 
-    TEST(ManagementModuleTests, LoadInvalidModule)
+    TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonPayload)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        module_path = module_path.append("/").append(libInvalidModuleSo);
-        ASSERT_EQ(false, ManagementModule::IsExportingMmi(module_path));
+        const char componentName[] = "component";
+        char invalid[] = "invalid";
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+
+        ASSERT_EQ(EINVAL, moduleManager->MpiSetDesired(invalid, strlen(invalid)));
     }
 
-    TEST(ManagementModuleTests, LoadNormalModule)
+    TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonSchema)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        module_path = module_path.append("/").append(libGoodModuleSo);
-        ASSERT_EQ(true, ManagementModule::IsExportingMmi(module_path));
+        const char componentName[] = "component";
+        char invalid[] = R""""([
+            {
+                "component": {
+                    "object": "value"
+                }
+            }])"""";
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+
+        ASSERT_EQ(EINVAL, moduleManager->MpiSetDesired(invalid, strlen(invalid)));
     }
 
-    TEST(ManagementModuleTests, LoadInvalidShemaModule)
+    TEST_F(ModuleManagerTests, MpiGetReported)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        module_path = module_path.append("/").append(libInvalidSchemaModuleSo);
-        ASSERT_EQ(true, ManagementModule::IsExportingMmi(module_path));
-        ManagementModule mm(clientName, module_path);
-        ASSERT_EQ(false, mm.IsValid());
+        const char componentName[] = "component";
+        const char objectName[] = "object";
+        char value[] = "\"value\"";
+        char expected[] = R""""(
+            {
+                "component": {
+                    "object": "value"
+                }
+            })"""";
+
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+        mockModule->AddReportedObject(componentName, objectName);
+
+        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value), SetArgPointee<3>(strlen(value)), Return(MMI_OK)));
+
+        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        EXPECT_TRUE(JSON_EQ(expected, payload));
     }
 
-    TEST(ManagementModuleTests, CreateModule)
+    TEST_F(ModuleManagerTests, MpiGetReported_MultipleComponents)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        module_path = module_path.append("/").append(libGoodModuleSo);
-        ManagementModule mm(clientName, module_path);
-        ASSERT_EQ(true, mm.IsValid());
-        EXPECT_THAT(mm.GetSupportedComponents(), ElementsAre("NormalModule"));
+        const char componentName_1[] = "component_1";
+        const char componentName_2[] = "component_2";
+        const char objectName_1[] = "object_1";
+        const char objectName_2[] = "object_2";
+        char value_1[] = "\"value_1\"";
+        char value_2[] = "\"value_2\"";
+        char expected[] = R""""(
+            {
+                "component_1": {
+                    "object_1": "value_1"
+                },
+                "component_2": {
+                    "object_2": "value_2"
+                }
+            })"""";
+
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        std::shared_ptr<MockManagementModule> mockModule_1 = moduleManager->CreateModule(componentName_1);
+        std::shared_ptr<MockManagementModule> mockModule_2 = moduleManager->CreateModule(componentName_2);
+        mockModule_1->AddReportedObject(componentName_1, objectName_1);
+        mockModule_2->AddReportedObject(componentName_2, objectName_2);
+
+        EXPECT_CALL(*mockModule_1, CallMmiGet(StrEq(componentName_1), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_1), SetArgPointee<3>(strlen(value_1)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule_2, CallMmiGet(StrEq(componentName_2), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_2), SetArgPointee<3>(strlen(value_2)), Return(MMI_OK)));
+
+        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        EXPECT_TRUE(JSON_EQ(expected, payload));
     }
 
-    TEST(ManagementModuleTests, CreateModule_Multiple_Components)
+    TEST_F(ModuleManagerTests, MpiGetReported_MultipleObjects)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        module_path = module_path.append("/").append(libMultiComponentModuleSo);
-        ManagementModule mm(clientName, module_path);
-        ASSERT_EQ(true, mm.IsValid());
-        EXPECT_THAT(mm.GetSupportedComponents(), ElementsAre("TestComponent1", "TestComponent2"));
+        const char componentName[] = "component";
+        const char objectName_1[] = "object_1";
+        const char objectName_2[] = "object_2";
+        char value_1[] = "\"value_1\"";
+        char value_2[] = "\"value_2\"";
+        char expected[] = R""""(
+            {
+                "component": {
+                    "object_1": "value_1",
+                    "object_2": "value_2"
+                }
+            })"""";
+
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+        mockModule->AddReportedObject(componentName, objectName_1);
+        mockModule->AddReportedObject(componentName, objectName_2);
+
+        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_1), SetArgPointee<3>(strlen(value_1)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_2), SetArgPointee<3>(strlen(value_2)), Return(MMI_OK)));
+
+        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        EXPECT_TRUE(JSON_EQ(expected, payload));
     }
 
-    TEST(ManagementModuleTests, VersionTests)
+    TEST_F(ModuleManagerTests, MpiGetReported_InvalidPayload)
     {
-        ManagementModule::Version v1 = {1,0,0,0};
-        ManagementModule::Version v1a = {1,0};
-        ManagementModule::Version v2 = {2,0,0,0};
-        ManagementModule::Version v2b = {2,1};
-        ManagementModule::Version v01 = {0,1,0,0};
-        ManagementModule::Version v02 = {0,2,0,0};
-        ManagementModule::Version v101 = {1,0,1,0};
-        ManagementModule::Version v001a = {0,0,1};
-        ManagementModule::Version v002 = {0,0,2,0};
-        ManagementModule::Version v002b = {0,0,2};
-        ManagementModule::Version v0001 = {0,0,0,1};
-        ManagementModule::Version v0002 = {0,0,0,2};
+        int payloadSizeBytes = 0;
 
-        ASSERT_LT(v1, v2);
-        ASSERT_LT(v1a, v2b);
-        ASSERT_LT(v1, v101);
-        ASSERT_LT(v01, v1);
-        ASSERT_LT(v01, v02);
-        ASSERT_LT(v02, v2);
-        ASSERT_LT(v0001, v0002);
-        ASSERT_LT(v0001, v1);
-        ASSERT_LT(v001a, v002b);
-
-        ASSERT_TRUE(v1 < v2);
-        ASSERT_TRUE(v01 < v02);
-        ASSERT_TRUE(v0002 < v02);
-        ASSERT_TRUE(v002 < v02);
-
-        ASSERT_FALSE(v1 < v02);
-        ASSERT_FALSE(v2 < v1);
-        ASSERT_FALSE(v2 < v002);
-        ASSERT_FALSE(v2b < v1a);
-        ASSERT_FALSE(v002b < v001a);
+        ASSERT_EQ(EINVAL, moduleManager->MpiGetReported(nullptr, &payloadSizeBytes));
+        ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST(ManagementModuleTests, VersionStringTests)
+    TEST_F(ModuleManagerTests, MpiGetReported_InvalidPayloadSizeBytes)
     {
-        ManagementModule::Version v = {1,2,3,4};
-        ManagementModule::Version v1 = {0};
-        ManagementModule::Version v2 = {0,0,1};
-        ManagementModule::Version v3 = {0,0,0,1};
-        ASSERT_STREQ("1.2.3.4", v.ToString().c_str());
-        ASSERT_STREQ("0.0.0.0", v1.ToString().c_str());
-        ASSERT_STREQ("0.0.1.0", v2.ToString().c_str());
-        ASSERT_STREQ("0.0.0.1", v3.ToString().c_str());
+        MPI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(EINVAL, moduleManager->MpiGetReported(&payload, nullptr));
+        ASSERT_EQ(nullptr, payload);
     }
 
-    TEST(ManagementModuleTests, GetReportedObjectsTest)
+    TEST_F(ModuleManagerTests, LoadModules)
     {
-        std::string module_path = MODULE_TEST_PATH;
-        ManagementModule mm(clientName, module_path);
-        ASSERT_TRUE(mm.GetReportedObjects(componentName1).empty());
-        ASSERT_TRUE(mm.GetReportedObjects(componentName2).empty());
+        ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
+    }
 
-        mm.AddReportedObject(componentName1, "TestObject1");
-        ASSERT_THAT(mm.GetReportedObjects(componentName1), ElementsAre("TestObject1"));
+    TEST_F(ModuleManagerTests, LoadModules_SingleReported)
+    {
+        ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonSingleReported));
+    }
 
-        // Add duplicate object
-        mm.AddReportedObject(componentName1, "TestObject1");
-        ASSERT_THAT(mm.GetReportedObjects(componentName1), ElementsAre("TestObject1"));
+    TEST_F(ModuleManagerTests, LoadModules_MultipleReported)
+    {
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
-        mm.AddReportedObject(componentName2, "TestObject2");
-        mm.AddReportedObject(componentName2, "TestObject3");
-        ASSERT_THAT(mm.GetReportedObjects(componentName2), ElementsAre("TestObject2", "TestObject3"));
+        ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonMultipleReported));
+        EXPECT_EQ(MPI_OK, moduleManager->MpiSetDesired((MPI_JSON_STRING)g_localPayload, strlen(g_localPayload)));
+        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        EXPECT_TRUE(JSON_EQ(payload, g_localPayload));
+    }
+
+    TEST_F(ModuleManagerTests, LoadModules_InvalidDirectory)
+    {
+        ASSERT_EQ(ENOENT, moduleManager->LoadModules("/invalid/path", g_configJsonNoneReported));
+    }
+
+    TEST_F(ModuleManagerTests, LoadModules_InvalidConfigPath)
+    {
+        ASSERT_EQ(ENOENT, moduleManager->LoadModules(g_moduleDir, "/invalid/path/config.json"));
+    }
+
+    TEST_F(ModuleManagerTests, LoadModules_InvalidConfig)
+    {
+        ASSERT_EQ(EINVAL, moduleManager->LoadModules(g_moduleDir, g_configJsonInvalid));
+    }
+
+    TEST_F(ModuleManagerTests, LoadModules_LatestModuleVersion)
+    {
+        ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
+
+        std::shared_ptr<ManagementModule> module = moduleManager->GetModule(g_testModuleComponent1);
+        EXPECT_STREQ("Valid Test Module V2", module->GetName().c_str());
+        EXPECT_STREQ("2.0.0.0", module->GetVersion().ToString().c_str());
+    }
+
+    TEST_F(ModuleManagerTests, ModuleCleanup_MpiSet)
+    {
+        moduleManager->SetDefaultCleanupTimespan(1);
+
+        EXPECT_CALL(*defaultModule, CallMmiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize)).Times(1).WillOnce(Return(MMI_OK));
+        ASSERT_EQ(MMI_OK, moduleManager->MpiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
+
+        moduleManager->DoWork();
+        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
+        EXPECT_CALL(*defaultModule, UnloadModule()).Times(1);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        moduleManager->DoWork();
+        ASSERT_EQ(0, moduleManager->GetModulesToUnload().size());
+    }
+
+    TEST_F(ModuleManagerTests, ModuleCleanup_MpiGet)
+    {
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+        moduleManager->SetDefaultCleanupTimespan(1);
+
+        EXPECT_CALL(*defaultModule, CallMmiGet(defaultComponent, defaultObject, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(defaultPayload), SetArgPointee<3>(defaultPayloadSize), Return(MMI_OK)));
+        ASSERT_EQ(MMI_OK, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, &payloadSizeBytes));
+        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
+        EXPECT_STREQ(defaultPayload, payload);
+        EXPECT_EQ(defaultPayloadSize, payloadSizeBytes);
+
+        moduleManager->DoWork();
+        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
+        EXPECT_CALL(*defaultModule, UnloadModule()).Times(1);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        moduleManager->DoWork();
+        ASSERT_EQ(0, moduleManager->GetModulesToUnload().size());
     }
 
 } // namespace Tests

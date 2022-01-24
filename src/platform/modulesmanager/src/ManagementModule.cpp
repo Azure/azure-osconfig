@@ -58,8 +58,8 @@ ManagementModule::ManagementModule(const std::string clientName, const std::stri
     }
 
     // Get the Management Module info and validate schema
-    MmiGetInfo_ptr mmiGetInfo = reinterpret_cast<MmiGetInfo_ptr>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
-    MmiFree_ptr mmiFree = reinterpret_cast<MmiFree_ptr>(dlsym(handle, MmiFuncMmiFree.c_str()));
+    Mmi_GetInfo mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
+    Mmi_Free mmiFree = reinterpret_cast<Mmi_Free>(dlsym(handle, MmiFuncMmiFree.c_str()));
     MMI_JSON_STRING retJson = nullptr;
     int retJsonSize = 0;
     int retMmiGetInfo = MMI_OK;
@@ -375,12 +375,12 @@ void ManagementModule::LoadModule()
             return;
         }
 
-        mmiOpen = reinterpret_cast<MmiOpen_ptr>(dlsym(handle, MmiFuncMmiOpen.c_str()));
-        mmiGetInfo = reinterpret_cast<MmiGetInfo_ptr>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
-        mmiClose = reinterpret_cast<MmiClose_ptr>(dlsym(handle, MmiFuncMmiClose.c_str()));
-        mmiSet = reinterpret_cast<MmiSet_ptr>(dlsym(handle, MmiFuncMmiSet.c_str()));
-        mmiGet = reinterpret_cast<MmiGet_ptr>(dlsym(handle, MmiFuncMmiGet.c_str()));
-        mmiFree = reinterpret_cast<MmiFree_ptr>(dlsym(handle, MmiFuncMmiFree.c_str()));
+        mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(handle, MmiFuncMmiOpen.c_str()));
+        mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(handle, MmiFuncMmiGetInfo.c_str()));
+        mmiClose = reinterpret_cast<Mmi_Close>(dlsym(handle, MmiFuncMmiClose.c_str()));
+        mmiSet = reinterpret_cast<Mmi_Set>(dlsym(handle, MmiFuncMmiSet.c_str()));
+        mmiGet = reinterpret_cast<Mmi_Get>(dlsym(handle, MmiFuncMmiGet.c_str()));
+        mmiFree = reinterpret_cast<Mmi_Free>(dlsym(handle, MmiFuncMmiFree.c_str()));
 
         if ((nullptr == mmiOpen) || (nullptr == mmiGetInfo) || (nullptr == mmiClose) || (nullptr == mmiSet) || (nullptr == mmiGet) || (nullptr == mmiFree))
         {
@@ -414,7 +414,7 @@ bool ManagementModule::IsValid() const
 
 bool ManagementModule::IsLoaded() const
 {
-    return nullptr == mmiHandle;
+    return mmiHandle ? true : false;
 }
 
 const std::vector<std::string> ManagementModule::GetSupportedComponents() const
@@ -425,23 +425,23 @@ const std::vector<std::string> ManagementModule::GetSupportedComponents() const
 const std::vector<std::string> ManagementModule::GetReportedObjects(const std::string& componentName) const
 {
     std::vector<std::string> objects;
-    if (info.reportedObjects.find(componentName) != info.reportedObjects.end())
+    if (reportedObjects.find(componentName) != reportedObjects.end())
     {
-        objects = info.reportedObjects.at(componentName);
+        objects = reportedObjects.at(componentName);
     }
     return objects;
 }
 
 void ManagementModule::AddReportedObject(const std::string& component, const std::string& object)
 {
-    if (info.reportedObjects.find(component) == info.reportedObjects.end())
+    if (reportedObjects.find(component) == reportedObjects.end())
     {
-        info.reportedObjects[component] = std::vector<std::string>();
+        reportedObjects[component] = std::vector<std::string>();
     }
 
-    if (std::find(info.reportedObjects[component].begin(), info.reportedObjects[component].end(), object) == info.reportedObjects[component].end())
+    if (std::find(reportedObjects[component].begin(), reportedObjects[component].end(), object) == reportedObjects[component].end())
     {
-        info.reportedObjects[component].push_back(object);
+        reportedObjects[component].push_back(object);
     }
 }
 
@@ -470,7 +470,7 @@ bool ManagementModule::IsExportingMmi(const std::string path)
     return true;
 }
 
-int ManagementModule::MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int ManagementModule::CallMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -478,23 +478,22 @@ int ManagementModule::MmiSet(std::string componentName, std::string objectName, 
     if (IsValidMimObjectPayload(payload, payloadSizeBytes, ModulesManagerLog::Get()))
     {
         LoadModule();
-        status = mmiSet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+        status = mmiSet(mmiHandle, componentName, objectName, payload, payloadSizeBytes);
     }
     else
     {
         status = EINVAL;
     }
 
-
     return status;
 }
 
-int ManagementModule::MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int ManagementModule::CallMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
     LoadModule();
-    status = mmiGet(mmiHandle, componentName.c_str(), objectName.c_str(), payload, payloadSizeBytes);
+    status = mmiGet(mmiHandle, componentName, objectName, payload, payloadSizeBytes);
 
     if (MMI_OK == status)
     {
