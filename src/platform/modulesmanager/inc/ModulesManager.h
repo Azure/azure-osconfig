@@ -99,7 +99,7 @@ private:
     int SetReportedObjects(const std::string& configJson);
 
     int MpiSetDesiredInternal(rapidjson::Document& document);
-    int MpiGetReportedInternal(char** payload, int* payloadSizeBytes);
+    int MpiGetReportedInternal(MPI_JSON_STRING* payload, int* payloadSizeBytes);
 
     void ScheduleUnloadModule(ModuleMetadata& mm);
 };

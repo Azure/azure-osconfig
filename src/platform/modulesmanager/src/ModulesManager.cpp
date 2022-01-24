@@ -758,7 +758,7 @@ int ModulesManager::MpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeByt
     return status;
 }
 
-int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes)
+int ModulesManager::MpiGetReportedInternal(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MPI_OK;
     rapidjson::Document document;
@@ -826,9 +826,9 @@ int ModulesManager::MpiGetReportedInternal(char** payload, int* payloadSizeBytes
         }
         else
         {
-            std::fill(*payload, *payload + buffer.GetSize() + 1, 0);
-            std::memcpy(*payload, buffer.GetString(), buffer.GetSize() + 1);
-            *payloadSizeBytes = buffer.GetSize() + 1;
+            std::fill(*payload, *payload + buffer.GetSize(), 0);
+            std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
+            *payloadSizeBytes = buffer.GetSize();
         }
     }
     catch (const std::exception& e)
