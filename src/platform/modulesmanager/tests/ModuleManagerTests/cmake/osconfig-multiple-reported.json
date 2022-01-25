@@ -1,16 +1,48 @@
 {
     "Reported": [
         {
-            "ComponentName": "TestComponent1",
-            "ObjectName": "TestObject1"
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "string"
         },
         {
-            "ComponentName": "TestComponent2",
-            "ObjectName": "TestObject2"
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "integer"
         },
         {
-            "ComponentName": "TestComponent2",
-            "ObjectName": "TestObject3"
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "boolean"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "integerEnum"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "integerArray"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "stringArray"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "stringArray"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "integerMap"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "stringMap"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "object"
+        },
+        {
+            "ComponentName": "TestModule_Component_1",
+            "ObjectName": "objectArray"
         }
     ]
 }

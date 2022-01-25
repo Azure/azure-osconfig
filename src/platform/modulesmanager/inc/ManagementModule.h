@@ -11,12 +11,12 @@
 #include <Mmi.h>
 
 // MMI function definitions
-using MmiGetInfo_ptr = int (*)(const char *, MMI_JSON_STRING *, int *);
-using MmiFree_ptr = void (*)(MMI_JSON_STRING);
-using MmiOpen_ptr = MMI_HANDLE (*)(const char *, const unsigned int);
-using MmiSet_ptr = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING, const int);
-using MmiGet_ptr = int (*)(MMI_HANDLE, const char *, const char *, const MMI_JSON_STRING *, int *);
-using MmiClose_ptr = void (*)(MMI_HANDLE);
+using Mmi_GetInfo = int (*)(const char*, MMI_JSON_STRING*, int*);
+using Mmi_Free = void (*)(MMI_JSON_STRING);
+using Mmi_Open = MMI_HANDLE (*)(const char*, const unsigned int);
+using Mmi_Set = int (*)(MMI_HANDLE, const char*, const char*, const MMI_JSON_STRING, const int);
+using Mmi_Get = int (*)(MMI_HANDLE, const char*, const char*, MMI_JSON_STRING*, int*);
+using Mmi_Close = void (*)(MMI_HANDLE);
 
 class ManagementModule
 {
@@ -54,7 +54,7 @@ public:
         }
     };
 
-    // Structure maps to the GetMMIInfo JSON Schema - see src/modules/schema/MmiGetInfoSchema.json for more info
+    // Structure maps to the MmiGetInfo JSON Schema - see src/modules/schema/mmi-get-info.schema.json for more info
     struct Info
     {
         std::string name;
@@ -63,52 +63,53 @@ public:
         Version version;
         std::string versionInfo;
         std::vector<std::string> components;
-        std::map<std::string, std::vector<std::string>> reportedObjects;
         Lifetime lifetime;
         std::string licenseUri;
         std::string projectUri;
         unsigned int userAccount;
     };
 
+    std::map<std::string, std::vector<std::string>> reportedObjects;
+
     ManagementModule(const std::string clientName, const std::string path, const unsigned int maxPayloadSize = 0);
-    ~ManagementModule();
+    virtual ~ManagementModule();
 
     // Is a valid Management Module (MM) eg. exposes the MM interface
     bool IsValid() const;
+
     // Is the Management Module (MM) loaded eg. MM handles open
     bool IsLoaded() const;
-    // Unloads the Management Module (MM) - Closes MMI and .so handles
-    void UnloadModule();
-    // Loads the Management Module (MM) - Opens the MMI and .so handles
-    void LoadModule();
-    // Sends a payload to the respective component
-    int MmiSet(std::string componentName, std::string objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
-    // Receive a payload to the respective component
-    int MmiGet(std::string componentName, std::string objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
-    // Is the module defining the valid MMI?
-    static bool IsExportingMmi(const std::string path);
+    virtual void LoadModule();
+    virtual void UnloadModule();
+
+    virtual int CallMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    virtual int CallMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
+
+    virtual bool IsExportingMmi(const std::string path);
 
     // MmiGetInfo Properties
     // See MmiGetInfo Schema for property descriptions -> src/modules/schema/MmiGetInfoSchema.json
+    const std::string GetName() const;
+    const Version GetVersion() const;
     Lifetime GetLifetime() const;
     const std::vector<std::string> GetSupportedComponents() const;
+
     void AddReportedObject(const std::string& componentName, const std::string& objectName);
     const std::vector<std::string> GetReportedObjects(const std::string& componentName) const;
-    const Version GetVersion() const;
-    const std::string GetName() const;
 
     const std::string GetModulePath() const;
 
-private:
+protected:
     void* handle;
     MMI_HANDLE mmiHandle;
+
     // Is a valid MM eg. exposes the MM interface (MMI)
     bool isValid;
-    // The client name of the MM
+
     const std::string clientName;
-    // Path of the MM
     const std::string modulePath;
+
     // The maximum payload size
     int maxPayloadSizeBytes;
 
@@ -116,12 +117,12 @@ private:
     Info info;
 
     // Management Module Interface (MMI) imported functions
-    MmiGetInfo_ptr mmiGetInfo;
-    MmiFree_ptr mmiFree;
-    MmiOpen_ptr mmiOpen;
-    MmiSet_ptr mmiSet;
-    MmiGet_ptr mmiGet;
-    MmiClose_ptr mmiClose;
+    Mmi_GetInfo mmiGetInfo;
+    Mmi_Open mmiOpen;
+    Mmi_Close mmiClose;
+    Mmi_Set mmiSet;
+    Mmi_Get mmiGet;
+    Mmi_Free mmiFree;
 };
 
 #endif // MANAGEMENTMODULE_H

@@ -80,9 +80,9 @@ jobs:
       failTaskOnFailedTests: true
 
   # Published the build artifacts (tar.gz source package + specfile + signatures.json)
-  - publish: $(Build.SourcesDirectory)/SPECS/osconfig/
+  - publish: $(Agent.BuildDirectory)/dist/
     displayName: 'Publishing spec+source package'
-    artifact: OSConfigSource_$(OSCONFIG_VERSION_BUILD)
+    artifact: OSConfig_$(OSCONFIG_VERSION_BUILD)_SOURCES
 
 - job: Build_Debug
   displayName: 'Debug Build'

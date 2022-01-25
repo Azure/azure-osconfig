@@ -1,11 +1,122 @@
 #ifndef MODULESMANAGERTESTS_H
 #define MODULESMANAGERTESTS_H
 
-#define MODULE_TEST_PATH "@MODULE_TEST_PATH@"
+// Path to the test modules directory
+const char g_moduleDir[] = "@TEST_MODULES_DIR@";
 
-#define OSCONFIG_JSON_INVALID "@OSCONFIG_JSON_INVALID@"
-#define OSCONFIG_JSON_NONE_REPORTED "@OSCONFIG_JSON_NONE_REPORTED@"
-#define OSCONFIG_JSON_SINGLE_REPORTED "@OSCONFIG_JSON_SINGLE_REPORTED@"
-#define OSCONFIG_JSON_MULTIPLE_REPORTED "@OSCONFIG_JSON_MULTIPLE_REPORTED@"
+// Path to each test module
+const char g_validModulePathV1[] = "@VALID_MODULE_V1_PATH@";
+const char g_validModulePathV2[] = "@VALID_MODULE_V2_PATH@";
+const char g_invalidModulePath[] = "@INVALID_MODULE_PATH@";
+const char g_invalidGetInfoModulePath[] = "@INVALIDGETINFO_MODULE_PATH@";
+
+// Component names used by all valid modules
+const char g_testModuleComponent1[] = "TestModule_Component_1";
+const char g_testModuleComponent2[] = "TestModule_Component_2";
+
+const char g_configJsonInvalid[] = "@OSCONFIG_JSON_INVALID@";
+const char g_configJsonNoneReported[] = "@OSCONFIG_JSON_NONE_REPORTED@";
+const char g_configJsonSingleReported[] = "@OSCONFIG_JSON_SINGLE_REPORTED@";
+const char g_configJsonMultipleReported[] = "@OSCONFIG_JSON_MULTIPLE_REPORTED@";
+
+// Object names
+const char g_string[] = "string";
+const char g_integer[] = "integer";
+const char g_boolean[] = "boolean";
+const char g_integerEnum[] = "integerEnum";
+const char g_integerArray[] = "integerArray";
+const char g_stringArray[] = "stringArray";
+const char g_integerMap[] = "integerMap";
+const char g_stringMap[] = "stringMap";
+const char g_object[] = "object";
+const char g_objectArray[] = "objectArray";
+
+// Object payloads
+const char g_stringPayload[] = "\"string\"";
+const char g_integerPayload[] = "123";
+const char g_booleanPayload[] = "true";
+const char g_integerEnumPayload[] = "1";
+const char g_integerArrayPayload[] = "[1, 2, 3]";
+const char g_stringArrayPayload[] = "[\"a\", \"b\", \"c\"]";
+const char g_integerMapPayload[] = "{\"key1\": 1, \"key2\": 2}";
+const char g_stringMapPayload[] = "{\"key1\": \"a\", \"key2\": \"b\"}";
+const char g_objectPayload[] = R"""({
+        "string": "value",
+        "integer": 1,
+        "boolean": true,
+        "integerEnum": 1,
+        "integerArray": [1, 2, 3],
+        "stringArray": ["a", "b", "c"],
+        "integerMap": { "key1": 1, "key2": 2 },
+        "stringMap": { "key1": "a", "key2": "b" }
+    })""";
+const char g_objectArrayPayload[] = R"""([
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "integerArray": [1, 2, 3],
+            "stringArray": ["a", "b", "c"],
+            "integerMap": { "key1": 1, "key2": 2 },
+            "stringMap": { "key1": "a", "key2": "b" }
+        },
+        {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "integerArray": [1, 2, 3],
+            "stringArray": ["a", "b", "c"],
+            "integerMap": { "key1": 1, "key2": 2 },
+            "stringMap": { "key1": "a", "key2": "b" }
+        }
+    ])""";
+
+// Payload for testing MpiSetDesired() and MpiGetReported()
+const char g_localPayload[] = R"""({
+    "TestModule_Component_1": {
+        "string": "string",
+        "integer": 123,
+        "boolean": true,
+        "integerEnum": 1,
+        "integerArray": [1, 2, 3],
+        "stringArray": ["a", "b", "c"],
+        "integerMap": { "key1": 1, "key2": 2 },
+        "stringMap": { "key1": "a", "key2": "b" },
+        "object": {
+            "string": "value",
+            "integer": 1,
+            "boolean": true,
+            "integerEnum": 1,
+            "integerArray": [1, 2, 3],
+            "stringArray": ["a", "b", "c"],
+            "integerMap": { "key1": 1, "key2": 2 },
+            "stringMap": { "key1": "a", "key2": "b" }
+        },
+        "objectArray": [
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "integerArray": [1, 2, 3],
+                "stringArray": ["a", "b", "c"],
+                "integerMap": { "key1": 1, "key2": 2 },
+                "stringMap": { "key1": "a", "key2": "b" }
+            },
+            {
+                "string": "value",
+                "integer": 1,
+                "boolean": true,
+                "integerEnum": 1,
+                "integerArray": [1, 2, 3],
+                "stringArray": ["a", "b", "c"],
+                "integerMap": { "key1": 1, "key2": 2 },
+                "stringMap": { "key1": "a", "key2": "b" }
+            }
+        ]
+    }
+})""";
 
 #endif // MODULESMANAGERTESTS_H
