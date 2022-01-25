@@ -37,9 +37,18 @@ private:
     static OSCONFIG_LOG_HANDLE m_log;
 };
 
-class AptInstall
+class AptInstallBase
 {
 public:
+    enum CurrentState
+    {
+        Unknown = 0,
+        Running,
+        Succeeded,
+        Failed,
+        TimedOut
+    };
+
     struct DesiredPackages
     {
         std::string stateId;
@@ -49,15 +58,18 @@ public:
     struct State
     {
         std::string stateId;
+        CurrentState currentState;
+        std::string packagesFingerprint;
     };
 
-    AptInstall(unsigned int maxPayloadSizeBytes);
-    virtual ~AptInstall() = default;
+    AptInstallBase(unsigned int maxPayloadSizeBytes);
+    virtual ~AptInstallBase() = default;
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual unsigned int GetMaxPayloadSizeBytes();
+    virtual int RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds) = 0;
 
 private:
     static int SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
@@ -65,10 +77,21 @@ private:
     static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     int ExecuteUpdate(const std::string& value);
     int ExecuteUpdates(const std::vector<std::string> packages);
-    int RunCommand(const char* command, bool replaceEol);
+    static CurrentState GetStateFromStatusCode(int status);
+    std::string GetFingerprint();
 
     // Store desired settings for reporting
     std::string m_stateId;
+    CurrentState m_currentState = CurrentState::Unknown;
 
     unsigned int m_maxPayloadSizeBytes;
+};
+
+class AptInstall : public AptInstallBase
+{
+public:
+    AptInstall(unsigned int maxPayloadSizeBytes);
+    ~AptInstall() = default;
+
+    int RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds) override;
 };

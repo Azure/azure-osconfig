@@ -16,6 +16,10 @@ static const std::string g_reportedObjectName = "State";
 static const std::string g_stateId = "StateId";
 static const std::string g_packages = "Packages";
 // static const std::string g_sources = "Sources";
+static const std::string g_currentState = "CurrentState";
+static const std::string g_packagesFingerprint = "PackagesFingerprint";
+static const std::string g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
+static const std::string g_commandAptUpdate = "sudo apt-get update";
 
 constexpr const char* g_commandExecuteUpdate = "sudo apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char ret[] = R""""({
@@ -31,12 +35,17 @@ constexpr const char ret[] = R""""({
 
 OSCONFIG_LOG_HANDLE AptInstallLog::m_log = nullptr;
 
-AptInstall::AptInstall(unsigned int maxPayloadSizeBytes)
+AptInstallBase::AptInstallBase(unsigned int maxPayloadSizeBytes)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
 }
 
-int AptInstall::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+AptInstall::AptInstall(unsigned int maxPayloadSizeBytes)
+    : AptInstallBase(maxPayloadSizeBytes)
+{
+}
+
+int AptInstallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -93,7 +102,7 @@ int AptInstall::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* p
     return status;
 }
 
-int AptInstall::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int AptInstallBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -120,11 +129,13 @@ int AptInstall::Set(const char* componentName, const char* objectName, const MMI
             {
                 if (document.IsObject())
                 {
-                    AptInstall::DesiredPackages desiredPackages;
+                    AptInstallBase::DesiredPackages desiredPackages;
                     if (0 == DeserializeDesiredPackages(document, desiredPackages))
                     {
                         m_stateId = desiredPackages.stateId;
-                        status = AptInstall::ExecuteUpdates(desiredPackages.packages);
+                        m_currentState = CurrentState::Running;
+                        status = AptInstallBase::ExecuteUpdates(desiredPackages.packages);
+                        m_currentState = AptInstallBase::GetStateFromStatusCode(status);
                     }
                     else
                     {
@@ -154,7 +165,7 @@ int AptInstall::Set(const char* componentName, const char* objectName, const MMI
     return status;
 }
 
-int AptInstall::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int AptInstallBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -176,6 +187,8 @@ int AptInstall::Get(const char* componentName, const char* objectName, MMI_JSON_
             {
                 State reportedState;
                 reportedState.stateId = m_stateId;
+                reportedState.currentState = m_currentState;
+                reportedState.packagesFingerprint = GetFingerprint();
                 status = SerializeState(reportedState, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
             else
@@ -194,12 +207,12 @@ int AptInstall::Get(const char* componentName, const char* objectName, MMI_JSON_
     return status;
 }
 
-unsigned int AptInstall::GetMaxPayloadSizeBytes()
+unsigned int AptInstallBase::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
 }
 
-int AptInstall::DeserializeDesiredPackages(rapidjson::Document &document, DesiredPackages &object)
+int AptInstallBase::DeserializeDesiredPackages(rapidjson::Document& document, DesiredPackages& object)
 {
     int status = 0;
 
@@ -283,8 +296,7 @@ int AptInstall::DeserializeDesiredPackages(rapidjson::Document &document, Desire
     return status;
 }
 
-
-int AptInstall::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int AptInstallBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -323,29 +335,11 @@ int AptInstall::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING
     return status;
 }
 
-
-int AptInstall::RunCommand(const char* command, bool replaceEol)
-{
-    char* buffer = nullptr;
-    int status = ExecuteCommand(nullptr, command, replaceEol, true, 0, 0, &buffer, nullptr, AptInstallLog::Get());
-
-    if (status != MMI_OK && IsFullLoggingEnabled())
-    {
-        OsConfigLogError(AptInstallLog::Get(), "RunCommand failed with status: %d and output '%s'", status, buffer);
-    }
-
-    if (buffer)
-    {
-        free(buffer);
-    }
-    return status;
-}
-
-int AptInstall::ExecuteUpdate(const std::string &value)
+int AptInstallBase::ExecuteUpdate(const std::string &value)
 {
     std::string command = std::regex_replace(g_commandExecuteUpdate, std::regex("\\$value"), value);
 
-    int status = RunCommand(command.c_str(), true);
+    int status = RunCommand(command.c_str(), true, nullptr, 600);
     if (status != MMI_OK && IsFullLoggingEnabled())
     {
         OsConfigLogError(AptInstallLog::Get(), "ExecuteUpdate failed with status %d and arguments '%s'", status, value.c_str());
@@ -353,9 +347,16 @@ int AptInstall::ExecuteUpdate(const std::string &value)
     return status;
 }
 
-int AptInstall::ExecuteUpdates(const std::vector<std::string> packages)
+int AptInstallBase::ExecuteUpdates(const std::vector<std::string> packages)
 {
     int status = MMI_OK;
+
+    status = RunCommand(g_commandAptUpdate.c_str(), true, nullptr, 0);
+    if (status != MMI_OK)
+    {
+        return status;
+    }
+
     for (std::string package : packages)
     {
         OsConfigLogInfo(AptInstallLog::Get(), "Starting to update package(s): %s", package.c_str());
@@ -368,7 +369,7 @@ int AptInstall::ExecuteUpdates(const std::vector<std::string> packages)
     return status;
 }
 
-int AptInstall::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
+int AptInstallBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -378,6 +379,10 @@ int AptInstall::SerializeState(State reportedState, MMI_JSON_STRING* payload, in
     writer.StartObject();
     writer.Key(g_stateId.c_str());
     writer.String(reportedState.stateId.c_str());
+    writer.Key(g_packagesFingerprint.c_str());
+    writer.String(reportedState.packagesFingerprint.c_str());
+    writer.Key(g_currentState.c_str());
+    writer.Int(static_cast<int>(reportedState.currentState));
     writer.EndObject();
 
     unsigned int bufferSize = buffer.GetSize();
@@ -389,7 +394,7 @@ int AptInstall::SerializeState(State reportedState, MMI_JSON_STRING* payload, in
     }
     else
     {
-        status = AptInstall::CopyJsonPayload(buffer, payload, payloadSizeBytes);
+        status = AptInstallBase::CopyJsonPayload(buffer, payload, payloadSizeBytes);
         if(0 != status)
         {
             OsConfigLogError(AptInstallLog::Get(), "Failed to serialize object %s", g_reportedObjectName.c_str());
@@ -397,4 +402,52 @@ int AptInstall::SerializeState(State reportedState, MMI_JSON_STRING* payload, in
     }
     
     return status;
+}
+
+int AptInstall::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
+{
+    char* buffer = nullptr;
+    int status = ExecuteCommand(nullptr, command, replaceEol, true, 0, timeoutSeconds, &buffer, nullptr, AptInstallLog::Get());
+
+    if (status == MMI_OK)
+    {
+        if (buffer && textResult)
+        {
+            *textResult = buffer;
+        }
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogError(AptInstallLog::Get(), "RunCommand failed with status: %d and output '%s'", status, buffer);
+    }
+
+    if (buffer)
+    {
+        free(buffer);
+    }
+    return status;
+}
+
+AptInstallBase::CurrentState AptInstallBase::GetStateFromStatusCode(int status)
+{
+    CurrentState state = CurrentState::Unknown;
+    switch (status)
+    {
+        case EXIT_SUCCESS:
+            state = CurrentState::Succeeded;
+            break;
+        case ETIME:
+            state = CurrentState::TimedOut;
+            break;
+        default:
+            state = CurrentState::Failed;
+    }
+    return state;
+}
+
+std::string AptInstallBase::GetFingerprint()
+{
+    std::string hashString = "";
+    RunCommand(g_commandGetInstalledPackagesHash.c_str(), true, &hashString, 0);
+    return hashString;
 }
