@@ -13,8 +13,18 @@
           "schema": {
             "fields": [
               {
-                "name": "StateId",
-                "schema": "string"
+                "name": "Packages",
+                "schema": {
+                  "type": "map",
+                  "mapKey":  {
+                    "name": "Name",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "Version",
+                    "schema": "string"
+                  }
+                }
               },
               {
                 "name": "PackagesFingerprint",
@@ -25,7 +35,7 @@
                 "schema": "string"
               },
               {
-                "name": "CurrentState",
+                "name": "ExecutionState",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
@@ -45,6 +55,10 @@
                     {
                       "name": "Failed",
                       "enumValue": 3
+                    },
+                    {
+                      "name": "TimedOut",
+                      "enumValue": 4
                     }
                   ]
                 }
@@ -59,10 +73,6 @@
           "schema": {
             "type": "object",
             "fields": [
-              {
-                "name": "StateId",
-                "schema": "string"
-              },
               {
                 "name": "Packages",
                 "schema": {
