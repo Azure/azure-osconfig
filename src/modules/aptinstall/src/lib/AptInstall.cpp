@@ -13,15 +13,15 @@
 static const std::string g_componentName = "AptInstall";
 static const std::string g_desiredObjectName = "DesiredPackages";
 static const std::string g_reportedObjectName = "State";
-static const std::string g_stateId = "StateId";
 static const std::string g_packages = "Packages";
 // static const std::string g_sources = "Sources";
-static const std::string g_currentState = "CurrentState";
+static const std::string g_executionState = "ExecutionState";
 static const std::string g_packagesFingerprint = "PackagesFingerprint";
 static const std::string g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
 static const std::string g_commandAptUpdate = "sudo apt-get update";
 
 constexpr const char* g_commandExecuteUpdate = "sudo apt-get install $value -y --allow-downgrades --auto-remove";
+constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
 constexpr const char ret[] = R""""({
     "Name": "AptInstall Module",
     "Description": "Module designed to install DEB-packages using APT",
@@ -132,10 +132,10 @@ int AptInstallBase::Set(const char* componentName, const char* objectName, const
                     AptInstallBase::DesiredPackages desiredPackages;
                     if (0 == DeserializeDesiredPackages(document, desiredPackages))
                     {
-                        m_stateId = desiredPackages.stateId;
-                        m_currentState = CurrentState::Running;
+                        m_desiredPackages = GetPackagesNames(desiredPackages.packages);
+                        m_executionState = ExecutionState::Running;
                         status = AptInstallBase::ExecuteUpdates(desiredPackages.packages);
-                        m_currentState = AptInstallBase::GetStateFromStatusCode(status);
+                        m_executionState = AptInstallBase::GetStateFromStatusCode(status);
                     }
                     else
                     {
@@ -186,9 +186,9 @@ int AptInstallBase::Get(const char* componentName, const char* objectName, MMI_J
             if (0 == g_reportedObjectName.compare(objectName))
             {
                 State reportedState;
-                reportedState.stateId = m_stateId;
-                reportedState.currentState = m_currentState;
+                reportedState.executionState = m_executionState;
                 reportedState.packagesFingerprint = GetFingerprint();
+                reportedState.packages = GetReportedPackages(m_desiredPackages);
                 status = SerializeState(reportedState, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
             else
@@ -215,24 +215,6 @@ unsigned int AptInstallBase::GetMaxPayloadSizeBytes()
 int AptInstallBase::DeserializeDesiredPackages(rapidjson::Document& document, DesiredPackages& object)
 {
     int status = 0;
-
-    if (document.HasMember(g_stateId.c_str()))
-    {
-        if (document[g_stateId.c_str()].IsString())
-        {
-            object.stateId = document[g_stateId.c_str()].GetString();
-        }
-        else
-        {
-            OsConfigLogError(AptInstallLog::Get(), "%s is not a string", g_stateId.c_str());
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(AptInstallLog::Get(), "JSON object does not contain a string setting");
-        status = EINVAL;
-    }
 
     // Deserialize a map of strings to strings
     // if (document.HasMember(g_sources.c_str()))
@@ -363,8 +345,10 @@ int AptInstallBase::ExecuteUpdates(const std::vector<std::string> packages)
         status = ExecuteUpdate(package);
         if (status != MMI_OK)
         {
+            OsConfigLogError(AptInstallLog::Get(), "Failed to update package(s): %s", package.c_str());
             return status;
         }
+        OsConfigLogInfo(AptInstallLog::Get(), "Successfully updated package(s): %s", package.c_str());
     }
     return status;
 }
@@ -377,12 +361,22 @@ int AptInstallBase::SerializeState(State reportedState, MMI_JSON_STRING* payload
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
     writer.StartObject();
-    writer.Key(g_stateId.c_str());
-    writer.String(reportedState.stateId.c_str());
+
     writer.Key(g_packagesFingerprint.c_str());
     writer.String(reportedState.packagesFingerprint.c_str());
-    writer.Key(g_currentState.c_str());
-    writer.Int(static_cast<int>(reportedState.currentState));
+
+    writer.Key(g_packages.c_str());
+    writer.StartObject();
+    for (auto& pair : reportedState.packages)
+    {
+        writer.Key(pair.first.c_str());
+        writer.String(pair.second.c_str());
+    }
+    writer.EndObject();
+
+    writer.Key(g_executionState.c_str());
+    writer.Int(static_cast<int>(reportedState.executionState));
+
     writer.EndObject();
 
     unsigned int bufferSize = buffer.GetSize();
@@ -428,19 +422,19 @@ int AptInstall::RunCommand(const char* command, bool replaceEol, std::string* te
     return status;
 }
 
-AptInstallBase::CurrentState AptInstallBase::GetStateFromStatusCode(int status)
+AptInstallBase::ExecutionState AptInstallBase::GetStateFromStatusCode(int status)
 {
-    CurrentState state = CurrentState::Unknown;
+    ExecutionState state = ExecutionState::Unknown;
     switch (status)
     {
         case EXIT_SUCCESS:
-            state = CurrentState::Succeeded;
+            state = ExecutionState::Succeeded;
             break;
         case ETIME:
-            state = CurrentState::TimedOut;
+            state = ExecutionState::TimedOut;
             break;
         default:
-            state = CurrentState::Failed;
+            state = ExecutionState::Failed;
     }
     return state;
 }
@@ -450,4 +444,79 @@ std::string AptInstallBase::GetFingerprint()
     std::string hashString = "";
     RunCommand(g_commandGetInstalledPackagesHash.c_str(), true, &hashString, 0);
     return hashString;
+}
+
+std::vector<std::string> AptInstallBase::GetPackagesNames(std::vector<std::string> packages)
+{
+    std::vector<std::string> packagesNames;
+    for (auto& packagesLine : packages)
+    {
+        std::vector<std::string> result = Split(packagesLine, " ");
+        for (auto& element : result)
+            {
+                std::string packageName = Split(element, "=")[0];
+                packagesNames.push_back(TrimEnd(packageName, "-"));
+            }
+    }
+    return packagesNames;
+}
+
+std::vector<std::string> AptInstallBase::Split(const std::string& str, const std::string& delimiter)
+{
+    std::vector<std::string> result;
+    size_t start;
+    size_t end = 0;
+    while ((start = str.find_first_not_of(delimiter, end)) != std::string::npos)
+    {
+        end = str.find(delimiter, start);
+        result.push_back(str.substr(start, end - start));
+    }
+    return result;
+}
+
+std::map<std::string, std::string> AptInstallBase::GetReportedPackages(std::vector<std::string> packages)
+{
+    std::map<std::string, std::string> result;
+    int status;
+    for (auto& packageName : packages)
+    {
+        std::string command = std::regex_replace(g_commandGetInstalledPackageVersion, std::regex("\\$value"), packageName);
+
+        std::string rawVersion = "";
+        status = RunCommand(command.c_str(), true, &rawVersion, 0);
+        if (status != MMI_OK && IsFullLoggingEnabled())
+        {
+            OsConfigLogError(AptInstallLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);
+        }
+
+        std::string version = rawVersion != "" ? Split(rawVersion, ":")[1] : "(failed)";
+        result[packageName] = Trim(version, " ");
+    }
+
+  return result;
+}
+
+std::string AptInstallBase::TrimStart(const std::string& str, const std::string& trim)
+{
+    size_t pos = str.find_first_not_of(trim);
+    if (pos == std::string::npos)
+    {
+        return str;
+    }
+    return str.substr(pos);
+}
+
+std::string AptInstallBase::TrimEnd(const std::string& str, const std::string& trim)
+{
+    size_t pos = str.find_last_not_of(trim);
+    if (pos == std::string::npos)
+    {
+        return str;
+    }
+    return str.substr(0, pos + 1);
+}
+
+std::string AptInstallBase::Trim(const std::string& str, const std::string& trim)
+{
+    return TrimStart(TrimEnd(str, trim), trim);
 }
