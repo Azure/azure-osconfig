@@ -399,9 +399,9 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
                 IotHubSetOption(OPTION_HTTP_PROXY, proxyData);
             }
 
-            if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetModuleTwinCallback(g_moduleHandle, ModuleTwinCallback, (void*)g_moduleHandle)))
+            if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetDeviceTwinCallback(g_moduleHandle, ModuleTwinCallback, (void*)g_moduleHandle)))
             {
-                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_SetModuleTwinCallback failed with %d", iothubResult);
+                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_SetDeviceTwinCallback failed with %d", iothubResult);
             }
             else if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetConnectionStatusCallback(g_moduleHandle, IotHubConnectionStatusCallback, (void*)g_moduleHandle)))
             {
