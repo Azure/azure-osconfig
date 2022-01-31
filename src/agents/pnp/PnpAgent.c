@@ -62,7 +62,7 @@ static int g_numReportedProperties = 0;
 static TICK_COUNTER_HANDLE g_tickCounter = NULL;
 static tickcounter_ms_t g_lastTick = 0;
 
-extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_deviceHandle;
+extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -100,6 +100,9 @@ static bool g_iotHubConnectionStringFromAis = false;
 // Obtained from AIS alongside the connection string in case of X.509 authentication
 static char* g_x509Certificate = NULL;
 static char* g_x509PrivateKeyHandle = NULL;
+
+// HTTP proxy name read from environment variable
+static char* g_proxyData = NULL;
 
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
@@ -216,7 +219,7 @@ static void SignalReloadConfiguration(int signal)
 static void SignalDoWork(int signal)
 {
     UNUSED(signal);
-    IoTHubDeviceClient_LL_DoWork(g_deviceHandle);
+    IoTHubDeviceClient_LL_DoWork(g_moduleHandle);
 }
 
 static void RefreshConnection()
@@ -250,7 +253,7 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_deviceHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -541,6 +544,40 @@ static int LoadReportedFromJsonConfig(const char* jsonString)
     return g_numReportedProperties;
 }
 
+static char* GetProxyData()
+{
+    const char* proxyVariables[] = {
+        "https_proxy",
+        "HTTPS_PROXY"
+    };
+    int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
+
+    char* proxyData = NULL;
+    char* environmentVariable = NULL;
+    int i = 0;
+
+    for (i = 0; i < proxyVariablesSize; i++)
+    {
+        environmentVariable = getenv(proxyVariables[i]);
+        if (NULL != environmentVariable)
+        {
+            // The environment variable string must be treated as read-only, make a copy for our use:
+            proxyData = strdup(environmentVariable);
+            if (NULL == proxyData)
+            {
+                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of proxy data (%s): %d", environmentVariable, errno);
+            }
+            else
+            {
+                OsConfigLogInfo(GetLog(), "Proxy data: %s", proxyData);
+            }
+            break;
+        }
+    }
+
+    return proxyData;
+}
+
 int main(int argc, char *argv[])
 {
     char* connectionString = NULL;
@@ -602,6 +639,9 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
+    // Read the proxy name if any from environment variables:
+    g_proxyData = GetProxyData();
+
     if ((argc < 2) || ((2 == argc) && forkDaemon))
     {
         connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle);
@@ -652,15 +692,15 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalDoWork);
 
-    if (0 != InitializePnpAgent(connectionString))
+    if (0 != InitializeAgent(connectionString))
     {
-        LogErrorWithTelemetry(GetLog(), "Failed to initialize OSConfig PnP module");
+        LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
         goto done;
     }
 
     while (0 == g_stopSignal)
     {
-        PnpAgentDoWork();
+        AgentDoWork();
         ThreadAPI_Sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
@@ -682,19 +722,20 @@ done:
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(g_iotHubConnectionString);
+    FREE_MEMORY(g_proxyData);
     if (freeConnectionString)
     {
         FREE_MEMORY(connectionString);
     }
 
-    ClosePnpAgent();
+    CloseAgent();
     CloseTraceLogging();
     CloseLog(&g_agentLog);
 
     return 0;
 }
 
-int InitializePnpAgent(const char* connectionString)
+int InitializeAgent(const char* connectionString)
 {
     if (NULL == (g_tickCounter = tickcounter_create()))
     {
@@ -711,7 +752,7 @@ int InitializePnpAgent(const char* connectionString)
     }
 
     // Initialize communication with the IoT Hub:
-    if (NULL == (g_deviceHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle)))
+    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
         g_exitState = IotHubInitializationFailure;
@@ -722,7 +763,7 @@ int InitializePnpAgent(const char* connectionString)
 
     tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
 
-    OsConfigLogInfo(GetLog(), "OSConfig PnP module initialized");
+    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent initialized");
 
     return 0;
 }
@@ -788,7 +829,7 @@ static void ReportProperties()
     }
 }
 
-void PnpAgentDoWork(void)
+void AgentDoWork(void)
 {
     tickcounter_ms_t nowTick = 0;
     tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
@@ -811,7 +852,7 @@ void PnpAgentDoWork(void)
     }
 }
 
-void ClosePnpAgent(void)
+void CloseAgent(void)
 {
     IotHubDeInitialize();
 
@@ -823,5 +864,5 @@ void ClosePnpAgent(void)
 
     FREE_MEMORY(g_reportedProperties);
 
-    OsConfigLogInfo(GetLog(), "OSConfig PnP module terminated");
+    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
