@@ -30,7 +30,7 @@ static const OPTION_OPENSSL_KEY_TYPE g_keyTypeEngine = KEY_TYPE_ENGINE;
 static const char g_propertyReadTemplate[] = "{\"""%s\":{\"__t\":\"c\",\"%s\":%.*s}}";
 static const char g_propertyAckTemplate[] = "{\"""%s\":{\"__t\":\"c\",\"%s\":{\"value\":%.*s,\"ac\":%d,\"ad\":\"-\",\"av\":%d}}}";
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE g_deviceHandle = NULL;
+IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle = NULL;
 
 static bool g_lostNetworkConnection = false;
 
@@ -125,7 +125,7 @@ static IOTHUB_CLIENT_RESULT PropertyUpdateFromIotHubCallback(const char* compone
 
     if (NULL == componentName)
     {
-        LogErrorWithTelemetry(GetLog(), "PropertyUpdateFromIotHubCallback: property %s arrived with a NULL component name, indicating root of device", propertyName);
+        LogErrorWithTelemetry(GetLog(), "PropertyUpdateFromIotHubCallback: property %s arrived with a NULL component name, indicating root", propertyName);
         return result;
     }
 
@@ -306,41 +306,41 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
     return result;
 }
 
-static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size, void* userContextCallback)
+static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size, void* userContextCallback)
 {
     LogAssert(GetLog(), NULL != payload);
     LogAssert(GetLog(), 0 < size);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "DeviceTwinCallback: received %.*s (%d bytes)", (int)size, payload, (int)size);
+        OsConfigLogInfo(GetLog(), "ModuleTwinCallback: received %.*s (%d bytes)", (int)size, payload, (int)size);
     }
     else
     {
-        OsConfigLogInfo(GetLog(), "DeviceTwinCallback: received %d bytes", (int)size);
+        OsConfigLogInfo(GetLog(), "ModuleTwinCallback: received %d bytes", (int)size);
     }
 
     IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(updateState, payload, size, PropertyUpdateFromIotHubCallback);
 
     UNUSED(userContextCallback);
 
-    OsConfigLogInfo(GetLog(), "DeviceTwinCallback completed with result %d", (int)result);
+    OsConfigLogInfo(GetLog(), "ModuleTwinCallback completed with result %d", (int)result);
 }
 
 static bool IotHubSetOption(const char* optionName, const void* value)
 {
-    if ((NULL == g_deviceHandle) || (NULL == optionName) || (NULL == value))
+    if ((NULL == g_moduleHandle) || (NULL == optionName) || (NULL == value))
     {
         LogErrorWithTelemetry(GetLog(), "Invalid argument, IotHubSetOption failed");
         return false;
     }
 
     IOTHUB_CLIENT_RESULT iothubClientResult = IOTHUB_CLIENT_ERROR;
-    if (IOTHUB_CLIENT_OK != (iothubClientResult = IoTHubDeviceClient_LL_SetOption(g_deviceHandle, optionName, value)))
+    if (IOTHUB_CLIENT_OK != (iothubClientResult = IoTHubDeviceClient_LL_SetOption(g_moduleHandle, optionName, value)))
     {
         LogErrorWithTelemetry(GetLog(), "Failed to set option %s, error %d", optionName, iothubClientResult);
-        IoTHubDeviceClient_LL_Destroy(g_deviceHandle);
-        g_deviceHandle = NULL;
+        IoTHubDeviceClient_LL_Destroy(g_moduleHandle);
+        g_moduleHandle = NULL;
 
         IoTHub_Deinit();
         return false;
@@ -351,13 +351,13 @@ static bool IotHubSetOption(const char* optionName, const void* value)
     }
 }
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, const char* x509Certificate, const char* x509PrivateKeyHandle)
+IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, const char* x509Certificate, const char* x509PrivateKeyHandle, const char* proxyData)
 {
     IOTHUB_CLIENT_RESULT iothubResult = IOTHUB_CLIENT_OK;
 
     bool urlEncodeOn = true;
 
-    if (NULL != g_deviceHandle)
+    if (NULL != g_moduleHandle)
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize called at the wrong time");
         return NULL;
@@ -375,7 +375,7 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
     }
     else
     {
-        if (NULL == (g_deviceHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, MQTT_Protocol)))
+        if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_CreateFromConnectionString failed");
         }
@@ -394,39 +394,44 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
                 IotHubSetOption(OPTION_X509_PRIVATE_KEY, x509PrivateKeyHandle);
             }
 
-            if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetDeviceTwinCallback(g_deviceHandle, DeviceTwinCallback, (void*)g_deviceHandle)))
+            if (NULL != proxyData)
             {
-                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_SetDeviceTwinCallback failed with %d", iothubResult);
+                IotHubSetOption(OPTION_HTTP_PROXY, proxyData);
             }
-            else if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetConnectionStatusCallback(g_deviceHandle, IotHubConnectionStatusCallback, (void*)g_deviceHandle)))
+
+            if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetModuleTwinCallback(g_moduleHandle, ModuleTwinCallback, (void*)g_moduleHandle)))
+            {
+                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_SetModuleTwinCallback failed with %d", iothubResult);
+            }
+            else if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetConnectionStatusCallback(g_moduleHandle, IotHubConnectionStatusCallback, (void*)g_moduleHandle)))
             {
                 LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_SetConnectionStatusCallback failed with %d", iothubResult);
             }
         }
 
-        if (NULL == g_deviceHandle)
+        if (NULL == g_moduleHandle)
         {
             LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
             IoTHub_Deinit();
         }
     }
 
-    return g_deviceHandle;
+    return g_moduleHandle;
 }
 
 void IotHubDeInitialize(void)
 {
-    if (NULL != g_deviceHandle)
+    if (NULL != g_moduleHandle)
     {
-        IoTHubDeviceClient_LL_Destroy(g_deviceHandle);
+        IoTHubDeviceClient_LL_Destroy(g_moduleHandle);
         IoTHub_Deinit();
-        g_deviceHandle = NULL;
+        g_moduleHandle = NULL;
     }
 }
 
 void IotHubDoWork(void)
 {
-    IoTHubDeviceClient_LL_DoWork(g_deviceHandle);
+    IoTHubDeviceClient_LL_DoWork(g_moduleHandle);
 }
 
 static void ReadReportedStateCallback(int statusCode, void* userContextCallback)
@@ -451,7 +456,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
     LogAssert(GetLog(), NULL != componentName);
     LogAssert(GetLog(), NULL != propertyName);
 
-    if (NULL == g_deviceHandle)
+    if (NULL == g_moduleHandle)
     {
         LogErrorWithTelemetry(GetLog(), "%s: the component needs to be initialized before reporting properties", componentName);
         return IOTHUB_CLIENT_ERROR;
@@ -485,7 +490,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
             if (reportProperty)
             {
-                result = IoTHubDeviceClient_LL_SendReportedState(g_deviceHandle, (const unsigned char*)decoratedPayload, decoratedLength, ReadReportedStateCallback, (void*)propertyName);
+                result = IoTHubDeviceClient_LL_SendReportedState(g_moduleHandle, (const unsigned char*)decoratedPayload, decoratedLength, ReadReportedStateCallback, (void*)propertyName);
 
                 if (IsFullLoggingEnabled())
                 {
@@ -627,7 +632,7 @@ IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const 
         LogAssert(GetLog(), ackValueLength >= (int)strlen(ackBuffer));
         ackValueLength = strlen(ackBuffer);
 
-        result = IoTHubDeviceClient_LL_SendReportedState(g_deviceHandle, (const unsigned char*)ackBuffer, ackValueLength, AckReportedStateCallback, NULL);
+        result = IoTHubDeviceClient_LL_SendReportedState(g_moduleHandle, (const unsigned char*)ackBuffer, ackValueLength, AckReportedStateCallback, NULL);
 
         if (IsFullLoggingEnabled())
         {

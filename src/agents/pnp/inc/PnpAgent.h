@@ -9,9 +9,9 @@ extern "C"
 {
 #endif
 
-int InitializePnpAgent(const char* connectionString);
-void PnpAgentDoWork(void);
-void ClosePnpAgent(void);
+int InitializeAgent(const char* connectionString);
+void AgentDoWork(void);
+void CloseAgent(void);
 void ScheduleRefreshConnection(void);
 
 #ifdef __cplusplus
