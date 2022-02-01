@@ -32,7 +32,17 @@
               },
               {
                 "name": "SourcesFingerprint",
-                "schema": "string"
+                "schema": {
+                  "type": "map",
+                  "mapKey":  {
+                    "name": "Id",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "Fingerprint",
+                    "schema": "string"
+                  }
+                }
               },
               {
                 "name": "ExecutionState",
@@ -67,7 +77,7 @@
           }
         },
         {
-          "name": "DesiredPackages",
+          "name": "DesiredState",
           "type": "MimObject",
           "desired": true,
           "schema": {
