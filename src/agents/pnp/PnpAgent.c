@@ -103,7 +103,7 @@ static char* g_x509Certificate = NULL;
 static char* g_x509PrivateKeyHandle = NULL;
 
 // HTTP proxy options read from environment variables
-static HTTP_PROXY_OPTIONS* g_proxyOptions = NULL;
+static HTTP_PROXY_OPTIONS g_proxyOptions = {0};
 
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
@@ -254,7 +254,7 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyOptions)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -550,6 +550,10 @@ int main(int argc, char *argv[])
     char* connectionString = NULL;
     char* jsonConfiguration = NULL;
     char* proxyData = NULL;
+    char* proxyHostAddress = NULL;
+    int proxyPort = 0;
+    char* proxyUsername = NULL;
+    char* proxyPassword = NULL;
     bool freeConnectionString = false;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
@@ -608,10 +612,15 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
     // Read the proxy options from environment variables:
-    if (NULL != (proxyData = GetHttpProxyData()))
+    if ((NULL != (proxyData = GetHttpProxyData())) && (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword)))
     {
-        g_proxyOptions = ParseHttpProxyData(proxyData);
         FREE_MEMORY(proxyData);
+
+        // Assign the string pointers and trasfer ownership to the SDK to be freed when done
+        g_proxyOptions.host_name = proxyHostAddress;
+        g_proxyOptions.port = proxyPort;
+        g_proxyOptions.username = proxyUsername;
+        g_proxyOptions.password = proxyPassword;
     }
 
     if ((argc < 2) || ((2 == argc) && forkDaemon))

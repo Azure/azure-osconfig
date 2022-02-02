@@ -39,7 +39,7 @@ char* GetHttpProxyData()
     return proxyData;
 }
 
-HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
+bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**username, char** password)
 {
     // We accept the proxy data string to be in one of two following formats:
     // "http://server:port"
@@ -64,12 +64,28 @@ HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
     int usernameLength = 0;
     int passwordLength = 0;
 
-    if (NULL == proxyData)
+    bool result = false;
+
+    if ((NULL == proxyData) || (NULL == hostAddress) || (NULL == port))
     {
+        LogErrorWithTelemetry(GetLog(), "ParseHttpProxyData called with invalid arguments");
         return NULL;
     }
 
-    if (strlen(proxyData) <=  strlen(httpPrefix))
+    *hostAddress = NULL;
+    port = 0;
+    
+    if (username)
+    {
+        *username = NULL;
+    }
+
+    if (password)
+    {
+        *password = NULL;
+    }
+
+    if (strlen(proxyData) <= strlen(httpPrefix))
     {
         LogErrorWithTelemetry(GetLog(), "Unsupported proxy data (%s), too short", proxyData);
     }
@@ -116,7 +132,6 @@ HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
         }
         else
         {
-            if (NULL != (proxyOptions = (HTTP_PROXY_OPTIONS*)malloc(sizeof(HTTP_PROXY_OPTIONS))))
             {
                 if (credentialsSeparator)
                 {
@@ -209,22 +224,22 @@ HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
                     }
                 }
 
-                proxyOptions->host_address = hostAddress;
-                proxyOptions->port = portNumber;
-                proxyOptions->username = username;
-                proxyOptions->password = password;
+                *hostAddress = hostAddress;
+                *port = portNumber;
+                
+                if (username && password)
+                {
+                    *username = username;
+                    *password = password;
+                }
 
-                OsConfigLogInfo(GetLog(), "Proxy host|address: %s (%d)", proxyOptions->host_address, hostAddressLength);
-                OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", proxyOptions->port, port, portLength);
-                OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", proxyOptions->username, usernameLength);
-                OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", proxyOptions->password, passwordLength);
+                OsConfigLogInfo(GetLog(), "Proxy host|address: %s (%d)", *host_address, hostAddressLength);
+                OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", *port, port, portLength);
+                OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", *username, usernameLength);
+                OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", *password, passwordLength);
 
                 // Port is unused past this, can be freed; the rest must remain allocated
                 FREE_MEMORY(port);
-            }
-            else
-            {
-                LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS: %d", errno);
             }
         }
     }

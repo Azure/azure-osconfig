@@ -12,7 +12,7 @@ extern "C"
 #endif
 
 char* GetHttpProxyData();
-HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData);
+bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**username, char** password);
 
 #ifdef __cplusplus
 }
