@@ -3,8 +3,6 @@
 
 #include "inc/ProxyUtils.h"
 
-static HTTP_PROXY_OPTIONS* g_proxyOptions = NULL;
-
 char* GetHttpProxyData()
 {
     const char* proxyVariables[] = {
@@ -109,8 +107,8 @@ HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
             (credentialsSeparator && (firstColumn >= credentialsSeparator)) ||
             (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
             (credentialsSeparator && (firstColumn == lastColumn)) ||
-            (credentialsSeparator && (0 == strlen(credentialsSeparator)) ||
-            ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A"))) >= strlen(proxyData)) ||
+            (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
+            ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) >= strlen(proxyData)) ||
             (1 >= strlen(lastColumn)) ||
             (1 >= strlen(firstColumn)))
         {
