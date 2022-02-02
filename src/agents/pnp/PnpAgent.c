@@ -582,7 +582,7 @@ static char* GetHttpProxyData()
 
 static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
 {
-    const char httpPrefix[] = "http:/";
+    const char httpPrefix[] = "http://";
     HTTP_PROXY_OPTIONS* proxyOptions = NULL;
     char* credentialsSeparator = NULL;
     char* firstColumn = NULL;
@@ -742,6 +742,8 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
                 OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", proxyOptions->port, port, portLength);
                 OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", proxyOptions->username, usernameLength);
                 OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", proxyOptions->password, passwordLength);
+
+                FREE_MEMORY(port);
             }
             else
             {
