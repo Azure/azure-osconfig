@@ -612,15 +612,18 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
     // Read the proxy options from environment variables:
-    if ((NULL != (proxyData = GetHttpProxyData())) && (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword)))
+    if (NULL != (proxyData = GetHttpProxyData()))
     {
-        FREE_MEMORY(proxyData);
+        if (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword))
+        {
+            // Assign the string pointers and trasfer ownership to the SDK to be freed when done
+            g_proxyOptions.host_address = proxyHostAddress;
+            g_proxyOptions.port = proxyPort;
+            g_proxyOptions.username = proxyUsername;
+            g_proxyOptions.password = proxyPassword;
 
-        // Assign the string pointers and trasfer ownership to the SDK to be freed when done
-        g_proxyOptions.host_name = proxyHostAddress;
-        g_proxyOptions.port = proxyPort;
-        g_proxyOptions.username = proxyUsername;
-        g_proxyOptions.password = proxyPassword;
+            FREE_MEMORY(proxyData);
+        }
     }
 
     if ((argc < 2) || ((2 == argc) && forkDaemon))
@@ -703,7 +706,6 @@ done:
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(g_iotHubConnectionString);
-    FREE_MEMORY(g_proxyOptions);
     if (freeConnectionString)
     {
         FREE_MEMORY(connectionString);
@@ -733,7 +735,7 @@ int InitializeAgent(const char* connectionString)
     }
 
     // Initialize communication with the IoT Hub:
-    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyOptions)))
+    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
         g_exitState = IotHubInitializationFailure;

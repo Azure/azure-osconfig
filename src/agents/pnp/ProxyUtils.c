@@ -39,7 +39,7 @@ char* GetHttpProxyData()
     return proxyData;
 }
 
-bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**username, char** password)
+bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword)
 {
     // We accept the proxy data string to be in one of two following formats:
     // "http://server:port"
@@ -47,8 +47,6 @@ bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**us
 
     const char httpPrefix[] = "http://";
 
-    HTTP_PROXY_OPTIONS* proxyOptions = NULL;
-    
     char* credentialsSeparator = NULL;
     char* firstColumn = NULL;
     char* lastColumn = NULL;
@@ -66,23 +64,23 @@ bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**us
 
     bool result = false;
 
-    if ((NULL == proxyData) || (NULL == hostAddress) || (NULL == port))
+    if ((NULL == proxyData) || (NULL == proxyHostAddress) || (NULL == proxyPort))
     {
         LogErrorWithTelemetry(GetLog(), "ParseHttpProxyData called with invalid arguments");
         return NULL;
     }
 
-    *hostAddress = NULL;
-    port = 0;
+    *proxyHostAddress = NULL;
+    *proxyPort = 0;
     
-    if (username)
+    if (proxyUsername)
     {
-        *username = NULL;
+        *proxyUsername = NULL;
     }
 
-    if (password)
+    if (proxyPassword)
     {
-        *password = NULL;
+        *proxyPassword = NULL;
     }
 
     if (strlen(proxyData) <= strlen(httpPrefix))
@@ -224,25 +222,27 @@ bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**us
                     }
                 }
 
-                *hostAddress = hostAddress;
-                *port = portNumber;
+                *proxyHostAddress = hostAddress;
+                *proxyPort = portNumber;
                 
-                if (username && password)
+                if ((NULL != proxyUsername) && (NULL != proxyPassword))
                 {
-                    *username = username;
-                    *password = password;
+                    *proxyUsername = username;
+                    *proxyPassword = password;
                 }
 
-                OsConfigLogInfo(GetLog(), "Proxy host|address: %s (%d)", *host_address, hostAddressLength);
-                OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", *port, port, portLength);
-                OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", *username, usernameLength);
-                OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", *password, passwordLength);
+                OsConfigLogInfo(GetLog(), "Proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+                OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", *proxyPort, port, portLength);
+                OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", *proxyUsername, usernameLength);
+                OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", *proxyPassword, passwordLength);
 
                 // Port is unused past this, can be freed; the rest must remain allocated
                 FREE_MEMORY(port);
+
+                result = true;
             }
         }
     }
 
-    return proxyOptions;
+    return result;
 }
