@@ -101,8 +101,8 @@ static bool g_iotHubConnectionStringFromAis = false;
 static char* g_x509Certificate = NULL;
 static char* g_x509PrivateKeyHandle = NULL;
 
-// HTTP proxy name read from environment variable
-static char* g_proxyData = NULL;
+// HTTP proxy options read from environment variables
+static HTTP_PROXY_OPTIONS* g_proxyOptions = NULL;
 
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
@@ -253,7 +253,7 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyOptions)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -544,10 +544,12 @@ static int LoadReportedFromJsonConfig(const char* jsonString)
     return g_numReportedProperties;
 }
 
-static char* GetProxyData()
+static char* GetHttpProxyData()
 {
     const char* proxyVariables[] = {
+        "http_proxy",
         "https_proxy",
+        "HTTP_PROXY",
         "HTTPS_PROXY"
     };
     int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
@@ -569,7 +571,7 @@ static char* GetProxyData()
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "Proxy data: %s", proxyData);
+                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
             }
             break;
         }
@@ -578,10 +580,188 @@ static char* GetProxyData()
     return proxyData;
 }
 
+static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
+{
+    const char httpPrefix[] = "http:/";
+    HTTP_PROXY_OPTIONS* proxyOptions = NULL;
+    char* credentialsSeparator = NULL;
+    char* firstColumn = NULL;
+    char* lastColumn = NULL;
+
+    char* hostAddress = NULL;
+    char* port = NULL;
+    char* username = NULL;
+    char* password = NULL;
+
+    int hostAddressLength = 0;
+    int portLength = 0;
+    int portNumber = 0;
+    int usernameLength = 0;
+    int passwordLength = 0;
+
+    if (NULL == proxyData)
+    {
+        return NULL;
+    }
+
+    // We accept the proxy date string to be one of the following formats:
+    // http://SERVER:PORT/
+    // http://USERNAME:PASSWORD@SERVER:PORT/
+    
+    if (0 == strncmp(proxyData, httpPrefix, strlen(httpPrefix)))
+    {
+        proxyData += strlen(httpPrefix);
+
+        firstColumn = strchr(proxyData, ':');
+        lastColumn = strrchr(proxyData, ':');
+        credentialsSeparator = strchr(proxyData, '@');
+
+        if (firstColumn)
+        {
+            firstColumn += 1;
+        }
+
+        if (lastColumn)
+        {
+            lastColumn += 1;
+        }
+
+        if (credentialsSeparator)
+        {
+            credentialsSeparator += 1;
+        }
+
+        if ((proxyData > firstColumn) ||
+            (firstColumn > lastColumn) ||
+            (credentialsSeparator && (firstColumn > credentialsSeparator)) ||
+            (credentialsSeparator && (credentialsSeparator > lastColumn)) ||
+            (credentialsSeparator && (firstColumn == lastColumn)) ||
+            (0 == strlen(lastColumn)))
+        {
+            LogErrorWithTelemetry(GetLog(), "Unsupported proxy data (%s) format", proxyData);
+        }
+        else
+        {
+            if (NULL != (proxyOptions = (HTTP_PROXY_OPTIONS*)malloc(sizeof(HTTP_PROXY_OPTIONS))))
+            {
+                if (credentialsSeparator) // USERNAME:PASSWORD@SERVER:PORT/
+                {
+                    usernameLength = (int)(firstColumn - proxyData - 1);
+                    if (usernameLength > 0)
+                    {
+                        if (NULL != (username = (char*)malloc(usernameLength + 1)))
+                        {
+                            strncpy(username, proxyData, usernameLength);
+                            username[usernameLength] = 0;
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
+                        }
+                    }
+
+                    passwordLength = (int)(credentialsSeparator - firstColumn - 1);
+                    if (passwordLength > 0)
+                    {
+                        if (NULL != (password = (char*)malloc(passwordLength + 1)))
+                        {
+                            strncpy(password, firstColumn, passwordLength);
+                            password[passwordLength] = 0;
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
+                        }
+                    }
+
+                    hostAddressLength = (int)(lastColumn - credentialsSeparator - 1);
+                    if (hostAddressLength > 0)
+                    {
+                        if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                        {
+                            strncpy(hostAddress, credentialsSeparator, hostAddressLength);
+                            hostAddress[hostAddressLength] = 0;
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                        }
+                    }
+
+                    portLength = (int)strlen(lastColumn);
+                    if (portLength > 0)
+                    {
+                        if (NULL != (port = (char*)malloc(portLength + 1)))
+                        {
+                            strncpy(port, lastColumn, hostAddressLength);
+                            portNumber = strtol(port, NULL, 10);
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                        }
+                    }
+                }
+                else // SERVER:PORT/
+                {
+                    hostAddressLength = (int)(firstColumn - proxyData - 1);
+                    if (hostAddressLength > 0)
+                    {
+                        if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                        {
+                            strncpy(hostAddress, proxyData, hostAddressLength);
+                            hostAddress[hostAddressLength] = 0;
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                        }
+                    }
+
+                    portLength = (int)strlen(firstColumn);
+                    if (portLength > 0)
+                    {
+                        if (NULL != (port = (char*)malloc(portLength + 1)))
+                        {
+                            strncpy(port, firstColumn, hostAddressLength);
+                            portNumber = strtol(port, NULL, 10);
+                        }
+                        else
+                        {
+                            LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                        }
+                    }
+                }
+
+                proxyOptions->host_address = hostAddress;
+                proxyOptions->port = portNumber;
+                proxyOptions->username = username;
+                proxyOptions->password = password;
+
+                OsConfigLogInfo(GetLog(), "Proxy host|address: %s (%d)", proxyOptions->host_address, hostAddressLength);
+                OsConfigLogInfo(GetLog(), "Proxy port: %d (%s, %d)", proxyOptions->port, port, portLength);
+                OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", proxyOptions->username, usernameLength);
+                OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", proxyOptions->password, passwordLength);
+            }
+            else
+            {
+                LogErrorWithTelemetry(GetLog(), "Cannot allocate memory for HTTP_PROXY_OPTIONS: %d", errno);
+            }
+        }
+    }
+    else
+    {
+        LogErrorWithTelemetry(GetLog(), "Unsupported proxy data (%s), no http prefix", proxyData);
+    }
+
+    return proxyOptions;
+}
+
 int main(int argc, char *argv[])
 {
     char* connectionString = NULL;
     char* jsonConfiguration = NULL;
+    char* proxyData = NULL;
     bool freeConnectionString = false;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
@@ -639,8 +819,13 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    // Read the proxy name if any from environment variables:
-    g_proxyData = GetProxyData();
+    // Read the proxy options from environment variables:
+    proxyData = GetHttpProxyData();
+    if (proxyData)
+    {
+        g_proxyOptions = ParseHttpProxyData(proxyData);
+        FREE_MEMORY(proxyData);
+    }
 
     if ((argc < 2) || ((2 == argc) && forkDaemon))
     {
@@ -722,7 +907,13 @@ done:
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(g_iotHubConnectionString);
-    FREE_MEMORY(g_proxyData);
+    /*if (g_proxyOptions)
+    {
+        FREE_MEMORY(g_proxyOptions->host_address);
+        FREE_MEMORY(g_proxyOptions->username);
+        FREE_MEMORY(g_proxyOptions->password);
+    }*/
+    FREE_MEMORY(g_proxyOptions);
     if (freeConnectionString)
     {
         FREE_MEMORY(connectionString);
@@ -752,7 +943,7 @@ int InitializeAgent(const char* connectionString)
     }
 
     // Initialize communication with the IoT Hub:
-    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
+    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyOptions)))
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
         g_exitState = IotHubInitializationFailure;
