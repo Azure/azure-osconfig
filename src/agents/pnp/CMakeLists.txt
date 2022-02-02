@@ -23,7 +23,8 @@ set(osconfig_files
     ./AisUtils.c
     ./MpiProxy.c
     ./PnpAgent.c
-    ./PnpUtils.c)
+    ./PnpUtils.c
+    ./ProxyUtils.c)
 
 set(target_name osconfig)
 
