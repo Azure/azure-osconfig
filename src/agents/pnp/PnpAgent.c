@@ -820,8 +820,7 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
     // Read the proxy options from environment variables:
-    proxyData = GetHttpProxyData();
-    if (proxyData)
+    if (NULL != (proxyData = GetHttpProxyData()))
     {
         g_proxyOptions = ParseHttpProxyData(proxyData);
         FREE_MEMORY(proxyData);
@@ -907,12 +906,6 @@ done:
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(g_iotHubConnectionString);
-    /*if (g_proxyOptions)
-    {
-        FREE_MEMORY(g_proxyOptions->host_address);
-        FREE_MEMORY(g_proxyOptions->username);
-        FREE_MEMORY(g_proxyOptions->password);
-    }*/
     FREE_MEMORY(g_proxyOptions);
     if (freeConnectionString)
     {
