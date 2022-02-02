@@ -24,7 +24,7 @@ namespace E2eTesting
         private string deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
         private readonly string moduleId = "osconfig";
         protected int twinTimeoutSeconds = 0;
-        private int twinTimeoutSecondsDefault = 45;
+        private int twinTimeoutSecondsDefault = 180;
         public readonly int twinRefreshIntervalMs = 2000;
 
         private ServiceClient _serviceClient;
@@ -155,7 +155,7 @@ namespace E2eTesting
 
             // If this is a new device (no reported properties will exist yet for that ComponentName)
             Console.WriteLine("[UpdateTwinBlockUntilUpdate] start:{0}", beforeUpdate);
-            while ( ((IsComponentNameReported(componentName) && (twin.Properties.Reported[componentName].GetLastUpdated() < beforeUpdate)) 
+            while ( ((IsComponentNameReported(componentName) && (twin.Properties.Reported[componentName].GetLastUpdated() < beforeUpdate))
                         || !IsComponentNameReported(componentName, false))
                      && ((DateTime.UtcNow - beforeUpdate).TotalSeconds < twinTimeoutSeconds))
             {
