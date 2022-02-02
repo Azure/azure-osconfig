@@ -1,9 +1,9 @@
 {
-  "name": "PackageManagerModel",
+  "name": "PackageManagerConfigurationModel",
   "type": "MimModel",
   "contents": [
     {
-      "name": "PackageManager",
+      "name": "PackageManagerConfiguration",
       "type": "MimComponent",
       "contents": [
         {
