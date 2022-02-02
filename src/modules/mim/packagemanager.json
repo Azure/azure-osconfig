@@ -1,9 +1,9 @@
 {
-  "name": "AptInstallModel",
+  "name": "PackageManagerModel",
   "type": "MimModel",
   "contents": [
     {
-      "name": "AptInstall",
+      "name": "PackageManager",
       "type": "MimComponent",
       "contents": [
         {
