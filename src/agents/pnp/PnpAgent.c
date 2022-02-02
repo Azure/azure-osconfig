@@ -604,9 +604,9 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
         return NULL;
     }
 
-    // We accept the proxy date string to be one of the following formats:
-    // http://SERVER:PORT/
-    // http://USERNAME:PASSWORD@SERVER:PORT/
+    // We accept the proxy data string to be one of two following formats:
+    // http://server:port
+    // http://username:password@server:port
     
     if (0 == strncmp(proxyData, httpPrefix, strlen(httpPrefix)))
     {
@@ -615,6 +615,8 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
         firstColumn = strchr(proxyData, ':');
         lastColumn = strrchr(proxyData, ':');
         credentialsSeparator = strchr(proxyData, '@');
+
+        // If found, bump over the first character that is the separator itself
 
         if (firstColumn)
         {
@@ -644,8 +646,9 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
         {
             if (NULL != (proxyOptions = (HTTP_PROXY_OPTIONS*)malloc(sizeof(HTTP_PROXY_OPTIONS))))
             {
-                if (credentialsSeparator) // USERNAME:PASSWORD@SERVER:PORT/
+                if (credentialsSeparator)
                 {
+                    //username:password@server:port
                     usernameLength = (int)(firstColumn - proxyData - 1);
                     if (usernameLength > 0)
                     {
@@ -702,8 +705,9 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
                         }
                     }
                 }
-                else // SERVER:PORT/
+                else
                 {
+                    //server:port
                     hostAddressLength = (int)(firstColumn - proxyData - 1);
                     if (hostAddressLength > 0)
                     {
@@ -743,6 +747,7 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
                 OsConfigLogInfo(GetLog(), "Proxy username: %s (%d)", proxyOptions->username, usernameLength);
                 OsConfigLogInfo(GetLog(), "Proxy password: %s (%d)", proxyOptions->password, passwordLength);
 
+                // Port is unused past this, can be freed; the rest must remain allocated
                 FREE_MEMORY(port);
             }
             else
@@ -753,7 +758,7 @@ static HTTP_PROXY_OPTIONS* ParseHttpProxyData(char* proxyData)
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "Unsupported proxy data (%s), no http prefix", proxyData);
+        LogErrorWithTelemetry(GetLog(), "Unsupported proxy data (%s), no 'http://' prefix", proxyData);
     }
 
     return proxyOptions;
