@@ -12,7 +12,7 @@ provider "azurerm" {
 
   subscription_id   = var.subscription_id
   tenant_id         = var.tenant_id
-  
+
   # Local testing - must create a SP and plumb id/secret below using scripts/create-sp-terraform.sh
   client_id         = var.client_id
   client_secret     = var.client_secret
@@ -188,8 +188,8 @@ resource "azurerm_dev_test_global_vm_shutdown_schedule" "vm_shutdown_schedule" {
   location           = "eastus"
   enabled            = true
 
-  // Shutdown 30-mins after creation time for cost savings
-  daily_recurrence_time = formatdate("hhmm", timeadd(timestamp(), "30m"))
+  // Shutdown 60-mins after creation time for cost savings
+  daily_recurrence_time = formatdate("hhmm", timeadd(timestamp(), "60m"))
   timezone              = "UTC"
 
   notification_settings {
