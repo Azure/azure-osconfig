@@ -463,13 +463,14 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
-bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
+bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
 {
     // We accept the proxy data string to be in one of two following formats:
     // "http://server:port"
     // "http://username:password@server:port"
 
     const char httpPrefix[] = "http://";
+    const char httpUppercasePrefix[] = "HTTP://";
 
     char* credentialsSeparator = NULL;
     char* firstColumn = NULL;
@@ -490,7 +491,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
 
     if ((NULL == proxyData) || (NULL == proxyHostAddress) || (NULL == proxyPort))
     {
-        LogErrorWithTelemetry(log, "ParseHttpProxyData called with invalid arguments");
+        OsConfigLogError(log, "ParseHttpProxyData called with invalid arguments");
         return NULL;
     }
 
@@ -509,11 +510,11 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
 
     if (strlen(proxyData) <= strlen(httpPrefix))
     {
-        LogErrorWithTelemetry(log, "Unsupported proxy data (%s), too short", proxyData);
+        OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
     }
-    else if (0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix)))
+    else if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) &&  (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
     {
-        LogErrorWithTelemetry(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
+        OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
     }
     else
     {
@@ -550,7 +551,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
             (1 >= strlen(lastColumn)) ||
             (1 >= strlen(firstColumn)))
         {
-            LogErrorWithTelemetry(log, "Unsupported proxy data (%s) format", proxyData);
+            OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
         }
         else
         {
@@ -568,7 +569,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
                         }
                     }
 
@@ -582,7 +583,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
                         }
                     }
 
@@ -596,7 +597,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
                         }
                     }
 
@@ -610,7 +611,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
                         }
                     }
                 }
@@ -627,7 +628,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
                         }
                     }
 
@@ -641,7 +642,7 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                         }
                         else
                         {
-                            LogErrorWithTelemetry(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
                         }
                     }
                 }
@@ -661,7 +662,10 @@ bool ParseHttpProxyData(char* proxyData, char** proxyHostAddress, int* proxyPort
                 OsConfigLogInfo(log, "Proxy password: %s (%d)", *proxyPassword, passwordLength);
 
                 // Port is unused past this, can be freed; the rest must remain allocated
-                FREE_MEMORY(port);
+                if (port)
+                {
+                    free(port);
+                }
 
                 result = true;
             }

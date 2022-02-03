@@ -6,7 +6,6 @@
 #include "inc/MpiProxy.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
-#include "inc/ProxyUtils.h"
 
 // TraceLogging Provider UUID: CF452C24-662B-4CC5-9726-5EFE827DB281
 TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
@@ -650,7 +649,7 @@ int main(int argc, char *argv[])
     // Read the proxy options from environment variables, parse it and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
     if (NULL != (proxyData = GetHttpProxyData()))
     {
-        if (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
+        if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
         {
             // Assign the string pointers and trasfer ownership to the SDK to be freed when done
             g_proxyOptions.host_address = proxyHostAddress;

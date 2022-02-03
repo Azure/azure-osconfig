@@ -616,16 +616,15 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
 
 struct HttpProxyOptions
 {
-    char* data;
-    char* hostAdddress;
+    const char* data;
+    const char* hostAddress;
     int port;
-    char* username;
-    char* password;
+    const char* username;
+    const char* password;
 };
 
 TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
 {
-    char* proxyData = NULL;
     char* hostAddress = NULL;
     int port = 0;
     char* username = NULL;
@@ -638,18 +637,25 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "http://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
         { "http://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
         { "http://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
-        { "http://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" }
+        { "http://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://wwww.foo.org:123", "wwww.foo.org", 123, nullptr, nullptr },
+        { "HTTP://11.22.33.44:123", "11.22.33.44", 123, nullptr, nullptr },
+        { "HTTP://user:password@wwww.foo.org:123", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
+        { "HTTP://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
+        { "HTTP://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
 
-    char badOptions[] = {
+    const char* badOptions[] = {
         "//wwww.foo.org:123",
         "https://wwww.foo.org:123",
         "11.22.22.44:123",
         "//wwww.foo.org:123@@",
         "user:password@wwww.foo.org:123/",
-        "http://user:password@@wwww.foo.org:123/",
+        "HTTPS://user:password@wwww.foo.org:123",
         "some text",
         "123"
     };
@@ -680,7 +686,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         }
     }
 
-    for (i = 0; i < badOptionsSize; i++)
+    for (int i = 0; i < badOptionsSize; i++)
     {
         EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
 
