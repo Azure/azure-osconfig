@@ -470,10 +470,15 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     // "http://server:port"
     // "http://username:password@server:port"
     //
-    // ..where the prefix can be either lowercase "http" or uppercase "HTTP"
+    // ..where the prefix must be either lowercase "http" or uppercase "HTTP"
 
     const char httpPrefix[] = "http://";
     const char httpUppercasePrefix[] = "HTTP://";
+
+    int proxyDataLength = 0;
+    bool isBadAlphaNum = false;
+    int credentialsSeparatorCounter = 0;
+    int columnCounter = 0;
 
     char* credentialsSeparator = NULL;
     char* firstColumn = NULL;
@@ -490,6 +495,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     int usernameLength = 0;
     int passwordLength = 0;
 
+    int i = 0;
+
     bool result = false;
 
     if ((NULL == proxyData) || (NULL == proxyHostAddress) || (NULL == proxyPort))
@@ -497,6 +504,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         OsConfigLogError(log, "ParseHttpProxyData called with invalid arguments");
         return NULL;
     }
+
+    // Initialize output arguments
 
     *proxyHostAddress = NULL;
     *proxyPort = 0;
@@ -509,6 +518,69 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     if (proxyPassword)
     {
         *proxyPassword = NULL;
+    }
+
+    // Check for invalid characters and if any found then immediatly fail
+
+    proxyDataLength = strlen(proxyData);
+    for (i = 0; i < proxyDataLength; i++)
+    {
+        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || (isalnum(proxyData[i])))
+        {
+            continue;
+        }
+        else if ('@' == proxyData[i])
+        {
+            // not valid as first character
+            if (0 == i)
+            {
+                OsConfigLogError(log, "Unsupported proxy data (%s), invalid '@' prefix", proxyData);
+                isBadAlphaNum = true;
+                break;
+            }
+            // '\@' can be used to insert '@' characters in username or password
+            else if ((i > 0) && ('\\' != proxyData[i - 1]))
+            {
+                if (NULL == credentialsSeparator)
+                {
+                    credentialsSeparator = &proxyData[i];
+                }
+                credentialsSeparatorCounter += 1;
+                if (credentialsSeparatorCounter > 1)
+                {
+                    OsConfigLogError(log, "Unsupported proxy data (%s), too many '@' characters", proxyData);
+                    isBadAlphaNum = true;
+                    break;
+                }
+            }
+        }
+        else if (':' == proxyData[i])
+        {
+            columCounter += 1;
+            if (columnCounter > 2)
+            {
+                OsConfigLogError(log, "Unsupported proxy data (%s), too many ':' characters", proxyData);
+                isBadAlphaNum = true;
+                break;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData[i], i);
+            isBadAlphaNum = true;
+            break;
+        }
+    }
+
+    if ((0 == columnCounter) && (false == isBadAlphaNum))
+    {
+        OsConfigLogError(log, "Unsupported proxy data (%s), missing ':'");
+        isBadAlphaNum = true;
+    }
+
+    if (isBadAlphaNum)
+    {
+        return NULL;
     }
 
     if (strlen(proxyData) <= strlen(httpPrefix))
@@ -525,7 +597,12 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
         firstColumn = strchr(proxyData, ':');
         lastColumn = strrchr(proxyData, ':');
-        credentialsSeparator = strchr(proxyData, '@');
+        
+        // If the '@' credentials separator is not already found, try the first one if any
+        if (NULL == credentialsSeparator)
+        {
+            credentialsSeparator = strchr(proxyData, '@');
+        }
 
         // If found, bump over the first character that is the separator itself
 
