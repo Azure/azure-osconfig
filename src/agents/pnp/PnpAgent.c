@@ -646,7 +646,7 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    // Read the proxy options from environment variables, parse it and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
+    // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
     if (NULL != (proxyData = GetHttpProxyData()))
     {
         if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
