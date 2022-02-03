@@ -101,8 +101,8 @@ static bool g_iotHubConnectionStringFromAis = false;
 static char* g_x509Certificate = NULL;
 static char* g_x509PrivateKeyHandle = NULL;
 
-// HTTP proxy name read from environment variable
-static char* g_proxyData = NULL;
+// HTTP proxy options read from environment variables
+static HTTP_PROXY_OPTIONS g_proxyOptions = {0};
 
 MPI_HANDLE g_mpiHandle = NULL;
 static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
@@ -253,7 +253,7 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -544,10 +544,12 @@ static int LoadReportedFromJsonConfig(const char* jsonString)
     return g_numReportedProperties;
 }
 
-static char* GetProxyData()
+static char* GetHttpProxyData()
 {
     const char* proxyVariables[] = {
+        "http_proxy",
         "https_proxy",
+        "HTTP_PROXY",
         "HTTPS_PROXY"
     };
     int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
@@ -565,11 +567,11 @@ static char* GetProxyData()
             proxyData = strdup(environmentVariable);
             if (NULL == proxyData)
             {
-                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of proxy data (%s): %d", environmentVariable, errno);
+                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "Proxy data: %s", proxyData);
+                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], IsFullLoggingEnabled() ? proxyData : "***");
             }
             break;
         }
@@ -582,6 +584,11 @@ int main(int argc, char *argv[])
 {
     char* connectionString = NULL;
     char* jsonConfiguration = NULL;
+    char* proxyData = NULL;
+    char* proxyHostAddress = NULL;
+    int proxyPort = 0;
+    char* proxyUsername = NULL;
+    char* proxyPassword = NULL;
     bool freeConnectionString = false;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
@@ -639,8 +646,20 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    // Read the proxy name if any from environment variables:
-    g_proxyData = GetProxyData();
+    // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
+    if (NULL != (proxyData = GetHttpProxyData()))
+    {
+        if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
+        {
+            // Assign the string pointers and trasfer ownership to the SDK to be freed when done
+            g_proxyOptions.host_address = proxyHostAddress;
+            g_proxyOptions.port = proxyPort;
+            g_proxyOptions.username = proxyUsername;
+            g_proxyOptions.password = proxyPassword;
+
+            FREE_MEMORY(proxyData);
+        }
+    }
 
     if ((argc < 2) || ((2 == argc) && forkDaemon))
     {
@@ -722,7 +741,6 @@ done:
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(g_iotHubConnectionString);
-    FREE_MEMORY(g_proxyData);
     if (freeConnectionString)
     {
         FREE_MEMORY(connectionString);
@@ -752,7 +770,7 @@ int InitializeAgent(const char* connectionString)
     }
 
     // Initialize communication with the IoT Hub:
-    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, g_proxyData)))
+    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
         g_exitState = IotHubInitializationFailure;

@@ -351,7 +351,7 @@ static bool IotHubSetOption(const char* optionName, const void* value)
     }
 }
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, const char* x509Certificate, const char* x509PrivateKeyHandle, const char* proxyData)
+IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, const char* x509Certificate, const char* x509PrivateKeyHandle, const HTTP_PROXY_OPTIONS* proxyOptions)
 {
     IOTHUB_CLIENT_RESULT iothubResult = IOTHUB_CLIENT_OK;
 
@@ -394,9 +394,9 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
                 IotHubSetOption(OPTION_X509_PRIVATE_KEY, x509PrivateKeyHandle);
             }
 
-            if (NULL != proxyData)
+            if ((NULL != proxyOptions) && (NULL != proxyOptions->host_address))
             {
-                IotHubSetOption(OPTION_HTTP_PROXY, proxyData);
+                IotHubSetOption(OPTION_HTTP_PROXY, proxyOptions);
             }
 
             if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetDeviceTwinCallback(g_moduleHandle, ModuleTwinCallback, (void*)g_moduleHandle)))
