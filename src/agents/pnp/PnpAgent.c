@@ -567,11 +567,11 @@ static char* GetHttpProxyData()
             proxyData = strdup(environmentVariable);
             if (NULL == proxyData)
             {
-                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of proxy data (%s): %d", environmentVariable, errno);
+                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
+                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], IsFullLoggingEnabled() ? proxyData : "***");
             }
             break;
         }

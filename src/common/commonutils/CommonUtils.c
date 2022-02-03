@@ -466,8 +466,11 @@ bool FileExists(const char* name)
 bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
 {
     // We accept the proxy data string to be in one of two following formats:
+    //
     // "http://server:port"
     // "http://username:password@server:port"
+    //
+    // ..where the prefix can be either lowercase "http" or uppercase "HTTP"
 
     const char httpPrefix[] = "http://";
     const char httpUppercasePrefix[] = "HTTP://";
@@ -512,7 +515,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     {
         OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
     }
-    else if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) &&  (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
+    else if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) && (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
     {
         OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
     }
@@ -656,10 +659,10 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     *proxyPassword = password;
                 }
 
-                OsConfigLogInfo(log, "Proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-                OsConfigLogInfo(log, "Proxy port: %d (%s, %d)", *proxyPort, port, portLength);
-                OsConfigLogInfo(log, "Proxy username: %s (%d)", *proxyUsername, usernameLength);
-                OsConfigLogInfo(log, "Proxy password: %s (%d)", *proxyPassword, passwordLength);
+                OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+                OsConfigLogInfo(log, "HTTP proxy port: %d (%s, %d)", *proxyPort, port, portLength);
+                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", IsFullLoggingEnabled() ? (*password) : "***", passwordLength);
 
                 // Port is unused past this, can be freed; the rest must remain allocated
                 if (port)
