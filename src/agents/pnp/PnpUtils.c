@@ -394,7 +394,7 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
                 IotHubSetOption(OPTION_X509_PRIVATE_KEY, x509PrivateKeyHandle);
             }
 
-            if (NULL != proxyOptions)
+            if ((NULL != proxyOptions) && (NULL != proxyOptions->host_address))
             {
                 IotHubSetOption(OPTION_HTTP_PROXY, proxyOptions);
             }
