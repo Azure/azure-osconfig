@@ -38,6 +38,8 @@ bool IsValidClientName(const char* name);
 
 bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log);
 
+bool ParseHttpProxyData(char* proxyData, char** hostAddress, int* port, char**username, char** password, void* log);
+
 #ifdef __cplusplus
 }
 #endif

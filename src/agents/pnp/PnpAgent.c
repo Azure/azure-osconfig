@@ -545,6 +545,42 @@ static int LoadReportedFromJsonConfig(const char* jsonString)
     return g_numReportedProperties;
 }
 
+static char* GetHttpProxyData()
+{
+    const char* proxyVariables[] = {
+        "http_proxy",
+        "https_proxy",
+        "HTTP_PROXY",
+        "HTTPS_PROXY"
+    };
+    int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
+
+    char* proxyData = NULL;
+    char* environmentVariable = NULL;
+    int i = 0;
+
+    for (i = 0; i < proxyVariablesSize; i++)
+    {
+        environmentVariable = getenv(proxyVariables[i]);
+        if (NULL != environmentVariable)
+        {
+            // The environment variable string must be treated as read-only, make a copy for our use:
+            proxyData = strdup(environmentVariable);
+            if (NULL == proxyData)
+            {
+                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of proxy data (%s): %d", environmentVariable, errno);
+            }
+            else
+            {
+                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
+            }
+            break;
+        }
+    }
+
+    return proxyData;
+}
+
 int main(int argc, char *argv[])
 {
     char* connectionString = NULL;
@@ -611,10 +647,10 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    // Read the proxy options from environment variables:
+    // Read the proxy options from environment variables, parse it and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
     if (NULL != (proxyData = GetHttpProxyData()))
     {
-        if (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword))
+        if (ParseHttpProxyData(proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
         {
             // Assign the string pointers and trasfer ownership to the SDK to be freed when done
             g_proxyOptions.host_address = proxyHostAddress;
