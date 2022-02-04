@@ -651,7 +651,7 @@ int main(int argc, char *argv[])
     {
         if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
         {
-            // Assign the string pointers and trasfer ownership to the SDK to be freed when done
+            // Assign the string pointers and trasfer ownership to the SDK
             g_proxyOptions.host_address = proxyHostAddress;
             g_proxyOptions.port = proxyPort;
             g_proxyOptions.username = proxyUsername;
@@ -749,6 +749,23 @@ done:
     CloseAgent();
     CloseTraceLogging();
     CloseLog(&g_agentLog);
+
+    // Once the SDK is done, we can free these
+
+    if (g_proxyOptions.host_address)
+    {
+        free((void *)g_proxyOptions.host_address);
+    }
+
+    if (g_proxyOptions.username)
+    {
+        free((void *)g_proxyOptions.username);
+    }
+
+    if (g_proxyOptions.password)
+    {
+        free((void *)g_proxyOptions.password);
+    }
 
     return 0;
 }

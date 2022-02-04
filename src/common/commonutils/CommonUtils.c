@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <Logging.h>
 #include <CommonUtils.h>
 
@@ -463,6 +464,27 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+static void RemoveProxyStringEscaping(char* value)
+{
+    int i = 0;
+    int j = 0;
+    
+    int length = strlen(value);
+
+    for (i = 0; i < length - 1; i++)
+    {
+        if (('\\' == value[i]) && ('@' == value[i + 1]))
+        {
+            for (j = i; j < length - 1; j++)
+            {
+                value[j] = value[j + 1];
+            }
+            length -= 1;
+            value[length] = 0;
+        }
+    }
+}
+
 bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
 {
     // We accept the proxy data string to be in one of two following formats:
@@ -471,6 +493,11 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     // "http://username:password@server:port"
     //
     // ..where the prefix must be either lowercase "http" or uppercase "HTTP"
+    // ..and username and password can contain '@' characters escaled as "\\@"
+    //
+    // For example:
+    //
+    // "http://username\\@mail.foo:p\\@ssw\\@rd@server:port" where username is "username@mail.foo" and password is "p@ssw@rd"
 
     const char httpPrefix[] = "http://";
     const char httpUppercasePrefix[] = "HTTP://";
@@ -520,9 +547,21 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         *proxyPassword = NULL;
     }
 
-    // Check for invalid characters and if any found then immediatly fail
+    // Check for required prefix and invalid characters and if any found then immediatly fail
 
     proxyDataLength = strlen(proxyData);
+    if (proxyDataLength <= strlen(httpPrefix))
+    {
+        OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
+        return NULL;
+    }
+
+    if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) && (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
+    {
+        OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
+        return NULL;
+    }
+    
     for (i = 0; i < proxyDataLength; i++)
     {
         if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || (isalnum(proxyData[i])))
@@ -543,7 +582,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             {
                 if (NULL == credentialsSeparator)
                 {
-                    credentialsSeparator = &proxyData[i];
+                    credentialsSeparator = (char*)&proxyData[i];
                 }
                 credentialsSeparatorCounter += 1;
                 if (credentialsSeparatorCounter > 1)
@@ -556,8 +595,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         }
         else if (':' == proxyData[i])
         {
-            columCounter += 1;
-            if (columnCounter > 2)
+            columnCounter += 1;
+            if (columnCounter > 3)
             {
                 OsConfigLogError(log, "Unsupported proxy data (%s), too many ':' characters", proxyData);
                 isBadAlphaNum = true;
@@ -566,7 +605,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         }
         else
         {
-            OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData[i], i);
+            OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData, proxyData[i], i);
             isBadAlphaNum = true;
             break;
         }
@@ -574,7 +613,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
     if ((0 == columnCounter) && (false == isBadAlphaNum))
     {
-        OsConfigLogError(log, "Unsupported proxy data (%s), missing ':'");
+        OsConfigLogError(log, "Unsupported proxy data (%s), missing ':'", proxyData);
         isBadAlphaNum = true;
     }
 
@@ -582,173 +621,168 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     {
         return NULL;
     }
+    
+    proxyData += strlen(httpPrefix);
 
-    if (strlen(proxyData) <= strlen(httpPrefix))
+    firstColumn = strchr(proxyData, ':');
+    lastColumn = strrchr(proxyData, ':');
+    
+    // If the '@' credentials separator is not already found, try the first one if any
+    if (NULL == credentialsSeparator)
     {
-        OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
+        credentialsSeparator = strchr(proxyData, '@');
     }
-    else if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) && (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
+
+    // If found, bump over the first character that is the separator itself
+
+    if (firstColumn && (strlen(firstColumn) > 0))
     {
-        OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
+        firstColumn += 1;
+    }
+
+    if (lastColumn && (strlen(lastColumn) > 0))
+    {
+        lastColumn += 1;
+    }
+
+    if (credentialsSeparator && (strlen(credentialsSeparator) > 0))
+    {
+        credentialsSeparator += 1;
+    }
+
+    if ((proxyData >= firstColumn) ||
+        (firstColumn > lastColumn) ||
+        (credentialsSeparator && (firstColumn >= credentialsSeparator)) ||
+        (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
+        (credentialsSeparator && (firstColumn == lastColumn)) ||
+        (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
+        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) >= strlen(proxyData)) ||
+        (1 >= strlen(lastColumn)) ||
+        (1 >= strlen(firstColumn)))
+    {
+        OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
     }
     else
     {
-        proxyData += strlen(httpPrefix);
-
-        firstColumn = strchr(proxyData, ':');
-        lastColumn = strrchr(proxyData, ':');
-        
-        // If the '@' credentials separator is not already found, try the first one if any
-        if (NULL == credentialsSeparator)
         {
-            credentialsSeparator = strchr(proxyData, '@');
-        }
-
-        // If found, bump over the first character that is the separator itself
-
-        if (firstColumn && (strlen(firstColumn) > 0))
-        {
-            firstColumn += 1;
-        }
-
-        if (lastColumn && (strlen(lastColumn) > 0))
-        {
-            lastColumn += 1;
-        }
-
-        if (credentialsSeparator && (strlen(credentialsSeparator) > 0))
-        {
-            credentialsSeparator += 1;
-        }
-
-        if ((proxyData >= firstColumn) ||
-            (firstColumn > lastColumn) ||
-            (credentialsSeparator && (firstColumn >= credentialsSeparator)) ||
-            (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
-            (credentialsSeparator && (firstColumn == lastColumn)) ||
-            (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
-            ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) >= strlen(proxyData)) ||
-            (1 >= strlen(lastColumn)) ||
-            (1 >= strlen(firstColumn)))
-        {
-            OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
-        }
-        else
-        {
+            if (credentialsSeparator)
             {
-                if (credentialsSeparator)
+                // username:password@server:port
+                usernameLength = (int)(firstColumn - proxyData - 1);
+                if (usernameLength > 0)
                 {
-                    // username:password@server:port
-                    usernameLength = (int)(firstColumn - proxyData - 1);
-                    if (usernameLength > 0)
+                    if (NULL != (username = (char*)malloc(usernameLength + 1)))
                     {
-                        if (NULL != (username = (char*)malloc(usernameLength + 1)))
-                        {
-                            strncpy(username, proxyData, usernameLength);
-                            username[usernameLength] = 0;
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
-                        }
-                    }
+                        strncpy(username, proxyData, usernameLength);
+                        username[usernameLength] = 0;
 
-                    passwordLength = (int)(credentialsSeparator - firstColumn - 1);
-                    if (passwordLength > 0)
-                    {
-                        if (NULL != (password = (char*)malloc(passwordLength + 1)))
-                        {
-                            strncpy(password, firstColumn, passwordLength);
-                            password[passwordLength] = 0;
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
-                        }
+                        RemoveProxyStringEscaping(username);
+                        usernameLength = strlen(username);
                     }
-
-                    hostAddressLength = (int)(lastColumn - credentialsSeparator - 1);
-                    if (hostAddressLength > 0)
+                    else
                     {
-                        if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
-                        {
-                            strncpy(hostAddress, credentialsSeparator, hostAddressLength);
-                            hostAddress[hostAddressLength] = 0;
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
-                        }
-                    }
-
-                    portLength = (int)strlen(lastColumn);
-                    if (portLength > 0)
-                    {
-                        if (NULL != (port = (char*)malloc(portLength + 1)))
-                        {
-                            strncpy(port, lastColumn, hostAddressLength);
-                            portNumber = strtol(port, NULL, 10);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
-                        }
-                    }
-                }
-                else
-                {
-                    // server:port
-                    hostAddressLength = (int)(firstColumn - proxyData - 1);
-                    if (hostAddressLength > 0)
-                    {
-                        if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
-                        {
-                            strncpy(hostAddress, proxyData, hostAddressLength);
-                            hostAddress[hostAddressLength] = 0;
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
-                        }
-                    }
-
-                    portLength = (int)strlen(firstColumn);
-                    if (portLength > 0)
-                    {
-                        if (NULL != (port = (char*)malloc(portLength + 1)))
-                        {
-                            strncpy(port, firstColumn, hostAddressLength);
-                            portNumber = strtol(port, NULL, 10);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
-                        }
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.username: %d", errno);
                     }
                 }
 
-                *proxyHostAddress = hostAddress;
-                *proxyPort = portNumber;
-
-                if ((NULL != proxyUsername) && (NULL != proxyPassword))
+                passwordLength = (int)(credentialsSeparator - firstColumn - 1);
+                if (passwordLength > 0)
                 {
-                    *proxyUsername = username;
-                    *proxyPassword = password;
+                    if (NULL != (password = (char*)malloc(passwordLength + 1)))
+                    {
+                        strncpy(password, firstColumn, passwordLength);
+                        password[passwordLength] = 0;
+
+                        RemoveProxyStringEscaping(password);
+                        passwordLength = strlen(password);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.password: %d", errno);
+                    }
                 }
 
-                OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-                OsConfigLogInfo(log, "HTTP proxy port: %d (%s, %d)", *proxyPort, port, portLength);
-                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", (IsFullLoggingEnabled() ? (*proxyPassword) : "***"), passwordLength);
-
-                // Port is unused past this, can be freed; the rest must remain allocated
-                if (port)
+                hostAddressLength = (int)(lastColumn - credentialsSeparator - 1);
+                if (hostAddressLength > 0)
                 {
-                    free(port);
+                    if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                    {
+                        strncpy(hostAddress, credentialsSeparator, hostAddressLength);
+                        hostAddress[hostAddressLength] = 0;
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                    }
                 }
 
-                result = true;
+                portLength = (int)strlen(lastColumn);
+                if (portLength > 0)
+                {
+                    if (NULL != (port = (char*)malloc(portLength + 1)))
+                    {
+                        strncpy(port, lastColumn, hostAddressLength);
+                        portNumber = strtol(port, NULL, 10);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                    }
+                }
             }
+            else
+            {
+                // server:port
+                hostAddressLength = (int)(firstColumn - proxyData - 1);
+                if (hostAddressLength > 0)
+                {
+                    if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
+                    {
+                        strncpy(hostAddress, proxyData, hostAddressLength);
+                        hostAddress[hostAddressLength] = 0;
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.host_address: %d", errno);
+                    }
+                }
+
+                portLength = (int)strlen(firstColumn);
+                if (portLength > 0)
+                {
+                    if (NULL != (port = (char*)malloc(portLength + 1)))
+                    {
+                        strncpy(port, firstColumn, hostAddressLength);
+                        portNumber = strtol(port, NULL, 10);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "Cannot allocate memory for HTTP_PROXY_OPTIONS.port string copy: %d", errno);
+                    }
+                }
+            }
+
+            *proxyHostAddress = hostAddress;
+            *proxyPort = portNumber;
+
+            if ((NULL != proxyUsername) && (NULL != proxyPassword))
+            {
+                *proxyUsername = username;
+                *proxyPassword = password;
+            }
+
+            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+            OsConfigLogInfo(log, "HTTP proxy port: %d (%s, %d)", *proxyPort, port, portLength);
+            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", (IsFullLoggingEnabled() ? (*proxyPassword) : "***"), passwordLength);
+
+            // Port is unused past this, can be freed; the rest must remain allocated
+            if (port)
+            {
+                free(port);
+            }
+
+            result = true;
         }
     }
 

@@ -662,6 +662,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "user:password@wwww.foo.org:123/",
         "HTTPS://user:password@wwww.foo.org:123",
         "some text",
+        "http://some text",
         "123",
         "http://abc"
         "HTTP://user:pass#word@wwww.foo.org:123//",
@@ -673,7 +674,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "http://wwww.fo$o.org:123",
         "http://wwww.fo%o.org:123",
         "http://wwww.&oo.org:123",
-        "http://wwww.foo.org:abc",
+        "http://wwww.foo?org:abc",
         "http://www*.foo.org:abc",
         "http://user:(password)@wwww.foo.org:123",
         "http://user:pass+word@wwww.foo.org:123",
