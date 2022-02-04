@@ -634,7 +634,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "http://wwww.foo.org:123", "wwww.foo.org", 123, nullptr, nullptr },
         { "http://11.22.33.44:123", "11.22.33.44", 123, nullptr, nullptr },
         { "http://user:password@wwww.foo.org:123", "wwww.foo.org", 123, "user", "password" },
-        { "http://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
+        { "http://user:password@11.22.33.44:123", "11.22.33.44", 123, "user", "password" },
         { "http://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
         { "http://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
         { "http://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" },
@@ -644,7 +644,12 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "HTTP://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
         { "HTTP://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
         { "HTTP://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
-        { "HTTP://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" }
+        { "HTTP://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user\\@foomail.org:passw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "user@foomail.org", "passw@rd" },
+        { "http://user\\@blah:p\\@\\@ssword@11.22.33.44.55:123", "11.22.33.44.55", 123, "user@blah", "p@@ssword" },
+        { "HTTP://foo_domain\\username:p\\@ssw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "foo_domain\\username", "p@ssw@rd" },
+        { "http://proxyuser:password@10.0.0.2:8080", "10.0.0.2", 8080, "proxyuser", "password" },
+        { "http://10.0.0.2:8080", "10.0.0.2", 8080, nullptr, nullptr }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
@@ -657,7 +662,30 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "user:password@wwww.foo.org:123/",
         "HTTPS://user:password@wwww.foo.org:123",
         "some text",
-        "123"
+        "http://some text",
+        "123",
+        "http://abc"
+        "HTTP://user:pass#word@wwww.foo.org:123//",
+        "http://us$er:pass#word@wwww.foo.org:123",
+        "http://wwww.foo!.org:123",
+        "http://a`:1",
+        "@//wwww.foo.org:123",
+        "http://wwww.^foo.org:123",
+        "http://wwww.fo$o.org:123",
+        "http://wwww.fo%o.org:123",
+        "http://wwww.&oo.org:123",
+        "http://wwww.foo?org:abc",
+        "http://www*.foo.org:abc",
+        "http://user:(password)@wwww.foo.org:123",
+        "http://user:pass+word@wwww.foo.org:123",
+        "http://user:pass=word@wwww.foo.org:123",
+        "http://user:[password]@wwww.foo.org:123",
+        "http://user:{password}@wwww.foo.org:123",
+        "http://wwww.;foo.org:123",
+        "HTTP://user@foomail.org:password@wwww.foo.org:123",
+        "http://user:<password>@wwww.foo.org:123",
+        "http://user:pass,word@wwww.foo.org:123",
+        "http://user:pass|word@wwww.foo.org:123"
     };
 
     int badOptionsSize = ARRAY_SIZE(badOptions);
