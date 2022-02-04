@@ -5,13 +5,13 @@
 #include <vector>
 
 #include <Mmi.h>
-#include <AptInstall.h>
+#include <PackageManagerConfiguration.h>
 
-class AptInstallTests : public AptInstallBase
+class PackageManagerConfigurationTests : public PackageManagerConfigurationBase
 {
 public:
-    AptInstallTests(const std::map<std::string, std::string> &textResults, unsigned int maxPayloadSizeBytes);
-    ~AptInstallTests() = default;
+    PackageManagerConfigurationTests(const std::map<std::string, std::string> &textResults, unsigned int maxPayloadSizeBytes);
+    ~PackageManagerConfigurationTests() = default;
     int RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds) override;
 
 
@@ -19,12 +19,12 @@ private:
     const std::map<std::string, std::string> &m_textResults;
 };
 
-AptInstallTests::AptInstallTests(const std::map<std::string, std::string> &textResults, unsigned int maxPayloadSizeBytes)
-    : AptInstallBase(maxPayloadSizeBytes), m_textResults(textResults)
+PackageManagerConfigurationTests::PackageManagerConfigurationTests(const std::map<std::string, std::string> &textResults, unsigned int maxPayloadSizeBytes)
+    : PackageManagerConfigurationBase(maxPayloadSizeBytes), m_textResults(textResults)
 {
 }
 
-int AptInstallTests::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
+int PackageManagerConfigurationTests::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
 {
     UNUSED(replaceEol);
     UNUSED(timeoutSeconds);
@@ -44,12 +44,12 @@ int AptInstallTests::RunCommand(const char* command, bool replaceEol, std::strin
 namespace OSConfig::Platform::Tests
 {   
     constexpr const unsigned int g_maxPayloadSizeBytes = 4000;
-    static char validJsonPayload[] = "{\"Packages\":[\"cowsay=3.03+dfsg2-7 sl\", \"bar-\"]}";
-    static const char* componentName = "AptInstall";
-    static const char* desiredObjectName = "DesiredPackages";
+    static char validJsonPayload[] = "{\"Packages\":[\"cowsay=3.03+dfsg2-7 sl\", \"bar-\"], \"Sources\":{\"key\":\"value\"}}";
+    static const char* componentName = "PackageManagerConfiguration";
+    static const char* desiredObjectName = "DesiredState";
     static const char* reportedObjectName = "State";
 
-    TEST(AptInstallTests, ValidSet)
+    TEST(PackageManagerConfigurationTests, ValidSet)
     {
         const std::map<std::string, std::string> textResults =
         {
@@ -58,23 +58,23 @@ namespace OSConfig::Platform::Tests
             {"sudo apt-get install bar- -y --allow-downgrades --auto-remove", ""},
         };
 
-        AptInstallTests testModule(textResults, g_maxPayloadSizeBytes);
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
     }
 
-    TEST(AptInstallTests, ValidGetInitialValues)
+    TEST(PackageManagerConfigurationTests, ValidGetInitialValues)
     {
         const std::map<std::string, std::string> textResults =
         {
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{},\"ExecutionState\":0}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{},\"ExecutionState\":0,\"SourcesFingerprint\":{}}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        AptInstallTests testModule(textResults, g_maxPayloadSizeBytes);
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, MMI_OK);
 
@@ -82,7 +82,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
     }
 
-    TEST(AptInstallTests, ValidSetGet)
+    TEST(PackageManagerConfigurationTests, ValidSetGet)
     {
         const std::map<std::string, std::string> textResults =
         {
@@ -94,13 +94,13 @@ namespace OSConfig::Platform::Tests
             {"apt-cache policy sl | grep Installed", "  Installed: 5.02-1 "},
             {"apt-cache policy bar | grep Installed", "  Installed: (none) "}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"3.03+dfsg2-7\",\"sl\":\"5.02-1\"},\"ExecutionState\":2}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"3.03+dfsg2-7\",\"sl\":\"5.02-1\"},\"ExecutionState\":2,\"SourcesFingerprint\":{}}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
         int status;
-        AptInstallTests testModule(textResults, g_maxPayloadSizeBytes);
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
         status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
 
@@ -111,13 +111,29 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
     }
 
-    TEST(AptInstallTests, InvalidComponentObjectName)
+    TEST(PackageManagerConfigurationTests, SetInvalidComponentObjectName)
     {
         const std::map<std::string, std::string> textResults =
         {
             {"sudo apt-get update", ""},
             {"sudo apt-get install cowsay sl -y --allow-downgrades --auto-remove", ""},
-            {"sudo apt-get install bar -y --allow-downgrades --auto-remove", ""},
+            {"sudo apt-get install bar -y --allow-downgrades --auto-remove", ""}
+        };
+        std::string invalidName = "invalid";
+
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
+        int status;
+        
+        status = testModule.Set(invalidName.c_str(), desiredObjectName, validJsonPayload, strlen(validJsonPayload));
+        EXPECT_EQ(status, EINVAL);
+        status = testModule.Set(componentName, invalidName.c_str(), validJsonPayload, strlen(validJsonPayload));
+        EXPECT_EQ(status, EINVAL);
+    }
+    
+    TEST(PackageManagerConfigurationTests, GetInvalidComponentObjectName)
+    {
+        const std::map<std::string, std::string> textResults =
+        {
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25beefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
         };
         std::string invalidName = "invalid";
@@ -125,21 +141,16 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        AptInstallTests testModule(textResults, g_maxPayloadSizeBytes);
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
         int status;
-        
-        status = testModule.Set(invalidName.c_str(), desiredObjectName, validJsonPayload, strlen(validJsonPayload));
-        EXPECT_EQ(status, EINVAL);
-        status = testModule.Set(componentName, invalidName.c_str(), validJsonPayload, strlen(validJsonPayload));
-        EXPECT_EQ(status, EINVAL);
-
+       
         status = testModule.Get(invalidName.c_str(), reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, EINVAL);
         status = testModule.Get(componentName, invalidName.c_str(), &payload, &payloadSizeBytes);
         EXPECT_EQ(status, EINVAL);
     }
 
-    TEST(AptInstallTests, SetInvalidPayloadString)
+    TEST(PackageManagerConfigurationTests, SetInvalidPayloadString)
     {
         const std::map<std::string, std::string> textResults =
         {
@@ -148,8 +159,8 @@ namespace OSConfig::Platform::Tests
             {"sudo apt-get install bar -y --allow-downgrades --auto-remove", ""},
         };
 
-        char invalidPayload[] = "C++ AptInstall Module";
-        AptInstallTests testModule(textResults, g_maxPayloadSizeBytes);
+        char invalidPayload[] = "C++ PackageManagerConfiguration Module";
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes);
 
         //test invalid length
         int status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload)-1); 

@@ -3,25 +3,25 @@
 
 cmake_minimum_required(VERSION 3.2)
 set (CMAKE_CXX_STANDARD 11)
-project(aptinstall)
+project(packagemanagerconfiguration)
 
-add_library(aptinstall SHARED AptInstallModule.cpp)
-target_link_libraries(aptinstall
+add_library(packagemanagerconfiguration SHARED PackageManagerConfigurationModule.cpp)
+target_link_libraries(packagemanagerconfiguration
     PRIVATE
         commonutils
         logging
     PUBLIC
-        aptinstalllib
+        packagemanagerconfigurationlib
 )
-target_include_directories(aptinstall
+target_include_directories(packagemanagerconfiguration
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(aptinstall
+set_target_properties(packagemanagerconfiguration
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
 
 # To install the shared library, uncomment the following line:
-install(TARGETS aptinstall DESTINATION ${MODULES_INSTALL_DIR})
+install(TARGETS packagemanagerconfiguration DESTINATION ${MODULES_INSTALL_DIR})

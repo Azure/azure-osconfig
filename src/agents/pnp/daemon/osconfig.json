@@ -47,7 +47,7 @@
       "ObjectName": "ServiceUrl"
     },
     {
-      "ComponentName": "AptInstall",
+      "ComponentName": "PackageManagerConfiguration",
       "ObjectName": "State"
     }
   ],

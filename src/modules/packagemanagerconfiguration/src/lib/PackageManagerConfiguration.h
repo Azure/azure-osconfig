@@ -13,10 +13,10 @@
 #include <Logging.h>
 #include <Mmi.h>
 
-#define APTINSTALL_LOGFILE "/var/log/osconfig_aptinstall.log"
-#define APTINSTALL_ROLLEDLOGFILE "/var/log/osconfig_aptinstall.bak"
+#define PACKAGEMANAGERCONFIGURATION_LOGFILE "/var/log/osconfig_packagemanagerconfiguration.log"
+#define PACKAGEMANAGERCONFIGURATION_ROLLEDLOGFILE "/var/log/osconfig_packagemanagerconfiguration.bak"
 
-class AptInstallLog
+class PackageManagerConfigurationLog
 {
 public:
     static OSCONFIG_LOG_HANDLE Get()
@@ -26,7 +26,7 @@ public:
 
     static void OpenLog()
     {
-        m_log = ::OpenLog(APTINSTALL_LOGFILE, APTINSTALL_ROLLEDLOGFILE);
+        m_log = ::OpenLog(PACKAGEMANAGERCONFIGURATION_LOGFILE, PACKAGEMANAGERCONFIGURATION_ROLLEDLOGFILE);
     }
 
     static void CloseLog()
@@ -38,7 +38,7 @@ private:
     static OSCONFIG_LOG_HANDLE m_log;
 };
 
-class AptInstallBase
+class PackageManagerConfigurationBase
 {
 public:
     enum ExecutionState
@@ -50,9 +50,10 @@ public:
         TimedOut
     };
 
-    struct DesiredPackages
+    struct DesiredState
     {
         std::vector<std::string> packages;
+        std::map<std::string, std::string> sources;
     };
 
     struct State
@@ -60,10 +61,11 @@ public:
         ExecutionState executionState;
         std::string packagesFingerprint;
         std::map<std::string, std::string> packages;
+        std::map<std::string, std::string> sourcesFingerprint;
     };
 
-    AptInstallBase(unsigned int maxPayloadSizeBytes);
-    virtual ~AptInstallBase() = default;
+    PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes);
+    virtual ~PackageManagerConfigurationBase() = default;
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
@@ -76,9 +78,10 @@ private:
     int ExecuteUpdates(const std::vector<std::string> packages);
     std::string GetFingerprint();
     std::map<std::string, std::string> GetReportedPackages(std::vector<std::string> packages);
+    std::map<std::string, std::string> GetSourcesFingerprint();
 
     static int SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
-    static int DeserializeDesiredPackages(rapidjson::Document& document, DesiredPackages& object);
+    static int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
     static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     static ExecutionState GetStateFromStatusCode(int status);
     static std::vector<std::string> Split(const std::string& str, const std::string& delimiter);
@@ -93,11 +96,11 @@ private:
     unsigned int m_maxPayloadSizeBytes;
 };
 
-class AptInstall : public AptInstallBase
+class PackageManagerConfiguration : public PackageManagerConfigurationBase
 {
 public:
-    AptInstall(unsigned int maxPayloadSizeBytes);
-    ~AptInstall() = default;
+    PackageManagerConfiguration(unsigned int maxPayloadSizeBytes);
+    ~PackageManagerConfiguration() = default;
 
     int RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds) override;
 };

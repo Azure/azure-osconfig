@@ -8,60 +8,61 @@
 
 #include "CommonUtils.h"
 #include "Mmi.h"
-#include "AptInstall.h"
+#include "PackageManagerConfiguration.h"
 
-static const std::string g_componentName = "AptInstall";
-static const std::string g_desiredObjectName = "DesiredPackages";
+static const std::string g_componentName = "PackageManagerConfiguration";
 static const std::string g_reportedObjectName = "State";
+static const std::string g_desiredObjectName = "DesiredState";
 static const std::string g_packages = "Packages";
-// static const std::string g_sources = "Sources";
+static const std::string g_sources = "Sources";
 static const std::string g_executionState = "ExecutionState";
 static const std::string g_packagesFingerprint = "PackagesFingerprint";
+static const std::string g_sourcesFingerprint = "SourcesFingerprint";
 static const std::string g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
 static const std::string g_commandAptUpdate = "sudo apt-get update";
 
 constexpr const char* g_commandExecuteUpdate = "sudo apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
 constexpr const char ret[] = R""""({
-    "Name": "AptInstall Module",
+    "Name": "PackageManagerConfiguration Module",
     "Description": "Module designed to install DEB-packages using APT",
     "Manufacturer": "Microsoft",
     "VersionMajor": 1,
     "VersionMinor": 0,
     "VersionInfo": "",
-    "Components": ["AptInstall"],
+    "Components": ["PackageManagerConfiguration"],
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-OSCONFIG_LOG_HANDLE AptInstallLog::m_log = nullptr;
+OSCONFIG_LOG_HANDLE PackageManagerConfigurationLog::m_log = nullptr;
 
-AptInstallBase::AptInstallBase(unsigned int maxPayloadSizeBytes)
+PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
 }
 
-AptInstall::AptInstall(unsigned int maxPayloadSizeBytes)
-    : AptInstallBase(maxPayloadSizeBytes)
+PackageManagerConfiguration::PackageManagerConfiguration(unsigned int maxPayloadSizeBytes)
+    : PackageManagerConfigurationBase(maxPayloadSizeBytes)
 {
 }
 
-int AptInstallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
     if (nullptr == clientName)
     {
-        OsConfigLogError(AptInstallLog::Get(), "MmiGetInfo called with null clientName");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(AptInstallLog::Get(), "MmiGetInfo called with null payload");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(AptInstallLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -72,7 +73,7 @@ int AptInstallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
-                OsConfigLogError(AptInstallLog::Get(), "MmiGetInfo failed to allocate memory");
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo failed to allocate memory");
                 status = ENOMEM;
             }
             else
@@ -83,7 +84,7 @@ int AptInstallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         }
         catch (const std::exception& e)
         {
-            OsConfigLogError(AptInstallLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
             status = EINTR;
 
             if (nullptr != *payload)
@@ -102,7 +103,7 @@ int AptInstallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
     return status;
 }
 
-int AptInstallBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int PackageManagerConfigurationBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -110,7 +111,7 @@ int AptInstallBase::Set(const char* componentName, const char* objectName, const
     int maxPayloadSizeBytes = static_cast<int>(GetMaxPayloadSizeBytes());
     if ((0 != maxPayloadSizeBytes) && (payloadSizeBytes > maxPayloadSizeBytes))
     {
-        OsConfigLogError(AptInstallLog::Get(), "%s %s payload too large. Max payload expected %d, actual payload size %d", componentName, objectName, maxPayloadSizeBytes, payloadSizeBytes);
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s %s payload too large. Max payload expected %d, actual payload size %d", componentName, objectName, maxPayloadSizeBytes, payloadSizeBytes);
         return E2BIG;
     }
 
@@ -118,7 +119,7 @@ int AptInstallBase::Set(const char* componentName, const char* objectName, const
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
-        OsConfigLogError(AptInstallLog::Get(), "Unabled to parse JSON payload: %s", payload);
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Unabled to parse JSON payload: %s", payload);
         status = EINVAL;
     }
     else
@@ -129,35 +130,36 @@ int AptInstallBase::Set(const char* componentName, const char* objectName, const
             {
                 if (document.IsObject())
                 {
-                    AptInstallBase::DesiredPackages desiredPackages;
-                    if (0 == DeserializeDesiredPackages(document, desiredPackages))
+                    PackageManagerConfigurationBase::DesiredState desiredState;
+
+                    if (0 == DeserializeDesiredState(document, desiredState))
                     {
-                        m_desiredPackages = GetPackagesNames(desiredPackages.packages);
                         m_executionState = ExecutionState::Running;
-                        status = AptInstallBase::ExecuteUpdates(desiredPackages.packages);
-                        m_executionState = AptInstallBase::GetStateFromStatusCode(status);
+                        m_desiredPackages = GetPackagesNames(desiredState.packages);
+                        status = PackageManagerConfigurationBase::ExecuteUpdates(desiredState.packages);
+                        m_executionState = PackageManagerConfigurationBase::GetStateFromStatusCode(status);
                     }
                     else
                     {
-                        OsConfigLogError(AptInstallLog::Get(), "Failed to deserialize %s", g_desiredObjectName.c_str());
+                        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to deserialize %s", g_desiredObjectName.c_str());
                         status = EINVAL;
                     }
                 }
                 else
                 {
-                    OsConfigLogError(AptInstallLog::Get(), "JSON payload is not a %s object", g_desiredObjectName.c_str());
+                    OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON payload is not a %s object", g_desiredObjectName.c_str());
                     status = EINVAL;
                 }
             }
             else
             {
-                OsConfigLogError(AptInstallLog::Get(), "Invalid objectName: %s", objectName);
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid objectName: %s", objectName);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(AptInstallLog::Get(), "Invalid componentName: %s", componentName);
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid componentName: %s", componentName);
             status = EINVAL;
         }
     }
@@ -165,13 +167,13 @@ int AptInstallBase::Set(const char* componentName, const char* objectName, const
     return status;
 }
 
-int AptInstallBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PackageManagerConfigurationBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
     if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(AptInstallLog::Get(), "Invalid payloadSizeBytes");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -189,17 +191,18 @@ int AptInstallBase::Get(const char* componentName, const char* objectName, MMI_J
                 reportedState.executionState = m_executionState;
                 reportedState.packagesFingerprint = GetFingerprint();
                 reportedState.packages = GetReportedPackages(m_desiredPackages);
+                reportedState.sourcesFingerprint = GetSourcesFingerprint();
                 status = SerializeState(reportedState, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
             else
             {
-                OsConfigLogError(AptInstallLog::Get(), "Invalid objectName: %s", objectName);
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid objectName: %s", objectName);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(AptInstallLog::Get(), "Invalid componentName: %s", componentName);
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid componentName: %s", componentName);
             status = EINVAL;
         }
     }
@@ -207,45 +210,39 @@ int AptInstallBase::Get(const char* componentName, const char* objectName, MMI_J
     return status;
 }
 
-unsigned int AptInstallBase::GetMaxPayloadSizeBytes()
+unsigned int PackageManagerConfigurationBase::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
 }
 
-int AptInstallBase::DeserializeDesiredPackages(rapidjson::Document& document, DesiredPackages& object)
+int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState& object)
 {
     int status = 0;
 
-    // Deserialize a map of strings to strings
-    // if (document.HasMember(g_sources.c_str()))
-    // {
-    //     if (document[g_sources.c_str()].IsObject())
-    //     {
-    //         for (auto &member : document[g_sources.c_str()].GetObject())
-    //         {
-    //             if (member.value.IsString())
-    //             {
-    //                 object.packages[member.name.GetString()] = member.value.GetString();
-    //             }
-    //             else
-    //             {
-    //                 OsConfigLogError(AptInstallLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
-    //                 status = EINVAL;
-    //             }
-    //         }
-    //     }
-    //     else
-    //     {
-    //         OsConfigLogError(AptInstallLog::Get(), "%s is not an object", g_sources.c_str());
-    //         status = EINVAL;
-    //     }
-    // }
-    // else
-    // {
-    //     OsConfigLogError(AptInstallLog::Get(), "JSON object does not contain a string map setting");
-    //     status = EINVAL;
-    // }
-
+    if (document.HasMember(g_sources.c_str()))
+    {
+        if (document[g_sources.c_str()].IsObject())
+        {
+            for (auto &member : document[g_sources.c_str()].GetObject())
+            {
+                if (member.value.IsString())
+                {
+                    object.sources[member.name.GetString()] = member.value.GetString();
+                }
+                else
+                {
+                    OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not an object", g_sources.c_str());
+            status = EINVAL;
+        }
+    }
+   
     if (document.HasMember(g_packages.c_str()))
     {
         if (document[g_packages.c_str()].IsArray())
@@ -258,27 +255,28 @@ int AptInstallBase::DeserializeDesiredPackages(rapidjson::Document& document, De
                 }
                 else
                 {
-                    OsConfigLogError(AptInstallLog::Get(), "Invalid string in JSON object string array at position %d", i);
+                    OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid string in JSON object string array at position %d", i);
                     status = EINVAL;
                 }
             }
         }
         else
         {
-            OsConfigLogError(AptInstallLog::Get(), "%s is not an array", g_packages.c_str());
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not an array", g_packages.c_str());
             status = EINVAL;
         }
     }
+    
     else
     {
-        OsConfigLogError(AptInstallLog::Get(), "JSON object does not contain a string array setting");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON object does not contain a string array setting, neither a map setting");
         status = EINVAL;
     }
 
     return status;
 }
 
-int AptInstallBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PackageManagerConfigurationBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -287,7 +285,7 @@ int AptInstallBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_ST
         *payload = new (std::nothrow) char[buffer.GetSize()];
         if (nullptr == *payload)
         {
-            OsConfigLogError(AptInstallLog::Get(), "Unable to allocate memory for payload");
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Unable to allocate memory for payload");
             status = ENOMEM;
         }
         else
@@ -299,7 +297,7 @@ int AptInstallBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_ST
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(AptInstallLog::Get(), "Could not allocate payload: %s", e.what());
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Could not allocate payload: %s", e.what());
         status = EINTR;
 
         if (nullptr != *payload)
@@ -317,19 +315,19 @@ int AptInstallBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_ST
     return status;
 }
 
-int AptInstallBase::ExecuteUpdate(const std::string &value)
+int PackageManagerConfigurationBase::ExecuteUpdate(const std::string &value)
 {
     std::string command = std::regex_replace(g_commandExecuteUpdate, std::regex("\\$value"), value);
 
     int status = RunCommand(command.c_str(), true, nullptr, 600);
     if (status != MMI_OK && IsFullLoggingEnabled())
     {
-        OsConfigLogError(AptInstallLog::Get(), "ExecuteUpdate failed with status %d and arguments '%s'", status, value.c_str());
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "ExecuteUpdate failed with status %d and arguments '%s'", status, value.c_str());
     }
     return status;
 }
 
-int AptInstallBase::ExecuteUpdates(const std::vector<std::string> packages)
+int PackageManagerConfigurationBase::ExecuteUpdates(const std::vector<std::string> packages)
 {
     int status = MMI_OK;
 
@@ -341,19 +339,19 @@ int AptInstallBase::ExecuteUpdates(const std::vector<std::string> packages)
 
     for (std::string package : packages)
     {
-        OsConfigLogInfo(AptInstallLog::Get(), "Starting to update package(s): %s", package.c_str());
+        OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Starting to update package(s): %s", package.c_str());
         status = ExecuteUpdate(package);
         if (status != MMI_OK)
         {
-            OsConfigLogError(AptInstallLog::Get(), "Failed to update package(s): %s", package.c_str());
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to update package(s): %s", package.c_str());
             return status;
         }
-        OsConfigLogInfo(AptInstallLog::Get(), "Successfully updated package(s): %s", package.c_str());
+        OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Successfully updated package(s): %s", package.c_str());
     }
     return status;
 }
 
-int AptInstallBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
+int PackageManagerConfigurationBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -377,31 +375,40 @@ int AptInstallBase::SerializeState(State reportedState, MMI_JSON_STRING* payload
     writer.Key(g_executionState.c_str());
     writer.Int(static_cast<int>(reportedState.executionState));
 
+    writer.Key(g_sourcesFingerprint.c_str());
+    writer.StartObject();
+    for (auto& pair : reportedState.sourcesFingerprint)
+    {
+        writer.Key(pair.first.c_str());
+        writer.String(pair.second.c_str());
+    }
+    writer.EndObject();
+
     writer.EndObject();
 
     unsigned int bufferSize = buffer.GetSize();
 
     if ((0 != maxPayloadSizeBytes) && (bufferSize > maxPayloadSizeBytes))
     {
-        OsConfigLogError(AptInstallLog::Get(), "Failed to serialize object %s. Max payload expected %d, actual payload size %d", g_reportedObjectName.c_str(), maxPayloadSizeBytes, bufferSize);
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to serialize object %s. Max payload expected %d, actual payload size %d", g_reportedObjectName.c_str(), maxPayloadSizeBytes, bufferSize);
         status = E2BIG;
     }
     else
     {
-        status = AptInstallBase::CopyJsonPayload(buffer, payload, payloadSizeBytes);
+        status = PackageManagerConfigurationBase::CopyJsonPayload(buffer, payload, payloadSizeBytes);
         if(0 != status)
         {
-            OsConfigLogError(AptInstallLog::Get(), "Failed to serialize object %s", g_reportedObjectName.c_str());
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to serialize object %s", g_reportedObjectName.c_str());
         }
     }
     
     return status;
 }
 
-int AptInstall::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
+int PackageManagerConfiguration::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
 {
     char* buffer = nullptr;
-    int status = ExecuteCommand(nullptr, command, replaceEol, true, 0, timeoutSeconds, &buffer, nullptr, AptInstallLog::Get());
+    int status = ExecuteCommand(nullptr, command, replaceEol, true, 0, timeoutSeconds, &buffer, nullptr, PackageManagerConfigurationLog::Get());
 
     if (status == MMI_OK)
     {
@@ -412,7 +419,7 @@ int AptInstall::RunCommand(const char* command, bool replaceEol, std::string* te
     }
     else if (IsFullLoggingEnabled())
     {
-        OsConfigLogError(AptInstallLog::Get(), "RunCommand failed with status: %d and output '%s'", status, buffer);
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "RunCommand failed with status: %d and output '%s'", status, buffer);
     }
 
     if (buffer)
@@ -422,7 +429,7 @@ int AptInstall::RunCommand(const char* command, bool replaceEol, std::string* te
     return status;
 }
 
-AptInstallBase::ExecutionState AptInstallBase::GetStateFromStatusCode(int status)
+PackageManagerConfigurationBase::ExecutionState PackageManagerConfigurationBase::GetStateFromStatusCode(int status)
 {
     ExecutionState state = ExecutionState::Unknown;
     switch (status)
@@ -439,14 +446,14 @@ AptInstallBase::ExecutionState AptInstallBase::GetStateFromStatusCode(int status
     return state;
 }
 
-std::string AptInstallBase::GetFingerprint()
+std::string PackageManagerConfigurationBase::GetFingerprint()
 {
     std::string hashString = "";
     RunCommand(g_commandGetInstalledPackagesHash.c_str(), true, &hashString, 0);
     return hashString;
 }
 
-std::vector<std::string> AptInstallBase::GetPackagesNames(std::vector<std::string> packages)
+std::vector<std::string> PackageManagerConfigurationBase::GetPackagesNames(std::vector<std::string> packages)
 {
     std::vector<std::string> packagesNames;
     for (auto& packagesLine : packages)
@@ -461,7 +468,7 @@ std::vector<std::string> AptInstallBase::GetPackagesNames(std::vector<std::strin
     return packagesNames;
 }
 
-std::vector<std::string> AptInstallBase::Split(const std::string& str, const std::string& delimiter)
+std::vector<std::string> PackageManagerConfigurationBase::Split(const std::string& str, const std::string& delimiter)
 {
     std::vector<std::string> result;
     size_t start;
@@ -474,7 +481,7 @@ std::vector<std::string> AptInstallBase::Split(const std::string& str, const std
     return result;
 }
 
-std::map<std::string, std::string> AptInstallBase::GetReportedPackages(std::vector<std::string> packages)
+std::map<std::string, std::string> PackageManagerConfigurationBase::GetReportedPackages(std::vector<std::string> packages)
 {
     std::map<std::string, std::string> result;
     int status;
@@ -486,7 +493,7 @@ std::map<std::string, std::string> AptInstallBase::GetReportedPackages(std::vect
         status = RunCommand(command.c_str(), true, &rawVersion, 0);
         if (status != MMI_OK && IsFullLoggingEnabled())
         {
-            OsConfigLogError(AptInstallLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);
         }
 
         std::string version = rawVersion != "" ? Split(rawVersion, ":")[1] : "(failed)";
@@ -496,7 +503,7 @@ std::map<std::string, std::string> AptInstallBase::GetReportedPackages(std::vect
   return result;
 }
 
-std::string AptInstallBase::TrimStart(const std::string& str, const std::string& trim)
+std::string PackageManagerConfigurationBase::TrimStart(const std::string& str, const std::string& trim)
 {
     size_t pos = str.find_first_not_of(trim);
     if (pos == std::string::npos)
@@ -506,7 +513,7 @@ std::string AptInstallBase::TrimStart(const std::string& str, const std::string&
     return str.substr(pos);
 }
 
-std::string AptInstallBase::TrimEnd(const std::string& str, const std::string& trim)
+std::string PackageManagerConfigurationBase::TrimEnd(const std::string& str, const std::string& trim)
 {
     size_t pos = str.find_last_not_of(trim);
     if (pos == std::string::npos)
@@ -516,7 +523,13 @@ std::string AptInstallBase::TrimEnd(const std::string& str, const std::string& t
     return str.substr(0, pos + 1);
 }
 
-std::string AptInstallBase::Trim(const std::string& str, const std::string& trim)
+std::string PackageManagerConfigurationBase::Trim(const std::string& str, const std::string& trim)
 {
     return TrimStart(TrimEnd(str, trim), trim);
+}
+
+std::map<std::string, std::string> PackageManagerConfigurationBase::GetSourcesFingerprint()
+{
+    std::map<std::string, std::string> result;
+    return result;
 }
