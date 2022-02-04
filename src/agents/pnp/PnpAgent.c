@@ -571,7 +571,7 @@ static char* GetHttpProxyData()
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], IsFullLoggingEnabled() ? proxyData : "***");
+                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
             }
             break;
         }

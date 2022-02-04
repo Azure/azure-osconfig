@@ -764,16 +764,17 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             *proxyHostAddress = hostAddress;
             *proxyPort = portNumber;
 
+            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
+                        
             if ((NULL != proxyUsername) && (NULL != proxyPassword))
             {
                 *proxyUsername = username;
                 *proxyPassword = password;
-            }
 
-            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-            OsConfigLogInfo(log, "HTTP proxy port: %d (%s, %d)", *proxyPort, port, portLength);
-            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", (IsFullLoggingEnabled() ? (*proxyPassword) : "***"), passwordLength);
+                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
+            }
 
             // Port is unused past this, can be freed; the rest must remain allocated
             if (port)
