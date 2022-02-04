@@ -651,7 +651,6 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "http://proxyuser:password@10.0.0.2:8080", "10.0.0.2", 8080, "proxyuser", "password" },
         { "http://10.0.0.2:8080", "10.0.0.2", 8080, nullptr, nullptr },
         { "HTTP://foodomain\\user:pass\\@word@11.22.33.44.55:123/", "11.22.33.44.55", 123, "foodomain\\user", "pass@word" }
-
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
@@ -689,7 +688,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "http://user:pass,word@wwww.foo.org:123",
         "http://user:pass|word@wwww.foo.org:123",
         "http://10,0,10,10:8080",
-        "http://10,0,10,10:8080",
+        "http://10`0`10`10:8080",
         "http://proxyuser:password@10'0'0'2:8080"
     };
 
