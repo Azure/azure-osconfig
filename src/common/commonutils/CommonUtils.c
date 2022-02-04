@@ -562,8 +562,6 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         return NULL;
     }
     
-    proxyData += strlen(httpPrefix);
-
     for (i = 0; i < proxyDataLength; i++)
     {
         if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || (isalnum(proxyData[i])))
@@ -598,7 +596,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         else if (':' == proxyData[i])
         {
             columnCounter += 1;
-            if (columnCounter > 2)
+            if (columnCounter > 3)
             {
                 OsConfigLogError(log, "Unsupported proxy data (%s), too many ':' characters", proxyData);
                 isBadAlphaNum = true;
@@ -623,7 +621,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     {
         return NULL;
     }
-    
+
+    proxyData += strlen(httpPrefix);
     firstColumn = strchr(proxyData, ':');
     lastColumn = strrchr(proxyData, ':');
     
