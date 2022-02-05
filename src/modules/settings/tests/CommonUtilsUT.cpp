@@ -654,6 +654,9 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
+    EXPECT_EQ(validOptionsSize, 20);
+
+    EXPECT_EQ(sizeof(validOptions[1]), sizeof(validOptions[3]));
 
     const char* badOptions[] = {
         "//wwww.foo.org:123",
@@ -693,6 +696,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
     };
 
     int badOptionsSize = ARRAY_SIZE(badOptions);
+    EXPECT_EQ(badOptionsSize, 34);
 
     for (int i = 0; i < validOptionsSize; i++)
     {
