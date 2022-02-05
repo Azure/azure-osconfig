@@ -464,18 +464,16 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
-static void RemoveProxyStringEscaping(char** input, void* log)
+static void RemoveProxyStringEscaping(char* value)
 {
     int i = 0;
     int j = 0;
 
-    if (NULL == input)
+    if (NULL == value)
     {
         return;
     }
 
-    char* value = *input;
-    
     int length = strlen(value);
 
     for (i = 0; i < length - 1; i++)
@@ -489,15 +487,6 @@ static void RemoveProxyStringEscaping(char** input, void* log)
             length -= 1;
             value[length] = 0;
         }
-    }
-
-    if (NULL != (value = realloc(value, length + 1)))
-    {
-        *input = value;
-    }
-    else
-    {
-        OsConfigLogError(log, "Realloc of %p to %d bytes failed", *input, length + 1);
     }
 }
 
@@ -691,7 +680,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(username, proxyData, usernameLength);
                         username[usernameLength] = 0;
 
-                        RemoveProxyStringEscaping(&username, log);
+                        RemoveProxyStringEscaping(username);
                         usernameLength = strlen(username);
                     }
                     else
@@ -708,7 +697,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
 
-                        RemoveProxyStringEscaping(&password, log);
+                        RemoveProxyStringEscaping(password);
                         passwordLength = strlen(password);
                     }
                     else
@@ -738,8 +727,6 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, lastColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
-                        /*free(port);
-                        port = NULL;*/
                     }
                     else
                     {
@@ -771,8 +758,6 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, firstColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
-                        /*free(port);
-                        port = NULL;*/
                     }
                     else
                     {
@@ -781,28 +766,22 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 }
             }
 
-            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", hostAddress, hostAddressLength);
-            OsConfigLogInfo(log, "HTTP proxy port: %d", portNumber);
-            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", username, usernameLength);
-            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", password, passwordLength);
-
             *proxyHostAddress = hostAddress;
-            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-
             *proxyPort = portNumber;
-            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
                         
-            if (proxyUsername)
+            if (proxyUsername && proxyPassword)
             {
                 *proxyUsername = username;
-                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+                *proxyPassword = password;
+                
             }
 
-            if (proxyPassword)
-            {
-                *proxyPassword = password;
-                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
-            }
+            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
+            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
+
+            FREE_MEMORY(port);
 
             result = true;
         }
