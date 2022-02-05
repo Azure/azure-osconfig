@@ -696,7 +696,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
     };
 
     int badOptionsSize = ARRAY_SIZE(badOptions);
-    EXPECT_EQ(badOptionsSize, 34);
+    EXPECT_EQ(badOptionsSize, 33);
 
     for (int i = 0; i < validOptionsSize; i++)
     {
