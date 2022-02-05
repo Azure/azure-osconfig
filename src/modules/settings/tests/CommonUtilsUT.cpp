@@ -623,7 +623,7 @@ struct HttpProxyOptions
     const char* password;
 };
 
-TEST_F(CommonUtilsTest, Validz`tHttpProxyData)
+TEST_F(CommonUtilsTest, ValidHttpProxyData)
 {
     char* hostAddress = nullptr;
     int port = 0;
