@@ -625,10 +625,10 @@ struct HttpProxyOptions
 
 TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
 {
-    char* hostAddress = NULL;
+    char* hostAddress = nullptr;
     int port = 0;
-    char* username = NULL;
-    char* password = NULL;
+    char* username = nullptr;
+    char* password = nullptr;
 
     HttpProxyOptions validOptions[] = {
         { "http://wwww.foo.org:123", "wwww.foo.org", 123, nullptr, nullptr },
@@ -654,9 +654,6 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
-    EXPECT_EQ(validOptionsSize, 20);
-
-    EXPECT_EQ(sizeof(validOptions[1]), sizeof(validOptions[3]));
 
     const char* badOptions[] = {
         "//wwww.foo.org:123",
@@ -696,7 +693,6 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
     };
 
     int badOptionsSize = ARRAY_SIZE(badOptions);
-    EXPECT_EQ(badOptionsSize, 34);
 
     for (int i = 0; i < validOptionsSize; i++)
     {
@@ -725,16 +721,19 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         if (nullptr != hostAddress)
         {
             free(hostAddress);
+            hostAddress = nullptr;
         }
 
         if (nullptr != username)
         {
             free(username);
+            username = nullptr;
         }
 
         if (nullptr != password)
         {
             free(password);
+            password = nullptr;
         }
     }
 
@@ -745,16 +744,19 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         if (nullptr != hostAddress)
         {
             free(hostAddress);
+            hostAddress = nullptr;
         }
 
         if (nullptr != username)
         {
             free(username);
+            username = nullptr;
         }
 
         if (nullptr != password)
         {
             free(password);
+            password = nullptr;
         }
     }
 }
