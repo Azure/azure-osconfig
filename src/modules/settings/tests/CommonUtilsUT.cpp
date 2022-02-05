@@ -614,15 +614,6 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
     ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
 }
 
-struct HttpProxyOptions
-{
-    const char* data;
-    const char* hostAddress;
-    int port;
-    const char* username;
-    const char* password;
-};
-
 TEST_F(CommonUtilsTest, ValidHttpProxyData)
 {
     char* hostAddress = nullptr;
@@ -630,38 +621,15 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
     char* username = nullptr;
     char* password = nullptr;
 
-    HttpProxyOptions validOptions[] = {
-        { "http://wwww.foo.org:10", "wwww.foo.org", 10, nullptr, nullptr },
-        { "http://88.88.88.88:20", "88.88.88.88", 20, nullptr, nullptr },
-        { "http://wwww.foo.org:30/", "wwww.foo.org", 30, nullptr, nullptr },
-        { "http://88.88.88.88:40/", "88.88.88.88", 40, nullptr, nullptr },
-        { "http://wwww.foo.org:500//", "wwww.foo.org", 500, nullptr, nullptr },
-        { "http://88.88.88.88:600//", "88.88.88.88", 600, nullptr, nullptr },
-        { "http://fooname:foopassword@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foopassword" },
-        { "http://foo_name:foo-password@12.34.56.78:8080", "12.34.56.78", 8080, "foo_name", "foo-password" },
-        { "http://foo_domain\\foo_name:foo_password@wwww.domain_foo.org:999", "wwww.domain_foo.org", 999, "foo_domain\\foo_name", "foo_password" },
-        { "http://foo-domain\\foo-name:foo-password@11.11.11.11:11", "11.11.11.11", 11, "foo-domain\\foo-name", "foo-password" },
-        { "http://foo\\@name:foo\\@password@wwww.foo.org:1212", "wwww.foo.org", 1212, "foo@name", "foo@password" },
-        { "http://f\\@\\@_name:f\\@\\@-password@33.33.33.33:1313", "33.33.33.33", 1313, "f@@_name", "f@@-password" },
-        { "http://foo_d\\@main\\foo_n\\@me:foo_passw\\@rd@wwww.domain_foo.org:1414", "wwww.domain_foo.org", 1414, "foo_d@main\\foo_n@me", "foo_passw@rd" },
-        { "http://foo-dom\\@in\\foo-name:foo-p\\@ssword@55.55.55.55:555", "55.55.55.55", 555, "foo-dom@in\\foo-name", "foo-p@ssword" },
-        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" }
-    };
+    EXPECT_TRUE(ParseHttpProxyData("http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", &hostAddress, &port, &username, &password, nullptr));
+    EXPECT_STREQ(hostAddress, "EFGHIJKLMNOPQRSTUVWXYZ");
+    EXPECT_EQ(port, 100);
+    EXPECT_STREQ(username, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo");
+    EXPECT_STREQ(password, "p@ssw@rd");
 
-    int validOptionsSize = ARRAY_SIZE(validOptions);
-
-    for (int i = 0; i < validOptionsSize; i++)
-    {
-        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
-        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
-        EXPECT_EQ(port, validOptions[i].port);
-        EXPECT_STREQ(username, validOptions[i].username);
-        EXPECT_STREQ(password, validOptions[i].password);
-
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
-    }
+    FREE_MEMORY(hostAddress);
+    FREE_MEMORY(username);
+    FREE_MEMORY(password);
 }
 
 TEST_F(CommonUtilsTest, InvalidHttpProxyData)
@@ -720,24 +688,6 @@ TEST_F(CommonUtilsTest, InvalidHttpProxyData)
         FREE_MEMORY(username);
         FREE_MEMORY(password);
     }
-}
-
-TEST_F(CommonUtilsTest, ValidArgumentsHttpProxyDataParsing)
-{
-    char* hostAddress = nullptr;
-    int port = 0;
-    char* username = nullptr;
-    char* password = nullptr;
-    
-    EXPECT_TRUE(ParseHttpProxyData("http://username\\@mail.foo:p\\@ssw\\@rd@server:100", &hostAddress, &port, &username, &password, nullptr));
-    EXPECT_STREQ(hostAddress, "server");
-    EXPECT_EQ(port, 100);
-    EXPECT_STREQ(username, "username@mail.foo");
-    EXPECT_STREQ(password, "p@ssw@rd");
-
-    FREE_MEMORY(hostAddress);
-    FREE_MEMORY(username);
-    FREE_MEMORY(password);
 }
 
 TEST_F(CommonUtilsTest, InvalidArgumentsHttpProxyDataParsing)
