@@ -765,6 +765,11 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 }
             }
 
+            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", hostAddress, hostAddressLength);
+            OsConfigLogInfo(log, "HTTP proxy port: %d", portNumber);
+            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", username, usernameLength);
+            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", password, passwordLength);
+
             *proxyHostAddress = hostAddress;
             OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
 
