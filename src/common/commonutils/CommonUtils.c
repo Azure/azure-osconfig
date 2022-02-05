@@ -722,6 +722,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, lastColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
+                        FREE_MEMORY(port);
                     }
                     else
                     {
@@ -753,6 +754,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, firstColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
+                        FREE_MEMORY(port);
                     }
                     else
                     {
@@ -762,24 +764,21 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             }
 
             *proxyHostAddress = hostAddress;
-            *proxyPort = portNumber;
-
             OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+
+            *proxyPort = portNumber;
             OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
                         
-            if ((NULL != proxyUsername) && (NULL != proxyPassword))
+            if (proxyUsername)
             {
                 *proxyUsername = username;
-                *proxyPassword = password;
-
                 OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
             }
 
-            // Port is unused past this, can be freed; the rest must remain allocated
-            if (NULL != port)
+            if (proxyPassword)
             {
-                free(port);
+                *proxyPassword = password;
+                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
             }
 
             result = true;
