@@ -612,7 +612,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         }
         else
         {
-            OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData, proxyData[i], i);
+            OsConfigLogError(log, "Unsupported proxy data (%s), unsupported character '%c' at position %d", proxyData, proxyData[i], (int)i);
             isBadAlphaNum = true;
             break;
         }
