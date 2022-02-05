@@ -718,7 +718,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
             EXPECT_EQ(nullptr, password);
         }    
 
-        if (nullptr != hostAddress)
+        /*if (nullptr != hostAddress)
         {
             free(hostAddress);
             hostAddress = nullptr;
@@ -734,14 +734,14 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         {
             free(password);
             password = nullptr;
-        }
+        }*/
     }
 
     for (int i = 0; i < badOptionsSize; i++)
     {
         EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
 
-        if (nullptr != hostAddress)
+        /*if (nullptr != hostAddress)
         {
             free(hostAddress);
             hostAddress = nullptr;
@@ -757,6 +757,6 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         {
             free(password);
             password = nullptr;
-        }
+        }*/
     }
 }
