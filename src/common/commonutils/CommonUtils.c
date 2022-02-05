@@ -464,7 +464,7 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
-static void RemoveProxyStringEscaping(char** input)
+static void RemoveProxyStringEscaping(char** input, void* log)
 {
     int i = 0;
     int j = 0;
@@ -691,7 +691,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(username, proxyData, usernameLength);
                         username[usernameLength] = 0;
 
-                        RemoveProxyStringEscaping(&username);
+                        RemoveProxyStringEscaping(&username, log);
                         usernameLength = strlen(username);
                     }
                     else
@@ -708,7 +708,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
 
-                        RemoveProxyStringEscaping(&password);
+                        RemoveProxyStringEscaping(&password, log);
                         passwordLength = strlen(password);
                     }
                     else
