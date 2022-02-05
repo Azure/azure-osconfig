@@ -464,10 +464,17 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
-static void RemoveProxyStringEscaping(char* value)
+static void RemoveProxyStringEscaping(char** input)
 {
     int i = 0;
     int j = 0;
+
+    if (NULL == input)
+    {
+        return;
+    }
+
+    char* value = *input;
     
     int length = strlen(value);
 
@@ -482,6 +489,15 @@ static void RemoveProxyStringEscaping(char* value)
             length -= 1;
             value[length] = 0;
         }
+    }
+
+    if (NULL != (value = realloc(value, length + 1)))
+    {
+        *input = value;
+    }
+    else
+    {
+        OsConfigLogError(log, "Realloc of %p to %d bytes failed", *input, length + 1);
     }
 }
 
@@ -675,7 +691,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(username, proxyData, usernameLength);
                         username[usernameLength] = 0;
 
-                        RemoveProxyStringEscaping(username);
+                        RemoveProxyStringEscaping(&username);
                         usernameLength = strlen(username);
                     }
                     else
@@ -692,7 +708,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                         strncpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
 
-                        RemoveProxyStringEscaping(password);
+                        RemoveProxyStringEscaping(&password);
                         passwordLength = strlen(password);
                     }
                     else
