@@ -644,13 +644,16 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "HTTP://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
         { "HTTP://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
         { "HTTP://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
-        { "HTTP://boom_user:boom-password@www.boom.org:666/", "www.boom.org", 666, "boom_user", "boom-password" },
+        { "HTTP://boom_user:boom-password@www.boom.org:666//", "www.boom.org", 666, "boom_user", "boom-password" },
         { "HTTP://user\\@foomail.org:passw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "user@foomail.org", "passw@rd" },
         { "http://user\\@blah:p\\@\\@ssword@11.22.33.44.55:123", "11.22.33.44.55", 123, "user@blah", "p@@ssword" },
         { "HTTP://foo_domain\\username:p\\@ssw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "foo_domain\\username", "p@ssw@rd" },
         { "http://proxyuser:password@10.0.0.2:8080", "10.0.0.2", 8080, "proxyuser", "password" },
         { "http://10.0.0.2:8080", "10.0.0.2", 8080, nullptr, nullptr },
-        { "HTTP://foodomain\\user:pass\\@word@11.22.33.44.55:123/", "11.22.33.44.55", 123, "foodomain\\user", "pass@word" }
+        { "HTTP://foodomain\\user:pass\\@word@11.22.33.44.55:123/", "11.22.33.44.55", 123, "foodomain\\user", "pass@word" },
+        { "http://10.0.0.3:80x80", "10.0.0.3", 8080, nullptr, nullptr },
+        { "http://10.0.0.4:8/0\\8-0", "10.0.0.4", 8080, nullptr, nullptr },
+        { "http://proxyuser:proxy\\@password@10.0.0.5:8_0-8.0", "10.0.0.5", 8080, "proxyuser", "proxy@password" }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);

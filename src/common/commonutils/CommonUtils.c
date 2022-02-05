@@ -485,6 +485,27 @@ static void RemoveProxyStringEscaping(char* value)
     }
 }
 
+static void RemoveNonDigits(char* value)
+{
+    int i = 0;
+    int j = 0;
+
+    int length = strlen(value);
+
+    for (i = 0; i < length - 1; i++)
+    {
+        if (!isdigit(value[i]))
+        {
+            for (j = i; j < length - 1; j++)
+            {
+                value[j] = value[j + 1];
+            }
+            length -= 1;
+            value[length] = 0;
+        }
+    }
+}
+
 bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* proxyPort, char** proxyUsername, char** proxyPassword, void* log)
 {
     // We accept the proxy data string to be in one of two following formats:
@@ -721,6 +742,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
                         strncpy(port, lastColumn, hostAddressLength);
+                        RemoveNonDigits(port);
+                        portLength = strlen(port);
                         portNumber = strtol(port, NULL, 10);
                     }
                     else
@@ -752,6 +775,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
                         strncpy(port, firstColumn, hostAddressLength);
+                        RemoveNonDigits(port);
+                        portLength = strlen(port);
                         portNumber = strtol(port, NULL, 10);
                     }
                     else
@@ -765,7 +790,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             *proxyPort = portNumber;
 
             OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
+            OsConfigLogInfo(log, "HTTP proxy port: %d (%s, %d)", *proxyPort, port, portLength);
                         
             if ((NULL != proxyUsername) && (NULL != proxyPassword))
             {
