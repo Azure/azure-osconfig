@@ -721,3 +721,31 @@ TEST_F(CommonUtilsTest, InvalidHttpProxyData)
         FREE_MEMORY(password);
     }
 }
+
+TEST_F(CommonUtilsTest, ValidArgumentsHttpProxyDataParsing)
+{
+    char* hostAddress = nullptr;
+    int port = 0;
+    char* username = nullptr;
+    char* password = nullptr;
+    
+    EXPECT_TRUE(ParseHttpProxyData("http://username\\@mail.foo:p\\@ssw\\@rd@server:100", &hostAddress, &port, &username, &password, nullptr));
+    EXPECT_STREQ(hostAddress, "server");
+    EXPECT_EQ(port, 100);
+    EXPECT_STREQ(username, "username@mail.foo");
+    EXPECT_STREQ(password, "p@ssw@rd");
+
+    FREE_MEMORY(hostAddress);
+    FREE_MEMORY(username);
+    FREE_MEMORY(password);
+}
+
+TEST_F(CommonUtilsTest, InvalidArgumentsHttpProxyDataParsing)
+{
+    char* hostAddress = nullptr;
+    int port = 0;
+
+    EXPECT_FALSE(ParseHttpProxyData(nullptr, &hostAddress, &port, nullptr, nullptr, nullptr));
+    EXPECT_FALSE(ParseHttpProxyData("http://a:1", nullptr, &port, nullptr, nullptr, nullptr));
+    EXPECT_FALSE(ParseHttpProxyData("http://a:1", &hostAddress, nullptr, nullptr, nullptr, nullptr));
+}
