@@ -569,7 +569,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     
     for (i = 0; i < proxyDataLength; i++)
     {
-        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || (isalnum(proxyData[i])))
+        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || 
+            ('$' == proxyData[i]) || ('!' == proxyData[i]) || (isalnum(proxyData[i])))
         {
             continue;
         }

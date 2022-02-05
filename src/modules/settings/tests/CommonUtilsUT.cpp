@@ -623,13 +623,12 @@ struct HttpProxyOptions
     const char* password;
 };
 
-TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
+TEST_F(CommonUtilsTest, Validz`tHttpProxyData)
 {
     char* hostAddress = nullptr;
     int port = 0;
     char* username = nullptr;
     char* password = nullptr;
-    int i = 0;
 
     HttpProxyOptions validOptions[] = {
         { "http://wwww.foo.org:10", "wwww.foo.org", 10, nullptr, nullptr },
@@ -645,11 +644,33 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "http://foo\\@name:foo\\@password@wwww.foo.org:1212", "wwww.foo.org", 1212, "foo@name", "foo@password" },
         { "http://f\\@\\@_name:f\\@\\@-password@33.33.33.33:1313", "33.33.33.33", 1313, "f@@_name", "f@@-password" },
         { "http://foo_d\\@main\\foo_n\\@me:foo_passw\\@rd@wwww.domain_foo.org:1414", "wwww.domain_foo.org", 1414, "foo_d@main\\foo_n@me", "foo_passw@rd" },
-        { "http://foo-dom\\@in\\foo-name:foo-p\\@ssword@55.55.55.55:555", "55.55.55.55", 555, "foo-dom@in\\foo-name", "foo-p@ssword" }
+        { "http://foo-dom\\@in\\foo-name:foo-p\\@ssword@55.55.55.55:555", "55.55.55.55", 555, "foo-dom@in\\foo-name", "foo-p@ssword" },
+        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
 
+    for (int i = 0; i < validOptionsSize; i++)
+    {
+        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
+        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
+        EXPECT_EQ(port, validOptions[i].port);
+        EXPECT_STREQ(username, validOptions[i].username);
+        EXPECT_STREQ(password, validOptions[i].password);
+
+        FREE_MEMORY(hostAddress);
+        FREE_MEMORY(username);
+        FREE_MEMORY(password);
+    }
+}
+
+TEST_F(CommonUtilsTest, InvalidHttpProxyData)
+{
+    char* hostAddress = nullptr;
+    int port = 0;
+    char* username = nullptr;
+    char* password = nullptr;
+    
     const char* badOptions[] = {
         "some random text",
         "http://blah",
@@ -664,9 +685,7 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "http://foo`name:foopassword@wwww.foo.org:6060",
         "http://fooname:foo=password@wwww.foo.org:6060",
         "http://foo~name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo!password@wwww.foo.org:6060",
         "http://foo#name:foopassword@wwww.foo.org:6060",
-        "http://fooname:foo$password@wwww.foo.org:6060",
         "http://foo%name:foopassword@wwww.foo.org:6060",
         "http://fooname:foo^password@wwww.foo.org:6060",
         "http://fooname:foo&password@wwww.foo.org:6060",
@@ -687,25 +706,13 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         "http://foo|name:foopassword@wwww.foo.org:6060",
         "http://fooname:foopassword@@wwww.foo.org:7070",
         "http://foo:name:foo:password@@wwww.foo.org:8080"
-        "http://fooname:foopassword@@wwww.foo.org:***"
+        "http://fooname:foopassword@wwww.foo.org:***",
+        "http://fooname:foo\"password@wwww.foo.org:9090"
     };
 
     int badOptionsSize = ARRAY_SIZE(badOptions);
 
-    for (i = 0; i < validOptionsSize; i++)
-    {
-        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
-        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
-        EXPECT_EQ(port, validOptions[i].port);
-        EXPECT_STREQ(username, validOptions[i].username);
-        EXPECT_STREQ(password, validOptions[i].password);
-
-        FREE_MEMORY(hostAddress);
-        FREE_MEMORY(username);
-        FREE_MEMORY(password);
-    }
-
-    for (i = 0; i < badOptionsSize; i++)
+    for (int i = 0; i < badOptionsSize; i++)
     {
         EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
 
