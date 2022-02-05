@@ -722,7 +722,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, lastColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
-                        FREE_MEMORY(port);
+                        free(port);
+                        port = NULL;
                     }
                     else
                     {
@@ -754,7 +755,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     {
                         strncpy(port, firstColumn, hostAddressLength);
                         portNumber = strtol(port, NULL, 10);
-                        FREE_MEMORY(port);
+                        free(port);
+                        port = NULL;
                     }
                     else
                     {
