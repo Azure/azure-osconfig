@@ -639,13 +639,13 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         { "http://wwww.foo.org:500//", "wwww.foo.org", 500, nullptr, nullptr },
         { "http://88.88.88.88:600//", "88.88.88.88", 600, nullptr, nullptr },
         { "http://fooname:foopassword@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foopassword" },
-        { "http://foo_name:foo-password@12.34.56.78:8080", "12.34.56.78", 8080, "fooname", "foopassword" },
+        { "http://foo_name:foo-password@12.34.56.78:8080", "12.34.56.78", 8080, "foo_name", "foo-password" },
         { "http://foo_domain\\foo_name:foo_password@wwww.domain_foo.org:999", "wwww.domain_foo.org", 999, "foo_domain\\foo_name", "foo_password" },
-        { "http://foo-domain\\foo-name:foo-password@11.11.11.11:11", "11.11.11.11", 111, "foo-domain\\foo-name", "foo-password" },
+        { "http://foo-domain\\foo-name:foo-password@11.11.11.11:11", "11.11.11.11", 11, "foo-domain\\foo-name", "foo-password" },
         { "http://foo\\@name:foo\\@password@wwww.foo.org:1212", "wwww.foo.org", 1212, "foo@name", "foo@password" },
-        { "http://f\\@\\@_name:f\\Q\\Q-password@33.33.33.33:1313", "33.33.33.33", 1313, "f@@name", "f@@password" },
-        { "http://foo_d\\@main\\foo_n\\Qme:foo_passw\\Qrd@wwww.domain_foo.org:1414", "wwww.domain_foo.org", 1414, "foo_d@main\\foo_n@me", "foo_passw@rd" },
-        { "http://foo-dom\\@in\\foo-name:foo-p\\@ssword@55.55.55.55:55:555", "55.55.55.55", 555, "foo=dom@in\\foo-name", "foo-p@ssword" }
+        { "http://f\\@\\@_name:f\\@\\@-password@33.33.33.33:1313", "33.33.33.33", 1313, "f@@_name", "f@@-password" },
+        { "http://foo_d\\@main\\foo_n\\@me:foo_passw\\@rd@wwww.domain_foo.org:1414", "wwww.domain_foo.org", 1414, "foo_d@main\\foo_n@me", "foo_passw@rd" },
+        { "http://foo-dom\\@in\\foo-name:foo-p\\@ssword@55.55.55.55:555", "55.55.55.55", 555, "foo-dom@in\\foo-name", "foo-p@ssword" }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
