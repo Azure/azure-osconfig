@@ -10,6 +10,13 @@
 
 #define UNUSED(x) (void)(x)
 
+#define FREE_MEMORY(a) {\
+    if (NULL != a) {\
+        free(a);\
+        a = NULL;\
+    }\
+}\
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
