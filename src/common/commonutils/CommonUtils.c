@@ -588,7 +588,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             {
                 if (NULL == credentialsSeparator)
                 {
-                    credentialsSeparator = &(proxyData[i]);
+                    credentialsSeparator = (char*)&(proxyData[i]);
                 }
                 credentialsSeparatorCounter += 1;
                 if (credentialsSeparatorCounter > 1)
@@ -661,9 +661,9 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
         (credentialsSeparator && (firstColumn == lastColumn)) ||
         (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
-        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) >= strlen(proxyData)) ||
-        (1 >= strlen(lastColumn)) ||
-        (1 >= strlen(firstColumn)))
+        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) > strlen(proxyData)) ||
+        (1 > strlen(lastColumn)) ||
+        (1 > strlen(firstColumn)))
     {
         OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
     }
@@ -678,7 +678,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (username = (char*)malloc(usernameLength + 1)))
                     {
-                        strncpy(username, proxyData, usernameLength);
+                        memcpy(username, proxyData, usernameLength);
                         username[usernameLength] = 0;
 
                         RemoveProxyStringEscaping(username);
@@ -695,7 +695,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (password = (char*)malloc(passwordLength + 1)))
                     {
-                        strncpy(password, firstColumn, passwordLength);
+                        memcpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
 
                         RemoveProxyStringEscaping(password);
@@ -712,7 +712,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        strncpy(hostAddress, credentialsSeparator, hostAddressLength);
+                        memcpy(hostAddress, credentialsSeparator, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else
@@ -721,12 +721,12 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                 }
 
-                portLength = strlen(lastColumn);
+                portLength = (int)strlen(lastColumn);
                 if (portLength > 0)
                 {
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
-                        strncpy(port, lastColumn, portLength);
+                        memcpy(port, lastColumn, portLength);
                         port[portLength] = 0;
                         portNumber = strtol(port, NULL, 10);
                     }
@@ -744,7 +744,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        strncpy(hostAddress, proxyData, hostAddressLength);
+                        memcpy(hostAddress, proxyData, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else
@@ -753,12 +753,12 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                 }
 
-                portLength = strlen(firstColumn);
+                portLength = (int)strlen(firstColumn);
                 if (portLength > 0)
                 {
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
-                        strncpy(port, firstColumn, portLength);
+                        memcpy(port, firstColumn, portLength);
                         port[portLength] = 0;
                         portNumber = strtol(port, NULL, 10);
                     }
