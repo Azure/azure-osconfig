@@ -614,6 +614,15 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
     ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
 }
 
+struct HttpProxyOptions
+{
+    const char* data;
+    const char* hostAddress;
+    int port;
+    const char* username;
+    const char* password;
+};
+
 TEST_F(CommonUtilsTest, ValidHttpProxyData)
 {
     char* hostAddress = nullptr;
@@ -621,15 +630,31 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
     char* username = nullptr;
     char* password = nullptr;
 
-    EXPECT_TRUE(ParseHttpProxyData("http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", &hostAddress, &port, &username, &password, nullptr));
-    EXPECT_STREQ(hostAddress, "EFGHIJKLMNOPQRSTUVWXYZ");
-    EXPECT_EQ(port, 100);
-    EXPECT_STREQ(username, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo");
-    EXPECT_STREQ(password, "p@ssw@rd");
+    HttpProxyOptions validOptions[] = {
+        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
+        { "http://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
+        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:200", "EFGHIJKLMNOPQRSTUVWXYZ", 200, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
+        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_ - .ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "0123456789!abcdefghIjklmnopqrstuvwxyz$_ - .ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
+        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" },
+        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "wwww.foo.org", 8070, "fooname", "foo$pass!word" },
+        { "http://a:1", "a", 1, nullptr, nullptr },
+        { "http://1:a", "1", 0, nullptr, nullptr }
+    };
 
-    FREE_MEMORY(hostAddress);
-    FREE_MEMORY(username);
-    FREE_MEMORY(password);
+    int validOptionsSize = ARRAY_SIZE(validOptions);
+
+    for (int i = 0; i < validOptionsSize; i++)
+    {
+        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
+        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
+        EXPECT_EQ(port, validOptions[i].port);
+        EXPECT_STREQ(username, validOptions[i].username);
+        EXPECT_STREQ(password, validOptions[i].password);
+
+        FREE_MEMORY(hostAddress);
+        FREE_MEMORY(username);
+        FREE_MEMORY(password);
+    }
 }
 
 TEST_F(CommonUtilsTest, InvalidHttpProxyData)
