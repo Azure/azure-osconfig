@@ -613,3 +613,140 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
     ASSERT_FALSE(IsValidMimObjectPayload(invalidStringMapPayload, sizeof(invalidStringMapPayload), nullptr));
     ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
 }
+
+struct HttpProxyOptions
+{
+    const char* data;
+    const char* hostAddress;
+    int port;
+    const char* username;
+    const char* password;
+};
+
+TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
+{
+    char* hostAddress = NULL;
+    int port = 0;
+    char* username = NULL;
+    char* password = NULL;
+
+    HttpProxyOptions validOptions[] = {
+        { "http://wwww.foo.org:123", "wwww.foo.org", 123, nullptr, nullptr },
+        { "http://11.22.33.44:123", "11.22.33.44", 123, nullptr, nullptr },
+        { "http://user:password@wwww.foo.org:123", "wwww.foo.org", 123, "user", "password" },
+        { "http://user:password@11.22.33.44:123", "11.22.33.44", 123, "user", "password" },
+        { "http://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
+        { "http://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
+        { "http://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://wwww.foo.org:123", "wwww.foo.org", 123, nullptr, nullptr },
+        { "HTTP://11.22.33.44:123", "11.22.33.44", 123, nullptr, nullptr },
+        { "HTTP://user:password@wwww.foo.org:123", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user:password@11.22.33.44.55:123", "11.22.33.44.55", 123, "user", "password" },
+        { "HTTP://user:password@wwww.foo.org:123/", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user:password@11.22.33.44.55:123/", "11.22.33.44.55", 123, "user", "password" },
+        { "HTTP://user:password@wwww.foo.org:123//", "wwww.foo.org", 123, "user", "password" },
+        { "HTTP://user\\@foomail.org:passw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "user@foomail.org", "passw@rd" },
+        { "http://user\\@blah:p\\@\\@ssword@11.22.33.44.55:123", "11.22.33.44.55", 123, "user@blah", "p@@ssword" },
+        { "HTTP://foo_domain\\username:p\\@ssw\\@rd@wwww.foo.org:123//", "wwww.foo.org", 123, "foo_domain\\username", "p@ssw@rd" },
+        { "http://proxyuser:password@10.0.0.2:8080", "10.0.0.2", 8080, "proxyuser", "password" },
+        { "http://10.0.0.2:8080", "10.0.0.2", 8080, nullptr, nullptr }
+    };
+
+    int validOptionsSize = ARRAY_SIZE(validOptions);
+
+    const char* badOptions[] = {
+        "//wwww.foo.org:123",
+        "https://wwww.foo.org:123",
+        "11.22.22.44:123",
+        "//wwww.foo.org:123@@",
+        "user:password@wwww.foo.org:123/",
+        "HTTPS://user:password@wwww.foo.org:123",
+        "some text",
+        "http://some text",
+        "123",
+        "http://abc"
+        "HTTP://user:pass#word@wwww.foo.org:123//",
+        "http://us$er:pass#word@wwww.foo.org:123",
+        "http://wwww.foo!.org:123",
+        "http://a`:1",
+        "@//wwww.foo.org:123",
+        "http://wwww.^foo.org:123",
+        "http://wwww.fo$o.org:123",
+        "http://wwww.fo%o.org:123",
+        "http://wwww.&oo.org:123",
+        "http://wwww.foo?org:abc",
+        "http://www*.foo.org:abc",
+        "http://user:(password)@wwww.foo.org:123",
+        "http://user:pass+word@wwww.foo.org:123",
+        "http://user:pass=word@wwww.foo.org:123",
+        "http://user:[password]@wwww.foo.org:123",
+        "http://user:{password}@wwww.foo.org:123",
+        "http://wwww.;foo.org:123",
+        "HTTP://user@foomail.org:password@wwww.foo.org:123",
+        "http://user:<password>@wwww.foo.org:123",
+        "http://user:pass,word@wwww.foo.org:123",
+        "http://user:pass|word@wwww.foo.org:123"
+    };
+
+    int badOptionsSize = ARRAY_SIZE(badOptions);
+
+    for (int i = 0; i < validOptionsSize; i++)
+    {
+        EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
+        EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
+        EXPECT_EQ(port, validOptions[i].port);
+        
+        if (nullptr != validOptions[i].username)
+        {
+            EXPECT_STREQ(username, validOptions[i].username);
+        }
+        else 
+        {
+            EXPECT_EQ(nullptr, username);
+        }
+
+        if (nullptr != validOptions[i].password)
+        {
+            EXPECT_STREQ(password, validOptions[i].password);
+        }
+        else 
+        {
+            EXPECT_EQ(nullptr, password);
+        }    
+
+        if (nullptr != hostAddress)
+        {
+            free(hostAddress);
+        }
+
+        if (nullptr != username)
+        {
+            free(username);
+        }
+
+        if (nullptr != password)
+        {
+            free(password);
+        }
+    }
+
+    for (int i = 0; i < badOptionsSize; i++)
+    {
+        EXPECT_FALSE(ParseHttpProxyData(badOptions[i], &hostAddress, &port, &username, &password, nullptr));
+
+        if (nullptr != hostAddress)
+        {
+            free(hostAddress);
+        }
+
+        if (nullptr != username)
+        {
+            free(username);
+        }
+
+        if (nullptr != password)
+        {
+            free(password);
+        }
+    }
+}
