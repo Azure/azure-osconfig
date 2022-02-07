@@ -8,7 +8,14 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(a) (void)(a)
+
+#define FREE_MEMORY(a) {\
+    if (NULL != a) {\
+        free(a);\
+        a = NULL;\
+    }\
+}\
 
 // Linefeed (LF) ASCII character
 #ifndef EOL

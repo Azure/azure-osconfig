@@ -468,7 +468,12 @@ static void RemoveProxyStringEscaping(char* value)
 {
     int i = 0;
     int j = 0;
-    
+
+    if (NULL == value)
+    {
+        return;
+    }
+
     int length = strlen(value);
 
     for (i = 0; i < length - 1; i++)
@@ -529,7 +534,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     if ((NULL == proxyData) || (NULL == proxyHostAddress) || (NULL == proxyPort))
     {
         OsConfigLogError(log, "ParseHttpProxyData called with invalid arguments");
-        return NULL;
+        return result;
     }
 
     // Initialize output arguments
@@ -556,7 +561,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         return NULL;
     }
 
-    if ((0 != strncmp(proxyData, httpPrefix, strlen(httpPrefix))) && (0 != strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix))))
+    if (strncmp(proxyData, httpPrefix, strlen(httpPrefix)) && strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix)))
     {
         OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
         return NULL;
@@ -564,7 +569,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     
     for (i = 0; i < proxyDataLength; i++)
     {
-        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || ('-' == proxyData[i]) || (isalnum(proxyData[i])))
+        if (('.' == proxyData[i]) || ('/' == proxyData[i]) || ('\\' == proxyData[i]) || ('_' == proxyData[i]) || 
+            ('-' == proxyData[i]) || ('$' == proxyData[i]) || ('!' == proxyData[i]) || (isalnum(proxyData[i])))
         {
             continue;
         }
@@ -582,7 +588,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             {
                 if (NULL == credentialsSeparator)
                 {
-                    credentialsSeparator = (char*)&proxyData[i];
+                    credentialsSeparator = (char*)&(proxyData[i]);
                 }
                 credentialsSeparatorCounter += 1;
                 if (credentialsSeparatorCounter > 1)
@@ -655,9 +661,9 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
         (credentialsSeparator && (firstColumn == lastColumn)) ||
         (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
-        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) >= strlen(proxyData)) ||
-        (1 >= strlen(lastColumn)) ||
-        (1 >= strlen(firstColumn)))
+        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) > strlen(proxyData)) ||
+        (1 > strlen(lastColumn)) ||
+        (1 > strlen(firstColumn)))
     {
         OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
     }
@@ -672,7 +678,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (username = (char*)malloc(usernameLength + 1)))
                     {
-                        strncpy(username, proxyData, usernameLength);
+                        memcpy(username, proxyData, usernameLength);
                         username[usernameLength] = 0;
 
                         RemoveProxyStringEscaping(username);
@@ -689,7 +695,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (password = (char*)malloc(passwordLength + 1)))
                     {
-                        strncpy(password, firstColumn, passwordLength);
+                        memcpy(password, firstColumn, passwordLength);
                         password[passwordLength] = 0;
 
                         RemoveProxyStringEscaping(password);
@@ -706,7 +712,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        strncpy(hostAddress, credentialsSeparator, hostAddressLength);
+                        memcpy(hostAddress, credentialsSeparator, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else
@@ -720,7 +726,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
-                        strncpy(port, lastColumn, hostAddressLength);
+                        memcpy(port, lastColumn, portLength);
+                        port[portLength] = 0;
                         portNumber = strtol(port, NULL, 10);
                     }
                     else
@@ -737,7 +744,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        strncpy(hostAddress, proxyData, hostAddressLength);
+                        memcpy(hostAddress, proxyData, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else
@@ -751,7 +758,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                 {
                     if (NULL != (port = (char*)malloc(portLength + 1)))
                     {
-                        strncpy(port, firstColumn, hostAddressLength);
+                        memcpy(port, firstColumn, portLength);
+                        port[portLength] = 0;
                         portNumber = strtol(port, NULL, 10);
                     }
                     else
@@ -763,24 +771,20 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 
             *proxyHostAddress = hostAddress;
             *proxyPort = portNumber;
-
-            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
-            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
                         
-            if ((NULL != proxyUsername) && (NULL != proxyPassword))
+            if (proxyUsername && proxyPassword)
             {
                 *proxyUsername = username;
                 *proxyPassword = password;
-
-                OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
-                OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
+                
             }
 
-            // Port is unused past this, can be freed; the rest must remain allocated
-            if (port)
-            {
-                free(port);
-            }
+            OsConfigLogInfo(log, "HTTP proxy host|address: %s (%d)", *proxyHostAddress, hostAddressLength);
+            OsConfigLogInfo(log, "HTTP proxy port: %d", *proxyPort);
+            OsConfigLogInfo(log, "HTTP proxy username: %s (%d)", *proxyUsername, usernameLength);
+            OsConfigLogInfo(log, "HTTP proxy password: %s (%d)", *proxyPassword, passwordLength);
+
+            FREE_MEMORY(port);
 
             result = true;
         }
