@@ -1,3 +1,4 @@
+# TODO: Remove in-favor of poackage build pipeline
 # Continuous Integration Pipeline
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
