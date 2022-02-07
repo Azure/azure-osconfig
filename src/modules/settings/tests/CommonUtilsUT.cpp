@@ -695,8 +695,24 @@ TEST_F(CommonUtilsTest, ValidateHttpProxyDataParsing)
         EXPECT_TRUE(ParseHttpProxyData(validOptions[i].data, &hostAddress, &port, &username, &password, nullptr));
         EXPECT_STREQ(hostAddress, validOptions[i].hostAddress);
         EXPECT_EQ(port, validOptions[i].port);
-        EXPECT_STREQ(username, validOptions[i].username);
-        EXPECT_STREQ(password, validOptions[i].password);
+        
+        if (nullptr != validOptions[i].username)
+        {
+            EXPECT_STREQ(username, validOptions[i].username);
+        }
+        else 
+        {
+            EXPECT_EQ(nullptr, username);
+        }
+
+        if (nullptr != validOptions[i].password)
+        {
+            EXPECT_STREQ(password, validOptions[i].password);
+        }
+        else 
+        {
+            EXPECT_EQ(nullptr, password);
+        }    
 
         if (nullptr != hostAddress)
         {
