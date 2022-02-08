@@ -34,7 +34,6 @@ namespace OSConfig::Platform::Tests
     void CommandRunnerTests::SetUp()
     {
         signal(SIGUSR1, SignalDoWork);
-        ASSERT_NE(1, 2);
     }
 
     void CommandRunnerTests::TearDown() 
