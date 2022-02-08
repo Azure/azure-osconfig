@@ -28,17 +28,11 @@ namespace OSConfig::Platform::Tests
     {
     public:
         void SetUp() override;
-        void TearDown() override;
     };
 
     void CommandRunnerTests::SetUp()
     {
         signal(SIGUSR1, SignalDoWork);
-    }
-
-    void CommandRunnerTests::TearDown() 
-    {
-        // Do nothing
     }
 
     TEST_F(CommandRunnerTests, Execute)
