@@ -150,7 +150,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%cancelation", 
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", 
                 command, (timeout > 0) ? timeout : DEFAULT_COMMAND_TIMEOUT, (NULL == callback) ? " no " : " ");
         }
 
