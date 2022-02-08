@@ -24,6 +24,7 @@
 #define MAX_COMMAND_RESULT_FILE_NAME 100
 #define COMMAND_CALLBACK_INTERVAL 5 //seconds
 #define COMMAND_SIGNAL_INTERVAL 25000 //microseconds
+#define DEFAULT_COMMAND_TIMEOUT 60 //seconds
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
@@ -133,6 +134,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     int status = -1;
     int intermediateStatus = -1;
     int totalWaitSeconds = 0;
+    int timeout = timeoutSeconds;
     const int callbackIntervalSeconds = COMMAND_CALLBACK_INTERVAL;
     const int signalIntervalMicroSeconds = COMMAND_SIGNAL_INTERVAL;
 
@@ -144,11 +146,12 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
     fflush(NULL);
 
-    if (timeoutSeconds > 0)
+    if ((timeout > 0) || (NULL != callback))
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds)", command, timeoutSeconds);
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%cancelation", 
+                command, (timeout > 0) ? timeout : DEFAULT_COMMAND_TIMEOUT, (NULL == callback) ? " no " : " ");
         }
 
         // Fork an intermediate process to act as the parent for two more forked processes:
@@ -191,11 +194,16 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 status = ETIME;
                 if (NULL == callback)
                 {
-                    sleep(timeoutSeconds);
+                    sleep(timeout);
                 }
                 else
                 {
-                    while (totalWaitSeconds < timeoutSeconds)
+                    if (timeout < 1)
+                    {
+                        timeout = DEFAULT_COMMAND_TIMEOUT;
+                    }
+
+                    while (totalWaitSeconds < timeout)
                     {
                         // If the callback returns non zero, cancel the command
                         if (0 != callback(context))
@@ -278,11 +286,11 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             }
         }
     }
-    else //no timeout
+    else //no timeout and no cancelation
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout", command);
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation", command);
         }
         if (0 == (workerProcess = fork()))
         {
