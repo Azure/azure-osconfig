@@ -19,8 +19,15 @@ using ::testing::Invoke;
 
 namespace OSConfig::Platform::Tests
 {
+    static void SignalDoWork(int signal)
+    {
+        UNUSED(signal);
+    }
+
     TEST(CommandRunnerTests, Execute)
     {
+        signal(SIGUSR1, SignalDoWork);
+
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::Execute", nullptr);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
@@ -34,6 +41,8 @@ namespace OSConfig::Platform::Tests
 
     TEST(CommandRunnerTests, CommandStatusUpdated)
     {
+        signal(SIGUSR1, SignalDoWork);
+        
         CommandRunner cmdRunner("CommandRunnerTests::CommandStatusUpdated", nullptr);
 
         // Run 1st command
@@ -61,6 +70,8 @@ namespace OSConfig::Platform::Tests
 
     TEST(CommandRunnerTests, ExecuteCommandLimitedPayload)
     {
+        signal(SIGUSR1, SignalDoWork);
+
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::ExecuteCommandLimitedPayload", nullptr, LIMITED_PAYLOAD_SIZE);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
@@ -74,6 +85,8 @@ namespace OSConfig::Platform::Tests
 
     TEST(CommandRunnerTests, CachedCommandStatus)
     {
+        signal(SIGUSR1, SignalDoWork);
+
         CommandRunner::CommandArguments cmdArgs{ "1", "echo 1", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::CachedCommandStatus", nullptr, LIMITED_PAYLOAD_SIZE);
         cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
@@ -88,6 +101,8 @@ namespace OSConfig::Platform::Tests
 
     TEST(CommandRunnerTests, OverwriteBufferCommandStatus)
     {
+        signal(SIGUSR1, SignalDoWork);
+
         constexpr int CommandArgumentsListSize = COMMANDSTATUS_CACHE_MAX + 1;
         std::array<CommandRunner::CommandArguments, CommandArgumentsListSize> commandArgumentList;
         CommandRunner cmdRunner("CommandRunnerTests::OverwriteBufferCommandStatus", nullptr);
