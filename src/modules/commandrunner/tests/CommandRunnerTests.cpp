@@ -19,7 +19,23 @@ using ::testing::Invoke;
 
 namespace OSConfig::Platform::Tests
 {
-    TEST(CommandRunnerTests, Execute)
+    static void SignalDoWork(int signal)
+    {
+        UNUSED(signal);
+    }
+
+    class CommandRunnerTests : public ::testing::Test
+    {
+    public:
+        void SetUp() override;
+    };
+
+    void CommandRunnerTests::SetUp()
+    {
+        signal(SIGUSR1, SignalDoWork);
+    }
+
+    TEST_F(CommandRunnerTests, Execute)
     {
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::Execute", nullptr);
@@ -32,7 +48,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus->commandState);
     }
 
-    TEST(CommandRunnerTests, CommandStatusUpdated)
+    TEST_F(CommandRunnerTests, CommandStatusUpdated)
     {
         CommandRunner cmdRunner("CommandRunnerTests::CommandStatusUpdated", nullptr);
 
@@ -59,7 +75,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdRunner.GetCommandIdToRefresh().c_str());
     }
 
-    TEST(CommandRunnerTests, ExecuteCommandLimitedPayload)
+    TEST_F(CommandRunnerTests, ExecuteCommandLimitedPayload)
     {
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::ExecuteCommandLimitedPayload", nullptr, LIMITED_PAYLOAD_SIZE);
@@ -72,7 +88,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus->commandState);
     }
 
-    TEST(CommandRunnerTests, CachedCommandStatus)
+    TEST_F(CommandRunnerTests, CachedCommandStatus)
     {
         CommandRunner::CommandArguments cmdArgs{ "1", "echo 1", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner cmdRunner("CommandRunnerTests::CachedCommandStatus", nullptr, LIMITED_PAYLOAD_SIZE);
@@ -86,7 +102,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::Succeeded, status.commandState);
     }
 
-    TEST(CommandRunnerTests, OverwriteBufferCommandStatus)
+    TEST_F(CommandRunnerTests, OverwriteBufferCommandStatus)
     {
         constexpr int CommandArgumentsListSize = COMMANDSTATUS_CACHE_MAX + 1;
         std::array<CommandRunner::CommandArguments, CommandArgumentsListSize> commandArgumentList;
@@ -110,7 +126,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_NE(nullptr, cmd2);
     }
 
-    TEST(CommandRunnerTests, WorkerThreadExecution)
+    TEST_F(CommandRunnerTests, WorkerThreadExecution)
     {
         CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 1s && echo 1", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 1s && echo 2", CommandRunner::Action::RunCommand, 0, true };
@@ -142,7 +158,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ("2 ", cmdStatus2->textResult.c_str());
     }
 
-    TEST(CommandRunnerTests, CommandTimeoutSeconds)
+    TEST_F(CommandRunnerTests, CommandTimeoutSeconds)
     {
         // Sleep for 10s, timeout in 1s
         // Actual timeout in 5s due to COMMAND_CALLBACK_INTERVAL = 5
@@ -158,7 +174,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::TimedOut, cmdStatus->commandState);
     }
 
-    TEST(CommandRunnerTests, CancelRunningCommand)
+    TEST_F(CommandRunnerTests, CancelRunningCommand)
     {
         CommandRunner::CommandArguments cmdArgs{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 15, true };
         CommandRunner cmdRunner("CommandRunnerTests::CancelRunningCommand", nullptr);
@@ -178,7 +194,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::Canceled, cmdStatus->commandState);
     }
 
-    TEST(CommandRunnerTests, CancelQueuedCommand)
+    TEST_F(CommandRunnerTests, CancelQueuedCommand)
     {
         CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 20, true };
         CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 10s", CommandRunner::Action::RunCommand, 20, true };
@@ -213,7 +229,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(CommandRunner::CommandState::Canceled, cmdStatus1->commandState);
     }
 
-    TEST(CommandRunnerTests, SingleLineTextResult)
+    TEST_F(CommandRunnerTests, SingleLineTextResult)
     {
         CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 1s && echo 'single\\nline'", CommandRunner::Action::RunCommand, 0, true };
         CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 1s && echo 'multiple\\nlines'", CommandRunner::Action::RunCommand, 0, false };
@@ -236,7 +252,7 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ("multiple\nlines\n", cmdStatus2->textResult.c_str());
     }
 
-    TEST(CommandRunnerTests, PersistedCommandStatus)
+    TEST_F(CommandRunnerTests, PersistedCommandStatus)
     {
         CommandRunner cmdRunner("CommandRunnerTests::PersistedCommandStatus", nullptr);
         CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 10, true };
