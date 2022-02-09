@@ -258,7 +258,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 }
 
-TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+void* TestTimeoutCommand(void*)
 {
     char* textResult = nullptr;
 
@@ -268,6 +268,14 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
     {
         free(textResult);
     }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+{
+    pthread_t tid = 0;
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
 }
 
 static int numberOfTimes = 0;
@@ -278,20 +286,6 @@ static int TestCommandCallback(void* context)
 
     numberOfTimes += 1;
     return (3 == numberOfTimes) ? 1 : 0;
-}
-
-TEST_F(CommonUtilsTest, CancelCommand)
-{
-    char* textResult = nullptr;
-
-    ::numberOfTimes = 0;
-
-    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, TestCommandCallback, nullptr));
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
 }
 
 class CallbackContext
@@ -314,7 +308,7 @@ public:
     }
 };
 
-void* TestCancelCommand(void *arg)
+void* TestCancelCommand(void*)
 {
     CallbackContext context;
 
@@ -330,13 +324,13 @@ void* TestCancelCommand(void *arg)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, CancelCommandWithContext)
+TEST_F(CommonUtilsTest, CancelCommand)
 {
     pthread_t tid = 0;
 
     ::numberOfTimes = 0;
 
-    EXPECT_NE(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)

@@ -146,7 +146,8 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", command, timeout, (NULL == callback) ? " no " : " ");
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", 
+                command, timeout, (NULL == callback) ? " no " : " ");
         }
 
         // Fork an intermediate process to act as the parent for two more forked processes:
