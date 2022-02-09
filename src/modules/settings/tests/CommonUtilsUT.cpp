@@ -310,11 +310,9 @@ public:
 
 void* TestCancelCommand(void*)
 {
-    CallbackContext context;
-
     char* textResult = nullptr;
 
-    EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
     if (nullptr != textResult)
     {
@@ -331,6 +329,31 @@ TEST_F(CommonUtilsTest, CancelCommand)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+}
+
+void* TestCancelCommandWithContext(void*)
+{
+    CallbackContext context;
+
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, CancelCommandWithContext)
+{
+    pthread_t tid = 0;
+
+    ::numberOfTimes = 0;
+
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
