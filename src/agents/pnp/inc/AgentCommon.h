@@ -47,13 +47,6 @@
 // Max number of bytes allowed to go through to Twins (4KB)
 #define OSCONFIG_MAX_PAYLOAD 4096
 
-#define FREE_MEMORY(a) {\
-    if (NULL != a) {\
-        free(a);\
-        a = NULL;\
-    }\
-}\
-
 #define LogErrorJustTelemetry(log, FORMAT, ...) {\
     {\
         char errorMessage[512] = {0};\
