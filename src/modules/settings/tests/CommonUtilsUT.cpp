@@ -16,11 +16,6 @@ using namespace std;
 #define SSCANF_DATE_FORMAT "%4d%2d%2d"
 #define DATE_FORMAT_LENGTH 9
 
-static void SignalDoWork(int signal)
-{
-    UNUSED(signal);
-}
-
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
@@ -119,8 +114,6 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTimeout)
 {
     char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
 
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 0, 10, &textResult, nullptr, nullptr));
     // Echo appends an end of line character:
@@ -269,8 +262,6 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
 {
     char* textResult = nullptr;
 
-    signal(SIGUSR1, SignalDoWork);
-
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
     if (nullptr != textResult)
@@ -292,8 +283,6 @@ static int TestCommandCallback(void* context)
 TEST_F(CommonUtilsTest, CancelCommand)
 {
     char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
 
     ::numberOfTimes = 0;
 
@@ -325,15 +314,11 @@ public:
     }
 };
 
-TEST_F(CommonUtilsTest, CancelCommandWithContext)
+void* TestCancelCommand(void *arg)
 {
-    char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
-
-    ::numberOfTimes = 0;
-
     CallbackContext context;
+
+    char* textResult = nullptr;
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
@@ -341,6 +326,17 @@ TEST_F(CommonUtilsTest, CancelCommandWithContext)
     {
         free(textResult);
     }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, CancelCommandWithContext)
+{
+    pthread_t tid = 0;
+
+    ::numberOfTimes = 0;
+
+    EXPECT_NE(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)

@@ -134,24 +134,19 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     int status = -1;
     int intermediateStatus = -1;
     int totalWaitSeconds = 0;
-    int timeout = timeoutSeconds;
+    int timeout = (timeoutSeconds > 0) ? timeoutSeconds : DEFAULT_COMMAND_TIMEOUT;
     const int callbackIntervalSeconds = COMMAND_CALLBACK_INTERVAL;
     const int signalIntervalMicroSeconds = COMMAND_SIGNAL_INTERVAL;
 
-    // When invoked on the main process thread we periodically signal to not block while the command executes
-    // Warning: main process must handle SIGUSR1 signal otherwise this signal may cause process termination
-    // (default action for SIGUSR1 is terminate the process, see: man 7 signal)
-    // When invoked from a worker thread, no need to signal as the main process won't be blocked
-    bool signalWhileWaiting = (bool)(getpid() == gettid());
+    bool mainProcessThread = (bool)(getpid() == gettid());
 
     fflush(NULL);
 
-    if ((timeout > 0) || (NULL != callback))
+    if ((false == mainProcessThread) && ((timeoutSeconds > 0) || (NULL != callback)))
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", 
-                command, (timeout > 0) ? timeout : DEFAULT_COMMAND_TIMEOUT, (NULL == callback) ? " no " : " ");
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", command, timeout, (NULL == callback) ? " no " : " ");
         }
 
         // Fork an intermediate process to act as the parent for two more forked processes:
@@ -198,11 +193,6 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
                 }
                 else
                 {
-                    if (timeout < 1)
-                    {
-                        timeout = DEFAULT_COMMAND_TIMEOUT;
-                    }
-
                     while (totalWaitSeconds < timeout)
                     {
                         // If the callback returns non zero, cancel the command
@@ -263,19 +253,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
         else if (intermediateProcess > 0)
         {
             // Wait on the intermediate process to finish
-            if (signalWhileWaiting)
-            {
-                while (intermediateProcess != waitpid(intermediateProcess, &status, WNOHANG))
-                {
-                    // While waiting signal SIGUSR1 to the main process to allow it to breathe
-                    raise(SIGUSR1);
-                    usleep(signalIntervalMicroSeconds);
-                }
-            }
-            else
-            {
-                waitpid(intermediateProcess, &status, 0);
-            }
+            waitpid(intermediateProcess, &status, 0);
         }
         else
         {
@@ -286,7 +264,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             }
         }
     }
-    else //no timeout and no cancelation
+    else
     {
         if (IsFullLoggingEnabled())
         {

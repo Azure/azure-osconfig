@@ -19,22 +19,6 @@ using ::testing::Invoke;
 
 namespace OSConfig::Platform::Tests
 {
-    static void SignalDoWork(int signal)
-    {
-        UNUSED(signal);
-    }
-
-    class CommandRunnerTests : public ::testing::Test
-    {
-    public:
-        void SetUp() override;
-    };
-
-    void CommandRunnerTests::SetUp()
-    {
-        signal(SIGUSR1, SignalDoWork);
-    }
-
     TEST_F(CommandRunnerTests, Execute)
     {
         CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
