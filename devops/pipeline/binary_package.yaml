@@ -186,12 +186,12 @@ stages:
     # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
     - script: |
         docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log"
-      condition: or(eq(variables.ignoreTestFailures, false), eq(variables.coverage, false))
+      condition: and(eq(variables.ignoreTestFailures, false), eq(variables.coverage, false))
       displayName: Run tests
 
     - script: |
         docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-$(arch) && ctest -T test --verbose > TestOutput.log || true"
-      condition: or(eq(variables.ignoreTestFailures, true), eq(variables.coverage, false))
+      condition: and(eq(variables.ignoreTestFailures, true), eq(variables.coverage, false))
       displayName: Run tests (ignore failures)
 
     - publish: $(Build.SourcesDirectory)/build-$(arch)/TestOutput.log
