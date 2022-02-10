@@ -33,6 +33,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 typedef int(*CommandCallback)(void* context);
 
+// If called from the main process thread the timeoutSeconds and callback arguments are ignored
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log);
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
