@@ -485,7 +485,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     // "http://username:password@server:port"
     //
     // ..where the prefix must be either lowercase "http" or uppercase "HTTP"
-    // ..and username and password can contain '@' characters escaled as "\\@"
+    // ..and username and password can contain '@' characters escaped as "\\@"
     //
     // For example:
     //

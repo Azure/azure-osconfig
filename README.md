@@ -170,6 +170,27 @@ To enable local priority, edit the OSConfig general configuration file `/etc/osc
 ```
 To configure for remote priority, set "LocalPriority" to 0.
 
+## Configuring an HTTP proxy
+
+OSConfig can read the HTTP proxy information from one of the following environment variables, when starting up attempting to read them in the following order:
+
+1. http_proxy
+1. https_proxy
+1. HTTP_PROXY
+1. HTTPS_PROXY
+
+When it finds one of these environment variables, OSConfig reads the HTTP proxy configuration from there.
+
+OSConfig supports the HTTP proxy configuration to be in one of the following formats:
+
+`http://server:port`
+`http://username:password@server:port`
+`http://domain\username:password@server:port`
+
+Where the prefix is either lowercase `http` or uppercase `HTTP`, the username and password can contain `@` characters escaped as `\@`, and the the proxy server is specified either by name or address.
+
+For example: `http://username\@mail.foo:p\@ssw\@rd@www.foo.org:100` where username is `username@mail.foo`, password is `p@ssw@rd`, the proxy server is `www.foo.org` and the port is 100.
+
 ## Local Management
 
 OSConfig uses two local files as local digital twins in MIM JSON format:
