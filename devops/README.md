@@ -51,7 +51,7 @@ In order for packaging/testing to be automated, only two pipelines are required 
  * [create_containers.yaml](https://github.com/Azure/azure-osconfig/blob/main/devops/pipeline/create_containers.yaml)
  * [binary_package.yaml](https://github.com/Azure/azure-osconfig/blob/main/devops/pipeline/binary_package.yaml)
 
-Both pipelines require the following variables in order to work against your service connection and container repository. Make sure the `SERVICE_CONNECTION` points to the repository (case-sensitive) service connection created above and the `CONTAINER_REGISTRY` URI for the image repository.
+Both pipelines require the following variables in order to work against the service connection and container repository. Make sure the `SERVICE_CONNECTION` points to the repository (case-sensitive) service connection created above and the `CONTAINER_REGISTRY` URI for the image repository.
 
  ```
 variables:
