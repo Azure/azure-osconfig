@@ -4,15 +4,16 @@ This folder contains various folders in use by OSConfig's Engineering Systems (B
  * debian - Debian packaging maintainer Scripts
  * docker - Container definitions
  * pipeline - Azure Pipeline pipeline definitions
- * scripts - various scripts for installing dependencies and creating service principals for the infrastructure
+ * scripts - Various scripts for installing dependencies and creating service principals for the infrastructure
  * terraform - Terraform scripts used for creating end-to-end test infrastructure
 
 # Containerized Environments
-OSConfig's engineering systems make use of containers for building, unit testing, and packaging. The container environments are located under the [docker](https://github.com/Azure/azure-osconfig/tree/main/devops/docker) directory naming convention is as follows `[distro]-[architecture]`. The container environments contain everything needed to build/test/package OSConfig.
+OSConfig's engineering systems make use of containers for building, unit testing, and packaging. The container environments are located under the [docker](https://github.com/Azure/azure-osconfig/tree/main/devops/docker) directory naming convention is as follows `[distro]-[architecture]`. The container environments contain everything needed to build, test, and package OSConfig.
 
 ### Supported Environments
 * Debian 9
-* Ubuntu 18.04/20.04 (LTS)
+* Ubuntu 18.04
+* Ubuntu 20.04
 
 ### Supported Architectures
 * AMD64 (native)
