@@ -644,16 +644,16 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
     char* password = nullptr;
 
     HttpProxyOptions validOptions[] = {
-        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
-        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
-        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
-        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" },
-        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "wwww.foo.org", 8070, "fooname", "foo$pass!word" },
-        { "http://a\\b:c@d:1", "d", 1, "a\\b", "c" },
-        { "http://a\\@b:c@d:1", "d", 1, "a@b", "c" },
-        { "http://a:b@c:1", "c", 1, "a", "b" },
-        { "http://a:1", "a", 1, nullptr, nullptr },
-        { "http://1:a", "1", 0, nullptr, nullptr }
+        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "http://EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
+        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "http://EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
+        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
+        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "http://wwww.foo.org", 7070, "fooname", "foo$pass!word" },
+        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "http://wwww.foo.org", 8070, "fooname", "foo$pass!word" },
+        { "http://a\\b:c@d:1", "http://d", 1, "a\\b", "c" },
+        { "http://a\\@b:c@d:1", "http://d", 1, "a@b", "c" },
+        { "http://a:b@c:1", "http://c", 1, "a", "b" },
+        { "http://a:1", "http://a", 1, nullptr, nullptr },
+        { "http://1:a", "http://1", 0, nullptr, nullptr }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
