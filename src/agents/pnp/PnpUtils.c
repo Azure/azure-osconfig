@@ -39,6 +39,17 @@ typedef IOTHUB_CLIENT_RESULT(*PROPERTY_UPDATE_CALLBACK)(const char* componentNam
 static const char g_connectionAuthenticated[] = "IOTHUB_CLIENT_CONNECTION_AUTHENTICATED";
 static const char g_connectionUnauthenticated[] = "IOTHUB_CLIENT_CONNECTION_UNAUTHENTICATED";
 
+#define MAX_DESIRED_TWIN_QUEUE 10
+typedef struct DESIRED_TWIN_UPDATE
+{
+    DEVICE_TWIN_UPDATE_STATE updateState;
+    unsigned char* payload;
+    size_t size;
+} DESIRED_TWIN_UPDATE;
+
+static DESIRED_TWIN_UPDATE g_desiredTwinUpdates[MAX_DESIRED_TWIN_QUEUE] = {0};
+static int g_desiredTwinUpdatesIndex = 0;
+
 static void IotHubConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result, IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason, void* userContextCallback)
 {
     bool authenticated = false;
@@ -306,6 +317,73 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
     return result;
 }
 
+static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size)
+{
+    if ((NULL == payload) || (0 == size))
+    {
+        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  size);
+        return;
+    }
+    
+    // This code is currently running all on a single thread. If it would be multi-threaded, we'd add here a mutex 
+    // that locks for this function as well as for ProcessDesiredTwinUpdates in case they are invoked in parallel.
+
+    g_desiredTwinUpdatesIndex += 1;
+
+    // Circular buffer, when full, continue overwritting from beginning
+    if ((g_desiredTwinUpdatesIndex + 1) > ARRAY_SIZE(g_desiredTwinUpdates))
+    {
+        g_desiredTwinUpdatesIndex = 0;
+    }
+    
+    // Free existing slot
+    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = 0;
+    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = 0;
+    FREE_MEMORY(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
+
+    // Allocate memory for new desired twin payload to queue
+    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload = malloc(size);
+    if (NULL != g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload)
+    {
+        memcpy(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload, payload, size);
+        g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = updateState;
+        g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = size;
+        
+        OsConfigLogInfo(GetLog(), "Queued desired payload of %d bytes at position %d of %d", (int)size, g_desiredTwinUpdatesIndex + 1, ARRAY_SIZE(g_desiredTwinUpdates));
+    }
+    else
+    {
+        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed to allocate buffer for new payload (%d bytes)", (int)size);
+    }
+}
+
+static void ClearAllDesiredTwinUpdates()
+{
+    int i = 0;
+    for (i = 0; i < ARRAY_SIZE(g_desiredTwinUpdates); i++)
+    {
+        g_desiredTwinUpdates[i].updateState = 0;
+        g_desiredTwinUpdates[i].size = 0;
+        FREE_MEMORY(g_desiredTwinUpdates[i].payload);
+    }
+}
+
+void ProcessDesiredTwinUpdates()
+{
+    int i = 0;
+    
+    for (i = 0; i < ARRAY_SIZE(g_desiredTwinUpdates); i++)
+    {
+        if ((g_desiredTwinUpdates[i].size > 0) && (NULL != g_desiredTwinUpdates[i].payload))
+        {
+            IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(updateState, payload, size, PropertyUpdateFromIotHubCallback);
+            OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin for desired twin %d of %d completed with result %d", i + 1, ARRAY_SIZE(g_desiredTwinUpdates), (int)result);
+        }
+    }
+    
+    ClearAllDesiredTwinUpdates();
+}
+
 static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size, void* userContextCallback)
 {
     LogAssert(GetLog(), NULL != payload);
@@ -320,11 +398,9 @@ static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
         OsConfigLogInfo(GetLog(), "ModuleTwinCallback: received %d bytes", (int)size);
     }
 
-    IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(updateState, payload, size, PropertyUpdateFromIotHubCallback);
+    QueueDesiredTwinUpdate(updateState, payload, size);
 
     UNUSED(userContextCallback);
-
-    OsConfigLogInfo(GetLog(), "ModuleTwinCallback completed with result %d", (int)result);
 }
 
 static bool IotHubSetOption(const char* optionName, const void* value)

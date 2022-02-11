@@ -865,6 +865,8 @@ void AgentDoWork(void)
 
     if ((nowTick == g_lastTick) || (intervalTick <= (nowTick - g_lastTick)))
     {
+        ProcessDesiredTwinUpdates();
+        
         ReportProperties();
 
         LoadDesiredConfigurationFromFile();
