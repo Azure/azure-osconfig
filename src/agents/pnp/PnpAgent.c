@@ -861,15 +861,15 @@ void AgentDoWork(void)
 {
     tickcounter_ms_t nowTick = 0;
     tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
+
     tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
     if ((nowTick == g_lastTick) || (intervalTick <= (nowTick - g_lastTick)))
     {
         ProcessDesiredTwinUpdates();
-        
-        ReportProperties();
-
         LoadDesiredConfigurationFromFile();
+
+        ReportProperties();
         SaveReportedConfigurationToFile();
 
         CallMpiDoWork();
