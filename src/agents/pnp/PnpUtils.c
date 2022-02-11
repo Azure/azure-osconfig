@@ -45,6 +45,7 @@ typedef struct DESIRED_TWIN_UPDATE
     DEVICE_TWIN_UPDATE_STATE updateState;
     unsigned char* payload;
     size_t size;
+    int processed;
 } DESIRED_TWIN_UPDATE;
 
 static DESIRED_TWIN_UPDATE g_desiredTwinUpdates[MAX_DESIRED_TWIN_QUEUE] = {0};
@@ -319,26 +320,21 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
 
 static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size)
 {
+    // This code is currently running all on a single thread. If it will become multi-threaded, 
+    // add a mutex and lock within all functions that access this common desired twin queue data.
+
+    int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
+
     if ((NULL == payload) || (0 == size))
     {
-        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  size);
+        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  (int)size);
         return;
     }
-    
-    // This code is currently running all on a single thread. If it would be multi-threaded, we'd add here a mutex 
-    // that locks for this function as well as for ProcessDesiredTwinUpdates in case they are invoked in parallel.
-
-    g_desiredTwinUpdatesIndex += 1;
-
-    // Circular buffer, when full, continue overwritting from beginning
-    if ((g_desiredTwinUpdatesIndex + 1) > ARRAY_SIZE(g_desiredTwinUpdates))
-    {
-        g_desiredTwinUpdatesIndex = 0;
-    }
-    
+   
     // Free existing slot
     g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = 0;
     g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = 0;
+    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].processed = 0;
     FREE_MEMORY(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
 
     // Allocate memory for new desired twin payload to queue
@@ -348,19 +344,27 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
         memcpy(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload, payload, size);
         g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = updateState;
         g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = size;
-        
-        OsConfigLogInfo(GetLog(), "Queued desired payload of %d bytes at position %d of %d", (int)size, g_desiredTwinUpdatesIndex + 1, ARRAY_SIZE(g_desiredTwinUpdates));
+        OsConfigLogInfo(GetLog(), "Queued desired payload of %d bytes at slot %d", (int)size, g_desiredTwinUpdatesIndex + 1);
     }
     else
     {
         LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed to allocate buffer for new payload (%d bytes)", (int)size);
     }
+
+    // Circular buffer, when full, continue overwritting from beginning
+    g_desiredTwinUpdatesIndex += 1;
+    if (g_desiredTwinUpdatesIndex >= queueSize)
+    {
+        g_desiredTwinUpdatesIndex = 0;
+    }
 }
 
-static void ClearAllDesiredTwinUpdates()
+static void ClearDesiredTwinUpdates()
 {
+    int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
     int i = 0;
-    for (i = 0; i < ARRAY_SIZE(g_desiredTwinUpdates); i++)
+
+    for (i = 0; i < queueSize; i++)
     {
         g_desiredTwinUpdates[i].updateState = 0;
         g_desiredTwinUpdates[i].size = 0;
@@ -370,18 +374,19 @@ static void ClearAllDesiredTwinUpdates()
 
 void ProcessDesiredTwinUpdates()
 {
+    int queueSize = (int)ARRAY_SIZE(g_desiredTwinUpdates);
     int i = 0;
     
-    for (i = 0; i < ARRAY_SIZE(g_desiredTwinUpdates); i++)
+    for (i = 0; i < queueSize; i++)
     {
-        if ((g_desiredTwinUpdates[i].size > 0) && (NULL != g_desiredTwinUpdates[i].payload))
+        if ((g_desiredTwinUpdates[i].size > 0) && (NULL != g_desiredTwinUpdates[i].payload) && (0 == g_desiredTwinUpdates[i].processed))
         {
-            IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(updateState, payload, size, PropertyUpdateFromIotHubCallback);
-            OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin for desired twin %d of %d completed with result %d", i + 1, ARRAY_SIZE(g_desiredTwinUpdates), (int)result);
+            IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(g_desiredTwinUpdates[i].updateState, g_desiredTwinUpdates[i].payload, 
+                g_desiredTwinUpdates[i].size, PropertyUpdateFromIotHubCallback);
+            g_desiredTwinUpdates[i].processed = 1;
+            OsConfigLogInfo(GetLog(), "ProcessDesiredTwinUpdates: processing desired twin update at slot %d completed with result %d", i + 1, (int)result);
         }
     }
-    
-    ClearAllDesiredTwinUpdates();
 }
 
 static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char* payload, size_t size, void* userContextCallback)
@@ -401,6 +406,8 @@ static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
     QueueDesiredTwinUpdate(updateState, payload, size);
 
     UNUSED(userContextCallback);
+
+    OsConfigLogInfo(GetLog(), "ModuleTwinCallback: done");
 }
 
 static bool IotHubSetOption(const char* optionName, const void* value)
@@ -432,6 +439,8 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
     IOTHUB_CLIENT_RESULT iothubResult = IOTHUB_CLIENT_OK;
 
     bool urlEncodeOn = true;
+
+    g_desiredTwinUpdatesIndex = 0;
 
     if (NULL != g_moduleHandle)
     {
@@ -503,6 +512,8 @@ void IotHubDeInitialize(void)
         IoTHub_Deinit();
         g_moduleHandle = NULL;
     }
+
+    ClearDesiredTwinUpdates();
 }
 
 void IotHubDoWork(void)
