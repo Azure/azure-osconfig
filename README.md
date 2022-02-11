@@ -189,6 +189,13 @@ Where the prefix is either lowercase `http` or uppercase `HTTP` and the username
 
 For example: `http://username\@mail.foo:p\@ssw\@rd@www.foo.org:100` where username is `username@mail.foo`, password is `p@ssw@rd`, the proxy server is `www.foo.org` and the port is 100.
 
+The environment variable needs to be set for the root user account. For example, for a fictive proxy server, user and password, the environment variable `http_proxy` can be set for the root user with:
+
+```
+sudo -E su
+export http_proxy=http://user:password@wwww.foo.org:100//
+```
+
 ## Local Management
 
 OSConfig uses two local files as local digital twins in MIM JSON format:
