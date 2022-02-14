@@ -142,12 +142,12 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
     fflush(NULL);
 
-    if ((false == mainProcessThread) && ((timeoutSeconds > 0) || (NULL != callback)))
+    if ((timeoutSeconds > 0) || (NULL != callback))
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", 
-                command, timeout, (NULL == callback) ? " no " : " ");
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread", 
+                command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
         }
 
         // Fork an intermediate process to act as the parent for two more forked processes:
@@ -269,7 +269,8 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation", command);
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", 
+                command, mainProcessThread ? "main process" : "worker");
         }
         if (0 == (workerProcess = fork()))
         {
