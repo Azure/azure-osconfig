@@ -366,10 +366,10 @@ static void ClearDesiredTwinUpdates()
 
     for (i = 0; i < queueSize; i++)
     {
-        g_desiredTwinUpdates[i].updateState = 0;
-        g_desiredTwinUpdates[i].size = 0;
         FREE_MEMORY(g_desiredTwinUpdates[i].payload);
     }
+
+    memset(g_desiredTwinUpdates, 0, sizeof(g_desiredTwinUpdates));
 }
 
 void ProcessDesiredTwinUpdates()
@@ -381,8 +381,7 @@ void ProcessDesiredTwinUpdates()
     {
         if ((g_desiredTwinUpdates[i].size > 0) && (NULL != g_desiredTwinUpdates[i].payload) && (0 == g_desiredTwinUpdates[i].processed))
         {
-            IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(g_desiredTwinUpdates[i].updateState, g_desiredTwinUpdates[i].payload, 
-                g_desiredTwinUpdates[i].size, PropertyUpdateFromIotHubCallback);
+            IOTHUB_CLIENT_RESULT result = ProcessJsonFromTwin(g_desiredTwinUpdates[i].updateState, g_desiredTwinUpdates[i].payload, g_desiredTwinUpdates[i].size, PropertyUpdateFromIotHubCallback);
             g_desiredTwinUpdates[i].processed = 1;
             OsConfigLogInfo(GetLog(), "ProcessDesiredTwinUpdates: processing desired twin update at slot %d completed with result %d", i + 1, (int)result);
         }

@@ -861,17 +861,19 @@ void AgentDoWork(void)
 {
     tickcounter_ms_t nowTick = 0;
     tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-
     tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
     if ((nowTick == g_lastTick) || (intervalTick <= (nowTick - g_lastTick)))
     {
+        // Process desired
         ProcessDesiredTwinUpdates();
         LoadDesiredConfigurationFromFile();
 
+        // Process reported
         ReportProperties();
         SaveReportedConfigurationToFile();
 
+        // Allow the inproc (for now) platform to unload unused modules
         CallMpiDoWork();
 
         tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
