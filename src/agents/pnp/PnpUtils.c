@@ -331,16 +331,15 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
         return;
     }
    
-    // Free existing slot
-    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = 0;
-    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = 0;
-    g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].processed = 0;
+    // Clear existing slot
     FREE_MEMORY(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload);
+    memset(&(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]), 0, sizeof(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex]));
 
     // Allocate memory for new desired twin payload to queue
     g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload = malloc(size);
     if (NULL != g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload)
     {
+        // Fill in the slot (the processed field is already cleared to 0)
         memcpy(g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].payload, payload, size);
         g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].updateState = updateState;
         g_desiredTwinUpdates[g_desiredTwinUpdatesIndex].size = size;

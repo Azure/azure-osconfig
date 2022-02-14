@@ -354,7 +354,6 @@ TEST_F(CommonUtilsTest, CancelCommand)
     }
 }
 
-
 void* TestCancelCommandWithContext(void*)
 {
     CallbackContext context;
