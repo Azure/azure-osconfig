@@ -406,6 +406,8 @@ static void ModuleTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
 
     UNUSED(userContextCallback);
 
+    raise(SIGUSR1);
+
     OsConfigLogInfo(GetLog(), "ModuleTwinCallback: done");
 }
 

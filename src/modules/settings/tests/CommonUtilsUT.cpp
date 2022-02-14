@@ -272,10 +272,22 @@ void* TestTimeoutCommand(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOutOnWorkerThread)
 {
     pthread_t tid = 0;
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
+}
+
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
 }
 
 static int numberOfTimes = 0;
@@ -303,7 +315,6 @@ public:
 
     static int TestCommandCallback(void* context)
     {
-        EXPECT_NE(nullptr, context);
         return ::TestCommandCallback(context);
     }
 };
@@ -322,7 +333,7 @@ void* TestCancelCommand(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, CancelCommand)
+TEST_F(CommonUtilsTest, CancelCommandOnWorkerThread)
 {
     pthread_t tid = 0;
 
@@ -330,6 +341,19 @@ TEST_F(CommonUtilsTest, CancelCommand)
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
 }
+
+TEST_F(CommonUtilsTest, CancelCommand)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+}
+
 
 void* TestCancelCommandWithContext(void*)
 {
@@ -347,13 +371,27 @@ void* TestCancelCommandWithContext(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, CancelCommandWithContext)
+TEST_F(CommonUtilsTest, CancelCommandWithContextOnWorkerThread)
 {
     pthread_t tid = 0;
 
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
+}
+
+TEST_F(CommonUtilsTest, CancelCommandWithContext)
+{
+    CallbackContext context;
+
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
