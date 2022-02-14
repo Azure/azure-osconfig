@@ -16,11 +16,6 @@ using namespace std;
 #define SSCANF_DATE_FORMAT "%4d%2d%2d"
 #define DATE_FORMAT_LENGTH 9
 
-static void SignalDoWork(int signal)
-{
-    UNUSED(signal);
-}
-
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
@@ -119,8 +114,6 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTimeout)
 {
     char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
 
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 0, 10, &textResult, nullptr, nullptr));
     // Echo appends an end of line character:
@@ -265,11 +258,9 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     }
 }
 
-TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+void* TestTimeoutCommand(void*)
 {
     char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
 
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
@@ -277,6 +268,14 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
     {
         free(textResult);
     }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+{
+    pthread_t tid = 0;
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
 }
 
 static int numberOfTimes = 0;
@@ -287,22 +286,6 @@ static int TestCommandCallback(void* context)
 
     numberOfTimes += 1;
     return (3 == numberOfTimes) ? 1 : 0;
-}
-
-TEST_F(CommonUtilsTest, CancelCommand)
-{
-    char* textResult = nullptr;
-
-    signal(SIGUSR1, SignalDoWork);
-
-    ::numberOfTimes = 0;
-
-    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, TestCommandCallback, nullptr));
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
 }
 
 class CallbackContext
@@ -325,15 +308,34 @@ public:
     }
 };
 
-TEST_F(CommonUtilsTest, CancelCommandWithContext)
+void* TestCancelCommand(void*)
 {
     char* textResult = nullptr;
 
-    signal(SIGUSR1, SignalDoWork);
+    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, CancelCommand)
+{
+    pthread_t tid = 0;
 
     ::numberOfTimes = 0;
 
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+}
+
+void* TestCancelCommandWithContext(void*)
+{
     CallbackContext context;
+
+    char* textResult = nullptr;
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
@@ -341,6 +343,17 @@ TEST_F(CommonUtilsTest, CancelCommandWithContext)
     {
         free(textResult);
     }
+
+    return nullptr;
+}
+
+TEST_F(CommonUtilsTest, CancelCommandWithContext)
+{
+    pthread_t tid = 0;
+
+    ::numberOfTimes = 0;
+
+    EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
@@ -631,16 +644,16 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
     char* password = nullptr;
 
     HttpProxyOptions validOptions[] = {
-        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
-        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
-        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
-        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" },
-        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "wwww.foo.org", 8070, "fooname", "foo$pass!word" },
-        { "http://a\\b:c@d:1", "d", 1, "a\\b", "c" },
-        { "http://a\\@b:c@d:1", "d", 1, "a@b", "c" },
-        { "http://a:b@c:1", "c", 1, "a", "b" },
-        { "http://a:1", "a", 1, nullptr, nullptr },
-        { "http://1:a", "1", 0, nullptr, nullptr }
+        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "http://EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
+        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "http://EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
+        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
+        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "http://wwww.foo.org", 7070, "fooname", "foo$pass!word" },
+        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "http://wwww.foo.org", 8070, "fooname", "foo$pass!word" },
+        { "http://a\\b:c@d:1", "http://d", 1, "a\\b", "c" },
+        { "http://a\\@b:c@d:1", "http://d", 1, "a@b", "c" },
+        { "http://a:b@c:1", "http://c", 1, "a", "b" },
+        { "http://a:1", "http://a", 1, nullptr, nullptr },
+        { "http://1:a", "http://1", 0, nullptr, nullptr }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);

@@ -129,7 +129,7 @@ static IOTHUB_CLIENT_RESULT PropertyUpdateFromIotHubCallback(const char* compone
         return result;
     }
 
-    OsConfigLogInfo(GetLog(), "PropertyUpdateFromIotHubCallback: invoking Settings for property %s, version %d", propertyName, version);
+    OsConfigLogInfo(GetLog(), "PropertyUpdateFromIotHubCallback: invoking %s for property %s, version %d", componentName, propertyName, version);
     result = UpdatePropertyFromIotHub(componentName, propertyName, propertyValue, version);
 
     return result;

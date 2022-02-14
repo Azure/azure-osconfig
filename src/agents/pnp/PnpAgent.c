@@ -216,12 +216,6 @@ static void SignalReloadConfiguration(int signal)
     g_refreshSignal = signal;
 }
 
-static void SignalDoWork(int signal)
-{
-    UNUSED(signal);
-    IoTHubDeviceClient_LL_DoWork(g_moduleHandle);
-}
-
 static void RefreshConnection()
 {
     char* connectionString = NULL;
@@ -709,7 +703,6 @@ int main(int argc, char *argv[])
         signal(g_stopSignals[i], SignalInterrupt);
     }
     signal(SIGHUP, SignalReloadConfiguration);
-    signal(SIGUSR1, SignalDoWork);
 
     if (0 != InitializeAgent(connectionString))
     {
