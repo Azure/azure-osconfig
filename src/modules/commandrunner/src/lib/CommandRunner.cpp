@@ -24,7 +24,6 @@ constexpr const char info[] = R""""({
     "UserAccount": 0})"""";
 
 static const std::string g_commandRunnerCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
-static const unsigned int g_maxCommandCacheSize = 10;
 
 CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, std::function<int()> persistCacheFunction) :
     m_clientName(clientName),
@@ -376,13 +375,13 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
             SetReportedStatusId(command->GetId());
 
             // Remove any completed commands from the cache if the cache size is greater than the maximum size
-            while (m_cacheBuffer.size() > g_maxCommandCacheSize)
+            while (m_cacheBuffer.size() > CommandRunner::MAX_CACHE_SIZE)
             {
-                std::weak_ptr<Command> oldestCommand = m_cacheBuffer.back();
-                if (!oldestCommand.expired() && oldestCommand.lock()->IsComplete())
+                std::shared_ptr<Command> oldestCommand = m_cacheBuffer.back();
+                if ((nullptr != oldestCommand) && (oldestCommand->IsComplete()))
                 {
                     m_cacheBuffer.pop_back();
-                    m_commandMap.erase(oldestCommand.lock()->GetId());
+                    m_commandMap.erase(oldestCommand->GetId());
                 }
             }
         }

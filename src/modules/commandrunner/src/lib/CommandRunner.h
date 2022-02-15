@@ -28,6 +28,8 @@ const std::string g_commandStatusValues = "CommandStatusValues";
 class CommandRunner
 {
 public:
+    static const unsigned int MAX_CACHE_SIZE = 10;
+
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, std::function<int()> persistCacheFunction = nullptr);
     virtual ~CommandRunner();
 

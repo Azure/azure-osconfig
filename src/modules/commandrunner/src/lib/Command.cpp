@@ -61,7 +61,18 @@ int Command::Execute(std::function<int()> persistCacheToDisk, unsigned int maxPa
     {
         char* textResult = nullptr;
         void* context = reinterpret_cast<void*>(const_cast<char*>(m_tmpFile.c_str()));
-        exitCode = ExecuteCommand(context, command.c_str(), replaceEol, true, maxPayloadSizeBytes, timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
+        unsigned int maxTextResultSize = 0;
+
+        if (maxPayloadSizeBytes > 0)
+        {
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            Command::Status::Serialize(writer, status);
+
+            maxTextResultSize = (maxPayloadSizeBytes > buffer.GetSize()) ? (maxPayloadSizeBytes - buffer.GetSize()) : 1;
+        }
+
+        exitCode = ExecuteCommand(context, command.c_str(), replaceEol, true, maxTextResultSize, timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
 
         SetStatus(exitCode, (textResult != nullptr) ? std::string(textResult) : "");
 
