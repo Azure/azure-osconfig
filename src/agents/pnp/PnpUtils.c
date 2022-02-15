@@ -460,7 +460,7 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
     }
     else
     {
-        if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, MQTT_Protocol)))
+        if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, /*MQTT_Protocol*/MQTT_WebSocket_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_CreateFromConnectionString failed");
         }
