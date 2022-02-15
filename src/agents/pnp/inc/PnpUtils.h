@@ -27,6 +27,8 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
 IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const char* propertyName, size_t* lastPayloadHash);
 IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const char* propertyName, char* propertyValue, int valueLength, int version, int propertyUpdateResult);
 
+void ProcessDesiredTwinUpdates();
+
 #ifdef __cplusplus
 }
 #endif

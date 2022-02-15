@@ -276,6 +276,13 @@ static void SignalChild(int signal)
     UNUSED(signal);
 }
 
+static void SignalProcessDesired(int signal)
+{
+    OsConfigLogInfo(GetLog(), "Processing desired twin updates");
+    ProcessDesiredTwinUpdates();
+    UNUSED(signal);
+}
+
 static void ForkDaemon()
 {
     OsConfigLogInfo(GetLog(), "Attempting to fork daemon process");
@@ -703,6 +710,7 @@ int main(int argc, char *argv[])
         signal(g_stopSignals[i], SignalInterrupt);
     }
     signal(SIGHUP, SignalReloadConfiguration);
+    signal(SIGUSR1, SignalProcessDesired);
 
     if (0 != InitializeAgent(connectionString))
     {
@@ -863,13 +871,16 @@ void AgentDoWork(void)
     tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
     tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
-    if ((nowTick == g_lastTick) || (intervalTick <= (nowTick - g_lastTick)))
+    if (intervalTick <= (nowTick - g_lastTick))
     {
-        ReportProperties();
-
+        // Process desired updates from local DC file (for Iot Hub this is signaled to be done with SIGUSR1)
         LoadDesiredConfigurationFromFile();
+
+        // Send reported to both Iot Hub and local RC file
+        ReportProperties();
         SaveReportedConfigurationToFile();
 
+        // Allow the inproc (for now) platform to unload unused modules
         CallMpiDoWork();
 
         tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
