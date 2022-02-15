@@ -64,6 +64,7 @@ public:
         std::map<std::string, std::string> sourcesFingerprint;
     };
 
+    PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes, std::string sourcesDir);
     PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes);
     virtual ~PackageManagerConfigurationBase() = default;
 
@@ -76,6 +77,7 @@ public:
 private:
     int ExecuteUpdate(const std::string& value);
     int ExecuteUpdates(const std::vector<std::string> packages);
+    int ConfigureSources(const std::map<std::string, std::string> sources);
     std::string GetFingerprint();
     std::map<std::string, std::string> GetReportedPackages(std::vector<std::string> packages);
     std::map<std::string, std::string> GetSourcesFingerprint();
@@ -94,6 +96,7 @@ private:
     ExecutionState m_executionState = ExecutionState::Unknown;
     std::vector<std::string> m_desiredPackages; 
     unsigned int m_maxPayloadSizeBytes;
+    std::string m_sourcesConfigurationDir;
 };
 
 class PackageManagerConfiguration : public PackageManagerConfigurationBase

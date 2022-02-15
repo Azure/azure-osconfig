@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <filesystem>
+#include <fstream>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
@@ -20,8 +22,10 @@ static const std::string g_packagesFingerprint = "PackagesFingerprint";
 static const std::string g_sourcesFingerprint = "SourcesFingerprint";
 static const std::string g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
 static const std::string g_commandAptUpdate = "sudo apt-get update";
+static const std::string g_sourcesFolderPath = "/etc/apt/sources.list.d/";
 
 constexpr const char* g_commandExecuteUpdate = "sudo apt-get install $value -y --allow-downgrades --auto-remove";
+constexpr const char* g_commandGetSourcesFileHash = "cat $value | sha256sum | head -c 64";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
 constexpr const char ret[] = R""""({
     "Name": "PackageManagerConfiguration Module",
@@ -36,9 +40,15 @@ constexpr const char ret[] = R""""({
 
 OSCONFIG_LOG_HANDLE PackageManagerConfigurationLog::m_log = nullptr;
 
-PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes)
+PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes, std::string sourcesDir)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
+    m_sourcesConfigurationDir = sourcesDir;
+}
+
+PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes)
+    : PackageManagerConfigurationBase(maxPayloadSizeBytes, g_sourcesFolderPath)
+{
 }
 
 PackageManagerConfiguration::PackageManagerConfiguration(unsigned int maxPayloadSizeBytes)
@@ -107,7 +117,6 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
 {
     int status = MMI_OK;
 
-    // Validate payload size.
     int maxPayloadSizeBytes = static_cast<int>(GetMaxPayloadSizeBytes());
     if ((0 != maxPayloadSizeBytes) && (payloadSizeBytes > maxPayloadSizeBytes))
     {
@@ -134,9 +143,19 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
 
                     if (0 == DeserializeDesiredState(document, desiredState))
                     {
-                        m_executionState = ExecutionState::Running;
                         m_desiredPackages = GetPackagesNames(desiredState.packages);
-                        status = PackageManagerConfigurationBase::ExecuteUpdates(desiredState.packages);
+                        m_executionState = ExecutionState::Running;
+
+                        if (!desiredState.sources.empty())
+                        {
+                            status = PackageManagerConfigurationBase::ConfigureSources(desiredState.sources);
+                        }
+                        
+                        if (status == MMI_OK)
+                        {
+                            status = PackageManagerConfigurationBase::ExecuteUpdates(desiredState.packages);
+                        }
+
                         m_executionState = PackageManagerConfigurationBase::GetStateFromStatusCode(status);
                     }
                     else
@@ -238,7 +257,7 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
         }
         else
         {
-            OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not an object", g_sources.c_str());
+            OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not a map", g_sources.c_str());
             status = EINVAL;
         }
     }
@@ -267,9 +286,9 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
         }
     }
     
-    else
+    if (!document.HasMember(g_sources.c_str()) && !document.HasMember(g_packages.c_str()))
     {
-        OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON object does not contain a string array setting, neither a map setting");
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON object does not contain '%s', neither '%s'", g_sources.c_str(), g_packages.c_str());
         status = EINVAL;
     }
 
@@ -496,7 +515,7 @@ std::map<std::string, std::string> PackageManagerConfigurationBase::GetReportedP
             OsConfigLogError(PackageManagerConfigurationLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);
         }
 
-        std::string version = rawVersion != "" ? Split(rawVersion, ":")[1] : "(failed)";
+        std::string version = !rawVersion.empty() ? Split(rawVersion, ":")[1] : "(failed)";
         result[packageName] = Trim(version, " ");
     }
 
@@ -531,5 +550,72 @@ std::string PackageManagerConfigurationBase::Trim(const std::string& str, const 
 std::map<std::string, std::string> PackageManagerConfigurationBase::GetSourcesFingerprint()
 {
     std::map<std::string, std::string> result;
+    for (auto& file : std::filesystem::directory_iterator(m_sourcesConfigurationDir))
+    {
+        std::string filePath = file.path();
+        std::string fileName = file.path().filename();
+        if (fileName.compare(fileName.size()-5, 5, ".list") == 0)
+        {
+            std::string hashString = "";
+            std::string command = std::regex_replace(g_commandGetSourcesFileHash, std::regex("\\$value"), filePath);
+            int status = RunCommand(command.c_str(), true, &hashString, 0);
+            if (status != MMI_OK && IsFullLoggingEnabled())
+            {
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Get the fingerprint of source file %s failed with status %d", filePath.c_str(), status);
+            }
+            std::string fileNameWithoutExtension = fileName.substr(0, fileName.find_last_of("."));
+            result[fileNameWithoutExtension] = !hashString.empty() ? hashString : "(failed)";
+        }
+    }
+
     return result;
+}
+
+int PackageManagerConfigurationBase::ConfigureSources(const std::map<std::string, std::string> sources)
+{
+    int status = MMI_OK;
+
+    for (auto& source : sources)
+    {
+        std::string sourcesFilePath = m_sourcesConfigurationDir + source.first + ".list";
+        OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Starting to configure source(s) file: %s", sourcesFilePath.c_str());
+
+        // Delete file when provided map value is empty
+        if (source.second.empty()) 
+        {
+            status = remove(sourcesFilePath.c_str());
+            if (status != MMI_OK)
+            {
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to delete source(s) file %s with status %d. Stopping configuration for further sources", sourcesFilePath.c_str(), status);
+                return errno;
+            }
+        }
+        else
+        {
+            std::ofstream output(sourcesFilePath);
+            
+            if (output.fail())
+            {
+                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to create source(s) file %s. Stopping configuration for further sources", sourcesFilePath.c_str());
+                output.close();
+                return errno;
+            }
+            
+            output << source.second << std::endl;
+            output.close();
+        }
+    }
+
+    status = RunCommand(g_commandAptUpdate.c_str(), true, nullptr, 0);
+
+    if (status != MMI_OK)
+    {
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Refresh sources failed with status %d", status);
+    }
+    else
+    {
+        OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Successfully configured sources");
+    }
+    
+    return status;
 }
