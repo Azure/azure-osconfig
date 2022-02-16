@@ -453,7 +453,7 @@ static int GetLocalReportingFromJsonConfig(const char* jsonString)
 
 static int GetProtocolFromJsonConfig(const char* jsonString)
 {
-    return g_mqttOverWebSocket = GetIntegerFromJsonConfig(MQTT_OVER_WEB_SOCKET, jsonString, 1, 0, 1);
+    return g_mqttOverWebSocket = GetIntegerFromJsonConfig(MQTT_OVER_WEB_SOCKET, jsonString, 0, 0, 1);
 }
 
 static int LoadReportedFromJsonConfig(const char* jsonString)
@@ -629,7 +629,6 @@ int main(int argc, char *argv[])
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
-    OsConfigLogInfo(GetLog(), "Protocol: %s", g_mqttOverWebSocket ? "MQTT over Web Socket" : "MQTT");
 
     if (IsFullLoggingEnabled())
     {
@@ -656,6 +655,8 @@ int main(int argc, char *argv[])
 
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
+
+    OsConfigLogInfo(GetLog(), "Protocol: %s", g_mqttOverWebSocket ? "MQTT over Web Socket" : "MQTT");
 
     if (g_mqttOverWebSocket)
     {
