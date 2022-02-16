@@ -41,7 +41,11 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_PRIORITY "LocalPriority"
 #define LOCAL_REPORTING "LocalReporting"
-#define MQTT_OVER_WEB_SOCKET "MqttOverWebSocket"
+#define PROTOCOL "Protocol"
+
+#define PROTOCOL_AUTO 0
+#define PROTOCOL_MQTT 1
+#define PROTOCOL_MQTT_WS 2
 
 #define DEFAULT_DEVICE_MODEL_ID 4
 #define MIN_DEVICE_MODEL_ID 3
@@ -129,7 +133,7 @@ static size_t g_desiredHash = 0;
 
 static int g_localPriority = 0;
 static int g_localReporting = 0;
-static int g_mqttOverWebSocket = 1;
+static int g_protocol = PROTOCOL_MQTT_WS;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -250,7 +254,7 @@ static void RefreshConnection()
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
         if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, 
-            g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, g_mqttOverWebSocket ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+            g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -453,7 +457,7 @@ static int GetLocalReportingFromJsonConfig(const char* jsonString)
 
 static int GetProtocolFromJsonConfig(const char* jsonString)
 {
-    return g_mqttOverWebSocket = GetIntegerFromJsonConfig(MQTT_OVER_WEB_SOCKET, jsonString, 0, 0, 1);
+    return g_protocol = GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
 }
 
 static int LoadReportedFromJsonConfig(const char* jsonString)
@@ -656,9 +660,9 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    OsConfigLogInfo(GetLog(), "Protocol: %s", g_mqttOverWebSocket ? "MQTT over Web Socket" : "MQTT");
+    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
-    if (g_mqttOverWebSocket)
+    if (PROTOCOL_MQTT_WS == g_protocol)
     {
         // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
         if (NULL != (proxyData = GetHttpProxyData()))
@@ -726,7 +730,7 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (0 != InitializeAgent(connectionString, g_mqttOverWebSocket ? MQTT_WebSocket_Protocol : MQTT_Protocol))
+    if (0 != InitializeAgent(connectionString, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))
     {
         LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
         goto done;
