@@ -732,12 +732,12 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             else
             {
                 // server:port
-                hostAddressLength = (int)(firstColumn - proxyData - 1);
+                hostAddressLength = (int)(firstColumn - /*proxyData*/afterPrefix - 1);
                 if (hostAddressLength > 0)
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        memcpy(hostAddress, proxyData, hostAddressLength);
+                        memcpy(hostAddress, /*proxyData*/afterPrefix, hostAddressLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else
