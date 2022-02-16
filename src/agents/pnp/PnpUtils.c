@@ -434,7 +434,8 @@ static bool IotHubSetOption(const char* optionName, const void* value)
     }
 }
 
-IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, const char* x509Certificate, const char* x509PrivateKeyHandle, const HTTP_PROXY_OPTIONS* proxyOptions)
+IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char* productInfo, const char* connectionString, bool traceOn, 
+    const char* x509Certificate, const char* x509PrivateKeyHandle, const HTTP_PROXY_OPTIONS* proxyOptions, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol)
 {
     IOTHUB_CLIENT_RESULT iothubResult = IOTHUB_CLIENT_OK;
 
@@ -460,7 +461,7 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
     }
     else
     {
-        if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, MQTT_WebSocket_Protocol)))
+        if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_CreateFromConnectionString failed");
         }

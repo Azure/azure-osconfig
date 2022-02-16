@@ -1,6 +1,7 @@
 {
   "ModelVersion": 5,
   "FullLogging": 0,
+  "MqttOverWebSocket": 1,
   "Reported": [
     {
       "ComponentName": "CommandRunner",
