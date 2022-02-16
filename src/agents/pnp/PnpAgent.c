@@ -249,7 +249,8 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, 
+            g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, g_mqttOverWebSocket ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
