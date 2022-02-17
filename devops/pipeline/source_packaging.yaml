@@ -9,6 +9,7 @@ variables:
 stages:
 - template: stages/source_build.yaml
   parameters:
+    prefix: validate
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
 
 - template: stages/binary_build.yaml
@@ -19,6 +20,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
     platform: linux/amd64
     publishArtifact: false
+    prefix: pkg
 
 - template: stages/binary_build.yaml
   parameters:
@@ -28,6 +30,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
     platform: linux/arm/v7
     publishArtifact: false
+    prefix: pkg
 
 - template: stages/binary_build.yaml
   parameters:
@@ -37,3 +40,4 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
     platform: linux/arm64/v8
     publishArtifact: false
+    prefix: pkg
