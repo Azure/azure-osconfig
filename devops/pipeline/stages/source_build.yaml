@@ -83,7 +83,7 @@ stages:
       condition: succeededOrFailed()
       artifact: Test_Logs_source
 
-    # Publishes the results of the ctest test pass to be used in the ADO dashboard
+    # Publishes the results of the ctest test pass to be used in the Azure DevOps dashboard
     - task: PublishTestResults@2
       displayName: 'Publish test results'
       condition: and(succeededOrFailed(), eq(${{ parameters.ignoreTestFailures }}, false))
