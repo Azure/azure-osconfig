@@ -14,6 +14,26 @@ stages:
 
 - template: stages/binary_build.yaml
   parameters:
+    variantName: ubuntu20.04
+    friendlyVariantName: ubuntu2004
+    architecture: amd64
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    platform: linux/amd64
+    publishArtifact: false
+    prefix: pkg
+
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: ubuntu20.04
+    friendlyVariantName: ubuntu2004
+    architecture: arm64
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
+    platform: linux/arm64/v8
+    publishArtifact: false
+    prefix: pkg
+
+- template: stages/binary_build.yaml
+  parameters:
     variantName: ubuntu18.04
     friendlyVariantName: ubuntu1804
     architecture: amd64
@@ -38,6 +58,36 @@ stages:
     friendlyVariantName: ubuntu1804
     architecture: arm64
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
+    platform: linux/arm64/v8
+    publishArtifact: false
+    prefix: pkg
+
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: debian9
+    friendlyVariantName: debian9
+    architecture: amd64
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
+    platform: linux/amd64
+    publishArtifact: false
+    prefix: pkg
+
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: debian9
+    friendlyVariantName: debian9
+    architecture: arm
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
+    platform: linux/arm/v7
+    publishArtifact: false
+    prefix: pkg
+
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: debian9
+    friendlyVariantName: debian9
+    architecture: arm64
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
     platform: linux/arm64/v8
     publishArtifact: false
     prefix: pkg
