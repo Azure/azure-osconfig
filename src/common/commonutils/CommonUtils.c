@@ -142,12 +142,12 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
     fflush(NULL);
 
-    if ((false == mainProcessThread) && ((timeoutSeconds > 0) || (NULL != callback)))
+    if ((timeoutSeconds > 0) || (NULL != callback))
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation", 
-                command, timeout, (NULL == callback) ? " no " : " ");
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread", 
+                command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
         }
 
         // Fork an intermediate process to act as the parent for two more forked processes:
@@ -269,7 +269,8 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation", command);
+            OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", 
+                command, mainProcessThread ? "main process" : "worker");
         }
         if (0 == (workerProcess = fork()))
         {
@@ -485,7 +486,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     // "http://username:password@server:port"
     //
     // ..where the prefix must be either lowercase "http" or uppercase "HTTP"
-    // ..and username and password can contain '@' characters escaled as "\\@"
+    // ..and username and password can contain '@' characters escaped as "\\@"
     //
     // For example:
     //
@@ -495,6 +496,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     const char httpUppercasePrefix[] = "HTTP://";
 
     int proxyDataLength = 0;
+    int prefixLength = 0;
     bool isBadAlphaNum = false;
     int credentialsSeparatorCounter = 0;
     int columnCounter = 0;
@@ -503,6 +505,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     char* firstColumn = NULL;
     char* lastColumn = NULL;
 
+    char* afterPrefix = NULL;
     char* hostAddress = NULL;
     char* port = NULL;
     char* username = NULL;
@@ -542,13 +545,14 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     // Check for required prefix and invalid characters and if any found then immediately fail
 
     proxyDataLength = strlen(proxyData);
-    if (proxyDataLength <= strlen(httpPrefix))
+    prefixLength = strlen(httpPrefix);
+    if (proxyDataLength <= prefixLength)
     {
         OsConfigLogError(log, "Unsupported proxy data (%s), too short", proxyData);
         return NULL;
     }
 
-    if (strncmp(proxyData, httpPrefix, strlen(httpPrefix)) && strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix)))
+    if (strncmp(proxyData, httpPrefix, prefixLength) && strncmp(proxyData, httpUppercasePrefix, strlen(httpUppercasePrefix)))
     {
         OsConfigLogError(log, "Unsupported proxy data (%s), no %s prefix", proxyData, httpPrefix);
         return NULL;
@@ -615,14 +619,14 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
         return NULL;
     }
 
-    proxyData += strlen(httpPrefix);
-    firstColumn = strchr(proxyData, ':');
-    lastColumn = strrchr(proxyData, ':');
+    afterPrefix = (char*)(proxyData + prefixLength);
+    firstColumn = strchr(afterPrefix, ':');
+    lastColumn = strrchr(afterPrefix, ':');
     
     // If the '@' credentials separator is not already found, try the first one if any
     if (NULL == credentialsSeparator)
     {
-        credentialsSeparator = strchr(proxyData, '@');
+        credentialsSeparator = strchr(afterPrefix, '@');
     }
 
     // If found, bump over the first character that is the separator itself
@@ -643,16 +647,17 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     }
 
     if ((proxyData >= firstColumn) ||
+        (afterPrefix >= firstColumn) ||
         (firstColumn > lastColumn) ||
         (credentialsSeparator && (firstColumn >= credentialsSeparator)) ||
         (credentialsSeparator && (credentialsSeparator >= lastColumn)) ||
         (credentialsSeparator && (firstColumn == lastColumn)) ||
         (credentialsSeparator && (0 == strlen(credentialsSeparator))) ||
-        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) > strlen(proxyData)) ||
+        ((credentialsSeparator ? strlen("A:A@A:A") : strlen("A:A")) > strlen(afterPrefix)) ||
         (1 > strlen(lastColumn)) ||
         (1 > strlen(firstColumn)))
     {
-        OsConfigLogError(log, "Unsupported proxy data (%s) format", proxyData);
+        OsConfigLogError(log, "Unsupported proxy data (%s) format", afterPrefix);
     }
     else
     {
@@ -660,12 +665,12 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
             if (credentialsSeparator)
             {
                 // username:password@server:port
-                usernameLength = (int)(firstColumn - proxyData - 1);
+                usernameLength = (int)(firstColumn - afterPrefix - 1);
                 if (usernameLength > 0)
                 {
                     if (NULL != (username = (char*)malloc(usernameLength + 1)))
                     {
-                        memcpy(username, proxyData, usernameLength);
+                        memcpy(username, afterPrefix, usernameLength);
                         username[usernameLength] = 0;
 
                         RemoveProxyStringEscaping(username);
@@ -694,12 +699,13 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
                     }
                 }
 
-                hostAddressLength = (int)(lastColumn - credentialsSeparator - 1);
+                hostAddressLength = (int)(prefixLength + lastColumn - credentialsSeparator - 1);
                 if (hostAddressLength > 0)
                 {
                     if (NULL != (hostAddress = (char*)malloc(hostAddressLength + 1)))
                     {
-                        memcpy(hostAddress, credentialsSeparator, hostAddressLength);
+                        memcpy(hostAddress, httpPrefix, prefixLength);
+                        memcpy(hostAddress + prefixLength, credentialsSeparator, hostAddressLength - prefixLength);
                         hostAddress[hostAddressLength] = 0;
                     }
                     else

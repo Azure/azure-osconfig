@@ -272,10 +272,22 @@ void* TestTimeoutCommand(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOutOnWorkerThread)
 {
     pthread_t tid = 0;
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
+}
+
+TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
 }
 
 static int numberOfTimes = 0;
@@ -303,7 +315,6 @@ public:
 
     static int TestCommandCallback(void* context)
     {
-        EXPECT_NE(nullptr, context);
         return ::TestCommandCallback(context);
     }
 };
@@ -322,13 +333,25 @@ void* TestCancelCommand(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, CancelCommand)
+TEST_F(CommonUtilsTest, CancelCommandOnWorkerThread)
 {
     pthread_t tid = 0;
 
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+}
+
+TEST_F(CommonUtilsTest, CancelCommand)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
 }
 
 void* TestCancelCommandWithContext(void*)
@@ -347,13 +370,27 @@ void* TestCancelCommandWithContext(void*)
     return nullptr;
 }
 
-TEST_F(CommonUtilsTest, CancelCommandWithContext)
+TEST_F(CommonUtilsTest, CancelCommandWithContextOnWorkerThread)
 {
     pthread_t tid = 0;
 
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
+}
+
+TEST_F(CommonUtilsTest, CancelCommandWithContext)
+{
+    CallbackContext context;
+
+    char* textResult = nullptr;
+
+    EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
@@ -644,16 +681,16 @@ TEST_F(CommonUtilsTest, ValidHttpProxyData)
     char* password = nullptr;
 
     HttpProxyOptions validOptions[] = {
-        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
-        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
-        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
-        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "wwww.foo.org", 7070, "fooname", "foo$pass!word" },
-        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "wwww.foo.org", 8070, "fooname", "foo$pass!word" },
-        { "http://a\\b:c@d:1", "d", 1, "a\\b", "c" },
-        { "http://a\\@b:c@d:1", "d", 1, "a@b", "c" },
-        { "http://a:b@c:1", "c", 1, "a", "b" },
-        { "http://a:1", "a", 1, nullptr, nullptr },
-        { "http://1:a", "1", 0, nullptr, nullptr }
+        { "http://0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD\\@mail.foo:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:100", "http://EFGHIJKLMNOPQRSTUVWXYZ", 100, "0123456789!abcdefghIjklmn\\opqrstuvwxyz$_-.ABCD@mail.foo", "p@ssw@rd" },
+        { "HTTP://0123456789\\opqrstuvwxyz$_-.ABCD\\@!abcdefghIjk.lmn:p\\@ssw\\@rd@EFGHIJKLMNOPQRSTUVWXYZ:8080", "http://EFGHIJKLMNOPQRSTUVWXYZ", 8080, "0123456789\\opqrstuvwxyz$_-.ABCD@!abcdefghIjk.lmn", "p@ssw@rd" },
+        { "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ:101", "http://0123456789!abcdefghIjklmnopqrstuvwxyz$_-.ABCDEFGHIJKLMNOPQRSTUVWXYZEFGHIJKLMNOPQRSTUVWXYZ", 101, nullptr, nullptr },
+        { "http://fooname:foo$pass!word@wwww.foo.org:7070", "http://wwww.foo.org", 7070, "fooname", "foo$pass!word" },
+        { "http://fooname:foo$pass!word@wwww.foo.org:8070//", "http://wwww.foo.org", 8070, "fooname", "foo$pass!word" },
+        { "http://a\\b:c@d:1", "http://d", 1, "a\\b", "c" },
+        { "http://a\\@b:c@d:1", "http://d", 1, "a@b", "c" },
+        { "http://a:b@c:1", "http://c", 1, "a", "b" },
+        { "http://a:1", "http://a", 1, nullptr, nullptr },
+        { "http://1:a", "http://1", 0, nullptr, nullptr }
     };
 
     int validOptionsSize = ARRAY_SIZE(validOptions);
