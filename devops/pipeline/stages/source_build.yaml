@@ -24,7 +24,7 @@ parameters:
 
 stages:
 - stage: source_build
-  displayName: Source Build
+  displayName: Source
   dependsOn: []
 
   jobs:

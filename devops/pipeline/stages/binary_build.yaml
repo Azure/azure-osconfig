@@ -44,7 +44,7 @@ parameters:
 
 stages:
 - stage: ${{ parameters.prefix }}_${{ parameters.friendlyVariantName }}_${{ parameters.architecture }}
-  displayName: Binary Build ${{ parameters.variantName }} ${{ parameters.architecture }}
+  displayName: Binary ${{ parameters.variantName }} ${{ parameters.architecture }}
   dependsOn: []
 
   jobs:

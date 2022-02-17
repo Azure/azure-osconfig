@@ -9,7 +9,7 @@ variables:
 stages:
 - template: stages/source_build.yaml
   parameters:
-    prefix: validate
+    prefix: Validate
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
 
 - template: stages/binary_build.yaml
