@@ -2,108 +2,38 @@
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
-resources:
-  containers:
-  - container: ubuntu20.04
-    type: ACR
-    azureSubscription: OSConfig-ACR
-    endpoint: OSConfig-ACR
-    resourceGroup: osconfig
-    registry: osconfig.azurecr.io
-    repository: ubuntu20.04-dev
-    image: osconfig.azurecr.io/ubuntu20.04-dev
-
 variables:
-  OSCONFIG_SRC: $(Build.SourcesDirectory)/src
+  SERVICE_CONNECTION: OSConfig-ACR
+  CONTAINER_REGISTRY: osconfig.azurecr.io
 
-pool:
-    vmImage: 'ubuntu-20.04'
+stages:
+- template: stages/source_build.yaml
+  parameters:
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
 
-jobs:
-- job: Build_Release
-  displayName: 'Release Build'
-  container: ubuntu20.04
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: ubuntu18.04
+    friendlyVariantName: ubuntu1804
+    architecture: amd64
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
+    platform: linux/amd64
+    publishArtifact: false
 
-  steps:
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: ubuntu18.04
+    friendlyVariantName: ubuntu1804
+    architecture: arm
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
+    platform: linux/arm/v7
+    publishArtifact: false
 
-  - checkout: self
-    submodules: recursive
-    clean: true
-
-  # Run CMake to generate Makefile
-  - task: CMake@1
-    displayName: 'Generate Makefile'
-    inputs:
-      workingDirectory: $(OSCONFIG_SRC)
-      cmakeArgs: '-DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -B$(Agent.BuildDirectory) -H.'
-
-  # Build project
-  - task: Bash@3
-    displayName: 'Build osconfig'
-    inputs:
-      workingDirectory: $(Agent.BuildDirectory)
-      targetType: 'inline'
-      script: 'make -j4'
-
-  # Create the source package (tar.gz), the RPM spec and signatures hash
-  # This is a custom target `dist` which creates archive/spec/signatures
-  - task: Bash@3
-    displayName: 'Create source package, generate spec and signatures'
-    inputs:
-      workingDirectory: $(Agent.BuildDirectory)
-      targetType: 'inline'
-      script: 'make dist'
-
-  # Runs ctest in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
-  # Tests by loading a CTestTestfile.cmake from the build tree and executing the defined tests.
-  # Record the output and result of each test
-  # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
-  - task: Bash@3
-    displayName: 'Run tests'
-    continueOnError: true
-    inputs:
-      workingDirectory: $(Agent.BuildDirectory)
-      targetType: 'inline'
-      script: 'ctest -T test --verbose > TestOutput.log'
-
-  # Published the test output from tests - test results above do not contain logs
-  - publish: $(Agent.BuildDirectory)/TestOutput.log
-    displayName: 'Publishing TestOutput.log'
-    artifact: Test Logs
-
-  # Publishes the results of the ctest test pass to be used in the ADO dashboard
-  - task: PublishTestResults@2
-    continueOnError: true
-    inputs:
-      testRunner: cTest
-      testResultsFiles: '$(Agent.BuildDirectory)/Testing/*/Test.xml'
-      failTaskOnFailedTests: true
-
-  # Published the build artifacts (tar.gz source package + specfile + signatures.json)
-  - publish: $(Agent.BuildDirectory)/dist/
-    displayName: 'Publishing spec+source package'
-    artifact: OSConfig_$(OSCONFIG_VERSION_BUILD)_SOURCES
-
-- job: Build_Debug
-  displayName: 'Debug Build'
-  container: ubuntu20.04
-  steps:
-
-  - checkout: self
-    submodules: recursive
-    clean: true
-
-  # Run CMake to generate Makefile
-  - task: CMake@1
-    displayName: 'Generate Makefile'
-    inputs:
-      workingDirectory: $(OSCONFIG_SRC)
-      cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -B$(Agent.BuildDirectory) -H.'
-
-  # Build project
-  - task: Bash@3
-    displayName: 'Build osconfig'
-    inputs:
-      workingDirectory: $(Agent.BuildDirectory)
-      targetType: 'inline'
-      script: 'make -j4'
+- template: stages/binary_build.yaml
+  parameters:
+    variantName: ubuntu18.04
+    friendlyVariantName: ubuntu1804
+    architecture: arm64
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
+    platform: linux/arm64/v8
+    publishArtifact: false

@@ -1,0 +1,167 @@
+# Binary build stage definition
+# Parameters:
+#  - (Required) variantName [string]: the name of the variant/distro to be used
+#  - (Required) friendlyVariantName [string]: the name of the variant/distro to be used but without symbols
+#  - (Required) architecture [string]: the name of the architecture to be built
+#  - (Required) containerPath [string]: the full path to the container to be used for the build environmentr (Example. osconfig.azurecr.io/ubuntu20.04-dev-amd64:latest)
+#  - (Required) platform [string]: the platform string to be used, this is necessary for targetting foreign architectures (see https://docs.docker.com/desktop/multi-arch/)
+#  - (Optional) prefix [string]: the prefix for the stage/job to be used - default: binary
+#  - (Optional) performCoverage [boolean]: performs code coverage (when enabled, no artifacts are produced) - default: false
+#  - (Optional) ignoreTestFailures [boolean]: ignores the failures caused by failing tests - default: false
+#  - (Optional) publishArtifact [boolean]: publishes the built artifacts (packages) as pipeline artifacts - default: true
+
+parameters:
+  - name: prefix
+    type: string
+    default: binary
+
+  - name: variantName
+    type: string
+
+  - name: friendlyVariantName
+    type: string
+  
+  - name: architecture
+    type: string
+  
+  - name: containerPath
+    type: string
+  
+  - name: platform
+    type: string
+  
+  - name: performCoverage
+    type: boolean
+    default: false
+
+  - name: ignoreTestFailures
+    type: boolean
+    default: false
+
+  - name: publishArtifact
+    type: boolean
+    default: true
+
+stages:
+- stage: ${{ parameters.prefix }}_${{ parameters.friendlyVariantName }}_${{ parameters.architecture }}
+  displayName: Binary Build ${{ parameters.variantName }} ${{ parameters.architecture }}
+  dependsOn: []
+
+  jobs:
+  - job: ${{ parameters.prefix }}_${{ parameters.friendlyVariantName }}_${{ parameters.architecture }}
+
+    pool:
+      vmImage: 'ubuntu-20.04'
+
+    steps:
+
+    - checkout: self
+      submodules: recursive
+      clean: true
+
+    - task: Docker@2
+      displayName: Login to ACR
+      inputs:
+        command: login
+        containerRegistry: $(SERVICE_CONNECTION)
+
+    - script: |
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        CONTAINER_ID=`docker run -di -v $(Build.SourcesDirectory):/AzOsConfig --platform=${{ parameters.platform }} ${{ parameters.containerPath }}`
+        echo CONTAINER_ID=$CONTAINER_ID
+        echo "##vso[task.setvariable variable=CONTAINER_ID]$CONTAINER_ID"
+      displayName: Setup QEMU emulation
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
+      displayName: Generate build
+      condition: eq(${{ parameters.performCoverage }}, false)
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
+      displayName: Generate build (with coverage)
+      condition: eq(${{ parameters.performCoverage }}, true)
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build-${{ parameters.architecture }}"
+      displayName: Build osconfig
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && cpack -G DEB"
+      displayName: Create Deb package
+      condition: eq(${{ parameters.publishArtifact }}, true)
+
+    - script: |
+        cp $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/osconfig_* $(Build.ArtifactStagingDirectory)
+      displayName: Stage Deb package
+      condition: eq(${{ parameters.publishArtifact }}, true)
+
+    - publish: $(Build.ArtifactStagingDirectory)
+      displayName: Publishing deb package for ${{ parameters.variantName }}_${{ parameters.architecture }}
+      artifact: OSConfig_$(Build.BuildNumber)_${{ parameters.variantName }}_${{ parameters.architecture }}
+      condition: eq(${{ parameters.publishArtifact }}, true)
+
+    # Runs ctest in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
+    # Tests by loading a CTestTestfile.cmake from the build tree and executing the defined tests.
+    # Record the output and result of each test
+    # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log"
+      condition: eq(${{ parameters.ignoreTestFailures }}, false)
+      displayName: Run tests
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log || true"
+      condition: eq(${{ parameters.ignoreTestFailures }}, true)
+      displayName: Run tests (ignore failures)
+
+    - publish: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/TestOutput.log
+      displayName: Publishing test outputs
+      condition: succeededOrFailed()
+      artifact: Test_Logs_${{ parameters.variantName }}_${{ parameters.architecture }}
+
+    # Publishes the results of the ctest test pass to be used in the ADO dashboard
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, false))
+      inputs:
+        testRunner: cTest
+        testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
+        failTaskOnFailedTests: true
+        testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
+        platform: ${{ parameters.architecture }}
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results (ignore failures)'
+      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, true))
+      inputs:
+        testRunner: cTest
+        testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
+        failTaskOnFailedTests: false
+        testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
+        platform: ${{ parameters.architecture }}
+
+    - script: |
+        docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-${{ parameters.architecture }}/coverage.xml"
+      displayName: Run code coverage
+      condition: eq(${{ parameters.performCoverage }}, true)
+      workingDirectory: $(Agent.BuildDirectory)
+
+    # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
+    - task: UseDotNet@2
+      displayName: Use .NET Core SDK
+      condition: eq(${{ parameters.performCoverage }}, true)
+      inputs:
+        packageType: sdk
+        version: 3.1.402
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    # Publish code coverage results
+    - task: PublishCodeCoverageResults@1
+      displayName: Publish code coverage results
+      condition: eq(${{ parameters.performCoverage }}, true)
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/coverage.xml
+        pathToSources: $(Build.SourcesDirectory)/src
+        #failIfCoverageEmpty: false # Optional
