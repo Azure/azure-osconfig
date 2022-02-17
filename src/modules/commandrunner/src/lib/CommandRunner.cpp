@@ -298,7 +298,7 @@ int CommandRunner::Refresh(const std::string id)
 {
     int status = 0;
 
-    if ((m_commandMap.find(id) != m_commandMap.end()) && !m_commandMap[id].expired())
+    if (CommandExists(id))
     {
         SetReportedStatusId(id);
     }
