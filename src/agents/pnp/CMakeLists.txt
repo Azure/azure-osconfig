@@ -60,6 +60,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
 
     target_link_libraries(${target_name}
         parson
+        iothub_client_mqtt_transport
         iothub_client_mqtt_ws_transport
         iothub_client
         prov_auth_client
@@ -85,6 +86,7 @@ else()
 
     target_link_libraries(${target_name}
         parson
+        iothub_client_mqtt_transport
         iothub_client_mqtt_ws_transport
         iothub_client
         prov_auth_client

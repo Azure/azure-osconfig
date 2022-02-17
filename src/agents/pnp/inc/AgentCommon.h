@@ -26,6 +26,7 @@
 #include "iothub_device_client.h"
 #include "iothub_device_client_ll.h"
 #include "iothub_client_options.h"
+#include "iothubtransportmqtt.h"
 #include "iothubtransportmqtt_websockets.h"
 #include "azure_c_shared_utility/threadapi.h"
 #include "azure_c_shared_utility/tickcounter.h"

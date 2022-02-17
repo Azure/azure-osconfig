@@ -1,6 +1,7 @@
 {
   "ModelVersion": 5,
   "FullLogging": 0,
+  "Protocol": 2,
   "Reported": [
     {
       "ComponentName": "CommandRunner",

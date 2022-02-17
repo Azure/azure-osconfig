@@ -42,6 +42,12 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define LOCAL_PRIORITY "LocalPriority"
 #define LOCAL_REPORTING "LocalReporting"
 
+#define PROTOCOL "Protocol"
+#define PROTOCOL_AUTO 0
+#define PROTOCOL_MQTT 1
+#define PROTOCOL_MQTT_WS 2
+static int g_protocol = PROTOCOL_AUTO;
+
 #define DEFAULT_DEVICE_MODEL_ID 4
 #define MIN_DEVICE_MODEL_ID 3
 #define MAX_DEVICE_MODEL_ID 999
@@ -247,7 +253,8 @@ static void RefreshConnection()
     {
         // Reinitialize communication with the IoT Hub:
         IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, 
+            g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -448,6 +455,11 @@ static int GetLocalReportingFromJsonConfig(const char* jsonString)
     return g_localReporting = GetIntegerFromJsonConfig(LOCAL_REPORTING, jsonString, 0, 0, 1);
 }
 
+static int GetProtocolFromJsonConfig(const char* jsonString)
+{
+    return g_protocol = GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
+}
+
 static int LoadReportedFromJsonConfig(const char* jsonString)
 {
     JSON_Value* rootValue = NULL;
@@ -638,6 +650,7 @@ int main(int argc, char *argv[])
         GetReportingIntervalFromJsonConfig(jsonConfiguration);
         GetLocalPriorityFromJsonConfig(jsonConfiguration);
         GetLocalReportingFromJsonConfig(jsonConfiguration);
+        GetProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -647,18 +660,23 @@ int main(int argc, char *argv[])
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
-    // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-    if (NULL != (proxyData = GetHttpProxyData()))
-    {
-        if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
-        {
-            // Assign the string pointers and trasfer ownership to the SDK
-            g_proxyOptions.host_address = proxyHostAddress;
-            g_proxyOptions.port = proxyPort;
-            g_proxyOptions.username = proxyUsername;
-            g_proxyOptions.password = proxyPassword;
+    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
-            FREE_MEMORY(proxyData);
+    if (PROTOCOL_MQTT_WS == g_protocol)
+    {
+        // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
+        if (NULL != (proxyData = GetHttpProxyData()))
+        {
+            if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
+            {
+                // Assign the string pointers and trasfer ownership to the SDK
+                g_proxyOptions.host_address = proxyHostAddress;
+                g_proxyOptions.port = proxyPort;
+                g_proxyOptions.username = proxyUsername;
+                g_proxyOptions.password = proxyPassword;
+
+                FREE_MEMORY(proxyData);
+            }
         }
     }
 
@@ -712,7 +730,7 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (0 != InitializeAgent(connectionString))
+    if (0 != InitializeAgent(connectionString, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))
     {
         LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
         goto done;
@@ -771,7 +789,7 @@ done:
     return 0;
 }
 
-int InitializeAgent(const char* connectionString)
+int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol)
 {
     if (NULL == (g_tickCounter = tickcounter_create()))
     {
@@ -788,7 +806,7 @@ int InitializeAgent(const char* connectionString)
     }
 
     // Initialize communication with the IoT Hub:
-    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions)))
+    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, protocol)))
     {
         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
         g_exitState = IotHubInitializationFailure;
