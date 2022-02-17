@@ -41,11 +41,12 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_PRIORITY "LocalPriority"
 #define LOCAL_REPORTING "LocalReporting"
-#define PROTOCOL "Protocol"
 
+#define PROTOCOL "Protocol"
 #define PROTOCOL_AUTO 0
 #define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
+static int g_protocol = PROTOCOL_AUTO;
 
 #define DEFAULT_DEVICE_MODEL_ID 4
 #define MIN_DEVICE_MODEL_ID 3
@@ -133,7 +134,6 @@ static size_t g_desiredHash = 0;
 
 static int g_localPriority = 0;
 static int g_localReporting = 0;
-static int g_protocol = PROTOCOL_MQTT_WS;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
