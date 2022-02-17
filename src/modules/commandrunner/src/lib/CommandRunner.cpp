@@ -23,56 +23,22 @@ constexpr const char info[] = R""""({
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-static const std::string g_commandRunnerCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
+const std::string CommandRunner::PERSISTED_COMMANDSTATUS_FILE = "/etc/osconfig/osconfig_commandrunner.cache";
 
-CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, std::function<int()> persistCacheFunction) :
+std::mutex CommandRunner::s_diskCacheMutex;
+
+CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, bool usePersistedCache) :
     m_clientName(clientName),
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),
-    m_persistCacheFunction(persistCacheFunction)
+    m_usePersistedCache(usePersistedCache)
 {
-    std::ifstream file(g_commandRunnerCacheFile);
-    if (file.good())
+    if (m_usePersistedCache && (0 != LoadPersistedCommandStatus(clientName)))
     {
-        rapidjson::IStreamWrapper isw(file);
-        rapidjson::Document document;
-
-        if (document.ParseStream(isw).HasParseError())
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file: %s", g_commandRunnerCacheFile.c_str());
-        }
-        else if (!document.IsArray())
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an array: %s", g_commandRunnerCacheFile.c_str());
-        }
-        else
-        {
-            for (auto& client : document.GetArray())
-            {
-                if (client.IsObject() && client.HasMember(g_clientName.c_str()) && client.HasMember(g_commandStatusValues.c_str()) && client[g_commandStatusValues.c_str()].IsArray())
-                {
-                    std::string name = client[g_clientName.c_str()].GetString();
-                    if (0 == clientName.compare(name))
-                    {
-                        for (auto& statusJson : client[g_commandStatusValues.c_str()].GetArray())
-                        {
-                            if (statusJson.IsObject())
-                            {
-                                Command::Status commandStatus = Command::Status::Deserialize(statusJson.GetObject());
-
-                                std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.id, "", 0, "");
-                                command->SetStatus(commandStatus.exitCode, commandStatus.textResult, commandStatus.state);
-
-                                if (0 == CacheCommand(command))
-                                {
-                                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to add cache command with id '%s'", command->GetId().c_str());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to load persisted command status for client %s", clientName.c_str());
     }
+
+    // Start the worker thread
+    m_workerThread = std::thread(&CommandRunner::WorkerThread, std::ref(*this));
 }
 
 CommandRunner::~CommandRunner()
@@ -88,15 +54,25 @@ CommandRunner::~CommandRunner()
         }
     }
 
+    // Push nullptr to signal the worker thread to exit
+    m_commandQueue.Push(std::weak_ptr<Command>());
+
     try
     {
-        m_workerThread.join();
+        if (m_workerThread.joinable())
+        {
+            m_workerThread.join();
+        }
     }
-    catch (const std::exception& e) {}
-
-    if (nullptr != m_persistCacheFunction)
+    catch (const std::exception& e)
     {
-        m_persistCacheFunction();
+        OsConfigLogError(CommandRunnerLog::Get(), "Exception thrown while joining worker thread: %s", e.what());
+    }
+
+    Command::Status status = GetStatusToPersist();
+    if (!status.id.empty() && (0 != PersistCommandStatus(status)))
+    {
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command status for client %s during shutdown", m_clientName.c_str());
     }
 }
 
@@ -192,6 +168,9 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                     case Command::Action::RefreshCommandStatus:
                         status = Refresh(arguments.id);
                         break;
+                    case Command::Action::None:
+                        OsConfigLogInfo(CommandRunnerLog::Get(), "Action is set to None (0), ignoring command");
+                        break;
                     default:
                         OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.action));
                         status = EINVAL;
@@ -241,7 +220,7 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
 
                 Command::Status commandStatus = GetReportedStatus();
                 Command::Status::Serialize(writer, commandStatus);
-                status = CopyJsonPayload(buffer, payload, payloadSizeBytes);
+                status = CopyJsonPayload(payload, payloadSizeBytes, buffer);
             }
             else
             {
@@ -266,15 +245,7 @@ unsigned int CommandRunner::GetMaxPayloadSizeBytes()
 
 void CommandRunner::WaitForCommands()
 {
-    if (!m_commandQueue.Empty() && m_workerThread.joinable())
-    {
-        m_workerThread.join();
-    }
-}
-
-std::string CommandRunner::GetClientName()
-{
-    return m_clientName;
+    m_commandQueue.WaitUntilEmpty();
 }
 
 int CommandRunner::Run(const std::string id, std::string arguments, unsigned int timeout, bool singleLineTextResult)
@@ -303,8 +274,16 @@ int CommandRunner::Cancel(const std::string id)
     if ((m_commandMap.find(id) != m_commandMap.end()) && !m_commandMap[id].expired())
     {
         std::shared_ptr<Command> command = m_commandMap[id].lock();
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command with command id: %s", id.c_str());
-        status = command->Cancel();
+        if (nullptr != command)
+        {
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command with command id: %s", id.c_str());
+            status = command->Cancel();
+        }
+        else
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Command with command id %s is expired", id.c_str());
+            status = EINVAL;
+        }
     }
     else
     {
@@ -332,30 +311,45 @@ int CommandRunner::Refresh(const std::string id)
     return status;
 }
 
+bool CommandRunner::CommandExists(const std::string& id)
+{
+    bool exists = false;
+    std::lock_guard<std::mutex> lock(m_cacheMutex);
+
+    if (m_commandMap.find(id) != m_commandMap.end())
+    {
+        exists = !m_commandMap[id].expired();
+    }
+
+    return exists;
+}
+
 int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
 {
     int status = 0;
 
-    if ((nullptr != m_persistCacheFunction) && (0 != (status = m_persistCacheFunction())))
+    if (!CommandExists(command->GetId()))
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command with id '%s'", command->GetId().c_str());
-    }
-    else
-    {
-        if (0 == (status = CacheCommand(command)))
+        if (0 == (status = PersistCommandStatus(command->GetStatus())))
         {
-            command->SetStatus(0, "", Command::State::Running);
-            m_commandQueue.Push(command);
-
-            if (!m_workerThread.joinable())
+            if (0 == (status = CacheCommand(command)))
             {
-                m_workerThread = std::thread(&CommandRunner::WorkerThread, std::ref(*this));
+                m_commandQueue.Push(command);
+            }
+            else
+            {
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command with id '%s'", command->GetId().c_str());
             }
         }
         else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command with id '%s'", command->GetId().c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command with id '%s'", command->GetId().c_str());
         }
+    }
+    else
+    {
+        OsConfigLogError(CommandRunnerLog::Get(), "Command with id '%s' already exists", command->GetId().c_str());
+        status = EEXIST;
     }
 
     return status;
@@ -429,12 +423,12 @@ Command::Status CommandRunner::GetReportedStatus()
 
 void CommandRunner::WorkerThread(CommandRunner& instance)
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread...");
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread for %s", instance.m_clientName.c_str());
 
-    while (!instance.m_commandQueue.Empty())
+    std::shared_ptr<Command> command;
+    while (nullptr != (command = instance.m_commandQueue.Front().lock()))
     {
-        std::shared_ptr<Command> command = instance.m_commandQueue.Front().lock();
-        int exitCode = command->Execute(instance.m_persistCacheFunction, instance.m_maxPayloadSizeBytes);
+        int exitCode = command->Execute(instance.m_maxPayloadSizeBytes);
 
         if (IsFullLoggingEnabled())
         {
@@ -448,16 +442,166 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
         instance.m_commandQueue.Pop();
     }
 
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped");
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped for %s", instance.m_clientName.c_str());
 }
 
 Command::Status CommandRunner::GetStatusToPersist()
 {
     std::lock_guard<std::mutex> lock(m_cacheMutex);
-    return m_cacheBuffer.front()->GetStatus();
+    if (m_cacheBuffer.empty())
+    {
+        return Command::Status("", 0, "", Command::State::Unknown);
+    }
+    else
+    {
+        return m_cacheBuffer.front()->GetStatus();
+    }
 }
 
-int CommandRunner::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
+{
+    int status = 0;
+
+    std::lock_guard<std::mutex> lock(s_diskCacheMutex);
+    std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
+
+    if (file.good())
+    {
+        rapidjson::IStreamWrapper isw(file);
+        rapidjson::Document document;
+
+        if (document.ParseStream(isw).HasParseError())
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file");
+            status = EINVAL;
+        }
+        else if (!document.IsObject())
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an array");
+            status = EINVAL;
+        }
+        else if (document.HasMember(clientName.c_str()))
+        {
+            const rapidjson::Value& client = document[clientName.c_str()];
+            Command::Status commandStatus = Command::Status::Deserialize(client);
+
+            std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.id, "", 0, "");
+            command->SetStatus(commandStatus.exitCode, commandStatus.textResult, commandStatus.state);
+
+            if (0 != CacheCommand(command))
+            {
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command with id '%s'", commandStatus.id.c_str());
+                status = -1;
+            }
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client %s", clientName.c_str());
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not exist");
+        status = -1;
+    }
+
+    return status;
+}
+
+int CommandRunner::PersistCommandStatus(const Command::Status& status)
+{
+    return m_usePersistedCache ? PersistCommandStatus(m_clientName, status) : 0;
+}
+
+int CommandRunner::PersistCommandStatus(const std::string& clientName, const Command::Status commandStatus)
+{
+    int status = 0;
+    std::lock_guard<std::mutex> lock(s_diskCacheMutex);
+
+    std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
+    if (file.good())
+    {
+        rapidjson::IStreamWrapper isw(file);
+        rapidjson::Document document;
+
+        if (document.ParseStream(isw).HasParseError())
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+            status = EINVAL;
+        }
+        else if (!document.IsObject())
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an object: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+            status = EINVAL;
+        }
+        else
+        {
+            rapidjson::Document statusDocument;
+            statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
+
+            rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
+
+            if (document.HasMember(clientName.c_str()))
+            {
+                document[clientName.c_str()].CopyFrom(statusDocument, allocator);
+            }
+            else
+            {
+                rapidjson::Value object(rapidjson::kObjectType);
+                object.CopyFrom(statusDocument, allocator);
+                document.AddMember(rapidjson::Value(clientName.c_str(), allocator), object, allocator);
+            }
+
+            rapidjson::StringBuffer buffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+            document.Accept(writer);
+
+            if (0 != (status = WriteFile(CommandRunner::PERSISTED_COMMANDSTATUS_FILE, buffer)))
+            {
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to write cache file %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+            }
+        }
+    }
+    else
+    {
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to open cache file %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+        status = errno;
+    }
+
+    return status;
+}
+
+int CommandRunner::WriteFile(const std::string& fileName, const rapidjson::StringBuffer& buffer)
+{
+    int status = 0;
+
+    if (buffer.GetSize() > 0)
+    {
+        std::FILE* file = std::fopen(fileName.c_str(), "w");
+        if (nullptr == file)
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file %s", fileName.c_str());
+            status = EACCES;
+        }
+        else
+        {
+            int rc = std::fputs(buffer.GetString(), file);
+
+            if ((0 > rc) || (EOF == rc))
+            {
+                status = errno ? errno : EINVAL;
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", fileName.c_str(), status, errno ? strerror(errno) : "-");
+            }
+
+            fflush(file);
+            std::fclose(file);
+        }
+    }
+
+    return 0;
+}
+
+int CommandRunner::CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const rapidjson::StringBuffer& buffer)
 {
     int status = MMI_OK;
 
@@ -496,23 +640,26 @@ int CommandRunner::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STR
     return status;
 }
 
-CommandRunner::SafeQueue::SafeQueue() :
+template<class T>
+CommandRunner::SafeQueue<T>::SafeQueue() :
     m_queue(),
     m_mutex(),
     m_condition() { }
 
-void CommandRunner::SafeQueue::Push(std::weak_ptr<Command> value)
+template<class T>
+void CommandRunner::SafeQueue<T>::Push(T value)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_queue.push(value);
     m_condition.notify_one();
 }
 
-std::weak_ptr<Command> CommandRunner::SafeQueue::Pop()
+template<class T>
+T CommandRunner::SafeQueue<T>::Pop()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_condition.wait(lock, [this] { return !m_queue.empty(); });
-    std::weak_ptr<Command> value = m_queue.front();
+    T value = m_queue.front();
     m_queue.pop();
 
     if (m_queue.empty())
@@ -523,15 +670,24 @@ std::weak_ptr<Command> CommandRunner::SafeQueue::Pop()
     return value;
 }
 
-std::weak_ptr<Command> CommandRunner::SafeQueue::Front()
+template<class T>
+T CommandRunner::SafeQueue<T>::Front()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_condition.wait(lock, [this] { return !m_queue.empty(); });
     return m_queue.front();
 }
 
-bool CommandRunner::SafeQueue::Empty()
+template<class T>
+bool CommandRunner::SafeQueue<T>::Empty()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_queue.empty();
+}
+
+template<class T>
+void CommandRunner::SafeQueue<T>::WaitUntilEmpty()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_conditionEmpty.wait(lock, [this] { return m_queue.empty(); });
 }

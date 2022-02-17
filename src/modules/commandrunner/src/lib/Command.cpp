@@ -48,13 +48,14 @@ Command::~Command()
     }
 }
 
-int Command::Execute(std::function<int()> persistCacheToDisk, unsigned int maxPayloadSizeBytes)
+int Command::Execute(unsigned int maxPayloadSizeBytes)
 {
     int exitCode = 0;
     Command::Status status = GetStatus();
 
-    if (Command::State::Canceled == status.state)
+    if (IsCanceled())
     {
+        SetStatus(ECANCELED, "");
         exitCode = ECANCELED;
     }
     else
@@ -65,12 +66,11 @@ int Command::Execute(std::function<int()> persistCacheToDisk, unsigned int maxPa
 
         if (maxPayloadSizeBytes > 0)
         {
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            Command::Status::Serialize(writer, status);
-
-            maxTextResultSize = (maxPayloadSizeBytes > buffer.GetSize()) ? (maxPayloadSizeBytes - buffer.GetSize()) : 1;
+            unsigned int estimatedSize = Command::Status::Serialize(Command::Status(status.id, 0, "", Command::State::Unknown)).size();
+            maxTextResultSize = (maxPayloadSizeBytes > estimatedSize) ? (maxPayloadSizeBytes - estimatedSize) : 1;
         }
+
+        SetStatus(0, "", Command::State::Running);
 
         exitCode = ExecuteCommand(context, command.c_str(), replaceEol, true, maxTextResultSize, timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
 
@@ -79,14 +79,6 @@ int Command::Execute(std::function<int()> persistCacheToDisk, unsigned int maxPa
         if (textResult != nullptr)
         {
             free(textResult);
-        }
-
-        if (persistCacheToDisk != nullptr)
-        {
-            if (0 != persistCacheToDisk())
-            {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist cache to disk");
-            }
         }
     }
 
@@ -102,8 +94,6 @@ int Command::Cancel()
     {
         std::ofstream output(m_tmpFile);
         output.close();
-
-        SetStatus(ECANCELED);
     }
     else
     {
@@ -122,22 +112,7 @@ bool Command::IsComplete()
 
 bool Command::IsCanceled()
 {
-    bool canceled = false;
-    std::lock_guard<std::mutex> lock(m_statusMutex);
-
-    if (Command::State::Canceled == m_status.state)
-    {
-        if (FileExists(m_tmpFile.c_str()))
-        {
-            canceled = true;
-        }
-        else
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' is in a canceled state but no temporary file exists (%s)", m_status.id.c_str(), m_tmpFile.c_str());
-        }
-    }
-
-    return canceled;
+    return FileExists(m_tmpFile.c_str());
 }
 
 std::string Command::GetId()
@@ -201,19 +176,19 @@ int Command::ExecutionCallback(void* context)
 ShutdownCommand::ShutdownCommand(std::string id, std::string command, unsigned int timeout, bool replaceEol) :
     Command(id, command, timeout, replaceEol) { }
 
-int ShutdownCommand::Execute(std::function<int()> persistCacheToDisk, unsigned int maxPayloadSizeBytes)
+int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
 {
     int exitCode = 0;
     char* textResult;
 
-    SetStatus(0, "", Command::State::Succeeded);
-
-    if ((nullptr != persistCacheToDisk) && (0 != persistCacheToDisk()))
+    if (IsCanceled())
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist cache to disk, skipping command with id '%s' (%s)", GetId().c_str(), command.c_str());
+        exitCode = ECANCELED;
     }
     else
     {
+        SetStatus(0, "", Command::State::Succeeded);
+
         exitCode = ExecuteCommand(nullptr, command.c_str(), replaceEol, true, maxPayloadSizeBytes, timeout, &textResult, nullptr, CommandRunnerLog::Get());
 
         if (nullptr != textResult)
@@ -231,6 +206,14 @@ Command::Arguments::Arguments(std::string id, std::string command, Command::Acti
     action(action),
     timeout(timeout),
     singleLineTextResult(singleLineTextResult) { }
+
+std::string Command::Arguments::Serialize(const Command::Arguments& arguments)
+{
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    Command::Arguments::Serialize(writer, arguments);
+    return buffer.GetString();
+}
 
 void Command::Arguments::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Arguments& arguments)
 {
@@ -254,7 +237,7 @@ void Command::Arguments::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& w
     writer.EndObject();
 }
 
-Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& object)
+Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value)
 {
     std::string id = "";
     std::string command = "";
@@ -262,10 +245,10 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& objec
     unsigned int timeout = 0;
     bool singleLineTextResult = false;
 
-    if (object.IsObject())
+    if (value.IsObject())
     {
         int actionValue = 0;
-        if (0 != DeserializeMember(object, g_action.c_str(), actionValue))
+        if (0 != DeserializeMember(value, g_action.c_str(), actionValue))
         {
             OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s", g_commandArguments.c_str(), g_action.c_str());
         }
@@ -279,7 +262,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& objec
                 case Command::Action::Shutdown:
                 case Command::Action::RefreshCommandStatus:
                 case Command::Action::CancelCommand:
-                    if (0 == DeserializeMember(object, g_commandId, id))
+                    if (0 == DeserializeMember(value, g_commandId, id))
                     {
                         if (id.empty())
                         {
@@ -293,16 +276,16 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& objec
                     break;
 
                 case Command::Action::RunCommand:
-                    if (0 == DeserializeMember(object, g_commandId, id) && !id.empty())
+                    if (0 == DeserializeMember(value, g_commandId, id) && !id.empty())
                     {
                         if (!id.empty())
                         {
-                            if (0 == DeserializeMember(object, g_arguments, command))
+                            if (0 == DeserializeMember(value, g_arguments, command))
                             {
                                 if (!command.empty())
                                 {
                                     // Timeout is an optional field
-                                    if (0 != DeserializeMember(object, g_timeout, timeout))
+                                    if (0 != DeserializeMember(value, g_timeout, timeout))
                                     {
                                         // Assume default of no timeout (0)
                                         timeout = 0;
@@ -310,7 +293,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& objec
                                     }
 
                                     // SingleLineTextResult is an optional field
-                                    if (0 != DeserializeMember(object, g_singleLineTextResult, singleLineTextResult))
+                                    if (0 != DeserializeMember(value, g_singleLineTextResult, singleLineTextResult))
                                     {
                                         // Assume default of true
                                         singleLineTextResult = true;
@@ -346,7 +329,7 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& objec
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Invalid command arguments JSON object");
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid command arguments JSON value");
     }
 
     return Command::Arguments(id, command, action, timeout, singleLineTextResult);
@@ -357,6 +340,14 @@ Command::Status::Status(const std::string id, int exitCode, std::string textResu
     exitCode(exitCode),
     textResult(textResult),
     state(state) { }
+
+std::string Command::Status::Serialize(const Command::Status& status, bool serializeTextResult)
+{
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    Command::Status::Serialize(writer, status, serializeTextResult);
+    return buffer.GetString();
+}
 
 void Command::Status::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Status& status, bool serializeTextResult)
 {
@@ -380,24 +371,24 @@ void Command::Status::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writ
     writer.EndObject();
 }
 
-Command::Status Command::Status::Deserialize(const rapidjson::Value& object)
+Command::Status Command::Status::Deserialize(const rapidjson::Value& value)
 {
     std::string id = "";
     int exitCode = 0;
     std::string textResult;
     Command::State state = Command::State::Unknown;
 
-    if (object.IsObject())
+    if (value.IsObject())
     {
         // Command id is a required field
-        if (0 == DeserializeMember(object, g_commandId, id))
+        if (0 == DeserializeMember(value, g_commandId, id))
         {
             // Use defaults for other fields
-            DeserializeMember(object, g_resultCode, exitCode);
-            DeserializeMember(object, g_textResult, textResult);
+            DeserializeMember(value, g_resultCode, exitCode);
+            DeserializeMember(value, g_textResult, textResult);
 
             int stateValue = 0;
-            if (0 == DeserializeMember(object, g_currentState, stateValue))
+            if (0 == DeserializeMember(value, g_currentState, stateValue))
             {
                 state = static_cast<Command::State>(stateValue);
             }
@@ -405,7 +396,7 @@ Command::Status Command::Status::Deserialize(const rapidjson::Value& object)
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Invalid command status JSON object");
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid command status JSON value");
     }
 
     return Command::Status(id, exitCode, textResult, state);

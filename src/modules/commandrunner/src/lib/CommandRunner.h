@@ -5,7 +5,6 @@
 #define COMMANDRUNNER_H
 
 #include <condition_variable>
-#include <functional>
 #include <map>
 #include <mutex>
 #include <queue>
@@ -20,17 +19,13 @@
 
 const std::string g_commandRunner = "CommandRunner";
 
-const std::string g_clientName = "ClientName";
-const std::string g_commandStatusValues = "CommandStatusValues";
-
-#define CACHEFILE "/etc/osconfig/osconfig_commandrunner.cache"
-
 class CommandRunner
 {
 public:
     static const unsigned int MAX_CACHE_SIZE = 10;
+    static const std::string PERSISTED_COMMANDSTATUS_FILE;
 
-    CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, std::function<int()> persistCacheFunction = nullptr);
+    CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     virtual ~CommandRunner();
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
@@ -38,25 +33,25 @@ public:
     int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     unsigned int GetMaxPayloadSizeBytes();
 
-    Command::Status GetStatusToPersist();
+    // Helper function to wait for the worker thread during unit tests
     void WaitForCommands();
-    std::string GetClientName();
 
 private:
+    template<class T>
     class SafeQueue
     {
     public:
         SafeQueue();
         ~SafeQueue() { }
 
-        void Push(std::weak_ptr<Command> element);
-        std::weak_ptr<Command> Pop();
-        std::weak_ptr<Command> Front();
+        void Push(T element);
+        T Pop();
+        T Front();
         bool Empty();
         void WaitUntilEmpty();
 
     private:
-        std::queue<std::weak_ptr<Command>> m_queue;
+        std::queue<T> m_queue;
         mutable std::mutex m_mutex;
         std::condition_variable m_condition;
         std::condition_variable m_conditionEmpty;
@@ -64,10 +59,10 @@ private:
 
     const std::string m_clientName;
     const unsigned int m_maxPayloadSizeBytes;
-    std::function<int()> m_persistCacheFunction;
+    const bool m_usePersistedCache;
 
     std::thread m_workerThread;
-    SafeQueue m_commandQueue;
+    SafeQueue<std::weak_ptr<Command>> m_commandQueue;
 
     std::deque<std::shared_ptr<Command>> m_cacheBuffer;
     std::map<std::string, std::weak_ptr<Command>> m_commandMap;
@@ -76,6 +71,8 @@ private:
     std::string m_reportedStatusId;
     std::mutex m_reportedStatusIdMutex;
 
+    static std::mutex s_diskCacheMutex;
+
     int Run(const std::string id, std::string arguments, unsigned int timeout, bool singleLineTextResult);
     int Reboot(const std::string id);
     int Shutdown(const std::string id);
@@ -83,6 +80,7 @@ private:
     void CancelAll();
     int Refresh(const std::string id);
 
+    bool CommandExists(const std::string& id);
     int ScheduleCommand(std::shared_ptr<Command> command);
     int CacheCommand(std::shared_ptr<Command> command);
 
@@ -93,7 +91,13 @@ private:
     static void WorkerThread(CommandRunner& instance);
     void Execute(Command command);
 
-    static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    Command::Status GetStatusToPersist();
+    int LoadPersistedCommandStatus(const std::string& clientName);
+    int PersistCommandStatus(const Command::Status& status);
+    static int PersistCommandStatus(const std::string& clientName, const Command::Status status);
+
+    static int WriteFile(const std::string& fileName, const rapidjson::StringBuffer& buffer);
+    static int CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const rapidjson::StringBuffer& buffer);
 };
 
 #endif // COMMANDRUNNER_H

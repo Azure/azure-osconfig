@@ -11,8 +11,6 @@
 #include <ScopeGuard.h>
 #include <Mmi.h>
 
-std::map<std::string, std::shared_ptr<CommandRunner>> instances;
-
 void __attribute__((constructor)) InitModule()
 {
     CommandRunnerLog::OpenLog();
@@ -22,10 +20,6 @@ void __attribute__((constructor)) InitModule()
 void __attribute__((destructor)) DestroyModule()
 {
     OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner module unloaded");
-    for (auto it = instances.begin(); it != instances.end(); ++it)
-    {
-        it->second.reset();
-    }
     CommandRunnerLog::CloseLog();
 }
 
@@ -68,60 +62,6 @@ int MmiGetInfo(
     return status;
 }
 
-int PersistCacheToDisk()
-{
-    int status = 0;
-    rapidjson::StringBuffer sb;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
-
-    writer.StartArray();
-
-    for (auto it = instances.begin(); it != instances.end(); ++it)
-    {
-        Command::Status commandStatus = it->second->GetStatusToPersist();
-
-        writer.StartObject();
-
-        writer.Key(g_clientName.c_str());
-        writer.String(it->first.c_str());
-
-        writer.Key(g_commandStatusValues.c_str());
-        writer.StartArray();
-
-        Command::Status::Serialize(writer, commandStatus, false);
-
-        writer.EndArray();
-        writer.EndObject();
-    }
-
-    writer.EndArray();
-
-    if (sb.GetSize() > 0)
-    {
-        std::FILE* file = std::fopen(CACHEFILE, "w");
-        if (nullptr == file)
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Unable to open persisted cache: %s", CACHEFILE);
-            status = EACCES;
-        }
-        else
-        {
-            int rc = std::fputs(sb.GetString(), file);
-
-            if ((0 > rc) || (EOF == rc))
-            {
-                status = errno ? errno : EINVAL;
-                OsConfigLogError(CommandRunnerLog::Get(), "Unable to save last command results to %s, error: %d %s", CACHEFILE, status, errno ? strerror(errno) : "-");
-            }
-
-            fflush(file);
-            std::fclose(file);
-        }
-    }
-
-    return status;
-}
-
 MMI_HANDLE MmiOpen(
     const char* clientName,
     const unsigned int maxPayloadSizeBytes)
@@ -145,17 +85,8 @@ MMI_HANDLE MmiOpen(
     {
         try
         {
-            if (instances.find(clientName) == instances.end())
-            {
-                std::shared_ptr<CommandRunner> session = std::make_shared<CommandRunner>(clientName, maxPayloadSizeBytes, PersistCacheToDisk);
-                instances[clientName] = session;
-                handle = reinterpret_cast<MMI_HANDLE>(session.get());
-            }
-            else
-            {
-                OsConfigLogError(CommandRunnerLog::Get(), "MmiOpen(%s, %d) failed, client already exists", clientName, maxPayloadSizeBytes);
-                status = EINVAL;
-            }
+            CommandRunner* session = new CommandRunner(clientName, maxPayloadSizeBytes);
+            handle = reinterpret_cast<MMI_HANDLE>(session);
         }
         catch (const std::exception& e)
         {
@@ -175,12 +106,9 @@ MMI_HANDLE MmiOpen(
 void MmiClose(MMI_HANDLE clientSession)
 {
     CommandRunner* session = reinterpret_cast<CommandRunner*>(clientSession);
-    std::string clientName = session->GetClientName();
-
-    if (instances.find(clientName) != instances.end())
+    if (nullptr != session)
     {
-        instances[clientName].reset();
-        instances.erase(clientName);
+        delete session;
     }
 }
 

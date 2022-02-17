@@ -34,7 +34,7 @@ namespace Tests
 
     TEST_F(CommandTests, Execute)
     {
-        EXPECT_EQ(0, command->Execute(nullptr, 0));
+        EXPECT_EQ(0, command->Execute(0));
 
         Command::Status status = command->GetStatus();
         EXPECT_STREQ(id.c_str(), status.id.c_str());
@@ -48,7 +48,7 @@ namespace Tests
         EXPECT_EQ(0, command->Cancel());
         EXPECT_TRUE(command->IsCanceled());
         EXPECT_EQ(ECANCELED, command->Cancel());
-        EXPECT_EQ(ECANCELED, command->Execute(nullptr, 0));
+        EXPECT_EQ(ECANCELED, command->Execute(0));
     }
 
     TEST_F(CommandTests, Status)

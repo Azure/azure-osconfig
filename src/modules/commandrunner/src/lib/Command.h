@@ -5,7 +5,6 @@
 #define COMMAND_H
 
 #include <cstring>
-#include <functional>
 #include <mutex>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -85,6 +84,7 @@ public:
 
         Arguments(std::string id, std::string command, Command::Action action, unsigned int timeout, bool singleLineTextResult);
 
+        static std::string Serialize(const Command::Arguments& arguments);
         static void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Arguments& arguments);
         static Arguments Deserialize(const rapidjson::Value& object);
     };
@@ -99,6 +99,7 @@ public:
 
         Status(const std::string id, int exitCode, std::string textResult, Command::State state);
 
+        static std::string Serialize(const Command::Status& status, bool serializeTextResult = true);
         static void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Command::Status& status, bool serializeTextResult = true);
         static Command::Status Deserialize(const rapidjson::Value& object);
     };
@@ -111,7 +112,7 @@ public:
     Command(Status status);
     ~Command();
 
-    virtual int Execute(std::function<int()> persistCacheToDisk, unsigned int maxPayloadSizeBytes);
+    virtual int Execute(unsigned int maxPayloadSizeBytes);
     int Cancel();
 
     bool IsComplete();
@@ -136,7 +137,7 @@ class ShutdownCommand : public Command
 public:
     ShutdownCommand(std::string id, std::string command, unsigned int timeout, bool replaceEol);
 
-    int Execute(std::function<int()> persistCacheToDisk, unsigned int maxPayloadSizeBytes) override;
+    int Execute(unsigned int maxPayloadSizeBytes) override;
 };
 
 #endif // COMMAND_H

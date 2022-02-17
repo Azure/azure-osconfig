@@ -19,6 +19,7 @@ namespace Tests
         static const char component[];
         static const char desiredObject[];
         static const char reportedObject[];
+        static const std::chrono::milliseconds timeout;
 
         void SetUp() override;
         void TearDown() override;
@@ -29,15 +30,16 @@ namespace Tests
     const char CommandRunnerTests::component[] = "CommandRunner";
     const char CommandRunnerTests::desiredObject[] = "CommandArguments";
     const char CommandRunnerTests::reportedObject[] = "CommandStatus";
+    const std::chrono::milliseconds CommandRunnerTests::timeout(5000);
 
     void CommandRunnerTests::SetUp()
     {
-        this->commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0);
+        this->commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
     }
 
     void CommandRunnerTests::TearDown()
     {
-        commandRunner.reset();
+        this->commandRunner.reset();
     }
 
     std::string CommandRunnerTests::Id()
@@ -46,29 +48,11 @@ namespace Tests
         return std::to_string(id++);
     }
 
-    std::string Serialize(const Command::Arguments& arguments)
-    {
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        Command::Arguments::Serialize(writer, arguments);
-
-        return buffer.GetString();
-    }
-
-    std::string Serialize(const Command::Status& status)
-    {
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        Command::Status::Serialize(writer, status);
-
-        return buffer.GetString();
-    }
-
     TEST_F(CommandRunnerTests, Set_InvalidComponent)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
         EXPECT_EQ(EINVAL, commandRunner->Set("invalid", desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
         EXPECT_EQ(EINVAL, commandRunner->Set(desiredObject, desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
@@ -79,7 +63,7 @@ namespace Tests
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
         EXPECT_EQ(EINVAL, commandRunner->Set(component, "invalid", (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
         EXPECT_EQ(EINVAL, commandRunner->Set(component, component, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
@@ -127,7 +111,7 @@ namespace Tests
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
         Command::Status status(id, 0, "hello world\n", Command::State::Succeeded);
 
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -136,7 +120,7 @@ namespace Tests
         commandRunner->WaitForCommands();
 
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(std::string(reportedPayload, payloadSizeBytes), Serialize(status)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RunCommand_Timeout)
@@ -145,7 +129,7 @@ namespace Tests
         Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 1, false);
         Command::Status status(id, ETIME, "", Command::State::TimedOut);
 
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -154,7 +138,7 @@ namespace Tests
         commandRunner->WaitForCommands();
 
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RunCommand_SingleLineTextResult)
@@ -163,7 +147,7 @@ namespace Tests
         Command::Arguments arguments(id, "echo 'single\nline'", Command::Action::RunCommand, 0, true);
         Command::Status status(id, 0, "single line ", Command::State::Succeeded);
 
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -172,7 +156,7 @@ namespace Tests
         commandRunner->WaitForCommands();
 
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RunCommand_LimitedPayloadSize)
@@ -182,15 +166,15 @@ namespace Tests
 
         std::string expectedTextResult = "hello";
         Command::Status status(id, 0, expectedTextResult, Command::State::Succeeded);
-        std::string desiredPayload = Serialize(arguments);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
         // Create an empty status to estimate the size of a serialized status
         Command::Status emptyStatus(id, 0, "", Command::State::Succeeded);
 
         // Add expected text result length and null terminator to the size
-        unsigned int limitedPayloadSize = Serialize(emptyStatus).length() + expectedTextResult.size() + 1;
+        unsigned int limitedPayloadSize = Command::Status::Serialize(emptyStatus).length() + expectedTextResult.size() + 1;
 
-        CommandRunner commandRunner("Limited_Payload_Client", limitedPayloadSize);
+        CommandRunner commandRunner("Limited_Payload_Client", limitedPayloadSize, false);
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -199,7 +183,7 @@ namespace Tests
         commandRunner.WaitForCommands();
 
         EXPECT_EQ(MMI_OK, commandRunner.Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RunCommand_MaximumCacheSize)
@@ -214,7 +198,7 @@ namespace Tests
             Command::Status status(id, 0, id + "\n", Command::State::Succeeded);
             expectedResults.push_back(std::make_pair(id, status));
 
-            std::string desiredPayload = Serialize(arguments);
+            std::string desiredPayload = Command::Arguments::Serialize(arguments);
             EXPECT_EQ(MMI_OK, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
         }
 
@@ -227,11 +211,11 @@ namespace Tests
         for (auto& expectedResult : expectedResults)
         {
             Command::Arguments arguments(expectedResult.first, "", Command::Action::RefreshCommandStatus, 0, false);
-            std::string refresh = Serialize(arguments);
+            std::string refresh = Command::Arguments::Serialize(arguments);
 
             EXPECT_EQ(MMI_OK, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
             EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-            EXPECT_TRUE(IsJsonEq(Serialize(expectedResult.second), std::string(reportedPayload, payloadSizeBytes)));
+            EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(expectedResult.second), std::string(reportedPayload, payloadSizeBytes)));
         }
 
         // Add one more command to the cache
@@ -239,23 +223,23 @@ namespace Tests
         Command::Arguments extraCommand(id, "echo '" + id + "'", Command::Action::RunCommand, 0, false);
         Command::Status lastStatus(id, 0, id + "\n", Command::State::Succeeded);
 
-        std::string desiredPayload = Serialize(extraCommand);
+        std::string desiredPayload = Command::Arguments::Serialize(extraCommand);
         EXPECT_EQ(MMI_OK, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
 
         commandRunner->WaitForCommands();
 
         // Get the last command from the cache
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
 
         // The first command should have been removed from the cache
         Command::Arguments refreshFirstCommand(expectedResults[0].first, "", Command::Action::RefreshCommandStatus, 0, false);
-        std::string refresh = Serialize(refreshFirstCommand);
+        std::string refresh = Command::Arguments::Serialize(refreshFirstCommand);
         EXPECT_EQ(EINVAL, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
 
         // The last command should still be reported (set as command to report) and in the cache
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RefreshCommand)
@@ -269,8 +253,8 @@ namespace Tests
         Command::Status status1(id1, 0, "command 1\n", Command::State::Succeeded);
         Command::Status status2(id2, 0, "command 2\n", Command::State::Succeeded);
 
-        std::string desiredPayload1 = Serialize(arguments1);
-        std::string desiredPayload2 = Serialize(arguments2);
+        std::string desiredPayload1 = Command::Arguments::Serialize(arguments1);
+        std::string desiredPayload2 = Command::Arguments::Serialize(arguments2);
 
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
@@ -282,18 +266,18 @@ namespace Tests
 
         // The last run command should be reported
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status2), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status2), std::string(reportedPayload, payloadSizeBytes)));
 
         // Refresh the command
         Command::Arguments refresh(id1, "", Command::Action::RefreshCommandStatus, 0, false);
-        std::string refreshPayload = Serialize(refresh);
+        std::string refreshPayload = Command::Arguments::Serialize(refresh);
         EXPECT_EQ(MMI_OK, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(refreshPayload.c_str()), refreshPayload.size()));
 
         commandRunner->WaitForCommands();
 
         // The refreshed command should be reported
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, CancelCommand)
@@ -303,8 +287,8 @@ namespace Tests
         Command::Arguments cancelCommand(id, "", Command::Action::CancelCommand, 0, false);
         Command::Status status(arguments.id, ECANCELED, "", Command::State::Canceled);
 
-        std::string desiredPayload = Serialize(arguments);
-        std::string cancelPayload = Serialize(cancelCommand);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+        std::string cancelPayload = Command::Arguments::Serialize(cancelCommand);
 
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
@@ -315,7 +299,7 @@ namespace Tests
         commandRunner->WaitForCommands();
 
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
     TEST_F(CommandRunnerTests, RepeatCommandId)
@@ -325,8 +309,8 @@ namespace Tests
         Command::Arguments arguments2(id, "echo 'repeated command id'", Command::Action::RunCommand, 0, false);
         Command::Status status(id, 0, "hello world\n", Command::State::Succeeded);
 
-        std::string desiredPayload1 = Serialize(arguments1);
-        std::string desiredPayload2 = Serialize(arguments2);
+        std::string desiredPayload1 = Command::Arguments::Serialize(arguments1);
+        std::string desiredPayload2 = Command::Arguments::Serialize(arguments2);
 
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
@@ -336,6 +320,6 @@ namespace Tests
         EXPECT_EQ(EINVAL, commandRunner->Set(component, desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
 
         EXPECT_EQ(MMI_OK, commandRunner->Get(component, reportedObject, &reportedPayload, &payloadSizeBytes));
-        EXPECT_TRUE(IsJsonEq(Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 } // namespace Tests
