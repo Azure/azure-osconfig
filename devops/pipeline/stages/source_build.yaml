@@ -64,9 +64,7 @@ stages:
       artifact: OSConfig_$(Build.BuildNumber)_SOURCES
       condition: eq(${{ parameters.publishArtifact }}, true)
 
-    # Runs ctest in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
-    # Tests by loading a CTestTestfile.cmake from the build tree and executing the defined tests.
-    # Record the output and result of each test
+    # Runs, tests and records in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
     # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
     - script: |
         docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build && ctest -T test --verbose > TestOutput.log"
