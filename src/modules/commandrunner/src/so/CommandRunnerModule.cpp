@@ -83,16 +83,15 @@ MMI_HANDLE MmiOpen(
 
     if (nullptr != clientName)
     {
-        try
+        CommandRunner* session = new (std::nothrow) CommandRunner(clientName, maxPayloadSizeBytes);
+        if (nullptr != session)
         {
-            CommandRunner* session = new CommandRunner(clientName, maxPayloadSizeBytes);
             handle = reinterpret_cast<MMI_HANDLE>(session);
         }
-        catch (const std::exception& e)
+        else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "%s", e.what());
-            status = EINVAL;
-        }
+            OsConfigLogError(CommandRunnerLog::Get(), "MmiOpen failed to allocate memory");
+            status = ENOMEM;        }
     }
     else
     {

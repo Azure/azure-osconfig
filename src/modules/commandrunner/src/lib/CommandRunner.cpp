@@ -64,10 +64,7 @@ CommandRunner::~CommandRunner()
             m_workerThread.join();
         }
     }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "Exception thrown while joining worker thread: %s", e.what());
-    }
+    catch (const std::exception& e) {}
 
     Command::Status status = GetStatusToPersist();
     if (!status.id.empty() && (0 != PersistCommandStatus(status)))
@@ -97,36 +94,17 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
     }
     else
     {
-        try
+        std::size_t len = ARRAY_SIZE(info) - 1;
+        *payload = new (std::nothrow) char[len];
+        if (nullptr == *payload)
         {
-            std::size_t len = ARRAY_SIZE(info) - 1;
-            *payload = new (std::nothrow) char[len];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo failed to allocate memory");
-                status = ENOMEM;
-            }
-            else
-            {
-                std::memcpy(*payload, info, len);
-                *payloadSizeBytes = len;
-            }
+            OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo failed to allocate memory");
+            status = ENOMEM;
         }
-        catch (const std::exception& e)
+        else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
-            status = EINTR;
-
-            if (nullptr != *payload)
-            {
-                delete[] * payload;
-                *payload = nullptr;
-            }
-
-            if (nullptr != payloadSizeBytes)
-            {
-                *payloadSizeBytes = 0;
-            }
+            std::memcpy(*payload, info, len);
+            *payloadSizeBytes = len;
         }
     }
 
@@ -169,7 +147,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                         status = Refresh(arguments.id);
                         break;
                     case Command::Action::None:
-                        OsConfigLogInfo(CommandRunnerLog::Get(), "Action is set to None (0), ignoring command");
+                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command '%s'", arguments.id.c_str());
                         break;
                     default:
                         OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.action));
@@ -271,23 +249,15 @@ int CommandRunner::Cancel(const std::string id)
     int status = 0;
     std::lock_guard<std::mutex> lock(m_cacheMutex);
 
-    if ((m_commandMap.find(id) != m_commandMap.end()) && !m_commandMap[id].expired())
+    if ((m_commandMap.find(id) != m_commandMap.end()))
     {
-        std::shared_ptr<Command> command = m_commandMap[id].lock();
-        if (nullptr != command)
-        {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command with command id: %s", id.c_str());
-            status = command->Cancel();
-        }
-        else
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Command with command id %s is expired", id.c_str());
-            status = EINVAL;
-        }
+        std::shared_ptr<Command> command = m_commandMap[id];
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command '%s'", id.c_str());
+        status = command->Cancel();
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command with id '%s' does not exist and cannot be canceled", id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' does not exist and cannot be canceled", id.c_str());
         status = EINVAL;
     }
 
@@ -304,7 +274,7 @@ int CommandRunner::Refresh(const std::string id)
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command with id '%s' does not exist and cannot be refreshed", id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' does not exist and cannot be refreshed", id.c_str());
         status = EINVAL;
     }
 
@@ -318,7 +288,7 @@ bool CommandRunner::CommandExists(const std::string& id)
 
     if (m_commandMap.find(id) != m_commandMap.end())
     {
-        exists = !m_commandMap[id].expired();
+        exists = true;
     }
 
     return exists;
@@ -338,17 +308,17 @@ int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
             }
             else
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command with id '%s'", command->GetId().c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", command->GetId().c_str());
             }
         }
         else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command with id '%s'", command->GetId().c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping Command '%s'", command->GetId().c_str());
         }
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command with id '%s' already exists", command->GetId().c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' already exists", command->GetId().c_str());
         status = EINVAL;
     }
 
@@ -411,9 +381,9 @@ Command::Status CommandRunner::GetReportedStatus()
     std::string reportedCommandId = GetReportedStatusId();
     std::lock_guard<std::mutex> lock(m_cacheMutex);
 
-    if ((m_commandMap.find(reportedCommandId) != m_commandMap.end()) && !m_commandMap[reportedCommandId].expired())
+    if (m_commandMap.find(reportedCommandId) != m_commandMap.end())
     {
-        return m_commandMap[reportedCommandId].lock()->GetStatus();
+        return m_commandMap[reportedCommandId]->GetStatus();
     }
     else
     {
@@ -490,7 +460,7 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 
             if (0 != CacheCommand(command))
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command with id '%s'", commandStatus.id.c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", commandStatus.id.c_str());
                 status = -1;
             }
         }

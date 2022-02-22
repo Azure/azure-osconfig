@@ -256,28 +256,21 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
         {
             action = static_cast<Command::Action>(actionValue);
 
-            switch (action)
+            if (0 == DeserializeMember(value, g_commandId, id))
             {
-                case Command::Action::Reboot:
-                case Command::Action::Shutdown:
-                case Command::Action::RefreshCommandStatus:
-                case Command::Action::CancelCommand:
-                    if (0 == DeserializeMember(value, g_commandId, id))
-                    {
+                switch (action)
+                {
+                    case Command::Action::Reboot:
+                    case Command::Action::Shutdown:
+                    case Command::Action::RefreshCommandStatus:
+                    case Command::Action::CancelCommand:
                         if (id.empty())
                         {
                             OsConfigLogError(CommandRunnerLog::Get(), "%s.%s is empty", g_commandArguments.c_str(), g_commandId.c_str());
                         }
-                    }
-                    else
-                    {
-                        OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s", g_commandArguments.c_str(), g_commandId.c_str());
-                    }
-                    break;
+                        break;
 
-                case Command::Action::RunCommand:
-                    if (0 == DeserializeMember(value, g_commandId, id) && !id.empty())
-                    {
+                    case Command::Action::RunCommand:
                         if (!id.empty())
                         {
                             if (0 == DeserializeMember(value, g_arguments, command))
@@ -314,16 +307,12 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
                         {
                             OsConfigLogError(CommandRunnerLog::Get(), "%s.%s is empty", g_commandArguments.c_str(), g_commandId.c_str());
                         }
-                    }
-                    else
-                    {
-                        OsConfigLogError(CommandRunnerLog::Get(), "Failed to deserialize %s.%s '%s'", g_commandArguments.c_str(), g_commandId.c_str(), id.c_str());
-                    }
-                    break;
+                        break;
 
-                case Command::Action::None:
-                default:
-                    break;
+                    case Command::Action::None:
+                    default:
+                        break;
+                }
             }
         }
     }

@@ -65,7 +65,7 @@ private:
     SafeQueue<std::weak_ptr<Command>> m_commandQueue;
 
     std::deque<std::shared_ptr<Command>> m_cacheBuffer;
-    std::map<std::string, std::weak_ptr<Command>> m_commandMap;
+    std::map<std::string, std::shared_ptr<Command>> m_commandMap;
     std::mutex m_cacheMutex;
 
     std::string m_reportedStatusId;
