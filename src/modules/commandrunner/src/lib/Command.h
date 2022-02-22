@@ -104,9 +104,9 @@ public:
         static Command::Status Deserialize(const rapidjson::Value& object);
     };
 
-    const std::string command;
-    const unsigned int timeout;
-    const bool replaceEol;
+    const std::string m_arguments;
+    const unsigned int m_timeout;
+    const bool m_replaceEol;
 
     Command(std::string id, std::string command, unsigned int timeout, bool replaceEol);
     Command(Status status);

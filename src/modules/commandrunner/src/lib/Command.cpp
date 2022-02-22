@@ -17,9 +17,9 @@ template<typename T>
 int DeserializeMember(const rapidjson::Value& document, const std::string key, T& value);
 
 Command::Command(std::string id, std::string command, unsigned int timeout, bool replaceEol) :
-    command(command),
-    timeout(timeout),
-    replaceEol(replaceEol),
+    m_arguments(command),
+    m_timeout(timeout),
+    m_replaceEol(replaceEol),
     m_status(id, 0, "", Command::State::Unknown),
     m_statusMutex()
 {
@@ -72,7 +72,7 @@ int Command::Execute(unsigned int maxPayloadSizeBytes)
 
         SetStatus(0, "", Command::State::Running);
 
-        exitCode = ExecuteCommand(context, command.c_str(), replaceEol, true, maxTextResultSize, timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
+        exitCode = ExecuteCommand(context, m_arguments.c_str(), m_replaceEol, true, maxTextResultSize, m_timeout, &textResult, &Command::ExecutionCallback, CommandRunnerLog::Get());
 
         SetStatus(exitCode, (textResult != nullptr) ? std::string(textResult) : "");
 
@@ -179,7 +179,7 @@ ShutdownCommand::ShutdownCommand(std::string id, std::string command, unsigned i
 int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
 {
     int exitCode = 0;
-    char* textResult;
+    char* textResult = nullptr;
 
     if (IsCanceled())
     {
@@ -189,7 +189,7 @@ int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
     {
         SetStatus(0, "", Command::State::Succeeded);
 
-        exitCode = ExecuteCommand(nullptr, command.c_str(), replaceEol, true, maxPayloadSizeBytes, timeout, &textResult, nullptr, CommandRunnerLog::Get());
+        exitCode = ExecuteCommand(nullptr, m_arguments.c_str(), m_replaceEol, true, maxPayloadSizeBytes, m_timeout, &textResult, nullptr, CommandRunnerLog::Get());
 
         if (nullptr != textResult)
         {

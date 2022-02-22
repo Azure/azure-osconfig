@@ -402,7 +402,7 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
 
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' ('%s') completed with code %d", command->GetId().c_str(), command->command.c_str(), exitCode);
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' ('%s') completed with code %d", command->GetId().c_str(), command->m_arguments.c_str(), exitCode);
         }
         else
         {
