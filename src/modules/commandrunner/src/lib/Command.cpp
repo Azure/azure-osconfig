@@ -66,7 +66,7 @@ int Command::Execute(unsigned int maxPayloadSizeBytes)
 
         if (maxPayloadSizeBytes > 0)
         {
-            unsigned int estimatedSize = Command::Status::Serialize(Command::Status(status.id, 0, "", Command::State::Unknown)).size();
+            unsigned int estimatedSize = Command::Status::Serialize(Command::Status(status.m_id, 0, "", Command::State::Unknown)).size();
             maxTextResultSize = (maxPayloadSizeBytes > estimatedSize) ? (maxPayloadSizeBytes - estimatedSize) : 1;
         }
 
@@ -90,14 +90,14 @@ int Command::Cancel()
     int status = 0;
     Status currentStatus = GetStatus();
 
-    if ((Command::State::Canceled != currentStatus.state) && !FileExists(m_tmpFile.c_str()))
+    if ((Command::State::Canceled != currentStatus.m_state) && !FileExists(m_tmpFile.c_str()))
     {
         std::ofstream output(m_tmpFile);
         output.close();
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' is already canceled", currentStatus.id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' is already canceled", currentStatus.m_id.c_str());
         status = ECANCELED;
     }
 
@@ -107,7 +107,7 @@ int Command::Cancel()
 bool Command::IsComplete()
 {
     std::lock_guard<std::mutex> lock(m_statusMutex);
-    return (Command::State::Unknown != m_status.state) && (Command::State::Running != m_status.state);
+    return (Command::State::Unknown != m_status.m_state) && (Command::State::Running != m_status.m_state);
 }
 
 bool Command::IsCanceled()
@@ -118,7 +118,7 @@ bool Command::IsCanceled()
 std::string Command::GetId()
 {
     std::lock_guard<std::mutex> lock(m_statusMutex);
-    return m_status.id;
+    return m_status.m_id;
 }
 
 Command::Status Command::GetStatus()
@@ -151,9 +151,9 @@ void Command::SetStatus(int exitCode, std::string textResult)
 void Command::SetStatus(int exitCode, std::string textResult, Command::State state)
 {
     std::lock_guard<std::mutex> lock(m_statusMutex);
-    m_status.exitCode = exitCode;
-    m_status.textResult = textResult;
-    m_status.state = state;
+    m_status.m_exitCode = exitCode;
+    m_status.m_textResult = textResult;
+    m_status.m_state = state;
 }
 
 int Command::ExecutionCallback(void* context)
@@ -201,11 +201,11 @@ int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
 }
 
 Command::Arguments::Arguments(std::string id, std::string command, Command::Action action, unsigned int timeout, bool singleLineTextResult) :
-    id(id),
-    command(command),
-    action(action),
-    timeout(timeout),
-    singleLineTextResult(singleLineTextResult) { }
+    m_id(id),
+    m_arguments(command),
+    m_action(action),
+    m_timeout(timeout),
+    m_singleLineTextResult(singleLineTextResult) { }
 
 std::string Command::Arguments::Serialize(const Command::Arguments& arguments)
 {
@@ -220,19 +220,19 @@ void Command::Arguments::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& w
     writer.StartObject();
 
     writer.String(g_commandId.c_str());
-    writer.String(arguments.id.c_str());
+    writer.String(arguments.m_id.c_str());
 
     writer.String(g_arguments.c_str());
-    writer.String(arguments.command.c_str());
+    writer.String(arguments.m_arguments.c_str());
 
     writer.String(g_action.c_str());
-    writer.Int(static_cast<int>(arguments.action));
+    writer.Int(static_cast<int>(arguments.m_action));
 
     writer.String(g_timeout.c_str());
-    writer.Uint(arguments.timeout);
+    writer.Uint(arguments.m_timeout);
 
     writer.String(g_singleLineTextResult.c_str());
-    writer.Bool(arguments.singleLineTextResult);
+    writer.Bool(arguments.m_singleLineTextResult);
 
     writer.EndObject();
 }
@@ -325,10 +325,10 @@ Command::Arguments Command::Arguments::Deserialize(const rapidjson::Value& value
 }
 
 Command::Status::Status(const std::string id, int exitCode, std::string textResult, Command::State state) :
-    id(id),
-    exitCode(exitCode),
-    textResult(textResult),
-    state(state) { }
+    m_id(id),
+    m_exitCode(exitCode),
+    m_textResult(textResult),
+    m_state(state) { }
 
 std::string Command::Status::Serialize(const Command::Status& status, bool serializeTextResult)
 {
@@ -343,19 +343,19 @@ void Command::Status::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writ
     writer.StartObject();
 
     writer.Key(g_commandId.c_str());
-    writer.String(status.id.c_str());
+    writer.String(status.m_id.c_str());
 
     writer.Key(g_resultCode.c_str());
-    writer.Int(status.exitCode);
+    writer.Int(status.m_exitCode);
 
     if (serializeTextResult)
     {
         writer.Key(g_textResult.c_str());
-        writer.String(status.textResult.c_str());
+        writer.String(status.m_textResult.c_str());
     }
 
     writer.Key(g_currentState.c_str());
-    writer.Int(status.state);
+    writer.Int(status.m_state);
 
     writer.EndObject();
 }

@@ -67,7 +67,7 @@ CommandRunner::~CommandRunner()
     catch (const std::exception& e) {}
 
     Command::Status status = GetStatusToPersist();
-    if (!status.id.empty() && (0 != PersistCommandStatus(status)))
+    if (!status.m_id.empty() && (0 != PersistCommandStatus(status)))
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command status for client %s during shutdown", m_clientName.c_str());
     }
@@ -129,28 +129,28 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
             {
                 Command::Arguments arguments = Command::Arguments::Deserialize(document);
 
-                switch (arguments.action)
+                switch (arguments.m_action)
                 {
                     case Command::Action::RunCommand:
-                        status = Run(arguments.id, arguments.command, arguments.timeout, arguments.singleLineTextResult);
+                        status = Run(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
                         break;
                     case Command::Action::Reboot:
-                        status = Reboot(arguments.id);
+                        status = Reboot(arguments.m_id);
                         break;
                     case Command::Action::Shutdown:
-                        status = Shutdown(arguments.id);
+                        status = Shutdown(arguments.m_id);
                         break;
                     case Command::Action::CancelCommand:
-                        status = Cancel(arguments.id);
+                        status = Cancel(arguments.m_id);
                         break;
                     case Command::Action::RefreshCommandStatus:
-                        status = Refresh(arguments.id);
+                        status = Refresh(arguments.m_id);
                         break;
                     case Command::Action::None:
-                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command '%s'", arguments.id.c_str());
+                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command '%s'", arguments.m_id.c_str());
                         break;
                     default:
-                        OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.action));
+                        OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
                         status = EINVAL;
                 }
             }
@@ -455,12 +455,12 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
             const rapidjson::Value& client = document[clientName.c_str()];
             Command::Status commandStatus = Command::Status::Deserialize(client);
 
-            std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.id, "", 0, "");
-            command->SetStatus(commandStatus.exitCode, commandStatus.textResult, commandStatus.state);
+            std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
+            command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
 
             if (0 != CacheCommand(command))
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", commandStatus.id.c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", commandStatus.m_id.c_str());
                 status = -1;
             }
         }

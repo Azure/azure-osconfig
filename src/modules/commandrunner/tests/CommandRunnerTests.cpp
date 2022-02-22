@@ -285,7 +285,7 @@ namespace Tests
         std::string id = Id();
         Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 0, false);
         Command::Arguments cancelCommand(id, "", Command::Action::CancelCommand, 0, false);
-        Command::Status status(arguments.id, ECANCELED, "", Command::State::Canceled);
+        Command::Status status(arguments.m_id, ECANCELED, "", Command::State::Canceled);
 
         std::string desiredPayload = Command::Arguments::Serialize(arguments);
         std::string cancelPayload = Command::Arguments::Serialize(cancelCommand);

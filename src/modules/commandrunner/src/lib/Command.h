@@ -76,11 +76,11 @@ public:
     class Arguments
     {
     public:
-        const std::string id;
-        const std::string command;
-        const Command::Action action;
-        const unsigned int timeout;
-        const bool singleLineTextResult;
+        const std::string m_id;
+        const std::string m_arguments;
+        const Command::Action m_action;
+        const unsigned int m_timeout;
+        const bool m_singleLineTextResult;
 
         Arguments(std::string id, std::string command, Command::Action action, unsigned int timeout, bool singleLineTextResult);
 
@@ -92,10 +92,10 @@ public:
     class Status
     {
     public:
-        const std::string id;
-        int exitCode;
-        std::string textResult;
-        Command::State state;
+        const std::string m_id;
+        int m_exitCode;
+        std::string m_textResult;
+        Command::State m_state;
 
         Status(const std::string id, int exitCode, std::string textResult, Command::State state);
 
