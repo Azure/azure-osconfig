@@ -349,7 +349,7 @@ int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
     else
     {
         OsConfigLogError(CommandRunnerLog::Get(), "Command with id '%s' already exists", command->GetId().c_str());
-        status = EEXIST;
+        status = EINVAL;
     }
 
     return status;
