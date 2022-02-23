@@ -7,7 +7,7 @@ set (CMAKE_CXX_STANDARD 17)
 
 project(packagemanagerconfigurationlib)
 
-add_library(packagemanagerconfigurationlib STATIC PackageManagerConfiguration.cpp)
+add_library(packagemanagerconfigurationlib STATIC ExecutionState.cpp PackageManagerConfiguration.cpp)
 target_link_libraries(packagemanagerconfigurationlib PRIVATE logging commonutils)
 
 target_include_directories(packagemanagerconfigurationlib

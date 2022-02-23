@@ -32,6 +32,15 @@ int PackageManagerConfigurationTests::RunCommand(const char* command, bool repla
     std::map<std::string, std::string>::const_iterator it = m_textResults.find(command);
     if (it != m_textResults.end())
     {
+        if (it->second == "COMMAND_ERROR")
+        {
+            return 100;
+        }
+        else if (it->second == "TIMEOUT_ERROR")
+        {
+            return ETIME;
+        }
+
         if (textResult)
         {
             *textResult = it->second;
@@ -61,7 +70,7 @@ namespace OSConfig::Platform::Tests
 
         mkdir(sourcesDir.c_str(), 0775);
 
-        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir + "/");
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir);
 
         int status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
@@ -74,14 +83,15 @@ namespace OSConfig::Platform::Tests
         const std::map<std::string, std::string> textResults =
         {
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
+            {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{},\"ExecutionState\":0,\"SourcesFingerprint\":{}}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{},\"ExecutionState\":\"Unknown\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"SourcesFilenames\":[]}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         mkdir(sourcesDir.c_str(), 0775);
 
-        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir + "/");
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir);
         int status = testModule.Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, MMI_OK);
 
@@ -101,18 +111,80 @@ namespace OSConfig::Platform::Tests
             {"apt-cache policy cowsay | grep Installed", "  Installed: 3.03+dfsg2-7 "},
             {"apt-cache policy sl | grep Installed", "  Installed: 5.02-1 "},
             {"apt-cache policy bar | grep Installed", "  Installed: (none) "},
-            {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"}
+            {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
+            {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"3.03+dfsg2-7\",\"sl\":\"5.02-1\"},\"ExecutionState\":2,\"SourcesFingerprint\":{\"key\":\"75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870\"}}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"3.03+dfsg2-7\",\"sl\":\"5.02-1\"},\"ExecutionState\":\"Succeeded\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         mkdir(sourcesDir.c_str(), 0775);
 
         int status;
-        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir + "/");
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir);
         status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
+
+        status = testModule.Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
+        EXPECT_EQ(status, MMI_OK);
+        
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
+        std::filesystem::remove_all(sourcesDir.c_str());
+    }
+
+    TEST(PackageManagerConfigurationTests, SetGetUpdatingPackagesSourcesFailure)
+    {
+        const std::map<std::string, std::string> textResults =
+        {
+            {"sudo apt-get update", "COMMAND_ERROR"},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
+            {"apt-cache policy cowsay | grep Installed", "  Installed: (none) "},
+            {"apt-cache policy sl | grep Installed", "  Installed: (none) "},
+            {"apt-cache policy bar | grep Installed", "  Installed: (none) "},
+            {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
+            {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
+        };
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"(none)\",\"sl\":\"(none)\"},\"ExecutionState\":\"Failed_UpdatingPackagesSources\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+        mkdir(sourcesDir.c_str(), 0775);
+
+        int status;
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir);
+        status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
+        EXPECT_EQ(status, 100);
+
+        status = testModule.Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
+        EXPECT_EQ(status, MMI_OK);
+        
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
+        std::filesystem::remove_all(sourcesDir.c_str());
+    }
+
+    TEST(PackageManagerConfigurationTests, SetGetPackageInstallationTimeoutFailure)
+    {
+        const std::map<std::string, std::string> textResults =
+        {
+            {"sudo apt-get update", ""},
+            {"sudo apt-get install cowsay=3.03+dfsg2-7 sl -y --allow-downgrades --auto-remove", "TIMEOUT_ERROR"},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
+            {"apt-cache policy cowsay | grep Installed", "  Installed: (none) "},
+            {"apt-cache policy sl | grep Installed", "  Installed: (none) "},
+            {"apt-cache policy bar | grep Installed", "  Installed: (none) "},
+            {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
+            {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
+        };
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"(none)\",\"sl\":\"(none)\"},\"ExecutionState\":\"TimedOut_InstallingPackages_{cowsay=3.03+dfsg2-7 sl}\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+        mkdir(sourcesDir.c_str(), 0775);
+
+        int status;
+        PackageManagerConfigurationTests testModule(textResults, g_maxPayloadSizeBytes, sourcesDir);
+        status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
+        EXPECT_EQ(status, ETIME);
 
         status = testModule.Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, MMI_OK);

@@ -20,12 +20,14 @@ static const std::string g_sources = "Sources";
 static const std::string g_executionState = "ExecutionState";
 static const std::string g_packagesFingerprint = "PackagesFingerprint";
 static const std::string g_sourcesFingerprint = "SourcesFingerprint";
+static const std::string g_sourcesFilenames = "SourcesFilenames";
 static const std::string g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
 static const std::string g_commandAptUpdate = "sudo apt-get update";
 static const std::string g_sourcesFolderPath = "/etc/apt/sources.list.d/";
+static const std::string g_listExtension = ".list";
 
 constexpr const char* g_commandExecuteUpdate = "sudo apt-get install $value -y --allow-downgrades --auto-remove";
-constexpr const char* g_commandGetSourcesFileHash = "cat $value | sha256sum | head -c 64";
+constexpr const char* g_commandGetSourcesFingerprint = "find $value -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
 constexpr const char ret[] = R""""({
     "Name": "PackageManagerConfiguration Module",
@@ -44,6 +46,7 @@ PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int ma
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
     m_sourcesConfigurationDir = sourcesDir;
+    m_executionState = ExecutionState();
 }
 
 PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes)
@@ -116,11 +119,13 @@ int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_ST
 int PackageManagerConfigurationBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
+    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingJsonPayload);
 
     int maxPayloadSizeBytes = static_cast<int>(GetMaxPayloadSizeBytes());
     if ((0 != maxPayloadSizeBytes) && (payloadSizeBytes > maxPayloadSizeBytes))
     {
         OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s %s payload too large. Max payload expected %d, actual payload size %d", componentName, objectName, maxPayloadSizeBytes, payloadSizeBytes);
+        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingJsonPayload);
         return E2BIG;
     }
 
@@ -129,6 +134,7 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
         OsConfigLogError(PackageManagerConfigurationLog::Get(), "Unabled to parse JSON payload: %s", payload);
+        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingJsonPayload);
         status = EINVAL;
     }
     else
@@ -140,11 +146,11 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
                 if (document.IsObject())
                 {
                     PackageManagerConfigurationBase::DesiredState desiredState;
+                    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingDesiredState);
 
                     if (0 == DeserializeDesiredState(document, desiredState))
                     {
                         m_desiredPackages = GetPackagesNames(desiredState.packages);
-                        m_executionState = ExecutionState::Running;
 
                         if (!desiredState.sources.empty())
                         {
@@ -155,30 +161,32 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
                         {
                             status = PackageManagerConfigurationBase::ExecuteUpdates(desiredState.packages);
                         }
-
-                        m_executionState = PackageManagerConfigurationBase::GetStateFromStatusCode(status);
                     }
                     else
                     {
                         OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to deserialize %s", g_desiredObjectName.c_str());
+                        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingDesiredState);
                         status = EINVAL;
                     }
                 }
                 else
                 {
                     OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON payload is not a %s object", g_desiredObjectName.c_str());
+                    m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingDesiredState);
                     status = EINVAL;
                 }
             }
             else
             {
                 OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid objectName: %s", objectName);
+                m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingDesiredState);
                 status = EINVAL;
             }
         }
         else
         {
             OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid componentName: %s", componentName);
+            m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingJsonPayload);
             status = EINVAL;
         }
     }
@@ -207,10 +215,11 @@ int PackageManagerConfigurationBase::Get(const char* componentName, const char* 
             if (0 == g_reportedObjectName.compare(objectName))
             {
                 State reportedState;
-                reportedState.executionState = m_executionState;
+                reportedState.executionState = m_executionState.GetReportedExecutionState();
                 reportedState.packagesFingerprint = GetFingerprint();
                 reportedState.packages = GetReportedPackages(m_desiredPackages);
-                reportedState.sourcesFingerprint = GetSourcesFingerprint();
+                reportedState.sourcesFingerprint = GetSourcesFingerprint(m_sourcesConfigurationDir);
+                reportedState.sourcesFilenames = GetSourcesFilenames();
                 status = SerializeState(reportedState, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
             else
@@ -240,17 +249,20 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
 
     if (document.HasMember(g_sources.c_str()))
     {
+        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingSources);
         if (document[g_sources.c_str()].IsObject())
         {
             for (auto &member : document[g_sources.c_str()].GetObject())
             {
                 if (member.value.IsString())
                 {
+                    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingSources, member.name.GetString());
                     object.sources[member.name.GetString()] = member.value.GetString();
                 }
                 else
                 {
                     OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
+                    m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingSources, member.name.GetString());
                     status = EINVAL;
                 }
             }
@@ -258,23 +270,28 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
         else
         {
             OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not a map", g_sources.c_str());
+            m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingSources);
             status = EINVAL;
         }
     }
    
     if (document.HasMember(g_packages.c_str()))
     {
+        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingPackages);
         if (document[g_packages.c_str()].IsArray())
         {
             for (rapidjson::SizeType i = 0; i < document[g_packages.c_str()].Size(); ++i)
             {
                 if (document[g_packages.c_str()][i].IsString())
                 {
-                    object.packages.push_back(document[g_packages.c_str()][i].GetString());
+                    std::string package = document[g_packages.c_str()][i].GetString();
+                    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingPackages, package);
+                    object.packages.push_back(package);
                 }
                 else
                 {
                     OsConfigLogError(PackageManagerConfigurationLog::Get(), "Invalid string in JSON object string array at position %d", i);
+                    m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingPackages, "index " + i);
                     status = EINVAL;
                 }
             }
@@ -282,6 +299,7 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
         else
         {
             OsConfigLogError(PackageManagerConfigurationLog::Get(), "%s is not an array", g_packages.c_str());
+            m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingPackages);
             status = EINVAL;
         }
     }
@@ -289,6 +307,7 @@ int PackageManagerConfigurationBase::DeserializeDesiredState(rapidjson::Document
     if (!document.HasMember(g_sources.c_str()) && !document.HasMember(g_packages.c_str()))
     {
         OsConfigLogError(PackageManagerConfigurationLog::Get(), "JSON object does not contain '%s', neither '%s'", g_sources.c_str(), g_packages.c_str());
+        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingDesiredState);
         status = EINVAL;
     }
 
@@ -349,24 +368,32 @@ int PackageManagerConfigurationBase::ExecuteUpdate(const std::string &value)
 int PackageManagerConfigurationBase::ExecuteUpdates(const std::vector<std::string> packages)
 {
     int status = MMI_OK;
+    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::UpdatingPackagesLists);
 
     status = RunCommand(g_commandAptUpdate.c_str(), true, nullptr, 0);
     if (status != MMI_OK)
     {
+        status == ETIME ? m_executionState.SetExecutionState(StateComponent::TimedOut, SubStateComponent::UpdatingPackagesLists) 
+                        : m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::UpdatingPackagesLists);
         return status;
     }
 
     for (std::string package : packages)
     {
         OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Starting to update package(s): %s", package.c_str());
+        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::InstallingPackages, package);
         status = ExecuteUpdate(package);
         if (status != MMI_OK)
         {
             OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to update package(s): %s", package.c_str());
+            status == ETIME ? m_executionState.SetExecutionState(StateComponent::TimedOut, SubStateComponent::InstallingPackages, package) 
+                            : m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::InstallingPackages, package);
             return status;
         }
         OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Successfully updated package(s): %s", package.c_str());
     }
+
+    m_executionState.SetExecutionState(StateComponent::Succeeded, SubStateComponent::None);
     return status;
 }
 
@@ -392,16 +419,18 @@ int PackageManagerConfigurationBase::SerializeState(State reportedState, MMI_JSO
     writer.EndObject();
 
     writer.Key(g_executionState.c_str());
-    writer.Int(static_cast<int>(reportedState.executionState));
+    writer.String(reportedState.executionState.c_str());
 
     writer.Key(g_sourcesFingerprint.c_str());
-    writer.StartObject();
-    for (auto& pair : reportedState.sourcesFingerprint)
+    writer.String(reportedState.sourcesFingerprint.c_str());
+
+    writer.Key(g_sourcesFilenames.c_str());
+    writer.StartArray();
+    for (auto& element : reportedState.sourcesFilenames)
     {
-        writer.Key(pair.first.c_str());
-        writer.String(pair.second.c_str());
+        writer.String(element.c_str());
     }
-    writer.EndObject();
+    writer.EndArray();
 
     writer.EndObject();
 
@@ -446,23 +475,6 @@ int PackageManagerConfiguration::RunCommand(const char* command, bool replaceEol
         free(buffer);
     }
     return status;
-}
-
-PackageManagerConfigurationBase::ExecutionState PackageManagerConfigurationBase::GetStateFromStatusCode(int status)
-{
-    ExecutionState state = ExecutionState::Unknown;
-    switch (status)
-    {
-        case EXIT_SUCCESS:
-            state = ExecutionState::Succeeded;
-            break;
-        case ETIME:
-            state = ExecutionState::TimedOut;
-            break;
-        default:
-            state = ExecutionState::Failed;
-    }
-    return state;
 }
 
 std::string PackageManagerConfigurationBase::GetFingerprint()
@@ -547,24 +559,33 @@ std::string PackageManagerConfigurationBase::Trim(const std::string& str, const 
     return TrimStart(TrimEnd(str, trim), trim);
 }
 
-std::map<std::string, std::string> PackageManagerConfigurationBase::GetSourcesFingerprint()
+
+std::string PackageManagerConfigurationBase::GetSourcesFingerprint(std::string sourcesDir)
 {
-    std::map<std::string, std::string> result;
+    std::string hashString = "";
+    std::string command = std::regex_replace(g_commandGetSourcesFingerprint, std::regex("\\$value"), sourcesDir);
+    int status = RunCommand(command.c_str(), true, &hashString, 0);
+
+    if (status != MMI_OK && IsFullLoggingEnabled())
+    {
+        OsConfigLogError(PackageManagerConfigurationLog::Get(), "Get the fingerprint of source files in directory %s failed with status %d", sourcesDir.c_str(), status);
+    }
+
+    return !hashString.empty() ? hashString : "(failed)";
+}
+
+std::vector<std::string> PackageManagerConfigurationBase::GetSourcesFilenames()
+{
+    std::vector<std::string> result;
+
     for (auto& file : std::filesystem::directory_iterator(m_sourcesConfigurationDir))
     {
-        std::string filePath = file.path();
         std::string fileName = file.path().filename();
-        if (fileName.compare(fileName.size()-5, 5, ".list") == 0)
+        int listExtensionLength = g_listExtension.length();
+        if (fileName.compare(fileName.length() - listExtensionLength, listExtensionLength, g_listExtension) == 0)
         {
-            std::string hashString = "";
-            std::string command = std::regex_replace(g_commandGetSourcesFileHash, std::regex("\\$value"), filePath);
-            int status = RunCommand(command.c_str(), true, &hashString, 0);
-            if (status != MMI_OK && IsFullLoggingEnabled())
-            {
-                OsConfigLogError(PackageManagerConfigurationLog::Get(), "Get the fingerprint of source file %s failed with status %d", filePath.c_str(), status);
-            }
             std::string fileNameWithoutExtension = fileName.substr(0, fileName.find_last_of("."));
-            result[fileNameWithoutExtension] = !hashString.empty() ? hashString : "(failed)";
+            result.push_back(fileNameWithoutExtension);
         }
     }
 
@@ -574,19 +595,31 @@ std::map<std::string, std::string> PackageManagerConfigurationBase::GetSourcesFi
 int PackageManagerConfigurationBase::ConfigureSources(const std::map<std::string, std::string> sources)
 {
     int status = MMI_OK;
+    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::ModifyingSources);
 
     for (auto& source : sources)
     {
-        std::string sourcesFilePath = m_sourcesConfigurationDir + source.first + ".list";
+        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::ModifyingSources, source.first);
+        std::string sourceFileName = source.first + ".list";
+        std::string sourcesFilePath = std::filesystem::path(m_sourcesConfigurationDir) / sourceFileName;
         OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Starting to configure source(s) file: %s", sourcesFilePath.c_str());
 
         // Delete file when provided map value is empty
         if (source.second.empty()) 
         {
-            status = remove(sourcesFilePath.c_str());
+            if (FileExists(sourcesFilePath.c_str()))
+            {
+                status = remove(sourcesFilePath.c_str());
+            }
+            else
+            {
+                OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Nothing to delete. Source(s) file: %s does not exist", sourcesFilePath.c_str());
+            }
+
             if (status != MMI_OK)
             {
                 OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to delete source(s) file %s with status %d. Stopping configuration for further sources", sourcesFilePath.c_str(), status);
+                m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::ModifyingSources, source.first);
                 return errno;
             }
         }
@@ -597,6 +630,7 @@ int PackageManagerConfigurationBase::ConfigureSources(const std::map<std::string
             if (output.fail())
             {
                 OsConfigLogError(PackageManagerConfigurationLog::Get(), "Failed to create source(s) file %s. Stopping configuration for further sources", sourcesFilePath.c_str());
+                m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::ModifyingSources, source.first);
                 output.close();
                 return errno;
             }
@@ -606,15 +640,19 @@ int PackageManagerConfigurationBase::ConfigureSources(const std::map<std::string
         }
     }
 
+    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::UpdatingPackagesSources);
     status = RunCommand(g_commandAptUpdate.c_str(), true, nullptr, 0);
 
     if (status != MMI_OK)
     {
         OsConfigLogError(PackageManagerConfigurationLog::Get(), "Refresh sources failed with status %d", status);
+        status == ETIME ? m_executionState.SetExecutionState(StateComponent::TimedOut, SubStateComponent::UpdatingPackagesSources)
+                        : m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::UpdatingPackagesSources);
     }
     else
     {
         OsConfigLogInfo(PackageManagerConfigurationLog::Get(), "Successfully configured sources");
+        m_executionState.SetExecutionState(StateComponent::Succeeded, SubStateComponent::None);
     }
     
     return status;

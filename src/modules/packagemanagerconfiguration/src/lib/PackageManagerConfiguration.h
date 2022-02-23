@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <CommonUtils.h>
+#include <ExecutionState.h>
 #include <Logging.h>
 #include <Mmi.h>
 
@@ -41,15 +42,6 @@ private:
 class PackageManagerConfigurationBase
 {
 public:
-    enum ExecutionState
-    {
-        Unknown = 0,
-        Running,
-        Succeeded,
-        Failed,
-        TimedOut
-    };
-
     struct DesiredState
     {
         std::vector<std::string> packages;
@@ -58,10 +50,11 @@ public:
 
     struct State
     {
-        ExecutionState executionState;
+        std::string executionState;
         std::string packagesFingerprint;
         std::map<std::string, std::string> packages;
-        std::map<std::string, std::string> sourcesFingerprint;
+        std::string sourcesFingerprint;
+        std::vector<std::string> sourcesFilenames;
     };
 
     PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes, std::string sourcesDir);
@@ -80,21 +73,19 @@ private:
     int ConfigureSources(const std::map<std::string, std::string> sources);
     std::string GetFingerprint();
     std::map<std::string, std::string> GetReportedPackages(std::vector<std::string> packages);
-    std::map<std::string, std::string> GetSourcesFingerprint();
-
+    std::string GetSourcesFingerprint(std::string sourcesDir);
+    std::vector<std::string> GetSourcesFilenames();
+    int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
     static int SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
-    static int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
     static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    static ExecutionState GetStateFromStatusCode(int status);
-    static std::vector<std::string> Split(const std::string& str, const std::string& delimiter);
+    static std::vector<std::string> Split(const std::string &str, const std::string &delimiter);
     static std::vector<std::string> GetPackagesNames(std::vector<std::string> packages);
     static std::string TrimStart(const std::string& str, const std::string& trim);
     static std::string TrimEnd(const std::string& str, const std::string& trim);
-    static std::string Trim(const std::string& str, const std::string& trim);   
+    static std::string Trim(const std::string& str, const std::string& trim);
 
-    // Store desired settings for reporting
-    ExecutionState m_executionState = ExecutionState::Unknown;
-    std::vector<std::string> m_desiredPackages; 
+    ExecutionState m_executionState;
+    std::vector<std::string> m_desiredPackages;
     unsigned int m_maxPayloadSizeBytes;
     std::string m_sourcesConfigurationDir;
 };
