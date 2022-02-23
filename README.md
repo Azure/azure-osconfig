@@ -115,6 +115,13 @@ When OSConfig exists prematurely (crashes) the Agent's log (osconfig_pnp_agent.l
 ```
 [ERROR] OSConfig crash due to segmentation fault (SIGSEGV) during MpiGet to Firewall.FirewallRules
 ```
+## Local Management
+
+OSConfig uses two local files as local digital twins in MIM JSON format:
+
+`/etc/osconfig/osconfig_desired.json` contains desired configuration (to be applied to the device)
+
+`/etc/osconfig/osconfig_reported.json` contains reported configuration (to be reported from the device)
 
 ## Configuration
 
@@ -176,9 +183,27 @@ To enable local priority, edit the OSConfig general configuration file `/etc/osc
 ```
 To configure for remote priority, set "LocalPriority" to 0.
 
+### Changing the protocol OSConfig uses to connect to the IoT Hub
+
+The networking protocol that OSConfig uses to connect to the IoT Hub is configured in the OSConfig general configuration file `/etc/osconfig/osconfig.json`:
+
+```json
+{
+    "Protocol": 2
+}
+```
+
+OSConfig currently supports the following protocol values:
+
+Value | Description
+-----|-----
+0 | Decided by OSConfig (currently this is MQTT)
+1 | MQTT
+2 | MQTT over Web Socket
+
 ## HTTP proxy configuration
 
-OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
+When the configured protocol is 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
 
 1. `http_proxy`
 1. `https_proxy`
@@ -201,14 +226,6 @@ The environment variable needs to be set for the root user account. For example,
 sudo -E su
 export http_proxy=http://user:password@wwww.foo.org:100//
 ```
-
-## Local Management
-
-OSConfig uses two local files as local digital twins in MIM JSON format:
-
-`/etc/osconfig/osconfig_desired.json` contains desired configuration (to be applied to the device)
-
-`/etc/osconfig/osconfig_reported.json` contains reported configuration (to be reported from the device)
 
 ## Health Telemetry
 
