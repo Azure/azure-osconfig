@@ -24,7 +24,7 @@ namespace E2eTesting
         private readonly string _uploadUrl = Environment.GetEnvironmentVariable("E2E_OSCONFIG_UPLOAD_URL")?.Trim('\"');
         private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
 
-        public partial class GenericResponse<T>
+        public class GenericResponse<T>
         {
             public T value { get; set; }
             public int ac { get; set; }
@@ -269,7 +269,7 @@ namespace E2eTesting
             Canceled
         }
 
-        public partial class CommandArguments
+        public class CommandArguments
         {
             public string CommandId { get; set; }
             public string Arguments { get; set; }
@@ -278,7 +278,7 @@ namespace E2eTesting
             public bool SingleLineTextResult { get; set; }
         }
 
-        public partial class CommandStatus
+        public class CommandStatus
         {
             public string CommandId { get; set; }
             public long ResultCode { get; set; }
