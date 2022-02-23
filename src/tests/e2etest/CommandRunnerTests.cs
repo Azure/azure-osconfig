@@ -61,7 +61,7 @@ namespace E2eTesting
                 {
                     Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
                     {
-                        return status.CommandId == command.CommandId && status.CurrentState == CommandRunnerTests.CommandState.Succeeded;
+                        return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
                     var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 180);
@@ -114,6 +114,7 @@ namespace E2eTesting
                 else
                 {
                     Assert.Warn("Time limit reached while waiting for update to {0} (start: {2} | end: {3} | last updated: {4})", componentName, beforeUpdate, currentTime, reported[componentName].GetLastUpdated());
+                    break;
                 }
             }
 
@@ -146,7 +147,7 @@ namespace E2eTesting
             }
 
             DateTime currentTime = DateTime.Now;
-            while (((!reported.Contains(componentName) && !reported[componentName].Contains(objectName)) ||
+            while ((!(reported.Contains(componentName) && reported[componentName].Contains(objectName)) ||
                     (reported.Contains(componentName) && reported[componentName].Contains(objectName) && (reported[componentName][objectName].GetLastUpdated() < beforeUpdate))))
             {
                 currentTime = DateTime.Now;
@@ -159,6 +160,7 @@ namespace E2eTesting
                 else
                 {
                     Assert.Warn("Time limit reached while waiting for update to {0}.{1} (start: {2} | end: {3} | last updated: {4})", componentName, objectName, beforeUpdate, currentTime, reported[componentName][objectName].GetLastUpdated());
+                    break;
                 }
             }
 
@@ -342,12 +344,13 @@ namespace E2eTesting
         public void SendCommand(CommandArguments command, int ackCode = 200)
         {
             Console.WriteLine($"{command.Action} \"{command.CommandId}\" ({command.Arguments})");
-            var setDesiredTask = SetDesired<CommandArguments>("CommandRunner", "CommandArguments", command);
 
             try
             {
+                var setDesiredTask = SetDesired<CommandArguments>("CommandRunner", "CommandArguments", command);
                 setDesiredTask.Wait();
                 int responseCode = setDesiredTask.Result;
+
                 if (responseCode != ackCode)
                 {
                     Assert.Fail("CommandRunner.CommandArguments expected ackCode {0}, but got {1}", ackCode, responseCode);
