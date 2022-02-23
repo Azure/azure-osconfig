@@ -590,8 +590,6 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
                     LogErrorWithTelemetry(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
                 }
             }
-
-            IotHubDoWork();
         }
         else
         {
@@ -731,8 +729,6 @@ IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const 
         {
             LogErrorWithTelemetry(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
         }
-
-        IotHubDoWork();
     }
     else
     {
