@@ -1,281 +1,323 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <algorithm>
-#include <chrono>
-#include <cstdio>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <string>
 
+#include <Command.h>
 #include <CommandRunner.h>
-#include <CommonUtils.h>
 #include <Mmi.h>
+#include <TestUtils.h>
 
-using ::testing::_;
-using ::testing::Invoke;
-
-#define LIMITED_PAYLOAD_SIZE 83
-
-namespace OSConfig::Platform::Tests
+namespace Tests
 {
-    TEST(CommandRunnerTests, Execute)
+    class CommandRunnerTests : public ::testing::Test
     {
-        CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner cmdRunner("CommandRunnerTests::Execute", nullptr);
-        cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
-        auto cmdStatus = cmdRunner.GetCommandStatus("1");
-        ASSERT_NE(nullptr, cmdStatus);
-        ASSERT_STREQ(cmdArgs.commandId.c_str(), cmdStatus->commandId.c_str());
-        ASSERT_STREQ("test ", cmdStatus->textResult.c_str());   // "test " CommandRunner adds " " instead of EOL
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus->commandState);
+    protected:
+        std::shared_ptr<CommandRunner> m_commandRunner;
+
+        static const char m_component[];
+        static const char m_desiredObject[];
+        static const char m_reportedObject[];
+
+        void SetUp() override;
+        void TearDown() override;
+
+        std::string Id();
+    };
+
+    const char CommandRunnerTests::m_component[] = "CommandRunner";
+    const char CommandRunnerTests::m_desiredObject[] = "CommandArguments";
+    const char CommandRunnerTests::m_reportedObject[] = "CommandStatus";
+
+    void CommandRunnerTests::SetUp()
+    {
+        this->m_commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
     }
 
-    TEST(CommandRunnerTests, CommandStatusUpdated)
+    void CommandRunnerTests::TearDown()
     {
-        CommandRunner cmdRunner("CommandRunnerTests::CommandStatusUpdated", nullptr);
-
-        // Run 1st command
-        CommandRunner::CommandArguments cmdArgs1{ "1", "echo test1", CommandRunner::Action::RunCommand, 0, true };
-        cmdRunner.AddCommandStatus(cmdArgs1.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs1.commandId, cmdArgs1.arguments, CommandRunner::CommandState::Unknown, cmdArgs1.timeout, true));
-        auto cmdStatus1 = cmdRunner.GetCommandStatus("1");
-        ASSERT_NE(nullptr, cmdStatus1);
-        ASSERT_STREQ(cmdArgs1.commandId.c_str(), cmdStatus1->commandId.c_str());
-        ASSERT_STREQ("test1 ", cmdStatus1->textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus1->commandState);
-
-        // Run 2nd command
-        CommandRunner::CommandArguments cmdArgs2{ "2", "echo test2", CommandRunner::Action::RunCommand, 0, true };
-        cmdRunner.AddCommandStatus(cmdArgs2.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs2.commandId, cmdArgs2.arguments, CommandRunner::CommandState::Unknown, cmdArgs2.timeout, true));
-        auto cmdStatus2 = cmdRunner.GetCommandStatus("2");
-        ASSERT_NE(nullptr, cmdStatus2);
-        ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdStatus2->commandId.c_str());
-        ASSERT_STREQ("test2 ", cmdStatus2->textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus2->commandState);
-
-        ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdRunner.GetCommandIdToRefresh().c_str());
+        this->m_commandRunner.reset();
     }
 
-    TEST(CommandRunnerTests, ExecuteCommandLimitedPayload)
+    std::string CommandRunnerTests::Id()
     {
-        CommandRunner::CommandArguments cmdArgs{ "1", "echo test", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner cmdRunner("CommandRunnerTests::ExecuteCommandLimitedPayload", nullptr, LIMITED_PAYLOAD_SIZE);
-        cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
-        auto cmdStatus = cmdRunner.GetCommandStatus("1");
-        ASSERT_NE(nullptr, cmdStatus);
-        ASSERT_STREQ(cmdArgs.commandId.c_str(), cmdStatus->commandId.c_str());
-        ASSERT_STREQ("t", cmdStatus->textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus->commandState);
+        static int id = 0;
+        return std::to_string(id++);
     }
 
-    TEST(CommandRunnerTests, CachedCommandStatus)
+    TEST_F(CommandRunnerTests, Set_InvalidComponent)
     {
-        CommandRunner::CommandArguments cmdArgs{ "1", "echo 1", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner cmdRunner("CommandRunnerTests::CachedCommandStatus", nullptr, LIMITED_PAYLOAD_SIZE);
-        cmdRunner.AddCommandStatus(cmdArgs.commandId, true);
-        ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, cmdArgs.commandId, cmdArgs.arguments, CommandRunner::CommandState::Unknown, cmdArgs.timeout, true));
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
-        auto status = cmdRunner.GetCommandStatusToPersist();
-
-        ASSERT_STREQ(cmdArgs.commandId.c_str(), status.commandId.c_str());
-        ASSERT_STREQ("1", status.textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, status.commandState);
+        EXPECT_EQ(EINVAL, m_commandRunner->Set("invalid", m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_desiredObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_reportedObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
     }
 
-    TEST(CommandRunnerTests, OverwriteBufferCommandStatus)
+    TEST_F(CommandRunnerTests, Set_InvalidObject)
     {
-        constexpr int CommandArgumentsListSize = COMMANDSTATUS_CACHE_MAX + 1;
-        std::array<CommandRunner::CommandArguments, CommandArgumentsListSize> commandArgumentList;
-        CommandRunner cmdRunner("CommandRunnerTests::OverwriteBufferCommandStatus", nullptr);
-        for (int i = 0; i < CommandArgumentsListSize; ++i)
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, "invalid", (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_component, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_reportedObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+    }
+
+    TEST_F(CommandRunnerTests, Set_InvalidPayload)
+    {
+        std::string invalidPayload = "InvalidPayload";
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(invalidPayload.c_str()), invalidPayload.size()));
+    }
+
+    TEST_F(CommandRunnerTests, Get_InvalidComponent)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(EINVAL, m_commandRunner->Get("invalid", m_reportedObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_desiredObject, m_reportedObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_reportedObject, m_reportedObject, &payload, &payloadSizeBytes));
+    }
+
+    TEST_F(CommandRunnerTests, Get_InvalidObject)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, "invalid", &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_component, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, &payload, &payloadSizeBytes));
+    }
+
+    TEST_F(CommandRunnerTests, Get_InvalidPayload)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, nullptr, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, &payload, nullptr));
+    }
+
+    TEST_F(CommandRunnerTests, RunCommand)
+    {
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+        Command::Status status(id, 0, "hello world\n", Command::State::Succeeded);
+
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+    }
+
+    TEST_F(CommandRunnerTests, RunCommand_Timeout)
+    {
+        std::string id = Id();
+        Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 1, false);
+        Command::Status status(id, ETIME, "", Command::State::TimedOut);
+
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+    }
+
+    TEST_F(CommandRunnerTests, RunCommand_SingleLineTextResult)
+    {
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'single\nline'", Command::Action::RunCommand, 0, true);
+        Command::Status status(id, 0, "single line ", Command::State::Succeeded);
+
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+    }
+
+    TEST_F(CommandRunnerTests, RunCommand_LimitedPayloadSize)
+    {
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+
+        std::string expectedTextResult = "hello";
+        Command::Status status(id, 0, expectedTextResult, Command::State::Succeeded);
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+
+        // Create an empty status to estimate the size of a serialized status
+        Command::Status emptyStatus(id, 0, "", Command::State::Succeeded);
+
+        // Add expected text result length and null terminator to the size
+        unsigned int limitedPayloadSize = Command::Status::Serialize(emptyStatus).length() + expectedTextResult.size() + 1;
+
+        CommandRunner commandRunner("Limited_Payload_Client", limitedPayloadSize, false);
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(MMI_OK, commandRunner.Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        commandRunner.WaitForCommands();
+
+        EXPECT_EQ(MMI_OK, commandRunner.Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+    }
+
+    TEST_F(CommandRunnerTests, RunCommand_MaximumCacheSize)
+    {
+        std::vector<std::pair<std::string, Command::Status>> expectedResults;
+
+        // Fill the cache with the max number of commands
+        for (unsigned int i = 0; i < CommandRunner::MAX_CACHE_SIZE; i++)
         {
-            char size, commandId[10], command[20];
-            size = sprintf(commandId, "%d", i);
-            ASSERT_GT(size, 0);
-            size = sprintf(command, "echo %d", i);
-            ASSERT_GT(size, 0);
-            commandArgumentList[i] = { commandId, command, CommandRunner::Action::RunCommand, 0, true };
-            cmdRunner.AddCommandStatus(commandId, true);
-            ASSERT_EQ(MMI_OK, cmdRunner.Execute(cmdRunner, CommandRunner::Action::RunCommand, commandArgumentList[i].commandId, commandArgumentList[i].arguments, CommandRunner::CommandState::Unknown, commandArgumentList[i].timeout, true));
+            std::string id = Id();
+            Command::Arguments arguments(id, "echo '" + id + "'", Command::Action::RunCommand, 0, false);
+            Command::Status status(id, 0, id + "\n", Command::State::Succeeded);
+            expectedResults.push_back(std::make_pair(id, status));
+
+            std::string desiredPayload = Command::Arguments::Serialize(arguments);
+            EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
         }
 
-        // 1st element should no longer be present in the buffer
-        auto cmd1 = cmdRunner.GetCommandStatus(commandArgumentList[0].commandId);
-        auto cmd2 = cmdRunner.GetCommandStatus(commandArgumentList[1].commandId);
-        ASSERT_EQ(nullptr, cmd1);
-        ASSERT_NE(nullptr, cmd2);
+        m_commandRunner->WaitForCommands();
+
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        // Check that all of the commands are in the cache
+        for (auto& expectedResult : expectedResults)
+        {
+            Command::Arguments arguments(expectedResult.first, "", Command::Action::RefreshCommandStatus, 0, false);
+            std::string refresh = Command::Arguments::Serialize(arguments);
+
+            EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
+            EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+            EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(expectedResult.second), std::string(reportedPayload, payloadSizeBytes)));
+        }
+
+        // Add one more command to the cache
+        std::string id = Id();
+        Command::Arguments extraCommand(id, "echo '" + id + "'", Command::Action::RunCommand, 0, false);
+        Command::Status lastStatus(id, 0, id + "\n", Command::State::Succeeded);
+
+        std::string desiredPayload = Command::Arguments::Serialize(extraCommand);
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        // Get the last command from the cache
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
+
+        // The first command should have been removed from the cache
+        Command::Arguments refreshFirstCommand(expectedResults[0].first, "", Command::Action::RefreshCommandStatus, 0, false);
+        std::string refresh = Command::Arguments::Serialize(refreshFirstCommand);
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
+
+        // The last command should still be reported (set as command to report) and in the cache
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST(CommandRunnerTests, WorkerThreadExecution)
+    TEST_F(CommandRunnerTests, RefreshCommand)
     {
-        CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 1s && echo 1", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 1s && echo 2", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner cmdRunner("CommandRunnerTests::WorkerThreadExecution", nullptr);
+        std::string id1 = Id();
+        std::string id2 = Id();
 
-        // Dispatch both
-        cmdRunner.Run(cmdArgs1);
-        cmdRunner.Run(cmdArgs2);
+        Command::Arguments arguments1(id1, "echo 'command 1'", Command::Action::RunCommand, 0, false);
+        Command::Arguments arguments2(id2, "echo 'command 2'", Command::Action::RunCommand, 0, false);
 
-        auto cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-        auto cmdStatus2 = cmdRunner.GetCommandStatus(cmdArgs2.commandId);
+        Command::Status status1(id1, 0, "command 1\n", Command::State::Succeeded);
+        Command::Status status2(id2, 0, "command 2\n", Command::State::Succeeded);
 
-        ASSERT_NE(nullptr, cmdStatus1);
-        ASSERT_NE(nullptr, cmdStatus2);
+        std::string desiredPayload1 = Command::Arguments::Serialize(arguments1);
+        std::string desiredPayload2 = Command::Arguments::Serialize(arguments2);
 
-        ASSERT_STREQ(cmdArgs1.commandId.c_str(), cmdStatus1->commandId.c_str());
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus1->commandState) || (CommandRunner::CommandState::Running == cmdStatus1->commandState));
-        ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdStatus2->commandId.c_str());
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus2->commandState) || (CommandRunner::CommandState::Running == cmdStatus2->commandState));
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
 
-        cmdRunner.WaitForCommandResults();
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
 
-        cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-        cmdStatus2 = cmdRunner.GetCommandStatus(cmdArgs2.commandId);
+        m_commandRunner->WaitForCommands();
 
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus1->commandState);
-        ASSERT_STREQ("1 ", cmdStatus1->textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus2->commandState);
-        ASSERT_STREQ("2 ", cmdStatus2->textResult.c_str());
+        // The last run command should be reported
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status2), std::string(reportedPayload, payloadSizeBytes)));
+
+        // Refresh the command
+        Command::Arguments refresh(id1, "", Command::Action::RefreshCommandStatus, 0, false);
+        std::string refreshPayload = Command::Arguments::Serialize(refresh);
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refreshPayload.c_str()), refreshPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        // The refreshed command should be reported
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST(CommandRunnerTests, CommandTimeoutSeconds)
+    TEST_F(CommandRunnerTests, CancelCommand)
     {
-        // Sleep for 10s, timeout in 1s
-        // Actual timeout in 5s due to COMMAND_CALLBACK_INTERVAL = 5
-        CommandRunner::CommandArguments cmdArgs{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 4, true };
-        CommandRunner cmdRunner("CommandRunnerTests::CommandTimeoutSeconds", nullptr);
+        std::string id = Id();
+        Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 0, false);
+        Command::Arguments cancelCommand(id, "", Command::Action::CancelCommand, 0, false);
+        Command::Status status(arguments.m_id, ECANCELED, "", Command::State::Canceled);
 
-        cmdRunner.Run(cmdArgs);
-        cmdRunner.WaitForCommandResults();
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+        std::string cancelPayload = Command::Arguments::Serialize(cancelCommand);
 
-        auto cmdStatus = cmdRunner.GetCommandStatus(cmdArgs.commandId);
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
 
-        ASSERT_NE(nullptr, cmdStatus);
-        ASSERT_EQ(CommandRunner::CommandState::TimedOut, cmdStatus->commandState);
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(cancelPayload.c_str()), cancelPayload.size()));
+
+        m_commandRunner->WaitForCommands();
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST(CommandRunnerTests, CancelRunningCommand)
+    TEST_F(CommandRunnerTests, RepeatCommandId)
     {
-        CommandRunner::CommandArguments cmdArgs{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 15, true };
-        CommandRunner cmdRunner("CommandRunnerTests::CancelRunningCommand", nullptr);
+        std::string id = Id();
+        Command::Arguments arguments1(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+        Command::Arguments arguments2(id, "echo 'repeated command id'", Command::Action::RunCommand, 0, false);
+        Command::Status status(id, 0, "hello world\n", Command::State::Succeeded);
 
-        cmdRunner.Run(cmdArgs);
-        auto cmdStatus = cmdRunner.GetCommandStatus(cmdArgs.commandId);
+        std::string desiredPayload1 = Command::Arguments::Serialize(arguments1);
+        std::string desiredPayload2 = Command::Arguments::Serialize(arguments2);
 
-        ASSERT_NE(nullptr, cmdStatus);
-        ASSERT_STREQ(cmdArgs.commandId.c_str(), cmdStatus->commandId.c_str());
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus->commandState) || (CommandRunner::CommandState::Running == cmdStatus->commandState));
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
 
-        // Cancel command
-        cmdRunner.Cancel(cmdArgs.commandId);
-        cmdRunner.WaitForCommandResults();
-        cmdStatus = cmdRunner.GetCommandStatus(cmdArgs.commandId);
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
+        m_commandRunner->WaitForCommands();
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
 
-        ASSERT_EQ(CommandRunner::CommandState::Canceled, cmdStatus->commandState);
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
-
-    TEST(CommandRunnerTests, CancelQueuedCommand)
-    {
-        CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 20, true };
-        CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 10s", CommandRunner::Action::RunCommand, 20, true };
-        CommandRunner cmdRunner("CommandRunnerTests::CancelQueuedCommand", nullptr);
-
-        cmdRunner.Run(cmdArgs1);
-        cmdRunner.Run(cmdArgs2);
-        auto cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-        auto cmdStatus2 = cmdRunner.GetCommandStatus(cmdArgs2.commandId);
-
-        ASSERT_NE(nullptr, cmdStatus1);
-        ASSERT_NE(nullptr, cmdStatus2);
-        ASSERT_STREQ(cmdArgs1.commandId.c_str(), cmdStatus1->commandId.c_str());
-        ASSERT_STREQ(cmdArgs2.commandId.c_str(), cmdStatus2->commandId.c_str());
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus1->commandState) || (CommandRunner::CommandState::Running == cmdStatus1->commandState));
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus2->commandState) || (CommandRunner::CommandState::Running == cmdStatus2->commandState));
-
-        // Cancel second command while the first is still running
-        cmdRunner.Cancel(cmdArgs2.commandId);
-        cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-        cmdStatus2 = cmdRunner.GetCommandStatus(cmdArgs2.commandId);
-
-        ASSERT_TRUE(cmdRunner.IsCanceled(cmdArgs2.commandId));
-        ASSERT_EQ(CommandRunner::CommandState::Canceled, cmdStatus2->commandState);
-        ASSERT_TRUE((CommandRunner::CommandState::Unknown == cmdStatus1->commandState) || (CommandRunner::CommandState::Running == cmdStatus1->commandState));
-
-        // Cancel first command
-        cmdRunner.Cancel(cmdArgs1.commandId);
-        cmdRunner.WaitForCommandResults();
-        cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-
-        ASSERT_EQ(CommandRunner::CommandState::Canceled, cmdStatus1->commandState);
-    }
-
-    TEST(CommandRunnerTests, SingleLineTextResult)
-    {
-        CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 1s && echo 'single\\nline'", CommandRunner::Action::RunCommand, 0, true };
-        CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 1s && echo 'multiple\\nlines'", CommandRunner::Action::RunCommand, 0, false };
-        CommandRunner cmdRunner("CommandRunnerTests::SingleLineTextResult", nullptr);
-
-        cmdRunner.Run(cmdArgs1);
-        cmdRunner.Run(cmdArgs2);
-
-        cmdRunner.WaitForCommandResults();
-
-        auto cmdStatus1 = cmdRunner.GetCommandStatus(cmdArgs1.commandId);
-        auto cmdStatus2 = cmdRunner.GetCommandStatus(cmdArgs2.commandId);
-
-        ASSERT_NE(nullptr, cmdStatus1);
-        ASSERT_NE(nullptr, cmdStatus2);
-
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus1->commandState);
-        ASSERT_STREQ("single line ", cmdStatus1->textResult.c_str());
-        ASSERT_EQ(CommandRunner::CommandState::Succeeded, cmdStatus2->commandState);
-        ASSERT_STREQ("multiple\nlines\n", cmdStatus2->textResult.c_str());
-    }
-
-    TEST(CommandRunnerTests, PersistedCommandStatus)
-    {
-        CommandRunner cmdRunner("CommandRunnerTests::PersistedCommandStatus", nullptr);
-        CommandRunner::CommandArguments cmdArgs1{ "1", "sleep 10s", CommandRunner::Action::RunCommand, 10, true };
-        CommandRunner::CommandArguments cmdArgs2{ "2", "sleep 10s", CommandRunner::Action::RunCommand, 10, true };
-
-        cmdRunner.Run(cmdArgs1);
-        auto persistedStatus = cmdRunner.GetCommandStatusToPersist();
-
-        // Check 1st command is persisted
-        ASSERT_STREQ(persistedStatus.commandId.c_str(), cmdArgs1.commandId.c_str());
-        ASSERT_EQ(persistedStatus.resultCode, 0);
-        ASSERT_EQ(persistedStatus.commandState, CommandRunner::CommandState::Unknown);
-
-        cmdRunner.Run(cmdArgs2);
-        persistedStatus = cmdRunner.GetCommandStatusToPersist();
-
-        // Check 2nd command is persisted while 1st command is running
-        ASSERT_STREQ(persistedStatus.commandId.c_str(), cmdArgs2.commandId.c_str());
-        ASSERT_EQ(persistedStatus.resultCode, 0);
-        ASSERT_EQ(persistedStatus.commandState, CommandRunner::CommandState::Unknown);
-
-        // Cancel 1st command
-        cmdRunner.Cancel(cmdArgs1.commandId);
-        persistedStatus = cmdRunner.GetCommandStatusToPersist();
-
-        // Check 2nd command is still persisted after canceling 1st command
-        ASSERT_STREQ(persistedStatus.commandId.c_str(), cmdArgs2.commandId.c_str());
-        ASSERT_EQ(persistedStatus.resultCode, 0);
-        ASSERT_EQ(persistedStatus.commandState, CommandRunner::CommandState::Unknown);
-
-        // Cancel 2nd command
-        cmdRunner.Cancel(cmdArgs2.commandId);
-        persistedStatus = cmdRunner.GetCommandStatusToPersist();
-
-        // Check 2nd command is still persisted after cancel
-        ASSERT_STREQ(persistedStatus.commandId.c_str(), cmdArgs2.commandId.c_str());
-        ASSERT_EQ(persistedStatus.resultCode, ECANCELED);
-        ASSERT_EQ(persistedStatus.commandState, CommandRunner::CommandState::Canceled);
-
-        cmdRunner.WaitForCommandResults();
-    }
-} // namespace OSConfig::Platform::Tests
+} // namespace Tests

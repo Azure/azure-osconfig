@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.2)
 set (CMAKE_CXX_STANDARD 11)
 
 project(commandrunnerlib)
-add_library(commandrunnerlib STATIC CommandRunner.cpp)
+add_library(commandrunnerlib STATIC CommandRunner.cpp Command.cpp)
 target_link_libraries(commandrunnerlib PRIVATE logging commonutils)
 target_include_directories(commandrunnerlib
     PUBLIC
