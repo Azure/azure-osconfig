@@ -14,7 +14,7 @@ namespace Tests
     class CommandRunnerTests : public ::testing::Test
     {
     protected:
-        std::shared_ptr<CommandRunner> commandRunner;
+        std::shared_ptr<CommandRunner> m_commandRunner;
 
         static const char m_component[];
         static const char m_desiredObject[];
@@ -32,12 +32,12 @@ namespace Tests
 
     void CommandRunnerTests::SetUp()
     {
-        this->commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
+        this->m_commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
     }
 
     void CommandRunnerTests::TearDown()
     {
-        this->commandRunner.reset();
+        this->m_commandRunner.reset();
     }
 
     std::string CommandRunnerTests::Id()
@@ -52,9 +52,9 @@ namespace Tests
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
         std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
-        EXPECT_EQ(EINVAL, commandRunner->Set("invalid", m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_desiredObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_reportedObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set("invalid", m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_desiredObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_reportedObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
     }
 
     TEST_F(CommandRunnerTests, Set_InvalidObject)
@@ -63,15 +63,15 @@ namespace Tests
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
         std::string desiredPayload = Command::Arguments::Serialize(arguments);
 
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, "invalid", (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, m_component, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, m_reportedObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, "invalid", (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_component, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_reportedObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
     }
 
     TEST_F(CommandRunnerTests, Set_InvalidPayload)
     {
         std::string invalidPayload = "InvalidPayload";
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(invalidPayload.c_str()), invalidPayload.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(invalidPayload.c_str()), invalidPayload.size()));
     }
 
     TEST_F(CommandRunnerTests, Get_InvalidComponent)
@@ -79,9 +79,9 @@ namespace Tests
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(EINVAL, commandRunner->Get("invalid", m_reportedObject, &payload, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_desiredObject, m_reportedObject, &payload, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_reportedObject, m_reportedObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get("invalid", m_reportedObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_desiredObject, m_reportedObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_reportedObject, m_reportedObject, &payload, &payloadSizeBytes));
     }
 
     TEST_F(CommandRunnerTests, Get_InvalidObject)
@@ -89,9 +89,9 @@ namespace Tests
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_component, "invalid", &payload, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_component, m_component, &payload, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_component, m_desiredObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, "invalid", &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_component, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, &payload, &payloadSizeBytes));
     }
 
     TEST_F(CommandRunnerTests, Get_InvalidPayload)
@@ -99,8 +99,8 @@ namespace Tests
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_component, m_desiredObject, nullptr, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, commandRunner->Get(m_component, m_desiredObject, &payload, nullptr));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, nullptr, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, &payload, nullptr));
     }
 
     TEST_F(CommandRunnerTests, RunCommand)
@@ -113,11 +113,11 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -131,11 +131,11 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -149,11 +149,11 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -197,10 +197,10 @@ namespace Tests
             expectedResults.push_back(std::make_pair(id, status));
 
             std::string desiredPayload = Command::Arguments::Serialize(arguments);
-            EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+            EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
         }
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
@@ -211,8 +211,8 @@ namespace Tests
             Command::Arguments arguments(expectedResult.first, "", Command::Action::RefreshCommandStatus, 0, false);
             std::string refresh = Command::Arguments::Serialize(arguments);
 
-            EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
-            EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+            EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
+            EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
             EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(expectedResult.second), std::string(reportedPayload, payloadSizeBytes)));
         }
 
@@ -222,21 +222,21 @@ namespace Tests
         Command::Status lastStatus(id, 0, id + "\n", Command::State::Succeeded);
 
         std::string desiredPayload = Command::Arguments::Serialize(extraCommand);
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
         // Get the last command from the cache
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
 
         // The first command should have been removed from the cache
         Command::Arguments refreshFirstCommand(expectedResults[0].first, "", Command::Action::RefreshCommandStatus, 0, false);
         std::string refresh = Command::Arguments::Serialize(refreshFirstCommand);
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refresh.c_str()), refresh.size()));
 
         // The last command should still be reported (set as command to report) and in the cache
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(lastStatus), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -257,24 +257,24 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
         // The last run command should be reported
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status2), std::string(reportedPayload, payloadSizeBytes)));
 
         // Refresh the command
         Command::Arguments refresh(id1, "", Command::Action::RefreshCommandStatus, 0, false);
         std::string refreshPayload = Command::Arguments::Serialize(refresh);
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refreshPayload.c_str()), refreshPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(refreshPayload.c_str()), refreshPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
         // The refreshed command should be reported
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -291,12 +291,12 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(cancelPayload.c_str()), cancelPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(cancelPayload.c_str()), cancelPayload.size()));
 
-        commandRunner->WaitForCommands();
+        m_commandRunner->WaitForCommands();
 
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
@@ -313,11 +313,11 @@ namespace Tests
         MMI_JSON_STRING reportedPayload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
-        commandRunner->WaitForCommands();
-        EXPECT_EQ(EINVAL, commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload1.c_str()), desiredPayload1.size()));
+        m_commandRunner->WaitForCommands();
+        EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload2.c_str()), desiredPayload2.size()));
 
-        EXPECT_EQ(MMI_OK, commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 } // namespace Tests

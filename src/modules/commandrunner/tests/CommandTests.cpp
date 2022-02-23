@@ -30,7 +30,7 @@ namespace Tests
         m_command.reset();
     }
 
-    const std::string CommandTests::m_id = "CommandTestm_Id";
+    const std::string CommandTests::m_id = "CommandTest_Id";
 
     TEST_F(CommandTests, Execute)
     {
