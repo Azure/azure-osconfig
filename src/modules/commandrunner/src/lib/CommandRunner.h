@@ -4,144 +4,100 @@
 #ifndef COMMANDRUNNER_H
 #define COMMANDRUNNER_H
 
-#include <array>
-#include <functional>
-#include <Logging.h>
+#include <condition_variable>
 #include <map>
 #include <mutex>
 #include <queue>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 #include <string>
 #include <thread>
-#include <unistd.h>
 
-#define COMMANDSTATUS_CACHE_MAX 10
-#define COMMANDRUNNER_LOGFILE "/var/log/osconfig_commandrunner.log"
-#define COMMADRUNNER_ROLLEDLOGFILE "/var/log/osconfig_commandrunner.bak"
+#include <Command.h>
+#include <Mmi.h>
 
-#define COMMAND_STATUS_UNIQUE_ID_LENGTH 10
-
-static const char alphanum[] = "0123456789"\
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\
-    "abcdefghijklmnopqrstuvwxyz";
-
-class CommandRunnerLog
-{
-public:
-    static OSCONFIG_LOG_HANDLE Get()
-    {
-        return m_log;
-    }
-
-    static void OpenLog()
-    {
-        m_log = ::OpenLog(COMMANDRUNNER_LOGFILE, COMMADRUNNER_ROLLEDLOGFILE);
-    }
-
-    static void CloseLog()
-    {
-        ::CloseLog(&m_log);
-    }
-
-    static OSCONFIG_LOG_HANDLE m_log;
-};
+const std::string g_commandRunner = "CommandRunner";
 
 class CommandRunner
 {
 public:
-    enum Action
-    {
-        None = 0,
-        Reboot,
-        Shutdown,
-        RunCommand,
-        RefreshCommandStatus,
-        CancelCommand
-    };
+    static const unsigned int MAX_CACHE_SIZE = 10;
+    static const std::string PERSISTED_COMMANDSTATUS_FILE;
 
-    enum CommandState
-    {
-        Unknown = 0,
-        Running,
-        Succeeded,
-        Failed,
-        TimedOut,
-        Canceled
-    };
-
-    struct CommandArguments
-    {
-        std::string commandId;
-        std::string arguments;
-        Action action;
-        unsigned int timeout;
-        bool singleLineTextResult;
-    };
-
-    class CommandStatus
-    {
-    public:
-        std::string commandId;
-        int resultCode;
-        std::string textResult;
-        CommandState commandState;
-
-        CommandStatus();
-        CommandStatus(const CommandStatus& other);
-        virtual ~CommandStatus() {};
-        CommandStatus& operator=(CommandStatus other)
-        {
-            std::swap(commandId, other.commandId);
-            std::swap(resultCode, other.resultCode);
-            std::swap(textResult, other.textResult);
-            std::swap(commandState, other.commandState);
-            return *this;
-        }
-        virtual std::string GetUniqueId();
-
-    private:
-        std::string uniqueId;
-    };
-
-    typedef std::map<std::string, std::weak_ptr<CommandStatus>> CommandResults;
-
-    CommandRunner(std::string name, std::function<int()> persistentCacheFunction, unsigned int maxSizeInBytes = 0);
+    CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     virtual ~CommandRunner();
-    virtual int Run(CommandArguments command);
-    virtual int Cancel(std::string commandId);
-    virtual void CancelAll();
-    static void CommandWorkerThread(CommandRunner& commandRunnerInstance, std::queue<CommandArguments>& commandArgumentsBuffer);
-    virtual CommandStatus* GetCommandStatus(std::string commandId);
-    static int Execute(CommandRunner& commandRunnerInstance, CommandRunner::Action action, std::string commandId, std::string command, CommandState initialState, unsigned int timeoutSeconds, bool replaceEol);
-    virtual const std::string& GetCommandIdToRefresh();
-    virtual int SetCommandIdToRefresh(std::string commandId);
-    virtual void WaitForCommandResults();
-    virtual CommandStatus GetCommandStatusToPersist();
-    virtual void PersistCommandStatus(CommandStatus commandStatus);
-    virtual void AddCommandStatus(std::string commandId, bool updateCommandToRefresh);
-    virtual void UpdatePartialCommandStatus(std::string commandId, int resultCode, CommandState commandState);
-    virtual void UpdateCommandStatus(std::string commandId, int resultCode, std::string textResult, CommandState commandState);
-    virtual bool CommandExists(std::string commandId);
-    virtual bool IsCanceled(std::string commandId);
-    virtual int GetMaxPayloadSizeInBytes();
-    virtual std::string GetClientName();
+
+    static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    unsigned int GetMaxPayloadSizeBytes();
+
+    // Helper function to wait for the worker thread during unit tests
+    void WaitForCommands();
 
 private:
-    static std::string GetTmpFilePath(std::string uniqueId);
-    static int CommandExecutionCallback(void* context);
-    static CommandState CommandStateFromStatusCode(int status);
+    template<class T>
+    class SafeQueue
+    {
+    public:
+        SafeQueue();
+        ~SafeQueue() { }
 
-    std::function<int()> cacheFunction;
-    std::mutex cacheMutex;
-    std::queue<CommandArguments> commandArgumentsBuffer;
-    std::thread commandWorkerThread;
-    std::array<std::shared_ptr<CommandStatus>, COMMANDSTATUS_CACHE_MAX> commandStatusBuffer;
-    int curIndexCommandBuffer;
-    CommandResults commmandMap;
-    CommandStatus persistedCommandStatus;
-    std::string commandIdToRefresh;
-    std::string clientName;
-    unsigned int maxPayloadSizeInBytes;
+        void Push(T element);
+        T Pop();
+        T Front();
+        bool Empty();
+        void WaitUntilEmpty();
+
+    private:
+        std::queue<T> m_queue;
+        mutable std::mutex m_mutex;
+        std::condition_variable m_condition;
+        std::condition_variable m_conditionEmpty;
+    };
+
+    const std::string m_clientName;
+    const unsigned int m_maxPayloadSizeBytes;
+    const bool m_usePersistedCache;
+
+    std::thread m_workerThread;
+    SafeQueue<std::weak_ptr<Command>> m_commandQueue;
+
+    std::deque<std::shared_ptr<Command>> m_cacheBuffer;
+    std::map<std::string, std::shared_ptr<Command>> m_commandMap;
+    std::mutex m_cacheMutex;
+
+    std::string m_reportedStatusId;
+    std::mutex m_reportedStatusIdMutex;
+
+    static std::mutex m_diskCacheMutex;
+
+    int Run(const std::string id, std::string arguments, unsigned int timeout, bool singleLineTextResult);
+    int Reboot(const std::string id);
+    int Shutdown(const std::string id);
+    int Cancel(const std::string id);
+    void CancelAll();
+    int Refresh(const std::string id);
+
+    bool CommandExists(const std::string& id);
+    int ScheduleCommand(std::shared_ptr<Command> command);
+    int CacheCommand(std::shared_ptr<Command> command);
+
+    void SetReportedStatusId(const std::string id);
+    std::string GetReportedStatusId();
+    Command::Status GetReportedStatus();
+
+    static void WorkerThread(CommandRunner& instance);
+    void Execute(Command command);
+
+    Command::Status GetStatusToPersist();
+    int LoadPersistedCommandStatus(const std::string& clientName);
+    int PersistCommandStatus(const Command::Status& status);
+    static int PersistCommandStatus(const std::string& clientName, const Command::Status status);
+
+    static int WriteFile(const std::string& fileName, const rapidjson::StringBuffer& buffer);
+    static int CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const rapidjson::StringBuffer& buffer);
 };
-
 
 #endif // COMMANDRUNNER_H
