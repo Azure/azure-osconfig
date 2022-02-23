@@ -41,33 +41,6 @@ namespace E2eTesting
             }
         }
 
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            if ((null == _sasToken) || (null == _uploadUrl) || (null == _resourceGroupName))
-            {
-                Console.WriteLine("[TearDown] Uploading logs to blob store");
-
-                string fileName = String.Format("{0}-{1}.tar.gz", _resourceGroupName, _deviceId);
-                string fullURL = String.Format("{0}{1}?{2}", _uploadUrl, fileName, _sasToken);
-
-                string tempFileCommand = "temp_file=`sudo mktemp`";
-                string tarCommand = "sudo tar -cvzf $temp_file osconfig*.log";
-                string curlCommand = String.Format("curl -X PUT -T $temp_file -H \"x-ms-date: $(date -u)\" -H \"x-ms-blob-type: BlockBlob\" \"{1}\"", fileName, fullURL);
-                string uploadCommand = String.Format("cd /var/log && {0} && {1} && {2}", tempFileCommand, tarCommand, curlCommand);
-
-                // Temporarily commented out to avoid uploading logs to blob store twice
-                // if (!ExecuteCommandViaCommandRunner(uploadCommand))
-                // {
-                //     Assert.Warn("[TearDown] Failed to upload logs to blob storage");
-                // }
-            }
-            else
-            {
-                Console.WriteLine("[TearDown] Skipping upload of logs to blob store");
-            }
-        }
-
         protected bool ExecuteCommandViaCommandRunner(string arguments)
         {
             bool success = true;
