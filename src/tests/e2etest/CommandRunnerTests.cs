@@ -24,9 +24,6 @@ namespace E2eTesting
         private readonly string _uploadUrl = Environment.GetEnvironmentVariable("E2E_OSCONFIG_UPLOAD_URL")?.Trim('\"');
         private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
 
-        // TODO: use this in Get/Set to simplify and reduce repeated arguments
-        // public abstract string componentName { get; }
-
         public partial class GenericResponse<T>
         {
             public T value { get; set; }
@@ -49,8 +46,69 @@ namespace E2eTesting
         {
             if ((null == _sasToken) || (null == _uploadUrl) || (null == _resourceGroupName))
             {
-                // TODO: Upload logs to blobstore
+                Console.WriteLine("[TearDown] Uploading logs to blob store");
+
+                string fileName = String.Format("{0}-{1}.tar.gz", _resourceGroupName, _deviceId);
+                string fullURL = String.Format("{0}{1}?{2}", _uploadUrl, fileName, _sasToken);
+
+                string tempFileCommand = "temp_file=`sudo mktemp`";
+                string tarCommand = "sudo tar -cvzf $temp_file osconfig*.log";
+                string curlCommand = String.Format("curl -X PUT -T $temp_file -H \"x-ms-date: $(date -u)\" -H \"x-ms-blob-type: BlockBlob\" \"{1}\"", fileName, fullURL);
+                string uploadCommand = String.Format("cd /var/log && {0} && {1} && {2}", tempFileCommand, tarCommand, curlCommand);
+
+                // Temporarily commented out to avoid uploading logs to blob store twice
+                // if (!ExecuteCommandViaCommandRunner(uploadCommand))
+                // {
+                //     Assert.Warn("[TearDown] Failed to upload logs to blob storage");
+                // }
             }
+            else
+            {
+                Console.WriteLine("[TearDown] Skipping upload of logs to blob store");
+            }
+        }
+
+        protected bool ExecuteCommandViaCommandRunner(string arguments)
+        {
+            bool success = true;
+            var command = CommandRunnerTests.CreateCommand(arguments);
+
+            try
+            {
+                var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "CommandArguments", command);
+                desiredResult.Wait();
+                int ackCode = desiredResult.Result;
+
+                if (200 != ackCode)
+                {
+                    Console.WriteLine("[ExecuteCommandViaCommandRunner] Failed to set desired state");
+                    success = false;
+                }
+                else
+                {
+                    Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
+                    {
+                        return status.CommandId == command.CommandId && status.CurrentState == CommandRunnerTests.CommandState.Succeeded;
+                    };
+
+                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 180);
+                    reportedResult.Wait();
+                    var reportedStatus = reportedResult.Result;
+
+                    if (!condition(reportedStatus))
+                    {
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}", command.CommandId);
+                        success = false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[ExecuteCommandViaCommandRunner] Exception: {0}", e.Message);
+                success = false;
+            }
+
+            return success;
         }
 
         protected async Task<int> SetDesired<T>(string componentName, T value, int ackCode = 200, int maxWaitSeconds = 90)
@@ -253,12 +311,17 @@ namespace E2eTesting
             public CommandState CurrentState { get; set; }
         }
 
-        public CommandArguments CreateCommand(string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLineTextResult = false)
+        public static string GenerateId()
         {
-            return CreateCommand(CreateCommandId(), arguments, action, timeout, singleLineTextResult);
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
         }
 
-        public CommandArguments CreateCommand(string commandId, string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLinetextResult = false)
+        public static CommandArguments CreateCommand(string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLineTextResult = false)
+        {
+            return CreateCommand(GenerateId(), arguments, action, timeout, singleLineTextResult);
+        }
+
+        public static CommandArguments CreateCommand(string commandId, string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLinetextResult = false)
         {
             return new CommandArguments
             {
@@ -270,7 +333,7 @@ namespace E2eTesting
             };
         }
 
-        public CommandArguments CreateLongRunningCommand(string commandId, int timeout = 120)
+        public static CommandArguments CreateLongRunningCommand(string commandId, int timeout = 120)
         {
             return new CommandArguments
             {
@@ -281,7 +344,7 @@ namespace E2eTesting
             };
         }
 
-        public CommandArguments CreateCancelCommand(string commandId)
+        public static CommandArguments CreateCancelCommand(string commandId)
         {
             return new CommandArguments
             {
@@ -292,7 +355,7 @@ namespace E2eTesting
             };
         }
 
-        public CommandStatus CreateCommandStatus(string commandId, string textResult = "", CommandState commandState = CommandState.Succeeded, int resultCode = 0)
+        public static CommandStatus CreateCommandStatus(string commandId, string textResult = "", CommandState commandState = CommandState.Succeeded, int resultCode = 0)
         {
             return new CommandStatus
             {
@@ -301,11 +364,6 @@ namespace E2eTesting
                 CurrentState = commandState,
                 ResultCode = resultCode
             };
-        }
-
-        public string CreateCommandId()
-        {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
         }
 
         public void SendCommand(CommandArguments command, int ackCode = 200)
@@ -372,7 +430,7 @@ namespace E2eTesting
         [Test]
         public void CommandRunnerTest_CancelCommand()
         {
-            var commandId = CreateCommandId();
+            var commandId = GenerateId();
             var command = CreateLongRunningCommand(commandId);
 
             SendCommand(command);
@@ -387,7 +445,7 @@ namespace E2eTesting
         [Test]
         public void CommandRunnerTest_RepeatCommandId()
         {
-            var commandId = CreateCommandId();
+            var commandId = GenerateId();
             var command = CreateCommand(commandId, "echo 'command 1'", Action.RunCommand, 0, true);
             var commandWithDuplicateCommandId = CreateCommand(commandId, "echo 'command 2'", Action.RunCommand, 0, true);
 
@@ -402,7 +460,7 @@ namespace E2eTesting
         [Test]
         public void CommandRunnerTest_CommandSequence()
         {
-            var command1 = CreateLongRunningCommand(CreateCommandId());
+            var command1 = CreateLongRunningCommand(GenerateId());
             var command2 = CreateCommand("echo 'command 2'");
             var command3 = CreateCommand("sleep 10s && echo 'command 3'", timeout: 1);
             var command4 = CreateCommand("blah");
