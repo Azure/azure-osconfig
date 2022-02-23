@@ -260,8 +260,6 @@ static void RefreshConnection()
             g_exitState = IotHubInitializationFailure;
             SignalInterrupt(SIGQUIT);
         }
-
-        IotHubDoWork();
     }
     else
     {
@@ -812,8 +810,6 @@ int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVID
         g_exitState = IotHubInitializationFailure;
         return -1;
     }
-
-    IotHubDoWork();
 
     tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
 
