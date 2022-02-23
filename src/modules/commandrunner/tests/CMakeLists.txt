@@ -8,7 +8,14 @@ cmake_minimum_required(VERSION 3.2.0)
 include(CTest)
 find_package(GTest REQUIRED)
 
-add_executable(commandrunnertests CommandRunnerTests.cpp)
-target_link_libraries(commandrunnertests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging)
+add_library(testutils TestUtils.cpp)
+target_include_directories(testutils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(testutils gtest gtest_main)
 
+add_executable(commandrunnertests CommandRunnerTests.cpp)
+target_link_libraries(commandrunnertests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging testutils)
 gtest_discover_tests(commandrunnertests)
+
+add_executable(commandtests CommandTests.cpp)
+target_link_libraries(commandtests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging testutils)
+gtest_discover_tests(commandtests)
