@@ -12,8 +12,8 @@ namespace Tests
     class CommandTests : public testing::Test
     {
     protected:
-        static const std::string s_id;
-        std::shared_ptr<Command> s_command;
+        static const std::string m_id;
+        std::shared_ptr<Command> m_command;
 
         void SetUp() override;
         void TearDown() override;
@@ -21,23 +21,23 @@ namespace Tests
 
     void CommandTests::SetUp()
     {
-        this->s_command = std::make_shared<Command>(s_id, "echo 'test'", 0, false);
-        EXPECT_STREQ(s_id.c_str(), this->s_command->GetId().c_str());
+        this->m_command = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        EXPECT_STREQ(m_id.c_str(), this->m_command->GetId().c_str());
     }
 
     void CommandTests::TearDown()
     {
-        s_command.reset();
+        m_command.reset();
     }
 
-    const std::string CommandTests::s_id = "CommandTests_Id";
+    const std::string CommandTests::m_id = "CommandTestm_Id";
 
     TEST_F(CommandTests, Execute)
     {
-        EXPECT_EQ(0, s_command->Execute(0));
+        EXPECT_EQ(0, m_command->Execute(0));
 
-        Command::Status status = s_command->GetStatus();
-        EXPECT_STREQ(s_id.c_str(), status.m_id.c_str());
+        Command::Status status = m_command->GetStatus();
+        EXPECT_STREQ(m_id.c_str(), status.m_id.c_str());
         EXPECT_EQ(0, status.m_exitCode);
         EXPECT_STREQ("test\n", status.m_textResult.c_str());
         EXPECT_EQ(Command::State::Succeeded, status.m_state);
@@ -45,39 +45,39 @@ namespace Tests
 
     TEST_F(CommandTests, Cancel)
     {
-        EXPECT_EQ(0, s_command->Cancel());
-        EXPECT_TRUE(s_command->IsCanceled());
-        EXPECT_EQ(ECANCELED, s_command->Cancel());
-        EXPECT_EQ(ECANCELED, s_command->Execute(0));
+        EXPECT_EQ(0, m_command->Cancel());
+        EXPECT_TRUE(m_command->IsCanceled());
+        EXPECT_EQ(ECANCELED, m_command->Cancel());
+        EXPECT_EQ(ECANCELED, m_command->Execute(0));
     }
 
     TEST_F(CommandTests, Status)
     {
-        Command::Status defaultStatus = s_command->GetStatus();
-        EXPECT_STREQ(s_id.c_str(), defaultStatus.m_id.c_str());
+        Command::Status defaultStatus = m_command->GetStatus();
+        EXPECT_STREQ(m_id.c_str(), defaultStatus.m_id.c_str());
         EXPECT_EQ(0, defaultStatus.m_exitCode);
         EXPECT_STREQ("", defaultStatus.m_textResult.c_str());
         EXPECT_EQ(Command::State::Unknown, defaultStatus.m_state);
 
-        s_command->SetStatus(EXIT_SUCCESS);
-        EXPECT_EQ(EXIT_SUCCESS, s_command->GetStatus().m_exitCode);
-        EXPECT_EQ(Command::State::Succeeded, s_command->GetStatus().m_state);
+        m_command->SetStatus(EXIT_SUCCESS);
+        EXPECT_EQ(EXIT_SUCCESS, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Succeeded, m_command->GetStatus().m_state);
 
-        s_command->SetStatus(ECANCELED);
-        EXPECT_EQ(ECANCELED, s_command->GetStatus().m_exitCode);
-        EXPECT_EQ(Command::State::Canceled, s_command->GetStatus().m_state);
+        m_command->SetStatus(ECANCELED);
+        EXPECT_EQ(ECANCELED, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Canceled, m_command->GetStatus().m_state);
 
-        s_command->SetStatus(ETIME);
-        EXPECT_EQ(ETIME, s_command->GetStatus().m_exitCode);
-        EXPECT_EQ(Command::State::TimedOut, s_command->GetStatus().m_state);
+        m_command->SetStatus(ETIME);
+        EXPECT_EQ(ETIME, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::TimedOut, m_command->GetStatus().m_state);
 
-        s_command->SetStatus(-1);
-        EXPECT_EQ(-1, s_command->GetStatus().m_exitCode);
-        EXPECT_EQ(Command::State::Failed, s_command->GetStatus().m_state);
+        m_command->SetStatus(-1);
+        EXPECT_EQ(-1, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Failed, m_command->GetStatus().m_state);
 
-        s_command->SetStatus(EXIT_SUCCESS, "test");
-        EXPECT_STREQ("test", s_command->GetStatus().m_textResult.c_str());
-        EXPECT_EQ(Command::State::Succeeded, s_command->GetStatus().m_state);
+        m_command->SetStatus(EXIT_SUCCESS, "test");
+        EXPECT_STREQ("test", m_command->GetStatus().m_textResult.c_str());
+        EXPECT_EQ(Command::State::Succeeded, m_command->GetStatus().m_state);
     }
 
     TEST(CommandArgumentsTests, Deserialize)

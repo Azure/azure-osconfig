@@ -25,7 +25,7 @@ constexpr const char info[] = R""""({
 
 const std::string CommandRunner::PERSISTED_COMMANDSTATUS_FILE = "/etc/osconfig/osconfig_commandrunner.cache";
 
-std::mutex CommandRunner::s_diskCacheMutex;
+std::mutex CommandRunner::m_diskCacheMutex;
 
 CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, bool usePersistedCache) :
     m_clientName(clientName),
@@ -432,7 +432,7 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 {
     int status = 0;
 
-    std::lock_guard<std::mutex> lock(s_diskCacheMutex);
+    std::lock_guard<std::mutex> lock(m_diskCacheMutex);
     std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
 
     if (file.good())
@@ -486,7 +486,7 @@ int CommandRunner::PersistCommandStatus(const Command::Status& status)
 int CommandRunner::PersistCommandStatus(const std::string& clientName, const Command::Status commandStatus)
 {
     int status = 0;
-    std::lock_guard<std::mutex> lock(s_diskCacheMutex);
+    std::lock_guard<std::mutex> lock(m_diskCacheMutex);
 
     std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
     if (file.good())

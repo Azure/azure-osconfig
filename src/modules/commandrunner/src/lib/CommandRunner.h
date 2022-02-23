@@ -71,7 +71,7 @@ private:
     std::string m_reportedStatusId;
     std::mutex m_reportedStatusIdMutex;
 
-    static std::mutex s_diskCacheMutex;
+    static std::mutex m_diskCacheMutex;
 
     int Run(const std::string id, std::string arguments, unsigned int timeout, bool singleLineTextResult);
     int Reboot(const std::string id);
