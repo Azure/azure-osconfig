@@ -5,6 +5,12 @@
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
+parameters:
+  - name: performSigning
+    type: boolean
+    displayName: 'Perform code signing'
+    default: false
+
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
   CONTAINER_REGISTRY: osconfig.azurecr.io
@@ -104,3 +110,10 @@ stages:
     architecture: arm64
     containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
     platform: linux/arm64/v8
+
+- template: stages/binary_signing.yaml
+  parameters:
+    performSigning: ${{ parameters.performSigning }}
+    vaultName: $(VaultName)
+    aadCertificateName: $(AADCertificateName)
+    esrpCertificateName: $(ESRPCertificateName)
