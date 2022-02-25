@@ -15,15 +15,8 @@
               {
                 "name": "Packages",
                 "schema": {
-                  "type": "map",
-                  "mapKey":  {
-                    "name": "Name",
-                    "schema": "string"
-                  },
-                  "mapValue": {
-                    "name": "Version",
-                    "schema": "string"
-                  }
+                  "type": "array",
+                  "elementSchema": "string"
                 }
               },
               {
@@ -32,16 +25,13 @@
               },
               {
                 "name": "SourcesFingerprint",
+                "schema": "string"
+              },
+              {
+                "name": "SourcesFilenames",
                 "schema": {
-                  "type": "map",
-                  "mapKey":  {
-                    "name": "Id",
-                    "schema": "string"
-                  },
-                  "mapValue": {
-                    "name": "Fingerprint",
-                    "schema": "string"
-                  }
+                  "type": "array",
+                  "elementSchema": "string"
                 }
               },
               {
