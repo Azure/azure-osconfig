@@ -108,8 +108,13 @@ bool IsValidClientName(const char* name)
 
 bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log)
 {
-    bool isValid = true;
+    if ((0 == payloadSizeBytes) || (nullptr == payload))
+    {
+      return false;
+    }
 
+    bool isValid = true;
+    
     const char schemaJson[] = R"""({
       "$schema": "http://json-schema.org/draft-04/schema#",
       "description": "MIM object JSON payload schema",
