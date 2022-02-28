@@ -231,7 +231,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError()) 
     {
-        OsConfigLogError(log, "MIM object JSON payload parser error: %.*s (%d bytes)", payloadSizeBytes, payload, payloadSizeBytes);
+        OsConfigLogError(log, "MIM object JSON payload parser error");
         isValid = false;
     }
     else
