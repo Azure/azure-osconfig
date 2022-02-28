@@ -108,8 +108,13 @@ bool IsValidClientName(const char* name)
 
 bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log)
 {
-    bool isValid = true;
+    if ((0 == payloadSizeBytes) || (nullptr == payload))
+    {
+      return false;
+    }
 
+    bool isValid = true;
+    
     const char schemaJson[] = R"""({
       "$schema": "http://json-schema.org/draft-04/schema#",
       "description": "MIM object JSON payload schema",
@@ -226,7 +231,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError()) 
     {
-        OsConfigLogError(log, "MIM object JSON payload parser error");
+        OsConfigLogError(log, "MIM object JSON payload parser error: %.*s (%d bytes)", payloadSizeBytes, payload, payloadSizeBytes);
         isValid = false;
     }
     else
