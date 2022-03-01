@@ -636,8 +636,8 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
     ])""";
     const char stringArrayPayload[] = R"""(["value1", "value2"])""";
     const char integerArrayPayload[] = R"""([1, 2])""";
-    const char stringMap[] = R"""({"key1": "value1", "key2" : "value2"})""";
-    const char integerMap[] = R"""({"key1": 1, "key2" : 2})""";
+    const char stringMap[] = R"""({"key1": "value1", "key2" : "value2", "key3": null})""";
+    const char integerMap[] = R"""({"key1": 1, "key2" : 2, "key3": null})""";
 
     ASSERT_TRUE(IsValidMimObjectPayload(stringPayload, sizeof(stringPayload), nullptr));
     ASSERT_TRUE(IsValidMimObjectPayload(integerPayload, sizeof(integerPayload), nullptr));
@@ -648,7 +648,7 @@ TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
     ASSERT_TRUE(IsValidMimObjectPayload(integerArrayPayload, sizeof(integerArrayPayload), nullptr));
     ASSERT_TRUE(IsValidMimObjectPayload(stringMap, sizeof(stringMap), nullptr));
     ASSERT_TRUE(IsValidMimObjectPayload(integerMap, sizeof(integerMap), nullptr));
-    
+
     // Invalid payloads
     const char invalidJson[] = R"""(invalid)""";
     const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
@@ -715,7 +715,7 @@ TEST_F(CommonUtilsTest, InvalidHttpProxyData)
     int port = 0;
     char* username = nullptr;
     char* password = nullptr;
-    
+
     const char* badOptions[] = {
         "some random text",
         "http://blah",
