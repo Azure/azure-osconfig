@@ -33,7 +33,11 @@ namespace E2eTesting
         [Test]
         public async Task TpmTest_Get()
         {
-            Tpm reported = await GetReported<Tpm>(_componentName);
+            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => {
+                return tpm.TpmVersion != null &&
+                       tpm.TpmManufacturer != null &&
+                       tpm.TpmStatus != TpmStatusCode.Unknown;
+            });
 
             Assert.Multiple(() =>
             {

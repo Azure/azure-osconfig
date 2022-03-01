@@ -78,9 +78,9 @@ namespace E2eTesting
                 var setDesiredTask = SetDesired<DesiredZtsi>(_componentName, desiredConfiguration);
                 setDesiredTask.Wait();
 
-                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled);
-                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl);
+                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled, (GenericResponse<bool> response) => response.ac == ACK_SUCCESS);
                 desiredEnabledTask.Wait();
+                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl, (GenericResponse<string> response) => response.ac == ACK_SUCCESS);
                 desiredServiceUrlTask.Wait();
 
                 return (desiredServiceUrlTask.Result.ac, desiredEnabledTask.Result.ac);

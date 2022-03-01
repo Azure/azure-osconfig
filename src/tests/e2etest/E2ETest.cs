@@ -324,31 +324,6 @@ namespace E2eTesting
 
             return reported;
         }
-
-        /// <summary>
-        /// Gets the last reported value of the specified component.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="componentName"></param>
-        /// <param name="maxWaitSeconds"></param>
-        protected async Task<T> GetReported<T>(string componentName, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
-        {
-            Func<T, bool> condition = (T t) => { return true; };
-            return await GetReported<T>(componentName, condition, maxWaitSeconds);
-        }
-
-        /// <summary>
-        /// Gets the last reported value of the specified object within a component.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="componentName"></param>
-        /// <param name="objectName"></param>
-        /// <param name="maxWaitSeconds"></param>
-        protected async Task<T> GetReported<T>(string componentName, string objectName, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
-        {
-            Func<T, bool> condition = (T t) => { return true; };
-            return await GetReported<T>(componentName, objectName, condition, maxWaitSeconds);
-        }
     }
 
     public static class JsonAssert

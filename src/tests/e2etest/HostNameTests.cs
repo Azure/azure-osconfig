@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -33,7 +34,7 @@ namespace E2eTesting
         [Test]
         public async Task HostNameTest_Get()
         {
-            HostName reported = await GetReported<HostName>(_componentName);
+            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => (hostname.Name != null) && (hostname.Hosts != null));
 
             Assert.Multiple(() =>
             {
@@ -45,27 +46,31 @@ namespace E2eTesting
         [Test]
         public async Task HostNameTest_Set()
         {
-            var desiredHostName = new DesiredHostName
+            var desired = new DesiredHostName
             {
                 DesiredName = "TestHost",
                 DesiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
             };
 
-            await SetDesired<DesiredHostName>(_componentName, desiredHostName);
+            await SetDesired<DesiredHostName>(_componentName, desired);
 
-            var desiredNameTask = GetReported<GenericResponse<string>>(_componentName, _desiredHostName);
-            var desiredHostsTask = GetReported<GenericResponse<string>>(_componentName, _desiredHosts);
+            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.ac == ACK_SUCCESS;
+
+            var desiredNameTask = GetReported<GenericResponse<string>>(_componentName, _desiredHostName, condition);
             desiredNameTask.Wait();
+            var desiredHostsTask = GetReported<GenericResponse<string>>(_componentName, _desiredHosts, condition);
             desiredHostsTask.Wait();
 
-            HostName reported = await GetReported<HostName>(_componentName);
+            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => {
+                return (hostname.Name == desired.DesiredName) && (hostname.Hosts == desired.DesiredHosts);
+            });
 
             Assert.Multiple(() =>
             {
                 Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.ac);
                 Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.ac);
-                Assert.AreEqual(desiredHostName.DesiredName, reported.Name);
-                Assert.AreEqual(desiredHostName.DesiredHosts, reported.Hosts);
+                Assert.AreEqual(desired.DesiredName, reported.Name);
+                Assert.AreEqual(desired.DesiredHosts, reported.Hosts);
             });
         }
     }
