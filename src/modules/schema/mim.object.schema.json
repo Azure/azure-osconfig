@@ -29,13 +29,13 @@
     "stringMap": {
       "type": "object",
       "additionalProperties": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "integerMap": {
       "type": "object",
       "additionalProperties": {
-        "type": "integer"
+        "type": ["integer", "null"]
       }
     },
     "object": {
