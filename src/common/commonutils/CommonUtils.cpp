@@ -40,7 +40,7 @@ bool IsValidClientName(const char* name)
     const std::string clientNamePrefix = OSCONFIG_NAME_PREFIX;
     const std::string modelVersionDelimiter = OSCONFIG_MODEL_VERSION_DELIMITER;
     const std::string semanticVersionDelimeter = OSCONFIG_SEMANTIC_VERSION_DELIMITER;
-        
+
     const int referenceModelVersion = OSCONFIG_REFERENCE_MODEL_VERSION;
     const int referenceReleaseDay = OSCONFIG_REFERENCE_MODEL_RELEASE_DAY;
     const int referenceReleaseMonth = OSCONFIG_REFERENCE_MODEL_RELEASE_MONTH;
@@ -114,7 +114,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
     }
 
     bool isValid = true;
-    
+
     const char schemaJson[] = R"""({
       "$schema": "http://json-schema.org/draft-04/schema#",
       "description": "MIM object JSON payload schema",
@@ -146,13 +146,13 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         "stringMap": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "integerMap": {
           "type": "object",
           "additionalProperties": {
-            "type": "integer"
+            "type": ["integer", "null"]
           }
         },
         "object": {
@@ -229,7 +229,7 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
     rapidjson::SchemaDocument schema(sd);
     rapidjson::Document document;
 
-    if (document.Parse(payload, payloadSizeBytes).HasParseError()) 
+    if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
         OsConfigLogError(log, "MIM object JSON payload parser error");
         isValid = false;
