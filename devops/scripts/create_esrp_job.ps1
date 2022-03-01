@@ -1,9 +1,9 @@
 <#
   .SYNOPSIS
-  MSFT-Internal ESRP Signing Tool
+  OSConfigCore internal signing tool
 
   .DESCRIPTION
-  Creates an ESRP job manifest for signing production binaries (MSFT-Internal)
+  Creates a signing job manifest for signing production binaries (OSConfigCore internal)
 
   .PARAMETER FilesToSign
   Files to submit for signing

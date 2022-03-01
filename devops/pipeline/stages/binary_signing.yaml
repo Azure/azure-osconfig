@@ -1,4 +1,4 @@
-# Binary signing stage (MSFT Internal)
+# Binary signing stage (OSConfigCore internal)
 # Parameters:
 #  - (Optional) prefix [string]: the prefix for the stage/job to be used - default: binary
 #  - (Optional) performSigning [boolean]: runs the "Code Signing" stage - default: false
@@ -67,7 +67,12 @@ stages:
           **/*stretch_x86_64.deb
           **/*stretch_armv7l.deb
           **/*stretch_aarch64.deb
-        path: $(Build.SourcesDirectory)/esrpclient/Input
+        path: $(Agent.TempDirectory)/osconfig_bin/
+
+    - powershell: |
+        Get-ChildItem -Recurse -File -Filter *.deb | Move-Item -Destination $(Build.SourcesDirectory)/esrpclient/Input
+      workingDirectory: $(Agent.TempDirectory)/osconfig_bin/
+      displayName: Stage artifacts for signing
 
     - task: AzureCLI@2
       displayName: Download certificates from Key Vault
@@ -103,10 +108,14 @@ stages:
       displayName: Signing packages
 
     - powershell: |
-        $result = ((cat .\Output\output.json | ConvertFrom-Json).submissionResponses | where { $_.statusCode -eq "pass" }).Count -eq (ls .\Input\).Count
-        if ($result -eq False)
+        $result = (((cat .\Output\output.json | ConvertFrom-Json).submissionResponses | where { $_.statusCode -eq "pass" }).statusCode).Count -eq (ls .\Input\).Count
+        if ($result -eq $false)
         {
           Write-Error "Failed signing" -TargetObject $result
         }
       workingDirectory: $(Build.SourcesDirectory)/esrpclient
       displayName: Validate ESRP signing job
+
+    - publish: $(Build.SourcesDirectory)/esrpclient/Output/
+      displayName: Publishing signed packages
+      artifact: OSConfig_$(Build.BuildNumber)_SIGNED
