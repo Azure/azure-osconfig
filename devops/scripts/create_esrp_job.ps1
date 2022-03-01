@@ -1,6 +1,3 @@
-# create_esrp_job.ps1
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License.
 <#
   .SYNOPSIS
   MSFT-Internal ESRP Signing Tool
@@ -42,7 +39,7 @@ param(
     [Parameter(Mandatory=$true)]
     [String] $SourceRoot,
     [Parameter(Mandatory=$true)]
-    [String] $TargetRoot
+    [String] $TargetRoot,
     [String] $JobFile = "Job.json"
 )
 
@@ -59,29 +56,29 @@ foreach ($file in $FilesToSign)
 
 $json = @"
 {
-    "Version": "1.0.0",
-    "SignBatches": [
-        {
-            "SourceLocationType": "UNC",
-            "SourceRootDirectory": "$SourceRoot",
-            "DestinationLocationType": "UNC",
-            "DestinationRootDirectory": "$TargetRoot",
-            "SignRequestFiles": [
-                $TO_SIGN
-            ],
-            "SigningInfo": {
-                "Operations": [
-                    {
-                        "KeyCode": "CP-450779-Pgp",
-                        "OperationCode": "LinuxSign",
-                        "Parameters": {},
-                        "ToolName": "sign",
-                        "ToolVersion": "1.0"
-                    }
-                ]
-            }
-        }
-    ]
+  "Version": "1.0.0",
+  "SignBatches": [
+    {
+      "SourceLocationType": "UNC",
+      "SourceRootDirectory": "$SourceRoot",
+      "DestinationLocationType": "UNC",
+      "DestinationRootDirectory": "$TargetRoot",
+      "SignRequestFiles": [
+        $TO_SIGN
+      ],
+      "SigningInfo": {
+        "Operations": [
+          {
+            "KeyCode": "CP-450779-Pgp",
+            "OperationCode": "LinuxSign",
+            "Parameters": {},
+            "ToolName": "sign",
+            "ToolVersion": "1.0"
+          }
+        ]
+      }
+    }
+  ]
 }
 "@
 $json | ConvertTo-Json | % { [System.Text.RegularExpressions.Regex]::Unescape($_).Replace("\","\\").Trim('"') } | Set-Content $JobFile
