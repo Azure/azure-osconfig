@@ -2,61 +2,48 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices;
-using System.Text.Json;
-using System;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.IO;
-
 
 namespace E2eTesting
 {
-    [TestFixture]
-    public class SettingsTests : E2eTest
-    {   
-        const string ComponentName = "Settings";
-        const string ConfigurationProperty = "DeviceHealthTelemetryConfiguration";
-        const string PoliciesProperty = "DeliveryOptimizationPolicies";
-        public partial class DeliveryOptimizationPolicies
+    [TestFixture, Category("Settings")]
+    public class SettingsTests : E2ETest
+    {
+        private static readonly string _componentName = "Settings";
+
+        public class DeliveryOptimizationPolicies
         {
             public int PercentageDownloadThrottle { get; set; }
             public int CacheHostSource { get; set; }
             public string CacheHost { get; set; }
             public int CacheHostFallback { get; set; }
         }
-        public partial class Settings
+
+        public class Settings
         {
             public int DeviceHealthTelemetryConfiguration { get; set; }
             public DeliveryOptimizationPolicies DeliveryOptimizationPolicies { get; set; }
         }
-        public partial class ResponseCode
-        {
-            public int ac { get; set; }
-        }
-        public partial class ReportedConfiguration
-        {
-            public int value { get; set; } 
-        }
 
-        public partial class ReportedPolicies
+        [Test]
+        // TODO: add more test cases
+        // [TestCase(1)]
+        public async Task SettingsTest_DeviceHealthTelemtryConfiguration()
         {
-            public DeliveryOptimizationPolicies value { get; set; }
-        }
+            int desiredValue = 2;
+            var response = await SetDesired<int>(_componentName, "DeviceHealthTelemetryConfiguration", desiredValue);
 
-        public Settings GetSettingsReportObject()
-        {
-            Settings reportedObject = new Settings();
-            ReportedConfiguration reportedConfigurationObject = JsonSerializer.Deserialize<ReportedConfiguration>(GetNewTwin().Properties.Reported[ComponentName][ConfigurationProperty].ToString());
-            ReportedPolicies reportedPoliciesObject = JsonSerializer.Deserialize<ReportedPolicies>(GetTwin().Properties.Reported[ComponentName][PoliciesProperty].ToString());
-            reportedObject.DeviceHealthTelemetryConfiguration = reportedConfigurationObject.value;
-            reportedObject.DeliveryOptimizationPolicies = reportedPoliciesObject.value;
-            return reportedObject;
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(200, response.ac);
+                Assert.AreEqual(desiredValue, response.value);
+            });
         }
 
         [Test]
-        public void SettingsTest_Set_Get()
+        // TODO: add more test cases
+        // [TestCase(1)]
+        public async Task SettingsTest_DeliveryOptimizationPolicies()
         {
             var desiredDeliveryOptimizationPolicies = new DeliveryOptimizationPolicies
             {
@@ -66,29 +53,16 @@ namespace E2eTesting
                 CacheHostFallback = 90
             };
 
-            var desiredSettings = new Settings
-            {
-                DeviceHealthTelemetryConfiguration = 2,
-                DeliveryOptimizationPolicies = desiredDeliveryOptimizationPolicies
-            };
+            var response = await SetDesired<DeliveryOptimizationPolicies>(_componentName, "DeliveryOptimizationPolicies", desiredDeliveryOptimizationPolicies);
 
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
+            Assert.Multiple(() =>
             {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredSettings);
-
-            var reportedObject = new Settings();
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                reportedObject = GetSettingsReportObject();
-                AreEqualByJson(reportedObject, desiredSettings);
-            }
-            else
-            {
-                Assert.Fail("Timeout for updating twin");
-            }
+                Assert.AreEqual(200, response.ac);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.PercentageDownloadThrottle, response.value.PercentageDownloadThrottle);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostSource, response.value.CacheHostSource);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHost, response.value.CacheHost);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostFallback, response.value.CacheHostFallback);
+            });
         }
     }
 }
