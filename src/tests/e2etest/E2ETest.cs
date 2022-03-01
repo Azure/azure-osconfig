@@ -5,10 +5,9 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -74,7 +73,11 @@ namespace E2eTesting
             }
         }
 
-        // TODO: doc string summary
+        /// <summary>
+        /// Execute a command via the CommandRunner. Commands are expected to succeed with exit code 0.
+        /// </summary>
+        /// <param name="arguments">The command to execute</param>
+        /// <returns><c>true</c> if the command succeeded, <c>false</c> otherwise</returns>
         protected bool ExecuteCommandViaCommandRunner(string arguments)
         {
             bool success = true;
@@ -145,14 +148,12 @@ namespace E2eTesting
             return twin.Properties.Reported;
         }
 
-        // TODO: doc string summary
         private async Task<T> LastReported<T>(string componentName)
         {
             TwinCollection reported = await LastReported();
             return reported.Contains(componentName) ? Deserialize<T>(reported[componentName]) : default(T);
         }
 
-        // TODO: doc string summary
         private async Task<T> LastReported<T>(string componentName, string objectName)
         {
             TwinCollection reported = await LastReported();
@@ -172,8 +173,12 @@ namespace E2eTesting
             }
         }
 
-        // // TODO: doc string summary
-        // // TODO: GenericResponse does not work here, check twin to see why
+        /// <summary>
+        /// Sets the desired value of the specified component and waits for a reported property update.
+        /// </summary>
+        /// <typeparam name="T">The type of the desired value</typeparam>
+        /// <param name="componentName">The name of the component</param>
+        /// <param name="desiredValue">The desired value</param>
         protected async Task SetDesired<T>(string componentName, T value, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
@@ -212,7 +217,15 @@ namespace E2eTesting
             }
         }
 
-        // // TODO: doc string summary
+        /// <summary>
+        /// Sets the desired value of the specified object within a component and waits for a reported property update.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="value"></param>
+        /// <param name="maxWaitSeconds"></param>
+        /// <returns>The response containing the acknowledged proprty update</returns>
         protected async Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
@@ -253,7 +266,13 @@ namespace E2eTesting
             return Deserialize<GenericResponse<T>>(reported[componentName][objectName]);
         }
 
-        // TODO: doc string summary
+        /// <summary>
+        /// Gets the last reported value of the specified component according to the given condition callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="condition"></param>
+        /// <param name="maxWaitSeconds"></param>
         protected async Task<T> GetReported<T>(string componentName, Func<T, bool> condition, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             DateTime start = DateTime.Now;
@@ -276,7 +295,14 @@ namespace E2eTesting
             return reported;
         }
 
-        // TODO: doc string summary
+        /// <summary>
+        /// Gets the last reported value of the specified object within a component according to the given condition callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="condition"></param>
+        /// <param name="maxWaitSeconds"></param>
         protected async Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             DateTime start = DateTime.Now;
@@ -299,12 +325,25 @@ namespace E2eTesting
             return reported;
         }
 
+        /// <summary>
+        /// Gets the last reported value of the specified component.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="maxWaitSeconds"></param>
         protected async Task<T> GetReported<T>(string componentName, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             Func<T, bool> condition = (T t) => { return true; };
             return await GetReported<T>(componentName, condition, maxWaitSeconds);
         }
 
+        /// <summary>
+        /// Gets the last reported value of the specified object within a component.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="maxWaitSeconds"></param>
         protected async Task<T> GetReported<T>(string componentName, string objectName, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
         {
             Func<T, bool> condition = (T t) => { return true; };
