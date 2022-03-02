@@ -91,7 +91,7 @@ namespace E2eTesting
 
                 if (ACK_SUCCESS != ackCode)
                 {
-                    Assert.Warn("[ExecuteCommandViaCommandRunner] Failed to set desired state");
+                    Console.WriteLine("[ExecuteCommandViaCommandRunner] Failed to set desired state");
                     success = false;
                 }
                 else
@@ -107,14 +107,14 @@ namespace E2eTesting
 
                     if (!condition(reportedStatus))
                     {
-                        Assert.Warn("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
                         success = false;
                     }
                 }
             }
             catch (Exception e)
             {
-                Assert.Warn("[ExecuteCommandViaCommandRunner] Exception: {0}", e.Message);
+                Console.WriteLine("[ExecuteCommandViaCommandRunner] Exception: {0}", e.Message);
                 success = false;
             }
 
