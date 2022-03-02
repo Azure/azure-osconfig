@@ -31,11 +31,7 @@ namespace E2eTesting
             int desiredValue = 2;
             var response = await SetDesired<int>(_componentName, "DeviceHealthTelemetryConfiguration", desiredValue);
 
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(ACK_SUCCESS, response.ac);
-                Assert.AreEqual(desiredValue, response.value);
-            });
+            Assert.AreEqual(desiredValue, response.value);
         }
 
         [Test]
@@ -53,7 +49,6 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_SUCCESS, response.ac);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.PercentageDownloadThrottle, response.value.PercentageDownloadThrottle);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostSource, response.value.CacheHostSource);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHost, response.value.CacheHost);
