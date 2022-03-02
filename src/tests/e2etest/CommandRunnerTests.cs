@@ -133,7 +133,7 @@ namespace E2eTesting
             SendCommand(CreateCancelCommand(commandId));
         }
 
-        public void RefreshCommandStatus(string commandId, int ackCode = ACK_SUCCESS)
+        public void RefreshCommandStatus(string commandId, int expectedAckCode = ACK_SUCCESS)
         {
             var refreshCommand = new CommandArguments
             {
@@ -142,7 +142,7 @@ namespace E2eTesting
                 Action = Action.RefreshCommandStatus
             };
 
-            SendCommand(refreshCommand, ackCode);
+            SendCommand(refreshCommand, expectedAckCode);
         }
 
         public CommandStatus WaitForStatus(string commandId, CommandState state)
