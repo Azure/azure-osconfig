@@ -22,13 +22,13 @@ namespace E2eTesting
             Enabled,
             Disabled
         }
-        public partial class Ztsi
+        public class Ztsi
         {
             public Enabled Enabled { get; set; }
             public string ServiceUrl { get; set; }
         }
 
-        public partial class DesiredZtsi
+        public class DesiredZtsi
         {
             public bool DesiredEnabled { get; set; }
             public string DesiredServiceUrl { get; set; }
@@ -64,7 +64,6 @@ namespace E2eTesting
             }
         }
 
-        // TODO: doc string summary
         public (int, int) SetZtsiConfiguration(string serviceUrl, bool enabled)
         {
             try
@@ -128,7 +127,7 @@ namespace E2eTesting
         {
             try
             {
-                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled != expectedEnabled));
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled == expectedEnabled));
                 reportedTask.Wait();
                 return reportedTask.Result.Enabled;
             }
@@ -139,99 +138,102 @@ namespace E2eTesting
             }
         }
 
-        private void RemoveConfigurationFile()
-        {
-            try
-            {
-                ExecuteCommandViaCommandRunner("rm /etc/ztsi/config.json");
-            }
-            catch
-            {
-                // Ignore warnings
-            }
-        }
-
         [Test]
-        [TestCase(true, "", true, "", ACK_SUCCESS, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "", false, "", ACK_SUCCESS, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", true, "", ACK_ERROR, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", false, "", ACK_ERROR, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", true, "https://www.test.com/", ACK_SUCCESS, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", false, "https://www.test.com/", ACK_SUCCESS, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(false, "https://www.example.com/", true, "https://www.example.com/", ACK_SUCCESS, Enabled.Enabled, ACK_SUCCESS)]
-        public void ZtsiTest_Enabled_ServiceUrl(bool removeConfigurationFile, string serviceUrl, bool enabled, string expectedServiceUrl, int expectedServiceUrlAckCode, Enabled expectedEnabled, int expectedEnabledAckCode)
+        [TestCase("http://")]
+        [TestCase("https://")]
+        [TestCase("http:\\\\example.com")]
+        [TestCase("htp://example.com")]
+        [TestCase("//example.com")]
+        [TestCase("www.example.com")]
+        [TestCase("example.com")]
+        [TestCase("example.com/params?a=1")]
+        [TestCase("/example")]
+        [TestCase("localhost")]
+        [TestCase("localhost:5000")]
+        public void ZtsiTest_InvalidServiceUrl(string serviceUrl)
         {
-            if (removeConfigurationFile)
-            {
-                RemoveConfigurationFile();
-            }
-
-            int enabledAckCode = SetEnabled(enabled);
+            int enabledAckCode = SetEnabled(false);
             int serviceUrlAckCode = SetServiceUrl(serviceUrl);
-            (string serviceUrl, Enabled enabled) reportedConfiguration = GetZtsiConfiguration(expectedServiceUrl, expectedEnabled);
+            Assert.AreEqual(ACK_ERROR, serviceUrlAckCode, "Unexpected ack code for service url");
+        }
+
+        [Test]
+        [TestCase("")]
+        [TestCase("http://example.com")]
+        [TestCase("https://example.com")]
+        [TestCase("http://example.com/")]
+        [TestCase("https://example.com/")]
+        [TestCase("http://www.example.com")]
+        [TestCase("https://www.example.com")]
+        [TestCase("https://www.example.com/path/to/something/")]
+        [TestCase("https://www.example.com/params?a=1")]
+        [TestCase("https://www.example.com/params?a=1&b=2")]
+        public void ZtsiTest_ValidServiceUrl(string serviceUrl)
+        {
+            int enabledAckCode = SetEnabled(false);
+            int serviceUrlAckCode = SetServiceUrl(serviceUrl);
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(expectedEnabledAckCode, enabledAckCode, "Unexpected ack code for setting enabled");
-                Assert.AreEqual(expectedServiceUrlAckCode, serviceUrlAckCode, "Unexpected ack code for setting service url");
-                Assert.AreEqual(expectedEnabled, reportedConfiguration.enabled);
-                Assert.AreEqual(expectedServiceUrl, reportedConfiguration.serviceUrl);
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
+                Assert.AreEqual(serviceUrl, GetServiceUrl(serviceUrl));
             });
         }
 
         [Test]
-        [TestCase(true, "", true, "", ACK_SUCCESS, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "", false, "", ACK_SUCCESS, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", true, "", ACK_ERROR, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", false, "", ACK_ERROR, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", true, "https://www.test.com/", ACK_SUCCESS, Enabled.Enabled, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", false, "https://www.test.com/", ACK_SUCCESS, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(false, "https://www.example.com/", true, "https://www.example.com/", ACK_SUCCESS, Enabled.Enabled, ACK_SUCCESS)]
-        public void ZtsiTest_ServiceUrl_Enabled(bool removeConfigurationFile, string serviceUrl, bool enabled, string expectedServiceUrl, int expectedServiceUrlAckCode, Enabled expectedEnabled, int expectedEnabledAckCode)
+        public void ZtsiTest_Enabled()
         {
-            if (removeConfigurationFile)
-            {
-                RemoveConfigurationFile();
-            }
-
-            int enabledAckCode = SetServiceUrl(serviceUrl);
-            string reportedServiceUrl = GetServiceUrl(expectedServiceUrl);
-            int serviceUrlAckCode = SetEnabled(enabled);
-            Enabled reportedEnabled = GetEnabled(expectedEnabled);
+            int serviceUrlAckCode = SetServiceUrl("http://example.com");
+            int enabledAckCode = SetEnabled(true);
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(expectedServiceUrlAckCode, serviceUrlAckCode, "Unexpected ack code for setting service url");
-                Assert.AreEqual(expectedEnabledAckCode, enabledAckCode, "Unexpected ack code for setting enabled");
-                Assert.AreEqual(expectedServiceUrl, reportedServiceUrl);
-                Assert.AreEqual(expectedEnabled, reportedEnabled);
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
+                Assert.AreEqual(Enabled.Enabled, GetEnabled(Enabled.Enabled));
             });
         }
 
-        [Test]
-        [TestCase(true, "", true, "", ACK_ERROR, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "", false, "", ACK_SUCCESS, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", true, "", ACK_ERROR, Enabled.Unknown, ACK_SUCCESS)]
-        [TestCase(true, "Invalid url", false, "", ACK_ERROR, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", true, "https://www.test.com/", ACK_SUCCESS, Enabled.Enabled, ACK_SUCCESS)]
-        [TestCase(true, "https://www.test.com/", false, "https://www.test.com/", ACK_SUCCESS, Enabled.Disabled, ACK_SUCCESS)]
-        [TestCase(false, "https://www.example.com/", true, "https://www.example.com/", ACK_SUCCESS, Enabled.Enabled, ACK_SUCCESS)]
-        public void ZtsiTest_Configuration(bool removeConfigurationFile, string serviceUrl, bool enabled, string expectedServiceUrl, int expectedServiceUrlAckCode, Enabled expectedEnabled, int expectedEnabledAckCode)
-        {
-            if (removeConfigurationFile)
-            {
-                RemoveConfigurationFile();
-            }
 
+        [Test]
+        [TestCase("http://example1.com", false, "http://example1.com", Enabled.Disabled)]
+        [TestCase("http://example2.com", true, "http://example2.com", Enabled.Enabled)]
+        [TestCase("", false, "", Enabled.Disabled)]
+        public void ZtsiTest_Configuration(string serviceUrl, bool enabled, string expectedServiceUrl, Enabled expectedEnabled)
+        {
             (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration(serviceUrl, enabled);
-            (string serviceUrl, Enabled enabled) configuration = GetZtsiConfiguration(expectedServiceUrl, expectedEnabled);
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(expectedServiceUrlAckCode, ackCode.serviceUrl, "Unexpected ack code for setting service url");
-                Assert.AreEqual(expectedEnabledAckCode, ackCode.enabled, "Unexpected ack code for setting enabled");
-                Assert.AreEqual(expectedServiceUrl, configuration.serviceUrl);
-                Assert.AreEqual(expectedEnabled, configuration.enabled);
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
+                Assert.AreEqual(expectedServiceUrl, GetServiceUrl(expectedServiceUrl));
+                Assert.AreEqual(expectedEnabled, GetEnabled(expectedEnabled));
+            });
+        }
+
+        [Test]
+        public void ZtsiTest_InvalidConfiguration()
+        {
+            (int serviceUrl, int enabled) setupAckCode = SetZtsiConfiguration("http://test.com", true);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.serviceUrl, "Unexpected ack code for service url during setup");
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.enabled, "Unexpected ack code for enabled during setup");
+            });
+
+            (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration("", true);
+
+            (string serviceUrl, Enabled enabled) = GetZtsiConfiguration("http://test.com", Enabled.Enabled);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
+                Assert.AreEqual("http://test.com", serviceUrl);
+                Assert.AreEqual(Enabled.Enabled, enabled);
             });
         }
     }
