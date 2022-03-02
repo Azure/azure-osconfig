@@ -572,6 +572,10 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 {
                     object.stringMapSetting[member.name.GetString()] = member.value.GetString();
                 }
+                else if (member.value.IsNull())
+                {
+                    object.stringMapSetting.erase(member.name.GetString());
+                }
                 else
                 {
                     OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
@@ -601,6 +605,10 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 if (member.value.IsInt())
                 {
                     object.integerMapSetting[member.name.GetString()] = member.value.GetInt();
+                }
+                else if (member.value.IsNull())
+                {
+                    object.integerMapSetting.erase(member.name.GetString());
                 }
                 else
                 {
