@@ -25,7 +25,8 @@ namespace E2eTesting
         private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
 
         private const int POLL_INTERVAL_MS = 1000;
-        private const int MAX_WAIT_TIME_SECONDS = 90;
+        private const int DEFAULT_MAX_WAIT_SECONDS = 90;
+        private int _maxWaitTimeSeconds = DEFAULT_MAX_WAIT_SECONDS;
 
         protected const int ACK_SUCCESS = 200;
         protected const int ACK_ERROR = 400;
@@ -41,9 +42,15 @@ namespace E2eTesting
         {
             _registryManager = RegistryManager.CreateFromConnectionString(_iotHubConnectionString);
 
+            if (null != Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"))
+            {
+                _maxWaitTimeSeconds = int.TryParse(Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"), out _maxWaitTimeSeconds) ? _maxWaitTimeSeconds : DEFAULT_MAX_WAIT_SECONDS;
+                Console.WriteLine($"Setting max wait time for twin updates to {_maxWaitTimeSeconds} seconds");
+            }
+
             if ((null == _sasToken) || (null == _uploadUrl) || (null == _resourceGroupName))
             {
-                Assert.Warn("Missing environment vars required for log upload to blob store");
+                Assert.Warn("Missing environment variables required for log upload to blob store");
             }
         }
 
@@ -101,7 +108,7 @@ namespace E2eTesting
                         return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
-                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 2 * MAX_WAIT_TIME_SECONDS);
+                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 2 * _maxWaitTimeSeconds);
                     reportedResult.Wait();
                     var reportedStatus = reportedResult.Result;
 
@@ -120,7 +127,6 @@ namespace E2eTesting
 
             return success;
         }
-
 
         private bool PropertyExists(TwinCollection twinCollection, string componentName)
         {
@@ -179,7 +185,7 @@ namespace E2eTesting
         /// <typeparam name="T">The type of the desired value</typeparam>
         /// <param name="componentName">The name of the component</param>
         /// <param name="desiredValue">The desired value</param>
-        protected async Task SetDesired<T>(string componentName, T value, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
+        protected async Task SetDesired<T>(string componentName, T value, int maxWaitSeconds)
         {
             Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
 
@@ -217,6 +223,11 @@ namespace E2eTesting
             }
         }
 
+        protected Task SetDesired<T>(string componentName, T value)
+        {
+            return SetDesired<T>(componentName, value, _maxWaitTimeSeconds);
+        }
+
         /// <summary>
         /// Sets the desired value of the specified object within a component and waits for a reported property update.
         /// </summary>
@@ -226,7 +237,7 @@ namespace E2eTesting
         /// <param name="value"></param>
         /// <param name="maxWaitSeconds"></param>
         /// <returns>The response containing the acknowledged proprty update</returns>
-        protected async Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
+        protected async Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value, int maxWaitSeconds)
         {
             Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
 
@@ -266,6 +277,11 @@ namespace E2eTesting
             return Deserialize<GenericResponse<T>>(reported[componentName][objectName]);
         }
 
+        protected Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value)
+        {
+            return SetDesired<T>(componentName, objectName, value, _maxWaitTimeSeconds);
+        }
+
         /// <summary>
         /// Gets the last reported value of the specified component according to the given condition callback.
         /// </summary>
@@ -273,7 +289,7 @@ namespace E2eTesting
         /// <param name="componentName"></param>
         /// <param name="condition"></param>
         /// <param name="maxWaitSeconds"></param>
-        protected async Task<T> GetReported<T>(string componentName, Func<T, bool> condition, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
+        protected async Task<T> GetReported<T>(string componentName, Func<T, bool> condition, int maxWaitSeconds)
         {
             DateTime start = DateTime.Now;
             T reported = await LastReported<T>(componentName);
@@ -295,6 +311,11 @@ namespace E2eTesting
             return reported;
         }
 
+        protected Task<T> GetReported<T>(string componentName, Func<T, bool> condition)
+        {
+            return GetReported<T>(componentName, condition, _maxWaitTimeSeconds);
+        }
+
         /// <summary>
         /// Gets the last reported value of the specified object within a component according to the given condition callback.
         /// </summary>
@@ -303,7 +324,7 @@ namespace E2eTesting
         /// <param name="objectName"></param>
         /// <param name="condition"></param>
         /// <param name="maxWaitSeconds"></param>
-        protected async Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds = MAX_WAIT_TIME_SECONDS)
+        protected async Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds)
         {
             DateTime start = DateTime.Now;
             T reported = await LastReported<T>(componentName, objectName);
@@ -323,6 +344,11 @@ namespace E2eTesting
             }
 
             return reported;
+        }
+
+        protected Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition)
+        {
+            return GetReported<T>(componentName, objectName, condition, _maxWaitTimeSeconds);
         }
     }
 
