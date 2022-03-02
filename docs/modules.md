@@ -815,6 +815,8 @@ OSConfig will not attempt to parse and validate the payload and payloadSizeBytes
 
 The maximum size of payload will be limited to the size specified via MmiOpen if that's a non-zero value (0 meaning unlimited). For OSConfig the payload of the PnP requests translated into MMI calls must be size limited (the size of the Twin, the Azure clone of the device, is limited) and a 4KB (4,096 bytes) limit was chosen but this may change in the future. Other platforms calling into the module may not have such a limitation. If needed, the module must enforce this maximum limit and reject MmiSet calls with payloadSizeBytes greater than this maximum value (unless than maximum value is 0, unlimited).
 
+MmiSet may be called with the same payload several times. The module must be able to handle these calls either by applying the same desired payload every time or detect when the respective desired configuration was already applied and in that case return MMI_OK without reapplying that desired payload.
+
 ## 4.5. MmiGet
 
 MmiGet takes as input arguments a handle returned by MmiOpen, the name of the component, the name of the object, and returns via output arguments the reported object payload formatted as JSON (same format as for MmiSet), the size of value size and MMI_OK if success, NULL, 0 and an error code defined in errno.h if failure. On success, the caller requests the module to free the memory for the JSON payload with MmiFree.
