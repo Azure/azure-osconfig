@@ -9,7 +9,7 @@ parameters:
   - name: performSigning
     type: boolean
     displayName: 'Perform code signing'
-    default: false
+    default: true
 
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
