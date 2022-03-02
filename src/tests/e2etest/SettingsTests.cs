@@ -26,8 +26,6 @@ namespace E2eTesting
         }
 
         [Test]
-        // TODO: add more test cases
-        // [TestCase(1)]
         public async Task SettingsTest_DeviceHealthTelemtryConfiguration()
         {
             int desiredValue = 2;
@@ -35,14 +33,12 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(200, response.ac);
+                Assert.AreEqual(ACK_SUCCESS, response.ac);
                 Assert.AreEqual(desiredValue, response.value);
             });
         }
 
         [Test]
-        // TODO: add more test cases
-        // [TestCase(1)]
         public async Task SettingsTest_DeliveryOptimizationPolicies()
         {
             var desiredDeliveryOptimizationPolicies = new DeliveryOptimizationPolicies
@@ -57,7 +53,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(200, response.ac);
+                Assert.AreEqual(ACK_SUCCESS, response.ac);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.PercentageDownloadThrottle, response.value.PercentageDownloadThrottle);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostSource, response.value.CacheHostSource);
                 Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHost, response.value.CacheHost);
