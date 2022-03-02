@@ -23,7 +23,7 @@ namespace E2eTesting
             TpmNotDetected
         }
 
-        public partial class Tpm
+        public class Tpm
         {
             public string TpmVersion { get; set; }
             public string TpmManufacturer { get; set; }
@@ -33,17 +33,21 @@ namespace E2eTesting
         [Test]
         public async Task TpmTest_Get()
         {
-            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => {
-                return tpm.TpmVersion != null &&
-                       tpm.TpmManufacturer != null &&
-                       tpm.TpmStatus != TpmStatusCode.Unknown;
-            });
+            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => true);
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_tpmVersionPattern, reported.TpmVersion);
-                RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
-                RegexAssert.IsMatch(_tpmStatusPattern, reported.TpmStatus.ToString());
+                RegexAssert.IsMatch(_tpmStatusPattern, reported.TpmStatus);
+
+                if (!string.IsNullOrEmpty(reported.TpmVersion))
+                {
+                    RegexAssert.IsMatch(_tpmVersionPattern, reported.TpmVersion);
+                }
+
+                if (!string.IsNullOrEmpty(reported.TpmManufacturer))
+                {
+                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
+                }
             });
         }
     }
