@@ -18,9 +18,17 @@ RUN apt -y update && apt-get -y install \
     rapidjson-dev \
     ninja-build\
     wget \
-    gcovr
-RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-RUN dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb
-RUN apt update && apt install -y dotnet-sdk-5.0
-
-RUN apt install -y gdb
+    gcovr \
+    gdb \
+    ca-certificates \
+    \
+    # .NET dependencies
+    libc6 \
+    libgcc1 \
+    libgssapi-krb5-2 \
+    libicu66 \
+    libssl1.1 \
+    libstdc++6 \
+    zlib1g
+RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 5.0
+ENV PATH="${PATH}:/root/.dotnet"
