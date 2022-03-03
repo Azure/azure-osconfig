@@ -19,7 +19,7 @@ parameters:
 - name: TWIN_TIMEOUT
   displayName: 'Timeout for twin updates'
   type: number
-  default: 45
+  default: 90
 # - name: PRE_SCRIPT
 #   displayName: 'Shell script to execute before osconfig install'
 #   type: string
