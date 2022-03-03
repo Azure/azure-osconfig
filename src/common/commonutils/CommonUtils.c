@@ -896,6 +896,11 @@ char* GetOsName(void* log)
         FREE_MEMORY(textResult);
     }
 
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS name: '%s'", textResult);
+    }
+    
     return textResult;
 }
 
@@ -917,6 +922,11 @@ char* GetOsVersion(void* log)
         FREE_MEMORY(textResult);
     }
 
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS version: '%s'", textResult);
+    }
+
     return textResult;
 }
 
@@ -931,6 +941,11 @@ char* GetOsKernelName(void* log)
     else
     {
         FREE_MEMORY(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
     }
 
     return textResult;
@@ -949,6 +964,11 @@ char* GetOsKernelRelease(void* log)
         FREE_MEMORY(textResult);
     }
 
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
+    }
+
     return textResult;
 }
 
@@ -963,6 +983,11 @@ char* GetOsKernelVersion(void* log)
     else
     {
         FREE_MEMORY(textResult);
+    }
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
     }
     
     return textResult;
@@ -981,6 +1006,11 @@ char* GetCpu(void* log)
         FREE_MEMORY(textResult);
     }
     
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Processor: '%s'", textResult);
+    }
+
     return textResult;
 }
 
@@ -997,6 +1027,11 @@ char* GetProductName(void* log)
         FREE_MEMORY(textResult);
     }
     
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product name: '%s'", textResult);
+    }
+
     return textResult;
 }
 
@@ -1013,5 +1048,10 @@ char* GetProductVendor(void* log)
         FREE_MEMORY(textResult);
     }
     
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
+    }
+
     return textResult;
 }

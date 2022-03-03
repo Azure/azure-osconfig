@@ -52,7 +52,8 @@ static int g_protocol = PROTOCOL_AUTO;
 #define MIN_DEVICE_MODEL_ID 3
 #define MAX_DEVICE_MODEL_ID 999
 #define DEVICE_MODEL_ID_SIZE 40
-#define DEVICE_PRODUCT_INFO_SIZE 256
+#define DEVICE_PRODUCT_NAME_SIZE 128
+#define DEVICE_PRODUCT_INFO_SIZE 1024
 
 #define MAX_COMPONENT_NAME 256
 typedef struct REPORTED_PROPERTY
@@ -126,7 +127,10 @@ static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 static const char g_modelIdTemplate[] = "dtmi:osconfig:deviceosconfiguration;%d";
 static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 
-static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s";
+static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
+static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
+
+static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;
@@ -604,6 +608,11 @@ int main(int argc, char *argv[])
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
     pid_t pid = 0;
+    char* osName = NULL;
+    char* osVersion = NULL;
+    char* cpuType = NULL;
+    char* productName = NULL;
+    char* productVendor = NULL;
 
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
@@ -632,33 +641,6 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    char* osName = GetOsName(GetLog());
-    char* osVersion = GetOsVersion(GetLog());
-    char* osKernelName = GetOsKernelName(GetLog());
-    char* osKernelRelease = GetOsKernelRelease(GetLog());
-    char* osKernelVersion = GetOsKernelVersion(GetLog());
-    char* cpuType = GetCpu(GetLog());
-    char* productName = GetProductName(GetLog());
-    char* productVendor = GetProductVendor(GetLog());
-
-    OsConfigLogInfo(GetLog(), "OS name: '%s'", osName);
-    OsConfigLogInfo(GetLog(), "OS version: '%s'", osVersion);
-    OsConfigLogInfo(GetLog(), "Kernel name: '%s'", osKernelName);
-    OsConfigLogInfo(GetLog(), "Kernel release: '%s'", osKernelRelease);
-    OsConfigLogInfo(GetLog(), "Kernel version: '%s'", osKernelVersion);
-    OsConfigLogInfo(GetLog(), "Processor: '%s'", cpuType);
-    OsConfigLogInfo(GetLog(), "Product name: '%s'", productName);
-    OsConfigLogInfo(GetLog(), "Product vendor: '%s'", productVendor);
-
-    FREE_MEMORY(osName);
-    FREE_MEMORY(osVersion);
-    FREE_MEMORY(osKernelName);
-    FREE_MEMORY(osKernelRelease);
-    FREE_MEMORY(osKernelVersion);
-    FREE_MEMORY(cpuType);
-    FREE_MEMORY(productName);
-    FREE_MEMORY(productVendor);
-
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", g_configFile);
@@ -682,8 +664,23 @@ int main(int argc, char *argv[])
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
+    snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
+    OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
+
+    osName = GetOsName(GetLog());
+    osVersion = GetOsVersion(GetLog());
+    cpuType = GetCpu(GetLog());
+    productVendor = GetProductVendor(GetLog());
+    productName = GetProductName(GetLog());
+
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, cpuType, productVendor, productName);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
+
+    FREE_MEMORY(osName);
+    FREE_MEMORY(osVersion);
+    FREE_MEMORY(cpuType);
+    FREE_MEMORY(productName);
+    FREE_MEMORY(productVendor);
 
     OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
@@ -823,7 +820,7 @@ int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVID
     }
 
     // Open the MPI session for this PnP Module instance:
-    if (NULL == (g_mpiHandle = CallMpiOpen(g_productInfo, g_maxPayloadSizeBytes)))
+    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
         LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
         g_exitState = MpiInitializationFailure;
