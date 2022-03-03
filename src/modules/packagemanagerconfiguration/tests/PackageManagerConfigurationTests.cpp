@@ -85,7 +85,7 @@ namespace OSConfig::Platform::Tests
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
             {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{},\"ExecutionState\":\"Unknown\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"SourcesFilenames\":[]}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[],\"ExecutionState\":\"Unknown\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"SourcesFilenames\":[]}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -114,7 +114,7 @@ namespace OSConfig::Platform::Tests
             {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
             {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"3.03+dfsg2-7\",\"sl\":\"5.02-1\"},\"ExecutionState\":\"Succeeded\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[\"cowsay=3.03+dfsg2-7\",\"sl=5.02-1\",\"bar=(none)\"],\"ExecutionState\":\"Succeeded\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
 
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -145,7 +145,7 @@ namespace OSConfig::Platform::Tests
             {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
             {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"(none)\",\"sl\":\"(none)\"},\"ExecutionState\":\"Failed_UpdatingPackagesSources\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"ExecutionState\":\"Failed_UpdatingPackagesSources\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         mkdir(sourcesDir.c_str(), 0775);
@@ -176,7 +176,7 @@ namespace OSConfig::Platform::Tests
             {"cat sources/key.list | sha256sum | head -c 64", "75c083f0e21449c1fd860cb64b12ea7442b479464d0aae1ade5ec4d15483b870"},
             {"find sources -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877"}
         };
-        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":{\"bar\":\"(none)\",\"cowsay\":\"(none)\",\"sl\":\"(none)\"},\"ExecutionState\":\"TimedOut_InstallingPackages_{cowsay=3.03+dfsg2-7 sl}\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
+        char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"ExecutionState\":\"TimedOut_InstallingPackages_{cowsay=3.03+dfsg2-7 sl}\",\"SourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"SourcesFilenames\":[\"key\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         mkdir(sourcesDir.c_str(), 0775);
