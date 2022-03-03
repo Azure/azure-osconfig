@@ -410,13 +410,12 @@ int PackageManagerConfigurationBase::SerializeState(State reportedState, MMI_JSO
     writer.String(reportedState.packagesFingerprint.c_str());
 
     writer.Key(g_packages.c_str());
-    writer.StartObject();
-    for (auto& pair : reportedState.packages)
+    writer.StartArray();
+    for (auto& element : reportedState.packages)
     {
-        writer.Key(pair.first.c_str());
-        writer.String(pair.second.c_str());
+        writer.String(element.c_str());
     }
-    writer.EndObject();
+    writer.EndArray();
 
     writer.Key(g_executionState.c_str());
     writer.String(reportedState.executionState.c_str());
@@ -512,9 +511,9 @@ std::vector<std::string> PackageManagerConfigurationBase::Split(const std::strin
     return result;
 }
 
-std::map<std::string, std::string> PackageManagerConfigurationBase::GetReportedPackages(std::vector<std::string> packages)
+std::vector<std::string> PackageManagerConfigurationBase::GetReportedPackages(std::vector<std::string> packages)
 {
-    std::map<std::string, std::string> result;
+    std::vector<std::string> result;
     int status;
     for (auto& packageName : packages)
     {
@@ -528,7 +527,8 @@ std::map<std::string, std::string> PackageManagerConfigurationBase::GetReportedP
         }
 
         std::string version = !rawVersion.empty() ? Split(rawVersion, ":")[1] : "(failed)";
-        result[packageName] = Trim(version, " ");
+        std::string packageElement = packageName + "=" + Trim(version, " ");
+        result.push_back(packageElement);
     }
 
   return result;

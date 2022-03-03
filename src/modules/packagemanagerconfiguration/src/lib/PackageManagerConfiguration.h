@@ -52,7 +52,7 @@ public:
     {
         std::string executionState;
         std::string packagesFingerprint;
-        std::map<std::string, std::string> packages;
+        std::vector<std::string> packages;
         std::string sourcesFingerprint;
         std::vector<std::string> sourcesFilenames;
     };
@@ -72,7 +72,7 @@ private:
     int ExecuteUpdates(const std::vector<std::string> packages);
     int ConfigureSources(const std::map<std::string, std::string> sources);
     std::string GetFingerprint();
-    std::map<std::string, std::string> GetReportedPackages(std::vector<std::string> packages);
+    std::vector<std::string> GetReportedPackages(std::vector<std::string> packages);
     std::string GetSourcesFingerprint(std::string sourcesDir);
     std::vector<std::string> GetSourcesFilenames();
     int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
