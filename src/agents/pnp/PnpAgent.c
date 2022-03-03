@@ -632,6 +632,33 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
+    char* osName = GetOsName(GetLog());
+    char* osVersion = GetOsVersion(GetLog());
+    char* osKernelName = GetOsKernelName(GetLog());
+    char* osKernelRelease = GetOsKernelRelease(GetLog());
+    char* osKernelVersion = GetOsKernelVersion(GetLog());
+    char* cpuType = GetCpu(GetLog());
+    char* productName = GetProductName(GetLog());
+    char* productVendor = GetProductVendor(GetLog());
+
+    OsConfigLogInfo(GetLog(), "OS name: %s", osName);
+    OsConfigLogInfo(GetLog(), "OS version: %s", osVersion);
+    OsConfigLogInfo(GetLog(), "Kernel name: %s", osKernelName);
+    OsConfigLogInfo(GetLog(), "Kernel release: %s", osKernelRelease);
+    OsConfigLogInfo(GetLog(), "Kernel version: %s", osKernelVersion);
+    OsConfigLogInfo(GetLog(), "Processor: %s", cpuType);
+    OsConfigLogInfo(GetLog(), "Product name: %s", productName);
+    OsConfigLogInfo(GetLog(), "Product vendor: %s", productVendor);
+
+    FREE_MEMORY(osName);
+    FREE_MEMORY(osVersion);
+    FREE_MEMORY(osKernelName);
+    FREE_MEMORY(osKernelRelease);
+    FREE_MEMORY(osKernelVersion);
+    FREE_MEMORY(cpuType);
+    FREE_MEMORY(productName);
+    FREE_MEMORY(productVendor);
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", g_configFile);
