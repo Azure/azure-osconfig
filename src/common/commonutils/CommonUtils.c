@@ -26,6 +26,16 @@
 #define COMMAND_SIGNAL_INTERVAL 25000 //microseconds
 #define DEFAULT_COMMAND_TIMEOUT 60 //seconds
 
+#define OS_NAME_COMMAND "sudo cat /etc/os-release | grep ID="
+#define OS_PRETTY_NAME_COMMAND "sudo cat /etc/os-release | grep PRETTY_NAME="
+#define OS_VERSION_COMMAND "sudo cat /etc/os-release | grep VERSION="
+#define OS_KERNEL_NAME_COMMAND "uname -s"
+#define OS_KERNEL_RELEASE_COMMAND "uname -r"
+#define OS_KERNEL_VERSION_COMMAND "uname -v"
+#define OS_CPU_COMMAND "uname -p"
+#define OS_PRODUCT_NAME_COMMAND "sudo cat /sys/devices/virtual/dmi/id/product_name"
+#define OS_PRODUCT_VENDOR_COMMAND "sudo cat /sys/devices/virtual/dmi/id/sys_vendor"
+
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
 static const char g_commandTerminator[] = " 2>&1";
@@ -785,18 +795,6 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     return result;
 }
 
-#define OS_NAME_COMMAND "sudo cat /etc/os-release | grep ID="
-#define OS_VERSION_COMMAND "sudo cat /etc/os-release | grep VERSION="
-//#define OS_VARIANT_ID_COMMAND "sudo cat/etc/os - release | grep VARIANT_ID="
-//#define OS_BUILD_ID_COMMAND "sudo cat/etc/os - release | grep BUILD_ID="
-#define OS_KERNEL_NAME_COMMAND "uname -s"
-#define OS_KERNEL_RELEASE_COMMAND "uname -r"
-#define OS_KERNEL_VERSION_COMMAND "uname -v"
-#define OS_CPU_COMMAND "uname -p"
-#define OS_PRODUCT_NAME_COMMAND "sudo cat /sys/devices/virtual/dmi/id/product_name"
-#define OS_PRODUCT_VENDOR_COMMAND "sudo cat /sys/devices/virtual/dmi/id/sys_vendor"
-//#define OS_RELEASE_COMMAND "/etc/os-release sudo cat /etc/os-release"
-
 static void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
@@ -873,18 +871,31 @@ char* GetOsName(void* log)
 {
     char* textResult = NULL;
     char* postEqual = NULL;
-    if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+
+    if (0 == ExecuteCommand(NULL, OS_PRETTY_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        
+        // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
+        TruncateAtFirstSpace(textResult);
+    }
+    else if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        // PRETTY_NAME did not work, try ID
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
         RemovePrefixLabel(textResult);
         RemovePrefixBlanks(textResult);
         TruncateAtFirstSpace(textResult);
     }
-    else
+    else    
     {
         FREE_MEMORY(textResult);
     }
+
     return textResult;
 }
 
@@ -892,6 +903,7 @@ char* GetOsVersion(void* log)
 {
     char* textResult = NULL;
     char* postEqual = NULL;
+
     if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemovePrefixBlanks(textResult);
@@ -904,12 +916,14 @@ char* GetOsVersion(void* log)
     {
         FREE_MEMORY(textResult);
     }
+
     return textResult;
 }
 
 char* GetOsKernelName(void* log)
 {
     char* textResult = NULL;
+
     if (0 == ExecuteCommand(NULL, OS_KERNEL_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -918,12 +932,14 @@ char* GetOsKernelName(void* log)
     {
         FREE_MEMORY(textResult);
     }
+
     return textResult;
 }
 
 char* GetOsKernelRelease(void* log)
 {
     char* textResult = NULL;
+
     if (0 == ExecuteCommand(NULL, OS_KERNEL_RELEASE_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -932,12 +948,14 @@ char* GetOsKernelRelease(void* log)
     {
         FREE_MEMORY(textResult);
     }
+
     return textResult;
 }
 
 char* GetOsKernelVersion(void* log)
 {
     char* textResult = NULL;
+
     if (0 == ExecuteCommand(NULL, OS_KERNEL_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -946,12 +964,14 @@ char* GetOsKernelVersion(void* log)
     {
         FREE_MEMORY(textResult);
     }
+    
     return textResult;
 }
 
 char* GetCpu(void* log)
 {
     char* textResult = NULL;
+    
     if (0 == ExecuteCommand(NULL, OS_CPU_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -960,12 +980,14 @@ char* GetCpu(void* log)
     {
         FREE_MEMORY(textResult);
     }
+    
     return textResult;
 }
 
 char* GetProductName(void* log)
 {
     char* textResult = NULL;
+    
     if (0 == ExecuteCommand(NULL, OS_PRODUCT_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -974,12 +996,14 @@ char* GetProductName(void* log)
     {
         FREE_MEMORY(textResult);
     }
+    
     return textResult;
 }
 
 char* GetProductVendor(void* log)
 {
     char* textResult = NULL;
+    
     if (0 == ExecuteCommand(NULL, OS_PRODUCT_VENDOR_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         RemoveTrailingBlanks(textResult);
@@ -988,5 +1012,6 @@ char* GetProductVendor(void* log)
     {
         FREE_MEMORY(textResult);
     }
+    
     return textResult;
 }
