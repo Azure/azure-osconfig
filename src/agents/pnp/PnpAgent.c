@@ -641,14 +641,14 @@ int main(int argc, char *argv[])
     char* productName = GetProductName(GetLog());
     char* productVendor = GetProductVendor(GetLog());
 
-    OsConfigLogInfo(GetLog(), "OS name: %s", osName);
-    OsConfigLogInfo(GetLog(), "OS version: %s", osVersion);
-    OsConfigLogInfo(GetLog(), "Kernel name: %s", osKernelName);
-    OsConfigLogInfo(GetLog(), "Kernel release: %s", osKernelRelease);
-    OsConfigLogInfo(GetLog(), "Kernel version: %s", osKernelVersion);
-    OsConfigLogInfo(GetLog(), "Processor: %s", cpuType);
-    OsConfigLogInfo(GetLog(), "Product name: %s", productName);
-    OsConfigLogInfo(GetLog(), "Product vendor: %s", productVendor);
+    OsConfigLogInfo(GetLog(), "OS name: '%s'", osName);
+    OsConfigLogInfo(GetLog(), "OS version: '%s'", osVersion);
+    OsConfigLogInfo(GetLog(), "Kernel name: '%s'", osKernelName);
+    OsConfigLogInfo(GetLog(), "Kernel release: '%s'", osKernelRelease);
+    OsConfigLogInfo(GetLog(), "Kernel version: '%s'", osKernelVersion);
+    OsConfigLogInfo(GetLog(), "Processor: '%s'", cpuType);
+    OsConfigLogInfo(GetLog(), "Product name: '%s'", productName);
+    OsConfigLogInfo(GetLog(), "Product vendor: '%s'", productVendor);
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);

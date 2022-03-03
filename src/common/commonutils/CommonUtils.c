@@ -785,8 +785,8 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     return result;
 }
 
-#define OS_NAME_COMMAND "sudo cat/etc/os-release | grep ID="
-#define OS_VERSION_COMMAND "sudo cat/etc/os - release | grep VERSION="
+#define OS_NAME_COMMAND "sudo cat /etc/os-release | grep ID="
+#define OS_VERSION_COMMAND "sudo cat /etc/os-release | grep VERSION="
 //#define OS_VARIANT_ID_COMMAND "sudo cat/etc/os - release | grep VARIANT_ID="
 //#define OS_BUILD_ID_COMMAND "sudo cat/etc/os - release | grep BUILD_ID="
 #define OS_KERNEL_NAME_COMMAND "uname -s"
@@ -794,13 +794,56 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 #define OS_KERNEL_VERSION_COMMAND "uname -v"
 #define OS_CPU_COMMAND "uname -p"
 #define OS_PRODUCT_NAME_COMMAND "sudo cat /sys/devices/virtual/dmi/id/product_name"
-#define OS_PRODUCT_VENDOR_COMMAND "sudo cat/sys/devices/virtual/dmi/id/sys_vendor"
+#define OS_PRODUCT_VENDOR_COMMAND "sudo cat /sys/devices/virtual/dmi/id/sys_vendor"
 //#define OS_RELEASE_COMMAND "/etc/os-release sudo cat /etc/os-release"
+
+static void RemoveTrailingBlanks(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength = (int)strlen(target);
+    int i = targetLength;
+
+    while ((i > 0) && (' ' == target[i - 1]))
+    {
+        target[i - 1] = 0;
+        i -= 1;
+    }
+}
+
+/*static char* RemovePrefixBlanks(char* target)
+{
+    if (NULL == target)
+    {
+        return NULL;
+    }
+
+    char* modifiedTarget = target;
+    int targetLength = (int)strlen(target);
+    int i = 0;
+
+    while ((i < targetLength) && (' ' == target[i]))
+    {
+        modifiedTarget += 1;
+        i += 1;
+    }
+
+    return modifiedTarget;
+}*/
 
 char* GetOsName(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_NAME_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+        //textResult = strchr(textResult, '=');
+        //textResult = RemovePrefixBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -810,7 +853,13 @@ char* GetOsName(void* log)
 char* GetOsVersion(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_VERSION_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+        //textResult = strchr(textResult, '=');
+        //textResult = RemovePrefixBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -820,7 +869,11 @@ char* GetOsVersion(void* log)
 char* GetOsKernelName(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_KERNEL_NAME_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_KERNEL_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -830,7 +883,11 @@ char* GetOsKernelName(void* log)
 char* GetOsKernelRelease(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_KERNEL_RELEASE_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_KERNEL_RELEASE_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -840,7 +897,11 @@ char* GetOsKernelRelease(void* log)
 char* GetOsKernelVersion(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_KERNEL_VERSION_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_KERNEL_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -850,7 +911,11 @@ char* GetOsKernelVersion(void* log)
 char* GetCpu(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_CPU_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_CPU_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -860,7 +925,11 @@ char* GetCpu(void* log)
 char* GetProductName(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_PRODUCT_NAME_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_PRODUCT_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
@@ -870,7 +939,11 @@ char* GetProductName(void* log)
 char* GetProductVendor(void* log)
 {
     char* textResult = NULL;
-    if (0 != ExecuteCommand(NULL, OS_PRODUCT_VENDOR_COMMAND, false, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, OS_PRODUCT_VENDOR_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemoveTrailingBlanks(textResult);
+    }
+    else
     {
         FREE_MEMORY(textResult);
     }
