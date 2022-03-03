@@ -797,6 +797,44 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
 #define OS_PRODUCT_VENDOR_COMMAND "sudo cat /sys/devices/virtual/dmi/id/sys_vendor"
 //#define OS_RELEASE_COMMAND "/etc/os-release sudo cat /etc/os-release"
 
+static void RemovePrefixBlanks(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength =(int)strlen(target);
+    int i = 0;
+    
+    while ((i < targetLength) && (' ' == target[i]))
+    {
+        i += 1;
+    }
+
+    memcpy(target, target + i, targetLength - i);
+    target[targetLength - i] = 0;
+}
+
+static void RemovePrefixLabel(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength =(int)strlen(target);
+    int i = 0;
+    char* equalSign = strchr(target, '=');
+
+    if (equalSign)
+    {
+        targetLength = strlen(equalSign + 1);
+        memcpy(target, equalSign + 1, targetLength);
+        target[targetLength] = 0;
+    }
+}
+
 static void RemoveTrailingBlanks(char* target)
 {
     if (NULL == target)
@@ -814,34 +852,34 @@ static void RemoveTrailingBlanks(char* target)
     }
 }
 
-/*static char* RemovePrefixBlanks(char* target)
+static void TruncateAtFirstSpace(char* target)
 {
     if (NULL == target)
     {
-        return NULL;
+        return;
     }
 
-    char* modifiedTarget = target;
-    int targetLength = (int)strlen(target);
+    int targetLength =(int)strlen(target);
     int i = 0;
+    char* space = strchr(target, ' ');
 
-    while ((i < targetLength) && (' ' == target[i]))
+    if (space)
     {
-        modifiedTarget += 1;
-        i += 1;
+        space[0] = 0;
     }
-
-    return modifiedTarget;
-}*/
+}
 
 char* GetOsName(void* log)
 {
     char* textResult = NULL;
+    char* postEqual = NULL;
     if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
+        RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        //textResult = strchr(textResult, '=');
-        //textResult = RemovePrefixBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirstSpace(textResult);
     }
     else
     {
@@ -853,11 +891,14 @@ char* GetOsName(void* log)
 char* GetOsVersion(void* log)
 {
     char* textResult = NULL;
+    char* postEqual = NULL;
     if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
+        RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        //textResult = strchr(textResult, '=');
-        //textResult = RemovePrefixBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirstSpace(textResult);
     }
     else
     {
