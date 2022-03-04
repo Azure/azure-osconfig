@@ -1024,3 +1024,68 @@ char* GetProductVendor(void* log)
 
     return textResult;
 }
+
+
+char* UrlEncode(char* target)
+{
+    if (NULL == target)
+    {
+        return NULL;
+    }
+
+    int i = 0;
+    char encodedCharacter[3] = {0};
+    int targetLength = (int)strlen(target);
+    int encodedLength = 3 * targetLength;
+    char* encodedTarget = (char*)malloc(encodedLength);
+    if (NULL != encodedTarget)
+    {
+        memset(encodedTarget, 0, encodedLength);
+
+        for (i = 0; i < targetLength; i++)
+        {
+            if ((isalnum(target[i])) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
+            {
+                encodedTarget[i] = target[i];
+            }
+            else if (' ' == target[i])
+            {
+                encodedTarget[i] = '+';
+            }
+            else
+            {
+                // format to "%%%02x" with value of character
+                snprintf(encodedCharacter, sizeof(encodedCharacter), "%%%02x", target[i]);
+                i += 2;
+            }
+        }
+    }
+
+    return encodedTarget;
+}
+
+char rfc3986[256] = { 0 };
+char html5[256] = { 0 };
+
+void url_encoder_rfc_tables_init(){
+
+    int i;
+
+    for (i = 0; i < 256; i++){
+
+        rfc3986[i] = isalnum(i) || i == '~' || i == '-' || i == '.' || i == '_' ? i : 0;
+        html5[i] = isalnum(i) || i == '*' || i == '-' || i == '.' || i == '_' ? i : (i == ' ') ? '+' : 0;
+    }
+}
+
+char *url_encode(char *table, unsigned char *s, char *enc){
+
+    for (; *s; s++){
+
+        if (table[*s]) *enc = table[*s];
+        else sprintf(enc, "%%%02X", *s);
+        while (*++enc);
+    }
+
+    return(enc);
+}

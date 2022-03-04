@@ -130,7 +130,8 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;";
+//static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;";
+static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s (\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;
@@ -858,7 +859,7 @@ static void LoadDesiredConfigurationFromFile()
         // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
         if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
         {
-            if (MPI_OK == CallMpiSetDesired(g_productInfo, (MPI_JSON_STRING)payload, payloadSizeBytes))
+            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
             {
                 g_desiredHash = payloadHash;
             }
@@ -876,7 +877,7 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localReporting)
     {
-        mpiResult = CallMpiGetReported(g_productInfo, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
