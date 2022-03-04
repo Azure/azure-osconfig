@@ -130,8 +130,11 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-//static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;";
-static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s (\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
+// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;"
+static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
+    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&"
+    "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
+    "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;

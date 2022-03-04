@@ -835,4 +835,6 @@ TEST_F(CommonUtilsTest, UrlEncode)
         EXPECT_STREQ(encodedUrl, validEncodedUrls[i].expected);
         FREE_MEMORY(encodedUrl);
     }
+
+    EXPECT_EQ(nullptr, encodedUrl = UrlEncode(nullptr));
 }

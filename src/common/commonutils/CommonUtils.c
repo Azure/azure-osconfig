@@ -950,12 +950,7 @@ static char* GetAnotherOsProperty(const char* command, void* log)
 char* GetOsKernelName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_NAME_COMMAND, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
-    }
-
+    OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
     return textResult;
 }
 
