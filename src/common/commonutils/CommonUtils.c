@@ -26,15 +26,15 @@
 #define COMMAND_SIGNAL_INTERVAL 25000 //microseconds
 #define DEFAULT_COMMAND_TIMEOUT 60 //seconds
 
-#define OS_NAME_COMMAND "sudo cat /etc/os-release | grep ID="
-#define OS_PRETTY_NAME_COMMAND "sudo cat /etc/os-release | grep PRETTY_NAME="
-#define OS_VERSION_COMMAND "sudo cat /etc/os-release | grep VERSION="
+#define OS_NAME_COMMAND "cat /etc/os-release | grep ID="
+#define OS_PRETTY_NAME_COMMAND "cat /etc/os-release | grep PRETTY_NAME="
+#define OS_VERSION_COMMAND "cat /etc/os-release | grep VERSION="
 #define OS_KERNEL_NAME_COMMAND "uname -s"
 #define OS_KERNEL_RELEASE_COMMAND "uname -r"
 #define OS_KERNEL_VERSION_COMMAND "uname -v"
 #define OS_CPU_COMMAND "uname -p"
-#define OS_PRODUCT_NAME_COMMAND "sudo cat /sys/devices/virtual/dmi/id/product_name"
-#define OS_PRODUCT_VENDOR_COMMAND "sudo cat /sys/devices/virtual/dmi/id/sys_vendor"
+#define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
+#define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
