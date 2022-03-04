@@ -21,12 +21,13 @@ if ! [ -x "$(command -v gpg)" ]; then
   echo 'Error: gpg is not installed.' >&2
   exit 1
 fi
-key=`mktemp`
+trap 'rm -rf "$tempdir"' EXIT
+tempdir=`mktemp -d`
+key=$tempdir/key.asc
 
 # Download and import the MSFT (Release signing) key
 curl -sSL https://packages.microsoft.com/keys/microsoft.asc --output $key
 gpg --import $key
-tempdir=`mktemp -d`
 
 # Extract Debian file
 ar -x $1 --output $tempdir
@@ -36,4 +37,4 @@ cat $tempdir/debian-binary $tempdir/control.tar.gz $tempdir/data.tar.gz > $tempd
 
 # Verify keys
 gpg --verify $tempdir/_gpgorigin $tempdir/combined-contents
-[ $? -eq 0 ] && echo "\n VALID Microsoft Signature" || echo "\nINVALID Microsoft Signature!" >&2
+[ $? -eq 0 ] && echo "\n VALID Microsoft Signature" || (echo "\nINVALID Microsoft Signature!" >&2 && exit 1)
