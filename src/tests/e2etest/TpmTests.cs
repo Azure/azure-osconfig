@@ -2,55 +2,53 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using Microsoft.Azure.Devices;
-using System.Text.Json;
-using System;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
-    public class TpmTests : E2eTest
+    [TestFixture, Category("Tpm")]
+    public class TpmTests : E2ETest
     {
-        readonly string ComponentName = "Tpm";
+        private static readonly string _componentName = "Tpm";
+
+        private static readonly Regex _tpmVersionPattern = new Regex(@"((\d+)\.)?((\d+))");
+        private static readonly Regex _tpmManufacturerPattern = new Regex(@"^[A-Za-z]([0-9a-zA-Z\s]+)?[^\s]$");
+        private static readonly Regex _tpmStatusPattern = new Regex(@"[0-2]");
+
         public enum TpmStatusCode
         {
             Unknown = 0,
             TpmDetected,
             TpmNotDetected
         }
-        public partial class Tpm
+
+        public class Tpm
         {
             public string TpmVersion { get; set; }
             public string TpmManufacturer { get; set; }
             public TpmStatusCode TpmStatus { get; set; }
         }
-        public partial class ExpectedTpmPattern
-        {
-            public Regex TpmVersionPattern { get; set; }
-            public Regex TpmManufacturerPattern { get; set; }
-            public Regex TpmStatusPattern { get; set; }
-        }
 
         [Test]
-        public void TpmTest()
+        public async Task TpmTest_Get()
         {
-            var expectedTpmPattern = new ExpectedTpmPattern
-            {
-                TpmVersionPattern = new Regex(@"((\d+)\.)?((\d+))"),
-                TpmManufacturerPattern = new Regex(@"^[A-Za-z]([0-9a-zA-Z\s]+)?[^\s]$"),
-                TpmStatusPattern = new Regex(@"[0-2]")
-            };
-            var deserializedReportedObject = JsonSerializer.Deserialize<Tpm>(GetTwin().Properties.Reported[ComponentName].ToString());
+            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => true);
 
-            if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
+            Assert.Multiple(() =>
             {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
+                RegexAssert.IsMatch(_tpmStatusPattern, reported.TpmStatus);
 
-            Assert.True(IsRegexMatch(expectedTpmPattern.TpmStatusPattern, deserializedReportedObject.TpmStatus));
-            Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmVersion) || IsRegexMatch(expectedTpmPattern.TpmVersionPattern, deserializedReportedObject.TpmVersion));
-            Assert.True(String.IsNullOrEmpty(deserializedReportedObject.TpmManufacturer) || IsRegexMatch(expectedTpmPattern.TpmManufacturerPattern, deserializedReportedObject.TpmManufacturer));
+                if (!string.IsNullOrEmpty(reported.TpmVersion))
+                {
+                    RegexAssert.IsMatch(_tpmVersionPattern, reported.TpmVersion);
+                }
+
+                if (!string.IsNullOrEmpty(reported.TpmManufacturer))
+                {
+                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
+                }
+            });
         }
     }
 }

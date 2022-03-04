@@ -2,136 +2,76 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices;
-using System.Text.Json;
 using System;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
-    [TestFixture]
-    public class HostNameTests : E2eTest
-    {   
-        string ComponentName = "HostName";
-        public partial class HostName
+
+    [TestFixture, Category("HostName")]
+    public class HostNameTests : E2ETest
+    {
+        private static readonly string _componentName = "HostName";
+        private static readonly string _desiredHostName = "DesiredName";
+        private static readonly string _desiredHosts = "DesiredHosts";
+
+        private static Regex _namePattern = new Regex(@"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])");
+        private static Regex _hostsPattern = new Regex(@"(((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))))( +((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])))+");
+
+        public class HostName
         {
             public string Name { get; set; }
             public string Hosts { get; set; }
         }
-        public partial class DesiredHostName
+
+        public class DesiredHostName
         {
             public string DesiredName { get; set; }
             public string DesiredHosts { get; set; }
         }
 
-        public partial class ResponseCode
+        [Test]
+        public async Task HostNameTest_Get()
         {
-            public int ac { get; set; }
-        }
-        public partial class ExpectedHostNamePattern
-        {
-            public Regex NamePattern { get; set; }
-            public Regex HostsPattern { get; set; }
-        }
-        private int m_twinTimeoutSeconds;
+            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => (hostname.Name != null) && (hostname.Hosts != null));
 
-        [SetUp]
-        public void TestSetUp()
-        {
-            m_twinTimeoutSeconds = base.twinTimeoutSeconds;
-            base.twinTimeoutSeconds = base.twinTimeoutSeconds * 2;
-        }
-
-        [TearDown]
-        public void TestTearDown()
-        {
-            base.twinTimeoutSeconds = m_twinTimeoutSeconds;
-        }
-
-        [Test]      
-        public void HostNameTest_Get()
-        {
-            var expectedHostNamePattern = new ExpectedHostNamePattern
+            Assert.Multiple(() =>
             {
-                NamePattern = new Regex(@"(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])"),
-                HostsPattern = new Regex(@"(((([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]))|((([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|[fF][eE]80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::([fF][eE]{4}(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))))( +((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])))+")
-            };
-
-            if ((GetTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
-            HostName deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
-
-            Assert.True(IsRegexMatch(expectedHostNamePattern.NamePattern, deserializedReportedObject.Name));
-            Assert.True(IsRegexMatch(expectedHostNamePattern.HostsPattern, deserializedReportedObject.Hosts));
+                RegexAssert.IsMatch(_namePattern, reported.Name);
+                RegexAssert.IsMatch(_hostsPattern, reported.Hosts);
+            });
         }
 
         [Test]
-        public void HostNameTest_Set_Get()
+        public async Task HostNameTest_Set()
         {
-            var desiredHostName = new DesiredHostName
+            var desired = new DesiredHostName
             {
                 DesiredName = "TestHost",
                 DesiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
             };
 
-            var expectedHostName = new HostName
+            await SetDesired<DesiredHostName>(_componentName, desired);
+
+            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.ac == ACK_SUCCESS;
+
+            var desiredNameTask = GetReported<GenericResponse<string>>(_componentName, _desiredHostName, condition);
+            desiredNameTask.Wait();
+            var desiredHostsTask = GetReported<GenericResponse<string>>(_componentName, _desiredHosts, condition);
+            desiredHostsTask.Wait();
+
+            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => {
+                return (hostname.Name == desired.DesiredName) && (hostname.Hosts == desired.DesiredHosts);
+            });
+
+            Assert.Multiple(() =>
             {
-                Name = desiredHostName.DesiredName,
-                Hosts = desiredHostName.DesiredHosts
-            };
-
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
-
-            HostName deserializedReportedObject = JsonSerializer.Deserialize<HostName>(GetTwin().Properties.Reported[ComponentName].ToString());
-
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
-            int count = 2;
-            while (count-- > 0)
-            {
-                if (count == 0)
-                {
-                    desiredHostName.DesiredName = deserializedReportedObject.Name;
-                    desiredHostName.DesiredHosts = deserializedReportedObject.Hosts;
-                    expectedHostName.Name = desiredHostName.DesiredName;
-                    expectedHostName.Hosts = desiredHostName.DesiredHosts;
-                    twinPatch = CreateTwinPatch(ComponentName, desiredHostName);
-                }
-
-                if (UpdateTwinBlockUntilUpdate(twinPatch))
-                {
-                    HostName reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                    // Wait until the reported properties are updated
-                    DateTime startTime = DateTime.Now;
-                    while(reportedObject.Name != desiredHostName.DesiredName && (DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds)
-                    {
-                        Console.WriteLine("[HostNameTests] waiting for twin to be updated...");
-                        Task.Delay(twinRefreshIntervalMs).Wait();
-                        reportedObject = JsonSerializer.Deserialize<HostName>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-                    }
-
-                    AreEqualByJson(expectedHostName, reportedObject);
-                    string desiredName = "DesiredName";
-                    string desiredHosts = "DesiredHosts";
-                    int responseCodeSuccess = 200;
-                    var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredName].ToString());
-                    Assert.True(responseObject.ac == responseCodeSuccess);
-                    responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredHosts].ToString());
-                    Assert.True(responseObject.ac == responseCodeSuccess);
-                }
-                else
-                {
-                    Assert.Fail("Timeout for updating twin");
-                }
-            }
+                Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.ac);
+                Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.ac);
+                Assert.AreEqual(desired.DesiredName, reported.Name);
+                Assert.AreEqual(desired.DesiredHosts, reported.Hosts);
+            });
         }
     }
 }
