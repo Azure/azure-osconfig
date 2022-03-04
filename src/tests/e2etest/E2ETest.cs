@@ -1,294 +1,376 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Linq;
-using NUnit.Framework;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using NUnit.Framework;
+using System;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
     [TestFixture]
-    public class E2eTest
+    public abstract class E2ETest
     {
-        // Local testing: populate and uncomment string below
-        // private string iotHubConnectionString = "HostName=<iot-hub>.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=<secret>";
-        private string iotHubConnectionString = Environment.GetEnvironmentVariable("E2E_OSCONFIG_IOTHUB_CONNSTR");
-        // Local testing: populate and uncomment the string below
-        // private string _deviceId = "ubuntu2004";
-        private string deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
-        private readonly string moduleId = "osconfig";
-        protected int twinTimeoutSeconds = 0;
+        private RegistryManager _registryManager;
 
-        // 30 minutes
-        private int twinTimeoutSecondsDefault = 60 * 30;
+        private readonly string _iotHubConnectionString = Environment.GetEnvironmentVariable("E2E_OSCONFIG_IOTHUB_CONNSTR")?.Trim('"');
+        private readonly string _moduleId = "osconfig";
+        private readonly string _deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
 
-        // 0.5 seconds
-        public readonly int twinRefreshIntervalMs = 500;
+        private readonly string _sasToken = Environment.GetEnvironmentVariable("E2E_OSCONFIG_SAS_TOKEN");
+        private readonly string _uploadUrl = Environment.GetEnvironmentVariable("E2E_OSCONFIG_UPLOAD_URL")?.Trim('\"');
+        private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
 
-        private ServiceClient _serviceClient;
-        protected RegistryManager _registryManager;
-        // vars needed to upload to blob store
-        private string sas_token = null;
-        private string upload_url = null;
-        private string resource_group_name = null;
+        private const int POLL_INTERVAL_MS = 1000;
+        private const int DEFAULT_MAX_WAIT_SECONDS = 90;
+        private int _maxWaitTimeSeconds = DEFAULT_MAX_WAIT_SECONDS;
 
-        private Twin twin;
+        protected const int ACK_SUCCESS = 200;
+        protected const int ACK_ERROR = 400;
 
-        public String DeviceId
+        public class GenericResponse<T>
         {
-            get { return deviceId; }
-        }
-
-        public void SetTwinTimeoutSeconds(int seconds)
-        {
-            twinTimeoutSeconds = seconds;
-        }
-
-        public void AssertModuleConnected()
-        {
-            if ((GetNewTwin().ConnectionState == DeviceConnectionState.Disconnected) || (GetTwin().Status == DeviceStatus.Disabled))
-            {
-                Assert.Fail("Module is disconnected or is disabled");
-            }
+            public T value { get; set; }
+            public int ac { get; set; }
         }
 
         [OneTimeSetUp]
-        public void Setup()
+        public void OneTimeSetUp()
         {
-            Console.WriteLine("[Setup] Setting up connection to IoTHub");
+            _registryManager = RegistryManager.CreateFromConnectionString(_iotHubConnectionString);
 
-            if (null == iotHubConnectionString)
+            if (null != Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"))
             {
-                Assert.Fail("Missing required environment variable 'E2E_OSCONFIG_IOTHUB_CONNSTR'");
-
-            }
-            if (null == deviceId)
-            {
-                Assert.Fail("Missing required environment variable 'E2E_OSCONFIG_DEVICE_ID'");
+                _maxWaitTimeSeconds = int.TryParse(Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"), out _maxWaitTimeSeconds) ? _maxWaitTimeSeconds : DEFAULT_MAX_WAIT_SECONDS;
+                Console.WriteLine($"Setting max wait time for twin updates to {_maxWaitTimeSeconds} seconds");
             }
 
-            sas_token = Environment.GetEnvironmentVariable("E2E_OSCONFIG_SAS_TOKEN");
-            upload_url = Environment.GetEnvironmentVariable("E2E_OSCONFIG_UPLOAD_URL")?.Trim('\"');
-            resource_group_name = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
-
-            int.TryParse(Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"), out twinTimeoutSeconds);
-            if (twinTimeoutSeconds == 0)
+            if ((null == _sasToken) || (null == _uploadUrl) || (null == _resourceGroupName))
             {
-                twinTimeoutSeconds = twinTimeoutSecondsDefault;
+                Assert.Warn("Missing environment variables required for log upload to blob store");
             }
-
-            if (!UploadLogsToBlobStore())
-            {
-                Assert.Warn("Missing environment vars required for log upload to blob store");
-            }
-
-            iotHubConnectionString = iotHubConnectionString.TrimStart('"');
-            iotHubConnectionString = iotHubConnectionString.TrimEnd('"');
-            _serviceClient = ServiceClient.CreateFromConnectionString(iotHubConnectionString);
-            _registryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
-            GetNewTwin();
         }
 
         [OneTimeTearDown]
-        public void TearDown()
+        public void OneTimeTearDown()
         {
-            Console.WriteLine("[TearDown] UploadLogsToBlobStore():{0}", UploadLogsToBlobStore());
-            if (UploadLogsToBlobStore())
+            if ((null != _sasToken) && (null != _uploadUrl) && (null != _resourceGroupName))
             {
-                string fileName = String.Format("{0}-{1}.tar.gz", resource_group_name, deviceId);
-                string fullURL = String.Format("{0}{1}?{2}", upload_url, fileName, sas_token);
+                Console.WriteLine("[TearDown] Uploading logs to blob store");
+
+                string fileName = String.Format("{0}-{1}.tar.gz", _resourceGroupName, _deviceId);
+                string fullURL = String.Format("{0}{1}?{2}", _uploadUrl, fileName, _sasToken);
 
                 string tempFileCommand = "temp_file=`sudo mktemp`";
                 string tarCommand = "sudo tar -cvzf $temp_file osconfig*.log";
                 string curlCommand = String.Format("curl -X PUT -T $temp_file -H \"x-ms-date: $(date -u)\" -H \"x-ms-blob-type: BlockBlob\" \"{1}\"", fileName, fullURL);
-                string commandToPerform = String.Format("cd /var/log && {0} && {1} && {2}", tempFileCommand, tarCommand, curlCommand);
+                string uploadCommand = String.Format("cd /var/log && {0} && {1} && {2}", tempFileCommand, tarCommand, curlCommand);
 
-                var result = PerformCommandViaCommandRunner(commandToPerform);
-                if (!result.Item1)
+                if (!ExecuteCommandViaCommandRunner(uploadCommand))
                 {
-                    Assert.Warn("Failed to upload logs to blob storage");
+                    Assert.Warn("[TearDown] Failed to upload logs to blob storage");
                 }
-            }
-        }
-
-        /// <summary>
-        /// Retreives the current twin (local)
-        /// </summary>
-        /// <returns>The current twin</returns>
-        public Twin GetTwin()
-        {
-            return twin == null ? GetNewTwin() : twin;
-        }
-
-        /// <summary>
-        /// Retreives a new Twin from the hub
-        /// </summary>
-        /// <returns>The new twin</returns>
-        public Twin GetNewTwin()
-        {
-            Task<Twin> newTwin = _registryManager.GetTwinAsync(DeviceId, moduleId);
-            newTwin.Wait();
-            twin = newTwin.Result;
-            return twin;
-        }
-
-        /// <summary>
-        /// Updates the desired property contained in the Twin and blocks until the agent has reported
-        /// </summary>
-        /// <param name="patch">Patch containing the twin changes</param>
-        /// <returns>True if the update succeeds and false if there is a failure</returns>
-        public bool UpdateTwinBlockUntilUpdate(Twin patch)
-        {
-            var beforeUpdate = DateTime.UtcNow;
-            var twinTask = _registryManager.UpdateTwinAsync(DeviceId, moduleId, patch, twin.ETag);
-            twinTask.Wait();
-            twin = twinTask.Result;
-
-            var patchJson = Newtonsoft.Json.Linq.JObject.Parse(patch.Properties.Desired.ToJson());
-            if (patchJson.Count == 0)
-            {
-                Assert.Fail("Invalid patch for twin");
-            }
-            var componentName = patchJson.Properties().First().Name;
-
-            // If this is a new device (no reported properties will exist yet for that ComponentName)
-            Console.WriteLine("[UpdateTwinBlockUntilUpdate] start:{0}", beforeUpdate);
-            while ( ((IsComponentNameReported(componentName) && (twin.Properties.Reported[componentName].GetLastUpdated() < beforeUpdate))
-                        || !IsComponentNameReported(componentName, false))
-                     && ((DateTime.UtcNow - beforeUpdate).TotalSeconds < twinTimeoutSeconds))
-            {
-                // Keep polling twin until updated
-                Console.WriteLine("[UpdateTwinBlockUntilUpdate] waiting for twin...");
-                Task.Delay(twinRefreshIntervalMs).Wait();
-            }
-            bool timeout = (DateTime.UtcNow - beforeUpdate).TotalSeconds >= twinTimeoutSeconds;
-            Console.WriteLine("[UpdateTwinBlockUntilUpdate] {0}! end:{1}, elapsed:{2} sec", timeout ? "Timeout" : "Success", DateTime.UtcNow, (DateTime.UtcNow - beforeUpdate).TotalSeconds);
-
-            if (timeout)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Performs a remote operation on the target device using the CommandRunner module
-        /// </summary>
-        /// <param name="command">The command (and arguments) to execute</param>
-        /// <returns>Tuple</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public (bool, string) PerformCommandViaCommandRunner(string command)
-        {
-            if (null == command)
-            {
-                throw new ArgumentNullException("command");
-            }
-
-            var random = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
-            var desiredCommand = new CommandRunnerTests.CommandArguments
-            {
-                CommandId = random,
-                Arguments = command,
-                Action = CommandRunnerTests.Action.RunCommand,
-                Timeout = 60,
-                SingleLineTextResult = true
-            };
-            var desiredCommandRefresh = new CommandRunnerTests.CommandArguments
-            {
-                CommandId = random,
-                Arguments = command,
-                Action = CommandRunnerTests.Action.RefreshCommandStatus,
-                Timeout = 60,
-                SingleLineTextResult = true
-            };
-
-            var twinPatch = CreateCommandArgumentsPropertyPatch("CommandRunner", desiredCommand);
-
-            if (!UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Assert.Fail("Timeout for updating twin - ActionRunCommand");
-            }
-
-            twinPatch = CreateCommandArgumentsPropertyPatch("CommandRunner", desiredCommandRefresh);
-
-            if (UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                var deserializedObject = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
-                // Wait until commandId is equivalent
-                DateTime startTime = DateTime.Now;
-                while(deserializedObject.CommandId != random && (DateTime.Now - startTime).TotalSeconds < 30)
-                {
-                    Console.WriteLine("[PerformCommandViaCommandRunner] waiting for commandId to be equivalent...");
-                    Task.Delay(twinRefreshIntervalMs).Wait();
-                    deserializedObject = JsonSerializer.Deserialize<CommandRunnerTests.CommandStatus>(GetNewTwin().Properties.Reported["CommandRunner"]["CommandStatus"].ToString());
-                }
-
-                if ((DateTime.Now - startTime).TotalSeconds >= 30)
-                {
-                    return (false,"");
-                }
-
-                if (deserializedObject.CurrentState != CommandRunnerTests.CommandState.Succeeded)
-                {
-                    Console.WriteLine("[PerformCommandViaCommandRunner] Unable to execute commandId:{0}", deserializedObject.CommandId);
-                    return (false,"");
-                }
-
-                return (true, deserializedObject.TextResult);
             }
             else
             {
-                // Timeout executing command
-                return (false, "");
+                Console.WriteLine("[TearDown] Skipping upload of logs to blob store");
             }
         }
 
-        protected static Twin CreateTwinPatch(string componentName, object propertyValue)
+        /// <summary>
+        /// Execute a command via the CommandRunner. Commands are expected to succeed with exit code 0.
+        /// </summary>
+        /// <param name="arguments">The command to execute</param>
+        /// <returns><c>true</c> if the command succeeded, <c>false</c> otherwise</returns>
+        protected bool ExecuteCommandViaCommandRunner(string arguments)
         {
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[componentName] = propertyValue;
-            return twinPatch;
+            bool success = true;
+            var command = CommandRunnerTests.CreateCommand(arguments);
+
+            try
+            {
+                var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "CommandArguments", command);
+                desiredResult.Wait();
+                int ackCode = desiredResult.Result.ac;
+
+                if (ACK_SUCCESS != ackCode)
+                {
+                    Console.WriteLine("[ExecuteCommandViaCommandRunner] Failed to set desired state");
+                    success = false;
+                }
+                else
+                {
+                    Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
+                    {
+                        return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
+                    };
+
+                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 2 * _maxWaitTimeSeconds);
+                    reportedResult.Wait();
+                    var reportedStatus = reportedResult.Result;
+
+                    if (!condition(reportedStatus))
+                    {
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
+                        success = false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[ExecuteCommandViaCommandRunner] Exception: {0}", e.Message);
+                success = false;
+            }
+
+            return success;
         }
 
-        protected static Twin CreateCommandArgumentsPropertyPatch(string componentName, object propertyValue)
+        private bool PropertyExists(TwinCollection twinCollection, string componentName)
         {
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[componentName] = new
-            {
-                __t = "c",
-                CommandArguments = propertyValue
-            };
-            return twinPatch;
+            return twinCollection.Contains(componentName);
         }
-        public static void AreEqualByJson(object expected, object actual)
+
+        private bool PropertyExists(TwinCollection twinCollection, string componentName, string objectName)
+        {
+            return twinCollection.Contains(componentName) && twinCollection[componentName].Contains(objectName);
+        }
+
+        private bool IsUpdated(TwinCollection twinCollection, string componentName, DateTime previousUpdate)
+        {
+            return PropertyExists(twinCollection, componentName) && (previousUpdate < twinCollection[componentName].GetLastUpdated());
+        }
+
+        private bool IsUpdated(TwinCollection twinCollection, string componentName, string objectName, DateTime previousUpdate)
+        {
+            return PropertyExists(twinCollection, componentName, objectName) && (previousUpdate < twinCollection[componentName][objectName].GetLastUpdated());
+        }
+
+        private async Task<TwinCollection> LastReported()
+        {
+            Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+            return twin.Properties.Reported;
+        }
+
+        private async Task<T> LastReported<T>(string componentName)
+        {
+            TwinCollection reported = await LastReported();
+            return reported.Contains(componentName) ? Deserialize<T>(reported[componentName]) : default(T);
+        }
+
+        private async Task<T> LastReported<T>(string componentName, string objectName)
+        {
+            TwinCollection reported = await LastReported();
+            return (reported.Contains(componentName) && reported[componentName].Contains(objectName)) ? Deserialize<T>(reported[componentName][objectName]) : default(T);
+        }
+
+        private T Deserialize<T>(TwinCollection twinCollection)
+        {
+            try
+            {
+                return JsonSerializer.Deserialize<T>(twinCollection.ToString());
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("[Deserialize] Exception: {0}", e.Message);
+                return default(T);
+            }
+        }
+
+        /// <summary>
+        /// Sets the desired value of the specified component and waits for a reported property update.
+        /// </summary>
+        /// <typeparam name="T">The type of the desired value</typeparam>
+        /// <param name="componentName">The name of the component</param>
+        /// <param name="desiredValue">The desired value</param>
+        protected async Task SetDesired<T>(string componentName, T value, int maxWaitSeconds)
+        {
+            Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[componentName] = value;
+
+            DateTime start = DateTime.Now;
+            Twin updatedTwin = await _registryManager.UpdateTwinAsync(_deviceId, _moduleId, twinPatch, twin.ETag);
+            TwinCollection reported = updatedTwin.Properties.Reported;
+            DateTime previousUpdate = PropertyExists(reported, componentName) ? reported[componentName].GetLastUpdated() : DateTime.MinValue;
+
+            if (!updatedTwin.Properties.Desired.Contains(componentName))
+            {
+                Assert.Warn("[SetDesired] {0} not found in desired properties", componentName);
+            }
+
+            while (!PropertyExists(reported, componentName) && !IsUpdated(reported, componentName, previousUpdate))
+            {
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    await Task.Delay(POLL_INTERVAL_MS);
+                    updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+                    reported = updatedTwin.Properties.Reported;
+                }
+                else
+                {
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3})", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated());
+                    break;
+                }
+            }
+
+            if (!reported.Contains(componentName))
+            {
+                Assert.Warn("[SetDesired] {0} not found in reported properties", componentName);
+            }
+        }
+
+        protected Task SetDesired<T>(string componentName, T value)
+        {
+            return SetDesired<T>(componentName, value, _maxWaitTimeSeconds);
+        }
+
+        /// <summary>
+        /// Sets the desired value of the specified object within a component and waits for a reported property update.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="value"></param>
+        /// <param name="maxWaitSeconds"></param>
+        /// <returns>The response containing the acknowledged proprty update</returns>
+        protected async Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value, int maxWaitSeconds)
+        {
+            Twin twin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[componentName] = new { __t = 'c' };
+            twinPatch.Properties.Desired[componentName][objectName] = Newtonsoft.Json.Linq.JToken.FromObject(value);
+
+            DateTime start = DateTime.Now;
+            Twin updatedTwin = await _registryManager.UpdateTwinAsync(_deviceId, _moduleId, twinPatch, twin.ETag);
+            TwinCollection reported = updatedTwin.Properties.Reported;
+            DateTime previousUpdate = PropertyExists(reported, componentName, objectName) ? reported[componentName][objectName].GetLastUpdated() : DateTime.MinValue;
+
+            if (!updatedTwin.Properties.Desired.Contains(componentName) && !updatedTwin.Properties.Desired[componentName].Contains(objectName))
+            {
+                Assert.Warn("[SetDesired] {0}.{1} not found in desired properties", componentName, objectName);
+            }
+
+            while (!PropertyExists(reported, componentName, objectName) || !IsUpdated(reported, componentName, objectName, previousUpdate))
+            {
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    await Task.Delay(POLL_INTERVAL_MS);
+                    reported = await LastReported();
+                }
+                else
+                {
+                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4})", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated());
+                    break;
+                }
+            }
+
+            if (!reported.Contains(componentName) || !reported[componentName].Contains(objectName))
+            {
+                Assert.Warn("[SetDesired] {0}.{1} not found in reported properties", componentName, objectName);
+            }
+
+            return Deserialize<GenericResponse<T>>(reported[componentName][objectName]);
+        }
+
+        protected Task<GenericResponse<T>> SetDesired<T>(string componentName, string objectName, T value)
+        {
+            return SetDesired<T>(componentName, objectName, value, _maxWaitTimeSeconds);
+        }
+
+        /// <summary>
+        /// Gets the last reported value of the specified component according to the given condition callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="condition"></param>
+        /// <param name="maxWaitSeconds"></param>
+        protected async Task<T> GetReported<T>(string componentName, Func<T, bool> condition, int maxWaitSeconds)
+        {
+            DateTime start = DateTime.Now;
+            T reported = await LastReported<T>(componentName);
+
+            while ((null == reported) || !condition(reported))
+            {
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    await Task.Delay(POLL_INTERVAL_MS);
+                    reported = await LastReported<T>(componentName);
+                }
+                else
+                {
+                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0} (start: {1} | end: {2})", componentName, start, DateTime.Now);
+                    break;
+                }
+            }
+
+            return reported;
+        }
+
+        protected Task<T> GetReported<T>(string componentName, Func<T, bool> condition)
+        {
+            return GetReported<T>(componentName, condition, _maxWaitTimeSeconds);
+        }
+
+        /// <summary>
+        /// Gets the last reported value of the specified object within a component according to the given condition callback.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="componentName"></param>
+        /// <param name="objectName"></param>
+        /// <param name="condition"></param>
+        /// <param name="maxWaitSeconds"></param>
+        protected async Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition, int maxWaitSeconds)
+        {
+            DateTime start = DateTime.Now;
+            T reported = await LastReported<T>(componentName, objectName);
+
+            while ((null == reported) || !condition(reported))
+            {
+                if ((DateTime.Now - start).TotalSeconds < maxWaitSeconds)
+                {
+                    await Task.Delay(POLL_INTERVAL_MS);
+                    reported = await LastReported<T>(componentName, objectName);
+                }
+                else
+                {
+                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3})", componentName, objectName, start, DateTime.Now);
+                    break;
+                }
+            }
+
+            return reported;
+        }
+
+        protected Task<T> GetReported<T>(string componentName, string objectName, Func<T, bool> condition)
+        {
+            return GetReported<T>(componentName, objectName, condition, _maxWaitTimeSeconds);
+        }
+    }
+
+    public static class JsonAssert
+    {
+        public static void AreEqual(object expected, object actual)
         {
             var expectedJson = JsonSerializer.Serialize(expected);
             var actualJson = JsonSerializer.Serialize(actual);
             Assert.AreEqual(expectedJson, actualJson);
         }
+    }
 
-        public static bool IsRegexMatch(Regex expected, object actual)
+    public static class RegexAssert
+    {
+        public static void IsMatch(Regex pattern, object value)
         {
-            string actualJson = JsonSerializer.Serialize(actual);
-            return expected.IsMatch(actualJson);
-        }
-
-        private bool IsComponentNameReported(string componentName, bool refreshTwin = true)
-        {
-            return refreshTwin ? GetNewTwin().Properties.Reported.Contains(componentName) : twin.Properties.Reported.Contains(componentName);
-        }
-        public bool UploadLogsToBlobStore()
-        {
-            return ((null != sas_token)  &&
-                    (null != upload_url) &&
-                    (null != resource_group_name));
+            string jsonValue = JsonSerializer.Serialize(value);
+            if (!pattern.IsMatch(jsonValue))
+            {
+                Assert.Fail("Regex does not match.\nPattern: {0},\n String: {1}", pattern, value);
+            }
         }
     }
 }
