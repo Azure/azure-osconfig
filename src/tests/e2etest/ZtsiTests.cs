@@ -2,224 +2,239 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.Devices;
-using System.Text.Json;
 using System;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.IO;
+
 namespace E2eTesting
 {
     [TestFixture, Category("Ztsi")]
-    public class ZtsiTests : E2eTest
+    public class ZtsiTests : E2ETest
     {
-        const string ComponentName = "Ztsi";
-        const string desiredEnabled = "DesiredEnabled";
-        const string desiredServiceUrl = "DesiredServiceUrl";
-        const string removeFileCommand = "rm /etc/ztsi/config.json";
-        const string urlRegex = "((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
+        private static readonly string _componentName = "Ztsi";
+        private static readonly string _desiredEnabled = "DesiredEnabled";
+        private static readonly string _desiredServiceUrl = "DesiredServiceUrl";
 
-        const int responseStatusSuccess = 200;
-        const int responseStatusFailed = 400;
+        private static readonly Regex _urlPattern = new Regex("((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 
-        public partial class Ztsi
+        public enum Enabled
         {
-            public int Enabled { get; set; }
+            Unknown = 0,
+            Enabled,
+            Disabled
+        }
+        public class Ztsi
+        {
+            public Enabled Enabled { get; set; }
             public string ServiceUrl { get; set; }
         }
-        public partial class DesiredZtsi
+
+        public class DesiredZtsi
         {
             public bool DesiredEnabled { get; set; }
             public string DesiredServiceUrl { get; set; }
         }
 
-        public partial class ResponseCode
+        public int SetServiceUrl(string serviceUrl)
         {
-            public int ac { get; set; }
-        }
-        public void RemoveConfigurationFile()
-        {
-            PerformCommandViaCommandRunner(removeFileCommand);
-        }
-
-        public void Set_ServiceUrl(string serviceUrl)
-        {
-            AssertModuleConnected();
-            var desiredZtsi = new DesiredZtsi
+            try
             {
-                DesiredServiceUrl = serviceUrl
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (!UpdateTwinBlockUntilUpdate(twinPatch))
+                var setDesiredTask = SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl);
+                setDesiredTask.Wait();
+                return setDesiredTask.Result.ac;
+            }
+            catch (Exception e)
             {
-                Assert.Fail("Timeout for updating module twin");
+                Assert.Warn("Failed to set service url: {0} ", e.Message);
+                return -1;
             }
         }
 
-        public void Get_ServiceUrl(string expectedServiceUrl, int serviceUrlResponseCode)
+        public int SetEnabled(bool enabled)
         {
-            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
-            DateTime startTime = DateTime.Now;
-            while ((reportedObject.ServiceUrl != expectedServiceUrl) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            try
             {
-                Console.WriteLine("[ZtsiTest_Get_ServiceUrl] waiting for module twin to be updated...");
-                Task.Delay(twinRefreshIntervalMs).Wait();
-                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
+                var setDesiredTask = SetDesired<bool>(_componentName, _desiredEnabled, enabled);
+                setDesiredTask.Wait();
+                return setDesiredTask.Result.ac;
             }
-            if (reportedObject.ServiceUrl != expectedServiceUrl)
+            catch (Exception e)
             {
-                Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
-            }
-
-            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-            Assert.True(responseObject.ac == serviceUrlResponseCode);
-        }
-        public void Set_Enabled(bool enabled)
-        {
-            AssertModuleConnected();
-            var desiredZtsi = new DesiredZtsi
-            {
-                DesiredEnabled = enabled
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (!UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Assert.Fail("Timeout for updating module twin");
+                Assert.Warn("Failed to set enabled: {0} ", e.Message);
+                return -1;
             }
         }
 
-        public void Get_Enabled(int expectedEnabled, int enabledResponseCode)
+        public (int, int) SetZtsiConfiguration(string serviceUrl, bool enabled)
         {
-            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-            // Wait until the reported properties are updated
-            DateTime startTime = DateTime.Now;
-            while ((reportedObject.Enabled != expectedEnabled) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            try
             {
-                Console.WriteLine("[ZtsiTest_Get_Enabled] waiting for module twin to be updated...");
-                Task.Delay(twinRefreshIntervalMs).Wait();
-                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-            }
-            if (reportedObject.Enabled != expectedEnabled)
-            {
-                Assert.Fail("Timeout for updating reported Enabled in module twin");
-            }
-            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
-            Assert.True(responseObject.ac == enabledResponseCode);
-        }
+                var desiredConfiguration = new DesiredZtsi
+                {
+                    DesiredEnabled = enabled,
+                    DesiredServiceUrl = serviceUrl
+                };
 
-        public void Set_ServiceUrl_Enabled(string serviceUrl, bool enabled)
-        {
-            AssertModuleConnected();
-            // Set Enabled and ServiceUrl at the same time
-            var desiredZtsi = new DesiredZtsi
+                var setDesiredTask = SetDesired<DesiredZtsi>(_componentName, desiredConfiguration);
+                setDesiredTask.Wait();
+
+                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled, (GenericResponse<bool> response) => response.ac == ACK_SUCCESS);
+                desiredEnabledTask.Wait();
+                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl, (GenericResponse<string> response) => response.ac == ACK_SUCCESS);
+                desiredServiceUrlTask.Wait();
+
+                return (desiredServiceUrlTask.Result.ac, desiredEnabledTask.Result.ac);
+            }
+            catch (Exception e)
             {
-                DesiredEnabled = enabled,
-                DesiredServiceUrl = serviceUrl
-            };
-            Twin twinPatch = CreateTwinPatch(ComponentName, desiredZtsi);
-            if (!UpdateTwinBlockUntilUpdate(twinPatch))
-            {
-                Assert.Fail("Timeout for updating module twin");
+                Assert.Warn("Failed to set ztsi configuration: {0} ", e.Message);
+                return (-1, -1);
             }
         }
 
-        public void Get_ServiceUrl_Enabled(string expectedServiceUrl,  int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
+        public (string, Enabled) GetZtsiConfiguration(string expectedServiceUrl, Enabled expectedEnabled)
         {
-            // Get Enabled and ServiceUrl at the same time
-            Ztsi reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-            DateTime startTime = DateTime.Now;
-            // Wait until the reported properties are updated
-            while (((reportedObject.Enabled != expectedEnabled) || (reportedObject.ServiceUrl != expectedServiceUrl)) && ((DateTime.Now - startTime).TotalSeconds < twinTimeoutSeconds))
+            try
             {
-                Console.WriteLine("[ZtsiTests_Get_ServiceUrl_Enabled] waiting for module twin to be updated...");
-                Task.Delay(twinRefreshIntervalMs).Wait();
-                reportedObject = JsonSerializer.Deserialize<Ztsi>(GetNewTwin().Properties.Reported[ComponentName].ToString());
-            }
-            if (reportedObject.Enabled != expectedEnabled)
-            {
-                Assert.Fail("Timeout for updating reported Enabled in module twin");
-            }
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => ((ztsi.ServiceUrl == expectedServiceUrl) && (ztsi.Enabled == expectedEnabled)));
+                reportedTask.Wait();
+                var reportedConfiguration = reportedTask.Result;
 
-            if (reportedObject.ServiceUrl != expectedServiceUrl)
-            {
-                Assert.Fail("Timeout for updating reported ServiceUrl in module twin");
+                return (reportedConfiguration.ServiceUrl, reportedConfiguration.Enabled);
             }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get ztsi configuration: {0} ", e.Message);
+                return (null, Enabled.Unknown);
+            }
+        }
 
-            var responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredEnabled].ToString());
-            Assert.True(responseObject.ac == enabledResponseCode);
-            responseObject = JsonSerializer.Deserialize<ResponseCode>(GetTwin().Properties.Reported[ComponentName][desiredServiceUrl].ToString());
-            Assert.True(responseObject.ac == serviceUrlResponseCode);
+        public string GetServiceUrl(string expectedServiceUrl)
+        {
+            try
+            {
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.ServiceUrl == expectedServiceUrl));
+                reportedTask.Wait();
+                return reportedTask.Result.ServiceUrl;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get service url: {0} ", e.Message);
+                return null;
+            }
+        }
+
+        public Enabled GetEnabled(Enabled expectedEnabled)
+        {
+            try
+            {
+                var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled == expectedEnabled));
+                reportedTask.Wait();
+                return reportedTask.Result.Enabled;
+            }
+            catch (Exception e)
+            {
+                Assert.Warn("Failed to get enabled: {0} ", e.Message);
+                return Enabled.Unknown;
+            }
         }
 
         [Test]
-        public void ZtsiTest_Get()
+        [TestCase("http://")]
+        [TestCase("https://")]
+        [TestCase("http:\\\\example.com")]
+        [TestCase("htp://example.com")]
+        [TestCase("//example.com")]
+        [TestCase("www.example.com")]
+        [TestCase("example.com")]
+        [TestCase("example.com/params?a=1")]
+        [TestCase("/example")]
+        [TestCase("localhost")]
+        [TestCase("localhost:5000")]
+        public void ZtsiTest_InvalidServiceUrl(string serviceUrl)
         {
-            AssertModuleConnected();
-            Ztsi deserializedReportedObject = JsonSerializer.Deserialize<Ztsi>(GetTwin().Properties.Reported[ComponentName].ToString());
-            Assert.True(IsRegexMatch(new Regex(@"[0-2]"), deserializedReportedObject.Enabled));
-            Assert.True(deserializedReportedObject.ServiceUrl is string);
+            int enabledAckCode = SetEnabled(false);
+            int serviceUrlAckCode = SetServiceUrl(serviceUrl);
+            Assert.AreEqual(ACK_ERROR, serviceUrlAckCode, "Unexpected ack code for service url");
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "", false, "", responseStatusSuccess, 2, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
-        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_Enabled_ServiceUrl(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
+        [TestCase("")]
+        [TestCase("http://example.com")]
+        [TestCase("https://example.com")]
+        [TestCase("http://example.com/")]
+        [TestCase("https://example.com/")]
+        [TestCase("http://www.example.com")]
+        [TestCase("https://www.example.com")]
+        [TestCase("https://www.example.com/path/to/something/")]
+        [TestCase("https://www.example.com/params?a=1")]
+        [TestCase("https://www.example.com/params?a=1&b=2")]
+        public void ZtsiTest_ValidServiceUrl(string serviceUrl)
         {
-            if (!ConfigurationFileExits)
-            {
-                RemoveConfigurationFile();
-            }
+            int enabledAckCode = SetEnabled(false);
+            int serviceUrlAckCode = SetServiceUrl(serviceUrl);
 
-            Set_Enabled(enabled);
-            Get_Enabled(expectedEnabled, enabledResponseCode);
-            Set_ServiceUrl(serviceUrl);
-            Get_ServiceUrl(expectedServiceUrl, serviceUrlResponseCode);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
+                Assert.AreEqual(serviceUrl, GetServiceUrl(serviceUrl));
+            });
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 0, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
-        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_ServiceUrl_Enabled(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode,int expectedEnabled, int enabledResponseCode)
+        public void ZtsiTest_Enabled()
         {
-            if (!ConfigurationFileExits)
-            {
-                RemoveConfigurationFile();
-            }
+            int serviceUrlAckCode = SetServiceUrl("http://example.com");
+            int enabledAckCode = SetEnabled(true);
 
-            Set_ServiceUrl(serviceUrl);
-            Get_ServiceUrl(expectedServiceUrl, serviceUrlResponseCode);
-            Set_Enabled(enabled);
-            Get_Enabled(expectedEnabled, enabledResponseCode);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, serviceUrlAckCode, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, enabledAckCode, "Unexpected ack code for enabled");
+                Assert.AreEqual(Enabled.Enabled, GetEnabled(Enabled.Enabled));
+            });
+        }
+
+
+        [Test]
+        [TestCase("http://example1.com", false, "http://example1.com", Enabled.Disabled)]
+        [TestCase("http://example2.com", true, "http://example2.com", Enabled.Enabled)]
+        [TestCase("", false, "", Enabled.Disabled)]
+        public void ZtsiTest_Configuration(string serviceUrl, bool enabled, string expectedServiceUrl, Enabled expectedEnabled)
+        {
+            (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration(serviceUrl, enabled);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
+                Assert.AreEqual(expectedServiceUrl, GetServiceUrl(expectedServiceUrl));
+                Assert.AreEqual(expectedEnabled, GetEnabled(expectedEnabled));
+            });
         }
 
         [Test]
-        [TestCase(false, "", true, "", responseStatusFailed, 0, responseStatusSuccess)]
-        [TestCase(false, "", false, "", responseStatusSuccess, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", true, "", responseStatusFailed, 0, responseStatusSuccess)]
-        [TestCase(false, "Invalid url", false, "", responseStatusFailed, 2, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", true, "https://www.test.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        [TestCase(false, "https://www.test.com/", false, "https://www.test.com/", responseStatusSuccess, 2, responseStatusSuccess)]
-        [TestCase(true, "https://www.example.com/", true, "https://www.example.com/", responseStatusSuccess, 1, responseStatusSuccess)]
-        public void ZtsiTest_Set_Get_Both(bool ConfigurationFileExits, string serviceUrl, bool enabled, string expectedServiceUrl, int serviceUrlResponseCode, int expectedEnabled, int enabledResponseCode)
+        public void ZtsiTest_InvalidConfiguration()
         {
-            if (!ConfigurationFileExits)
-            {
-                RemoveConfigurationFile();
-            }
+            (int serviceUrl, int enabled) setupAckCode = SetZtsiConfiguration("http://test.com", true);
 
-            Set_ServiceUrl_Enabled(serviceUrl, enabled);
-            Get_ServiceUrl_Enabled(expectedServiceUrl, serviceUrlResponseCode, expectedEnabled, enabledResponseCode);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.serviceUrl, "Unexpected ack code for service url during setup");
+                Assert.AreEqual(ACK_SUCCESS, setupAckCode.enabled, "Unexpected ack code for enabled during setup");
+            });
+
+            (int serviceUrl, int enabled) ackCode = SetZtsiConfiguration("", true);
+
+            (string serviceUrl, Enabled enabled) = GetZtsiConfiguration("http://test.com", Enabled.Enabled);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(ACK_SUCCESS, ackCode.serviceUrl, "Unexpected ack code for service url");
+                Assert.AreEqual(ACK_SUCCESS, ackCode.enabled, "Unexpected ack code for enabled");
+                Assert.AreEqual("http://test.com", serviceUrl);
+                Assert.AreEqual(Enabled.Enabled, enabled);
+            });
         }
     }
 }
