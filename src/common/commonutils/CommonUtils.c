@@ -26,6 +26,16 @@
 #define COMMAND_SIGNAL_INTERVAL 25000 //microseconds
 #define DEFAULT_COMMAND_TIMEOUT 60 //seconds
 
+#define OS_NAME_COMMAND "cat /etc/os-release | grep ID="
+#define OS_PRETTY_NAME_COMMAND "cat /etc/os-release | grep PRETTY_NAME="
+#define OS_VERSION_COMMAND "cat /etc/os-release | grep VERSION="
+#define OS_KERNEL_NAME_COMMAND "uname -s"
+#define OS_KERNEL_RELEASE_COMMAND "uname -r"
+#define OS_KERNEL_VERSION_COMMAND "uname -v"
+#define OS_CPU_COMMAND "uname -p"
+#define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
+#define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
+
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
 static const char g_commandTerminator[] = " 2>&1";
@@ -783,4 +793,237 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     }
 
     return result;
+}
+
+static void RemovePrefixBlanks(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength =(int)strlen(target);
+    int i = 0;
+    
+    while ((i < targetLength) && (' ' == target[i]))
+    {
+        i += 1;
+    }
+
+    memcpy(target, target + i, targetLength - i);
+    target[targetLength - i] = 0;
+}
+
+static void RemovePrefixLabel(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength =(int)strlen(target);
+    int i = 0;
+    char* equalSign = strchr(target, '=');
+
+    if (equalSign)
+    {
+        targetLength = strlen(equalSign + 1);
+        memcpy(target, equalSign + 1, targetLength);
+        target[targetLength] = 0;
+    }
+}
+
+static void RemoveTrailingBlanks(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength = (int)strlen(target);
+    int i = targetLength;
+
+    while ((i > 0) && (' ' == target[i - 1]))
+    {
+        target[i - 1] = 0;
+        i -= 1;
+    }
+}
+
+static void TruncateAtFirstSpace(char* target)
+{
+    if (NULL == target)
+    {
+        return;
+    }
+
+    int targetLength =(int)strlen(target);
+    int i = 0;
+    char* space = strchr(target, ' ');
+
+    if (space)
+    {
+        space[0] = 0;
+    }
+}
+
+char* GetOsName(void* log)
+{
+    char* textResult = NULL;
+    char* postEqual = NULL;
+
+    if (0 == ExecuteCommand(NULL, OS_PRETTY_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        
+        // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
+        TruncateAtFirstSpace(textResult);
+    }
+    else if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        // PRETTY_NAME did not work, try ID
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirstSpace(textResult);
+    }
+    else    
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    OsConfigLogInfo(log, "OS name: '%s'", textResult);
+    
+    return textResult;
+}
+
+char* GetOsVersion(void* log)
+{
+    char* textResult = NULL;
+    char* postEqual = NULL;
+
+    if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+        RemovePrefixLabel(textResult);
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirstSpace(textResult);
+    }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    OsConfigLogInfo(log, "OS version: '%s'", textResult);
+
+    return textResult;
+}
+
+static char* GetAnotherOsProperty(const char* command, void* log)
+{
+    char* textResult = NULL;
+    char* postEqual = NULL;
+
+    if (NULL == command)
+    {
+        return NULL;
+    }
+
+    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+    }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    return textResult;
+}
+
+char* GetOsKernelName(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_NAME_COMMAND, log);
+    OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
+    return textResult;
+}
+
+char* GetOsKernelRelease(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_RELEASE_COMMAND, log);
+    OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
+    return textResult;
+}
+
+char* GetOsKernelVersion(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_VERSION_COMMAND, log);
+    OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
+    return textResult;
+}
+
+char* GetCpu(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
+    OsConfigLogInfo(log, "Processor: '%s'", textResult);
+    return textResult;
+}
+
+char* GetProductName(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
+    OsConfigLogInfo(log, "Product name: '%s'", textResult);
+    return textResult;
+}
+
+char* GetProductVendor(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
+    OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
+    return textResult;
+}
+
+char* UrlEncode(char* target)
+{
+    if (NULL == target)
+    {
+        return NULL;
+    }
+
+    int i = 0, j = 0;
+    int targetLength = (int)strlen(target);
+    int encodedLength = 3 * targetLength;
+    char* encodedTarget = (char*)malloc(encodedLength);
+    if (NULL != encodedTarget)
+    {
+        memset(encodedTarget, 0, encodedLength);
+
+        for (i = 0; i < targetLength; i++)
+        {
+            if ((isalnum(target[i])) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
+            {
+                encodedTarget[j] = target[i];
+                j += 1;
+            }
+            else if (' ' == target[i])
+            {
+                encodedTarget[j] = '+';
+                j += 1;
+            }
+            else
+            {
+                // format to "%%%02x" with value of character
+                sprintf(&encodedTarget[j], "%%%02X", target[i]);
+                j += strlen(&encodedTarget[j]);
+            }
+        }
+    }
+
+    return encodedTarget;
 }

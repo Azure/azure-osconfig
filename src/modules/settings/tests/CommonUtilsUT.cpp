@@ -776,3 +776,65 @@ TEST_F(CommonUtilsTest, InvalidArgumentsHttpProxyDataParsing)
     EXPECT_FALSE(ParseHttpProxyData("http://a:1", nullptr, &port, nullptr, nullptr, nullptr));
     EXPECT_FALSE(ParseHttpProxyData("http://a:1", &hostAddress, nullptr, nullptr, nullptr, nullptr));
 }
+
+TEST_F(CommonUtilsTest, OsProperties)
+{
+    char* osName = NULL;
+    char* osVersion = NULL;
+    char* cpuType = NULL;
+    char* productName = NULL;
+    char* productVendor = NULL;
+    char* kernelName = NULL;
+    char* kernelVersion = NULL;
+    char* kernelRelease = NULL;
+
+    EXPECT_NE(nullptr, osName = GetOsName(nullptr));
+    EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
+    EXPECT_NE(nullptr, cpuType = GetCpu(nullptr));
+    EXPECT_NE(nullptr, productVendor = GetProductVendor(nullptr));
+    EXPECT_NE(nullptr, productName = GetProductName(nullptr));
+    EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
+    EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
+    EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
+
+    FREE_MEMORY(osName);
+    FREE_MEMORY(osVersion);
+    FREE_MEMORY(cpuType);
+    FREE_MEMORY(productName);
+    FREE_MEMORY(productVendor);
+    FREE_MEMORY(kernelName);
+    FREE_MEMORY(kernelVersion);
+    FREE_MEMORY(kernelRelease);
+}
+
+struct UrlEncoding
+{
+    const char* original;
+    const char* expected;
+};
+
+TEST_F(CommonUtilsTest, UrlEncode)
+{
+    UrlEncoding validEncodedUrls[] = {
+        { "+", "%2B" },
+        { " ", "+" },
+        { "abcABC123", "abcABC123" },
+        { "~abcd~EFGH-123_456", "~abcd~EFGH-123_456" },
+        { "name=value", "name%3Dvalue" },
+        { "\"name\"=\"value\"", "%22name%22%3D%22value%22" },
+        { "(\"name1\"=\"value1\"&\"name2\"=\"value2\")", "%28%22name1%22%3D%22value1%22%26%22name2%22%3D%22value2%22%29" }
+    };
+
+    char* encodedUrl = nullptr;
+
+    int validEncodedUrlsSize = ARRAY_SIZE(validEncodedUrls);
+
+    for (int i = 0; i < validEncodedUrlsSize; i++)
+    {
+        EXPECT_NE(nullptr, encodedUrl = UrlEncode((char*)validEncodedUrls[i].original));
+        EXPECT_STREQ(encodedUrl, validEncodedUrls[i].expected);
+        FREE_MEMORY(encodedUrl);
+    }
+
+    EXPECT_EQ(nullptr, encodedUrl = UrlEncode(nullptr));
+}
