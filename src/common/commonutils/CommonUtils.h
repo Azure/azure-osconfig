@@ -57,6 +57,8 @@ char* GetCpu(void* log);
 char* GetProductName(void* log);
 char* GetProductVendor(void* log);
 
+char* UrlEncode(char* target);
+
 #ifdef __cplusplus
 }
 #endif

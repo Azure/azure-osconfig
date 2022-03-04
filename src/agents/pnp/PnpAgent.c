@@ -617,6 +617,7 @@ int main(int argc, char *argv[])
     char* kernelVersion = NULL;
     char* productName = NULL;
     char* productVendor = NULL;
+    char* encodedProductInfo = NULL;
 
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
@@ -681,14 +682,27 @@ int main(int argc, char *argv[])
     productName = GetProductName(GetLog());
 
     snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
-    OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
+    if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
+    {
+        if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
+        {
+            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated", 
+                (int)strlen(encodedProductInfo), (int)sizeof(g_productInfo));
+        } 
+        
+        memset(g_productInfo, 0, sizeof(g_productInfo));
+        memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
+    }
+    
+    OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
-
+    FREE_MEMORY(encodedProductInfo);
+    
     OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
     if (PROTOCOL_MQTT_WS == g_protocol)

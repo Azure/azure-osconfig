@@ -896,10 +896,7 @@ char* GetOsName(void* log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "OS name: '%s'", textResult);
-    }
+    OsConfigLogInfo(log, "OS name: '%s'", textResult);
     
     return textResult;
 }
@@ -922,10 +919,7 @@ char* GetOsVersion(void* log)
         FREE_MEMORY(textResult);
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "OS version: '%s'", textResult);
-    }
+    OsConfigLogInfo(log, "OS version: '%s'", textResult);
 
     return textResult;
 }
@@ -968,63 +962,37 @@ char* GetOsKernelName(void* log)
 char* GetOsKernelRelease(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_RELEASE_COMMAND, log);
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
-    }
-
+    OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
     return textResult;
 }
 
 char* GetOsKernelVersion(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_VERSION_COMMAND, log);
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
-    }
-    
+    OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
     return textResult;
 }
 
 char* GetCpu(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Processor: '%s'", textResult);
-    }
-
+    OsConfigLogInfo(log, "Processor: '%s'", textResult);
     return textResult;
 }
 
 char* GetProductName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product name: '%s'", textResult);
-    }
-
+    OsConfigLogInfo(log, "Product name: '%s'", textResult);
     return textResult;
 }
 
 char* GetProductVendor(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
-    
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
-    }
-
+    OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
     return textResult;
 }
-
 
 char* UrlEncode(char* target)
 {
@@ -1033,8 +1001,7 @@ char* UrlEncode(char* target)
         return NULL;
     }
 
-    int i = 0;
-    char encodedCharacter[3] = {0};
+    int i = 0, j = 0;
     int targetLength = (int)strlen(target);
     int encodedLength = 3 * targetLength;
     char* encodedTarget = (char*)malloc(encodedLength);
@@ -1046,46 +1013,22 @@ char* UrlEncode(char* target)
         {
             if ((isalnum(target[i])) || ('-' == target[i]) || ('_' == target[i]) || ('.' == target[i]) || ('~' == target[i]))
             {
-                encodedTarget[i] = target[i];
+                encodedTarget[j] = target[i];
+                j += 1;
             }
             else if (' ' == target[i])
             {
-                encodedTarget[i] = '+';
+                encodedTarget[j] = '+';
+                j += 1;
             }
             else
             {
                 // format to "%%%02x" with value of character
-                snprintf(encodedCharacter, sizeof(encodedCharacter), "%%%02x", target[i]);
-                i += 2;
+                sprintf(&encodedTarget[j], "%%%02X", target[i]);
+                j += strlen(&encodedTarget[j]);
             }
         }
     }
 
     return encodedTarget;
-}
-
-char rfc3986[256] = { 0 };
-char html5[256] = { 0 };
-
-void url_encoder_rfc_tables_init(){
-
-    int i;
-
-    for (i = 0; i < 256; i++){
-
-        rfc3986[i] = isalnum(i) || i == '~' || i == '-' || i == '.' || i == '_' ? i : 0;
-        html5[i] = isalnum(i) || i == '*' || i == '-' || i == '.' || i == '_' ? i : (i == ' ') ? '+' : 0;
-    }
-}
-
-char *url_encode(char *table, unsigned char *s, char *enc){
-
-    for (; *s; s++){
-
-        if (table[*s]) *enc = table[*s];
-        else sprintf(enc, "%%%02X", *s);
-        while (*++enc);
-    }
-
-    return(enc);
 }

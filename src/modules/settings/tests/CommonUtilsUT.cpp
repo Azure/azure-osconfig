@@ -820,6 +820,8 @@ TEST_F(CommonUtilsTest, UrlEncode)
         { " ", "+" },
         { "abcABC123", "abcABC123" },
         { "~abcd~EFGH-123_456", "~abcd~EFGH-123_456" },
+        { "name=value", "name%3Dvalue" },
+        { "\"name\"=\"value\"", "%22name%22%3D%22value%22" },
         { "(\"name1\"=\"value1\"&\"name2\"=\"value2\")", "%28%22name1%22%3D%22value1%22%26%22name2%22%3D%22value2%22%29" }
     };
 
@@ -829,7 +831,7 @@ TEST_F(CommonUtilsTest, UrlEncode)
 
     for (int i = 0; i < validEncodedUrlsSize; i++)
     {
-        EXPECT_NE(nullptr, encodedUrl = UrlEncode(validEncodedUrls[i].original));
+        EXPECT_NE(nullptr, encodedUrl = UrlEncode((char*)validEncodedUrls[i].original));
         EXPECT_STREQ(encodedUrl, validEncodedUrls[i].expected);
         FREE_MEMORY(encodedUrl);
     }
