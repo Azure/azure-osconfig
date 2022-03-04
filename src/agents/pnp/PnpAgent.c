@@ -130,7 +130,7 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s";
+static const char g_productInfoTemplate[] = "Azure OSConfig %d; %s;%s %s %s; %s %s %s; %s %s;"
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;
@@ -611,6 +611,9 @@ int main(int argc, char *argv[])
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
+    char* kernelName = NULL;
+    char* kernelRelease = NULL;
+    char* kernelVersion = NULL;
     char* productName = NULL;
     char* productVendor = NULL;
 
@@ -670,10 +673,13 @@ int main(int argc, char *argv[])
     osName = GetOsName(GetLog());
     osVersion = GetOsVersion(GetLog());
     cpuType = GetCpu(GetLog());
+    kernelName = GetOsKernelName(GetLog());
+    kernelRelease = GetOsKernelRelease(GetLog());
+    kernelVersion = GetOsKernelVersion(GetLog());
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, cpuType, productVendor, productName);
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
     OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
 
     FREE_MEMORY(osName);

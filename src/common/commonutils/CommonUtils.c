@@ -930,18 +930,32 @@ char* GetOsVersion(void* log)
     return textResult;
 }
 
-char* GetOsKernelName(void* log)
+static char* GetAnotherOsProperty(const char* command, void* log)
 {
     char* textResult = NULL;
+    char* postEqual = NULL;
 
-    if (0 == ExecuteCommand(NULL, OS_KERNEL_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    if (NULL == command)
     {
+        return NULL;
+    }
+
+    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
     }
     else
     {
         FREE_MEMORY(textResult);
     }
+
+    return textResult;
+}
+
+char* GetOsKernelName(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_NAME_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -953,16 +967,7 @@ char* GetOsKernelName(void* log)
 
 char* GetOsKernelRelease(void* log)
 {
-    char* textResult = NULL;
-
-    if (0 == ExecuteCommand(NULL, OS_KERNEL_RELEASE_COMMAND, true, true, 0, 0, &textResult, NULL, log))
-    {
-        RemoveTrailingBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_RELEASE_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -974,16 +979,7 @@ char* GetOsKernelRelease(void* log)
 
 char* GetOsKernelVersion(void* log)
 {
-    char* textResult = NULL;
-
-    if (0 == ExecuteCommand(NULL, OS_KERNEL_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
-    {
-        RemoveTrailingBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
+    char* textResult = GetAnotherOsProperty(OS_KERNEL_VERSION_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -995,16 +991,7 @@ char* GetOsKernelVersion(void* log)
 
 char* GetCpu(void* log)
 {
-    char* textResult = NULL;
-    
-    if (0 == ExecuteCommand(NULL, OS_CPU_COMMAND, true, true, 0, 0, &textResult, NULL, log))
-    {
-        RemoveTrailingBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
+    char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -1016,16 +1003,7 @@ char* GetCpu(void* log)
 
 char* GetProductName(void* log)
 {
-    char* textResult = NULL;
-    
-    if (0 == ExecuteCommand(NULL, OS_PRODUCT_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
-    {
-        RemoveTrailingBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
+    char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -1037,16 +1015,7 @@ char* GetProductName(void* log)
 
 char* GetProductVendor(void* log)
 {
-    char* textResult = NULL;
-    
-    if (0 == ExecuteCommand(NULL, OS_PRODUCT_VENDOR_COMMAND, true, true, 0, 0, &textResult, NULL, log))
-    {
-        RemoveTrailingBlanks(textResult);
-    }
-    else
-    {
-        FREE_MEMORY(textResult);
-    }
+    char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
