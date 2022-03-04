@@ -130,7 +130,7 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-static const char g_productInfoTemplate[] = "Azure OSConfig %d; %s;%s %s %s; %s %s %s; %s %s;"
+static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;
