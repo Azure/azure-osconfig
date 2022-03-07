@@ -37,4 +37,4 @@ cat $tempdir/debian-binary $tempdir/control.tar.gz $tempdir/data.tar.gz > $tempd
 
 # Verify keys
 gpg --verify $tempdir/_gpgorigin $tempdir/combined-contents
-[ $? -eq 0 ] && echo "\n VALID Microsoft Signature" || (echo "\nINVALID Microsoft Signature!" >&2 && exit 1)
+[ $? -eq 0 ] && echo "\nVALID Microsoft Signature" || (echo "\nINVALID Microsoft Signature!" >&2 && exit 1)
