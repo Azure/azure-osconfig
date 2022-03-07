@@ -2,7 +2,7 @@
 # Validate Microsoft Release Signing Keys
 # Requires: curl, ar (build-essentials) and gpg
 if [ -z "$1" ]; then
-    echo 'Error: missing file input.\n./validate_msft_signing.sh <input-file>' >&2
+    echo 'Error: missing file input.\n./validate_signing.sh <input-file>' >&2
     exit 1
 fi
 if ! [ -f "$1" ]; then
