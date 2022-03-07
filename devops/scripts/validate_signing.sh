@@ -1,5 +1,5 @@
 #!/bin/sh
-# Validate MSFT Release Signing Keys
+# Validate Microsoft Release Signing Keys
 # Requires: curl, ar (build-essentials) and gpg
 if [ -z "$1" ]; then
     echo 'Error: missing file input.\n./validate_msft_signing.sh <input-file>' >&2
@@ -25,7 +25,7 @@ trap 'rm -rf "$tempdir"' EXIT
 tempdir=`mktemp -d`
 key=$tempdir/key.asc
 
-# Download and import the MSFT (Release signing) key
+# Download and import the Microsoft release signing key
 curl -sSL https://packages.microsoft.com/keys/microsoft.asc --output $key
 gpg --import $key
 
