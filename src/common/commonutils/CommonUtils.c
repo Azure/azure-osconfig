@@ -795,7 +795,7 @@ bool ParseHttpProxyData(const char* proxyData, char** proxyHostAddress, int* pro
     return result;
 }
 
-static void RemovePrefixBlanks(char* target)
+void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
     {
@@ -814,7 +814,7 @@ static void RemovePrefixBlanks(char* target)
     target[targetLength - i] = 0;
 }
 
-static void RemovePrefixLabel(char* target)
+void RemovePrefixUpTo(char* target, char marker)
 {
     if (NULL == target)
     {
@@ -822,8 +822,7 @@ static void RemovePrefixLabel(char* target)
     }
 
     int targetLength =(int)strlen(target);
-    int i = 0;
-    char* equalSign = strchr(target, '=');
+    char* equalSign = strchr(target, marker);
 
     if (equalSign)
     {
@@ -833,7 +832,7 @@ static void RemovePrefixLabel(char* target)
     }
 }
 
-static void RemoveTrailingBlanks(char* target)
+void RemoveTrailingBlanks(char* target)
 {
     if (NULL == target)
     {
@@ -850,7 +849,7 @@ static void RemoveTrailingBlanks(char* target)
     }
 }
 
-static void TruncateAtFirstSpace(char* target)
+void TruncateAtFirst(char* target, char marker)
 {
     if (NULL == target)
     {
@@ -858,12 +857,11 @@ static void TruncateAtFirstSpace(char* target)
     }
 
     int targetLength =(int)strlen(target);
-    int i = 0;
-    char* space = strchr(target, ' ');
+    char* found = strchr(target, marker);
 
-    if (space)
+    if (found)
     {
-        space[0] = 0;
+        found[0] = 0;
     }
 }
 
@@ -876,20 +874,20 @@ char* GetOsName(void* log)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        RemovePrefixLabel(textResult);
+        RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
         
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
-        TruncateAtFirstSpace(textResult);
+        TruncateAtFirst(textResult, ' ');
     }
     else if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
         // PRETTY_NAME did not work, try ID
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        RemovePrefixLabel(textResult);
+        RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
-        TruncateAtFirstSpace(textResult);
+        TruncateAtFirst(textResult, ' ');
     }
     else    
     {
@@ -910,9 +908,9 @@ char* GetOsVersion(void* log)
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
-        RemovePrefixLabel(textResult);
+        RemovePrefixUpTo(textResult, '=');
         RemovePrefixBlanks(textResult);
-        TruncateAtFirstSpace(textResult);
+        TruncateAtFirst(textResult, ' ');
     }
     else
     {
@@ -1018,7 +1016,6 @@ char* UrlEncode(char* target)
             }
             else
             {
-                // format to "%%%02x" with value of character
                 sprintf(&encodedTarget[j], "%%%02X", target[i]);
                 j += strlen(&encodedTarget[j]);
             }

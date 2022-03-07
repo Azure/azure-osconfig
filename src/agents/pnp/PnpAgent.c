@@ -684,7 +684,9 @@ int main(int argc, char *argv[])
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, 
+        osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
+        
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
         if (strlen(encodedProductInfo) >= sizeof(g_productInfo))

@@ -57,6 +57,11 @@ char* GetCpu(void* log);
 char* GetProductName(void* log);
 char* GetProductVendor(void* log);
 
+void RemovePrefixBlanks(char* target);
+void RemovePrefixUpTo(char* target, char marker);
+void RemoveTrailingBlanks(char* target);
+void TruncateAtFirst(char* target, char marker);
+
 char* UrlEncode(char* target);
 
 #ifdef __cplusplus
