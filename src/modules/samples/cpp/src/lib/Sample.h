@@ -60,6 +60,10 @@ public:
         std::vector<int> integerArraySetting;
         std::map<std::string, std::string> stringMapSetting;
         std::map<std::string, int> integerMapSetting;
+
+        // Store removed elements to remort as 'null'
+        std::vector<std::string> removedStringMapSettingKeys;
+        std::vector<std::string> removedIntegerMapSettingKeys;
     };
 
     Sample(unsigned int maxPayloadSizeBytes);
