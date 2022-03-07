@@ -61,7 +61,7 @@ public:
         std::map<std::string, std::string> stringMapSetting;
         std::map<std::string, int> integerMapSetting;
 
-        // Store removed elements to remort as 'null'
+        // Store removed elements to report as 'null'
         std::vector<std::string> removedStringMapSettingKeys;
         std::vector<std::string> removedIntegerMapSettingKeys;
     };
