@@ -31,6 +31,8 @@ static const std::string g_integerArraySettingName = "IntegerArraySetting";
 static const std::string g_stringMapSettingName = "StringMapSetting";
 static const std::string g_integerMapSettingName = "IntegerMapSetting";
 
+static const int g_maxRemovedMapKeys = 10;
+
 constexpr const char info[] = R""""({
     "Name": "C++ Sample",
     "Description": "A sample module written in C++",
@@ -592,6 +594,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
 
                     // Store the removed element key for reporting
                     object.removedStringMapSettingKeys.push_back(member.name.GetString());
+
+                    // Remove the first element from the vector if the max size has been reached
+                    if (object.removedStringMapSettingKeys.size() > g_maxRemovedMapKeys)
+                    {
+                        object.removedStringMapSettingKeys.erase(object.removedStringMapSettingKeys.begin());
+                    }
                 }
                 else
                 {
@@ -629,6 +637,12 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
 
                     // Store the removed element key for reporting
                     object.removedIntegerMapSettingKeys.push_back(member.name.GetString());
+
+                    // Remove the first element from the vector if the max size has been reached
+                    if (object.removedIntegerMapSettingKeys.size() > g_maxRemovedMapKeys)
+                    {
+                        object.removedIntegerMapSettingKeys.erase(object.removedIntegerMapSettingKeys.begin());
+                    }
                 }
                 else
                 {
