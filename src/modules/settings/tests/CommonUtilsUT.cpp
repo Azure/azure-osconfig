@@ -807,9 +807,27 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(kernelRelease);
 }
 
+char* AllocateAndCopyTestString(const char* source)
+{
+    char* output = nullptr;
+    int length = 0;
+    
+    EXPECT_NE(nullptr, source);
+    EXPECT_NE(0, length = (int)strlen(source));
+    EXPECT_NE(nullptr, output = (char*)malloc(length + 1));
+
+    if (nullptr != output)
+    {
+        memcpy(output, source, length);
+        output[length] = 0;
+    }
+
+    return output;
+}
+
 TEST_F(CommonUtilsTest, RemovePrefixBlanks)
 {
-    char* targets[] = {
+    const char* targets[] = {
         "Test",
         " Test",
         "  Test",
@@ -823,19 +841,21 @@ TEST_F(CommonUtilsTest, RemovePrefixBlanks)
     };
 
     int numTargets = ARRAY_SIZE(targets);
-
     char expected[] = "Test";
+    char* testString = nullptr;
 
     for (int i = 0; i < numTargets; i++)
     {
-        RemovePrefixBlanks(target[i]);
-        EXPECT_STREQ(target[i], expected);
+        EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i]));
+        RemovePrefixBlanks(testString);
+        EXPECT_STREQ(testString, expected);
+        FREE_MEMORY(testString);
     }
 }
 
 TEST_F(CommonUtilsTest, RemoveTrailingBlanks)
 {
-    char* targets[] = {
+    const char* targets[] = {
         "Test",
         "Test ",
         "Test  ",
@@ -849,20 +869,22 @@ TEST_F(CommonUtilsTest, RemoveTrailingBlanks)
     };
 
     int numTargets = ARRAY_SIZE(targets);
-
     char expected[] = "Test";
+    char* testString = nullptr;
 
     for (int i = 0; i < numTargets; i++)
     {
-        RemoveTrailingBlanks(target[i]);
-        EXPECT_STREQ(target[i], expected);
+        EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i]));
+        RemoveTrailingBlanks(testString);
+        EXPECT_STREQ(testString, expected);
+        FREE_MEMORY(testString);
     }
 }
 
 struct MarkedTestTargets
 {
     const char* target;
-    const char* marker;
+    char marker;
 };
 
 TEST_F(CommonUtilsTest, RemovePrefixUpTo)
@@ -879,13 +901,15 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
     };
 
     int numTargets = ARRAY_SIZE(targets);
-
     char expected[] = "Test";
+    char* testString = nullptr;
 
     for (int i = 0; i < numTargets; i++)
     {
-        RemovePrefixUpTo(target[i].target, targets[i].marker);
-        EXPECT_STREQ(target[i].target, expected);
+        EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
+        RemovePrefixUpTo(testString, targets[i].marker);
+        EXPECT_STREQ(testString, expected);
+        FREE_MEMORY(testString);
     }
 }
 
@@ -903,13 +927,15 @@ TEST_F(CommonUtilsTest, TruncateAtFirst)
     };
 
     int numTargets = ARRAY_SIZE(targets);
-
     char expected[] = "Test";
+    char* testString = nullptr;
 
     for (int i = 0; i < numTargets; i++)
     {
-        RemoveAt First(target[i].target, targets[i].marker);
-        EXPECT_STREQ(target[i].target, expected);
+        EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
+        TruncateAtFirst(testString, targets[i].marker);
+        EXPECT_STREQ(testString, expected);
+        FREE_MEMORY(testString);
     }
 }
 
@@ -931,15 +957,20 @@ TEST_F(CommonUtilsTest, UrlEncode)
         { "(\"name1\"=\"value1\"&\"name2\"=\"value2\")", "%28%22name1%22%3D%22value1%22%26%22name2%22%3D%22value2%22%29" },
         { "Azure OSConfig 5;1.0.1.20220228 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.4\"&\"cpu_architecture\"=\"x86_64\"&"
         "\"kernel_name\"=\"Linux\"&\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon Feb 7 14:25:10 UTC 2022\"&"
-        "\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"FooProduct 123\)",
+        "\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"FooProduct 123)",
         "Azure+OSConfig+5%3B1.0.1.20220228+%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.4%22%26%22cpu_architecture%22%3D%22x"
         "86_64%22%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26%22kernel_version%22%3D%22%2333~20.04.1"
-        "-Ubuntu+SMP+Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22Acme+Inc.%22%26%22product_name%22%3D%22FooProduct+123%22%29" }
+        "-Ubuntu+SMP+Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22Acme+Inc.%22%26%22product_name%22%3D%22FooProduct+123%29" },
+        {"Azure OSConfig 5;1.0.1.20220301 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.3\"&\"cpu_architecture\"=\"x86_64\"&\"kernel_name\"=\"Linux\"&"
+        "\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"ACME\"&\"product_name\"=\"10ABC789\")",
+        "Azure+OSConfig+5%3B1.0.1.20220301+%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.3%22%26%22cpu_architecture%22%3D%22x86_64%2"
+        "2%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26%22kernel_version%22%3D%22%2333~20.04.1-Ubuntu+SMP+"
+        "Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22ACME%22%26%22product_name%22%3D%2210ABC789%22%29"}
     };
 
-    char* encodedUrl = nullptr;
-
     int validEncodedUrlsSize = ARRAY_SIZE(validEncodedUrls);
+
+    char* encodedUrl = nullptr;
 
     for (int i = 0; i < validEncodedUrlsSize; i++)
     {
