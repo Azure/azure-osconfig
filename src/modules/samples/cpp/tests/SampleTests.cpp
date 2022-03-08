@@ -120,6 +120,56 @@ namespace OSConfig::Platform::Tests
         ASSERT_STREQ(jsonPayload, payloadString.c_str());
     }
 
+    TEST_F(CppSampleTests, GetSetObjectMapNullValues)
+    {
+        char jsonPayload[] = "{"
+            "\"StringSetting\":\"C++ Sample Module\","
+            "\"BooleanSetting\":true,"
+            "\"IntegerSetting\":12345,"
+            "\"IntegerEnumerationSetting\":0,"
+            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"IntegerArraySetting\":[1,2,3,4,5],"
+            "\"StringMapSetting\":{"
+                "\"Key1\":\"C++ Sample Module 1\","
+                "\"Key2\":\"C++ Sample Module 2\""
+            "},"
+            "\"IntegerMapSetting\":{"
+                "\"Key1\":1,"
+                "\"Key2\":2"
+            "}}";
+
+        char jsonPayloadWithNullMapValues[] = "{"
+            "\"StringSetting\":\"C++ Sample Module\","
+            "\"BooleanSetting\":true,"
+            "\"IntegerSetting\":12345,"
+            "\"IntegerEnumerationSetting\":0,"
+            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"IntegerArraySetting\":[1,2,3,4,5],"
+            "\"StringMapSetting\":{"
+                "\"Key1\":\"C++ Sample Module 1\","
+                "\"Key2\":null"
+            "},"
+            "\"IntegerMapSetting\":{"
+                "\"Key1\":1,"
+                "\"Key2\":null"
+            "}}";
+
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, jsonPayload, strlen(jsonPayload)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayload, payloadString.c_str());
+
+        ASSERT_EQ(MMI_OK, session->Set(componentName, desiredObjectName, jsonPayloadWithNullMapValues, strlen(jsonPayloadWithNullMapValues)));
+        ASSERT_EQ(MMI_OK, session->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes));
+
+        std::string payloadStringWithNullMapValues(payload, payloadSizeBytes);
+        ASSERT_STREQ(jsonPayloadWithNullMapValues, payloadStringWithNullMapValues.c_str());
+    }
+
     TEST_F(CppSampleTests, GetSetArrayObject)
     {
         char jsonPayload[] = "["
