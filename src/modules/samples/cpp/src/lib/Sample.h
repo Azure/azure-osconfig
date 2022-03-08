@@ -62,7 +62,7 @@ public:
         std::map<std::string, int> integerMapSetting;
 
         // Store removed elements to report as 'null'
-        // These vectors should have a maximum size depending on the max payload size recieved by MmiOpen()
+        // These vectors must have a maximum size relative to the max payload size recieved by MmiOpen()
         std::vector<std::string> removedStringMapSettingKeys;
         std::vector<std::string> removedIntegerMapSettingKeys;
     };
