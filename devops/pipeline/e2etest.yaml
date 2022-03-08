@@ -162,14 +162,12 @@ stages:
           itemPattern: $(packagePattern)
 
       - script: |
-          cp `find . -name '*.deb'` $(Build.SourcesDirectory)/devops/terraform/host/osconfig.deb
+          cp `find . -name '*.deb' | head -n 1` $(Build.SourcesDirectory)/devops/terraform/host/osconfig.deb
         displayName: Stage OSConfig
-        continueOnError: true
         workingDirectory: $(Pipeline.Workspace)
 
       - task: AzureCLI@2
         displayName: Create device identity
-        continueOnError: true
         name: azcli_device_identity
         inputs:
           azureSubscription: $(SERVICE_CONNECTION)
