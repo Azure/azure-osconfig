@@ -845,6 +845,9 @@ int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVID
         return -1;
     }
 
+    // Initialize the Management Platform
+    CallMpiInitialize();
+
     // Open the MPI session for this PnP Module instance:
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
@@ -966,6 +969,8 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
+
+    CallMpiShutdown();
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }

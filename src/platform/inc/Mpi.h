@@ -20,7 +20,6 @@ extern "C"
 MPI_HANDLE MpiOpen(
     const char* clientName,
     const unsigned int maxPayloadSizeBytes);
-void MpiClose(MPI_HANDLE clientSession);
 int MpiSet(
     MPI_HANDLE clientSession,
     const char* componentName,
@@ -33,6 +32,8 @@ int MpiGet(
     const char* objectName,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes);
+void MpiClose(MPI_HANDLE clientSession);
+
 int MpiSetDesired(
     const char* clientName,
     const MPI_JSON_STRING payload,
@@ -42,8 +43,12 @@ int MpiGetReported(
     const unsigned int maxPayloadSizeBytes,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes);
+
 void MpiFree(MPI_JSON_STRING payload);
+
+void MpiInitalize(void);
 void MpiDoWork(void);
+void MpiShutdown(void);
 
 #ifdef __cplusplus
 }
