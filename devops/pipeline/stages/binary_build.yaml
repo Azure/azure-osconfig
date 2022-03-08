@@ -115,7 +115,7 @@ stages:
 
     - publish: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/TestOutput.log
       displayName: Publishing test outputs
-      condition: succeededOrFailed()
+      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false))
       artifact: Test_Logs_${{ parameters.variantName }}_${{ parameters.architecture }}
 
     # Publishes the results of the ctest test pass to be used in the Azure DevOps dashboard
