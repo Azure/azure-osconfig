@@ -35,8 +35,8 @@ const char* g_configReported = "Reported";
 const char* g_configComponentName = "ComponentName";
 const char* g_configObjectName = "ObjectName";
 
-// Manager mapping MPI_HANDLE <-> ModulesManager
-std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>> mpiMap;
+// Manager mapping clientName <-> ModulesManager
+std::map<std::string, std::shared_ptr<ModulesManager>> mpiMap;
 
 OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
 
@@ -46,6 +46,7 @@ MPI_HANDLE MpiOpen(
     const unsigned int maxPayloadSizeBytes)
 {
     MPI_HANDLE handle = nullptr;
+    std::shared_ptr<ModulesManager> modulesManager = nullptr;
 
     ScopeGuard sg{[&]()
     {
@@ -66,17 +67,28 @@ MPI_HANDLE MpiOpen(
 
     if (nullptr != clientName)
     {
-        auto modulesManager = std::shared_ptr<ModulesManager>(new ModulesManager(clientName, maxPayloadSizeBytes));
-        if (nullptr != modulesManager)
+        if (mpiMap.find(clientName) != mpiMap.end())
         {
-            modulesManager->LoadModules();
+            modulesManager = mpiMap[clientName];
             handle = reinterpret_cast<MPI_HANDLE>(modulesManager.get());
-            mpiMap[handle] = modulesManager;
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen(%s, %u) failed to allocate a ModulesManager", clientName, maxPayloadSizeBytes);
+            modulesManager = std::make_shared<ModulesManager>(clientName, maxPayloadSizeBytes);
+            mpiMap[clientName] = modulesManager;
+
+            if (nullptr != modulesManager)
+            {
+                modulesManager->LoadModules();
+                handle = reinterpret_cast<MPI_HANDLE>(modulesManager.get());
+                mpiMap[clientName] = modulesManager;
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiOpen(%s, %u) failed to allocate a ModulesManager", clientName, maxPayloadSizeBytes);
+            }
         }
+
     }
     else
     {
@@ -88,10 +100,16 @@ MPI_HANDLE MpiOpen(
 
 void MpiClose(MPI_HANDLE clientSession)
 {
-    if (mpiMap.end() != mpiMap.find(clientSession))
+    ModulesManager* modulesManager = reinterpret_cast<ModulesManager*>(clientSession);
+
+    if ((nullptr != modulesManager) && (mpiMap.end() != mpiMap.find(modulesManager->GetClientName())))
     {
-        mpiMap[clientSession]->UnloadModules();
-        mpiMap.erase(clientSession);
+        mpiMap[modulesManager->GetClientName()]->UnloadModules();
+        mpiMap.erase(modulesManager->GetClientName());
+    }
+    else
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiClose(%p) called with an invalid session", clientSession);
     }
 
     if (0 == mpiMap.size())
@@ -154,25 +172,33 @@ int MpiSetDesired(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    ModulesManager* modulesManager = nullptr;
 
     if (nullptr != clientName)
     {
-        modulesManager = new (std::nothrow) ModulesManager(clientName);
-        if (nullptr != modulesManager)
+        if (mpiMap.end() != mpiMap.find(clientName))
         {
-            if (0 == (status = modulesManager->LoadModules()))
-            {
-                status = modulesManager->MpiSetDesired(payload, payloadSizeBytes);
-            }
-
-            modulesManager->UnloadAllModules();
-            delete modulesManager;
+            std::shared_ptr<ModulesManager> modulesManager = mpiMap[clientName];
+            status = modulesManager->MpiSetDesired(payload, payloadSizeBytes);
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired failed to allocate a ModulesManager for %s", clientName);
-            status = ENOMEM;
+            ModulesManager* modulesManager = new (std::nothrow) ModulesManager(clientName);
+
+            if (nullptr != modulesManager)
+            {
+                if (0 == (status = modulesManager->LoadModules()))
+                {
+                    status = modulesManager->MpiSetDesired(payload, payloadSizeBytes);
+                }
+
+                modulesManager->UnloadAllModules();
+                delete modulesManager;
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired failed to allocate a ModulesManager for %s", clientName);
+                status = ENOMEM;
+            }
         }
     }
     else
@@ -191,25 +217,33 @@ int MpiGetReported(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    ModulesManager* modulesManager = nullptr;
 
     if (nullptr != clientName)
     {
-        modulesManager = new (std::nothrow) ModulesManager(clientName, maxPayloadSizeBytes);
-        if (nullptr != modulesManager)
+        if (mpiMap.end() != mpiMap.find(clientName))
         {
-            if (0 == (status = modulesManager->LoadModules()))
-            {
-                status = modulesManager->MpiGetReported(payload, payloadSizeBytes);
-            }
-
-            modulesManager->UnloadAllModules();
-            delete modulesManager;
+            std::shared_ptr<ModulesManager> modulesManager = mpiMap[clientName];
+            status = modulesManager->MpiGetReported(payload, payloadSizeBytes);
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported failed to allocate a ModulesManager for %s", clientName);
-            status = ENOMEM;
+            ModulesManager* modulesManager = new (std::nothrow) ModulesManager(clientName, maxPayloadSizeBytes);
+
+            if (nullptr != modulesManager)
+            {
+                if (0 == (status = modulesManager->LoadModules()))
+                {
+                    status = modulesManager->MpiGetReported(payload, payloadSizeBytes);
+                }
+
+                modulesManager->UnloadAllModules();
+                delete modulesManager;
+            }
+            else
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported failed to allocate a ModulesManager for %s", clientName);
+                status = ENOMEM;
+            }
         }
     }
     else
@@ -229,8 +263,7 @@ void MpiFree(MPI_JSON_STRING payload)
 void MpiDoWork()
 {
     // Perform work on all client sessions
-    std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>>::iterator it;
-    for (it = mpiMap.begin(); it != mpiMap.end(); ++it)
+    for (auto it = mpiMap.begin(); it != mpiMap.end(); ++it)
     {
         it->second->DoWork();
     }
