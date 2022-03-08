@@ -41,6 +41,10 @@ std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>> mpiMap;
 OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
 
 // MPI
+
+void MpiInitialize(void) {};
+void MpiShutdown(void) {};
+
 MPI_HANDLE MpiOpen(
     const char* clientName,
     const unsigned int maxPayloadSizeBytes)

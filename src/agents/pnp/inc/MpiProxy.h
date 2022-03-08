@@ -18,8 +18,8 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 int CallMpiSetDesired(const char* clientName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
 int CallMpiGetReported(const char* clientName, const unsigned int maxPayloadSizeBytes, MPI_JSON_STRING* payload, int* payloadSizeBytes);
 void CallMpiFree(MPI_JSON_STRING payload);
-void CallMpiInitialize(void);
 void CallMpiDoWork(void);
+void CallMpiInitialize(void);
 void CallMpiShutdown(void);
 
 #ifdef __cplusplus

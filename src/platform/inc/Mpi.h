@@ -45,8 +45,8 @@ int MpiGetReported(
     int* payloadSizeBytes);
 
 void MpiFree(MPI_JSON_STRING payload);
-
-void MpiInitalize(void);
+     
+void MpiInitialize(void);
 void MpiDoWork(void);
 void MpiShutdown(void);
 
