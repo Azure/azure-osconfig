@@ -204,3 +204,15 @@ void CallMpiDoWork(void)
 {
     MpiDoWork();
 }
+
+void CallMpiInitialize(void)
+{
+    OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
+    MpiInitialize();
+}
+
+void CallMpiShutdown(void)
+{
+    OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
+    MpiShutdown();
+}
