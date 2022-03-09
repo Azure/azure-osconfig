@@ -1033,15 +1033,15 @@ char* UrlDecode(char* target)
     }
 
     int i = 0, j = 0;
-    char buffer[4] = {0};
+    char buffer[3] = {0};
+    int value = 0;
     int targetLength = (int)strlen(target);
-    int decodedLength = targetLength;
-    char* decodedTarget = (char*)malloc(decodedLength);
+    char* decodedTarget = (char*)malloc(targetLength);
     if (NULL != decodedTarget)
     {
-        memset(decodedTarget, 0, decodedLength);
+        memset(decodedTarget, 0, targetLength);
 
-        for (i = 0; i < targetLength; i++)
+        for (i = 0, j = 0; (i < targetLength) && (j < targetLength); i++)
         {
             if ((isalnum(target[j])) || ('-' == target[j]) || ('_' == target[j]) || ('.' == target[j]) || ('~' == target[j]))
             {
@@ -1050,16 +1050,17 @@ char* UrlDecode(char* target)
             }
             else if ('+' == target[j])
             {
-                encodedTarget[i] = ' ';
+                decodedTarget[i] = ' ';
                 j += 1;
             }
             else if ('%' == target[j])
             {
-                memcpy(buffer, target[j], 3);
-                buffer[4] = 0;
-
-                sprintf(&decodedTarget[i], "%c", (char)atoi(buffer));
-                j += 3;
+                memcpy(buffer, &target[j + 1], 2);
+                buffer[2] = 0;
+                
+                sscanf(buffer, "%x", &value);
+                sprintf(&decodedTarget[i], "%c", value);
+                j += sizeof(buffer);
             }
         }
     }
