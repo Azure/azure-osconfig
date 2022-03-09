@@ -386,6 +386,13 @@ int Sample::SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, 
         writer.String(pair.second.c_str());
     }
 
+    // Add key-value pairs for removed map elements
+    for (auto& key : object.removedStringMapSettingKeys)
+    {
+        writer.Key(key.c_str());
+        writer.Null();
+    }
+
     writer.EndObject();
 
     // Object integer map setting
@@ -396,6 +403,13 @@ int Sample::SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, 
     {
         writer.Key(pair.first.c_str());
         writer.Int(pair.second);
+    }
+
+    // Add key-value pairs for removed map elements
+    for (auto& key : object.removedIntegerMapSettingKeys)
+    {
+        writer.Key(key.c_str());
+        writer.Null();
     }
 
     writer.EndObject();
@@ -572,6 +586,13 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 {
                     object.stringMapSetting[member.name.GetString()] = member.value.GetString();
                 }
+                else if (member.value.IsNull())
+                {
+                    object.stringMapSetting.erase(member.name.GetString());
+
+                    // Store the removed element key for reporting
+                    object.removedStringMapSettingKeys.push_back(member.name.GetString());
+                }
                 else
                 {
                     OsConfigLogError(SampleLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
@@ -601,6 +622,13 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
                 if (member.value.IsInt())
                 {
                     object.integerMapSetting[member.name.GetString()] = member.value.GetInt();
+                }
+                else if (member.value.IsNull())
+                {
+                    object.integerMapSetting.erase(member.name.GetString());
+
+                    // Store the removed element key for reporting
+                    object.removedIntegerMapSettingKeys.push_back(member.name.GetString());
                 }
                 else
                 {

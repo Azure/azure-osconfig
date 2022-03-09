@@ -105,17 +105,17 @@ stages:
     # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
     - script: |
         docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log"
-      condition: eq(${{ parameters.ignoreTestFailures }}, false)
+      condition: and(eq(${{ parameters.ignoreTestFailures }}, false), eq(${{ parameters.performCoverage }}, false))
       displayName: Run tests
 
     - script: |
         docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log || true"
-      condition: eq(${{ parameters.ignoreTestFailures }}, true)
+      condition: and(eq(${{ parameters.ignoreTestFailures }}, true), eq(${{ parameters.performCoverage }}, false))
       displayName: Run tests (ignore failures)
 
     - publish: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/TestOutput.log
       displayName: Publishing test outputs
-      condition: succeededOrFailed()
+      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false))
       artifact: Test_Logs_${{ parameters.variantName }}_${{ parameters.architecture }}
 
     # Publishes the results of the ctest test pass to be used in the Azure DevOps dashboard

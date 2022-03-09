@@ -41,6 +41,10 @@ std::map<MPI_HANDLE, std::shared_ptr<ModulesManager>> mpiMap;
 OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
 
 // MPI
+
+void MpiInitialize(void) {};
+void MpiShutdown(void) {};
+
 MPI_HANDLE MpiOpen(
     const char* clientName,
     const unsigned int maxPayloadSizeBytes)
@@ -380,11 +384,15 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
                     if (modMap.end() != modMap.find(componentName))
                     {
                         modMap[componentName].module->AddReportedObject(componentName, objectName);
-                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found reported object %s for component %s", objectName.c_str(), componentName.c_str());
+                        
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogInfo(ModulesManagerLog::Get(), "Found reported object %s for component %s", objectName.c_str(), componentName.c_str());
+                        }
                     }
                     else
                     {
-                        OsConfigLogError(ModulesManagerLog::Get(), "Found reported object %s for component %s, but no module has been loaded", objectName.c_str(), componentName.c_str());
+                        OsConfigLogError(ModulesManagerLog::Get(), "Found reported object %s for component %s, but no such module has been loaded", objectName.c_str(), componentName.c_str());
                         status = EINVAL;
                     }
                 }

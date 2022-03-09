@@ -48,6 +48,23 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
 
 bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, void* log);
 
+char* GetOsName(void* log);
+char* GetOsVersion(void* log);
+char* GetOsKernelName(void* log);
+char* GetOsKernelRelease(void* log);
+char* GetOsKernelVersion(void* log);
+char* GetCpu(void* log);
+char* GetProductName(void* log);
+char* GetProductVendor(void* log);
+
+void RemovePrefixBlanks(char* target);
+void RemovePrefixUpTo(char* target, char marker);
+void RemoveTrailingBlanks(char* target);
+void TruncateAtFirst(char* target, char marker);
+
+char* UrlEncode(char* target);
+char* UrlDecode(char* target);
+
 #ifdef __cplusplus
 }
 #endif

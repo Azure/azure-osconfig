@@ -52,7 +52,8 @@ static int g_protocol = PROTOCOL_AUTO;
 #define MIN_DEVICE_MODEL_ID 3
 #define MAX_DEVICE_MODEL_ID 999
 #define DEVICE_MODEL_ID_SIZE 40
-#define DEVICE_PRODUCT_INFO_SIZE 256
+#define DEVICE_PRODUCT_NAME_SIZE 128
+#define DEVICE_PRODUCT_INFO_SIZE 1024
 
 #define MAX_COMPONENT_NAME 256
 typedef struct REPORTED_PROPERTY
@@ -126,7 +127,14 @@ static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 static const char g_modelIdTemplate[] = "dtmi:osconfig:deviceosconfiguration;%d";
 static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 
-static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s";
+static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
+static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
+
+// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;"
+static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
+    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&"
+    "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
+    "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 
 static size_t g_reportedHash = 0;
@@ -604,6 +612,15 @@ int main(int argc, char *argv[])
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
     pid_t pid = 0;
+    char* osName = NULL;
+    char* osVersion = NULL;
+    char* cpuType = NULL;
+    char* kernelName = NULL;
+    char* kernelRelease = NULL;
+    char* kernelVersion = NULL;
+    char* productName = NULL;
+    char* productVendor = NULL;
+    char* encodedProductInfo = NULL;
 
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
@@ -655,9 +672,42 @@ int main(int argc, char *argv[])
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION);
-    OsConfigLogInfo(GetLog(), "Product info: %s", g_productInfo);
+    snprintf(g_productName, sizeof(g_productName), g_productNameTemplate, g_modelVersion, OSCONFIG_VERSION);
+    OsConfigLogInfo(GetLog(), "Product name: %s", g_productName);
 
+    osName = GetOsName(GetLog());
+    osVersion = GetOsVersion(GetLog());
+    cpuType = GetCpu(GetLog());
+    kernelName = GetOsKernelName(GetLog());
+    kernelRelease = GetOsKernelRelease(GetLog());
+    kernelVersion = GetOsKernelVersion(GetLog());
+    productVendor = GetProductVendor(GetLog());
+    productName = GetProductName(GetLog());
+
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, 
+        osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
+        
+    if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
+    {
+        if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
+        {
+            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated", 
+                (int)strlen(encodedProductInfo), (int)sizeof(g_productInfo));
+        } 
+        
+        memset(g_productInfo, 0, sizeof(g_productInfo));
+        memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
+    }
+    
+    OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+
+    FREE_MEMORY(osName);
+    FREE_MEMORY(osVersion);
+    FREE_MEMORY(cpuType);
+    FREE_MEMORY(productName);
+    FREE_MEMORY(productVendor);
+    FREE_MEMORY(encodedProductInfo);
+    
     OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
     if (PROTOCOL_MQTT_WS == g_protocol)
@@ -795,8 +845,11 @@ int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVID
         return -1;
     }
 
+    // Initialize the Management Platform
+    CallMpiInitialize();
+
     // Open the MPI session for this PnP Module instance:
-    if (NULL == (g_mpiHandle = CallMpiOpen(g_productInfo, g_maxPayloadSizeBytes)))
+    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
         LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
         g_exitState = MpiInitializationFailure;
@@ -828,7 +881,7 @@ static void LoadDesiredConfigurationFromFile()
         // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
         if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
         {
-            if (MPI_OK == CallMpiSetDesired(g_productInfo, (MPI_JSON_STRING)payload, payloadSizeBytes))
+            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
             {
                 g_desiredHash = payloadHash;
             }
@@ -846,7 +899,7 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localReporting)
     {
-        mpiResult = CallMpiGetReported(g_productInfo, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
@@ -916,6 +969,8 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
+
+    CallMpiShutdown();
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
