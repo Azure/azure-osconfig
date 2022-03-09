@@ -13,8 +13,6 @@
 static const char g_componentMarker[] = "__t";
 static const char g_desiredObjectName[] = "desired";
 static const char g_desiredVersion[] = "$version";
-static const char g_child[] = "child";
-static const char g_children[] = "children";
 
 // The openssl engine from the AIS aziot-identity-service package:
 static const char g_azIotKeys[] = "aziot_keys";
@@ -256,8 +254,6 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
 
         numChildren = json_object_get_count(desiredObject);
 
-        OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin: %d %s in desired object, version %d", (int)numChildren, (1 == numChildren) ? g_child : g_children, version);
-
         for (size_t i = 0; i < numChildren; i++)
         {
             componentName = json_object_get_name(desiredObject, i);
@@ -269,15 +265,10 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
                 continue;
             }
 
-            OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin: component child[%d] is %s", (int)i, componentName);
-
             if (JSONObject == json_type(childValue))
             {
-                OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin: process child[%d]", (int)i);
                 childObject = json_value_get_object(childValue);
                 numChildChildren = json_object_get_count(childObject);
-
-                OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin: %d %s in component", (int)numChildChildren, (1 == numChildChildren) ? g_child : g_children);
 
                 for (size_t i = 0; i < numChildChildren; i++)
                 {
@@ -295,8 +286,6 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
                         // Ignore the marker
                         continue;
                     }
-
-                    OsConfigLogInfo(GetLog(), "ProcessJsonFromTwin: property child[%d] is %s, process it", (int)i, propertyName);
 
                     result = propertyCallback(componentName, propertyName, propertyValue, version);
                 }
