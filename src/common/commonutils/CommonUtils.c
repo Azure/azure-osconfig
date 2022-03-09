@@ -1024,3 +1024,46 @@ char* UrlEncode(char* target)
 
     return encodedTarget;
 }
+
+char* UrlDecode(char* target)
+{
+    if (NULL == target)
+    {
+        return NULL;
+    }
+
+    int i = 0, j = 0;
+    char buffer[3] = {0};
+    int value = 0;
+    int targetLength = (int)strlen(target);
+    char* decodedTarget = (char*)malloc(targetLength);
+    if (NULL != decodedTarget)
+    {
+        memset(decodedTarget, 0, targetLength);
+
+        for (i = 0, j = 0; (i < targetLength) && (j < targetLength); i++)
+        {
+            if ((isalnum(target[j])) || ('-' == target[j]) || ('_' == target[j]) || ('.' == target[j]) || ('~' == target[j]))
+            {
+                decodedTarget[i] = target[j];
+                j += 1;
+            }
+            else if ('+' == target[j])
+            {
+                decodedTarget[i] = ' ';
+                j += 1;
+            }
+            else if ('%' == target[j])
+            {
+                memcpy(buffer, &target[j + 1], 2);
+                buffer[2] = 0;
+                
+                sscanf(buffer, "%x", &value);
+                sprintf(&decodedTarget[i], "%c", value);
+                j += sizeof(buffer);
+            }
+        }
+    }
+
+    return decodedTarget;
+}
