@@ -1,6 +1,9 @@
 # E2E test pipeline - performs end-to-end tests on the following platforms
+#  - Debian 9
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
+# 
+# See "!!! ADD NEW DISTROS HERE !!!" for new distro placeholder
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
@@ -115,14 +118,20 @@ stages:
         matrix:
           # Find different VM variants on the Azure Marketplace
           # See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
-          # debian-9:
-          #   distroName: debian-9
-          #   image_publisher: credativ
-          #   image_offer: Debian
-          #   image_sku: 9-backports
-          #   image_version: 9.20210721.0
-          #   packagePattern: '**/*stretch_x86_64.deb'
-          #   device_id: debian9
+          # !!! ADD NEW DISTROS HERE !!!
+          debian-9:
+            distroName: debian-9
+            image_publisher: credativ
+            image_offer: Debian
+            image_sku: 9
+            image_version: 9.20210721.0
+            packagePattern: '**/*stretch_x86_64.deb'
+            device_id: debian9
+            pre_script: >-
+              export DEBIAN_FRONTEND=noninteractive &&
+              sudo apt update && sudo apt upgrade -y && sudo apt install curl wget -y &&
+              wget https://github.com/Azure/azure-iotedge/releases/download/1.2.8/aziot-identity-service_1.2.6-1_debian9_amd64.deb &&
+              sudo apt install ./aziot-identity-service_1.2.6-1_debian9_amd64.deb -y
           ubuntu-18.04:
             distroName: ubuntu-18.04
             image_publisher: Canonical
@@ -132,6 +141,7 @@ stages:
             packagePattern: '**/*bionic_x86_64.deb'
             device_id: ubuntu1804
             pre_script: >-
+              export DEBIAN_FRONTEND=noninteractive &&
               curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &&
               sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/ &&
               curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list &&
@@ -147,8 +157,13 @@ stages:
             packagePattern: '**/*focal_x86_64.deb'
             device_id: ubuntu2004
             pre_script: >-
-              wget https://github.com/Azure/azure-iotedge/releases/download/1.2.4/aziot-identity-service_1.2.3-1_ubuntu20.04_amd64.deb &&
-              sudo apt install ./aziot-identity-service_1.2.3-1_ubuntu20.04_amd64.deb
+              export DEBIAN_FRONTEND=noninteractive &&
+              curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg &&
+              sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/ &&
+              curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list &&
+              sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/ &&
+              sudo apt update &&
+              sudo apt install aziot-identity-service
 
     steps:
       - task: DownloadPipelineArtifact@2
@@ -213,9 +228,10 @@ stages:
   - job: E2ETestJob
     strategy:
       matrix:
-        # debian-9:
-        #     distroName: debian-9
-        #     device_id: debian9
+        # !!! ADD NEW DISTROS HERE !!!
+        debian-9:
+          distroName: debian-9
+          device_id: debian9
         ubuntu-18.04:
           distroName: ubuntu-18.04
           device_id: ubuntu1804
@@ -258,6 +274,36 @@ stages:
         continueOnError: true
         artifact: Logs_$(distroName)
 
+- stage: Terraform_stop_vm
+  displayName: Stop VMs
+  condition: succeededOrFailed()
+  dependsOn:
+    - Terraform_iothub
+    - Terraform_VM
+    - Run_Test_Driver
+  variables:
+    RESOURCE_GROUP_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['resource_group_name_step.RESOURCE_GROUP_NAME'] ]
+  pool:
+    vmImage: 'ubuntu-18.04'
+  jobs:
+  - job: StopVMs
+    steps:
+      - task: AzureCLI@2
+        displayName: Stop running VMs
+        continueOnError: true
+        name: azcli_dt
+        inputs:
+          azureSubscription: $(SERVICE_CONNECTION)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt
+            az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "72f988bf-86f1-41af-91ab-2d7cd011db47"
+            # !!! ADD NEW DISTROS HERE !!!
+            az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-debian-9
+            az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-ubuntu-18.04
+            az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-ubuntu-20.04
+
 - stage: Terraform_destroy_vm
   displayName: Tear down cloud resources (VMs)
   dependsOn:
@@ -274,9 +320,9 @@ stages:
   - job: TerraformDestroy
     strategy:
           matrix:
-            # debian-9:
-            #   distroName: debian-9
-            #   device_id: debian9
+            debian-9:
+              distroName: debian-9
+              device_id: debian9
             ubuntu-18.04:
               distroName: ubuntu-18.04
               device_id: ubuntu1804
