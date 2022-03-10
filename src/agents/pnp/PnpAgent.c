@@ -43,7 +43,6 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_PRIORITY "LocalPriority"
-#define LOCAL_MANAGEMENT "LocalManagement"
 #define FULL_LOGGING "FullLogging"
 
 #define PROTOCOL "Protocol"
@@ -142,7 +141,7 @@ static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
 static int g_localPriority = 0;
-static int g_localReporting = 0;
+static int g_localManagement = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -377,27 +376,6 @@ static bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
     return result;
 }
 
-static bool IsLocalEnabledManagementInJsonConfig(const char* jsonString)
-{
-    bool result = false;
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                result = (0 == (int)json_object_get_number(rootObject, LOCAL_MANAGEMENT)) ? false : true;
-            }
-            json_value_free(rootValue);
-        }
-    }
-    return result;
-}
-
-
 static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)
 {
     JSON_Value* rootValue = NULL;
@@ -478,9 +456,9 @@ static int GetLocalPriorityFromJsonConfig(const char* jsonString)
     return g_localPriority = GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
 }
 
-static int GetLocalReportingFromJsonConfig(const char* jsonString)
+static int GetLocalManagementFromJsonConfig(const char* jsonString)
 {
-    return g_localReporting = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
+    return g_localManagement = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
 }
 
 static int GetProtocolFromJsonConfig(const char* jsonString)
@@ -651,7 +629,6 @@ int main(int argc, char *argv[])
     if (NULL != jsonConfiguration)
     {
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
-        SetLocalManagement(IsLocalEnabledManagementInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -687,7 +664,7 @@ int main(int argc, char *argv[])
         LoadReportedFromJsonConfig(jsonConfiguration);
         GetReportingIntervalFromJsonConfig(jsonConfiguration);
         GetLocalPriorityFromJsonConfig(jsonConfiguration);
-        GetLocalReportingFromJsonConfig(jsonConfiguration);
+        GetLocalManagementFromJsonConfig(jsonConfiguration);
         GetProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
@@ -920,7 +897,7 @@ static void SaveReportedConfigurationToFile()
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
     int mpiResult = MPI_OK;
-    if (g_localReporting)
+    if (g_localManagement)
     {
         mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))

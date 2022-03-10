@@ -28,9 +28,6 @@ void CloseLog(OSCONFIG_LOG_HANDLE* log);
 void SetFullLogging(bool fullLogging);
 bool IsFullLoggingEnabled(void);
 
-void SetLocalManagement(bool localManagement);
-bool IsLocalManagementEnabled(void);
-
 FILE* GetLogFile(OSCONFIG_LOG_HANDLE log);
 char* GetFormattedTime();
 void TrimLog(OSCONFIG_LOG_HANDLE log);
