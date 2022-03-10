@@ -15,7 +15,6 @@
 #define MAX_LOG_TRIM 1000
 
 static bool g_fullLoggingEnabled = false;
-static bool g_localManagementEnabled = false;
 
 typedef struct OSCONFIG_LOG
 {
