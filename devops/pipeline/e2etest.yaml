@@ -3,7 +3,7 @@
 #  - Ubuntu 18.04
 #  - Ubuntu 20.04
 # 
-# See "!!! ADD NEW DISTROS HERE !!!" for new distro placeholder
+# Add new distros as needed
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
@@ -118,7 +118,7 @@ stages:
         matrix:
           # Find different VM variants on the Azure Marketplace
           # See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
-          # !!! ADD NEW DISTROS HERE !!!
+          # Add new distros as needed
           debian-9:
             distroName: debian-9
             image_publisher: credativ
@@ -228,7 +228,7 @@ stages:
   - job: E2ETestJob
     strategy:
       matrix:
-        # !!! ADD NEW DISTROS HERE !!!
+        # Add new distros as needed
         debian-9:
           distroName: debian-9
           device_id: debian9
@@ -299,7 +299,7 @@ stages:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
             az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "72f988bf-86f1-41af-91ab-2d7cd011db47"
-            # !!! ADD NEW DISTROS HERE !!!
+            # Add new distros as needed
             az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-debian-9
             az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-ubuntu-18.04
             az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-ubuntu-20.04
