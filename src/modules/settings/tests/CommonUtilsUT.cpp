@@ -941,13 +941,13 @@ TEST_F(CommonUtilsTest, TruncateAtFirst)
 
 struct UrlEncoding
 {
-    const char* original;
-    const char* expected;
+    const char* decoded;
+    const char* encoded;
 };
 
-TEST_F(CommonUtilsTest, UrlEncode)
+TEST_F(CommonUtilsTest, UrlEncodeDecode)
 {
-    UrlEncoding validEncodedUrls[] = {
+    UrlEncoding validUrls[] = {
         { "+", "%2B" },
         { " ", "+" },
         { "abcABC123", "abcABC123" },
@@ -968,16 +968,21 @@ TEST_F(CommonUtilsTest, UrlEncode)
         "Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22ACME%22%26%22product_name%22%3D%2210ABC789%22%29"}
     };
 
-    int validEncodedUrlsSize = ARRAY_SIZE(validEncodedUrls);
+    int validUrlsSize = ARRAY_SIZE(validUrls);
 
-    char* encodedUrl = nullptr;
+    char* url = nullptr;
 
-    for (int i = 0; i < validEncodedUrlsSize; i++)
+    for (int i = 0; i < validUrlsSize; i++)
     {
-        EXPECT_NE(nullptr, encodedUrl = UrlEncode((char*)validEncodedUrls[i].original));
-        EXPECT_STREQ(encodedUrl, validEncodedUrls[i].expected);
-        FREE_MEMORY(encodedUrl);
+        EXPECT_NE(nullptr, url = UrlEncode((char*)validUrls[i].decoded));
+        EXPECT_STREQ(url, validUrls[i].encoded);
+        FREE_MEMORY(url);
+
+        EXPECT_NE(nullptr, url = UrlDecode((char*)validUrls[i].encoded));
+        EXPECT_STREQ(url, validUrls[i].decoded);
+        FREE_MEMORY(url);
     }
 
-    EXPECT_EQ(nullptr, encodedUrl = UrlEncode(nullptr));
+    EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
+    EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
 }

@@ -63,6 +63,7 @@ void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
 char* UrlEncode(char* target);
+char* UrlDecode(char* target);
 
 #ifdef __cplusplus
 }
