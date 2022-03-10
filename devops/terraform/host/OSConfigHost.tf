@@ -182,17 +182,3 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
         environment = var.environment_tag
     }
 }
-
-resource "azurerm_dev_test_global_vm_shutdown_schedule" "vm_shutdown_schedule" {
-  virtual_machine_id = azurerm_linux_virtual_machine.osconfigvm.id
-  location           = "eastus"
-  enabled            = true
-
-  // Shutdown 60-mins after creation time for cost savings
-  daily_recurrence_time = formatdate("hhmm", timeadd(timestamp(), "60m"))
-  timezone              = "UTC"
-
-  notification_settings {
-      enabled = false
-  }
-}
