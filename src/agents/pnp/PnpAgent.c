@@ -31,6 +31,9 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
+// The configuration file for OSConfig
+#define CONFIG_FILE "/etc/osconfig/osconfig.json"
+
 // The optional second command line argument that when present instructs the agent to run as a traditional daemon
 #define FORK_ARG "fork"
 
@@ -40,7 +43,8 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_PRIORITY "LocalPriority"
-#define LOCAL_REPORTING "LocalReporting"
+#define LOCAL_MANAGEMENT "LocalManagement"
+#define FULL_LOGGING "FullLogging"
 
 #define PROTOCOL "Protocol"
 #define PROTOCOL_AUTO 0
@@ -117,9 +121,6 @@ static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
-
-static const char g_configFile[] = "/etc/osconfig/osconfig.json";
-static const char g_fullLoggingValue[] = "FullLogging";
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
@@ -356,7 +357,7 @@ static void ForkDaemon()
     }
 }
 
-static bool IsFullLoggingInJsonConfig(const char* jsonString)
+static bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
 {
     bool result = false;
     JSON_Value* rootValue = NULL;
@@ -368,13 +369,34 @@ static bool IsFullLoggingInJsonConfig(const char* jsonString)
         {
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
-                result = (0 == (int)json_object_get_number(rootObject, g_fullLoggingValue)) ? false : true;
+                result = (0 == (int)json_object_get_number(rootObject, FULL_LOGGING)) ? false : true;
             }
             json_value_free(rootValue);
         }
     }
     return result;
 }
+
+static bool IsLocalEnabledManagementInJsonConfig(const char* jsonString)
+{
+    bool result = false;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                result = (0 == (int)json_object_get_number(rootObject, LOCAL_MANAGEMENT)) ? false : true;
+            }
+            json_value_free(rootValue);
+        }
+    }
+    return result;
+}
+
 
 static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)
 {
@@ -458,7 +480,7 @@ static int GetLocalPriorityFromJsonConfig(const char* jsonString)
 
 static int GetLocalReportingFromJsonConfig(const char* jsonString)
 {
-    return g_localReporting = GetIntegerFromJsonConfig(LOCAL_REPORTING, jsonString, 0, 0, 1);
+    return g_localReporting = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
 }
 
 static int GetProtocolFromJsonConfig(const char* jsonString)
@@ -625,10 +647,11 @@ int main(int argc, char *argv[])
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
 
-    jsonConfiguration = LoadStringFromFile(g_configFile, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false);
     if (NULL != jsonConfiguration)
     {
-        SetFullLogging(IsFullLoggingInJsonConfig(jsonConfiguration));
+        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetLocalManagement(IsLocalEnabledManagementInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -651,13 +674,13 @@ int main(int argc, char *argv[])
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", g_configFile);
+        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
 
     // Load remaining configuration
-    jsonConfiguration = LoadStringFromFile(g_configFile, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false);
     if (NULL != jsonConfiguration)
     {
         GetModelVersionFromJsonConfig(jsonConfiguration);
