@@ -13,6 +13,7 @@
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::StrEq;
 using ::testing::Values;
 
 namespace Tests
@@ -21,6 +22,7 @@ namespace Tests
     {
     public:
         std::shared_ptr<MockManagementModule> module;
+        std::shared_ptr<MmiSession> session;
 
         static const char defaultClient[];
         static const char defaultComponent[];
@@ -38,94 +40,55 @@ namespace Tests
 
     void ManagementModuleTests::SetUp()
     {
-        module = std::make_shared<MockManagementModule>(defaultClient);
+        module = std::make_shared<MockManagementModule>();
+        session = std::make_shared<MmiSession>(module, defaultClient);
     }
 
     void ManagementModuleTests::TearDown()
     {
+        session.reset();
         module.reset();
     }
 
     TEST_F(ManagementModuleTests, LoadModule)
     {
-        ManagementModule module(defaultClient, g_validModulePathV1);
+        ManagementModule module(g_validModulePathV1);
+        ManagementModule::Info info = module.GetInfo();
 
-        module.LoadModule();
-
-        ASSERT_TRUE(module.IsValid());
-        ASSERT_TRUE(module.IsLoaded());
-
-        // Check info parsed from module GetInfo() call
-        EXPECT_STREQ("Valid Test Module V1", module.GetName().c_str());
-        EXPECT_STREQ("1.0.0.0", module.GetVersion().ToString().c_str());
-        EXPECT_EQ(ManagementModule::Lifetime::Short, module.GetLifetime());
-        EXPECT_THAT(module.GetSupportedComponents(), ElementsAre(g_testModuleComponent1, g_testModuleComponent2));
-
-        module.UnloadModule();
-
-        ASSERT_TRUE(module.IsValid());
-        ASSERT_FALSE(module.IsLoaded());
+        EXPECT_TRUE(module.IsValid());
+        EXPECT_STREQ("Valid Test Module V1", info.name.c_str());
+        EXPECT_STREQ("1.0.0.0", info.version.ToString().c_str());
+        EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidPath)
     {
         const std::string invalidPath = g_moduleDir;
-        ManagementModule invalidModule(defaultClient, (invalidPath + "/blah.so"));
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
+        ManagementModule invalidModule(invalidPath + "/blah.so");
+        EXPECT_FALSE(invalidModule.IsValid());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidMmi)
     {
-        ManagementModule invalidModule(defaultClient, g_invalidModulePath);
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
+        ManagementModule invalidModule(g_invalidModulePath);
+        EXPECT_FALSE(invalidModule.IsValid());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidModuleInfo)
     {
-        ManagementModule invalidModule(defaultClient, g_invalidGetInfoModulePath);
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
-    }
-
-    TEST_F(ManagementModuleTests, ReportedObjects)
-    {
-        ManagementModule module(defaultClient, g_validModulePathV1);
-
-        const char object_1[] = "object_1";
-        const char object_2[] = "object_2";
-        const char object_3[] = "object_3";
-
-        module.AddReportedObject(g_testModuleComponent1, object_1);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), IsEmpty());
-
-        module.AddReportedObject(g_testModuleComponent1, object_2);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1, object_2));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), IsEmpty());
-
-        module.AddReportedObject(g_testModuleComponent2, object_3);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1, object_2));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), ElementsAre(object_3));
+        ManagementModule invalidModule(g_invalidGetInfoModulePath);
+        EXPECT_FALSE(invalidModule.IsValid());
     }
 
     TEST_F(ManagementModuleTests, CallMmiSet)
     {
-        MockManagementModule module(defaultClient);
         char componentName[] = "component_name";
         char objectName[] = "object_name";
         char payload[] = "\"payload\"";
         int payloadSize = strlen(payload);
 
-        // Provide a mock implmenation of an MmiSet() function pointer to the module
-        module.MmiSet(
+        // Provide a mock implmenation of CallMmiSet()
+        ON_CALL(*module, CallMmiSet).WillByDefault(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
             {
                 (void)clientSession;
@@ -136,29 +99,20 @@ namespace Tests
                 return -1;
             });
 
-        // Delegate mock call to parent class and call mmiSet function pointer
-        EXPECT_CALL(module, CallMmiSet(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize)).Times(1).WillOnce(
-            [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
-            {
-                return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
-            });
-
-        EXPECT_CALL(module, LoadModule()).Times(1);
-        ASSERT_EQ(0, module.CallMmiSet(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
+        ASSERT_EQ(MMI_OK, session->Set(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
     }
 
     TEST_F(ManagementModuleTests, CallMmiGet)
     {
-        MockManagementModule module(defaultClient);
         char componentName[] = "component_name";
         char objectName[] = "object_name";
         char expectedPayload[] = "\"payload\"";
         MMI_JSON_STRING payload = nullptr;
         int payloadSize = 0;
 
-        // Provide a mock implmenation of an MmiGet() function pointer to the module that returns a payload and payloadSize
-        module.MmiGet(
-            [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
+        // Provide a mock implmenation of CallMmiGet()
+        ON_CALL(*module, CallMmiGet).WillByDefault(
+           [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
             {
                 (void)clientSession;
                 int status = 0;
@@ -179,7 +133,7 @@ namespace Tests
                     }
                     else
                     {
-                        std::fill(*payload, *payload + size, 0);
+                        std::fill(*payload, *payload + size + 1, 0);
                         std::memcpy(*payload, buffer, size);
                         *payloadSizeBytes = size;
                     }
@@ -192,22 +146,14 @@ namespace Tests
                 return status;
             });
 
-        // Delegate mock call to parent class and call mmiGet function pointer
-        EXPECT_CALL(module, CallMmiGet(componentName, objectName, _, _)).Times(1).WillOnce(
-            [&module](const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
-            {
-                return module.ManagementModule::CallMmiGet(componentName, objectName, payload, payloadSizeBytes);
-            });
-
-        EXPECT_CALL(module, LoadModule()).Times(1);
-        ASSERT_EQ(0, module.CallMmiGet(componentName, objectName, &payload, &payloadSize));
-        ASSERT_STREQ(expectedPayload, payload);
-        ASSERT_EQ(strlen(expectedPayload), payloadSize);
+        EXPECT_EQ(MMI_OK, session->Get(componentName, objectName, &payload, &payloadSize));
+        EXPECT_STREQ(expectedPayload, payload);
+        EXPECT_EQ(strlen(expectedPayload), payloadSize);
     }
 
     TEST_F(ManagementModuleTests, PayloadValidation)
     {
-        MockManagementModule module(defaultClient);
+        MockManagementModule module;
         std::vector<std::pair<std::string, std::string>> objects = {
             {g_string, g_stringPayload},
             {g_integer, g_integerPayload},
@@ -236,15 +182,7 @@ namespace Tests
         {
             const char* objectName = object.first.c_str();
             const char* payload = object.second.c_str();
-            // Delegate mock call to parent class and call mmiSet function pointer
-            EXPECT_CALL(module, CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload))).Times(1).WillOnce(
-                [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
-                {
-                    return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
-                });
-
-            EXPECT_CALL(module, LoadModule()).Times(1);
-            ASSERT_EQ(MMI_OK, module.CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
+            EXPECT_EQ(MMI_OK, session->Set(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
         }
 
     }

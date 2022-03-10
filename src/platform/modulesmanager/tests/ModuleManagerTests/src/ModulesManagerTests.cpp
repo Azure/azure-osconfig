@@ -8,17 +8,19 @@
 #include <CommonTests.h>
 #include <CommonUtils.h>
 #include <ManagementModule.h>
+#include <MockManagementModule.h>
+#include <ModulesManager.h>
 #include <MockModulesManager.h>
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
 
-using testing::_;
-using testing::ElementsAre;
-using testing::DoAll;
-using testing::InSequence;
-using testing::Return;
-using testing::SetArgPointee;
-using testing::StrEq;
+using ::testing::_;
+using ::testing::ElementsAre;
+using ::testing::DoAll;
+using ::testing::InSequence;
+using ::testing::Return;
+using ::testing::SetArgPointee;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 namespace Tests
@@ -26,8 +28,10 @@ namespace Tests
     class ModuleManagerTests : public ::testing::Test
     {
     protected:
-        std::shared_ptr<StrictMock<MockModulesManager>> moduleManager;
-        std::shared_ptr<StrictMock<MockManagementModule>> defaultModule;
+        // TODO: rename to mockModulesManager
+        std::shared_ptr<MockModulesManager> moduleManager;
+        std::shared_ptr<StrictMock<MockManagementModule>> mockModule;
+        std::shared_ptr<MpiSession> session;
 
         static const char defaultClient[];
         static const char defaultComponent[];
@@ -42,42 +46,48 @@ namespace Tests
     const char ModuleManagerTests::defaultClient[] = "Default_ModuleManagerTest_Client";
     const char ModuleManagerTests::defaultComponent[] = "Default_ModuleManagerTest_Component";
     const char ModuleManagerTests::defaultObject[] = "Default_ModuleManagerTest_Object";
-    char ModuleManagerTests::defaultPayload[] = "Default_ModuleManagerTest_Payload";
+    char ModuleManagerTests::defaultPayload[] = "\"Default_ModuleManagerTest_Payload\"";
     const int ModuleManagerTests::defaultPayloadSize = ARRAY_SIZE(ModuleManagerTests::defaultPayload) - 1;
 
     void ModuleManagerTests::SetUp()
     {
-        moduleManager.reset(new StrictMock<MockModulesManager>(defaultClient, 0));
-        ASSERT_NE(nullptr, moduleManager);
+        // Create a ModulesManager
+        this->moduleManager = std::make_shared<MockModulesManager>();
 
-        this->defaultModule = moduleManager->CreateModule(defaultComponent);
+        // Create a mock ManagementModule and "Load" it into the ModulesManager
+        this->mockModule = std::make_shared<StrictMock<MockManagementModule>>("Default_Module_Name", std::vector<std::string>({defaultComponent}));
+        this->moduleManager->Load(this->mockModule);
+
+        // "Open" an MpiSession using the ModulesManager with the mock module loaded
+        this->session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
     }
 
     void ModuleManagerTests::TearDown()
     {
-        moduleManager.reset();
-        defaultModule.reset();
+        this->session.reset();
+        this->mockModule.reset();
+        this->moduleManager.reset();
     }
 
     TEST_F(ModuleManagerTests, MpiSet)
     {
-        EXPECT_CALL(*defaultModule, CallMmiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize)).Times(1).WillOnce(Return(MMI_OK));
-        ASSERT_EQ(MPI_OK, moduleManager->MpiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
+        EXPECT_CALL(*mockModule, CallMmiSet(_, defaultComponent, defaultObject, defaultPayload, defaultPayloadSize)).Times(1).WillOnce(Return(MMI_OK));
+        ASSERT_EQ(MPI_OK, session->Set(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
     }
 
     TEST_F(ModuleManagerTests, MpiSet_InvalidComponentName)
     {
-        ASSERT_EQ(EINVAL, moduleManager->MpiSet(nullptr, defaultObject, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(EINVAL, session->Set(nullptr, defaultObject, defaultPayload, defaultPayloadSize));
     }
 
     TEST_F(ModuleManagerTests, MpiSet_InvalidObjectName)
     {
-        ASSERT_EQ(EINVAL, moduleManager->MpiSet(defaultComponent, nullptr, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(EINVAL, session->Set(defaultComponent, nullptr, defaultPayload, defaultPayloadSize));
     }
 
     TEST_F(ModuleManagerTests, MpiSet_InvalidPayload)
     {
-        ASSERT_EQ(EINVAL, moduleManager->MpiSet(defaultComponent, defaultObject, nullptr, 0));
+        ASSERT_EQ(EINVAL, session->Set(defaultComponent, defaultObject, nullptr, 0));
     }
 
     TEST_F(ModuleManagerTests, MpiGet)
@@ -86,9 +96,9 @@ namespace Tests
         MMI_JSON_STRING payload = nullptr;
         char expected[] = "\"expected\"";
 
-        EXPECT_CALL(*defaultModule, CallMmiGet(defaultComponent, defaultObject, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(expected), SetArgPointee<3>(strlen(expected)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule, CallMmiGet(_, defaultComponent, defaultObject, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(expected), SetArgPointee<4>(strlen(expected)), Return(MMI_OK)));
 
-        EXPECT_EQ(MPI_OK, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(MPI_OK, session->Get(defaultComponent, defaultObject, &payload, &payloadSizeBytes));
         EXPECT_STREQ(expected, payload);
         EXPECT_EQ(strlen(expected), payloadSizeBytes);
     }
@@ -98,7 +108,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        EXPECT_EQ(EINVAL, moduleManager->MpiGet(nullptr, defaultObject, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, session->Get(nullptr, defaultObject, &payload, &payloadSizeBytes));
         EXPECT_EQ(nullptr, payload);
         EXPECT_EQ(0, payloadSizeBytes);
     }
@@ -108,7 +118,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, nullptr, &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, session->Get(defaultComponent, nullptr, &payload, &payloadSizeBytes));
         EXPECT_EQ(nullptr, payload);
         EXPECT_EQ(0, payloadSizeBytes);
     }
@@ -117,7 +127,7 @@ namespace Tests
     {
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, defaultObject, nullptr, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, session->Get(defaultComponent, defaultObject, nullptr, &payloadSizeBytes));
         EXPECT_EQ(0, payloadSizeBytes);
     }
 
@@ -125,7 +135,7 @@ namespace Tests
     {
         MMI_JSON_STRING payload = nullptr;
 
-        EXPECT_EQ(EINVAL, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, nullptr));
+        EXPECT_EQ(EINVAL, session->Get(defaultComponent, defaultObject, &payload, nullptr));
         EXPECT_EQ(nullptr, payload);
     }
 
@@ -141,10 +151,12 @@ namespace Tests
                 }
             })"""";
 
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+        std::shared_ptr<MockManagementModule> mockModule = std::make_shared<MockManagementModule>("mockModule", std::vector<std::string>({componentName}));
+        moduleManager->Load(mockModule);
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
 
-        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName), StrEq(value), strlen(value))).Times(1).WillOnce(Return(MMI_OK));
-        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
+        EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName), StrEq(value), strlen(value))).Times(1).WillOnce(Return(MMI_OK));
+        ASSERT_EQ(MPI_OK, session->SetDesired(payload, strlen(payload)));
     }
 
     TEST_F(ModuleManagerTests, MpiSetDesired_MultipleComponents)
@@ -165,13 +177,18 @@ namespace Tests
                 }
             })"""";
 
-        std::shared_ptr<MockManagementModule> mockModule_1 = moduleManager->CreateModule(componentName_1);
-        std::shared_ptr<MockManagementModule> mockModule_2 = moduleManager->CreateModule(componentName_2);
+        std::shared_ptr<MockManagementModule> mockModule_1 = std::make_shared<MockManagementModule>("mockModule_1", std::vector<std::string>({componentName_1}));
+        std::shared_ptr<MockManagementModule> mockModule_2 = std::make_shared<MockManagementModule>("mockModule_2", std::vector<std::string>({componentName_2}));
 
-        EXPECT_CALL(*mockModule_1, CallMmiSet(StrEq(componentName_1), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
-        EXPECT_CALL(*mockModule_2, CallMmiSet(StrEq(componentName_2), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+        moduleManager->Load(mockModule_1);
+        moduleManager->Load(mockModule_2);
 
-        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
+
+        EXPECT_CALL(*mockModule_1, CallMmiSet(_, StrEq(componentName_1), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
+        EXPECT_CALL(*mockModule_2, CallMmiSet(_, StrEq(componentName_2), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+
+        ASSERT_EQ(MPI_OK, session->SetDesired(payload, strlen(payload)));
     }
 
     TEST_F(ModuleManagerTests, MpiSetDesired_MultipleObjects)
@@ -189,35 +206,33 @@ namespace Tests
                 }
             })"""";
 
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
+        std::shared_ptr<MockManagementModule> mockModule = std::make_shared<MockManagementModule>("mockModule", std::vector<std::string>({componentName}));
+        moduleManager->Load(mockModule);
 
-        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
-        EXPECT_CALL(*mockModule, CallMmiSet(StrEq(componentName), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
 
-        ASSERT_EQ(MPI_OK, moduleManager->MpiSetDesired(payload, strlen(payload)));
+        EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
+        EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
+
+        EXPECT_EQ(MPI_OK, session->SetDesired(payload, strlen(payload)));
     }
 
     TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonPayload)
     {
-        const char componentName[] = "component";
         char invalid[] = "invalid";
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
-
-        ASSERT_EQ(EINVAL, moduleManager->MpiSetDesired(invalid, strlen(invalid)));
+        EXPECT_EQ(EINVAL, session->SetDesired(invalid, strlen(invalid)));
     }
 
     TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonSchema)
     {
-        const char componentName[] = "component";
         char invalid[] = R""""([
             {
                 "component": {
                     "object": "value"
                 }
             }])"""";
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
 
-        ASSERT_EQ(EINVAL, moduleManager->MpiSetDesired(invalid, strlen(invalid)));
+        EXPECT_EQ(EINVAL, session->SetDesired(invalid, strlen(invalid)));
     }
 
     TEST_F(ModuleManagerTests, MpiGetReported)
@@ -235,12 +250,15 @@ namespace Tests
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
-        mockModule->AddReportedObject(componentName, objectName);
+        std::shared_ptr<MockManagementModule> mockModule = std::make_shared<MockManagementModule>("mockModule", std::vector<std::string>({componentName}));
 
-        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value), SetArgPointee<3>(strlen(value)), Return(MMI_OK)));
+        moduleManager->Load(mockModule);
+        moduleManager->AddReportedObject(componentName, objectName);
 
-        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
+
+        EXPECT_CALL(*mockModule, CallMmiGet(_, StrEq(componentName), StrEq(objectName), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value), SetArgPointee<4>(strlen(value)), Return(MMI_OK)));
+        EXPECT_EQ(MPI_OK, session->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
         EXPECT_TRUE(JSON_EQ(expected, actual));
@@ -267,15 +285,19 @@ namespace Tests
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        std::shared_ptr<MockManagementModule> mockModule_1 = moduleManager->CreateModule(componentName_1);
-        std::shared_ptr<MockManagementModule> mockModule_2 = moduleManager->CreateModule(componentName_2);
-        mockModule_1->AddReportedObject(componentName_1, objectName_1);
-        mockModule_2->AddReportedObject(componentName_2, objectName_2);
+        std::shared_ptr<MockManagementModule> mockModule_1 = std::make_shared<MockManagementModule>("mockModule_1", std::vector<std::string>({componentName_1}));
+        std::shared_ptr<MockManagementModule> mockModule_2 = std::make_shared<MockManagementModule>("mockModule_2", std::vector<std::string>({componentName_2}));
 
-        EXPECT_CALL(*mockModule_1, CallMmiGet(StrEq(componentName_1), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_1), SetArgPointee<3>(strlen(value_1)), Return(MMI_OK)));
-        EXPECT_CALL(*mockModule_2, CallMmiGet(StrEq(componentName_2), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_2), SetArgPointee<3>(strlen(value_2)), Return(MMI_OK)));
+        moduleManager->Load(mockModule_1);
+        moduleManager->Load(mockModule_2);
+        moduleManager->AddReportedObject(componentName_1, objectName_1);
+        moduleManager->AddReportedObject(componentName_2, objectName_2);
 
-        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        EXPECT_CALL(*mockModule_1, CallMmiGet(_, StrEq(componentName_1), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_1), SetArgPointee<4>(strlen(value_1)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule_2, CallMmiGet(_, StrEq(componentName_2), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_2), SetArgPointee<4>(strlen(value_2)), Return(MMI_OK)));
+
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
+        EXPECT_EQ(MPI_OK, session->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
         EXPECT_TRUE(JSON_EQ(expected, actual));
@@ -299,14 +321,16 @@ namespace Tests
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        std::shared_ptr<MockManagementModule> mockModule = moduleManager->CreateModule(componentName);
-        mockModule->AddReportedObject(componentName, objectName_1);
-        mockModule->AddReportedObject(componentName, objectName_2);
+        std::shared_ptr<MockManagementModule> mockModule = std::make_shared<MockManagementModule>("mockModule", std::vector<std::string>({componentName}));
+        moduleManager->Load(mockModule);
+        moduleManager->AddReportedObject(componentName, objectName_1);
+        moduleManager->AddReportedObject(componentName, objectName_2);
 
-        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_1), SetArgPointee<3>(strlen(value_1)), Return(MMI_OK)));
-        EXPECT_CALL(*mockModule, CallMmiGet(StrEq(componentName), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(value_2), SetArgPointee<3>(strlen(value_2)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule, CallMmiGet(_, StrEq(componentName), StrEq(objectName_1), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_1), SetArgPointee<4>(strlen(value_1)), Return(MMI_OK)));
+        EXPECT_CALL(*mockModule, CallMmiGet(_, StrEq(componentName), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_2), SetArgPointee<4>(strlen(value_2)), Return(MMI_OK)));
 
-        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
+        EXPECT_EQ(MPI_OK, session->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
         EXPECT_TRUE(JSON_EQ(expected, actual));
@@ -316,7 +340,7 @@ namespace Tests
     {
         int payloadSizeBytes = 0;
 
-        ASSERT_EQ(EINVAL, moduleManager->MpiGetReported(nullptr, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, session->GetReported(nullptr, &payloadSizeBytes));
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
@@ -324,7 +348,7 @@ namespace Tests
     {
         MPI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, moduleManager->MpiGetReported(&payload, nullptr));
+        ASSERT_EQ(EINVAL, session->GetReported(&payload, nullptr));
         ASSERT_EQ(nullptr, payload);
     }
 
@@ -344,8 +368,11 @@ namespace Tests
         int payloadSizeBytes = 0;
 
         ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonMultipleReported));
-        EXPECT_EQ(MPI_OK, moduleManager->MpiSetDesired((MPI_JSON_STRING)g_localPayload, strlen(g_localPayload)));
-        EXPECT_EQ(MPI_OK, moduleManager->MpiGetReported(&payload, &payloadSizeBytes));
+
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(*moduleManager, defaultClient);
+
+        EXPECT_EQ(MPI_OK, session->SetDesired((MPI_JSON_STRING)g_localPayload, strlen(g_localPayload)));
+        EXPECT_EQ(MPI_OK, session->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
         EXPECT_TRUE(JSON_EQ(g_localPayload, actual));
@@ -366,51 +393,12 @@ namespace Tests
         ASSERT_EQ(EINVAL, moduleManager->LoadModules(g_moduleDir, g_configJsonInvalid));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_LatestModuleVersion)
-    {
-        ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
+    // TEST_F(ModuleManagerTests, LoadModules_LatestModuleVersion)
+    // {
+    //     ASSERT_EQ(MPI_OK, moduleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
 
-        std::shared_ptr<ManagementModule> module = moduleManager->GetModule(g_testModuleComponent1);
-        EXPECT_STREQ("Valid Test Module V2", module->GetName().c_str());
-        EXPECT_STREQ("2.0.0.0", module->GetVersion().ToString().c_str());
-    }
-
-    TEST_F(ModuleManagerTests, ModuleCleanup_MpiSet)
-    {
-        moduleManager->SetDefaultCleanupTimespan(1);
-
-        EXPECT_CALL(*defaultModule, CallMmiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize)).Times(1).WillOnce(Return(MMI_OK));
-        ASSERT_EQ(MMI_OK, moduleManager->MpiSet(defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
-        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
-
-        moduleManager->DoWork();
-        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
-        EXPECT_CALL(*defaultModule, UnloadModule()).Times(1);
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-
-        moduleManager->DoWork();
-        ASSERT_EQ(0, moduleManager->GetModulesToUnload().size());
-    }
-
-    TEST_F(ModuleManagerTests, ModuleCleanup_MpiGet)
-    {
-        MPI_JSON_STRING payload = nullptr;
-        int payloadSizeBytes = 0;
-        moduleManager->SetDefaultCleanupTimespan(1);
-
-        EXPECT_CALL(*defaultModule, CallMmiGet(defaultComponent, defaultObject, _, _)).Times(1).WillOnce(DoAll(SetArgPointee<2>(defaultPayload), SetArgPointee<3>(defaultPayloadSize), Return(MMI_OK)));
-        ASSERT_EQ(MMI_OK, moduleManager->MpiGet(defaultComponent, defaultObject, &payload, &payloadSizeBytes));
-        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
-        EXPECT_STREQ(defaultPayload, payload);
-        EXPECT_EQ(defaultPayloadSize, payloadSizeBytes);
-
-        moduleManager->DoWork();
-        ASSERT_EQ(1, moduleManager->GetModulesToUnload().size());
-        EXPECT_CALL(*defaultModule, UnloadModule()).Times(1);
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-
-        moduleManager->DoWork();
-        ASSERT_EQ(0, moduleManager->GetModulesToUnload().size());
-    }
-
+    //     std::shared_ptr<ManagementModule> module = moduleManager->GetModule(g_testModuleComponent1);
+    //     EXPECT_STREQ("Valid Test Module V2", module->GetName().c_str());
+    //     EXPECT_STREQ("2.0.0.0", module->GetVersion().ToString().c_str());
+    // }
 } // namespace Tests
