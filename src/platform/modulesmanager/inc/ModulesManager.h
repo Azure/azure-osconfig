@@ -69,7 +69,7 @@ protected:
 
     int SetReportedObjects(const std::string& configJson);
     void ScheduleModuleUnload(std::shared_ptr<ManagementModule> mm);
-    void SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components);
+    void SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components, bool replace = false);
 
     friend class MpiSession;
 };

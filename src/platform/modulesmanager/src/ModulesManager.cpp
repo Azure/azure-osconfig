@@ -35,7 +35,6 @@ const char* g_configReported = "Reported";
 const char* g_configComponentName = "ComponentName";
 const char* g_configObjectName = "ObjectName";
 
-// TODO: can this be const ???
 static ModulesManager modulesManager;
 
 OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
@@ -274,7 +273,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                         OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (%s -> %s), loading newer version (%s)", info.name.c_str(), currentInfo.version.ToString().c_str(), info.version.ToString().c_str(), filePath.c_str());
                         m_modules[info.name] = mm;
 
-                        SetComponentsForModule(info.name, info.components);
+                        SetComponentsForModule(info.name, info.components, true);
                     }
                 }
                 else
@@ -368,11 +367,11 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
     return status;
 }
 
-void ModulesManager::SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components)
+void ModulesManager::SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components, bool replace)
 {
     for (auto& component : components)
     {
-        if (m_componentToModule.find(component) == m_componentToModule.end())
+        if (replace || (m_componentToModule.find(component) == m_componentToModule.end()))
         {
             m_componentToModule[component] = moduleName;
         }
@@ -680,8 +679,6 @@ int MpiSession::SetDesiredPayload(rapidjson::Document& document)
 int MpiSession::GetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MPI_OK;
-
-    OsConfigLogInfo(ModulesManagerLog::Get(), "MpiGetReported");
 
     ScopeGuard sg{[&]()
     {
