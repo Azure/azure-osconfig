@@ -32,7 +32,7 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
 // The configuration file for OSConfig
-#define CONFIG_FILE[] "/etc/osconfig/osconfig.json"
+#define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
 // The optional second command line argument that when present instructs the agent to run as a traditional daemon
 #define FORK_ARG "fork"
