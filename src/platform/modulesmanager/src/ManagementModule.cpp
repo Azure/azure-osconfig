@@ -52,14 +52,14 @@ ManagementModule::ManagementModule(const std::string path) :
     m_info.lifetime = Lifetime::Undefined;
     m_info.userAccount= 0;
 
-    void* handle = dlopen(path.c_str(), RTLD_LAZY);
-    if (nullptr != handle)
+    void* m_handle = dlopen(path.c_str(), RTLD_LAZY);
+    if (nullptr != m_handle)
     {
         const std::vector<std::string> symbols = { g_mmiFuncMmiGetInfo, g_mmiFuncMmiOpen, g_mmiFuncMmiClose, g_mmiFuncMmiSet, g_mmiFuncMmiGet, g_mmiFuncMmiFree };
 
         for (auto &symbol : symbols)
         {
-            mmi_t funcPtr = (mmi_t)dlsym(handle, symbol.c_str());
+            mmi_t funcPtr = (mmi_t)dlsym(m_handle, symbol.c_str());
             if (nullptr == funcPtr)
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
@@ -69,12 +69,12 @@ ManagementModule::ManagementModule(const std::string path) :
 
         if (m_isValid)
         {
-            m_mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(handle, g_mmiFuncMmiOpen.c_str()));
-            m_mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(handle, g_mmiFuncMmiGetInfo.c_str()));
-            m_mmiClose = reinterpret_cast<Mmi_Close>(dlsym(handle, g_mmiFuncMmiClose.c_str()));
-            m_mmiSet = reinterpret_cast<Mmi_Set>(dlsym(handle, g_mmiFuncMmiSet.c_str()));
-            m_mmiGet = reinterpret_cast<Mmi_Get>(dlsym(handle, g_mmiFuncMmiGet.c_str()));
-            m_mmiFree = reinterpret_cast<Mmi_Free>(dlsym(handle, g_mmiFuncMmiFree.c_str()));
+            m_mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(m_handle, g_mmiFuncMmiOpen.c_str()));
+            m_mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(m_handle, g_mmiFuncMmiGetInfo.c_str()));
+            m_mmiClose = reinterpret_cast<Mmi_Close>(dlsym(m_handle, g_mmiFuncMmiClose.c_str()));
+            m_mmiSet = reinterpret_cast<Mmi_Set>(dlsym(m_handle, g_mmiFuncMmiSet.c_str()));
+            m_mmiGet = reinterpret_cast<Mmi_Get>(dlsym(m_handle, g_mmiFuncMmiGet.c_str()));
+            m_mmiFree = reinterpret_cast<Mmi_Free>(dlsym(m_handle, g_mmiFuncMmiFree.c_str()));
 
             MMI_JSON_STRING payload = nullptr;
             int payloadSizeBytes = 0;
@@ -108,7 +108,11 @@ ManagementModule::ManagementModule(const std::string path) :
     {
         std::stringstream ss;
         ss << "[";
-        std::copy(m_info.components.begin(), m_info.components.end(), std::ostream_iterator<std::string>(ss, ", "));
+        if (m_info.components.size() != 0)
+        {
+            std::copy(m_info.components.begin(), m_info.components.end() - 1, std::ostream_iterator<std::string>(ss, ", "));
+            ss << m_info.components.back();
+        }
         ss << "]";
 
         OsConfigLogInfo(ModulesManagerLog::Get(), "Loaded '%s' module (%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
@@ -116,6 +120,11 @@ ManagementModule::ManagementModule(const std::string path) :
     else
     {
         OsConfigLogError(ModulesManagerLog::Get(), "Failed to load module '%s'", m_modulePath.c_str());
+        if (nullptr != m_handle)
+        {
+            dlclose(m_handle);
+            m_handle = nullptr;
+        }
     }
 }
 
@@ -131,11 +140,6 @@ ManagementModule::~ManagementModule()
 bool ManagementModule::IsValid() const
 {
     return m_isValid;
-}
-
-bool ManagementModule::IsLoaded() const
-{
-    return (nullptr != m_handle) || (nullptr != m_mmiGetInfo) || (nullptr != m_mmiOpen) || (nullptr != m_mmiClose) || (nullptr != m_mmiSet) || (nullptr != m_mmiGet) || (nullptr != m_mmiFree);
 }
 
 ManagementModule::Info ManagementModule::GetInfo() const
@@ -193,6 +197,12 @@ int ManagementModule::CallMmiGet(MMI_HANDLE handle, const char* componentName, c
 int ManagementModule::Info::Deserialize(const rapidjson::Value& object, ManagementModule::Info& info)
 {
     int status = 0;
+
+    if (!object.IsObject())
+    {
+        OsConfigLogError(ModulesManagerLog::Get(), "Failed to deserialize info JSON, expected object");
+        return EINVAL;
+    }
 
     // Required fields
 

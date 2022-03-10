@@ -77,7 +77,6 @@ public:
     virtual ~ManagementModule();
 
     bool IsValid() const;
-    bool IsLoaded() const;
     Info GetInfo() const;
 
 protected:
@@ -97,11 +96,11 @@ protected:
 
     Info m_info;
 
-    int CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    MMI_HANDLE CallMmiOpen(const char* componentName, unsigned int maxPayloadSizeBytes);
-    void CallMmiClose(MMI_HANDLE handle);
-    int CallMmiSet(MMI_HANDLE handle, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
-    int CallMmiGet(MMI_HANDLE handle, const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
+    virtual int CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    virtual MMI_HANDLE CallMmiOpen(const char* componentName, unsigned int maxPayloadSizeBytes);
+    virtual void CallMmiClose(MMI_HANDLE handle);
+    virtual int CallMmiSet(MMI_HANDLE handle, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    virtual int CallMmiGet(MMI_HANDLE handle, const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
     friend class MmiSession;
 };
