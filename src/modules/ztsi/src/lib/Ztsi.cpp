@@ -41,6 +41,7 @@ int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigne
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
 
+    // if ((maxPayloadSizeBytes > 0) && (buffer.GetSize() > maxPayloadSizeBytes))
     if (buffer.GetSize() > maxPayloadSizeBytes)
     {
         OsConfigLogError(ZtsiLog::Get(), "Failed to serialize JSON object to buffer");
@@ -113,11 +114,6 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
     if (nullptr == clientName)
     {
         OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null clientName");
-        status = EINVAL;
-    }
-    else if (!IsValidClientName(clientName))
-    {
-        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with invalid clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
