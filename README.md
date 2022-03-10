@@ -155,14 +155,14 @@ To disable full logging, set "FullLogging" to 0.
 
 By default the reported configuration is not saved locally to `/etc/osconfig/osconfig_reported.json` (local reporting is disabled).
 
-To enable local reporting, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "LocalReporting" to a non zero value:
+To enable local reporting, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "LocalManagement" to a non zero value:
 
 ```json
 {
-    "LocalReporting": 1
+    "LocalManagement": 1
 }
 ```
-To disable local reporting, set "LocalReporting" to 0.
+To disable local reporting, set "LocalManagement" to 0.
 
 ### Changing priority for local versus remote desired configuration
 
