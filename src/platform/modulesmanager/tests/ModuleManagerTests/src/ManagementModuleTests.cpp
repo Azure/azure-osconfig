@@ -10,23 +10,17 @@
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
 
-using ::testing::_;
-using ::testing::ElementsAre;
-using ::testing::IsEmpty;
-using ::testing::StrEq;
-using ::testing::Values;
-
 namespace Tests
 {
     class ManagementModuleTests : public ::testing::Test
     {
     public:
-        std::shared_ptr<MockManagementModule> module;
-        std::shared_ptr<MmiSession> session;
+        std::shared_ptr<MockManagementModule> m_mockModule;
+        std::shared_ptr<MmiSession> m_mmiSession;
 
-        static const char defaultClient[];
-        static const char defaultComponent[];
-        static const char defaultObject[];
+        static const char m_defaultClient[];
+        static const char m_defaultComponent[];
+        static const char m_defaultObject[];
 
         static const std::vector<std::tuple<const char*, const char *>> objectPayloads;
 
@@ -34,28 +28,28 @@ namespace Tests
         void TearDown() override;
     };
 
-    const char ManagementModuleTests::defaultClient[] = "Default_ManagementModuleTest_Client";
-    const char ManagementModuleTests::defaultComponent[] = "Default_ManagementModuleTest_Component";
-    const char ManagementModuleTests::defaultObject[] = "Default_ManagementModuleTest_Object";
+    const char ManagementModuleTests::m_defaultClient[] = "Default_ManagementModuleTest_Client";
+    const char ManagementModuleTests::m_defaultComponent[] = "Default_ManagementModuleTest_Component";
+    const char ManagementModuleTests::m_defaultObject[] = "Default_ManagementModuleTest_Object";
 
     void ManagementModuleTests::SetUp()
     {
-        module = std::make_shared<MockManagementModule>();
-        session = std::make_shared<MmiSession>(module, defaultClient);
+        m_mockModule = std::make_shared<MockManagementModule>();
+        m_mmiSession = std::make_shared<MmiSession>(m_mockModule, m_defaultClient);
     }
 
     void ManagementModuleTests::TearDown()
     {
-        session.reset();
-        module.reset();
+        m_mmiSession.reset();
+        m_mockModule.reset();
     }
 
     TEST_F(ManagementModuleTests, LoadModule)
     {
-        ManagementModule module(g_validModulePathV1);
-        ManagementModule::Info info = module.GetInfo();
+        ManagementModule mockModule(g_validModulePathV1);
+        ManagementModule::Info info = mockModule.GetInfo();
 
-        EXPECT_TRUE(module.IsValid());
+        EXPECT_TRUE(mockModule.IsValid());
         EXPECT_STREQ("Valid Test Module V1", info.name.c_str());
         EXPECT_STREQ("1.0.0.0", info.version.ToString().c_str());
         EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
@@ -88,7 +82,7 @@ namespace Tests
         int payloadSize = strlen(payload);
 
         // Provide a mock implmenation of CallMmiSet()
-        ON_CALL(*module, CallMmiSet).WillByDefault(
+        ON_CALL(*m_mockModule, CallMmiSet).WillByDefault(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
             {
                 (void)clientSession;
@@ -99,7 +93,7 @@ namespace Tests
                 return -1;
             });
 
-        ASSERT_EQ(MMI_OK, session->Set(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
+        ASSERT_EQ(MMI_OK, m_mmiSession->Set(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
     }
 
     TEST_F(ManagementModuleTests, CallMmiGet)
@@ -111,7 +105,7 @@ namespace Tests
         int payloadSize = 0;
 
         // Provide a mock implmenation of CallMmiGet()
-        ON_CALL(*module, CallMmiGet).WillByDefault(
+        ON_CALL(*m_mockModule, CallMmiGet).WillByDefault(
            [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
             {
                 (void)clientSession;
@@ -146,14 +140,14 @@ namespace Tests
                 return status;
             });
 
-        EXPECT_EQ(MMI_OK, session->Get(componentName, objectName, &payload, &payloadSize));
+        EXPECT_EQ(MMI_OK, m_mmiSession->Get(componentName, objectName, &payload, &payloadSize));
         EXPECT_STREQ(expectedPayload, payload);
         EXPECT_EQ(strlen(expectedPayload), payloadSize);
     }
 
     TEST_F(ManagementModuleTests, PayloadValidation)
     {
-        MockManagementModule module;
+        MockManagementModule mockModule;
         std::vector<std::pair<std::string, std::string>> objects = {
             {g_string, g_stringPayload},
             {g_integer, g_integerPayload},
@@ -166,7 +160,7 @@ namespace Tests
             {g_objectArray, g_objectArrayPayload}
         };
 
-        module.MmiSet(
+        mockModule.MmiSet(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
             {
                 // MmiSet
@@ -182,7 +176,7 @@ namespace Tests
         {
             const char* objectName = object.first.c_str();
             const char* payload = object.second.c_str();
-            EXPECT_EQ(MMI_OK, session->Set(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
+            EXPECT_EQ(MMI_OK, m_mmiSession->Set(m_defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
         }
 
     }
