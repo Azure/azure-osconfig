@@ -50,5 +50,5 @@
   ],
   "ReportingIntervalSeconds": 30,
   "LocalPriority": 0,
-  "LocalReporting": 0
+  "LocalManagement": 0
 }
