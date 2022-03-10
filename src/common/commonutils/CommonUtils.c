@@ -1009,10 +1009,10 @@ char* UrlEncode(char* target)
                 encodedTarget[j] = target[i];
                 j += 1;
             }
-            else if (' ' == target[i])
+            else if ('\n' == target[i])
             {
-                encodedTarget[j] = '+';
-                j += 1;
+                memcpy(&encodedTarget[j], "%0A", sizeof("%0A"));
+                j += strlen(&encodedTarget[j]);
             }
             else
             {
@@ -1048,18 +1048,21 @@ char* UrlDecode(char* target)
                 decodedTarget[i] = target[j];
                 j += 1;
             }
-            else if ('+' == target[j])
-            {
-                decodedTarget[i] = ' ';
-                j += 1;
-            }
             else if ('%' == target[j])
             {
-                memcpy(buffer, &target[j + 1], 2);
-                buffer[2] = 0;
+                if (((j + 2) < targetLength) && ('0' == target[j + 1]) && ('A' == toupper(target[j + 2])))
+                {
+                    decodedTarget[i] = '\n';
+                }
+                else
+                {
+                    memcpy(buffer, &target[j + 1], 2);
+                    buffer[2] = 0;
+                    
+                    sscanf(buffer, "%x", &value);
+                    sprintf(&decodedTarget[i], "%c", value);
+                }
                 
-                sscanf(buffer, "%x", &value);
-                sprintf(&decodedTarget[i], "%c", value);
                 j += sizeof(buffer);
             }
         }
