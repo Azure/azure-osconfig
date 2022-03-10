@@ -947,7 +947,7 @@ struct UrlEncoding
 
 TEST_F(CommonUtilsTest, UrlEncodeDecode)
 {
-    UrlEncoding validUrls[] = {
+    UrlEncoding testUrls[] = {
         { "+", "%2B" },
         { " ", "+" },
         { "abcABC123", "abcABC123" },
@@ -965,21 +965,23 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
         "\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"ACME\"&\"product_name\"=\"10ABC789\")",
         "Azure+OSConfig+5%3B1.0.1.20220301+%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.3%22%26%22cpu_architecture%22%3D%22x86_64%2"
         "2%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26%22kernel_version%22%3D%22%2333~20.04.1-Ubuntu+SMP+"
-        "Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22ACME%22%26%22product_name%22%3D%2210ABC789%22%29"}
+        "Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22ACME%22%26%22product_name%22%3D%2210ABC789%22%29" },
+        { "`-=~!@#$%^&*()_+,./<>?'[]\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n",
+        "%60-%3D~%21%40%23%24%25%5E%26%2A%28%29_%2B%2C.%2F%3C%3E%3F%27%5B%5D%5C%7B%7D%7C%20qwertyuiopasdfghjklzxcvbnm%201234567890%20QWERTYUIOPASDFGHJKLZXCVBNM%5Cn" }
     };
 
-    int validUrlsSize = ARRAY_SIZE(validUrls);
+    int testUrlsSize = ARRAY_SIZE(testUrls);
 
     char* url = nullptr;
 
-    for (int i = 0; i < validUrlsSize; i++)
+    for (int i = 0; i < testUrlsSize; i++)
     {
-        EXPECT_NE(nullptr, url = UrlEncode((char*)validUrls[i].decoded));
-        EXPECT_STREQ(url, validUrls[i].encoded);
+        EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
+        EXPECT_STREQ(url, testUrls[i].encoded);
         FREE_MEMORY(url);
 
-        EXPECT_NE(nullptr, url = UrlDecode((char*)validUrls[i].encoded));
-        EXPECT_STREQ(url, validUrls[i].decoded);
+        EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
+        EXPECT_STREQ(url, testUrls[i].decoded);
         FREE_MEMORY(url);
     }
 
