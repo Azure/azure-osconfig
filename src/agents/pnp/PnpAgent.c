@@ -42,6 +42,7 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTED_COMPONENT_NAME "ComponentName"
 #define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
+#define LOCAL_MANAGEMENT "LocalManagement"
 #define LOCAL_PRIORITY "LocalPriority"
 #define FULL_LOGGING "FullLogging"
 
