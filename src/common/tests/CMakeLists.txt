@@ -1,28 +1,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(settingstests)
+project(commontests)
 
 cmake_minimum_required(VERSION 3.2.0)
 
 include(CTest)
 find_package(GTest REQUIRED)
 
-add_executable(settingstests
-    ConfigFileUtilsUT.cpp
-    SettingsTests.cpp
-    ScopeGuardUT.cpp)
+add_executable(commontests  
+    CommonUtilsUT.cpp)
 
-target_link_libraries(settingstests
+target_link_libraries(commontests
     gtest
     gtest_main
     gmock
     gmock_main
     pthread
-    settingslib
-    settings
     logging
-    configfileutils
     commonutils)
 
-gtest_discover_tests(settingstests)
+gtest_discover_tests(commontests)
