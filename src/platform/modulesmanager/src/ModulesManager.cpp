@@ -716,12 +716,6 @@ int MpiSession::GetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
         status = GetReportedPayload(payload, payloadSizeBytes);
     }
 
-    OsConfigLogInfo(ModulesManagerLog::Get(), "*******SESSIONS*******");
-    for (auto& session : m_mmiSessions)
-    {
-        OsConfigLogInfo(ModulesManagerLog::Get(), "Module '%s'  (%s)", session.first.c_str(), session.second->GetInfo().description.c_str());
-    }
-
     return status;
 }
 
