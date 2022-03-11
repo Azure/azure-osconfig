@@ -50,7 +50,7 @@ namespace Tests
         ManagementModule::Info info = mockModule.GetInfo();
 
         EXPECT_TRUE(mockModule.IsValid());
-        EXPECT_STREQ("Valid Test Module V1", info.name.c_str());
+        EXPECT_STREQ("Valid Test Module", info.name.c_str());
         EXPECT_STREQ("1.0.0.0", info.version.ToString().c_str());
         EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
     }
