@@ -50,10 +50,10 @@ class ModulesManager
 {
 public:
     ModulesManager();
-    virtual ~ModulesManager();
+    ~ModulesManager();
 
     // Loads Management Modules (MMs) into the Modules Manager
-    virtual int LoadModules(std::string modulePath, std::string configJson);
+    int LoadModules(std::string modulePath, std::string configJson);
 
     void UnloadModules();
 

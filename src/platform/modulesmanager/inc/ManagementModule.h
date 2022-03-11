@@ -18,7 +18,6 @@ using Mmi_Set = int (*)(MMI_HANDLE, const char*, const char*, const MMI_JSON_STR
 using Mmi_Get = int (*)(MMI_HANDLE, const char*, const char*, MMI_JSON_STRING*, int*);
 using Mmi_Close = void (*)(MMI_HANDLE);
 
-// class MmiSession;
 class ManagementModule
 {
 public:
