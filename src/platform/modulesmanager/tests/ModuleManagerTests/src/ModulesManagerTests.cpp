@@ -352,12 +352,35 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, LoadModules)
     {
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+        const char emptyPayload[] = "{}";
+
         ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
+
+        std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+
+        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)emptyPayload, strlen(emptyPayload)));
+        EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
+
+        std::string actual(payload, payloadSizeBytes);
+        EXPECT_TRUE(JSON_EQ(emptyPayload, actual));
     }
 
     TEST_F(ModuleManagerTests, LoadModules_SingleReported)
     {
+        MPI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
         ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonSingleReported));
+
+        std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+
+        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_singleObjectPayload, strlen(g_singleObjectPayload)));
+        EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
+
+        std::string actual(payload, payloadSizeBytes);
+        EXPECT_TRUE(JSON_EQ(g_singleObjectPayload, actual));
     }
 
     TEST_F(ModuleManagerTests, LoadModules_MultipleReported)
@@ -369,11 +392,11 @@ namespace Tests
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
 
-        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_localPayload, strlen(g_localPayload)));
+        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_multipleObjectsPayload, strlen(g_multipleObjectsPayload)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
-        EXPECT_TRUE(JSON_EQ(g_localPayload, actual));
+        EXPECT_TRUE(JSON_EQ(g_multipleObjectsPayload, actual));
     }
 
     TEST_F(ModuleManagerTests, LoadModules_InvalidDirectory)
