@@ -57,6 +57,7 @@ namespace Tests
 
         // "Open" an MpiSession using the ModulesManager with the mock module loaded
         this->m_mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        ASSERT_EQ(0, this->m_mpiSession->Open());
     }
 
     void ModuleManagerTests::TearDown()
@@ -150,7 +151,9 @@ namespace Tests
 
         std::shared_ptr<MockManagementModule> mockModule = std::make_shared<MockManagementModule>("mockModule", std::vector<std::string>({componentName}));
         m_mockModuleManager->Load(mockModule);
+
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName), StrEq(value), strlen(value))).Times(1).WillOnce(Return(MMI_OK));
         ASSERT_EQ(MPI_OK, mpiSession->SetDesired(payload, strlen(payload)));
@@ -181,6 +184,7 @@ namespace Tests
         m_mockModuleManager->Load(mockModule_2);
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_CALL(*mockModule_1, CallMmiSet(_, StrEq(componentName_1), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
         EXPECT_CALL(*mockModule_2, CallMmiSet(_, StrEq(componentName_2), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
@@ -207,6 +211,7 @@ namespace Tests
         m_mockModuleManager->Load(mockModule);
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName_1), StrEq(value_1), strlen(value_1))).Times(1).WillOnce(Return(MMI_OK));
         EXPECT_CALL(*mockModule, CallMmiSet(_, StrEq(componentName), StrEq(objectName_2), StrEq(value_2), strlen(value_2))).Times(1).WillOnce(Return(MMI_OK));
@@ -253,6 +258,7 @@ namespace Tests
         m_mockModuleManager->AddReportedObject(componentName, objectName);
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_CALL(*mockModule, CallMmiGet(_, StrEq(componentName), StrEq(objectName), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value), SetArgPointee<4>(strlen(value)), Return(MMI_OK)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
@@ -294,6 +300,7 @@ namespace Tests
         EXPECT_CALL(*mockModule_2, CallMmiGet(_, StrEq(componentName_2), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_2), SetArgPointee<4>(strlen(value_2)), Return(MMI_OK)));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
@@ -328,6 +335,7 @@ namespace Tests
         EXPECT_CALL(*mockModule, CallMmiGet(_, StrEq(componentName), StrEq(objectName_2), _, _)).Times(1).WillOnce(DoAll(SetArgPointee<3>(value_2), SetArgPointee<4>(strlen(value_2)), Return(MMI_OK)));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
@@ -359,6 +367,7 @@ namespace Tests
         ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)emptyPayload, strlen(emptyPayload)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
@@ -375,6 +384,7 @@ namespace Tests
         ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonSingleReported));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_singleObjectPayload, strlen(g_singleObjectPayload)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
@@ -391,6 +401,7 @@ namespace Tests
         ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonMultipleReported));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
+        EXPECT_EQ(0, mpiSession->Open());
 
         EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_multipleObjectsPayload, strlen(g_multipleObjectsPayload)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));

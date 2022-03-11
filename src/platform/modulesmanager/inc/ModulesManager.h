@@ -79,6 +79,9 @@ public:
     MpiSession(ModulesManager& modulesManager, std::string clientName, const unsigned int maxPayloadSizeBytes = 0);
     ~MpiSession();
 
+    int Open();
+    void Close();
+
     int Set(const char* componentName, const char* objectName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
     int Get(const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSizeBytes);
     int SetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes);

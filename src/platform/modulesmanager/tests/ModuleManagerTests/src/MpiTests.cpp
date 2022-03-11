@@ -92,8 +92,6 @@ namespace Tests
 
     TEST_F(MpiTests, PayloadValidation)
     {
-        MPI_HANDLE handle = nullptr;
-        ModulesManager modulesManager;
         std::vector<std::pair<std::string, std::string>> objects = {
             {g_string, g_stringPayload},
             {g_integer, g_integerPayload},
@@ -106,9 +104,12 @@ namespace Tests
             {g_objectArray, g_objectArrayPayload}
         };
 
-        modulesManager.LoadModules(g_moduleDir, g_configJsonNoneReported);
-        MpiSession session(modulesManager, m_defaultClient);
-        handle = reinterpret_cast<MPI_HANDLE>(&session);
+        ModulesManager modulesManager;
+        EXPECT_EQ(MPI_OK, modulesManager.LoadModules(g_moduleDir, g_configJsonNoneReported));
+
+        MpiSession mpiSession(modulesManager, m_defaultClient);
+        EXPECT_EQ(MPI_OK, mpiSession.Open());
+        MPI_HANDLE handle = reinterpret_cast<MPI_HANDLE>(&mpiSession);
 
         for (auto object : objects)
         {

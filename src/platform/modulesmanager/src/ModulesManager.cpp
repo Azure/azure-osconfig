@@ -72,7 +72,7 @@ MPI_HANDLE MpiOpen(
     if (nullptr != clientName)
     {
         MpiSession* session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes);
-        if (nullptr != session)
+        if (nullptr != session && (0 == session->Open()))
         {
             handle = reinterpret_cast<MPI_HANDLE>(session);
         }
@@ -93,7 +93,9 @@ void MpiClose(MPI_HANDLE handle)
 {
     if (nullptr != handle)
     {
-        delete reinterpret_cast<MpiSession*>(handle);
+        MpiSession* session = reinterpret_cast<MpiSession*>(handle);
+        session->Close();
+        delete session;
     }
     else
     {
@@ -157,13 +159,14 @@ int MpiSetDesired(
 
     if (nullptr != clientName)
     {
-        if (nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, payloadSizeBytes)))
+        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, payloadSizeBytes))) && (0 == session->Open()))
         {
             if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%s, %p, %d) failed to set the desired state", clientName, payload, payloadSizeBytes);
             }
 
+            session->Close();
             delete session;
         }
         else
@@ -192,13 +195,14 @@ int MpiGetReported(
 
     if (nullptr != clientName)
     {
-        if (nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes)))
+        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes))) && (0 == session->Open()))
         {
             if (MPI_OK != (status = session->GetReported(payload, payloadSizeBytes)))
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%s, %u, %p, %p) failed to get the reported state", clientName, maxPayloadSizeBytes, payload, payloadSizeBytes);
             }
 
+            session->Close();
             delete session;
         }
         else
@@ -398,25 +402,37 @@ void ModulesManager::UnloadModules()
 MpiSession::MpiSession(ModulesManager& modulesManager, std::string clientName, unsigned int maxPayloadSizeBytes) :
     m_modulesManager(modulesManager),
     m_clientName(clientName),
-    m_maxPayloadSizeBytes(maxPayloadSizeBytes)
+    m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
+
+MpiSession::~MpiSession()
 {
+    Close();
+}
+
+int MpiSession::Open()
+{
+    int status = 0;
+
     for (auto& module : m_modulesManager.m_modules)
     {
-        int status = 0;
+        int mmiStatus = 0;
         std::shared_ptr<MmiSession> mmiSession = std::make_shared<MmiSession>(module.second, m_clientName, m_maxPayloadSizeBytes);
 
-        if (0 == (status = mmiSession->Open()))
+        if (0 == (mmiStatus = mmiSession->Open()))
         {
             m_mmiSessions[module.first] = mmiSession;
         }
         else
         {
             OsConfigLogError(ModulesManagerLog::Get(), "Unable to open MMI session for module '%s'", module.first.c_str());
+            status = EINVAL;
         }
     }
+
+    return status;
 }
 
-MpiSession::~MpiSession()
+void MpiSession::Close()
 {
     for (auto& mmiSession : m_mmiSessions)
     {
