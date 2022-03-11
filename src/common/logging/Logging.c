@@ -15,7 +15,6 @@
 #define MAX_LOG_TRIM 1000
 
 static bool g_fullLoggingEnabled = false;
-static bool g_localManagementEnabled = false;
 
 typedef struct OSCONFIG_LOG
 {
@@ -33,16 +32,6 @@ void SetFullLogging(bool fullLogging)
 bool IsFullLoggingEnabled()
 {
     return g_fullLoggingEnabled;
-}
-
-void SetLocalManagement(bool localManagement)
-{
-    g_localManagementEnabled = localManagement;
-}
-
-bool IsLocalManagementEnabled(void)
-{
-    return g_localManagementEnabled;
 }
 
 static int RestrictAccessToRootOnly(const char* fileName)
