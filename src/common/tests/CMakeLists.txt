@@ -8,10 +8,10 @@ cmake_minimum_required(VERSION 3.2.0)
 include(CTest)
 find_package(GTest REQUIRED)
 
-add_executable(settingstests  
+add_executable(commontests  
     CommonUtilsUT.cpp)
 
-target_link_libraries(settingstests
+target_link_libraries(commontests
     gtest
     gtest_main
     gmock
@@ -20,4 +20,4 @@ target_link_libraries(settingstests
     logging
     commonutils)
 
-gtest_discover_tests(settingstests)
+gtest_discover_tests(commontests)
