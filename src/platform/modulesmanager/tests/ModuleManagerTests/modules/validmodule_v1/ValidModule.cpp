@@ -23,8 +23,8 @@
 class TestsModuleHandle {};
 
 constexpr const char info[] = R"""({
-    "Name": "Valid Test Module V1",
-    "Description": "This is a test module",
+    "Name": "Valid Test Module",
+    "Description": "This is a test module (V1)",
     "Manufacturer": "Microsoft",
     "VersionMajor": 1,
     "VersionMinor": 0,
