@@ -270,10 +270,14 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                     // Use the module with the latest version
                     if (currentInfo.version < info.version)
                     {
-                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (%s -> %s), loading newer version (%s)", info.name.c_str(), currentInfo.version.ToString().c_str(), info.version.ToString().c_str(), filePath.c_str());
+                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
                         m_modules[info.name] = mm;
 
                         SetComponentsForModule(info.name, info.components, true);
+                    }
+                    else
+                    {
+                        OsConfigLogInfo(ModulesManagerLog::Get(), "Newer version of '%s' module already loaded (%s), skipping '%s'", info.name.c_str(), currentInfo.version.ToString().c_str(), filePath.c_str());
                     }
                 }
                 else
@@ -710,6 +714,12 @@ int MpiSession::GetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
         *payload = nullptr;
         *payloadSizeBytes = 0;
         status = GetReportedPayload(payload, payloadSizeBytes);
+    }
+
+    OsConfigLogInfo(ModulesManagerLog::Get(), "*******SESSIONS*******");
+    for (auto& session : m_mmiSessions)
+    {
+        OsConfigLogInfo(ModulesManagerLog::Get(), "Module '%s'  (%s)", session.first.c_str(), session.second->GetInfo().description.c_str());
     }
 
     return status;
