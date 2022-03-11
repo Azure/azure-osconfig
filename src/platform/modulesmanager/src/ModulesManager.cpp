@@ -25,15 +25,13 @@
 #include <Mpi.h>
 #include <ScopeGuard.h>
 
-constexpr unsigned int g_defaultModuleCleanup = 60 * 30; // 30 minutes
+static const std::string g_moduleDir = "/usr/lib/osconfig";
+static const std::string g_moduleExtension = ".so";
 
-const std::string g_moduleDir = "/usr/lib/osconfig";
-const std::string g_moduleExtension = ".so";
-
-const std::string g_configJson = "/etc/osconfig/osconfig.json";
-const char* g_configReported = "Reported";
-const char* g_configComponentName = "ComponentName";
-const char* g_configObjectName = "ObjectName";
+static const std::string g_configJson = "/etc/osconfig/osconfig.json";
+static const char g_configReported[] = "Reported";
+static const char g_configComponentName[] = "ComponentName";
+static const char g_configObjectName[] = "ObjectName";
 
 static ModulesManager modulesManager;
 
@@ -259,7 +257,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
         for (auto &filePath : fileList)
         {
             std::shared_ptr<ManagementModule> mm = std::make_shared<ManagementModule>(filePath);
-            if (mm->IsValid())
+            if (0 == mm->Load())
             {
                 ManagementModule::Info info = mm->GetInfo();
 
@@ -270,14 +268,14 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                     // Use the module with the latest version
                     if (currentInfo.version < info.version)
                     {
-                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
+                        OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (v%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
                         m_modules[info.name] = mm;
 
                         RegisterModuleComponents(info.name, info.components, true);
                     }
                     else
                     {
-                        OsConfigLogInfo(ModulesManagerLog::Get(), "Newer version of '%s' module already loaded (%s), skipping '%s'", info.name.c_str(), currentInfo.version.ToString().c_str(), filePath.c_str());
+                        OsConfigLogInfo(ModulesManagerLog::Get(), "Newer version of '%s' module already loaded (v%s), skipping '%s'", info.name.c_str(), currentInfo.version.ToString().c_str(), filePath.c_str());
                     }
                 }
                 else
@@ -390,6 +388,7 @@ void ModulesManager::UnloadModules()
 {
     for (auto& module : m_modules)
     {
+        module.second->Unload();
         module.second.reset();
     }
 

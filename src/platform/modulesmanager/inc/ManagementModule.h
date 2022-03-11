@@ -75,12 +75,13 @@ public:
     ManagementModule(const std::string path);
     virtual ~ManagementModule();
 
-    bool IsValid() const;
+    virtual int Load();
+    virtual void Unload();
+
     Info GetInfo() const;
 
 protected:
     const std::string m_modulePath;
-    bool m_isValid;
 
     // The handle retuned by dlopen()
     void* m_handle;

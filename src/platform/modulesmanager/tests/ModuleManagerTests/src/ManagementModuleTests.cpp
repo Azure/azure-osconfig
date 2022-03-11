@@ -9,7 +9,6 @@
 #include <MockManagementModule.h>
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
-
 namespace Tests
 {
     class ManagementModuleTests : public ::testing::Test
@@ -35,6 +34,7 @@ namespace Tests
     void ManagementModuleTests::SetUp()
     {
         m_mockModule = std::make_shared<MockManagementModule>();
+
         m_mmiSession = std::make_shared<MmiSession>(m_mockModule, m_defaultClient);
         ASSERT_EQ(0, m_mmiSession->Open());
     }
@@ -48,10 +48,10 @@ namespace Tests
 
     TEST_F(ManagementModuleTests, LoadModule)
     {
-        ManagementModule mockModule(g_validModulePathV1);
-        ManagementModule::Info info = mockModule.GetInfo();
+        ManagementModule module(g_validModulePathV1);
+        EXPECT_EQ(0, module.Load());
 
-        EXPECT_TRUE(mockModule.IsValid());
+        ManagementModule::Info info = module.GetInfo();
         EXPECT_STREQ("Valid Test Module", info.name.c_str());
         EXPECT_STREQ("1.0.0.0", info.version.ToString().c_str());
         EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
@@ -61,19 +61,19 @@ namespace Tests
     {
         const std::string invalidPath = g_moduleDir;
         ManagementModule invalidModule(invalidPath + "/blah.so");
-        EXPECT_FALSE(invalidModule.IsValid());
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidMmi)
     {
         ManagementModule invalidModule(g_invalidModulePath);
-        EXPECT_FALSE(invalidModule.IsValid());
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidModuleInfo)
     {
         ManagementModule invalidModule(g_invalidGetInfoModulePath);
-        EXPECT_FALSE(invalidModule.IsValid());
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, CallMmiSet)

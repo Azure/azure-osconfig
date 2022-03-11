@@ -23,39 +23,50 @@ static const std::string g_mmiFuncMmiSet = "MmiSet";
 static const std::string g_mmiFuncMmiGet = "MmiGet";
 static const std::string g_mmiFuncMmiFree = "MmiFree";
 
-static const std::string g_mmiGetInfoName = "Name";
-static const std::string g_mmiGetInfoDescription = "Description";
-static const std::string g_mmiGetInfoManufacturer = "Manufacturer";
-static const std::string g_mmiGetInfoVersionMajor = "VersionMajor";
-static const std::string g_mmiGetInfoVersionMinor = "VersionMinor";
-static const std::string g_mmiGetInfoVersionPatch = "VersionPatch";
-static const std::string g_mmiGetInfoVersionTweak = "VersionTweak";
-static const std::string g_mmiGetInfoVersionInfo = "VersionInfo";
-static const std::string g_mmiGetInfoComponents = "Components";
-static const std::string g_mmiGetInfoLifetime = "Lifetime";
-static const std::string g_mmiGetInfoLicenseUri = "LicenseUri";
-static const std::string g_mmiGetInfoProjectUri = "ProjectUri";
-static const std::string g_mmiGetInfoUserAccount = "UserAccount";
+static const char g_mmiGetInfoName[] = "Name";
+static const char g_mmiGetInfoDescription[] = "Description";
+static const char g_mmiGetInfoManufacturer[] = "Manufacturer";
+static const char g_mmiGetInfoVersionMajor[] = "VersionMajor";
+static const char g_mmiGetInfoVersionMinor[] = "VersionMinor";
+static const char g_mmiGetInfoVersionPatch[] = "VersionPatch";
+static const char g_mmiGetInfoVersionTweak[] = "VersionTweak";
+static const char g_mmiGetInfoVersionInfo[] = "VersionInfo";
+static const char g_mmiGetInfoComponents[] = "Components";
+static const char g_mmiGetInfoLifetime[] = "Lifetime";
+static const char g_mmiGetInfoLicenseUri[] = "LicenseUri";
+static const char g_mmiGetInfoProjectUri[] = "ProjectUri";
+static const char g_mmiGetInfoUserAccount[] = "UserAccount";
 
 typedef void (*mmi_t)();
 
-ManagementModule::ManagementModule() :
-    m_modulePath(""),
-    m_isValid(false),
-    m_handle(nullptr) {}
+ManagementModule::ManagementModule() : ManagementModule("") {}
 
 ManagementModule::ManagementModule(const std::string path) :
     m_modulePath(path),
-    m_isValid(true),
     m_handle(nullptr)
 {
     m_info.lifetime = Lifetime::Undefined;
     m_info.userAccount= 0;
+}
 
-    void* m_handle = dlopen(path.c_str(), RTLD_LAZY);
+ManagementModule::~ManagementModule()
+{
+    Unload();
+}
+
+int ManagementModule::Load()
+{
+    int status = 0;
+
     if (nullptr != m_handle)
     {
-        const std::vector<std::string> symbols = { g_mmiFuncMmiGetInfo, g_mmiFuncMmiOpen, g_mmiFuncMmiClose, g_mmiFuncMmiSet, g_mmiFuncMmiGet, g_mmiFuncMmiFree };
+        return status;
+    }
+
+    void* m_handle = dlopen(m_modulePath.c_str(), RTLD_LAZY);
+    if (nullptr != m_handle)
+    {
+        const std::vector<std::string> symbols = {g_mmiFuncMmiGetInfo, g_mmiFuncMmiOpen, g_mmiFuncMmiClose, g_mmiFuncMmiSet, g_mmiFuncMmiGet, g_mmiFuncMmiFree};
 
         for (auto &symbol : symbols)
         {
@@ -63,11 +74,11 @@ ManagementModule::ManagementModule(const std::string path) :
             if (nullptr == funcPtr)
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
-                m_isValid = false;
+                status = EINVAL;
             }
         }
 
-        if (m_isValid)
+        if (0 == status)
         {
             m_mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(m_handle, g_mmiFuncMmiOpen.c_str()));
             m_mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(m_handle, g_mmiFuncMmiGetInfo.c_str()));
@@ -85,26 +96,26 @@ ManagementModule::ManagementModule(const std::string path) :
                 if (document.Parse(payload, payloadSizeBytes).HasParseError())
                 {
                     OsConfigLogError(ModulesManagerLog::Get(), "Failed to parse info JSON for module '%s'", m_modulePath.c_str());
-                    m_isValid = false;
+                    status = EINVAL;
                 }
                 else if (0 != Info::Deserialize(document, m_info))
                 {
-                    m_isValid = false;
+                    status = EINVAL;
                 }
             }
             else
             {
                 OsConfigLogError(ModulesManagerLog::Get(), "Failed to get info for module '%s'", m_modulePath.c_str());
-                m_isValid = false;
+                status = EINVAL;
             }
         }
     }
     else
     {
-        m_isValid = false;
+        status = EINVAL;
     }
 
-    if (m_isValid)
+    if (0 == status)
     {
         std::stringstream ss;
         ss << "[";
@@ -115,7 +126,7 @@ ManagementModule::ManagementModule(const std::string path) :
         }
         ss << "]";
 
-        OsConfigLogInfo(ModulesManagerLog::Get(), "Loaded '%s' module (%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
+        OsConfigLogInfo(ModulesManagerLog::Get(), "Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
     }
     else
     {
@@ -126,20 +137,17 @@ ManagementModule::ManagementModule(const std::string path) :
             m_handle = nullptr;
         }
     }
+
+    return status;
 }
 
-ManagementModule::~ManagementModule()
+void ManagementModule::Unload()
 {
     if (nullptr != m_handle)
     {
         dlclose(m_handle);
         m_handle = nullptr;
     }
-}
-
-bool ManagementModule::IsValid() const
-{
-    return m_isValid;
 }
 
 ManagementModule::Info ManagementModule::GetInfo() const
@@ -207,126 +215,126 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
     // Required fields
 
     // Name
-    if (object.HasMember(g_mmiGetInfoName.c_str()))
+    if (object.HasMember(g_mmiGetInfoName))
     {
-        if (object[g_mmiGetInfoName.c_str()].IsString())
+        if (object[g_mmiGetInfoName].IsString())
         {
-            info.name = object[g_mmiGetInfoName.c_str()].GetString();
+            info.name = object[g_mmiGetInfoName].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoName.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoName);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoName.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoName);
         status = EINVAL;
     }
 
     // Description
-    if (object.HasMember(g_mmiGetInfoDescription.c_str()))
+    if (object.HasMember(g_mmiGetInfoDescription))
     {
-        if (object[g_mmiGetInfoDescription.c_str()].IsString())
+        if (object[g_mmiGetInfoDescription].IsString())
         {
-            info.description = object[g_mmiGetInfoDescription.c_str()].GetString();
+            info.description = object[g_mmiGetInfoDescription].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoDescription.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoDescription);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoDescription.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoDescription);
         status = EINVAL;
     }
 
     // Manufacturer
-    if (object.HasMember(g_mmiGetInfoManufacturer.c_str()))
+    if (object.HasMember(g_mmiGetInfoManufacturer))
     {
-        if (object[g_mmiGetInfoManufacturer.c_str()].IsString())
+        if (object[g_mmiGetInfoManufacturer].IsString())
         {
-            info.manufacturer = object[g_mmiGetInfoManufacturer.c_str()].GetString();
+            info.manufacturer = object[g_mmiGetInfoManufacturer].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoManufacturer.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoManufacturer.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
         status = EINVAL;
     }
 
     // Version Major
-    if (object.HasMember(g_mmiGetInfoVersionMajor.c_str()))
+    if (object.HasMember(g_mmiGetInfoVersionMajor))
     {
-        if (object[g_mmiGetInfoVersionMajor.c_str()].IsInt())
+        if (object[g_mmiGetInfoVersionMajor].IsInt())
         {
-            info.version.major = object[g_mmiGetInfoVersionMajor.c_str()].GetInt();
+            info.version.major = object[g_mmiGetInfoVersionMajor].GetInt();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
         status = EINVAL;
     }
 
     // Version Minor
-    if (object.HasMember(g_mmiGetInfoVersionMinor.c_str()))
+    if (object.HasMember(g_mmiGetInfoVersionMinor))
     {
-        if (object[g_mmiGetInfoVersionMinor.c_str()].IsInt())
+        if (object[g_mmiGetInfoVersionMinor].IsInt())
         {
-            info.version.minor = object[g_mmiGetInfoVersionMinor.c_str()].GetInt();
+            info.version.minor = object[g_mmiGetInfoVersionMinor].GetInt();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
         status = EINVAL;
     }
 
     // Version Info
-    if (object.HasMember(g_mmiGetInfoVersionInfo.c_str()))
+    if (object.HasMember(g_mmiGetInfoVersionInfo))
     {
-        if (object[g_mmiGetInfoVersionInfo.c_str()].IsString())
+        if (object[g_mmiGetInfoVersionInfo].IsString())
         {
-            info.versionInfo = object[g_mmiGetInfoVersionInfo.c_str()].GetString();
+            info.versionInfo = object[g_mmiGetInfoVersionInfo].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoVersionInfo.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
         status = EINVAL;
     }
 
     // Components
-    if (object.HasMember(g_mmiGetInfoComponents.c_str()))
+    if (object.HasMember(g_mmiGetInfoComponents))
     {
-        if (object[g_mmiGetInfoComponents.c_str()].IsArray())
+        if (object[g_mmiGetInfoComponents].IsArray())
         {
             std::unordered_set<std::string> components;
-            for (auto& component : object[g_mmiGetInfoComponents.c_str()].GetArray())
+            for (auto& component : object[g_mmiGetInfoComponents].GetArray())
             {
                 if (component.IsString() && (components.find(component.GetString()) == components.end()))
                 {
@@ -335,111 +343,111 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
                 }
                 else
                 {
-                    OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoComponents.c_str());
+                    OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoComponents);
                 }
             }
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an array", g_mmiGetInfoComponents.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an array", g_mmiGetInfoComponents);
             status = EINVAL;
         }
     }
 
     // Lifetime
-    if (object.HasMember(g_mmiGetInfoLifetime.c_str()))
+    if (object.HasMember(g_mmiGetInfoLifetime))
     {
-        if (object[g_mmiGetInfoLifetime.c_str()].IsInt())
+        if (object[g_mmiGetInfoLifetime].IsInt())
         {
-            int lifetime = object[g_mmiGetInfoLifetime.c_str()].GetInt();
+            int lifetime = object[g_mmiGetInfoLifetime].GetInt();
             if (0 <= lifetime && lifetime <= 2)
             {
                 info.lifetime = static_cast<Lifetime>(lifetime);
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime.c_str(), lifetime);
+                OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
                 info.lifetime = Lifetime::Undefined;
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoLifetime.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoLifetime.c_str());
+        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
         status = EINVAL;
     }
 
     // Optional fields
 
     // Version Patch
-    if (object.HasMember(g_mmiGetInfoVersionPatch.c_str()))
+    if (object.HasMember(g_mmiGetInfoVersionPatch))
     {
-        if (object[g_mmiGetInfoVersionPatch.c_str()].IsInt())
+        if (object[g_mmiGetInfoVersionPatch].IsInt())
         {
-            info.version.patch = object[g_mmiGetInfoVersionPatch.c_str()].GetInt();
+            info.version.patch = object[g_mmiGetInfoVersionPatch].GetInt();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
         }
     }
 
     // Version Tweak
-    if (object.HasMember(g_mmiGetInfoVersionTweak.c_str()))
+    if (object.HasMember(g_mmiGetInfoVersionTweak))
     {
-        if (object[g_mmiGetInfoVersionTweak.c_str()].IsInt())
+        if (object[g_mmiGetInfoVersionTweak].IsInt())
         {
-            info.version.tweak = object[g_mmiGetInfoVersionTweak.c_str()].GetInt();
+            info.version.tweak = object[g_mmiGetInfoVersionTweak].GetInt();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
         }
     }
 
 
     // License URI
-    if (object.HasMember(g_mmiGetInfoLicenseUri.c_str()))
+    if (object.HasMember(g_mmiGetInfoLicenseUri))
     {
-        if (object[g_mmiGetInfoLicenseUri.c_str()].IsString())
+        if (object[g_mmiGetInfoLicenseUri].IsString())
         {
-            info.licenseUri = object[g_mmiGetInfoLicenseUri.c_str()].GetString();
+            info.licenseUri = object[g_mmiGetInfoLicenseUri].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoLicenseUri.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
         }
     }
 
     // Project URI
-    if (object.HasMember(g_mmiGetInfoProjectUri.c_str()))
+    if (object.HasMember(g_mmiGetInfoProjectUri))
     {
-        if (object[g_mmiGetInfoProjectUri.c_str()].IsString())
+        if (object[g_mmiGetInfoProjectUri].IsString())
         {
-            info.projectUri = object[g_mmiGetInfoProjectUri.c_str()].GetString();
+            info.projectUri = object[g_mmiGetInfoProjectUri].GetString();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoProjectUri.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
         }
     }
 
     // User Account
-    if (object.HasMember(g_mmiGetInfoUserAccount.c_str()))
+    if (object.HasMember(g_mmiGetInfoUserAccount))
     {
-        if (object[g_mmiGetInfoUserAccount.c_str()].IsUint())
+        if (object[g_mmiGetInfoUserAccount].IsUint())
         {
-            info.userAccount = object[g_mmiGetInfoUserAccount.c_str()].GetUint();
+            info.userAccount = object[g_mmiGetInfoUserAccount].GetUint();
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount.c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
         }
     }
 
@@ -452,13 +460,16 @@ MmiSession::MmiSession(std::shared_ptr<ManagementModule> module, const std::stri
     m_module(module),
     m_mmiHandle(nullptr) {}
 
-MmiSession::~MmiSession() {}
+MmiSession::~MmiSession()
+{
+    Close();
+}
 
 int MmiSession::Open()
 {
     int status = 0;
 
-    if (m_module)
+    if (nullptr != m_module)
     {
         if (nullptr == m_mmiHandle)
         {
@@ -490,7 +501,7 @@ int MmiSession::Open()
 
 void MmiSession::Close()
 {
-    if (m_module)
+    if (nullptr != m_module)
     {
         if (nullptr != m_mmiHandle)
         {
