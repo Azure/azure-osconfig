@@ -450,30 +450,64 @@ MmiSession::MmiSession(std::shared_ptr<ManagementModule> module, const std::stri
     m_clientName(clientName),
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),
     m_module(module),
-    m_handle(nullptr)
+    m_mmiHandle(nullptr) {}
+
+MmiSession::~MmiSession() {}
+
+int MmiSession::Open()
 {
+    int status = 0;
+
     if (m_module)
     {
-        m_handle = m_module->CallMmiOpen(m_clientName.c_str(), m_maxPayloadSizeBytes);
+        if (nullptr == m_mmiHandle)
+        {
+            if (nullptr == (m_mmiHandle = m_module->CallMmiOpen(m_clientName.c_str(), m_maxPayloadSizeBytes)))
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "Failed to open MMI session for client '%s'", m_clientName.c_str());
+            }
+        }
+        else
+        {
+            status = EINVAL;
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(ModulesManagerLog::Get(), "MMI session already open");
+            }
+        }
     }
+    else
+    {
+        status = EINVAL;
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "MMI session not attached to a valid module");
+        }
+    }
+
+    return status;
 }
 
-MmiSession::~MmiSession()
+void MmiSession::Close()
 {
     if (m_module)
     {
-        m_module->CallMmiClose(m_handle);
+        if (nullptr != m_mmiHandle)
+        {
+            m_module->CallMmiClose(m_mmiHandle);
+            m_mmiHandle = nullptr;
+        }
     }
 }
 
 int MmiSession::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    return (nullptr != m_module) ? m_module->CallMmiSet(m_handle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
+    return (nullptr != m_module) ? m_module->CallMmiSet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
 }
 
 int MmiSession::Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes)
 {
-    return (nullptr != m_module) ? m_module->CallMmiGet(m_handle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
+    return (nullptr != m_module) ? m_module->CallMmiGet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
 }
 
 ManagementModule::Info MmiSession::GetInfo()

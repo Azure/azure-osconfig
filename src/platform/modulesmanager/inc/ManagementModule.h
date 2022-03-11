@@ -110,7 +110,8 @@ public:
     MmiSession(std::shared_ptr<ManagementModule> module, const std::string& clientName, unsigned int maxPayloadSizeBytes = 0);
     ~MmiSession();
 
-    std::string GetModuleName() const;
+    int Open();
+    void Close();
 
     int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     int Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
@@ -121,7 +122,7 @@ private:
     const unsigned int m_maxPayloadSizeBytes;
     std::shared_ptr<ManagementModule> m_module;
 
-    MMI_HANDLE m_handle;
+    MMI_HANDLE m_mmiHandle;
 };
 
 #endif // MANAGEMENTMODULE_H

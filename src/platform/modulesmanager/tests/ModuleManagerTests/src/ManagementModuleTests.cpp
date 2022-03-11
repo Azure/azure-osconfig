@@ -36,10 +36,12 @@ namespace Tests
     {
         m_mockModule = std::make_shared<MockManagementModule>();
         m_mmiSession = std::make_shared<MmiSession>(m_mockModule, m_defaultClient);
+        ASSERT_EQ(0, m_mmiSession->Open());
     }
 
     void ManagementModuleTests::TearDown()
     {
+        m_mmiSession->Close();
         m_mmiSession.reset();
         m_mockModule.reset();
     }
