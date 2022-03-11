@@ -13,17 +13,17 @@ namespace Tests
         m_modules[info.name] = module;
         for (auto& component : info.components)
         {
-            m_componentToModule[component] = info.name;
+            m_moduleComponentName[component] = info.name;
         }
     }
 
     void MockModulesManager::AddReportedObject(std::string componentName, std::string objectName)
     {
-        if (m_reported.find(componentName) == m_reported.end())
+        if (m_reportedComponents.find(componentName) == m_reportedComponents.end())
         {
-            m_reported[componentName] = std::unordered_set<std::string>();
+            m_reportedComponents[componentName] = std::unordered_set<std::string>();
         }
 
-        m_reported[componentName].insert(objectName);
+        m_reportedComponents[componentName].insert(objectName);
     }
 } // namespace Tests

@@ -273,7 +273,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                         OsConfigLogInfo(ModulesManagerLog::Get(), "Found newer version of '%s' module (%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
                         m_modules[info.name] = mm;
 
-                        SetComponentsForModule(info.name, info.components, true);
+                        RegisterModuleComponents(info.name, info.components, true);
                     }
                     else
                     {
@@ -283,7 +283,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                 else
                 {
                     m_modules[info.name] = mm;
-                    SetComponentsForModule(info.name, info.components);
+                    RegisterModuleComponents(info.name, info.components);
                 }
             }
         }
@@ -344,14 +344,14 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
                     std::string componentName = reported[g_configComponentName].GetString();
                     std::string objectName = reported[g_configObjectName].GetString();
 
-                    if (m_reported.find(componentName) == m_reported.end())
+                    if (m_reportedComponents.find(componentName) == m_reportedComponents.end())
                     {
-                        m_reported[componentName] = std::unordered_set<std::string>();
+                        m_reportedComponents[componentName] = std::unordered_set<std::string>();
                     }
 
-                    if (m_reported[componentName].find(objectName) == m_reported[componentName].end())
+                    if (m_reportedComponents[componentName].find(objectName) == m_reportedComponents[componentName].end())
                     {
-                        m_reported[componentName].insert(objectName);
+                        m_reportedComponents[componentName].insert(objectName);
                     }
                 }
                 else
@@ -371,17 +371,17 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
     return status;
 }
 
-void ModulesManager::SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components, bool replace)
+void ModulesManager::RegisterModuleComponents(const std::string& moduleName, const std::vector<std::string>& components, bool replace)
 {
     for (auto& component : components)
     {
-        if (replace || (m_componentToModule.find(component) == m_componentToModule.end()))
+        if (replace || (m_moduleComponentName.find(component) == m_moduleComponentName.end()))
         {
-            m_componentToModule[component] = moduleName;
+            m_moduleComponentName[component] = moduleName;
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Component '%s' is already registered to module '%s'", component.c_str(), m_componentToModule[component].c_str());
+            OsConfigLogError(ModulesManagerLog::Get(), "Component '%s' is already registered to module '%s'", component.c_str(), m_moduleComponentName[component].c_str());
         }
     }
 }
@@ -403,7 +403,17 @@ MpiSession::MpiSession(ModulesManager& modulesManager, std::string clientName, u
 {
     for (auto& module : m_modulesManager.m_modules)
     {
-        m_mmiSessions[module.first] = std::make_shared<MmiSession>(module.second, m_clientName, m_maxPayloadSizeBytes);
+        int status = 0;
+        std::shared_ptr<MmiSession> mmiSession = std::make_shared<MmiSession>(module.second, m_clientName, m_maxPayloadSizeBytes);
+
+        if (0 == (status = mmiSession->Open()))
+        {
+            m_mmiSessions[module.first] = mmiSession;
+        }
+        else
+        {
+            OsConfigLogError(ModulesManagerLog::Get(), "Unable to open MMI session for module '%s'", module.first.c_str());
+        }
     }
 }
 
@@ -411,6 +421,7 @@ MpiSession::~MpiSession()
 {
     for (auto& mmiSession : m_mmiSessions)
     {
+        mmiSession.second->Close();
         mmiSession.second.reset();
     }
 
@@ -421,9 +432,9 @@ std::shared_ptr<MmiSession> MpiSession::GetSession(const std::string& componentN
 {
     std::shared_ptr<MmiSession> mmiSession;
 
-    if (m_modulesManager.m_componentToModule.find(componentName) != m_modulesManager.m_componentToModule.end())
+    if (m_modulesManager.m_moduleComponentName.find(componentName) != m_modulesManager.m_moduleComponentName.end())
     {
-        std::string moduleName = m_modulesManager.m_componentToModule[componentName];
+        std::string moduleName = m_modulesManager.m_moduleComponentName[componentName];
         if (m_mmiSessions.find(moduleName) != m_mmiSessions.end())
         {
             mmiSession = m_mmiSessions[moduleName];
@@ -726,7 +737,7 @@ int MpiSession::GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeByt
     rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
     document.SetObject();
 
-    for (auto reported : m_modulesManager.m_reported)
+    for (auto reported : m_modulesManager.m_reportedComponents)
     {
         std::string componentName = reported.first;
         std::unordered_set<std::string> objectNames = reported.second;

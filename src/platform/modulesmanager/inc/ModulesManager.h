@@ -59,17 +59,16 @@ public:
 
 protected:
     // Component name -> vector of reported components according to osconfig.json
-    std::map<std::string, std::unordered_set<std::string>> m_reported;
+    std::map<std::string, std::unordered_set<std::string>> m_reportedComponents;
 
     // Component name -> module name
-    std::map<std::string, std::string> m_componentToModule;
+    std::map<std::string, std::string> m_moduleComponentName;
 
     // Module name -> ManagementModule
     std::map<std::string, std::shared_ptr<ManagementModule>> m_modules;
 
     int SetReportedObjects(const std::string& configJson);
-    void ScheduleModuleUnload(std::shared_ptr<ManagementModule> mm);
-    void SetComponentsForModule(const std::string& moduleName, const std::vector<std::string>& components, bool replace = false);
+    void RegisterModuleComponents(const std::string& moduleName, const std::vector<std::string>& components, bool replace = false);
 
     friend class MpiSession;
 };
