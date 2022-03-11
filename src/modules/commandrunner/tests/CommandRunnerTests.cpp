@@ -320,4 +320,48 @@ namespace Tests
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
+
+    TEST(CommandRunnerFactory, CreateClients)
+    {
+        std::string clientName1 = "client1";
+        std::string clientName2 = "client2";
+
+        // Create two sessions for 'client1', each resulting command runner should point to a common instance
+        auto commandRunner1 = CommandRunner::Factory::Create(clientName1);
+        auto commandRunner2 = CommandRunner::Factory::Create(clientName1);
+        EXPECT_NE(nullptr, commandRunner1);
+        EXPECT_NE(nullptr, commandRunner2);
+        EXPECT_EQ(commandRunner1, commandRunner2);
+        EXPECT_STREQ(clientName1.c_str(), commandRunner1->GetClientName().c_str());
+        EXPECT_STREQ(clientName1.c_str(), commandRunner2->GetClientName().c_str());
+
+        // Create a session for 'client2', this command runner should be different from the one for 'client1'
+        auto commandRunner3 = CommandRunner::Factory::Create(clientName2);
+        EXPECT_NE(nullptr, commandRunner3);
+        EXPECT_NE(commandRunner1, commandRunner3);
+        EXPECT_NE(commandRunner2, commandRunner3);
+        EXPECT_STREQ(clientName2.c_str(), commandRunner3->GetClientName().c_str());
+
+        // Destroy a session for 'client1'
+        CommandRunner::Factory::Destroy(commandRunner2.get());
+
+        // Create another session for 'client1'
+        auto commandRunner4 = CommandRunner::Factory::Create(clientName1);
+        EXPECT_NE(nullptr, commandRunner4);
+        EXPECT_EQ(commandRunner1, commandRunner4);
+        EXPECT_STREQ(clientName1.c_str(), commandRunner4->GetClientName().c_str());
+
+        // Destroy all the open sessions
+        CommandRunner::Factory::Destroy(commandRunner1.get());
+        CommandRunner::Factory::Destroy(commandRunner3.get());
+        CommandRunner::Factory::Destroy(commandRunner4.get());
+
+        // Create a session for 'client1' again, this time it should be a new instance
+        auto commandRunner5 = CommandRunner::Factory::Create(clientName1);
+        EXPECT_NE(nullptr, commandRunner5);
+        EXPECT_NE(commandRunner1, commandRunner5);
+        EXPECT_STREQ(clientName1.c_str(), commandRunner5->GetClientName().c_str());
+
+        CommandRunner::Factory::Destroy(commandRunner5.get());
+    }
 } // namespace Tests

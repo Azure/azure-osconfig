@@ -27,6 +27,9 @@ const std::string CommandRunner::PERSISTED_COMMANDSTATUS_FILE = "/etc/osconfig/o
 
 std::mutex CommandRunner::m_diskCacheMutex;
 
+std::map<std::string, std::shared_ptr<CommandRunner::Factory::Session>> CommandRunner::Factory::m_sessions;
+std::mutex CommandRunner::Factory::m_mutex;
+
 CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, bool usePersistedCache) :
     m_clientName(clientName),
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),
@@ -43,7 +46,7 @@ CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSize
 
 CommandRunner::~CommandRunner()
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner %s shutting down", m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner '%s' shutting down", m_clientName.c_str());
 
     while (!m_commandQueue.Empty())
     {
@@ -216,7 +219,12 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
     return status;
 }
 
-unsigned int CommandRunner::GetMaxPayloadSizeBytes()
+const std::string& CommandRunner::GetClientName() const
+{
+    return m_clientName;
+}
+
+unsigned int CommandRunner::GetMaxPayloadSizeBytes() const
 {
     return m_maxPayloadSizeBytes;
 }
@@ -393,7 +401,7 @@ Command::Status CommandRunner::GetReportedStatus()
 
 void CommandRunner::WorkerThread(CommandRunner& instance)
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread for %s", instance.m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread for '%s'", instance.m_clientName.c_str());
 
     std::shared_ptr<Command> command;
     while (nullptr != (command = instance.m_commandQueue.Front().lock()))
@@ -412,7 +420,7 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
         instance.m_commandQueue.Pop();
     }
 
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped for %s", instance.m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped for '%s'", instance.m_clientName.c_str());
 }
 
 Command::Status CommandRunner::GetStatusToPersist()
@@ -608,6 +616,78 @@ int CommandRunner::CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeByt
     }
 
     return status;
+}
+
+std::shared_ptr<CommandRunner> CommandRunner::Factory::Create(std::string clientName, int maxPayloadSizeBytes)
+{
+    std::shared_ptr<Factory::Session> session;
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    if (m_sessions.find(clientName) == m_sessions.end())
+    {
+        session = std::make_shared<Factory::Session>(clientName, maxPayloadSizeBytes);
+        m_sessions[clientName] = session;
+    }
+    else
+    {
+        session = m_sessions[clientName];
+    }
+
+    return session->Get();
+}
+
+void CommandRunner::Factory::Destroy(CommandRunner* commandRunner)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::string clientName = commandRunner->GetClientName();
+
+    if (m_sessions.find(clientName) != m_sessions.end())
+    {
+        if (0 == m_sessions[clientName]->Release())
+        {
+            m_sessions[clientName].reset();
+            m_sessions.erase(clientName);
+        }
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogError(CommandRunnerLog::Get(), "CommandRunner for %s not found", clientName.c_str());
+    }
+}
+
+void CommandRunner::Factory::Clear()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it)
+    {
+        it->second.reset();
+    }
+
+    m_sessions.clear();
+}
+
+CommandRunner::Factory::Session::Session(std::string clientName, int maxPayloadSizeBytes) :
+    m_clients(0)
+{
+    m_instance = std::make_shared<CommandRunner>(clientName, maxPayloadSizeBytes);
+}
+
+CommandRunner::Factory::Session::~Session()
+{
+    m_instance.reset();
+}
+
+std::shared_ptr<CommandRunner> CommandRunner::Factory::Session::Get()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_clients++;
+    return m_instance;
+}
+
+int CommandRunner::Factory::Session::Release()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return --m_clients;
 }
 
 template<class T>
