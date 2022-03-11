@@ -20,8 +20,9 @@ namespace Tests
         else
         {
             return testing::AssertionFailure() << "expected JSON is:\n"
-                                               << leftString << "\n but got:\n"
-                                               << rightString;
+                                               << "'" << leftString << "'\n"
+                                               << "but got:\n"
+                                               << "'" << rightString << "'" << "\n";
         }
     }
 } // namespace Tests

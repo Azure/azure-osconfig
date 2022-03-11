@@ -31,25 +31,25 @@ public:
 
     struct Version
     {
-        unsigned int Major = 0;
-        unsigned int Minor = 0;
-        unsigned int Patch = 0;
-        unsigned int Tweak = 0;
+        unsigned int major = 0;
+        unsigned int minor = 0;
+        unsigned int patch = 0;
+        unsigned int tweak = 0;
 
         // Only defining "<" as we are only using that operator in comparisons
         bool operator < (const Version &rhs) const
         {
-            return (((Major < rhs.Major) ||
-                     ((Major == rhs.Major) && (Minor < rhs.Minor)) ||
-                     ((Major == rhs.Major) && (Minor == rhs.Minor) && (Patch < rhs.Patch)) ||
-                     ((Major == rhs.Major) && (Minor == rhs.Minor) && (Patch == rhs.Patch) && (Tweak < rhs.Tweak)))
+            return (((major < rhs.major) ||
+                     ((major == rhs.major) && (minor < rhs.minor)) ||
+                     ((major == rhs.major) && (minor == rhs.minor) && (patch < rhs.patch)) ||
+                     ((major == rhs.major) && (minor == rhs.minor) && (patch == rhs.patch) && (tweak < rhs.tweak)))
                         ? true : false);
         }
 
         std::string ToString() const
         {
             std::ostringstream ostream;
-            ostream << Major << "." << Minor << "." << Patch << "." << Tweak;
+            ostream << major << "." << minor << "." << patch << "." << tweak;
             return ostream.str();
         }
     };
@@ -67,62 +67,63 @@ public:
         std::string licenseUri;
         std::string projectUri;
         unsigned int userAccount;
+
+        static int Deserialize(const rapidjson::Value& object, Info& info);
     };
 
-    std::map<std::string, std::vector<std::string>> reportedObjects;
-
-    ManagementModule(const std::string clientName, const std::string path, const unsigned int maxPayloadSize = 0);
+    ManagementModule();
+    ManagementModule(const std::string path);
     virtual ~ManagementModule();
 
-    // Is a valid Management Module (MM) eg. exposes the MM interface
-    bool IsValid() const;
+    virtual int Load();
+    virtual void Unload();
 
-    // Is the Management Module (MM) loaded eg. MM handles open
-    bool IsLoaded() const;
-
-    virtual void LoadModule();
-    virtual void UnloadModule();
-
-    virtual int CallMmiSet(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
-    virtual int CallMmiGet(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
-
-    virtual bool IsExportingMmi(const std::string path);
-
-    // MmiGetInfo Properties
-    // See MmiGetInfo Schema for property descriptions -> src/modules/schema/MmiGetInfoSchema.json
-    const std::string GetName() const;
-    const Version GetVersion() const;
-    Lifetime GetLifetime() const;
-    const std::vector<std::string> GetSupportedComponents() const;
-
-    void AddReportedObject(const std::string& componentName, const std::string& objectName);
-    const std::vector<std::string> GetReportedObjects(const std::string& componentName) const;
-
-    const std::string GetModulePath() const;
+    Info GetInfo() const;
 
 protected:
-    void* handle;
-    MMI_HANDLE mmiHandle;
+    const std::string m_modulePath;
 
-    // Is a valid MM eg. exposes the MM interface (MMI)
-    bool isValid;
-
-    const std::string clientName;
-    const std::string modulePath;
-
-    // The maximum payload size
-    int maxPayloadSizeBytes;
-
-    // Module Metadata
-    Info info;
+    // The handle retuned by dlopen()
+    void* m_handle;
 
     // Management Module Interface (MMI) imported functions
-    Mmi_GetInfo mmiGetInfo;
-    Mmi_Open mmiOpen;
-    Mmi_Close mmiClose;
-    Mmi_Set mmiSet;
-    Mmi_Get mmiGet;
-    Mmi_Free mmiFree;
+    Mmi_GetInfo m_mmiGetInfo;
+    Mmi_Open m_mmiOpen;
+    Mmi_Close m_mmiClose;
+    Mmi_Set m_mmiSet;
+    Mmi_Get m_mmiGet;
+    Mmi_Free m_mmiFree;
+
+    Info m_info;
+
+    virtual int CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    virtual MMI_HANDLE CallMmiOpen(const char* componentName, unsigned int maxPayloadSizeBytes);
+    virtual void CallMmiClose(MMI_HANDLE handle);
+    virtual int CallMmiSet(MMI_HANDLE handle, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    virtual int CallMmiGet(MMI_HANDLE handle, const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
+
+    friend class MmiSession;
+};
+
+class MmiSession
+{
+public:
+    MmiSession(std::shared_ptr<ManagementModule> module, const std::string& clientName, unsigned int maxPayloadSizeBytes = 0);
+    ~MmiSession();
+
+    int Open();
+    void Close();
+
+    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
+
+    ManagementModule::Info GetInfo();
+private:
+    const std::string m_clientName;
+    const unsigned int m_maxPayloadSizeBytes;
+    std::shared_ptr<ManagementModule> m_module;
+
+    MMI_HANDLE m_mmiHandle;
 };
 
 #endif // MANAGEMENTMODULE_H

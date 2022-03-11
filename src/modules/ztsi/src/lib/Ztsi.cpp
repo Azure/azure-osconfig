@@ -115,11 +115,6 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
         OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null clientName");
         status = EINVAL;
     }
-    else if (!IsValidClientName(clientName))
-    {
-        OsConfigLogError(ZtsiLog::Get(), "GetInfo called with invalid clientName");
-        status = EINVAL;
-    }
     else if (nullptr == payload)
     {
         OsConfigLogError(ZtsiLog::Get(), "GetInfo called with null payload");

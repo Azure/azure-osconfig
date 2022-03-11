@@ -19,48 +19,50 @@ namespace Tests
     class MpiTests : public ::testing::Test
     {
     protected:
-        MPI_HANDLE handle;
+        ModulesManager m_modulesManager;
+        MPI_HANDLE m_handle;
 
-        static const char defaultClient[];
-        static const char defaultComponent[];
-        static const char defaultObject[];
-        static char defaultPayload[];
-        static const int defaultPayloadSize;
+        static const char m_defaultClient[];
+        static const char m_defaultComponent[];
+        static const char m_defaultObject[];
+        static char m_defaultPayload[];
+        static const int m_defaultPayloadSize;
 
         void SetUp() override;
         void TearDown() override;
     };
 
-    const char MpiTests::defaultClient[] = "Default_MpiTest_Client";
-    const char MpiTests::defaultComponent[] = "Default_MpiTest_Component";
-    const char MpiTests::defaultObject[] = "Default_MpiTest_Object";
-    char MpiTests::defaultPayload[] = "\"Default_MpiTest_Payload\"";
-    const int MpiTests::defaultPayloadSize = ARRAY_SIZE(MpiTests::defaultPayload) - 1;
+    const char MpiTests::m_defaultClient[] = "Default_MpiTest_Client";
+    const char MpiTests::m_defaultComponent[] = "Default_MpiTest_Component";
+    const char MpiTests::m_defaultObject[] = "Default_MpiTest_Object";
+    char MpiTests::m_defaultPayload[] = "\"Default_MpiTest_Payload\"";
+    const int MpiTests::m_defaultPayloadSize = ARRAY_SIZE(MpiTests::m_defaultPayload) - 1;
 
     void MpiTests::SetUp()
     {
-        ModulesManager* modulesManager = new ModulesManager(defaultClient);
-        ASSERT_NE(nullptr, modulesManager);
-
-        this->handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
+        MpiSession* session = new (std::nothrow) MpiSession(m_modulesManager, m_defaultClient);
+        ASSERT_NE(nullptr, session);
+        this->m_handle = reinterpret_cast<MPI_HANDLE>(session);
     }
 
     void MpiTests::TearDown()
     {
-        ModulesManager* modulesManager = reinterpret_cast<ModulesManager*>(this->handle);
-        ASSERT_NE(nullptr, modulesManager);
-        delete modulesManager;
+        MpiSession* session = reinterpret_cast<MpiSession*>(this->m_handle);
+        ASSERT_NE(nullptr, session);
+        delete session;
     }
 
     TEST_F(MpiTests, MpiOpen)
     {
-        MPI_HANDLE handle = MpiOpen(defaultClient, 0);
-        ASSERT_NE(nullptr, handle);
+        MPI_HANDLE handle1 = MpiOpen(m_defaultClient, 0);
+        MPI_HANDLE handle2 = MpiOpen(m_defaultClient, 0);
 
-        ModulesManager* modulesManager = reinterpret_cast<ModulesManager*>(handle);
-        ASSERT_STREQ(defaultClient, modulesManager->GetClientName().c_str());
+        EXPECT_NE(nullptr, handle1);
+        EXPECT_NE(nullptr, handle2);
+        EXPECT_NE(handle1, handle2);
 
-        MpiClose(handle);
+        MpiClose(handle1);
+        MpiClose(handle2);
     }
 
     TEST_F(MpiTests, MpiOpen_InvalidClientName)
@@ -70,28 +72,26 @@ namespace Tests
 
     TEST_F(MpiTests, MpiSet_InvalidClientSession)
     {
-        ASSERT_EQ(EINVAL, MpiSet(nullptr, defaultComponent, defaultObject, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(EINVAL, MpiSet(nullptr, m_defaultComponent, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
     TEST_F(MpiTests, MpiSet_InvalidComponentName)
     {
-        ASSERT_EQ(EINVAL, MpiSet(handle, nullptr, defaultObject, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(EINVAL, MpiSet(m_handle, nullptr, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
     TEST_F(MpiTests, MpiSet_InvalidObjectName)
     {
-        ASSERT_EQ(EINVAL, MpiSet(handle, defaultComponent, nullptr, defaultPayload, defaultPayloadSize));
+        ASSERT_EQ(EINVAL, MpiSet(m_handle, m_defaultComponent, nullptr, m_defaultPayload, m_defaultPayloadSize));
     }
 
     TEST_F(MpiTests, MpiSet_InvalidPayload)
     {
-        ASSERT_EQ(EINVAL, MpiSet(handle, defaultComponent, defaultObject, nullptr, 1));
+        ASSERT_EQ(EINVAL, MpiSet(m_handle, m_defaultComponent, m_defaultObject, nullptr, 1));
     }
 
     TEST_F(MpiTests, PayloadValidation)
     {
-        MPI_HANDLE handle = nullptr;
-        ModulesManager* modulesManager = new ModulesManager(defaultClient, 0);
         std::vector<std::pair<std::string, std::string>> objects = {
             {g_string, g_stringPayload},
             {g_integer, g_integerPayload},
@@ -104,8 +104,12 @@ namespace Tests
             {g_objectArray, g_objectArrayPayload}
         };
 
-        modulesManager->LoadModules(g_moduleDir, g_configJsonNoneReported);
-        handle = reinterpret_cast<MPI_HANDLE>(modulesManager);
+        ModulesManager modulesManager;
+        EXPECT_EQ(MPI_OK, modulesManager.LoadModules(g_moduleDir, g_configJsonNoneReported));
+
+        MpiSession mpiSession(modulesManager, m_defaultClient);
+        EXPECT_EQ(MPI_OK, mpiSession.Open());
+        MPI_HANDLE handle = reinterpret_cast<MPI_HANDLE>(&mpiSession);
 
         for (auto object : objects)
         {
@@ -127,7 +131,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, MpiGet(nullptr, defaultComponent, defaultObject, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, MpiGet(nullptr, m_defaultComponent, m_defaultObject, &payload, &payloadSizeBytes));
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
@@ -136,7 +140,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, MpiGet(handle, nullptr, defaultObject, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, MpiGet(m_handle, nullptr, m_defaultObject, &payload, &payloadSizeBytes));
         ASSERT_EQ(nullptr, payload);
         ASSERT_EQ(0, payloadSizeBytes);
     }
@@ -146,7 +150,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, MpiGet(handle, defaultComponent, nullptr, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, MpiGet(m_handle, m_defaultComponent, nullptr, &payload, &payloadSizeBytes));
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
@@ -154,7 +158,7 @@ namespace Tests
     {
         int payloadSizeBytes = 0;
 
-        ASSERT_EQ(EINVAL, MpiGet(handle, defaultComponent, defaultObject, nullptr, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, MpiGet(m_handle, m_defaultComponent, m_defaultObject, nullptr, &payloadSizeBytes));
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
@@ -162,7 +166,7 @@ namespace Tests
     {
         MMI_JSON_STRING payload = nullptr;
 
-        ASSERT_EQ(EINVAL, MpiGet(handle, defaultComponent, defaultObject, &payload, nullptr));
+        ASSERT_EQ(EINVAL, MpiGet(m_handle, m_defaultComponent, m_defaultObject, &payload, nullptr));
         ASSERT_EQ(nullptr, payload);
     }
 

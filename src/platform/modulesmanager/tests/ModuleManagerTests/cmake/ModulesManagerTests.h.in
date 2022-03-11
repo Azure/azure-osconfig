@@ -73,8 +73,13 @@ const char g_objectArrayPayload[] = R"""([
         }
     ])""";
 
-// Payload for testing MpiSetDesired() and MpiGetReported()
-const char g_localPayload[] = R"""({
+// Payloads for testing MpiSetDesired() and MpiGetReported()
+const char g_singleObjectPayload[] = R"""({
+    "TestModule_Component_1": {
+        "string": "string"
+    }
+})""";
+const char g_multipleObjectsPayload[] = R"""({
     "TestModule_Component_1": {
         "string": "string",
         "integer": 123,

@@ -76,8 +76,8 @@ static const char g_objectArrayPayload[] = R"""([
     ])""";
 
 static constexpr const char g_info[] = R"""({
-    "Name": "Valid Test Module V2",
-    "Description": "This is a test module",
+    "Name": "Valid Test Module",
+    "Description": "This is a test module (V2)",
     "Manufacturer": "Microsoft",
     "VersionMajor": 2,
     "VersionMinor": 0,
