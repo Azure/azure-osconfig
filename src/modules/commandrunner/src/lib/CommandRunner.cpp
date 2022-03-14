@@ -46,7 +46,7 @@ CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSize
 
 CommandRunner::~CommandRunner()
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner '%s' shutting down", m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Terminating command runner session for: %s", m_clientName.c_str());
 
     while (!m_commandQueue.Empty())
     {
@@ -72,7 +72,7 @@ CommandRunner::~CommandRunner()
     Command::Status status = GetStatusToPersist();
     if (!status.m_id.empty() && (0 != PersistCommandStatus(status)))
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command status for client %s during shutdown", m_clientName.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command status for session %s during shutdown", m_clientName.c_str());
     }
 }
 
@@ -82,17 +82,17 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
 
     if (nullptr == clientName)
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo called with null clientName");
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo called with null payload");
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
+        OsConfigLogError(CommandRunnerLog::Get(), "Invalid payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -101,7 +101,7 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
         *payload = new (std::nothrow) char[len];
         if (nullptr == *payload)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "MmiGetInfo failed to allocate memory");
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
             status = ENOMEM;
         }
         else
@@ -150,7 +150,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                         status = Refresh(arguments.m_id);
                         break;
                     case Command::Action::None:
-                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command '%s'", arguments.m_id.c_str());
+                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
                         break;
                     default:
                         OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
@@ -260,12 +260,12 @@ int CommandRunner::Cancel(const std::string id)
     if ((m_commandMap.find(id) != m_commandMap.end()))
     {
         std::shared_ptr<Command> command = m_commandMap[id];
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command '%s'", id.c_str());
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Canceling command: %s", id.c_str());
         status = command->Cancel();
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' does not exist and cannot be canceled", id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be canceled: %s", id.c_str());
         status = EINVAL;
     }
 
@@ -282,7 +282,7 @@ int CommandRunner::Refresh(const std::string id)
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' does not exist and cannot be refreshed", id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be refreshed: %s", id.c_str());
         status = EINVAL;
     }
 
@@ -316,17 +316,17 @@ int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
             }
             else
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", command->GetId().c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", command->GetId().c_str());
             }
         }
         else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping Command '%s'", command->GetId().c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command: %s", command->GetId().c_str());
         }
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' already exists", command->GetId().c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command already exists: %s", command->GetId().c_str());
         status = EINVAL;
     }
 
@@ -359,7 +359,7 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
         }
         else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Cannot cache command with duplicate id '%s'", command->GetId().c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Cannot cache command with duplicate id: %s", command->GetId().c_str());
             status = EINVAL;
         }
     }
@@ -401,7 +401,7 @@ Command::Status CommandRunner::GetReportedStatus()
 
 void CommandRunner::WorkerThread(CommandRunner& instance)
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread for '%s'", instance.m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Starting worker thread for session: %s", instance.m_clientName.c_str());
 
     std::shared_ptr<Command> command;
     while (nullptr != (command = instance.m_commandQueue.Front().lock()))
@@ -410,17 +410,17 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
 
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' ('%s') completed with code %d", command->GetId().c_str(), command->m_arguments.c_str(), exitCode);
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' (%s) completed with code: %d", command->GetId().c_str(), command->m_arguments.c_str(), exitCode);
         }
         else
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' completed with code %d", command->GetId().c_str(), exitCode);
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' completed with code: %d", command->GetId().c_str(), exitCode);
         }
 
         instance.m_commandQueue.Pop();
     }
 
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped for '%s'", instance.m_clientName.c_str());
+    OsConfigLogInfo(CommandRunnerLog::Get(), "Worker thread stopped for session: %s", instance.m_clientName.c_str());
 }
 
 Command::Status CommandRunner::GetStatusToPersist()
@@ -468,13 +468,13 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
 
             if (0 != CacheCommand(command))
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache Command '%s'", commandStatus.m_id.c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
                 status = -1;
             }
         }
         else if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client %s", clientName.c_str());
+            OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client: %s", clientName.c_str());
         }
     }
     else
@@ -536,13 +536,13 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
             if (0 != (status = WriteFile(CommandRunner::PERSISTED_COMMANDSTATUS_FILE, buffer)))
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to write cache file %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to write cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
             }
         }
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to open cache file %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to open cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
         status = errno;
     }
 
@@ -558,7 +558,7 @@ int CommandRunner::WriteFile(const std::string& fileName, const rapidjson::Strin
         std::FILE* file = std::fopen(fileName.c_str(), "w");
         if (nullptr == file)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file %s", fileName.c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", fileName.c_str());
             status = EACCES;
         }
         else
@@ -588,7 +588,7 @@ int CommandRunner::CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeByt
         *payload = new (std::nothrow) char[buffer.GetSize()];
         if (nullptr == *payload)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Unable to allocate memory for payload");
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
             status = ENOMEM;
         }
         else
@@ -651,7 +651,7 @@ void CommandRunner::Factory::Destroy(CommandRunner* commandRunner)
     }
     else if (IsFullLoggingEnabled())
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "CommandRunner for %s not found", clientName.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "CommandRunner not found for session: %s", clientName.c_str());
     }
 }
 
