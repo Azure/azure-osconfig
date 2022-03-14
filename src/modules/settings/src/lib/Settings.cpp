@@ -31,6 +31,11 @@ Settings::Settings(unsigned int maxSizeInBytes)
     maxPayloadSizeInBytes = maxSizeInBytes;
 }
 
+unsigned int Settings::GetMaxPayloadSizeBytes() const
+{
+    return maxPayloadSizeInBytes;
+}
+
 int Settings::SetDeviceHealthTelemetryConfiguration(std::string payload, const char* fileName, bool &configurationChanged)
 {
     char* valueToWrite = NULL;
