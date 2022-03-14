@@ -45,6 +45,9 @@ public:
         static void Destroy(CommandRunner* commandRunner);
         static void Clear();
 
+        // Helper method for validating sessions during unit tests
+        static int GetClientCount(const std::string& clientName);
+
     private:
         class Session
         {
@@ -54,6 +57,7 @@ public:
 
             std::shared_ptr<CommandRunner> Get();
             int Release();
+            int GetClientCount();
 
         private:
             std::mutex m_mutex;

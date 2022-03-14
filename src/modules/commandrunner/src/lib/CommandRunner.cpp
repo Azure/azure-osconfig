@@ -664,6 +664,19 @@ void CommandRunner::Factory::Clear()
     m_sessions.clear();
 }
 
+int CommandRunner::Factory::GetClientCount(const std::string& clientName)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    int count = 0;
+
+    if (m_sessions.find(clientName) != m_sessions.end())
+    {
+        count = m_sessions[clientName]->GetClientCount();
+    }
+
+    return count;
+}
+
 CommandRunner::Factory::Session::Session(std::string clientName, int maxPayloadSizeBytes) :
     m_clients(0)
 {
@@ -686,6 +699,13 @@ int CommandRunner::Factory::Session::Release()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return --m_clients;
+}
+
+// Return the number of clients using this session
+int CommandRunner::Factory::Session::GetClientCount()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_clients;
 }
 
 template<class T>
