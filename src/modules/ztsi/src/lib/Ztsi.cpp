@@ -41,7 +41,7 @@ int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigne
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
 
-    if (buffer.GetSize() > maxPayloadSizeBytes)
+    if ((maxPayloadSizeBytes > 0) && (buffer.GetSize() > maxPayloadSizeBytes))
     {
         OsConfigLogError(ZtsiLog::Get(), "Failed to serialize JSON object to buffer");
         status = E2BIG;
