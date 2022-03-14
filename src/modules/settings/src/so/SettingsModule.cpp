@@ -13,16 +13,12 @@
 #include <ScopeGuard.h>
 #include <Settings.h>
 
-using namespace rapidjson;
-std::unique_ptr<Settings> settings;
-
-unsigned int maxPayloadSizeBytes = 0;
-
 void __attribute__((constructor)) InitModule()
 {
     SettingsLog::OpenLog();
     OsConfigLogInfo(SettingsLog::Get(), "Settings module loaded");
 }
+
 void __attribute__((destructor)) DestroyModule()
 {
     OsConfigLogInfo(SettingsLog::Get(), "Settings module unloaded");
@@ -34,151 +30,118 @@ int MmiGetInfo(
     MMI_JSON_STRING* payload,
     int* payloadSizeBytes)
 {
-    try
-    {
-        int status = MMI_OK;
+    int status = MMI_OK;
 
-        if ((nullptr == clientName) || (nullptr == payload) || (nullptr == payloadSizeBytes))
+    ScopeGuard sg{[&]()
+    {
+        if (MMI_OK == status)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(SettingsLog::Get(), "MmiGetInfo(%s, %.*s, %d) invalid arguments",
-                    clientName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0));
+                OsConfigLogInfo(SettingsLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
-            status = EINVAL;
+            else
+            {
+                OsConfigLogInfo(SettingsLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, *payloadSizeBytes, status);
+            }
         }
         else
         {
-            constexpr const char ret[] =
-                R""""({
-                "Name": "Settings",
-                "Description": "Provides functionality to configure other settings on the device",
-                "Manufacturer": "Microsoft",
-                "VersionMajor": 0,
-                "VersionMinor": 1,
-                "VersionInfo": "Iron",
-                "Components": ["Settings"],
-                "Lifetime": 0,
-                "UserAccount": 0})"""";
-
-            std::size_t len = sizeof(ret) - 1;
-
-            *payloadSizeBytes = len;
-            *payload = new char[len];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiGetInfo failed to allocate %d bytes for payload", (int)len);
-                status = ENOMEM;
-            }
-            else
-            {
-                std::memcpy(*payload, ret, len);
-            }
+            OsConfigLogError(SettingsLog::Get(), "MmiGetInfo(%s, %p, %p) returned %d", clientName, payload, payloadSizeBytes, status);
         }
+    }};
 
-        ScopeGuard sg{[&]() {
-            if ((MMI_OK == status) && (nullptr != payload) && (nullptr != payloadSizeBytes))
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(SettingsLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-                }
-                else
-                {
-                    OsConfigLogInfo(SettingsLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, *payloadSizeBytes, status);
-                }
-            }
-            else
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogError(SettingsLog::Get(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), status);
-                }
-                else
-                {
-                    OsConfigLogError(SettingsLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, (payloadSizeBytes ? *payloadSizeBytes : 0), status);
-                }
-            }
-        }};
-
-        return status;
-    }
-    catch (const std::exception &e)
+    if (nullptr == clientName)
     {
-        OsConfigLogError(SettingsLog::Get(), "MmiGetInfo exception occurred");
-        return ENODATA;
+        OsConfigLogError(SettingsLog::Get(), "Invalid clientName");
+        status = EINVAL;
     }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(SettingsLog::Get(), "Invalid payload");
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        OsConfigLogError(SettingsLog::Get(), "Invalid payloadSizeBytes");
+        status = EINVAL;
+    }
+    else
+    {
+        constexpr const char info[] = R""""({
+            "Name": "Settings",
+            "Description": "Provides functionality to configure other settings on the device",
+            "Manufacturer": "Microsoft",
+            "VersionMajor": 0,
+            "VersionMinor": 1,
+            "VersionInfo": "Iron",
+            "Components": ["Settings"],
+            "Lifetime": 0,
+            "UserAccount": 0})"""";
+
+        std::size_t len = ARRAY_SIZE(info) - 1;
+        *payload = new (std::nothrow) char[len];
+        if (nullptr == *payload)
+        {
+            OsConfigLogError(SettingsLog::Get(), "Failed to allocate memory for payload");
+            status = ENOMEM;
+        }
+        else
+        {
+            std::memcpy(*payload, info, len);
+            *payloadSizeBytes = len;
+        }
+    }
+
+    return status;
 }
 
 MMI_HANDLE MmiOpen(
     const char* clientName,
-    const unsigned int maxPayloadSize)
+    const unsigned int maxPayloadSizeBytes)
 {
-    try
-    {
-        int status = MMI_OK;
-        MMI_HANDLE handle = nullptr;
+    int status = MMI_OK;
+    MMI_HANDLE handle = nullptr;
 
-        if (nullptr == clientName)
+    ScopeGuard sg{[&]() {
+        if (MMI_OK == status)
         {
-            OsConfigLogError(SettingsLog::Get(), "MmiOpen(%s, %u) clientName %s is null", clientName, maxPayloadSize, clientName);
-            status = EINVAL;
+            OsConfigLogInfo(SettingsLog::Get(), "MmiOpen(%s, %d) returned: %p, status: %d", clientName, maxPayloadSizeBytes, handle, status);
         }
         else
         {
-            maxPayloadSizeBytes = maxPayloadSize;
-            settings.reset(new Settings(maxPayloadSizeBytes));
-            if (nullptr == settings.get())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiOpen Settings construction failed");
-                status = ENODATA;
-            }
-            else
-            {
-                handle = reinterpret_cast<MMI_HANDLE>(settings.get());
-            }
+            OsConfigLogError(SettingsLog::Get(), "MmiOpen(%s, %d) returned: %p, status: %d", clientName, maxPayloadSizeBytes, handle, status);
         }
+    }};
 
-        ScopeGuard sg{[&]() {
-            if (MMI_OK == status)
-            {
-                OsConfigLogInfo(SettingsLog::Get(), "MmiOpen(%s) returned: %p, status: %d", clientName, handle, status);
-            }
-            else
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiOpen(%s) returned: %p, status: %d", clientName, handle, status);
-            }
-        }};
-
-        return handle;
-    }
-    catch(const std::exception& e)
+    if (nullptr != clientName)
     {
-        OsConfigLogError(SettingsLog::Get(), "MmiOpen exception occurred");
-        return nullptr;
+        Settings* settings = new (std::nothrow) Settings(maxPayloadSizeBytes);
+        if (nullptr != settings)
+        {
+            handle = reinterpret_cast<MMI_HANDLE>(settings);
+        }
+        else
+        {
+            OsConfigLogError(SettingsLog::Get(), "MmiOpen Settings construction failed");
+            status = ENOMEM;
+        }
     }
+    else
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiOpen(%s, %u) clientName %s is null", clientName, maxPayloadSizeBytes, clientName);
+        status = EINVAL;
+    }
+
+    return handle;
 }
 
 void MmiClose(MMI_HANDLE clientSession)
 {
-    try
+    Settings* settings = reinterpret_cast<Settings*>(clientSession);
+    if (settings != nullptr)
     {
-        if (clientSession == nullptr)
-        {
-            OsConfigLogError(SettingsLog::Get(), "MmiClose MMI_HANDLE %p is null", clientSession);
-        }
-        else if (clientSession == reinterpret_cast<MMI_HANDLE>(settings.get()))
-        {
-            settings.reset();
-        }
-        else
-        {
-            OsConfigLogError(SettingsLog::Get(), "MmiClose MMI_HANDLE %p not recognized", clientSession);
-        }
-    }
-    catch(const std::exception& e)
-    {
-        OsConfigLogError(SettingsLog::Get(), "MmiClose exception occurred");
+        delete settings;
     }
 }
 
@@ -189,141 +152,132 @@ int MmiSet(
     const MMI_JSON_STRING payload,
     const int payloadSizeBytes)
 {
-    try
-    {
-        int status = EINVAL;
+    int status = MMI_OK;
+    Settings* settings = reinterpret_cast<Settings*>(clientSession);
 
-        if (nullptr == clientSession)
+    ScopeGuard sg{[&]()
+    {
+        if (MMI_OK == status)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) clientSession %p is null",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, clientSession);
+                OsConfigLogInfo(SettingsLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
-        }
-        else if ((nullptr == componentName) || (SETTINGS != componentName))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) componentName %s is invalid, %s is expected",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, componentName, SETTINGS.c_str());
-            }
-        }
-        else if ((nullptr == objectName) || ((DEVICEHEALTHTELEMETRY != objectName) && (DELIVERYOPTIMIZATION != objectName)))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) objectName %s is invalid, %s or %s is expected",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, objectName, DEVICEHEALTHTELEMETRY.c_str(), DELIVERYOPTIMIZATION.c_str());
-            }
-        }
-        else if (nullptr == payload)
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) payload %p is null",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, payload);
-            }
-        }
-        else if ((maxPayloadSizeBytes > 0) && (payloadSizeBytes > static_cast<int>(maxPayloadSizeBytes)))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) payloadSizeBytes %d exceeds maxPayloadSizeBytes %d",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, payloadSizeBytes, static_cast<int>(maxPayloadSizeBytes));
-            }
-            status = E2BIG;
         }
         else
         {
-            status = MMI_OK;
-            std::string str(objectName);
-            Document document;
-            document.Parse(payload);
-
-            if (document.HasParseError())
+            if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) parse operation failed with error: %s (offset: %u)\n",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes,
-                    GetParseError_En(document.GetParseError()),
-                    (unsigned)document.GetErrorOffset());
-
-                status = ENODATA;
+                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
-            else if (str == DEVICEHEALTHTELEMETRY)
+            else
             {
-                bool configurationChanged = false;
-                static const char g_healthTelemetryConfigFile[] = "/etc/azure-device-health-services/config.toml";
-                std::string DHStr = std::string(payload, payloadSizeBytes);
+                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, -, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, status);
+            }
+        }
+    }};
 
-                status = settings->SetDeviceHealthTelemetryConfiguration(DHStr, g_healthTelemetryConfigFile, configurationChanged);
-
-                if (status == MMI_OK)
+    if (nullptr == settings)
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with null clientSession");
+        status = EINVAL;
+    }
+    else if (nullptr == componentName)
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with null componentName");
+        status = EINVAL;
+    }
+    else if (nullptr == objectName)
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with null objectName");
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with null payload");
+        status = EINVAL;
+    }
+    else if (payloadSizeBytes < 0)
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with negative payloadSizeBytes");
+        status = EINVAL;
+    }
+    else if ((payloadSizeBytes > 0) && (payloadSizeBytes > static_cast<int>(settings->GetMaxPayloadSizeBytes())))
+    {
+        OsConfigLogError(SettingsLog::Get(), "MmiSet called with invalid payloadSizeBytes");
+        status = E2BIG;
+    }
+    else
+    {
+        rapidjson::Document document;
+        if (!document.Parse(payload, payloadSizeBytes).HasParseError())
+        {
+            if (0 == g_componentName.compare(componentName))
+            {
+                if (0 == g_deviceHealthTelemetry.compare(objectName))
                 {
-                    if (configurationChanged)
+                    bool configurationChanged = false;
+                    std::string payloadString = std::string(payload, payloadSizeBytes);
+                    status = settings->SetDeviceHealthTelemetryConfiguration(payloadString, g_healthTelemetryConfigFile, configurationChanged);
+
+                    if ((MMI_OK == status && configurationChanged))
                     {
                         status = ExecuteCommand(nullptr, "systemctl kill -s SIGHUP azure-device-telemetryd.service", false, true, 0, 0, nullptr, nullptr, nullptr);
                         status = (0 == status) ? ExecuteCommand(nullptr, "systemctl kill -s SIGHUP azure-device-errorreporting-uploaderd.service", false, true, 0, 0, nullptr, nullptr, nullptr) : status;
                     }
                 }
+                else if (0 == g_deliveryOptimization.compare(objectName))
+                {
+                    bool configurationChanged = false;
+                    Settings::DeliveryOptimization deliveryOptimization;
+
+                    if (document.HasMember(g_percentageDownloadThrottle.c_str()))
+                    {
+                        deliveryOptimization.percentageDownloadThrottle = document[g_percentageDownloadThrottle.c_str()].GetInt();
+                    }
+
+                    if (document.HasMember(g_cacheHostSource.c_str()))
+                    {
+                        deliveryOptimization.cacheHostSource = document[g_cacheHostSource.c_str()].GetInt();
+                    }
+
+                    if (document.HasMember(g_cacheHost.c_str()))
+                    {
+                        deliveryOptimization.cacheHost = document[g_cacheHost.c_str()].GetString();
+                    }
+
+                    if (document.HasMember(g_cacheHostFallback.c_str()))
+                    {
+                        deliveryOptimization.cacheHostFallback = document[g_cacheHostFallback.c_str()].GetInt();
+                    }
+
+                    status = settings->SetDeliveryOptimizationPolicies(deliveryOptimization, g_doConfigFile, configurationChanged);
+
+                    if ((status == MMI_OK) && configurationChanged)
+                    {
+                        status = ExecuteCommand(nullptr, "systemctl kill -s SIGHUP deliveryoptimization-agent", false, true, 0, 0, nullptr, nullptr, nullptr);
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(SettingsLog::Get(), "MmiSet called with invalid objectName: %s", objectName);
+                    status = EINVAL;
+                }
             }
-            else if (str == DELIVERYOPTIMIZATION)
+            else
             {
-                bool configurationChanged = false;
-                static const char g_doConfigFile[] = "/etc/deliveryoptimization-agent/admin-config.json";
-                Settings::DeliveryOptimization deliveryOptimization;
-                if (document.HasMember(PERCENTAGEDOWNLOADTHROTTLE.c_str()))
-                {
-                    deliveryOptimization.percentageDownloadThrottle = document[PERCENTAGEDOWNLOADTHROTTLE.c_str()].GetInt();
-                }
-
-                if (document.HasMember(CACHEHOSTSOURCE.c_str()))
-                {
-                    deliveryOptimization.cacheHostSource = document[CACHEHOSTSOURCE.c_str()].GetInt();
-                }
-
-                if (document.HasMember(CACHEHOST.c_str()))
-                {
-                    deliveryOptimization.cacheHost = document[CACHEHOST.c_str()].GetString();
-                }
-
-                if (document.HasMember(CACHEHOSTFALLBACK.c_str()))
-                {
-                    deliveryOptimization.cacheHostFallback = document[CACHEHOSTFALLBACK.c_str()].GetInt();
-                }
-
-                status = settings->SetDeliveryOptimizationPolicies(deliveryOptimization, g_doConfigFile, configurationChanged);
-
-                if ((status == MMI_OK) && configurationChanged)
-                {
-                    status = ExecuteCommand(nullptr, "systemctl kill -s SIGHUP deliveryoptimization-agent", false, true, 0, 0, nullptr, nullptr, nullptr);
-                }
+                OsConfigLogError(SettingsLog::Get(), "MmiSet called with invalid componentName: %s", componentName);
+                status = EINVAL;
             }
         }
-
-        ScopeGuard sg{[&]() {
-            if (MMI_OK == status)
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) returned %d",
-                        clientSession, componentName, objectName, payload, payloadSizeBytes, status);
-                }
-            }
-            else if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(SettingsLog::Get(), "MmiSet(%p, %s, %s, %p, %d) returned %d",
-                    clientSession, componentName, objectName, payload, payloadSizeBytes, status);
-            }
-        }};
-
-        return status;
+        else
+        {
+            OsConfigLogError(SettingsLog::Get(), "Unable to parse JSON payload");
+            status = EINVAL;
+        }
     }
-    catch(const std::exception& e)
-    {
-        OsConfigLogError(SettingsLog::Get(), "MmiSet exception occurred");
-        return ENODATA;
-    }
+
+    return status;
 }
 
 int MmiGet(
