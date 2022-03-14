@@ -46,8 +46,6 @@ CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSize
 
 CommandRunner::~CommandRunner()
 {
-    OsConfigLogInfo(CommandRunnerLog::Get(), "Terminating command runner session for: %s", m_clientName.c_str());
-
     while (!m_commandQueue.Empty())
     {
         std::shared_ptr<Command> command = m_commandQueue.Pop().lock();
