@@ -122,7 +122,7 @@ public:
     void SetStatus(int exitCode, std::string textResult = "");
     void SetStatus(int exitCode, std::string textResult, State state);
 
-    bool operator==(const Command& other) const;
+    bool operator ==(const Command& other) const;
 
 protected:
     Status m_status;
