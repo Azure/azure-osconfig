@@ -33,7 +33,8 @@ std::mutex CommandRunner::Factory::m_mutex;
 CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, bool usePersistedCache) :
     m_clientName(clientName),
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),
-    m_usePersistedCache(usePersistedCache)
+    m_usePersistedCache(usePersistedCache),
+    m_lastPayloadHash(0)
 {
     if (m_usePersistedCache)
     {
@@ -139,6 +140,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
         {
             if (0 == g_commandArguments.compare(objectName))
             {
+                size_t payloadHash = HashString(payload);
                 Command::Arguments arguments = Command::Arguments::Deserialize(document);
 
                 if (m_usePersistedCache)
@@ -148,7 +150,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                     {
                         if (IsFullLoggingEnabled())
                         {
-                            OsConfigLogInfo(CommandRunnerLog::Get(), "Updating command loaded from disk with id: %s", arguments.m_id.c_str());
+                            OsConfigLogInfo(CommandRunnerLog::Get(), "Updating command (%s) loaded from disk, with complete payload", arguments.m_id.c_str());
                         }
 
                         // Update the partial command loaded from the persisted cache
@@ -161,29 +163,34 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
                     }
                 }
 
-                switch (arguments.m_action)
+                if (m_lastPayloadHash != payloadHash)
                 {
-                    case Command::Action::RunCommand:
-                        status = Run(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
-                        break;
-                    case Command::Action::Reboot:
-                        status = Reboot(arguments.m_id);
-                        break;
-                    case Command::Action::Shutdown:
-                        status = Shutdown(arguments.m_id);
-                        break;
-                    case Command::Action::CancelCommand:
-                        status = Cancel(arguments.m_id);
-                        break;
-                    case Command::Action::RefreshCommandStatus:
-                        status = Refresh(arguments.m_id);
-                        break;
-                    case Command::Action::None:
-                        OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
-                        break;
-                    default:
-                        OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
-                        status = EINVAL;
+                    m_lastPayloadHash = payloadHash;
+
+                    switch (arguments.m_action)
+                    {
+                        case Command::Action::RunCommand:
+                            status = Run(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
+                            break;
+                        case Command::Action::Reboot:
+                            status = Reboot(arguments.m_id);
+                            break;
+                        case Command::Action::Shutdown:
+                            status = Shutdown(arguments.m_id);
+                            break;
+                        case Command::Action::CancelCommand:
+                            status = Cancel(arguments.m_id);
+                            break;
+                        case Command::Action::RefreshCommandStatus:
+                            status = Refresh(arguments.m_id);
+                            break;
+                        case Command::Action::None:
+                            OsConfigLogInfo(CommandRunnerLog::Get(), "No action for command: %s", arguments.m_id.c_str());
+                            break;
+                        default:
+                            OsConfigLogError(CommandRunnerLog::Get(), "Unsupported action: %d", static_cast<int>(arguments.m_action));
+                            status = EINVAL;
+                    }
                 }
             }
             else
@@ -311,8 +318,8 @@ int CommandRunner::Refresh(const std::string id)
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be refreshed: %s", id.c_str());
         status = EINVAL;
+        OsConfigLogError(CommandRunnerLog::Get(), "Command does not exist and cannot be refreshed: %s", id.c_str());
     }
 
     return status;

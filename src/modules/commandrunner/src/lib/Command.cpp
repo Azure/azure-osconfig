@@ -97,7 +97,6 @@ int Command::Cancel()
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command is already in a canceled state: %s", m_status.m_id.c_str());
         status = ECANCELED;
     }
 

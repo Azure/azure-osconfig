@@ -98,7 +98,9 @@ private:
     const std::string m_clientName;
     const unsigned int m_maxPayloadSizeBytes;
     const bool m_usePersistedCache;
+
     std::string m_commandIdLoadedFromDisk;
+    size_t m_lastPayloadHash;
 
     std::thread m_workerThread;
     SafeQueue<std::weak_ptr<Command>> m_commandQueue;
