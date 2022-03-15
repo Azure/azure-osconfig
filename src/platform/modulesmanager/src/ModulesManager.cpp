@@ -159,7 +159,7 @@ int MpiSetDesired(
 
     if (nullptr != clientName)
     {
-        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, payloadSizeBytes))) && (0 == session->Open()))
+        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName))) && (0 == session->Open()))
         {
             if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
             {
