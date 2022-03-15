@@ -200,6 +200,11 @@ int ShutdownCommand::Execute(unsigned int maxPayloadSizeBytes)
     return exitCode;
 }
 
+bool Command::operator==(const Command& other) const
+{
+    return (m_status.m_id == other.m_status.m_id) && (m_arguments == other.m_arguments) && (m_timeout == other.m_timeout) && (m_replaceEol == other.m_replaceEol);
+}
+
 Command::Arguments::Arguments(std::string id, std::string command, Command::Action action, unsigned int timeout, bool singleLineTextResult) :
     m_id(id),
     m_arguments(command),

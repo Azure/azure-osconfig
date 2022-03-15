@@ -321,6 +321,25 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
+    TEST_F(CommandRunnerTests, RepeatCommand)
+    {
+        std::string id = Id();
+        Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
+        Command::Status status(id, 0, "hello world\n", Command::State::Succeeded);
+
+        std::string desiredPayload = Command::Arguments::Serialize(arguments);
+
+        MMI_JSON_STRING reportedPayload = nullptr;
+        int payloadSizeBytes = 0;
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+        m_commandRunner->WaitForCommands();
+        EXPECT_EQ(MMI_OK, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
+
+        EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
+        EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
+    }
+
     TEST(CommandRunnerFactory, CreateClients)
     {
         std::string clientName1 = "client1";

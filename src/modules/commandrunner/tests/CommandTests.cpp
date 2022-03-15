@@ -80,6 +80,20 @@ namespace Tests
         EXPECT_EQ(Command::State::Succeeded, m_command->GetStatus().m_state);
     }
 
+    TEST_F(CommandTests, Equality)
+    {
+        std::shared_ptr<Command> command1 = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        std::shared_ptr<Command> command2 = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        std::shared_ptr<Command> command3 = std::make_shared<Command>(m_id, "echo 'test2'", 0, false);
+        std::shared_ptr<Command> command4 = std::make_shared<Command>(m_id, "echo 'test'", 1, false);
+        std::shared_ptr<Command> command5 = std::make_shared<Command>(m_id, "echo 'test'", 0, true);
+
+        EXPECT_TRUE(*command1 == *command2);
+        EXPECT_FALSE(*command1 == *command3);
+        EXPECT_FALSE(*command1 == *command4);
+        EXPECT_FALSE(*command1 == *command5);
+    }
+
     TEST(CommandArgumentsTests, Deserialize)
     {
         const std::string json = R"""({

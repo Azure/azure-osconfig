@@ -35,9 +35,20 @@ CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSize
     m_maxPayloadSizeBytes(maxPayloadSizeBytes),
     m_usePersistedCache(usePersistedCache)
 {
-    if (m_usePersistedCache && (0 != LoadPersistedCommandStatus(clientName)))
+    if (m_usePersistedCache)
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to load persisted command status for client %s", clientName.c_str());
+        if (0 != LoadPersistedCommandStatus(clientName))
+        {
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to load persisted command status for client %s", clientName.c_str());
+        }
+        else if (m_commandMap.size() > 0)
+        {
+            m_commandIdLoadedFromDisk = m_commandMap.rbegin()->first;
+        }
+    }
+    else
+    {
+        m_commandIdLoadedFromDisk = "";
     }
 
     // Start the worker thread
@@ -129,6 +140,26 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
             if (0 == g_commandArguments.compare(objectName))
             {
                 Command::Arguments arguments = Command::Arguments::Deserialize(document);
+
+                if (m_usePersistedCache)
+                {
+                    std::lock_guard<std::mutex> lock(m_cacheMutex);
+                    if ((m_commandMap.find(arguments.m_id) != m_commandMap.end()) && (m_commandMap[arguments.m_id]->GetId() == m_commandIdLoadedFromDisk))
+                    {
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogInfo(CommandRunnerLog::Get(), "Updating command loaded from disk with id: %s", arguments.m_id.c_str());
+                        }
+
+                        // Update the partial command loaded from the persisted cache
+                        Command::Status currentStatus = m_commandMap[arguments.m_id]->GetStatus();
+
+                        std::shared_ptr<Command> command = std::make_shared<Command>(arguments.m_id, arguments.m_arguments, arguments.m_timeout, arguments.m_singleLineTextResult);
+                        command->SetStatus(currentStatus.m_exitCode, currentStatus.m_textResult, currentStatus.m_state);
+
+                        m_commandMap[arguments.m_id] = command;
+                    }
+                }
 
                 switch (arguments.m_action)
                 {
@@ -274,7 +305,7 @@ int CommandRunner::Refresh(const std::string id)
 {
     int status = 0;
 
-    if (CommandExists(id))
+    if (CommandIdExists(id))
     {
         SetReportedStatusId(id);
     }
@@ -287,45 +318,52 @@ int CommandRunner::Refresh(const std::string id)
     return status;
 }
 
-bool CommandRunner::CommandExists(const std::string& id)
+bool CommandRunner::CommandExists(std::shared_ptr<Command> command)
 {
-    bool exists = false;
     std::lock_guard<std::mutex> lock(m_cacheMutex);
+    std::string id = command->GetId();
+    return (m_commandMap.find(id) != m_commandMap.end()) && (*m_commandMap[id] == *command);
+}
 
-    if (m_commandMap.find(id) != m_commandMap.end())
-    {
-        exists = true;
-    }
-
-    return exists;
+bool CommandRunner::CommandIdExists(const std::string& id)
+{
+    std::lock_guard<std::mutex> lock(m_cacheMutex);
+    return m_commandMap.find(id) != m_commandMap.end();
 }
 
 int CommandRunner::ScheduleCommand(std::shared_ptr<Command> command)
 {
     int status = 0;
 
-    if (!CommandExists(command->GetId()))
+    if (!CommandExists(command))
     {
-        if (0 == (status = PersistCommandStatus(command->GetStatus())))
+        if (!CommandIdExists(command->GetId()))
         {
-            if (0 == (status = CacheCommand(command)))
+            if (0 == (status = PersistCommandStatus(command->GetStatus())))
             {
-                m_commandQueue.Push(command);
+                if (0 == (status = CacheCommand(command)))
+                {
+                    m_commandQueue.Push(command);
+                }
+                else
+                {
+                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", command->GetId().c_str());
+                }
             }
             else
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", command->GetId().c_str());
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command: %s", command->GetId().c_str());
             }
         }
         else
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to persist command to disk. Skipping command: %s", command->GetId().c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Command already exists with id: %s", command->GetId().c_str());
+            status = EINVAL;
         }
     }
-    else
+    else if (IsFullLoggingEnabled())
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command already exists: %s", command->GetId().c_str());
-        status = EINVAL;
+        OsConfigLogInfo(CommandRunnerLog::Get(), "Command already recieved: %s (%s)", command->GetId().c_str(), command->m_arguments.c_str());
     }
 
     return status;
