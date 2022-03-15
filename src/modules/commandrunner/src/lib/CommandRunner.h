@@ -99,6 +99,9 @@ private:
     const unsigned int m_maxPayloadSizeBytes;
     const bool m_usePersistedCache;
 
+    std::string m_commandIdLoadedFromDisk;
+    size_t m_lastPayloadHash;
+
     std::thread m_workerThread;
     SafeQueue<std::weak_ptr<Command>> m_commandQueue;
 
@@ -118,7 +121,8 @@ private:
     void CancelAll();
     int Refresh(const std::string id);
 
-    bool CommandExists(const std::string& id);
+    bool CommandExists(std::shared_ptr<Command> command);
+    bool CommandIdExists(const std::string& id);
     int ScheduleCommand(std::shared_ptr<Command> command);
     int CacheCommand(std::shared_ptr<Command> command);
 
