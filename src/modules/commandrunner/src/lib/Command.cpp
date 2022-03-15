@@ -44,7 +44,7 @@ Command::~Command()
 {
     if (FileExists(m_tmpFile.c_str()) && (0 != remove(m_tmpFile.c_str())))
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to remove tmp file '%s'", m_tmpFile.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Failed to remove tmp file: %s", m_tmpFile.c_str());
     }
 }
 
@@ -88,16 +88,16 @@ int Command::Execute(unsigned int maxPayloadSizeBytes)
 int Command::Cancel()
 {
     int status = 0;
-    Status currentStatus = GetStatus();
+    std::lock_guard<std::mutex> lock(m_statusMutex);
 
-    if ((Command::State::Canceled != currentStatus.m_state) && !FileExists(m_tmpFile.c_str()))
+    if ((Command::State::Canceled != m_status.m_state) && !FileExists(m_tmpFile.c_str()))
     {
         std::ofstream output(m_tmpFile);
         output.close();
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Command '%s' is already canceled", currentStatus.m_id.c_str());
+        OsConfigLogError(CommandRunnerLog::Get(), "Command is already in a canceled state: %s", m_status.m_id.c_str());
         status = ECANCELED;
     }
 
