@@ -65,6 +65,9 @@
           },
           {
             "$ref": "#/definitions/integerMap"
+          },
+          {
+            "type": "null"
           }
         ]
       }
