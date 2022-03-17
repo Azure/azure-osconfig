@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <Logging.h>
@@ -1087,19 +1088,19 @@ static bool LockUnlockFile(FILE* file, bool lock, void* log)
 	int lockResult = -1;
 	int lockOperation = lock ? (LOCK_EX | LOCK_NB) : LOCK_UN;
 
-	if (NUL == file)
+	if (NULL == file)
 	{
 		return ENOENT;
 	}
 
-	if (-1 == (fileDescriptor = fileno(fp)))
+	if (-1 == (fileDescriptor = fileno(file)))
 	{
 		if (IsFullLoggingEnabled())
 		{
 			OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
 		}
 	}
-	else if (0 != (lockResult = flock(fd, lockOperation)))
+	else if (0 != (lockResult = flock(fileDescriptor, lockOperation)))
 	{
 		if (IsFullLoggingEnabled())
 		{
@@ -1115,7 +1116,7 @@ bool LockFile(FILE* file, void* log)
 	return LockUnlockFile(file, true, log);
 }
 
-bool UnlockFile(const FILE* file, void* log)
+bool UnlockFile(FILE* file, void* log)
 {
 	return LockUnlockFile(file, false, log);
 }

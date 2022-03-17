@@ -5,6 +5,7 @@
 #define COMMON_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -66,7 +67,7 @@ char* UrlEncode(char* target);
 char* UrlDecode(char* target);
 
 bool LockFile(FILE* file, void* log);
-bool UnlockFile(const FILE* file, void* log);
+bool UnlockFile(FILE* file, void* log);
 
 #ifdef __cplusplus
 }

@@ -382,7 +382,6 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 
 std::FILE* Ztsi::OpenAndLockFile(const char* mode)
 {
-    int fd = -1;
     std::FILE* fp = nullptr;
 
     if (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode)))
