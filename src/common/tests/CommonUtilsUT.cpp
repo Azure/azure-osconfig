@@ -58,43 +58,43 @@ class CommonUtilsTest : public ::testing::Test
 
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
-    EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false));
+    EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoadStringFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
-    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data)));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
+	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 {
-    EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol)));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+	EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
 {
-    EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data)));
-    EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data)));
-    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1));
-    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0));
+	EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data), nullptr));
+	EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data), nullptr));
+	EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1, nullptr));
+	EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
@@ -984,4 +984,17 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 
     EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
     EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
+}
+
+TEST_F(CommonUtilsTest, LockUnlockFile)
+{
+	FILE* testFile = nullptr;
+
+	EXPECT_TRUE(CreateTestFile(m_path, m_data));
+	EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
+	EXPECT_TRUE(LockFile(testFile, nullptr));
+	EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
+	EXPECT_TRUE(UnlockFile(testFile, nullptr));
+	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+	EXPECT_TRUE(Cleanup(m_path));
 }

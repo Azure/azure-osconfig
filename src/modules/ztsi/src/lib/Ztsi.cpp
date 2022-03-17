@@ -387,11 +387,7 @@ std::FILE* Ztsi::OpenAndLockFile(const char* mode)
 
     if (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode)))
     {
-        if (0 == (fd = fileno(fp)))
-        {
-            OsConfigLogError(ZtsiLog::Get(), "Failed to get file descriptor for %s", m_agentConfigurationFile.c_str());
-        }
-        else if (0 != flock(fd, LOCK_EX | LOCK_NB))
+		if (!LockFile(fp, ZtsiLog::Get()))
         {
             if (IsFullLoggingEnabled())
             {
@@ -427,7 +423,7 @@ void Ztsi::CloseAndUnlockFile(std::FILE* fp)
     if ((nullptr != fp))
     {
         fflush(fp);
-        flock(fileno(fp), LOCK_UN);
+		UnlockFile(fp, ZtsiLog::Get());
         fclose(fp);
     }
 }
