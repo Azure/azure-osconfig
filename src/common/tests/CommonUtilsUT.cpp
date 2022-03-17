@@ -91,10 +91,10 @@ TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 
 TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
 {
-	EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data), nullptr));
-	EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data), nullptr));
-	EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1, nullptr));
-	EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
+    EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1, nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
