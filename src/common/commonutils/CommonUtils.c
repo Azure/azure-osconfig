@@ -59,28 +59,28 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     {
         if (LockFile(file, log))
         {
-	        fseek(file, 0, SEEK_END);
-	        fileSize = ftell(file);
-	        fseek(file, 0, SEEK_SET);
+            fseek(file, 0, SEEK_END);
+            fileSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
 
-	        string = (char*)malloc(fileSize + 1);
-	        if (string)
-	        {
-		        memset(&string[0], 0, fileSize + 1);
-		        for (i = 0; i < fileSize; i++)
-		        {
-			        next = fgetc(file);
-			        if ((EOF == next) || (stopAtEol && (EOL == next)))
-			        {
-				        string[i] = 0;
-				        break;
-			        }
+            string = (char*)malloc(fileSize + 1);
+            if (string)
+            {
+                memset(&string[0], 0, fileSize + 1);
+                for (i = 0; i < fileSize; i++)
+                {
+                    next = fgetc(file);
+                    if ((EOF == next) || (stopAtEol && (EOL == next)))
+                    {
+                        string[i] = 0;
+                        break;
+                    }
 
-			        string[i] = (char)next;
-		        }
-	        }
+                    string[i] = (char)next;
+	            }
+            }
 
-	        UnlockFile(file, log);
+            UnlockFile(file, log);
         }
 
         fclose(file);
@@ -1113,10 +1113,10 @@ static bool LockUnlockFile(FILE* file, bool lock, void* log)
 
 bool LockFile(FILE* file, void* log)
 {
-	return LockUnlockFile(file, true, log);
+    return LockUnlockFile(file, true, log);
 }
 
 bool UnlockFile(FILE* file, void* log)
 {
-	return LockUnlockFile(file, false, log);
+    return LockUnlockFile(file, false, log);
 }
