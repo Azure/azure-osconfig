@@ -221,7 +221,7 @@ sudo -E su
 export http_proxy=http://user:password@wwww.foo.org:100//
 ```
 
-The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/agents/pnp/daemon/osconfig.service](../src/agents/pnp/daemon/osconfig.service):
+The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service):
 
 ```
 # Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
