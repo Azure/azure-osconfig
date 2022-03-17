@@ -77,7 +77,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
                     }
 
                     string[i] = (char)next;
-	            }
+                }
             }
 
             UnlockFile(file, log);
