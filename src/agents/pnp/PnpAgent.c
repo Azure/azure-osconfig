@@ -876,7 +876,7 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    archar* payload = LoadStringFromFile(DC_FILE, false, GetLog());
+    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
@@ -905,7 +905,7 @@ static void SaveReportedConfigurationToFile()
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
             {
-				if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
+                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
                     g_reportedHash = payloadHash;
