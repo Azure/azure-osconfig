@@ -1084,31 +1084,31 @@ char* UrlDecode(char* target)
 
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
 {
-	int fileDescriptor = -1;
-	int lockResult = -1;
-	int lockOperation = lock ? (LOCK_EX | LOCK_NB) : LOCK_UN;
+    int fileDescriptor = -1;
+    int lockResult = -1;
+    int lockOperation = lock ? (LOCK_EX | LOCK_NB) : LOCK_UN;
 
-	if (NULL == file)
-	{
-		return ENOENT;
-	}
+    if (NULL == file)
+    {
+        return ENOENT;
+    }
 
-	if (-1 == (fileDescriptor = fileno(file)))
-	{
-		if (IsFullLoggingEnabled())
-		{
-			OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
-		}
-	}
-	else if (0 != (lockResult = flock(fileDescriptor, lockOperation)))
-	{
-		if (IsFullLoggingEnabled())
-		{
-			OsConfigLogError(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
-		}
-	}
+    if (-1 == (fileDescriptor = fileno(file)))
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
+        }
+    }
+    else if (0 != (lockResult = flock(fileDescriptor, lockOperation)))
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
+        }
+    }
 
-	return (0 == lockResult) ? true : false;
+    return (0 == lockResult) ? true : false;
 }
 
 bool LockFile(FILE* file, void* log)

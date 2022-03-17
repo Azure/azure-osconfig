@@ -386,7 +386,7 @@ std::FILE* Ztsi::OpenAndLockFile(const char* mode)
 
     if (nullptr != (file = fopen(m_agentConfigurationFile.c_str(), mode)))
     {
-		if (!LockFile(file, ZtsiLog::Get()))
+        if (!LockFile(file, ZtsiLog::Get()))
         {
             if (IsFullLoggingEnabled())
             {
@@ -422,7 +422,7 @@ void Ztsi::CloseAndUnlockFile(std::FILE* file)
     if ((nullptr != file))
     {
         fflush(file);
-		UnlockFile(file, ZtsiLog::Get());
+        UnlockFile(file, ZtsiLog::Get());
         fclose(file);
     }
 }

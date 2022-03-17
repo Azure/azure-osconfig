@@ -658,7 +658,7 @@ int main(int argc, char *argv[])
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
 
     // Load remaining configuration
-	jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
         GetModelVersionFromJsonConfig(jsonConfiguration);
@@ -752,7 +752,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-			connectionString = LoadStringFromFile(argv[1], true, GetLog());
+            connectionString = LoadStringFromFile(argv[1], true, GetLog());
             if (NULL != connectionString)
             {
                 freeConnectionString = true;

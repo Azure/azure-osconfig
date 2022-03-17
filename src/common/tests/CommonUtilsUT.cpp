@@ -988,13 +988,13 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
 
 TEST_F(CommonUtilsTest, LockUnlockFile)
 {
-	FILE* testFile = nullptr;
+    FILE* testFile = nullptr;
 
-	EXPECT_TRUE(CreateTestFile(m_path, m_data));
-	EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
-	EXPECT_TRUE(LockFile(testFile, nullptr));
-	EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
-	EXPECT_TRUE(UnlockFile(testFile, nullptr));
-	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
-	EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
+    EXPECT_TRUE(LockFile(testFile, nullptr));
+    EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_TRUE(UnlockFile(testFile, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
 }
