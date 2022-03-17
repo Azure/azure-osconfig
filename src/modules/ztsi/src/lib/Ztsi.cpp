@@ -441,7 +441,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
         if (nullptr != (file = OpenAndLockFile("r")))
         {
             fseek(file, 0, SEEK_END);
-            fileSize = ftell (file);
+            fileSize = ftell(file);
             rewind(file);
 
             buffer = new (std::nothrow) char[fileSize + 1];
