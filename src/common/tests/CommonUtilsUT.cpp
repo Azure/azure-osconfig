@@ -64,28 +64,28 @@ TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 TEST_F(CommonUtilsTest, LoadStringFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
-	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
     EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
-	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 {
 	EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
-	EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 

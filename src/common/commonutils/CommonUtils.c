@@ -57,31 +57,31 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
     file = fopen(fileName, "r");
     if (file)
     {
-		if (LockFile(file, log))
-		{
-			fseek(file, 0, SEEK_END);
-			fileSize = ftell(file);
-			fseek(file, 0, SEEK_SET);
+        if (LockFile(file, log))
+        {
+	        fseek(file, 0, SEEK_END);
+	        fileSize = ftell(file);
+	        fseek(file, 0, SEEK_SET);
 
-			string = (char*)malloc(fileSize + 1);
-			if (string)
-			{
-				memset(&string[0], 0, fileSize + 1);
-				for (i = 0; i < fileSize; i++)
-				{
-					next = fgetc(file);
-					if ((EOF == next) || (stopAtEol && (EOL == next)))
-					{
-						string[i] = 0;
-						break;
-					}
+	        string = (char*)malloc(fileSize + 1);
+	        if (string)
+	        {
+		        memset(&string[0], 0, fileSize + 1);
+		        for (i = 0; i < fileSize; i++)
+		        {
+			        next = fgetc(file);
+			        if ((EOF == next) || (stopAtEol && (EOL == next)))
+			        {
+				        string[i] = 0;
+				        break;
+			        }
 
-					string[i] = (char)next;
-				}
-			}
+			        string[i] = (char)next;
+		        }
+	        }
 
-			UnlockFile(file, log);
-		}
+	        UnlockFile(file, log);
+        }
 
         fclose(file);
     }
@@ -101,18 +101,18 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
         if (file)
         {
             result = LockFile(file, log);
-			if (result)
-			{
-				for (i = 0; i < payloadSizeBytes; i++)
-				{
-					if (payload[i] != fputc(payload[i], file))
-					{
-						result = false;
-					}
-				}
+            if (result)
+            {
+                for (i = 0; i < payloadSizeBytes; i++)
+                {
+                    if (payload[i] != fputc(payload[i], file))
+                    {
+                        result = false;
+                    }
+                }
 
-				UnlockFile(file, log);
-			}
+                UnlockFile(file, log);
+            }
             fclose(file);
         }
     }
