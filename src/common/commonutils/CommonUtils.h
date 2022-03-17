@@ -5,6 +5,7 @@
 #define COMMON_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -27,9 +28,9 @@ extern "C"
 {
 #endif
 
-char* LoadStringFromFile(const char* fileName, bool stopAtEol);
+char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 
-bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes);
+bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 
 typedef int(*CommandCallback)(void* context);
 
@@ -64,6 +65,9 @@ void TruncateAtFirst(char* target, char marker);
 
 char* UrlEncode(char* target);
 char* UrlDecode(char* target);
+
+bool LockFile(FILE* file, void* log);
+bool UnlockFile(FILE* file, void* log);
 
 #ifdef __cplusplus
 }
