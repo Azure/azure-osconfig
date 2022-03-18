@@ -75,16 +75,32 @@ systemctl start osconfig.service
 %{_bindir}/osconfig
 /etc/aziot/identityd/config.d/osconfig.toml
 /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
+/etc/osconfig/osconfig_commandrunner.cache
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
-/etc/osconfig/osconfig_commandrunner.cache
 /etc/systemd/system/osconfig.service
 /usr/lib/osconfig/commandrunner.so
 /usr/lib/osconfig/firewall.so
+/usr/lib/osconfig/hostname.so
 /usr/lib/osconfig/networking.so
 /usr/lib/osconfig/settings.so
+/usr/lib/osconfig/tpm.so
+/usr/lib/osconfig/ztsi.so
 
 %changelog
+* Fri Mar 18 2022 Ahmed Messaoud <ahbenmes@microsoft.com> 1.0.2.2022031901
+- Bumped version to 1.0.2.x
+- Added http proxy support to PnP Agent
+- Updates to PnP Agent
+- Updates to CommonUtils
+- ModuleManager session handling fixes
+- CommandRunner fixes
+- Updates to Samples Module
+- Updates to E2ETest application
+- Updates to unit tests
+- Added code signing to packaging build
+* Mon Feb 21 2022 Jr-Chiang Jaw <jcjaw@microsoft.com> 1.0.1.20220125
+- include module hostname, tpm, ztsi modules
 * Fri Jun 25 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.4.0-1
 - Latest bugfixes to CommandRunner module
 - Latest bugfixes to Firewall module
