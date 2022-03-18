@@ -1,7 +1,7 @@
 {
     "$id": "rcdc.schema.json",
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "description": "MPI desired/reported configuration file schema for local management authorities",
+    "description": "JSON schema for RC/DC files",
     "type": "object",
     "additionalProperties": {
         "allOf":[
