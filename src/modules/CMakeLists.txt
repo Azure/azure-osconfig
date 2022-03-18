@@ -11,6 +11,7 @@ add_subdirectory(settings)
 add_subdirectory(hostname)
 add_subdirectory(tpm)
 add_subdirectory(ztsi)
+add_subdirectory(osinfo)
 
 if (BUILD_SAMPLES)
     add_subdirectory(samples)
