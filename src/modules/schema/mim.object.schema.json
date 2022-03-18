@@ -1,4 +1,5 @@
 {
+  "$id": "mim.object.schema.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "MIM object JSON payload schema",
   "definitions": {

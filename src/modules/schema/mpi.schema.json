@@ -1,0 +1,20 @@
+{
+    "$id": "local-management.schema.json",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "MPI desired/reported configuration file schema for local management authorities",
+    "type": "object",
+    "additionalProperties": {
+        "allOf":[
+            {
+                "type": "object",
+                "additionalProperties": {
+                    "allOf":[
+                        {
+                            "$ref": "mim.object.schema.json"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
