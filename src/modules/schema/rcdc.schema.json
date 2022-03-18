@@ -1,0 +1,20 @@
+{
+    "$id": "rcdc.schema.json",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "JSON schema for RC/DC files",
+    "type": "object",
+    "additionalProperties": {
+        "allOf":[
+            {
+                "type": "object",
+                "additionalProperties": {
+                    "allOf":[
+                        {
+                            "$ref": "mim.object.schema.json"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
