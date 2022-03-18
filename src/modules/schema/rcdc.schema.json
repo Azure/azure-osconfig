@@ -1,5 +1,5 @@
 {
-    "$id": "local-management.schema.json",
+    "$id": "rcdc.schema.json",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "description": "MPI desired/reported configuration file schema for local management authorities",
     "type": "object",
