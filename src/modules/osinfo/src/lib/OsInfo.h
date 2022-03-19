@@ -4,6 +4,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
+#include <errno.h>
 
 #ifndef OSINFO_H
 #define OSINFO_H
@@ -23,11 +24,15 @@ extern "C"
 #endif
 
 OSCONFIG_LOG_HANDLE OsInfoGetLog(void);
-void OsInfoOpenLog(void);
-void OsInfoCloseLog(void);
+             
+void Initialize(void);
+void Shutdown(void);
                   
+MMI_HANDLE OsInfoOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);
+void OsInfoClose(MMI_HANDLE clientSession);
 int OsInfoGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
 int OsInfoGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+void OsInfoFree(MMI_JSON_STRING payload);
 
 #ifdef __cplusplus
 }

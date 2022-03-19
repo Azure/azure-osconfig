@@ -6,14 +6,12 @@
 
 void __attribute__((constructor)) InitModule(void)
 {
-    OsInfoOpenLog();
     OsConfigLogInfo(OsInfoGetLog(), "%s module loaded", OSINFO);
 }
 
 void __attribute__((destructor)) DestroyModule(void)
 {
     OsConfigLogInfo(OsInfoGetLog(), "%s module unloaded", OSINFO);
-    OsInfoCloseLog();
 }
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
