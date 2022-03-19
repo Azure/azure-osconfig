@@ -6,19 +6,19 @@
 
 void __attribute__((constructor)) InitModule(void)
 {
-    OpenLog();
-    OsConfigLogInfo(GetLog(), "%s module loaded", OSINFO);
+    OsInfoOpenLog();
+    OsConfigLogInfo(OsInfoGetLog(), "%s module loaded", OSINFO);
 }
 
 void __attribute__((destructor)) DestroyModule(void)
 {
-    OsConfigLogInfo(GetLog(), "%s module unloaded", OSINFO);
-    CloseLog();
+    OsConfigLogInfo(OsInfoGetLog(), "%s module unloaded", OSINFO);
+    OsInfoCloseLog();
 }
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    return GetInfo(clientName, payload, payloadSizeBytes);
+    return OsInfoGetInfo(clientName, payload, payloadSizeBytes);
 }
 
 MMI_HANDLE MmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -33,22 +33,22 @@ void MmiClose(MMI_HANDLE clientSession)
 
 int MmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    return EPERM;
+    return -1; //EPERM;
 }
 
 int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    int status = Get(clientSession, componentName, objectName, payload, payloadSizeBytes);
+    int status = OsInfoGet(clientSession, componentName, objectName, payload, payloadSizeBytes);
 
     if (IsFullLoggingEnabled())
     {
         if (MMI_OK == status)
         {
-            OsConfigLogInfo(GetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+            OsConfigLogInfo(OsInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
         }
         else
         {
-            OsConfigLogError(GetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+            OsConfigLogError(OsInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
         }
     }
 
@@ -57,9 +57,5 @@ int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* obje
 
 void MmiFree(MMI_JSON_STRING payload)
 {
-    if (!payload)
-    {
-        return;
-    }
-    delete[] payload;
+    FREE_MEMORY(payload);
 }
