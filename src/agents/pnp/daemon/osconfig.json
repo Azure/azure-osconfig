@@ -28,6 +28,38 @@
       "ObjectName": "Hosts"
     },
     {
+      "ComponentName": "OsInfo",
+      "ObjectName": "OsName"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "OsVersion"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "Processor"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "KernelName"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "KernelRelease"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "KernelVersion"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "ProductName"
+    },
+    {
+      "ComponentName": "OsInfo",
+      "ObjectName": "ProductVendor"
+    },
+    {
       "ComponentName": "Tpm",
       "ObjectName": "TpmStatus"
     },

@@ -1,12 +1,38 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <CommonUtils.h>
+#include <Logging.h>
+#include <Mmi.h>
+#include <errno.h>
+
 #include "OsInfo.h"
 
-#define OSINFO_MODULE_INFO "({\"Name\": \"OsInfo\",\"Description\": \"Provides functionality to observe OS and device information\",\"Manufacturer\": \"Microsoft\",\"VersionMajor\": 1,\"VersionMinor\": 0,\"VersionInfo\": \"Copper\",\"Components\": [\"OsInfo\"],\"Lifetime\": 2,\"UserAccount\": 0})"
+static char* g_osInfoModuleName = "OsInfo module";
+static char* g_osInfoComponentName = "OsInfo";
+static char* g_osNameObject = "OsName";
+static char* g_osVersionObject = "OsVersion";
+static char* g_cpuTypeObject = "Processor";
+static char* g_kernelNameObject = "KernelName";
+static char* g_kernelReleaseObject = "KernelRelease";
+static char* g_kernelVersionObject = "KernelVersion";
+static char* g_productNameObject = "ProductName";
+static char* g_productVendorObject = "ProductVendor";
 
-#define OSINFO_LOG_FILE "/var/log/osconfig_osinfo.log"
-#define OSINFO_ROLLED_LOG_FILE "/var/log/osconfig_osinfo.bak"
+static const char* g_osInfoLogFile "/var/log/osconfig_osinfo.log"
+static const char* g_osInfoRolledLogFile "/var/log/osconfig_osinfo.bak"
+
+static const char* g_osInfoModuleInfo = "({\"Name\": \"OsInfo\","
+    "\"Description\": \"Provides functionality to observe OS and device information\","
+    "\"Manufacturer\": \"Microsoft\","
+    "\"VersionMajor\": 1,"
+    "\"VersionMinor\": 0,"
+    "\"VersionInfo\": \"Copper\","
+    "\"Components\": [\"OsInfo\"],"
+    "\"Lifetime\": 2,"
+    "\"UserAccount\": 0})";
+
+static OSCONFIG_LOG_HANDLE g_log = NULL;
 
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
@@ -17,22 +43,17 @@ static char* g_kernelVersion = NULL;
 static char* g_productName = NULL;
 static char* g_productVendor = NULL;
 
-static int g_maxPayloadSizeBytes = 0;
+static bool g_referenceCount = 0;
+static unsigned int g_maxPayloadSizeBytes = 0;
 
-static OSCONFIG_LOG_HANDLE g_log = NULL;
-
-static int g_referenceCount = 0;
-
-static char* g_osInfo = "OsInfo module session";
-
-OSCONFIG_LOG_HANDLE OsInfoGetLog(void)
+static OSCONFIG_LOG_HANDLE OsInfoGetLog(void)
 {
     return g_log;
 }
 
-void Initialize(void)
+void OsInfoInitialize(void)
 {
-    g_log = OpenLog(OSINFO_LOG_FILE, OSINFO_ROLLED_LOG_FILE);
+    g_log = OpenLog(g_osInfoLogFile, g_osInfoRolledLogFile);
     
     g_osName = GetOsName(OsInfoGetLog());
     g_osVersion = GetOsVersion(OsInfoGetLog());
@@ -43,10 +64,10 @@ void Initialize(void)
     g_productVendor = GetProductVendor(OsInfoGetLog());
     g_productName = GetProductName(OsInfoGetLog());
 
-    OsConfigLogInfo(OsInfoGetLog(), "%s module initialized", g_osInfo);
+    OsConfigLogInfo(OsInfoGetLog(), "%s initialized", g_osInfoModuleName);
 }
 
-void Shutdown(void)
+void OsInfoShutdown(void)
 {
     FREE_MEMORY(g_osName);
     FREE_MEMORY(g_osVersion);
@@ -57,89 +78,171 @@ void Shutdown(void)
     FREE_MEMORY(g_productVendor);
     FREE_MEMORY(g_productName);
     
-    OsConfigLogInfo(OsInfoGetLog(), "%s module shutdown", g_osInfo);
+    OsConfigLogInfo(OsInfoGetLog(), "%s shutting down", g_osInfoModuleName);
     
     CloseLog(&g_log);
 }
 
-static bool IsValidSession(MMI_HANDLE clientSession)
+MMI_HANDLE OsInfoMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    return ((NULL == clientSession) || (0 != strcmp(g_osInfo, (char*)clientSession)) || (g_referenceCount = < 0)) ? false : true;
-}
-
-MMI_HANDLE OsInfoOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
-{
-    MMI_HANDLE handle = (MMI_HANDLE)g_osInfo;
+    MMI_HANDLE handle = (MMI_HANDLE)g_osInfoModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
     g_referenceCount += 1;
     OsConfigLogInfo(OsInfoGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
 
-void OsInfoClose(MMI_HANDLE clientSession)
+static bool IsValidSession(MMI_HANDLE clientSession)
 {
-    if (!IsValidSession(clientSession))
-    {
-        OsConfigLogError(OsInfoGetLog(), "MmiClose() called outside of a valid session");
-        return;
-    }
-
-    g_referenceCount -= 1;
-    OsConfigLogInfo(OsInfoGetLog(), "MmiClose()");
+    return ((NULL == clientSession) || (0 != strcmp(g_osInfoModuleName, (char*)clientSession)) || (g_referenceCount = < 0)) ? false : true;
 }
 
-int OsInfoGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+void OsInfoMmiClose(MMI_HANDLE clientSession)
 {
+    if (IsValidSession(clientSession))
+    {
+        g_referenceCount -= 1;
+        OsConfigLogInfo(OsInfoGetLog(), "MmiClose()");
+    }
+    else
+    {
+        OsConfigLogError(OsInfoGetLog(), "MmiClose() called outside of a valid session");
+    }
+}
+
+int OsInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+{
+    int status = EINVAL;
+
     if ((NULL == payload) || (payloadSizeBytes))
     {
-        return EINVAL;
+        return status;
     }
     
-    int status = MMI_OK;
-    int size = (int)strlen(OSINFO_MODULE_INFO);
-
     *payload = NULL;
-    *payloadSizeBytes = 0;
+    *payloadSizeBytes = (int)strlen(g_osInfoModuleInfo);
     
-    *payload = (MMI_JSON_STRING)malloc(size);
+    *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
-        memcpy(*payload, OSINFO_MODULE_INFO, size);
-        *payloadSizeBytes = size;
+        memcpy(*payload, g_osInfoModuleInfo, *payloadSizeBytes);
+        status = MMI_OK;
     }
     else
     {
-        status = ENOMEM;
         OsConfigLogError(OsInfoGetLog(), "MmiGetInfo: failed to allocate %d bytes", size);
+        *payloadSizeBytes = 0;
+        status = ENOMEM;
     }
     
-    if (MMI_OK == status)
-    {
-        OsConfigLogInfo(OsInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returned %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
-    else
-    {
-        OsConfigLogError(OsInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) failed with %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
+    OsConfigLogInfo(OsInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     return status;
 }
 
-int OsInfoGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
+    int status = MMI_OK;
+    char* value = NULL;
+
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
-        return EINVAL;
+        return status;
     }
-    else if (!IsValidSession(clientSession))
+
+    *payload = NULL;
+    *payloadSizeBytes = 0;
+
+    if (!IsValidSession(clientSession))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
-        return EINVAL;
+        return status;
     }
+    
+    if ((MMI_OK == status) && (strcmp(componentName, g_osInfoComponentName))
+    {
+        OsConfigLogError(OsInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
+        status = EINVAL;
+    }
+    
+    if (MMI_OK == status)
+    {
+        if (0 == strcmp(objectName, g_osNameObject))
+        {
+            value = g_osName;
+        }
+        else if (0 == strcmp(objectName, g_osVersionObject))
+        {
+            value = g_osVersion;
+        }
+        else if (0 == strcmp(objectName, g_cpuTypeObject))
+        {
+            value = g_cpuType;
+        }
+        else if (0 == strcmp(objectName, g_kernelNameObject))
+        {
+            value = g_kernelName;
+        }
+        else if (0 == strcmp(objectName, g_kernelReleaseObject))
+        {
+            value = g_kernelRelease;
+        }
+        else if (0 == strcmp(objectName, g_kernelVersionObject))
+        {
+            value = g_kernelVersion;
+        }
+        else if (0 == strcmp(objectName, g_productNameObject))
+        {
+            value = g_productName;
+        }
+        else if (0 == strcmp(objectName, g_productVendorObject))
+        {
+            value = g_productVendor;
+        }
+        else
+        {
+            OsConfigLogError(OsInfoGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
+            status = EINVAL;
+        }
+    }
+
+    if (MMI_OK == status)
+    {
+        *payloadSizeBytes = strlen(value);
+        if (*payloadSizeBytes > g_maxPayloadSizeBytes)
+        {
+            OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
+                componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+            *payloadSizeBytes = g_maxPayloadSizeBytes;
+        }
+
+        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
+        if (*payload)
+        {
+            memcpy(*payload, value, *payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(OsInfoGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes);
+            *payloadSizeBytes = 0;
+            status = ENOMEM;
+        }
+    }    
+
+    OsConfigLogInfo(OsInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+
+    return status;
 }
 
-void OsInfoFree(MMI_JSON_STRING payload)
+int OsInfoMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+{
+    OsConfigLogInfo(OsInfoGetLog(), "No desired objects, MmiSet not implemented");
+    return EPERM;
+}
+
+void OsInfoMmiFree(MMI_JSON_STRING payload)
 {
     FREE_MEMORY(payload);
 }
