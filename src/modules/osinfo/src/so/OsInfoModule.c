@@ -11,12 +11,12 @@ void __attribute__((constructor)) InitModule(void)
 
 void __attribute__((destructor)) DestroyModule(void)
 {
-    OsInfoShutdow();
+    OsInfoShutdown();
 }
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    return OsInfoGetInfo(clientName, payload, payloadSizeBytes);
+    return OsInfoMmiGetInfo(clientName, payload, payloadSizeBytes);
 }
 
 MMI_HANDLE MmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)

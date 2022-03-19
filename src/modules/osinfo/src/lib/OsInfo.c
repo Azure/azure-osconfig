@@ -19,10 +19,10 @@ static char* g_kernelVersionObject = "KernelVersion";
 static char* g_productNameObject = "ProductName";
 static char* g_productVendorObject = "ProductVendor";
 
-static const char* g_osInfoLogFile "/var/log/osconfig_osinfo.log"
-static const char* g_osInfoRolledLogFile "/var/log/osconfig_osinfo.bak"
+static const char* g_osInfoLogFile = "/var/log/osconfig_osinfo.log";
+static const char* g_osInfoRolledLogFile = "/var/log/osconfig_osinfo.bak";
 
-static const char* g_osInfoModuleInfo = "({\"Name\": \"OsInfo\","
+static const char* g_osInfoModuleInfo = "{\"Name\": \"OsInfo\","
     "\"Description\": \"Provides functionality to observe OS and device information\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
@@ -30,7 +30,7 @@ static const char* g_osInfoModuleInfo = "({\"Name\": \"OsInfo\","
     "\"VersionInfo\": \"Copper\","
     "\"Components\": [\"OsInfo\"],"
     "\"Lifetime\": 2,"
-    "\"UserAccount\": 0})";
+    "\"UserAccount\": 0}";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
@@ -43,7 +43,7 @@ static char* g_kernelVersion = NULL;
 static char* g_productName = NULL;
 static char* g_productVendor = NULL;
 
-static bool g_referenceCount = 0;
+static unsigned int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE OsInfoGetLog(void)
@@ -94,7 +94,7 @@ MMI_HANDLE OsInfoMmiOpen(const char* clientName, const unsigned int maxPayloadSi
 
 static bool IsValidSession(MMI_HANDLE clientSession)
 {
-    return ((NULL == clientSession) || (0 != strcmp(g_osInfoModuleName, (char*)clientSession)) || (g_referenceCount = < 0)) ? false : true;
+    return ((NULL == clientSession) || (0 != strcmp(g_osInfoModuleName, (char*)clientSession)) || (g_referenceCount <= 0)) ? false : true;
 }
 
 void OsInfoMmiClose(MMI_HANDLE clientSession)
@@ -102,7 +102,7 @@ void OsInfoMmiClose(MMI_HANDLE clientSession)
     if (IsValidSession(clientSession))
     {
         g_referenceCount -= 1;
-        OsConfigLogInfo(OsInfoGetLog(), "MmiClose()");
+        OsConfigLogInfo(OsInfoGetLog(), "MmiClose(%p)", clientSession);
     }
     else
     {
@@ -114,7 +114,7 @@ int OsInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payl
 {
     int status = EINVAL;
 
-    if ((NULL == payload) || (payloadSizeBytes))
+    if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
         return status;
     }
@@ -130,7 +130,7 @@ int OsInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payl
     }
     else
     {
-        OsConfigLogError(OsInfoGetLog(), "MmiGetInfo: failed to allocate %d bytes", size);
+        OsConfigLogError(OsInfoGetLog(), "MmiGetInfo: failed to allocate %d bytes", *payloadSizeBytes);
         *payloadSizeBytes = 0;
         status = ENOMEM;
     }
@@ -145,7 +145,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
     int status = MMI_OK;
     char* value = NULL;
 
-    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes))
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         return status;
@@ -160,7 +160,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
         return status;
     }
     
-    if ((MMI_OK == status) && (strcmp(componentName, g_osInfoComponentName))
+    if ((MMI_OK == status) && (strcmp(componentName, g_osInfoComponentName)))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
@@ -209,8 +209,8 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = strlen(value);
-        if (*payloadSizeBytes > g_maxPayloadSizeBytes)
+        *payloadSizeBytes = strlen(value) + 2;
+        if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
             OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
@@ -221,7 +221,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (*payload)
         {
-            memcpy(*payload, value, *payloadSizeBytes);
+            sprintf(*payload, "\"%s\"", value); /// add max size
         }
         else
         {
