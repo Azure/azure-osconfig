@@ -148,6 +148,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s, %p, %p) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
+        status = EINVAL;
         return status;
     }
 
@@ -157,7 +158,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
     if (!IsValidSession(clientSession))
     {
         OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
-        return status;
+        status = EINVAL;
     }
     
     if ((MMI_OK == status) && (strcmp(componentName, g_osInfoComponentName)))
@@ -221,7 +222,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (*payload)
         {
-            sprintf(*payload, "\"%s\"", value); /// add max size
+            snprintf(*payload, *payloadSizeBytes, "\"%s\"", value);
         }
         else
         {
