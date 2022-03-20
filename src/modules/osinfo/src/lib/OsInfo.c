@@ -54,7 +54,7 @@ static OSCONFIG_LOG_HANDLE OsInfoGetLog(void)
 void OsInfoInitialize(void)
 {
     g_log = OpenLog(g_osInfoLogFile, g_osInfoRolledLogFile);
-    
+
     g_osName = GetOsName(OsInfoGetLog());
     g_osVersion = GetOsVersion(OsInfoGetLog());
     g_cpuType = GetCpu(OsInfoGetLog());
@@ -94,7 +94,7 @@ MMI_HANDLE OsInfoMmiOpen(const char* clientName, const unsigned int maxPayloadSi
 
 static bool IsValidSession(MMI_HANDLE clientSession)
 {
-    return ((NULL == clientSession) || (0 != strcmp(g_osInfoModuleName, (char*)clientSession)) || (g_referenceCount <= 0)) ? false : true;
+    return ((NULL == clientSession) || (0 != strcmp(g_osInfoModuleName, (char*)clientSession)) || (g_referenceCount <= 0) || (NULL == g_osName)) ? false : true;
 }
 
 void OsInfoMmiClose(MMI_HANDLE clientSession)
@@ -135,7 +135,10 @@ int OsInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payl
         status = ENOMEM;
     }
     
-    OsConfigLogInfo(OsInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(OsInfoGetLog(), "MmiGetInfo(%s, %.*s, %d) returning %d", clientName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    }
 
     return status;
 }
@@ -211,6 +214,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
     if (MMI_OK == status)
     {
         *payloadSizeBytes = strlen(value) + 2;
+        
         if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
             OsConfigLogError(OsInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
@@ -222,7 +226,7 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (*payload)
         {
-            snprintf(*payload, *payloadSizeBytes, "\"%s\"", value);
+            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value);
         }
         else
         {
@@ -232,7 +236,10 @@ int OsInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char
         }
     }    
 
-    OsConfigLogInfo(OsInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(OsInfoGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+    }
 
     return status;
 }

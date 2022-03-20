@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <Mmi.h>
 #include <OsInfo.h>
+#include <CommonUtils.h>
 
 using namespace std;
 
@@ -36,12 +37,12 @@ class OsInfoTest : public ::testing::Test
         int m_normalMaxPayloadSizeBytes = 1024;
         int m_truncatedMaxPayloadSizeBytes = 1;
 
-        void InitializeModule()
+        void SetUp()
         {
             OsInfoInitialize();
         }
 
-        void Cleanup()
+        void TearDown()
         {
             OsInfoShutdown();
         }
@@ -54,30 +55,50 @@ TEST_F(OsInfoTest, MmiOpen)
     OsInfoMmiClose(handle);
 }
 
+char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
+{
+    char* output = nullptr;
+    
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
+
+    if (nullptr != output)
+    {
+        memcpy(output, payload, payloadSizeBytes);
+        output[payloadSizeBytes] = 0;
+    }
+
+    return output;
+}
+
 TEST_F(OsInfoTest, MmiGetInfo)
 {
-    MMI_HANDLE handle = NULL;
     char* payload = nullptr;
+    char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
     EXPECT_EQ(MMI_OK, OsInfoMmiGetInfo(m_clientName, &payload, &payloadSizeBytes));
     EXPECT_NE(nullptr, payload);
     EXPECT_NE(0, payloadSizeBytes);
-    EXPECT_STREQ(payload, m_expectedMmiInfo);
-    EXPECT_EQ(strlen(payload), payloadSizeBytes);
 
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_STREQ(m_expectedMmiInfo, payloadString);
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+
+    FREE_MEMORY(payloadString);
     OsInfoMmiFree(payload);
 }
 
 TEST_F(OsInfoTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
-    char* payload = "\"Test\":\"test\"";
+    const char* payload = "\"Test\":\"test\"";
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = OsInfoMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     
-    EXPECT_EQ(EPERM, OsInfoMmiSet(handle, m_osInfoComponentName, m_osVersionObject, payload, payloadSizeBytes));
+    EXPECT_EQ(EPERM, OsInfoMmiSet(handle, m_osInfoComponentName, m_osVersionObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
     
     OsInfoMmiClose(handle);
 }
@@ -86,6 +107,7 @@ TEST_F(OsInfoTest, MmiGetRequiredObjects)
 {
     MMI_HANDLE handle = NULL;
     char* payload = nullptr;
+    char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
@@ -97,7 +119,7 @@ TEST_F(OsInfoTest, MmiGetRequiredObjects)
         m_kernelVersionObject,
         m_productNameObject,
         m_productVendorObject
-    }
+    };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
@@ -108,7 +130,9 @@ TEST_F(OsInfoTest, MmiGetRequiredObjects)
         EXPECT_EQ(MMI_OK, OsInfoMmiGet(handle, m_osInfoComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
         EXPECT_NE(nullptr, payload);
         EXPECT_NE(0, payloadSizeBytes);
-        EXPECT_EQ(strlen(payload), payloadSizeBytes);
+        EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+        EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        FREE_MEMORY(payloadString);
         OsInfoMmiFree(payload);
     }
     
@@ -119,6 +143,7 @@ TEST_F(OsInfoTest, MmiGetTruncatedPayload)
 {
     MMI_HANDLE handle = NULL;
     char* payload = nullptr;
+    char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
@@ -130,7 +155,7 @@ TEST_F(OsInfoTest, MmiGetTruncatedPayload)
         m_kernelVersionObject,
         m_productNameObject,
         m_productVendorObject
-    }
+    };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
@@ -141,8 +166,10 @@ TEST_F(OsInfoTest, MmiGetTruncatedPayload)
         EXPECT_EQ(MMI_OK, OsInfoMmiGet(handle, m_osInfoComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
         EXPECT_NE(nullptr, payload);
         EXPECT_NE(0, payloadSizeBytes);
-        EXPECT_EQ(strlen(payload), payloadSizeBytes);
+        EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+        EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
+        FREE_MEMORY(payloadString);
         OsInfoMmiFree(payload);
     }
 
@@ -153,12 +180,13 @@ TEST_F(OsInfoTest, MmiGetOptionalObjects)
 {
     MMI_HANDLE handle = NULL;
     char* payload = nullptr;
+    char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
     const char* mimOptionalObjects[] = {
         m_productNameObject,
         m_productVendorObject
-    }
+    };
 
     int mimOptionalObjectsNumber = ARRAY_SIZE(mimOptionalObjects);
 
@@ -166,7 +194,7 @@ TEST_F(OsInfoTest, MmiGetOptionalObjects)
 
     for (int i = 0; i < mimOptionalObjectsNumber; i++)
     {
-        EXPECT_EQ(MMI_OK, OsInfoMmiGet(handle, m_osInfoComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, OsInfoMmiGet(handle, m_osInfoComponentName, mimOptionalObjects[i], &payload, &payloadSizeBytes));
         if ((nullptr == payload) || (0 == payloadSizeBytes))
         {
             EXPECT_EQ(nullptr, payload);
@@ -175,7 +203,9 @@ TEST_F(OsInfoTest, MmiGetOptionalObjects)
         else
         {
             EXPECT_NE(0, payloadSizeBytes);
-            EXPECT_EQ(strlen(payload), payloadSizeBytes);
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            FREE_MEMORY(payloadString);
             OsInfoMmiFree(payload);
         }
     }
@@ -191,7 +221,7 @@ TEST_F(OsInfoTest, MmiGetInvalidComponent)
 
     EXPECT_NE(nullptr, handle = OsInfoMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    EXPECT_EQ(EINVAL, OsInfoMmiGet(handle, "RandomName", m_osNameObject, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, OsInfoMmiGet(handle, "Test123", m_osNameObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
     
@@ -206,7 +236,7 @@ TEST_F(OsInfoTest, MmiGetInvalidObject)
 
     EXPECT_NE(nullptr, handle = OsInfoMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    EXPECT_EQ(EINVAL, OsInfoMmiGet(handle, m_osInfoComponentName, "RandomName", &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, OsInfoMmiGet(handle, m_osInfoComponentName, "Test123", &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
     
