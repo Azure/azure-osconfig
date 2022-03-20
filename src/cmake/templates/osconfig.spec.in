@@ -75,37 +75,60 @@ systemctl start osconfig.service
 %{_bindir}/osconfig
 /etc/aziot/identityd/config.d/osconfig.toml
 /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
+/etc/osconfig/osconfig_commandrunner.cache
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
-/etc/osconfig/osconfig_commandrunner.cache
 /etc/systemd/system/osconfig.service
 /usr/lib/osconfig/commandrunner.so
 /usr/lib/osconfig/firewall.so
+/usr/lib/osconfig/hostname.so
 /usr/lib/osconfig/networking.so
 /usr/lib/osconfig/settings.so
+/usr/lib/osconfig/tpm.so
+/usr/lib/osconfig/ztsi.so
 
 %changelog
-* Fri Jun 25 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.4.0-1
+* Fri Mar 18 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.2.2022031901
+- Bumped version to 1.0.2.x
+- Added HTTP proxy support for connection to Iot Hub.
+- Added support to MQTT for WS protocol alogside MQTT.
+- Refactored the PnP Agent to queue for async execution desired twin payload.
+- Refactored the Module Manager and CommandRunner to use multiple client sessions.
+- Refactored CommandRunner to follow the recommended pattern for modules.
+- Introduced default timeout of 60 seconds for commands requested without timeout.
+- Fixed the Settings module to support multiple client sessions.
+- Added support for removing MIM map elements.
+- Added OS/device telemetry via IoT Hub.
+- Added exclusive locks to RC/DC files for local management.
+- Improved package build pipeline reliability.
+- E2E tests improvements.
+- Commonutils tests moved to commonutils/tests.
+- Improvements to logging.
+- MIM for the future PackageManagerConfiguration module.
+- Other security and stability fixes.
+* Mon Feb 21 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.1.20220125
+- include module hostname, tpm, ztsi modules
+* Fri Jun 25 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.4.0-1
 - Latest bugfixes to CommandRunner module
 - Latest bugfixes to Firewall module
 - Latest bugfixes to Networking module
 - Latest bugfixes to Settings module
-* Fri Jun 11 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.3.6-1
+* Fri Jun 11 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.3.6-1
 - Latest bugfixes to CommandRunner module
 - Latest bugfixes to Firewall module
 - Latest bugfixes to Networking module
 - Latest bugfixes to Settings module
-* Tue Jun 8 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.3.5-1
+* Tue Jun 8 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.3.5-1
 - Latest bugfixes to Networking module
 - Latest bugfixes to CommandRunner module
-* Fri May 28 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.3.4-1
+* Fri May 28 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.3.4-1
 - Included debug symbols exporting
 - Added agent daemon to auto-start
 - Added networking module (preview)
 - Added firewall module (preview)
-* Mon Apr 5 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.3.0-1
+* Mon Apr 5 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.3.0-1
 - Added EIS agent support
 - Added Modules manager
 - Added modules (CommandRunner, Settings)
-* Thu Jan 21 2021 Ahmed Messaoud <ahbenmes@microsoft.com> 0.2.1-1
+* Thu Jan 21 2021 OSConfig Core Team <osconfigcore@microsoft.com> 0.2.1-1
 - Initial version for Mariner/SantaCruz.
