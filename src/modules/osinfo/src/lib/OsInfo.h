@@ -11,7 +11,7 @@ extern "C"
 
 void OsInfoInitialize(void);
 void OsInfoShutdown(void);
-     
+
 MMI_HANDLE OsInfoMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);
 void OsInfoMmiClose(MMI_HANDLE clientSession);
 int OsInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
