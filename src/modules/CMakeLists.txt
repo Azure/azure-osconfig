@@ -6,12 +6,12 @@ set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for i
 
 add_subdirectory(commandrunner)
 add_subdirectory(firewall)
-add_subdirectory(networking)
-add_subdirectory(settings)
 add_subdirectory(hostname)
+add_subdirectory(networking)
+add_subdirectory(osinfo)
+add_subdirectory(settings)
 add_subdirectory(tpm)
 add_subdirectory(ztsi)
-add_subdirectory(osinfo)
 
 if (BUILD_SAMPLES)
     add_subdirectory(samples)
