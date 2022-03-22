@@ -5,10 +5,7 @@
 # TraceLogging requires C11.
 # To use TraceLogging this component compiles as C11.
 # Without TraceLogging this component can be compiled as C99.
-set (CMAKE_C_STANDARD 11)
-set (CMAKE_CXX_STANDARD 11)
 
-cmake_minimum_required(VERSION 3.2)
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4.7)

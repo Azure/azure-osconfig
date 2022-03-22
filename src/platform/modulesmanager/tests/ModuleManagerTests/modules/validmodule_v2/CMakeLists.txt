@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.2)
-set(CMAKE_CXX_STANDARD 11)
 project(valid_module_v2)
 
 set(VALID_MODULE_V2_PATH "${TEST_MODULES_DIR}/${PROJECT_NAME}.so" CACHE FILEPATH "Path to the valid_module_v2.so module")

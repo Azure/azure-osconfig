@@ -1,8 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.2)
-set (CMAKE_CXX_STANDARD 11)
 project(networking)
 
 add_library(networking SHARED NetworkingModule.cpp)
