@@ -992,3 +992,12 @@ TEST_F(CommonUtilsTest, LockUnlockFile)
     EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
+
+TEST_F(CommonUtilsTest, DuplicateString)
+{
+    char* duplicate = nullptr;
+    EXPECT_EQ(nullptr, duplicate = DuplicateString(nullptr));
+    EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
+    EXPECT_STREQ(m_data, duplicate);
+    FREE_MEMORY(duplicate);
+}

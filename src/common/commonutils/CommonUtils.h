@@ -43,6 +43,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
+char* DuplicateString(const char* source);
+
 size_t HashString(const char* source);
 
 bool IsValidClientName(const char* name);
