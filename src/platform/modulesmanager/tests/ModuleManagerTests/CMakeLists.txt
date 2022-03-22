@@ -3,6 +3,8 @@
 
 project(modulesmanagertests)
 
+set (CMAKE_CXX_STANDARD 14)
+
 include(CTest)
 find_package(GTest REQUIRED)
 
