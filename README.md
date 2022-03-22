@@ -10,6 +10,10 @@ For more information on OSConfig see [OSConfig North Star Architecture](docs/arc
 
 For our code of conduct and contributing instructions see [CONTRIBUTING](CONTRIBUTING.md). For our approach to security see [SECURITY](SECURITY.md).
 
+### C Standard
+
+OSConfig's C/C++ code currently targets compliance with C11.
+
 ## Getting started
 
 ### Prerequisites
@@ -46,7 +50,6 @@ Build with the following commands issued from under the build subfolder:
 cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DBUILD_TESTS=ON|OFF
 cmake --build . --config Release|Debug  --target install
 ```
-
 The following OSConfig files are binplaced at build time:
 
 Source | Destination | Descriptiopn
