@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
+set (CMAKE_C_STANDARD 11)
+set (CMAKE_CXX_STANDARD 11)
+
 cmake_minimum_required(VERSION 3.2)
 
 project(osconfig)

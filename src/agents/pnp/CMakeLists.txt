@@ -3,8 +3,8 @@
 
 # The Azure IoT C SDK requires C99.
 # TraceLogging requires C11.
-# To use TraceLogging this project compiles as C11.
-# Without TraceLogging this project can be compiled as C99.
+# To use TraceLogging this component compiles as C11.
+# Without TraceLogging this component can be compiled as C99.
 set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
