@@ -12,7 +12,7 @@ For our code of conduct and contributing instructions see [CONTRIBUTING](CONTRIB
 
 ### C Standard
 
-OSConfig's C/C++ code is C11 compliant. C17 and C18 are not currently supported.
+OSConfig's C/C++ code currently targets compliance with C11.
 
 ## Getting started
 
