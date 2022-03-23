@@ -1,10 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.2)
-
-set (CMAKE_CXX_STANDARD 17)
-
 project(packagemanagerconfigurationlib)
 
 add_library(packagemanagerconfigurationlib STATIC PackageManagerConfigurationBase.cpp PackageManagerConfiguration.cpp)
