@@ -473,6 +473,27 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+char* DuplicateString(const char* source)
+{
+    int length = 0;
+    char* duplicate = NULL;
+    
+    if (NULL == source)
+    {
+        return duplicate;
+    }
+
+    length = (int)strlen(source);
+    duplicate = (char*)malloc(length + 1);
+    if (NULL != duplicate)
+    {
+        memcpy(duplicate, source, length);
+        duplicate[length] = 0;
+    }
+
+    return duplicate;
+}
+
 static void RemoveProxyStringEscaping(char* value)
 {
     int i = 0;
