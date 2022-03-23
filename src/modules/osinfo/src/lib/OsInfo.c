@@ -10,14 +10,14 @@
 
 static char* g_osInfoModuleName = "OsInfo module";
 static char* g_osInfoComponentName = "OsInfo";
-static char* g_osNameObject = "OsName";
-static char* g_osVersionObject = "OsVersion";
-static char* g_cpuTypeObject = "Processor";
+static char* g_osNameObject = "Name";
+static char* g_osVersionObject = "Version";
+static char* g_cpuTypeObject = "CpuType";
 static char* g_kernelNameObject = "KernelName";
 static char* g_kernelReleaseObject = "KernelRelease";
 static char* g_kernelVersionObject = "KernelVersion";
-static char* g_productNameObject = "ProductName";
-static char* g_productVendorObject = "ProductVendor";
+static char* g_productVendorObject = "Manufacturer";
+static char* g_productNameObject = "Model";
 
 static const char* g_osInfoLogFile = "/var/log/osconfig_osinfo.log";
 static const char* g_osInfoRolledLogFile = "/var/log/osconfig_osinfo.bak";

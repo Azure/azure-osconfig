@@ -23,14 +23,14 @@ class OsInfoTest : public ::testing::Test
 
         const char* m_osInfoModuleName = "OsInfo module";
         const char* m_osInfoComponentName = "OsInfo";
-        const char* m_osNameObject = "OsName";
-        const char* m_osVersionObject = "OsVersion";
-        const char* m_cpuTypeObject = "Processor";
+        const char* m_osNameObject = "Name";
+        const char* m_osVersionObject = "Version";
+        const char* m_cpuTypeObject = "CpuType";
         const char* m_kernelNameObject = "KernelName";
         const char* m_kernelReleaseObject = "KernelRelease";
         const char* m_kernelVersionObject = "KernelVersion";
-        const char* m_productNameObject = "ProductName";
-        const char* m_productVendorObject = "ProductVendor";
+        const char* m_productVendorObject = "Manufacturer";
+        const char* m_productNameObject = "Model";
 
         const char* m_clientName = "Test";
 

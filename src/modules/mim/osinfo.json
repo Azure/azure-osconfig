@@ -7,19 +7,19 @@
       "type": "MimComponent",
       "contents": [
         {
-          "name": "OsName",
+          "name": "Name",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "OsVersion",
+          "name": "Version",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "Processor",
+          "name": "CpuType",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
@@ -31,19 +31,25 @@
           "schema": "string"
         },
         {
+          "name": "KernelRelease",
+          "type": "MimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "KernelVersion",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "ProductVendor",
+          "name": "Manufacturer",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "ProductName",
+          "name": "Model",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
