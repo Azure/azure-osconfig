@@ -29,15 +29,15 @@
     },
     {
       "ComponentName": "OsInfo",
-      "ObjectName": "OsName"
+      "ObjectName": "Name"
     },
     {
       "ComponentName": "OsInfo",
-      "ObjectName": "OsVersion"
+      "ObjectName": "Version"
     },
     {
       "ComponentName": "OsInfo",
-      "ObjectName": "Processor"
+      "ObjectName": "CpuType"
     },
     {
       "ComponentName": "OsInfo",
@@ -53,11 +53,11 @@
     },
     {
       "ComponentName": "OsInfo",
-      "ObjectName": "ProductName"
+      "ObjectName": "Manufacturer"
     },
     {
       "ComponentName": "OsInfo",
-      "ObjectName": "ProductVendor"
+      "ObjectName": "Model"
     },
     {
       "ComponentName": "Tpm",
