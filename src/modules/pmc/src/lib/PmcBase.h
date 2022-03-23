@@ -8,10 +8,10 @@
 #include <Logging.h>
 #include <Mmi.h>
 
-#define PACKAGEMANAGERCONFIGURATION_LOGFILE "/var/log/osconfig_packagemanagerconfiguration.log"
-#define PACKAGEMANAGERCONFIGURATION_ROLLEDLOGFILE "/var/log/osconfig_packagemanagerconfiguration.bak"
+#define PMC_LOGFILE "/var/log/osconfig_packagemanagerconfiguration.log"
+#define PMC_ROLLEDLOGFILE "/var/log/osconfig_packagemanagerconfiguration.bak"
 
-class PackageManagerConfigurationLog
+class PmcLog
 {
 public:
     static OSCONFIG_LOG_HANDLE Get()
@@ -21,7 +21,7 @@ public:
 
     static void OpenLog()
     {
-        m_log = ::OpenLog(PACKAGEMANAGERCONFIGURATION_LOGFILE, PACKAGEMANAGERCONFIGURATION_ROLLEDLOGFILE);
+        m_log = ::OpenLog(PMC_LOGFILE, PMC_ROLLEDLOGFILE);
     }
 
     static void CloseLog()
@@ -33,11 +33,11 @@ private:
     static OSCONFIG_LOG_HANDLE m_log;
 };
 
-class PackageManagerConfigurationBase
+class PmcBase
 {
 public:
-    PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes);
-    virtual ~PackageManagerConfigurationBase() = default;
+    PmcBase(unsigned int maxPayloadSizeBytes);
+    virtual ~PmcBase() = default;
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);

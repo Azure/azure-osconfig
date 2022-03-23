@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "PackageManagerConfigurationBase.h"
+#include "PmcBase.h"
 
 constexpr const char ret[] = R""""({
     "Name": "PackageManagerConfiguration Module",
@@ -14,30 +14,30 @@ constexpr const char ret[] = R""""({
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-OSCONFIG_LOG_HANDLE PackageManagerConfigurationLog::m_log = nullptr;
+OSCONFIG_LOG_HANDLE PmcLog::m_log = nullptr;
 
-PackageManagerConfigurationBase::PackageManagerConfigurationBase(unsigned int maxPayloadSizeBytes)
+PmcBase::PmcBase(unsigned int maxPayloadSizeBytes)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
 }
 
-int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PmcBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
     if (nullptr == clientName)
     {
-        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null clientName");
+        OsConfigLogError(PmcLog::Get(), "MmiGetInfo called with null clientName");
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null payload");
+        OsConfigLogError(PmcLog::Get(), "MmiGetInfo called with null payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
+        OsConfigLogError(PmcLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -48,7 +48,7 @@ int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_ST
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
-                OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo failed to allocate memory");
+                OsConfigLogError(PmcLog::Get(), "MmiGetInfo failed to allocate memory");
                 status = ENOMEM;
             }
             else
@@ -59,7 +59,7 @@ int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_ST
         }
         catch (const std::exception& e)
         {
-            OsConfigLogError(PackageManagerConfigurationLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
+            OsConfigLogError(PmcLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
             status = EINTR;
 
             if (nullptr != *payload)
@@ -78,7 +78,7 @@ int PackageManagerConfigurationBase::GetInfo(const char* clientName, MMI_JSON_ST
     return status;
 }
 
-int PackageManagerConfigurationBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     UNUSED(componentName);
     UNUSED(objectName);
@@ -89,7 +89,7 @@ int PackageManagerConfigurationBase::Set(const char* componentName, const char* 
     return status;
 }
 
-int PackageManagerConfigurationBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PmcBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     UNUSED(componentName);
     UNUSED(objectName);
@@ -100,7 +100,7 @@ int PackageManagerConfigurationBase::Get(const char* componentName, const char* 
     return status;
 }
 
-unsigned int PackageManagerConfigurationBase::GetMaxPayloadSizeBytes()
+unsigned int PmcBase::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
 }

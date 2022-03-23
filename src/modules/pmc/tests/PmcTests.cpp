@@ -4,18 +4,18 @@
 #include <gtest/gtest.h>
 
 #include <Mmi.h>
-#include <PackageManagerConfigurationBase.h>
+#include <PmcBase.h>
 
-class PackageManagerConfigurationTests : public PackageManagerConfigurationBase
+class PmcTests : public PmcBase
 {
 public:
-    PackageManagerConfigurationTests(unsigned int maxPayloadSizeBytes);
-    ~PackageManagerConfigurationTests() = default;
+    PmcTests(unsigned int maxPayloadSizeBytes);
+    ~PmcTests() = default;
 
 };
 
-PackageManagerConfigurationTests::PackageManagerConfigurationTests(unsigned int maxPayloadSizeBytes)
-    : PackageManagerConfigurationBase(maxPayloadSizeBytes)
+PmcTests::PmcTests(unsigned int maxPayloadSizeBytes)
+    : PmcBase(maxPayloadSizeBytes)
 {
 }
 
@@ -27,10 +27,10 @@ namespace OSConfig::Platform::Tests
     constexpr const char* reportedObjectName = "";
     static char validJsonPayload[] = "";
 
-    TEST(PackageManagerConfigurationTests, ValidSetGet)
+    TEST(PmcTests, ValidSetGet)
     {
         int status;
-        PackageManagerConfigurationTests testModule(g_maxPayloadSizeBytes);
+        PmcTests testModule(g_maxPayloadSizeBytes);
         status = testModule.Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
 
