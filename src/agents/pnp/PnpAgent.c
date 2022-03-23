@@ -584,7 +584,7 @@ static char* GetHttpProxyData()
         if (NULL != environmentVariable)
         {
             // The environment variable string must be treated as read-only, make a copy for our use:
-            proxyData = strdup(environmentVariable);
+            proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
                 LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
