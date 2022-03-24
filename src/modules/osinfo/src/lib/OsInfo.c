@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <errno.h>
+#include <stdatomic.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
-#include <errno.h>
 
 #include "OsInfo.h"
 
@@ -43,7 +44,7 @@ static char* g_kernelVersion = NULL;
 static char* g_productName = NULL;
 static char* g_productVendor = NULL;
 
-static unsigned int g_referenceCount = 0;
+static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE OsInfoGetLog(void)
@@ -87,7 +88,7 @@ MMI_HANDLE OsInfoMmiOpen(const char* clientName, const unsigned int maxPayloadSi
 {
     MMI_HANDLE handle = (MMI_HANDLE)g_osInfoModuleName;
     g_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    g_referenceCount += 1;
+    ++g_referenceCount;
     OsConfigLogInfo(OsInfoGetLog(), "MmiOpen(%s, %d) returning %p", clientName, maxPayloadSizeBytes, handle);
     return handle;
 }
@@ -101,7 +102,7 @@ void OsInfoMmiClose(MMI_HANDLE clientSession)
 {
     if (IsValidSession(clientSession))
     {
-        g_referenceCount -= 1;
+        --g_referenceCount;
         OsConfigLogInfo(OsInfoGetLog(), "MmiClose(%p)", clientSession);
     }
     else
