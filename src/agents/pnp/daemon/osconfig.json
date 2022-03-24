@@ -8,8 +8,36 @@
       "ObjectName": "CommandStatus"
     },
     {
-      "ComponentName": "Networking",
-      "ObjectName": "NetworkConfiguration"
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "OsName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "OsVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "CpuType"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "KernelName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "KernelRelease"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "KernelVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "Manufacturer"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "Model"
     },
     {
       "ComponentName": "Firewall",
@@ -28,36 +56,8 @@
       "ObjectName": "Hosts"
     },
     {
-      "ComponentName": "OsInfo",
-      "ObjectName": "Name"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "Version"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "CpuType"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "KernelName"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "KernelRelease"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "KernelVersion"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "Manufacturer"
-    },
-    {
-      "ComponentName": "OsInfo",
-      "ObjectName": "Model"
+      "ComponentName": "Networking",
+      "ObjectName": "NetworkConfiguration"
     },
     {
       "ComponentName": "Tpm",
