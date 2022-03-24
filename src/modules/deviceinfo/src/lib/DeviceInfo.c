@@ -199,7 +199,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else if (0 == strcmp(objectName, g_manufacturerObject))
         {
-            value = g_manufacturerObject;
+            value = g_manufacturer;
         }
         else if (0 == strcmp(objectName, g_modelObject))
         {

@@ -80,7 +80,7 @@
       "ObjectName": "ServiceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 30,
+  "ReportingIntervalSeconds": 3,
   "LocalPriority": 0,
-  "LocalManagement": 0
+  "LocalManagement": 1
 }
