@@ -8,8 +8,8 @@
 #include <Logging.h>
 #include <Mmi.h>
 
-#define PMC_LOGFILE "/var/log/osconfig_packagemanagerconfiguration.log"
-#define PMC_ROLLEDLOGFILE "/var/log/osconfig_packagemanagerconfiguration.bak"
+#define PMC_LOGFILE "/var/log/osconfig_pmc.log"
+#define PMC_ROLLEDLOGFILE "/var/log/osconfig_pmc.bak"
 
 class PmcLog
 {
