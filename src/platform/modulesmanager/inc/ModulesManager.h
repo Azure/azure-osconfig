@@ -12,7 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <rapidjson/document.h>
-#include <unordered_set>
+#include <set>
 #include <vector>
 
 #include <CommonUtils.h>
@@ -58,8 +58,8 @@ public:
     void UnloadModules();
 
 protected:
-    // Component name -> vector of reported components according to osconfig.json
-    std::map<std::string, std::unordered_set<std::string>> m_reportedComponents;
+    // Component name -> set of reported components according to osconfig.json
+    std::map<std::string, std::set<std::string>> m_reportedComponents;
 
     // Component name -> module name
     std::map<std::string, std::string> m_moduleComponentName;
