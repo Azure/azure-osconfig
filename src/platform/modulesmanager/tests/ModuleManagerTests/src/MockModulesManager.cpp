@@ -21,7 +21,7 @@ namespace Tests
     {
         if (m_reportedComponents.find(componentName) == m_reportedComponents.end())
         {
-            m_reportedComponents[componentName] = std::unordered_set<std::string>();
+            m_reportedComponents[componentName] = std::set<std::string>();
         }
 
         m_reportedComponents[componentName].insert(objectName);

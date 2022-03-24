@@ -348,7 +348,7 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
 
                     if (m_reportedComponents.find(componentName) == m_reportedComponents.end())
                     {
-                        m_reportedComponents[componentName] = std::unordered_set<std::string>();
+                        m_reportedComponents[componentName] = std::set<std::string>();
                     }
 
                     if (m_reportedComponents[componentName].find(objectName) == m_reportedComponents[componentName].end())
@@ -755,7 +755,7 @@ int MpiSession::GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeByt
     for (auto reported : m_modulesManager.m_reportedComponents)
     {
         std::string componentName = reported.first;
-        std::unordered_set<std::string> objectNames = reported.second;
+        std::set<std::string> objectNames = reported.second;
         std::shared_ptr<MmiSession> module = GetSession(componentName);
 
         if ((nullptr != module) && !objectNames.empty())
