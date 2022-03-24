@@ -1,19 +1,19 @@
 {
-  "name": "OsInfoModel",
+  "name": "DeviceInfoModel",
   "type": "MimModel",
   "contents": [
     {
-      "name": "OsInfo",
+      "name": "DeviceInfo",
       "type": "MimComponent",
       "contents": [
         {
-          "name": "Name",
+          "name": "OsName",
           "type": "MimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "Version",
+          "name": "OsVersion",
           "type": "MimObject",
           "desired": false,
           "schema": "string"

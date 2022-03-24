@@ -1,23 +1,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(osinfo)
+project(deviceinfo)
 
-add_library(osinfo SHARED OsInfoModule.c)
-target_link_libraries(osinfo
+add_library(deviceinfo SHARED OsInfoModule.c)
+target_link_libraries(deviceinfo
     PRIVATE
         commonutils
         logging
     PUBLIC
-        osinfolib
+        deviceinfolib
 )
-target_include_directories(osinfo
+target_include_directories(deviceinfo
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(osinfo
+set_target_properties(deviceinfo
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
-install(TARGETS osinfo DESTINATION ${MODULES_INSTALL_DIR})
+install(TARGETS deviceinfo DESTINATION ${MODULES_INSTALL_DIR})

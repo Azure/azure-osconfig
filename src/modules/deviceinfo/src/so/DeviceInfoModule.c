@@ -2,16 +2,16 @@
 // Licensed under the MIT License.
 
 #include <Mmi.h>
-#include <OsInfo.h>
+#include <DeviceInfo.h>
 
 void __attribute__((constructor)) InitModule(void)
 {
-    OsInfoInitialize();
+    DeviceInfoInitialize();
 }
 
 void __attribute__((destructor)) DestroyModule(void)
 {
-    OsInfoShutdown();
+    DeviceInfoShutdown();
 }
 
 // This module implements one global static session for all clients. This allows the MMI implementation 
@@ -20,30 +20,30 @@ void __attribute__((destructor)) DestroyModule(void)
 
 int MmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    return OsInfoMmiGetInfo(clientName, payload, payloadSizeBytes);
+    return DeviceInfoMmiGetInfo(clientName, payload, payloadSizeBytes);
 }
 
 MMI_HANDLE MmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    return OsInfoMmiOpen(clientName, maxPayloadSizeBytes);
+    return DeviceInfoMmiOpen(clientName, maxPayloadSizeBytes);
 }
 
 void MmiClose(MMI_HANDLE clientSession)
 {
-    return OsInfoMmiClose(clientSession);
+    return DeviceInfoMmiClose(clientSession);
 }
 
 int MmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    return OsInfoMmiSet(clientSession, componentName, objectName, payload, payloadSizeBytes);
+    return DeviceInfoMmiSet(clientSession, componentName, objectName, payload, payloadSizeBytes);
 }
 
 int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    return OsInfoMmiGet(clientSession, componentName, objectName, payload, payloadSizeBytes);
+    return DeviceInfoMmiGet(clientSession, componentName, objectName, payload, payloadSizeBytes);
 }
 
 void MmiFree(MMI_JSON_STRING payload)
 {
-    return OsInfoMmiFree(payload);
+    return DeviceInfoMmiFree(payload);
 }
