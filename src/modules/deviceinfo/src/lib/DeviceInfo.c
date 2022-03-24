@@ -17,7 +17,7 @@ static char* g_cpuTypeObject = "CpuType";
 static char* g_kernelNameObject = "KernelName";
 static char* g_kernelReleaseObject = "KernelRelease";
 static char* g_kernelVersionObject = "KernelVersion";
-static char* g_modelObject = "Manufacturer";
+static char* g_manufacturerObject = "Manufacturer";
 static char* g_modelObject = "Model";
 
 static const char* g_deviceInfoLogFile = "/var/log/osconfig_deviceinfo.log";
@@ -197,13 +197,13 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             value = g_kernelVersion;
         }
-        else if (0 == strcmp(objectName, g_modelObject))
+        else if (0 == strcmp(objectName, g_manufacturerObject))
         {
-            value = g_model;
+            value = g_manufacturerObject;
         }
         else if (0 == strcmp(objectName, g_modelObject))
         {
-            value = g_manufacturer;
+            value = g_model;
         }
         else
         {

@@ -3,7 +3,7 @@
 
 project(deviceinfo)
 
-add_library(deviceinfo SHARED OsInfoModule.c)
+add_library(deviceinfo SHARED DeviceInfoModule.c)
 target_link_libraries(deviceinfo
     PRIVATE
         commonutils
