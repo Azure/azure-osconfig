@@ -4,7 +4,7 @@
 #include "PmcBase.h"
 
 constexpr const char ret[] = R""""({
-    "Name": "PackageManagerConfiguration (PMC) Module",
+    "Name": "PMC",
     "Description": "Module designed to install DEB-packages using APT",
     "Manufacturer": "Microsoft",
     "VersionMajor": 1,
