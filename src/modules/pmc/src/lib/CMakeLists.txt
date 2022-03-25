@@ -3,7 +3,7 @@
 
 project(pmclib)
 
-add_library(pmclib STATIC PmcBase.cpp Pmc.cpp)
+add_library(pmclib STATIC ExecutionState.cpp PmcBase.cpp Pmc.cpp)
 target_link_libraries(pmclib PRIVATE logging commonutils)
 
 target_include_directories(pmclib
