@@ -25,6 +25,17 @@ void __attribute__((destructor)) DestroyModule()
     SettingsLog::CloseLog();
 }
 
+constexpr const char g_moduleInfo[] = R""""({
+    "Name": "Settings",
+    "Description": "Provides functionality to configure other settings on the device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 0,
+    "VersionMinor": 1,
+    "VersionInfo": "Iron",
+    "Components": ["Settings"],
+    "Lifetime": 0,
+    "UserAccount": 0})"""";
+
 int MmiGetInfo(
     const char* clientName,
     MMI_JSON_STRING* payload,
@@ -68,18 +79,7 @@ int MmiGetInfo(
     }
     else
     {
-        constexpr const char info[] = R""""({
-            "Name": "Settings",
-            "Description": "Provides functionality to configure other settings on the device",
-            "Manufacturer": "Microsoft",
-            "VersionMajor": 0,
-            "VersionMinor": 1,
-            "VersionInfo": "Iron",
-            "Components": ["Settings"],
-            "Lifetime": 0,
-            "UserAccount": 0})"""";
-
-        std::size_t len = ARRAY_SIZE(info) - 1;
+        std::size_t len = ARRAY_SIZE(g_moduleInfo) - 1;
         *payload = new (std::nothrow) char[len];
         if (nullptr == *payload)
         {
@@ -88,7 +88,7 @@ int MmiGetInfo(
         }
         else
         {
-            std::memcpy(*payload, info, len);
+            std::memcpy(*payload, g_moduleInfo, len);
             *payloadSizeBytes = len;
         }
     }
