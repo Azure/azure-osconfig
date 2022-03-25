@@ -197,7 +197,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             value = g_kernelVersion;
         }
-        else if (0 == strcmp(objectName, ymObject))
+        else if (0 == strcmp(objectName, g_manufacturerObject))
         {
             value = g_manufacturer;
         }
