@@ -58,8 +58,8 @@ public:
     void UnloadModules();
 
 protected:
-    // Component name -> set of reported components according to osconfig.json
-    std::map<std::string, std::set<std::string>> m_reportedComponents;
+    // Component name -> vector of reported components according to osconfig.json
+    std::map<std::string, std::vector<std::string>> m_reportedComponents;
 
     // Component name -> module name
     std::map<std::string, std::string> m_moduleComponentName;
