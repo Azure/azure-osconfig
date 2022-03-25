@@ -257,6 +257,8 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
         }
         closedir(dir);
 
+        sort(fileList.begin(), fileList.end());
+
         // Build map for module name -> ManagementModule
         for (auto &filePath : fileList)
         {
