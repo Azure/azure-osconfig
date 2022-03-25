@@ -52,19 +52,12 @@ public:
     ModulesManager();
     ~ModulesManager();
 
-    // Loads Management Modules (MMs) into the Modules Manager
     int LoadModules(std::string modulePath, std::string configJson);
-
     void UnloadModules();
 
 protected:
-    // Component name -> vector of reported components according to osconfig.json
     std::map<std::string, std::vector<std::string>> m_reportedComponents;
-
-    // Component name -> module name
     std::map<std::string, std::string> m_moduleComponentName;
-
-    // Module name -> ManagementModule
     std::map<std::string, std::shared_ptr<ManagementModule>> m_modules;
 
     int SetReportedObjects(const std::string& configJson);
@@ -92,9 +85,7 @@ private:
     std::string m_clientName;
     unsigned int m_maxPayloadSizeBytes;
 
-    // Module name -> MmiSession
     std::map<std::string, std::shared_ptr<MmiSession>> m_mmiSessions;
-
     std::shared_ptr<MmiSession> GetSession(const std::string& componentName);
 
     int SetDesiredPayload(rapidjson::Document& document);
