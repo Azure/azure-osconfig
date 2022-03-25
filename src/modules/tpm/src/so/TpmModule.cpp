@@ -24,6 +24,17 @@ void __attribute__((destructor)) DestroyModule()
     TpmLog::CloseLog();
 }
 
+constexpr const char g_moduleInfo[] = R""""({
+    "Name": "Tpm",
+    "Description": "Provides functionality to remotely query the TPM on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Tpm"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 int MmiGetInfo(
     const char* clientName,
     MMI_JSON_STRING* payload,
@@ -45,19 +56,7 @@ int MmiGetInfo(
         }
         else
         {
-            constexpr const char tpmInfo[] =
-                R""""({
-                "Name": "Tpm",
-                "Description": "Provides functionality to remotely query the TPM on device",
-                "Manufacturer": "Microsoft",
-                "VersionMajor": 1,
-                "VersionMinor": 0,
-                "VersionInfo": "Nickel",
-                "Components": ["Tpm"],
-                "Lifetime": 1,
-                "UserAccount": 0})"""";
-
-            std::size_t infoLength = sizeof(tpmInfo) - 1;
+            std::size_t infoLength = sizeof(g_moduleInfo) - 1;
             *payloadSizeBytes = infoLength;
             *payload = new char[infoLength];
             if (nullptr == *payload)
@@ -67,7 +66,7 @@ int MmiGetInfo(
             }
             else
             {
-                std::memcpy(*payload, tpmInfo, infoLength);
+                std::memcpy(*payload, g_moduleInfo, infoLength);
             }
         }
 

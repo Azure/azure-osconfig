@@ -3,7 +3,7 @@
 
 #include "PmcBase.h"
 
-constexpr const char ret[] = R""""({
+constexpr const char g_moduleInfo[] = R""""({
     "Name": "PMC",
     "Description": "Module designed to install DEB-packages using APT",
     "Manufacturer": "Microsoft",
@@ -44,7 +44,7 @@ int PmcBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payl
     {
         try
         {
-            std::size_t len = ARRAY_SIZE(ret) - 1;
+            std::size_t len = ARRAY_SIZE(g_moduleInfo) - 1;
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
@@ -53,7 +53,7 @@ int PmcBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payl
             }
             else
             {
-                std::memcpy(*payload, ret, len);
+                std::memcpy(*payload, g_moduleInfo, len);
                 *payloadSizeBytes = len;
             }
         }
