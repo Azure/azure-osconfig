@@ -1,6 +1,6 @@
 {
   "ModelVersion": 5,
-  "FullLogging": 1,
+  "FullLogging": 0,
   "Protocol": 2,
   "Reported": [
     {
@@ -80,7 +80,7 @@
       "ObjectName": "ServiceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 3,
+  "ReportingIntervalSeconds": 30,
   "LocalPriority": 0,
-  "LocalManagement": 1
+  "LocalManagement": 0
 }
