@@ -700,7 +700,10 @@ int main(int argc, char *argv[])
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
     
-    OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+    }
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);

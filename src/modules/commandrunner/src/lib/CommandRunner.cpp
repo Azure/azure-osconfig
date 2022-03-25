@@ -12,7 +12,7 @@
 #include <CommandRunner.h>
 #include <Mmi.h>
 
-constexpr const char info[] = R""""({
+constexpr const char g_moduleInfo[] = R""""({
     "Name": "CommandRunner",
     "Description": "Provides functionality to remotely run commands on the device",
     "Manufacturer": "Microsoft",
@@ -107,7 +107,7 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
     }
     else
     {
-        std::size_t len = ARRAY_SIZE(info) - 1;
+        std::size_t len = ARRAY_SIZE(g_moduleInfo) - 1;
         *payload = new (std::nothrow) char[len];
         if (nullptr == *payload)
         {
@@ -116,7 +116,7 @@ int CommandRunner::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int
         }
         else
         {
-            std::memcpy(*payload, info, len);
+            std::memcpy(*payload, g_moduleInfo, len);
             *payloadSizeBytes = len;
         }
     }
