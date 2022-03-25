@@ -31,6 +31,9 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
+// The configuration file for OSConfig
+#define CONFIG_FILE "/etc/osconfig/osconfig.json"
+
 // The optional second command line argument that when present instructs the agent to run as a traditional daemon
 #define FORK_ARG "fork"
 
@@ -39,8 +42,9 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define REPORTED_COMPONENT_NAME "ComponentName"
 #define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
+#define LOCAL_MANAGEMENT "LocalManagement"
 #define LOCAL_PRIORITY "LocalPriority"
-#define LOCAL_REPORTING "LocalReporting"
+#define FULL_LOGGING "FullLogging"
 
 #define PROTOCOL "Protocol"
 #define PROTOCOL_AUTO 0
@@ -118,9 +122,6 @@ static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
-static const char g_configFile[] = "/etc/osconfig/osconfig.json";
-static const char g_fullLoggingValue[] = "FullLogging";
-
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 
@@ -141,7 +142,7 @@ static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
 static int g_localPriority = 0;
-static int g_localReporting = 0;
+static int g_localManagement = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -356,7 +357,7 @@ static void ForkDaemon()
     }
 }
 
-static bool IsFullLoggingInJsonConfig(const char* jsonString)
+static bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
 {
     bool result = false;
     JSON_Value* rootValue = NULL;
@@ -368,7 +369,7 @@ static bool IsFullLoggingInJsonConfig(const char* jsonString)
         {
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
-                result = (0 == (int)json_object_get_number(rootObject, g_fullLoggingValue)) ? false : true;
+                result = (0 == (int)json_object_get_number(rootObject, FULL_LOGGING)) ? false : true;
             }
             json_value_free(rootValue);
         }
@@ -456,9 +457,9 @@ static int GetLocalPriorityFromJsonConfig(const char* jsonString)
     return g_localPriority = GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
 }
 
-static int GetLocalReportingFromJsonConfig(const char* jsonString)
+static int GetLocalManagementFromJsonConfig(const char* jsonString)
 {
-    return g_localReporting = GetIntegerFromJsonConfig(LOCAL_REPORTING, jsonString, 0, 0, 1);
+    return g_localManagement = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
 }
 
 static int GetProtocolFromJsonConfig(const char* jsonString)
@@ -583,7 +584,7 @@ static char* GetHttpProxyData()
         if (NULL != environmentVariable)
         {
             // The environment variable string must be treated as read-only, make a copy for our use:
-            proxyData = strdup(environmentVariable);
+            proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
                 LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
@@ -625,10 +626,10 @@ int main(int argc, char *argv[])
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
 
-    jsonConfiguration = LoadStringFromFile(g_configFile, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetFullLogging(IsFullLoggingInJsonConfig(jsonConfiguration));
+        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -651,20 +652,20 @@ int main(int argc, char *argv[])
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", g_configFile);
+        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
 
     // Load remaining configuration
-    jsonConfiguration = LoadStringFromFile(g_configFile, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
         GetModelVersionFromJsonConfig(jsonConfiguration);
         LoadReportedFromJsonConfig(jsonConfiguration);
         GetReportingIntervalFromJsonConfig(jsonConfiguration);
         GetLocalPriorityFromJsonConfig(jsonConfiguration);
-        GetLocalReportingFromJsonConfig(jsonConfiguration);
+        GetLocalManagementFromJsonConfig(jsonConfiguration);
         GetProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
@@ -751,7 +752,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            connectionString = LoadStringFromFile(argv[1], true);
+            connectionString = LoadStringFromFile(argv[1], true, GetLog());
             if (NULL != connectionString)
             {
                 freeConnectionString = true;
@@ -875,7 +876,7 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false);
+    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
@@ -897,14 +898,14 @@ static void SaveReportedConfigurationToFile()
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
     int mpiResult = MPI_OK;
-    if (g_localReporting)
+    if (g_localManagement)
     {
         mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
             {
-                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes))
+                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
                     g_reportedHash = payloadHash;

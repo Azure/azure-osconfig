@@ -121,21 +121,21 @@ TEST(SettingsTests, MmiSet)
     MMI_HANDLE handle = MmiOpen(clientName, maxPayloadSizeBytes);
     EXPECT_NE(handle, nullptr);
 
-    int status = MmiSet(nullptr, SETTINGS.c_str(), DEVICEHEALTHTELEMETRY.c_str(), payload, payloadSizeBytes);
+    int status = MmiSet(nullptr, g_componentName.c_str(), g_deviceHealthTelemetry.c_str(), payload, payloadSizeBytes);
     EXPECT_EQ(status, EINVAL);
 
     const char* componentNameUnknown = "ComponentNameUnknown";
-    status = MmiSet(handle, componentNameUnknown, DEVICEHEALTHTELEMETRY.c_str(), payload, payloadSizeBytes);
+    status = MmiSet(handle, componentNameUnknown, g_deviceHealthTelemetry.c_str(), payload, payloadSizeBytes);
     EXPECT_EQ(status, EINVAL);
 
     const char* objectNameUnknown = "ObjectNameUnknown";
-    status = MmiSet(handle, SETTINGS.c_str(), objectNameUnknown, payload, payloadSizeBytes);
+    status = MmiSet(handle, g_componentName.c_str(), objectNameUnknown, payload, payloadSizeBytes);
     EXPECT_EQ(status, EINVAL);
 
-    status = MmiSet(handle, SETTINGS.c_str(), DEVICEHEALTHTELEMETRY.c_str(), nullptr, payloadSizeBytes);
+    status = MmiSet(handle, g_componentName.c_str(), g_deviceHealthTelemetry.c_str(), nullptr, payloadSizeBytes);
     EXPECT_EQ(status, EINVAL);
 
-    status = MmiSet(handle, SETTINGS.c_str(), DEVICEHEALTHTELEMETRY.c_str(), payload, payloadSizeBytesExceedsMax);
+    status = MmiSet(handle, g_componentName.c_str(), g_deviceHealthTelemetry.c_str(), payload, payloadSizeBytesExceedsMax);
     EXPECT_EQ(status, E2BIG);
 
     MmiClose(handle);

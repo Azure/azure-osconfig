@@ -58,43 +58,43 @@ class CommonUtilsTest : public ::testing::Test
 
 TEST_F(CommonUtilsTest, LoadStringFromFileInvalidArgument)
 {
-    EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false));
+    EXPECT_STREQ(nullptr, LoadStringFromFile(nullptr, false, nullptr));
 }
 
 TEST_F(CommonUtilsTest, LoadStringFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, LoadStringWithEolFromFile)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFile)
 {
-    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data)));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_data, strlen(m_data), nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadWithEolToFile)
 {
-    EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol)));
-    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true));
+    EXPECT_TRUE(SavePayloadToFile(m_path, m_dataWithEol, strlen(m_dataWithEol), nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
 {
-    EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data)));
-    EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data)));
-    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1));
-    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0));
+    EXPECT_FALSE(SavePayloadToFile(nullptr, m_data, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, nullptr, sizeof(m_data), nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, -1, nullptr));
+    EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
@@ -782,8 +782,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
-    char* productName = NULL;
-    char* productVendor = NULL;
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
@@ -791,8 +789,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
     EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
     EXPECT_NE(nullptr, cpuType = GetCpu(nullptr));
-    EXPECT_NE(nullptr, productVendor = GetProductVendor(nullptr));
-    EXPECT_NE(nullptr, productName = GetProductName(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
@@ -800,8 +796,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
-    FREE_MEMORY(productName);
-    FREE_MEMORY(productVendor);
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);
@@ -947,42 +941,63 @@ struct UrlEncoding
 
 TEST_F(CommonUtilsTest, UrlEncodeDecode)
 {
-    UrlEncoding validUrls[] = {
+    UrlEncoding testUrls[] = {
         { "+", "%2B" },
-        { " ", "+" },
+        { " ", "%20" },
+        { "\n", "%0A" },
         { "abcABC123", "abcABC123" },
         { "~abcd~EFGH-123_456", "~abcd~EFGH-123_456" },
         { "name=value", "name%3Dvalue" },
         { "\"name\"=\"value\"", "%22name%22%3D%22value%22" },
         { "(\"name1\"=\"value1\"&\"name2\"=\"value2\")", "%28%22name1%22%3D%22value1%22%26%22name2%22%3D%22value2%22%29" },
-        { "Azure OSConfig 5;1.0.1.20220228 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.4\"&\"cpu_architecture\"=\"x86_64\"&"
-        "\"kernel_name\"=\"Linux\"&\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon Feb 7 14:25:10 UTC 2022\"&"
-        "\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"FooProduct 123)",
-        "Azure+OSConfig+5%3B1.0.1.20220228+%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.4%22%26%22cpu_architecture%22%3D%22x"
-        "86_64%22%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26%22kernel_version%22%3D%22%2333~20.04.1"
-        "-Ubuntu+SMP+Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22Acme+Inc.%22%26%22product_name%22%3D%22FooProduct+123%29" },
-        {"Azure OSConfig 5;1.0.1.20220301 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.3\"&\"cpu_architecture\"=\"x86_64\"&\"kernel_name\"=\"Linux\"&"
-        "\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"ACME\"&\"product_name\"=\"10ABC789\")",
-        "Azure+OSConfig+5%3B1.0.1.20220301+%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.3%22%26%22cpu_architecture%22%3D%22x86_64%2"
-        "2%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26%22kernel_version%22%3D%22%2333~20.04.1-Ubuntu+SMP+"
-        "Mon+Feb+7+14%3A25%3A10+UTC+2022%22%26%22product_vendor%22%3D%22ACME%22%26%22product_name%22%3D%2210ABC789%22%29"}
+        { "Azure OSConfig 5;1.0.1.20220308 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.4\"&\"cpu_architecture\"=\"x86_64\"&"
+        "\"kernel_name\"=\"Linux\"&\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon "
+        "Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"Foo 123\")", 
+        "Azure%20OSConfig%205%3B1.0.1.20220308%20%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.4%22%26%22cpu_"
+        "architecture%22%3D%22x86_64%22%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26"
+        "%22kernel_version%22%3D%22%2333~20.04.1-Ubuntu%20SMP%20Mon%20Feb%207%2014%3A25%3A10%20UTC%202022%22%26%22"
+        "product_vendor%22%3D%22Acme%20Inc.%22%26%22product_name%22%3D%22Foo%20123%22%29" },
+        { "`-=~!@#$%^&*()_+,./<>?'[]{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n",
+        "%60-%3D~%21%40%23%24%25%5E%26%2A%28%29_%2B%2C.%2F%3C%3E%3F%27%5B%5D%7B%7D%7C%20qwertyuiopasdfghjklzxcvbnm%201234567890%20QWERTYUIOPASDFGHJKLZXCVBNM%0A" }
     };
 
-    int validUrlsSize = ARRAY_SIZE(validUrls);
+    int testUrlsSize = ARRAY_SIZE(testUrls);
 
     char* url = nullptr;
 
-    for (int i = 0; i < validUrlsSize; i++)
+    for (int i = 0; i < testUrlsSize; i++)
     {
-        EXPECT_NE(nullptr, url = UrlEncode((char*)validUrls[i].decoded));
-        EXPECT_STREQ(url, validUrls[i].encoded);
+        EXPECT_NE(nullptr, url = UrlEncode((char*)testUrls[i].decoded));
+        EXPECT_STREQ(url, testUrls[i].encoded);
         FREE_MEMORY(url);
 
-        EXPECT_NE(nullptr, url = UrlDecode((char*)validUrls[i].encoded));
-        EXPECT_STREQ(url, validUrls[i].decoded);
+        EXPECT_NE(nullptr, url = UrlDecode((char*)testUrls[i].encoded));
+        EXPECT_STREQ(url, testUrls[i].decoded);
         FREE_MEMORY(url);
     }
 
     EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
     EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
+}
+
+TEST_F(CommonUtilsTest, LockUnlockFile)
+{
+    FILE* testFile = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_NE(nullptr, testFile = fopen(m_path, "r"));
+    EXPECT_TRUE(LockFile(testFile, nullptr));
+    EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_TRUE(UnlockFile(testFile, nullptr));
+    EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, DuplicateString)
+{
+    char* duplicate = nullptr;
+    EXPECT_EQ(nullptr, duplicate = DuplicateString(nullptr));
+    EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
+    EXPECT_STREQ(m_data, duplicate);
+    FREE_MEMORY(duplicate);
 }

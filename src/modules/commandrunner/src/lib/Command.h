@@ -109,7 +109,6 @@ public:
     const bool m_replaceEol;
 
     Command(std::string id, std::string command, unsigned int timeout, bool replaceEol);
-    Command(Status status);
     ~Command();
 
     virtual int Execute(unsigned int maxPayloadSizeBytes);
@@ -122,6 +121,8 @@ public:
     Status GetStatus();
     void SetStatus(int exitCode, std::string textResult = "");
     void SetStatus(int exitCode, std::string textResult, State state);
+
+    bool operator ==(const Command& other) const;
 
 protected:
     Status m_status;

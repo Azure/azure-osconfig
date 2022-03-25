@@ -4,8 +4,6 @@
 # Find cmake module for the iothub_client library and headers
 # Exports IotHubClient::iothub_client target
 
-cmake_minimum_required(VERSION 3.2)
-
 include (FindPackageHandleStandardArgs)
 
 find_path(

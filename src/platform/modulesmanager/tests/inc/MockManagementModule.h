@@ -16,12 +16,11 @@ namespace Tests
     public:
         MMI_HANDLE mmiHandle;
 
-        MockManagementModule(const std::string& clientName, unsigned int maxPayloadSizeBytes = 0);
+        MockManagementModule();
+        MockManagementModule(std::string name, std::vector<std::string> components);
 
-        MOCK_METHOD(void, LoadModule, ());
-        MOCK_METHOD(void, UnloadModule, ());
-        MOCK_METHOD(int, CallMmiSet, (const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes));
-        MOCK_METHOD(int, CallMmiGet, (const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes));
+        MOCK_METHOD(int, CallMmiSet, (MMI_HANDLE handle, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes), (override));
+        MOCK_METHOD(int, CallMmiGet, (MMI_HANDLE handle, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes), (override));
 
         void MmiGetInfo(Mmi_GetInfo mmiGetInfo);
         void MmiOpen(Mmi_Open mmiOpen);

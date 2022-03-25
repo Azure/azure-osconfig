@@ -3,6 +3,9 @@
 
 #include <cstdio>
 #include <cstring>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/prettywriter.h>
 #include <string>
 
 #include <MockManagementModule.h>
@@ -11,7 +14,8 @@ namespace Tests
 {
     class MockHandle {};
 
-    MockManagementModule::MockManagementModule(const std::string& clientName, unsigned int maxPayloadSizeBytes) : ManagementModule(clientName, "", maxPayloadSizeBytes)
+    MockManagementModule::MockManagementModule() :
+        ManagementModule()
     {
         this->MmiGetInfo([](const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
             {
@@ -28,7 +32,7 @@ namespace Tests
                     "Lifetime": 2,
                     "UserAccount": 0})""";
 
-                std::size_t len = strlen(mockInfo) - 1;
+                std::size_t len = strlen(mockInfo);
                 *payloadSizeBytes = len;
                 *payload = new char[len];
                 std::memcpy(*payload, mockInfo, len);
@@ -38,16 +42,9 @@ namespace Tests
 
         this->MmiOpen([](const char* clientName, const unsigned int maxPayloadSizeBytes) -> MMI_HANDLE
             {
+                (void)clientName;
                 (void)maxPayloadSizeBytes;
-
-                MMI_HANDLE handle = nullptr;
-
-                if (0 == strcmp("client_name", clientName))
-                {
-                    handle = reinterpret_cast<MMI_HANDLE>(new MockHandle());
-                }
-
-                return handle;
+                return reinterpret_cast<MMI_HANDLE>(new MockHandle());
             });
 
         this->MmiClose([](MMI_HANDLE handle)
@@ -84,35 +81,51 @@ namespace Tests
             {
                 delete[] payload;
             });
+
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        CallMmiGetInfo("Azure OsConfig", &payload, &payloadSizeBytes);
+
+        rapidjson::Document document;
+        document.Parse(payload, payloadSizeBytes).HasParseError();
+        Info::Deserialize(document, m_info);
+    }
+
+    MockManagementModule::MockManagementModule(std::string name, std::vector<std::string> components) :
+        MockManagementModule()
+    {
+        m_info.name = name;
+        m_info.components = components;
     }
 
     void MockManagementModule::MmiGetInfo(Mmi_GetInfo mmiGetInfo)
     {
-        this->mmiGetInfo = mmiGetInfo;
+        this->m_mmiGetInfo = mmiGetInfo;
     }
 
     void MockManagementModule::MmiOpen(Mmi_Open mmiOpen)
     {
-        this->mmiOpen = mmiOpen;
+        this->m_mmiOpen = mmiOpen;
     }
 
     void MockManagementModule::MmiClose(Mmi_Close mmiClose)
     {
-        this->mmiClose = mmiClose;
+        this->m_mmiClose = mmiClose;
     }
 
     void MockManagementModule::MmiSet(Mmi_Set mmiSet)
     {
-        this->mmiSet = mmiSet;
+        this->m_mmiSet = mmiSet;
     }
 
     void MockManagementModule::MmiGet(Mmi_Get mmiGet)
     {
-        this->mmiGet = mmiGet;
+        this->m_mmiGet = mmiGet;
     }
 
     void MockManagementModule::MmiFree(Mmi_Free mmiFree)
     {
-        this->mmiFree = mmiFree;
+        this->m_mmiFree = mmiFree;
     }
 } // namespace Tests

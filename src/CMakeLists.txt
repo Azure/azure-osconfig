@@ -1,13 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.2)
-
 project(osconfig)
+
+set (CMAKE_C_STANDARD 11)
+set (CMAKE_CXX_STANDARD 11)
+
+cmake_minimum_required(VERSION 3.2)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
-set(PATCH_VERSION "1" CACHE STRING "Patch version")
+set(PATCH_VERSION "2" CACHE STRING "Patch version")
 
 option(BUILD_AGENTS "Build OSConfig PnP Agent" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)

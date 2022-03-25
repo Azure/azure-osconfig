@@ -244,5 +244,10 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         }
     }
 
+    if (IsFullLoggingEnabled() && (false == isValid))
+    {
+        OsConfigLogError(log, "Invalid JSON: '%.*s' (%d bytes)", payloadSizeBytes, payload, payloadSizeBytes);
+    }
+
     return isValid;
 }

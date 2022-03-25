@@ -9,7 +9,6 @@ include(CTest)
 find_package(GTest REQUIRED)
 
 add_executable(settingstests
-    CommonUtilsUT.cpp
     ConfigFileUtilsUT.cpp
     SettingsTests.cpp
     ScopeGuardUT.cpp)

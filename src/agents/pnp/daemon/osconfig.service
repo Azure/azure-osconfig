@@ -7,9 +7,11 @@ StartLimitIntervalSec=960
 StartLimitBurst=3
 
 [Service]
-# Uncomment and use next two lines to run osconfig with a manual connection string loaded from a file
+# Uncomment and use next two lines to run OSConfig with a manual connection string loaded from a file
 # Environment=CONN_STR="/etc/osconfig/osconfig.conn"
 # ExecStart=/usr/bin/osconfig $CONN_STR
+# Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
+# Environment="http_proxy=http://user:password@wwww.foo.org:100//"
 ExecStart=/usr/bin/osconfig
 Type=simple
 User=root

@@ -26,15 +26,53 @@ public:
     static const std::string PERSISTED_COMMANDSTATUS_FILE;
 
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
-    virtual ~CommandRunner();
+    ~CommandRunner();
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    unsigned int GetMaxPayloadSizeBytes();
 
-    // Helper function to wait for the worker thread during unit tests
+    const std::string& GetClientName() const;
+    unsigned int GetMaxPayloadSizeBytes() const;
+
+    // Helper method to wait for the worker thread during unit tests
     void WaitForCommands();
+
+    class Factory
+    {
+    public:
+        static std::shared_ptr<CommandRunner> Create(std::string clientName, int maxPayloadSizeBytes = 0);
+        static void Destroy(CommandRunner* commandRunner);
+        static void Clear();
+
+        // Helper method for validating sessions during unit tests
+        static int GetClientCount(const std::string& clientName);
+
+    private:
+        class Session
+        {
+        public:
+            Session(std::string clientName, int maxPayloadSizeBytes);
+            ~Session();
+
+            std::shared_ptr<CommandRunner> Get();
+            int Release();
+            int GetClientCount();
+
+        private:
+            std::mutex m_mutex;
+            int m_clients;
+            std::shared_ptr<CommandRunner> m_instance;
+        };
+
+        static std::map<std::string, std::shared_ptr<Session>> m_sessions;
+        static std::mutex m_mutex;
+
+        Factory() = delete;
+        ~Factory() = delete;
+    };
+
+    friend class Factory;
 
 private:
     template<class T>
@@ -61,6 +99,9 @@ private:
     const unsigned int m_maxPayloadSizeBytes;
     const bool m_usePersistedCache;
 
+    std::string m_commandIdLoadedFromDisk;
+    size_t m_lastPayloadHash;
+
     std::thread m_workerThread;
     SafeQueue<std::weak_ptr<Command>> m_commandQueue;
 
@@ -80,7 +121,8 @@ private:
     void CancelAll();
     int Refresh(const std::string id);
 
-    bool CommandExists(const std::string& id);
+    bool CommandExists(std::shared_ptr<Command> command);
+    bool CommandIdExists(const std::string& id);
     int ScheduleCommand(std::shared_ptr<Command> command);
     int CacheCommand(std::shared_ptr<Command> command);
 

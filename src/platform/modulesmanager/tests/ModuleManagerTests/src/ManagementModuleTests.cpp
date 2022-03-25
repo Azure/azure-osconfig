@@ -9,22 +9,17 @@
 #include <MockManagementModule.h>
 #include <ModulesManagerTests.h>
 #include <Mpi.h>
-
-using ::testing::_;
-using ::testing::ElementsAre;
-using ::testing::IsEmpty;
-using ::testing::Values;
-
 namespace Tests
 {
     class ManagementModuleTests : public ::testing::Test
     {
     public:
-        std::shared_ptr<MockManagementModule> module;
+        std::shared_ptr<MockManagementModule> m_mockModule;
+        std::shared_ptr<MmiSession> m_mmiSession;
 
-        static const char defaultClient[];
-        static const char defaultComponent[];
-        static const char defaultObject[];
+        static const char m_defaultClient[];
+        static const char m_defaultComponent[];
+        static const char m_defaultObject[];
 
         static const std::vector<std::tuple<const char*, const char *>> objectPayloads;
 
@@ -32,100 +27,64 @@ namespace Tests
         void TearDown() override;
     };
 
-    const char ManagementModuleTests::defaultClient[] = "Default_ManagementModuleTest_Client";
-    const char ManagementModuleTests::defaultComponent[] = "Default_ManagementModuleTest_Component";
-    const char ManagementModuleTests::defaultObject[] = "Default_ManagementModuleTest_Object";
+    const char ManagementModuleTests::m_defaultClient[] = "Default_ManagementModuleTest_Client";
+    const char ManagementModuleTests::m_defaultComponent[] = "Default_ManagementModuleTest_Component";
+    const char ManagementModuleTests::m_defaultObject[] = "Default_ManagementModuleTest_Object";
 
     void ManagementModuleTests::SetUp()
     {
-        module = std::make_shared<MockManagementModule>(defaultClient);
+        m_mockModule = std::make_shared<MockManagementModule>();
+
+        m_mmiSession = std::make_shared<MmiSession>(m_mockModule, m_defaultClient);
+        ASSERT_EQ(0, m_mmiSession->Open());
     }
 
     void ManagementModuleTests::TearDown()
     {
-        module.reset();
+        m_mmiSession->Close();
+        m_mmiSession.reset();
+        m_mockModule.reset();
     }
 
     TEST_F(ManagementModuleTests, LoadModule)
     {
-        ManagementModule module(defaultClient, g_validModulePathV1);
+        ManagementModule module(g_validModulePathV1);
+        EXPECT_EQ(0, module.Load());
 
-        module.LoadModule();
-
-        ASSERT_TRUE(module.IsValid());
-        ASSERT_TRUE(module.IsLoaded());
-
-        // Check info parsed from module GetInfo() call
-        EXPECT_STREQ("Valid Test Module V1", module.GetName().c_str());
-        EXPECT_STREQ("1.0.0.0", module.GetVersion().ToString().c_str());
-        EXPECT_EQ(ManagementModule::Lifetime::Short, module.GetLifetime());
-        EXPECT_THAT(module.GetSupportedComponents(), ElementsAre(g_testModuleComponent1, g_testModuleComponent2));
-
-        module.UnloadModule();
-
-        ASSERT_TRUE(module.IsValid());
-        ASSERT_FALSE(module.IsLoaded());
+        ManagementModule::Info info = module.GetInfo();
+        EXPECT_STREQ("Valid Test Module", info.name.c_str());
+        EXPECT_STREQ("1.0.0.0", info.version.ToString().c_str());
+        EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidPath)
     {
         const std::string invalidPath = g_moduleDir;
-        ManagementModule invalidModule(defaultClient, (invalidPath + "/blah.so"));
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
+        ManagementModule invalidModule(invalidPath + "/blah.so");
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidMmi)
     {
-        ManagementModule invalidModule(defaultClient, g_invalidModulePath);
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
+        ManagementModule invalidModule(g_invalidModulePath);
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModule_InvalidModuleInfo)
     {
-        ManagementModule invalidModule(defaultClient, g_invalidGetInfoModulePath);
-
-        ASSERT_FALSE(invalidModule.IsValid());
-        ASSERT_FALSE(invalidModule.IsLoaded());
-        EXPECT_THAT(invalidModule.GetSupportedComponents(), IsEmpty());
-    }
-
-    TEST_F(ManagementModuleTests, ReportedObjects)
-    {
-        ManagementModule module(defaultClient, g_validModulePathV1);
-
-        const char object_1[] = "object_1";
-        const char object_2[] = "object_2";
-        const char object_3[] = "object_3";
-
-        module.AddReportedObject(g_testModuleComponent1, object_1);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), IsEmpty());
-
-        module.AddReportedObject(g_testModuleComponent1, object_2);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1, object_2));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), IsEmpty());
-
-        module.AddReportedObject(g_testModuleComponent2, object_3);
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent1), ElementsAre(object_1, object_2));
-        EXPECT_THAT(module.GetReportedObjects(g_testModuleComponent2), ElementsAre(object_3));
+        ManagementModule invalidModule(g_invalidGetInfoModulePath);
+        EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, CallMmiSet)
     {
-        MockManagementModule module(defaultClient);
         char componentName[] = "component_name";
         char objectName[] = "object_name";
         char payload[] = "\"payload\"";
         int payloadSize = strlen(payload);
 
-        // Provide a mock implmenation of an MmiSet() function pointer to the module
-        module.MmiSet(
+        // Provide a mock implmenation of CallMmiSet()
+        ON_CALL(*m_mockModule, CallMmiSet).WillByDefault(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
             {
                 (void)clientSession;
@@ -136,29 +95,20 @@ namespace Tests
                 return -1;
             });
 
-        // Delegate mock call to parent class and call mmiSet function pointer
-        EXPECT_CALL(module, CallMmiSet(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize)).Times(1).WillOnce(
-            [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
-            {
-                return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
-            });
-
-        EXPECT_CALL(module, LoadModule()).Times(1);
-        ASSERT_EQ(0, module.CallMmiSet(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
+        ASSERT_EQ(MMI_OK, m_mmiSession->Set(componentName, objectName, (MMI_JSON_STRING)payload, payloadSize));
     }
 
     TEST_F(ManagementModuleTests, CallMmiGet)
     {
-        MockManagementModule module(defaultClient);
         char componentName[] = "component_name";
         char objectName[] = "object_name";
         char expectedPayload[] = "\"payload\"";
         MMI_JSON_STRING payload = nullptr;
         int payloadSize = 0;
 
-        // Provide a mock implmenation of an MmiGet() function pointer to the module that returns a payload and payloadSize
-        module.MmiGet(
-            [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
+        // Provide a mock implmenation of CallMmiGet()
+        ON_CALL(*m_mockModule, CallMmiGet).WillByDefault(
+           [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
             {
                 (void)clientSession;
                 int status = 0;
@@ -179,7 +129,7 @@ namespace Tests
                     }
                     else
                     {
-                        std::fill(*payload, *payload + size, 0);
+                        std::fill(*payload, *payload + size + 1, 0);
                         std::memcpy(*payload, buffer, size);
                         *payloadSizeBytes = size;
                     }
@@ -192,22 +142,14 @@ namespace Tests
                 return status;
             });
 
-        // Delegate mock call to parent class and call mmiGet function pointer
-        EXPECT_CALL(module, CallMmiGet(componentName, objectName, _, _)).Times(1).WillOnce(
-            [&module](const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) -> int
-            {
-                return module.ManagementModule::CallMmiGet(componentName, objectName, payload, payloadSizeBytes);
-            });
-
-        EXPECT_CALL(module, LoadModule()).Times(1);
-        ASSERT_EQ(0, module.CallMmiGet(componentName, objectName, &payload, &payloadSize));
-        ASSERT_STREQ(expectedPayload, payload);
-        ASSERT_EQ(strlen(expectedPayload), payloadSize);
+        EXPECT_EQ(MMI_OK, m_mmiSession->Get(componentName, objectName, &payload, &payloadSize));
+        EXPECT_STREQ(expectedPayload, payload);
+        EXPECT_EQ(strlen(expectedPayload), payloadSize);
     }
 
     TEST_F(ManagementModuleTests, PayloadValidation)
     {
-        MockManagementModule module(defaultClient);
+        MockManagementModule mockModule;
         std::vector<std::pair<std::string, std::string>> objects = {
             {g_string, g_stringPayload},
             {g_integer, g_integerPayload},
@@ -220,7 +162,7 @@ namespace Tests
             {g_objectArray, g_objectArrayPayload}
         };
 
-        module.MmiSet(
+        mockModule.MmiSet(
             [](MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
             {
                 // MmiSet
@@ -236,15 +178,7 @@ namespace Tests
         {
             const char* objectName = object.first.c_str();
             const char* payload = object.second.c_str();
-            // Delegate mock call to parent class and call mmiSet function pointer
-            EXPECT_CALL(module, CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload))).Times(1).WillOnce(
-                [&module](const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) -> int
-                {
-                    return module.ManagementModule::CallMmiSet(componentName, objectName, payload, payloadSizeBytes);
-                });
-
-            EXPECT_CALL(module, LoadModule()).Times(1);
-            ASSERT_EQ(MMI_OK, module.CallMmiSet(defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
+            EXPECT_EQ(MMI_OK, m_mmiSession->Set(m_defaultComponent, objectName, (MMI_JSON_STRING)payload, strlen(payload)));
         }
 
     }

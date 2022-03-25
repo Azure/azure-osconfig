@@ -17,13 +17,14 @@ namespace Tests
     class MockModulesManager : public ModulesManager
     {
     public:
-        MockModulesManager(std::string clientName, unsigned int maxPayloadSizeBytes = 0) : ModulesManager(clientName, maxPayloadSizeBytes) {}
+        MockModulesManager() : ModulesManager() {}
         ~MockModulesManager() {}
 
-        // Helper methods providing access to protected members of ModulesManager
-        std::shared_ptr<StrictMock<MockManagementModule>> CreateModule(const std::string& componentName);
-        std::shared_ptr<ManagementModule> GetModule(const std::string& componentName);
-        std::vector<MockModulesManager::ModuleMetadata> GetModulesToUnload();
+        // Helper method to "load" mock modules into the ModulesManager
+        void Load(std::shared_ptr<ManagementModule> module);
+
+        // Helper method to add reported objects to the ModulesManager
+        void AddReportedObject(std::string componentName, std::string objectName);
     };
 } // namespace Tests
 

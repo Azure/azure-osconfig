@@ -7,20 +7,23 @@ using ::testing::StrictMock;
 
 namespace Tests
 {
-    std::shared_ptr<StrictMock<MockManagementModule>> MockModulesManager::CreateModule(const std::string& componentName)
+    void MockModulesManager::Load(std::shared_ptr<ManagementModule> module)
     {
-        std::shared_ptr<StrictMock<MockManagementModule>> module = std::make_shared<StrictMock<MockManagementModule>>(componentName);
-        this->modMap[componentName] = {module, std::chrono::system_clock::now(), false};
-        return module;
+        ManagementModule::Info info = module->GetInfo();
+        m_modules[info.name] = module;
+        for (auto& component : info.components)
+        {
+            m_moduleComponentName[component] = info.name;
+        }
     }
 
-    std::shared_ptr<ManagementModule> MockModulesManager::GetModule(const std::string& componentName)
+    void MockModulesManager::AddReportedObject(std::string componentName, std::string objectName)
     {
-        return this->modMap[componentName].module;
-    }
+        if (m_reportedComponents.find(componentName) == m_reportedComponents.end())
+        {
+            m_reportedComponents[componentName] = std::set<std::string>();
+        }
 
-    std::vector<MockModulesManager::ModuleMetadata> MockModulesManager::GetModulesToUnload()
-    {
-        return this->modulesToUnload;
+        m_reportedComponents[componentName].insert(objectName);
     }
 } // namespace Tests

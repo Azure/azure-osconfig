@@ -4,13 +4,17 @@
 #include <string>
 #include <Logging.h>
 
-const std::string SETTINGS = "Settings";
-const std::string DEVICEHEALTHTELEMETRY = "DeviceHealthTelemetryConfiguration";
-const std::string DELIVERYOPTIMIZATION = "DeliveryOptimizationPolicies";
-const std::string PERCENTAGEDOWNLOADTHROTTLE = "PercentageDownloadThrottle";
-const std::string CACHEHOSTSOURCE = "CacheHostSource";
-const std::string CACHEHOST = "CacheHost";
-const std::string CACHEHOSTFALLBACK = "CacheHostFallback";
+const std::string g_componentName = "Settings";
+const std::string g_deviceHealthTelemetry = "DeviceHealthTelemetryConfiguration";
+const std::string g_deliveryOptimization = "DeliveryOptimizationPolicies";
+
+const std::string g_percentageDownloadThrottle = "PercentageDownloadThrottle";
+const std::string g_cacheHostSource = "CacheHostSource";
+const std::string g_cacheHost = "CacheHost";
+const std::string g_cacheHostFallback = "CacheHostFallback";
+
+static const char g_healthTelemetryConfigFile[] = "/etc/azure-device-health-services/config.toml";
+static const char g_doConfigFile[] = "/etc/deliveryoptimization-agent/admin-config.json";
 
 #define SETTINGS_LOGFILE "/var/log/osconfig_settings.log"
 #define SETTINGS_ROLLEDLOGFILE "/var/log/osconfig_settings.bak"
@@ -50,7 +54,9 @@ class Settings
         Settings(unsigned int maxSizeInBytes = 0);
         virtual ~Settings() = default;
         int SetDeviceHealthTelemetryConfiguration(std::string payload, const char* fileName, bool &configurationChanged);
-        int SetDeliveryOptimizationPolicies(Settings::DeliveryOptimization deliveryoptimization, const char* fileName, bool &configurationChanged);
+        int SetDeliveryOptimizationPolicies(Settings::DeliveryOptimization deliveryoptimization, const char* fileName, bool& configurationChanged);
+
+        unsigned int GetMaxPayloadSizeBytes() const;
 
     private:
         unsigned int maxPayloadSizeInBytes;

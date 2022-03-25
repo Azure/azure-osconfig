@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <rapidjson/document.h>
+#include <set>
 #include <vector>
 
 #include <CommonUtils.h>
@@ -21,12 +22,6 @@
 
 #define MODULESMANAGER_LOGFILE "/var/log/osconfig_platform.log"
 #define MODULESMANAGER_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
-
-namespace Tests
-{
-    class ModuleManagerTests_ModuleCleanup_Test;
-    class ModuleManagerTests;
-} // namespace Tests
 
 class ModulesManagerLog
 {
@@ -49,59 +44,61 @@ public:
     static OSCONFIG_LOG_HANDLE m_log;
 };
 
+class MpiSession;
+
 class ModulesManager
 {
 public:
-    ModulesManager(std::string clientName, const unsigned int maxPayloadSizeBytes = 0);
-    virtual ~ModulesManager();
-
-    std::string GetClientName();
-
-    // Set the default cleanup timespan in seconds for Management Modules (MMs), unloads the MM if Lifespan is "Short"
-    void SetDefaultCleanupTimespan(unsigned int timespan);
+    ModulesManager();
+    ~ModulesManager();
 
     // Loads Management Modules (MMs) into the Modules Manager
-    int LoadModules();
-    int LoadModules(std::string modulePath);
     int LoadModules(std::string modulePath, std::string configJson);
 
-    int MpiSet(const char* componentName, const char* objectName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
-    int MpiGet(const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSizeBytes);
-    int MpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes);
-    int MpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes);
-
     void UnloadModules();
-    void UnloadAllModules();
-    void DoWork();
 
 protected:
-    struct ModuleMetadata
-    {
-        std::shared_ptr<ManagementModule> module;
-        std::chrono::system_clock::time_point lastOperation;
-        bool operationInProgress;
-    };
+    // Component name -> set of reported components according to osconfig.json
+    std::map<std::string, std::set<std::string>> m_reportedComponents;
 
-    // Module mapping componentName <-> ModuleMetadata
-    std::map<std::string, ModuleMetadata> modMap;
-    std::vector<ModuleMetadata> modulesToUnload;
+    // Component name -> module name
+    std::map<std::string, std::string> m_moduleComponentName;
 
-private:
-    static std::string moduleDirectory;
-    static std::string configurationJsonFile;
-
-    std::string clientName;
-    unsigned int maxPayloadSizeBytes;
-
-    // Timespan in seconds in order to unload loaded MMs, eg. unload module after x secs
-    unsigned int cleanupTimespan;
+    // Module name -> ManagementModule
+    std::map<std::string, std::shared_ptr<ManagementModule>> m_modules;
 
     int SetReportedObjects(const std::string& configJson);
+    void RegisterModuleComponents(const std::string& moduleName, const std::vector<std::string>& components, bool replace = false);
 
-    int MpiSetDesiredInternal(rapidjson::Document& document);
-    int MpiGetReportedInternal(MPI_JSON_STRING* payload, int* payloadSizeBytes);
+    friend class MpiSession;
+};
 
-    void ScheduleUnloadModule(ModuleMetadata& mm);
+class MpiSession
+{
+public:
+    MpiSession(ModulesManager& modulesManager, std::string clientName, const unsigned int maxPayloadSizeBytes = 0);
+    ~MpiSession();
+
+    int Open();
+    void Close();
+
+    int Set(const char* componentName, const char* objectName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
+    int Get(const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSizeBytes);
+    int SetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes);
+    int GetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes);
+
+private:
+    ModulesManager& m_modulesManager;
+    std::string m_clientName;
+    unsigned int m_maxPayloadSizeBytes;
+
+    // Module name -> MmiSession
+    std::map<std::string, std::shared_ptr<MmiSession>> m_mmiSessions;
+
+    std::shared_ptr<MmiSession> GetSession(const std::string& componentName);
+
+    int SetDesiredPayload(rapidjson::Document& document);
+    int GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeBytes);
 };
 
 #endif // MODULESMANAGER_H

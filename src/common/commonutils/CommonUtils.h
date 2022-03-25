@@ -5,6 +5,9 @@
 #define COMMON_H
 
 #include <stddef.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -27,9 +30,9 @@ extern "C"
 {
 #endif
 
-char* LoadStringFromFile(const char* fileName, bool stopAtEol);
+char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 
-bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes);
+bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 
 typedef int(*CommandCallback)(void* context);
 
@@ -39,6 +42,8 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
+
+char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
 
@@ -64,6 +69,9 @@ void TruncateAtFirst(char* target, char marker);
 
 char* UrlEncode(char* target);
 char* UrlDecode(char* target);
+
+bool LockFile(FILE* file, void* log);
+bool UnlockFile(FILE* file, void* log);
 
 #ifdef __cplusplus
 }
