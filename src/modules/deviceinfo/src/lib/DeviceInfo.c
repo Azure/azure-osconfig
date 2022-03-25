@@ -214,8 +214,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     if (MMI_OK == status)
     {
-        // The string value is wrapped in "" and is not null terminated
-        *payloadSizeBytes = strlen(value) + 2;
+        // The string value (can be empty string) is wrapped in "" and is not null terminated
+        *payloadSizeBytes = (value ? strlen(value) : 0) + 2;
         
         if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
@@ -229,7 +229,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         if (*payload)
         {
             // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
-            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value);
+            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value ? value : "");
         }
         else
         {

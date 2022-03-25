@@ -23,6 +23,18 @@ void __attribute__((destructor)) DestroyModule()
     NetworkingLog::CloseLog();
 }
 
+constexpr const char g_moduleInfo[] =
+    R""""({
+    "Name": "Networking",
+    "Description": "Provides functionality to remotely query device networking",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "VersionInfo": "Iron",
+    "Components": ["Networking"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 int MmiGetInfo(
     const char* clientName,
     MMI_JSON_STRING* payload,
@@ -44,19 +56,7 @@ int MmiGetInfo(
         }
         else
         {
-            constexpr const char networkingInfo[] =
-                R""""({
-                "Name": "Networking",
-                "Description": "Provides functionality to remotely query device networking",
-                "Manufacturer": "Microsoft",
-                "VersionMajor": 1,
-                "VersionMinor": 0,
-                "VersionInfo": "Iron",
-                "Components": ["Networking"],
-                "Lifetime": 1,
-                "UserAccount": 0})"""";
-
-            std::size_t infoLength = sizeof(networkingInfo) - 1;
+            std::size_t infoLength = sizeof(g_moduleInfo) - 1;
             *payloadSizeBytes = infoLength;
             *payload = new char[infoLength];
             if (nullptr == *payload)
@@ -66,7 +66,7 @@ int MmiGetInfo(
             }
             else
             {
-                std::memcpy(*payload, networkingInfo, infoLength);
+                std::memcpy(*payload, g_moduleInfo, infoLength);
             }
         }
 

@@ -95,20 +95,20 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_lastEnabledState = false;
 }
 
+constexpr const char g_moduleInfo[] = R""""({
+    "Name": "Ztsi",
+    "Description": "Provides functionality to remotely configure the ZTSI Agent on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Ztsi"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-
-    constexpr const char info[] = R""""({
-        "Name": "Ztsi",
-        "Description": "Provides functionality to remotely configure the ZTSI Agent on device",
-        "Manufacturer": "Microsoft",
-        "VersionMajor": 1,
-        "VersionMinor": 0,
-        "VersionInfo": "Nickel",
-        "Components": ["Ztsi"],
-        "Lifetime": 1,
-        "UserAccount": 0})"""";
 
     if (nullptr == clientName)
     {
@@ -129,7 +129,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
     {
         try
         {
-            std::size_t len = ARRAY_SIZE(info) - 1;
+            std::size_t len = ARRAY_SIZE(g_moduleInfo) - 1;
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
@@ -138,7 +138,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
             }
             else
             {
-                std::memcpy(*payload, info, len);
+                std::memcpy(*payload, g_moduleInfo, len);
                 *payloadSizeBytes = len;
             }
         }

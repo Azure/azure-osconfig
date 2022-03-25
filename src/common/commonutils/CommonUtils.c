@@ -926,7 +926,10 @@ char* GetOsName(void* log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLogInfo(log, "OS name: '%s'", textResult);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS name: '%s'", textResult);
+    }
     
     return textResult;
 }
@@ -949,7 +952,10 @@ char* GetOsVersion(void* log)
         FREE_MEMORY(textResult);
     }
 
-    OsConfigLogInfo(log, "OS version: '%s'", textResult);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "OS version: '%s'", textResult);
+    }
 
     return textResult;
 }
@@ -980,42 +986,72 @@ static char* GetAnotherOsProperty(const char* command, void* log)
 char* GetOsKernelName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_NAME_COMMAND, log);
-    OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
+    }
+
     return textResult;
 }
 
 char* GetOsKernelRelease(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_RELEASE_COMMAND, log);
-    OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
+    }
+
     return textResult;
 }
 
 char* GetOsKernelVersion(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_KERNEL_VERSION_COMMAND, log);
-    OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Kernel version: '%s'", textResult);
+    }
+    
     return textResult;
 }
 
 char* GetCpu(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
-    OsConfigLogInfo(log, "Processor: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Processor: '%s'", textResult);
+    }
+
     return textResult;
 }
 
 char* GetProductName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
-    OsConfigLogInfo(log, "Product name: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product name: '%s'", textResult);
+    }
+
     return textResult;
 }
 
 char* GetProductVendor(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
-    OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
+    
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
+    }
+
     return textResult;
 }
 
