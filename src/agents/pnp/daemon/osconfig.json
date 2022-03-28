@@ -1,43 +1,11 @@
 {
-  "ModelVersion": 6,
+  "ModelVersion": 5,
   "FullLogging": 0,
   "Protocol": 2,
   "Reported": [
     {
       "ComponentName": "CommandRunner",
       "ObjectName": "CommandStatus"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "OsName"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "OsVersion"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "CpuType"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelName"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelRelease"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelVersion"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "Manufacturer"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "Model"
     },
     {
       "ComponentName": "Firewall",
