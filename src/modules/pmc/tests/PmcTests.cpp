@@ -12,8 +12,7 @@ class PmcTestImpl : public PmcBase
 {
 public:
     PmcTestImpl(unsigned int maxPayloadSizeBytes);
-    ~PmcTestImpl() = default;
-    int RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds) override;
+    int RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds) override;
     void SetTextResult(const std::map<std::string, std::string> &textResults);
 
 private:
@@ -30,9 +29,8 @@ void PmcTestImpl::SetTextResult(const std::map<std::string, std::string> &textRe
     m_textResults = textResults;
 }
 
-int PmcTestImpl::RunCommand(const char* command, bool replaceEol, std::string* textResult, unsigned int timeoutSeconds)
+int PmcTestImpl::RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds)
 {
-    UNUSED(replaceEol);
     UNUSED(timeoutSeconds);
 
     std::map<std::string, std::string>::const_iterator it = m_textResults.find(command);

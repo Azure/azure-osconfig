@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <string>
 #include "ExecutionState.h"
 
 ExecutionState::ExecutionState()
@@ -27,12 +28,12 @@ bool ExecutionState::IsSuccessful()
     return m_stateComponent == StateComponent::Succeeded;
 }
 
-StateComponent ExecutionState::GetExecutionState()
+ExecutionState::StateComponent ExecutionState::GetExecutionState()
 {
     return m_stateComponent;
 }
 
-SubStateComponent ExecutionState::GetExecutionSubState()
+ExecutionState::SubStateComponent ExecutionState::GetExecutionSubState()
 {
     return m_subStateComponent;
 }

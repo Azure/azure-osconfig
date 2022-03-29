@@ -1,30 +1,28 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string>
-
-enum StateComponent
-{
-    Unknown = 0,
-    Running,
-    Succeeded,
-    Failed,
-    TimedOut
-};
-
-enum SubStateComponent
-{
-    None,
-    DeserializingJsonPayload,
-    DeserializingDesiredState,
-    DeserializingPackages,
-    UpdatingPackagesLists,
-    InstallingPackages
-};
-
 class ExecutionState
 {
 public:
+    enum StateComponent
+    {
+        Unknown = 0,
+        Running,
+        Succeeded,
+        Failed,
+        TimedOut
+    };
+
+    enum SubStateComponent
+    {
+        None,
+        DeserializingJsonPayload,
+        DeserializingDesiredState,
+        DeserializingPackages,
+        UpdatingPackagesLists,
+        InstallingPackages
+    };
+
     ExecutionState();
     virtual ~ExecutionState() = default;
 
