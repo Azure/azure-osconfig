@@ -13,8 +13,8 @@
 #include <string>
 
 const char g_componentName[] = "Firewall";
-const char g_firewallState[] = "FirewallState";
-const char g_firewallFingerprint[] = "FirewallFingerprint";
+const char g_firewallState[] = "firewallState";
+const char g_firewallFingerprint[] = "firewallFingerprint";
 
 using namespace std;
 

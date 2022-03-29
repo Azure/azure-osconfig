@@ -10,8 +10,8 @@ namespace E2eTesting
     public class CommandRunnerTests : E2ETest
     {
         private static readonly string _componentName = "CommandRunner";
-        private static readonly string _desiredObjectName = "CommandArguments";
-        private static readonly string _reportedObjectName = "CommandStatus";
+        private static readonly string _desiredObjectName = "commandArguments";
+        private static readonly string _reportedObjectName = "commandStatus";
 
         public enum Action
         {
@@ -109,7 +109,7 @@ namespace E2eTesting
         {
             int ackCode = -1;
 
-            Console.WriteLine($"{command.Action} \"{command.CommandId}\" ({command.Arguments})");
+            Console.WriteLine($"{command.action} \"{command.commandId}\" ({command.arguments})");
 
             try
             {

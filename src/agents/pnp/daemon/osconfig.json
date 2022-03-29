@@ -5,79 +5,79 @@
   "Reported": [
     {
       "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus"
+      "ObjectName": "commandStatus"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "OsName"
+      "ObjectName": "osName"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "OsVersion"
+      "ObjectName": "osVersion"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "CpuType"
+      "ObjectName": "cpuType"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelName"
+      "ObjectName": "kernelName"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelRelease"
+      "ObjectName": "kernelRelease"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "KernelVersion"
+      "ObjectName": "kernelVersion"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "Manufacturer"
+      "ObjectName": "manufacturer"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "Model"
+      "ObjectName": "model"
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "FirewallState"
+      "ObjectName": "firewallState"
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "FirewallFingerprint"
+      "ObjectName": "firewallFingerprint"
     },
     {
       "ComponentName": "HostName",
-      "ObjectName": "Name"
+      "ObjectName": "name"
     },
     {
       "ComponentName": "HostName",
-      "ObjectName": "Hosts"
+      "ObjectName": "hosts"
     },
     {
       "ComponentName": "Networking",
-      "ObjectName": "NetworkConfiguration"
+      "ObjectName": "networkConfiguration"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmStatus"
+      "ObjectName": "tpmStatus"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmVersion"
+      "ObjectName": "tpmVersion"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmManufacturer"
+      "ObjectName": "tpmManufacturer"
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "Enabled"
+      "ObjectName": "enabled"
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "ServiceUrl"
+      "ObjectName": "serviceUrl"
     }
   ],
   "ReportingIntervalSeconds": 30,

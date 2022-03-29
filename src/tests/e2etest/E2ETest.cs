@@ -92,7 +92,7 @@ namespace E2eTesting
 
             try
             {
-                var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "CommandArguments", command);
+                var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "commandArguments", command);
                 desiredResult.Wait();
                 int ackCode = desiredResult.Result.ac;
 
@@ -108,7 +108,7 @@ namespace E2eTesting
                         return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
-                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "CommandStatus", condition, 2 * _maxWaitTimeSeconds);
+                    var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "commandStatus", condition, 2 * _maxWaitTimeSeconds);
                     reportedResult.Wait();
                     var reportedStatus = reportedResult.Result;
 

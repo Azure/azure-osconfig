@@ -4,54 +4,54 @@
   "contents": [
     {
       "name": "CommandRunner",
-      "type": "MimComponent",
+      "type": "mimComponent",
       "contents": [
         {
-          "name": "CommandStatus",
-          "type": "MimObject",
+          "name": "commandStatus",
+          "type": "mimObject",
           "desired": false,
           "schema": {
             "fields": [
               {
-                "name": "CommandId",
+                "name": "commandId",
                 "schema": "string"
               },
               {
-                "name": "ResultCode",
+                "name": "resultCode",
                 "schema": "string"
               },
               {
-                "name": "TextResult",
+                "name": "textResult",
                 "schema": "string"
               },
               {
-                "name": "CurrentState",
+                "name": "currentState",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     { 
-                      "name": "Unknown",
+                      "name": "unknown",
                       "enumValue": 0
                     },
                     {
-                      "name": "Running",
+                      "name": "running",
                       "enumValue": 1
                     },
                     {
-                      "name": "Succeeded",
+                      "name": "succeeded",
                       "enumValue": 2
                     },
                     {
-                      "name": "Failed",
+                      "name": "failed",
                       "enumValue": 3
                     },
                     {
-                      "name": "TimedOut",
+                      "name": "timedOut",
                       "enumValue": 4
                     },
                     {
-                      "name": "Canceled",
+                      "name": "canceled",
                       "enumValue": 5
                     }
                   ]
@@ -61,55 +61,55 @@
           }
         },
         {
-          "name": "CommandArguments",
-          "type": "MimObject",
+          "name": "commandArguments",
+          "type": "mimObject",
           "desired": true,
           "schema": {
             "fields": [
               {
-                "name": "CommandId",
+                "name": "commandId",
                 "schema": "string"
               },
               {
-                "name": "Arguments",
+                "name": "arguments",
                 "schema": "string"
               },
               {
-                "name": "Timeout",
+                "name": "timeout",
                 "schema": "integer"
               },
               {
-                "name": "SingleLineTextResult",
+                "name": "singleLineTextResult",
                 "schema": "boolean"
               },
               {
-                "name": "Action",
+                "name": "action",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     { 
-                      "name": "None",
+                      "name": "none",
                       "enumValue": 0
                     },
                     {
-                      "name": "Reboot",
+                      "name": "reboot",
                       "enumValue": 1
                     },
                     {
-                      "name": "Shutdown",
+                      "name": "shutdown",
                       "enumValue": 2
                     },
                     {
-                      "name": "RunCommand",
+                      "name": "runCommand",
                       "enumValue": 3
                     },
                     {
-                      "name": "RefreshCommandStatus",
+                      "name": "refreshCommandStatus",
                       "enumValue": 4
                     },
                     {
-                      "name": "CancelCommand",
+                      "name": "cancelCommand",
                       "enumValue": 5
                     }
                   ]

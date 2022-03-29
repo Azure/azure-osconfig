@@ -14,15 +14,15 @@
 #include <Networking.h>
 #include <CommonUtils.h>
 
-std::string g_interfaceTypes = "InterfaceTypes";
-std::string g_macAddresses = "MacAddresses";
-std::string g_ipAddresses = "IpAddresses";
-std::string g_subnetMasks = "SubnetMasks";
-std::string g_defaultGateways = "DefaultGateways";
-std::string g_dnsServers = "DnsServers";
-std::string g_dhcpEnabled = "DhcpEnabled";
-std::string g_enabled = "Enabled";
-std::string g_connected = "Connected";
+std::string g_interfaceTypes = "interfaceTypes";
+std::string g_macAddresses = "macAddresses";
+std::string g_ipAddresses = "ipAddresses";
+std::string g_subnetMasks = "subnetMasks";
+std::string g_defaultGateways = "defaultGateways";
+std::string g_dnsServers = "dnsServers";
+std::string g_dhcpEnabled = "dhcpEnabled";
+std::string g_enabled = "enabled";
+std::string g_connected = "connected";
 
 const char* g_getInterfaceNames = "ls -A /sys/class/net";
 const char* g_getInterfaceTypesNmcli = "nmcli device show";
