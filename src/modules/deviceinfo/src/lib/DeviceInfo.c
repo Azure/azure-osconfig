@@ -11,14 +11,14 @@
 
 static char* g_deviceInfoModuleName = "DeviceInfo module";
 static char* g_deviceInfoComponentName = "DeviceInfo";
-static char* g_osNameObject = "OsName";
-static char* g_osVersionObject = "OsVersion";
-static char* g_cpuTypeObject = "CpuType";
-static char* g_kernelNameObject = "KernelName";
-static char* g_kernelReleaseObject = "KernelRelease";
-static char* g_kernelVersionObject = "KernelVersion";
-static char* g_manufacturerObject = "Manufacturer";
-static char* g_modelObject = "Model";
+static char* g_osNameObject = "osName";
+static char* g_osVersionObject = "osVersion";
+static char* g_cpuTypeObject = "cpuType";
+static char* g_kernelNameObject = "kernelName";
+static char* g_kernelReleaseObject = "kernelRelease";
+static char* g_kernelVersionObject = "kernelVersion";
+static char* g_manufacturerObject = "manufacturer";
+static char* g_modelObject = "model";
 
 static const char* g_deviceInfoLogFile = "/var/log/osconfig_deviceinfo.log";
 static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak";

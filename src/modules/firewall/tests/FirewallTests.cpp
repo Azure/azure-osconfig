@@ -660,8 +660,8 @@ TEST (FirewallTests, Get)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
-    const string testFirewallState = "FirewallState";
-    const string testFirewallFingerprint = "FirewallFingerprint";
+    const string testFirewallState = "firewallState";
+    const string testFirewallFingerprint = "firewallFingerprint";
     const string testWrongObjectName = "abc";
     testModule.testTableStrings = g_testTableStrings;
     MMI_JSON_STRING payload;

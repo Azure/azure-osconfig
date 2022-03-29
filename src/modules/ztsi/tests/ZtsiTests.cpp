@@ -15,10 +15,10 @@
 #define MAX_PAYLOAD_SIZE 256
 
 static const char g_componentName[] = "Ztsi";
-static const char g_desiredServiceUrl[] = "DesiredServiceUrl";
-static const char g_desiredEnabled[] = "DesiredEnabled";
-static const char g_reportedServiceUrl[] = "ServiceUrl";
-static const char g_reportedEnabled[] = "Enabled";
+static const char g_desiredServiceUrl[] = "desiredServiceUrl";
+static const char g_desiredEnabled[] = "desiredEnabled";
+static const char g_reportedServiceUrl[] = "serviceUrl";
+static const char g_reportedEnabled[] = "enabled";
 
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const std::string g_defaultServiceUrl = "";

@@ -55,7 +55,9 @@ Modules in general only need to contain only one MIM component. Sometimes, a sec
 
 Each MIM component is defined by and contains a set of MIM objects. Each new version of a MIM component must have a name that's different from the previous versions of the same MIM component.
 
-Example of an existing OSConfig MIM component: CommandRunner.
+The names of MIM components must be PascalCased, with the first letter of each word capitalized.
+
+Example of an existing OSConfig MIM component: commandRunner.
 
 ### 3.1.2. MIM Objects
 
@@ -77,27 +79,29 @@ An array MIM object is a MIM object with its list of MIM settings repeated a var
 
 When a MIM object contains just one MIM setting, that object and setting share the same name and for PnP are translated to a simple PnP property.
 
+The names of MIM objects must be camelCased, with the first letter lowercase and the first letter of each word after the first uppercase.
+
 Example of an MIM object that contains multiple MIM settings:
 
 ```JSON
 { 
   "name": "TpmStatus", 
-  "type": "MimObject", 
+  "type": "mimObject", 
   "desired": false,
   "schema": {
      "type": "enum",
      "valueSchema": "integer",
      "enumValues": [
        { 
-         "name": "Unknown",
+         "name": "unknown",
          "enumValue": 0
        },
        {
-         "name": "TpmDetected",
+         "name": "tpmDetected",
          "enumValue": 1
        },
        {
-         "name": "TpmNotDetected",
+         "name": "tpmNotDetected",
          "enumValue": 2
        }
      ]
@@ -109,8 +113,8 @@ Example of a simple MIM object that contains a single MIM setting:
 
 ```JSON
 { 
-  "name": "ServiceUrl", 
-  "type": "MimObject", 
+  "name": "serviceUrl", 
+  "type": "mimObject", 
   "desired": false,
   "schema": "string"
 }
@@ -120,32 +124,32 @@ Example of an array MIM object:
 
 ```JSON
 {
-  "name": "FirewallRules",
-  "type": "MimObject",
+  "name": "firewallRules",
+  "type": "mimObject",
   "desired": true,
   "schema": {
     "type": "array",
     "elementSchema": {
-      "type": "Object",
+      "type": "object",
       "fields": [
         {
-          "name": "Direction",
+          "name": "direction",
           "schema": "string"
         },
         {
-          "name": "Target",
+          "name": "target",
           "schema": "string"
         },
         {
-          "name": "Protocol",
+          "name": "protocol",
           "schema": "string"
         },
         {
-          "name": "IpAddress",
+          "name": "ipAddress",
           "schema": "string"
         },
         {
-          "name": "Port",
+          "name": "port",
           "schema": "string"
         }
       ]
@@ -169,11 +173,13 @@ MIM Settings translate to PnP property values of following types supported by bo
 
 Same as objects, settings can be either reported or desired. All MIM settings within a MIM object share the same parent object's type (either reported or desired). 
 
+The names of MIM settings and setting values must be camelCased, with the first letter lowercase and the first letter of each word after the first uppercase.
+
 Example of an MIM setting of string type:
 
 ```JSON
 {
-  "name": "CommandId",
+  "name": "commandId",
   "schema": "string"
 }
 ```
@@ -182,7 +188,7 @@ Example of an MIM setting of integer type:
 
 ```JSON
 {
-  "name": "Timeout",
+  "name": "timeout",
   "schema": "integer"
 }
 ```
@@ -191,7 +197,7 @@ Example of an MIM setting of boolean type:
 
 ```JSON
 {
-  "name": "SingleLineTextResult",
+  "name": "singleLineTextResult",
   "schema": "boolean"
 }
 ```
@@ -200,33 +206,33 @@ Example of an MIM setting of enumeration of integers type:
 
 ```JSON
 {
-  "name": "CurrentState",
+  "name": "currentState",
   "schema": {
     "type": "enum",
     "valueSchema": "integer",
     "enumValues": [
       { 
-        "name": "Unknown",
+        "name": "unknown",
         "enumValue": 0
       },
       {
-        "name": "Running",
+        "name": "running",
         "enumValue": 1
       },
       {
-        "name": "Succeeded",
+        "name": "succeeded",
         "enumValue": 2
       },
       {
-        "name": "Failed",
+        "name": "failed",
         "enumValue": 3
       },
       {
-        "name": "TimedOut",
+        "name": "timedOut",
         "enumValue": 4
       },
       {
-        "name": "Canceled",
+        "name": "sanceled",
         "enumValue": 5
       }
     ]
@@ -238,7 +244,7 @@ Example of a MIM seting of array of strings type:
 
 ```JSON
 {
-  "name": "FirewallFingerprints",
+  "name": "firewallFingerprints",
   "schema": {
     "type": "array",
     "elementSchema": "string"
@@ -250,15 +256,15 @@ Example of a MIM seting of map of strings type:
 
 ```JSON
 {
-  "name": "FirewallFingerprins",
+  "name": "firewallFingerprins",
   "schema": {
     "type": "map",
     "mapKey": {
-      "name": "FingerprintName",
+      "name": "fingerprintName",
       "schema": "string"
     },
     "mapValue": {
-      "name": "FingerprintValue",
+      "name": "fingerprintValue",
       "schema": "string"
     }
   } 
@@ -274,6 +280,8 @@ MIM names (for components, objects, settings and setting values, including map k
 ```
 
 Value types can be "object", "string", "integer", "boolean", "enum" (enumeration of "integer" values), "array" (array of "integer" or "string" values), "map" (map of "integer" or "string" values).
+
+MIM names for components must be PascalCased, while for object, settings and setting values must be camelCased.
 
 The number of MIM components, objects and settings translated to PnP affect the size of the device's Twin, which is limited. Thus it is important to try to describe a new module with the smallest possible number and size of MIM components, objects, and settings.
  
@@ -300,8 +308,8 @@ Example: desired setting Action of CommandArguments:
 Question | Answer
 -----|-----
 Component | CommandRunner
-Object | CommandArguments
-Setting | Action
+Object | commandArguments
+Setting | action
 Access | Desired (no matching reported setting)
 Description | The action for this command
 Value type | Enumeration of integers
@@ -315,26 +323,26 @@ Example: setting CommandId links desired object CommandArguments and reported ob
 Question | Answer
 -----|-----
 Component | CommandRunner
-Object | CommandArguments
-Setting | CommandId
+Object | commandArguments
+Setting | commandId
 Access | Desired (matching CommandStatus.CommandId as reported)
 Description | The identifier for this command, as provided with the command request
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
-Links two objects | Yes. CommandArguments with CommandStatus. The setting value identifies a command and links this desired CommandArguments object with the reported CommandStatus object.
+Links two objects | Yes. commandArguments with commandStatus. The setting value identifies a command and links this desired CommandArguments object with the reported commandStatus object.
 Relation to other settings | None
 Required | Yes
 
 Question | Answer
 -----|-----
 Component | CommandRunner
-Object | CommandStatus
-Setting | CommandId
+Object | commandStatus
+Setting | commandId
 Access | Reported
 Description | The identifier for this command, originally provided via a CommandArguments object, now reported back to indicate the command this result (status) is for.
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
-Links two objects | Yes. CommandArguments with CommandStatus. The setting value identifies a command and links this reported CommandStatus object with the respective desired CommandArguments object.
+Links two objects | Yes. commandArguments with commandStatus. The setting value identifies a command and links this reported commandStatus object with the respective desired commandArguments object.
 Relation to other settings | None
 Required | Yes
 
@@ -343,27 +351,27 @@ Example: fictive setting FooPolicy, both desired and reported, optional:
 Question | Answer
 -----|-----
 Component | FooPolicies
-Object | DesiredFooPolicies
-Setting | FooPolicy
+Object | desiredFooPolicies
+Setting | fooPolicy
 Access | Desired (matching ReportedFooPolicies.FooPolicy as reported)
 Description | A fictive desired policy
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
 Links two objects | No
-Relation to other settings | Related to reported ReportedFooPolicies.FooPolicy
+Relation to other settings | Related to reported reportedFooPolicies.fooPolicy
 Required | No
 
 Question | Answer
 -----|-----
 Component | FooPolicies
-Object | ReportedFooPolicies
-Setting | FooPolicy
+Object | reportedFooPolicies
+Setting | fooPolicy
 Access | Reported
 Description | A fictive reported policy
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
 Links two objects | No
-Relation to other settings | Related to (set via) DesiredFooPolicies.FooPolicy
+Relation to other settings | Related to (set via) desiredFooPolicies.fooPolicy
 Required | No
 
 Example: fictive setting ReadOnlyFooPolicy which is only reported and is required:
@@ -371,8 +379,8 @@ Example: fictive setting ReadOnlyFooPolicy which is only reported and is require
 Question | Answer
 -----|-----
 Component | FooPolicies
-Object | ReportedFooPolicies
-Setting | ReadOnlyFooPolicy
+Object | reportedFooPolicies
+Setting | readOnlyFooPolicy
 Access | Reported
 Description | A fictive read-only reported policy
 Value type | String
@@ -394,86 +402,86 @@ Sample MIM JSON:
 ```JSON
 {
   "name": "ModelName",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "ComponentName",
-      "type": "MimComponent",
+      "type": "mimComponent",
       "contents": [
         {
-          "name": "ObjectName",
-          "type": "MimObject",
+          "name": "objectName",
+          "type": "mimObject",
           "desired": [true,  false],
           "schema": {
             "type": "object",
             "fields": [
               {
-                "name": "StringSettingName",
+                "name": "stringSettingName",
                 "schema": "string"
               },
               {
-                "name": "IntegerSettingName",
+                "name": "integerSettingName",
                 "schema": "integer"
               },
               {
-                "name": "BooleanSettingName",
+                "name": "booleanSettingName",
                 "schema": "boolean"
               },
               {
-                "name": "IntegerEnumerationSettingName",
+                "name": "integerEnumerationSettingName",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     {
-                      "name": "None",
+                      "name": "none",
                       "enumValue":  0
                     },
                     {
-                      "name": "EnumValue1",
+                      "name": "enumValue1",
                       "enumValue":  1
                     }
                   ]
                 }
               },
               {
-                "name": "StringsArraySettingName",
+                "name": "stringsArraySettingName",
                 "schema": { 
                   "type": "array",
                   "elementSchema": "string"  
                 }
               },
               {
-                "name": "IntegerArraySettingName",
+                "name": "integerArraySettingName",
                 "schema":  {
                   "type": "array",
                   "elementSchema": "integer"  
                 }
               },
               {
-                "name": "StringMapSettingName",
+                "name": "stringMapSettingName",
                 "schema": {
                   "type": "map",
                   "mapKey":  {
-                    "name": "KeyName",
+                    "name": "keyName",
                     "schema": "string"
                   },
                   "mapValue": {
-                    "name": "MapValue",
+                    "name": "mapValue",
                     "schema": "string"
                   }
                 }
               },
               {
-                "name": "IntegerMapSettingName",
+                "name": "integerMapSettingName",
                 "schema": {
                   "type": "map",
                   "mapKey":  {
-                    "name": "KeyName",
+                    "name": "keyName",
                     "schema": "string"
                   },
                   "mapValue": {
-                    "name": "MapValue",
+                    "name": "mapValue",
                     "schema": "integer"
                   }
                 }
@@ -482,8 +490,8 @@ Sample MIM JSON:
           }
         },
         {
-          "name": "ArrayObjectName",
-          "type": "MimObject",
+          "name": "arrayObjectName",
+          "type": "mimObject",
           "desired": [true,  false],
           "schema": {
             "type": "array",
@@ -491,72 +499,72 @@ Sample MIM JSON:
               "type": "object",
               "fields": [
                 {
-                  "name": "StringSettingName",
+                  "name": "stringSettingName",
                   "schema": "string"
                 },
                 {
-                  "name": "IntegerSettingName",
+                  "name": "integerSettingName",
                   "schema": "integer"
                 },
                 {
-                  "name": "BooleanSettingName",
+                  "name": "booleanSettingName",
                   "schema": "boolean"
                 },
                 {
-                  "name": "IntegerEnumerationSettingName",
+                  "name": "integerEnumerationSettingName",
                   "schema": {
                     "type": "enum",
                     "valueSchema": "integer",
                     "enumValues": [
                       {
-                        "name": "None",
+                        "name": "none",
                         "enumValue": 0
                       },
                       {
-                        "name": "EnumValue1",
+                        "name": "enumValue1",
                         "enumValue": 1
                       }
                     ]
                   }
                 },
                 {
-                  "name": "StringsArraySettingName",
+                  "name": "stringsArraySettingName",
                   "schema": { 
                     "type": "array",
                     "elementSchema": "string"
                 }
                 },
                 {
-                  "name": "IntegerArraySettingName",
+                  "name": "integerArraySettingName",
                   "schema":  {
                     "type": "array",
                     "elementSchema": "integer" 
                   }
                 },
                 {
-                  "name": "StringMapSettingName",
+                  "name": "stringMapSettingName",
                   "schema": {
                     "type": "map",
                     "mapKey":  {
-                      "name": "KeyName",
+                      "name": "keyName",
                       "schema": "string"
                     },
                     "mapValue": {
-                      "name": "MapValue",
+                      "name": "mapValue",
                       "schema": "string"
                     }
                   }
                 },
                 {
-                  "name": "IntegerMapSettingName",
+                  "name": "integerMapSettingName",
                   "schema": {
                     "type": "map",
                     "mapKey":  {
-                      "name": "KeyName",
+                      "name": "keyName",
                       "schema": "string"
                     },
                     "mapValue": {
-                      "name": "MapValue",
+                      "name": "mapValue",
                       "schema": "integer"
                     }
                   }
@@ -566,7 +574,7 @@ Sample MIM JSON:
           }
         },
         {
-           "name": "ObjectNameZ"
+           "name": "objectNameZ"
         }
       ]
     },
@@ -582,11 +590,11 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
 ```JSON
 {
   "name": "Firewall",
-  "type": "MimComponent",
+  "type": "mimComponent",
   "contents": [
     {
-      "type": "MimObject",
-      "name": "FirewallRulesArray",
+      "type": "mimObject",
+      "name": "firewallRulesArray",
       "desired": true,
       "schema": {
         "type": "array",
@@ -594,23 +602,23 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
           "type": "object",
           "fields": [
             {
-              "name": "Direction",
+              "name": "direction",
               "schema": "string"
             },
             {
-              "name": "Target",
+              "name": "target",
               "schema": "string"
             },
             {
-              "name": "Protocol",
+              "name": "protocol",
               "schema": "string"
             },
             {
-              "name": "IpAddress",
+              "name": "ipAddress",
               "schema": "string"
             },
             {
-              "name": "Port",
+              "name": "port",
               "schema": "string"
             }
           ]
@@ -618,8 +626,8 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       }
     },
     {
-      "type": "MimObject",
-      "name": "FirewallFingerprintArray",
+      "type": "mimObject",
+      "name": "firewallFingerprintArray",
       "schema": {
         "type": "array",
         "elementSchema": "string"
@@ -627,16 +635,16 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
       "desired": true
     },
     {
-      "type": "MimObject",
-      "name": "FirewallFingerprintMap",
+      "type": "mimObject",
+      "name": "firewallFingerprintMap",
       "schema": {
         "type": "map",
           "mapKey": {
-            "name": "FingerprintName",
+            "name": "fingerprintName",
             "schema": "string"
           },
           "mapValue": {
-            "name": "FingerprintValue",
+            "name": "fingerprintValue",
             "schema": "string"
           }
         },
@@ -647,7 +655,7 @@ A partial MIM JSON example of a fictional firewall configuration component inclu
 ```
 
 Other MIM JSON examples:
-- CommandRunner: two MIM objects, CommandArguments (desired) and CommandStatus (reported), linked together by a common setting, CommandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
+- CommandRunner: two MIM objects, commandArguments (desired) and commandStatus (reported), linked together by a common setting, commandId: [CommandRunner MIM](../src/modules/mim/commandrunner.json)
 - Tpm: three simple reported MIM objects, each containing a single setting: [Tpm MIM](../src/modules/mim/tpm.json)
 
 ### 3.2.3 Serialized MIM payload at run-time
@@ -655,13 +663,13 @@ Other MIM JSON examples:
 The following would be the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles): 
 
 ```
-{"ComponentName":{"ObjectName":[{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]},{"ObjectNameZ":{...}}},{"ComponentNameY":{...}}
+{"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
 ```
 
 MmiSet and MmiGet only use the object portions of this payload. Such as:
 
 ```
-{"StringSettingName":"some value","IntegerValueName":N,"BooleanValueName":true|false,"IntegerEnumerationSettingName":N,"StringArraySettingName":["StringArrayItemA","StringArrayItemB","StringArrayItemC"],"IntegerArraySettingName":[A,B,C],"StringMapSettingName":{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"},"IntegerMapSettingName":{"MapKeyX":X,"MapKeyY":Y,"MapKeyZ":Z}},{...}]}
+{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
 ```
 
 or:
@@ -685,19 +693,19 @@ true|false
 or:
 
 ```
-["StringArrayItemA","StringArrayItemB","StringArrayItemC"]
+["stringArrayItemA","stringArrayItemB","stringArrayItemC"]
 ```
 
 or:
 
 ```
-[A,B,C]
+[a,b,c]
 ```
 
 or:
 
 ```
-{"MapKeyX":"X","MapKeyY":"Y","MapKeyZ":"Z"}
+{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"}
 ```
 
 Etc.
@@ -705,7 +713,7 @@ Etc.
 Example of serialized JSON payload for CommandRunner.CommandArguments and Settings:
 
 ```JSON
-{"CommandRunner":{"CommandArguments":{"CommandId":"A","Arguments":"date","Action":4}},"Settings":{"DeviceHealthTelemetryConfiguration":2,"DeliveryOptimizationPolicies":{"PercentageDownloadThrottle": 55,"CacheHostSource": 0,"CacheHost": "abc","CacheHostFallback":2022}}}
+{"CommandRunner":{"commandArguments":{"commandId":"A","arguments":"date","action":4}},"Settings":{"deviceHealthTelemetryConfiguration":2,"deliveryOptimizationPolicies":{"percentageDownloadThrottle": 55,"cacheHostSource": 0,"cacheHost": "abc","cacheHostFallback":2022}}}
 ```
 
 # 4. Management Modules Interface (MMI)
@@ -857,11 +865,11 @@ For example, to add a MyComponent.MyReportedObject to the list to be reported:
   "Reported": [
     {
       "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus"
+      "ObjectName": "commandStatus"
     },
     {
       "ComponentName": "MyComponent",
-      "ObjectName": "MyReportedObject"
+      "ObjectName": "myReportedObject"
     }
   ]
 }

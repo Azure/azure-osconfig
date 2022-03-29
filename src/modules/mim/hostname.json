@@ -1,32 +1,32 @@
 {
   "name": "HostNameModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "HostName",
-      "type": "MimComponent",
+      "type": "mimComponent",
       "contents": [
         {
-          "name": "DesiredName",
-          "type": "MimObject",
+          "name": "desiredName",
+          "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "DesiredHosts",
-          "type": "MimObject",
+          "name": "desiredHosts",
+          "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "Name",
-          "type": "MimObject",
+          "name": "name",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "Hosts",
-          "type": "MimObject",
+          "name": "hosts",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         }

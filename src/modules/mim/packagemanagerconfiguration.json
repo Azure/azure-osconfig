@@ -1,55 +1,55 @@
 {
   "name": "PackageManagerConfigurationModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "PackageManagerConfiguration",
-      "type": "MimComponent",
+      "type": "mimComponent",
       "contents": [
         {
-          "name": "State",
-          "type": "MimObject",
+          "name": "state",
+          "type": "mimObject",
           "desired": false,
           "schema": {
             "fields": [
               {
-                "name": "Packages",
+                "name": "packages",
                 "schema": {
                   "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
-                "name": "PackagesFingerprint",
+                "name": "packagesFingerprint",
                 "schema": "string"
               },
               {
-                "name": "SourcesFingerprint",
+                "name": "sourcesFingerprint",
                 "schema": "string"
               },
               {
-                "name": "SourcesFilenames",
+                "name": "sourcesFilenames",
                 "schema": {
                   "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
-                "name": "ExecutionState",
+                "name": "executionState",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     {
-                      "name": "Unknown",
+                      "name": "unknown",
                       "enumValue": 0
                     },
                     {
-                      "name": "Running",
+                      "name": "running",
                       "enumValue": 1
                     },
                     {
-                      "name": "Succeeded",
+                      "name": "succeeded",
                       "enumValue": 2
                     },
                     {
@@ -57,84 +57,84 @@
                       "enumValue": 3
                     },
                     {
-                      "name": "TimedOut",
+                      "name": "timedOut",
                       "enumValue": 4
                     }
                   ]
                 }
               },
               {
-                "name": "ExecutionSubState",
+                "name": "executionSubState",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     {
-                      "name": "None",
+                      "name": "none",
                       "enumValue": 0
                     },
                     {
-                      "name": "DeserializingJsonPayload",
+                      "name": "deserializingJsonPayload",
                       "enumValue": 1
                     },
                     {
-                      "name": "DeserializingDesiredState",
+                      "name": "deserializingDesiredState",
                       "enumValue": 2
                     },
                     {
-                      "name": "DeserializingPackages",
+                      "name": "deserializingPackages",
                       "enumValue": 3
                     },
                     {
-                      "name": "DeserializingSources",
+                      "name": "deserializingSources",
                       "enumValue": 4
                     },
                     {
-                      "name": "ModifyingSources",
+                      "name": "modifyingSources",
                       "enumValue": 5
                     },
                     {
-                      "name": "UpdatingPackagesLists",
+                      "name": "updatingPackagesLists",
                       "enumValue": 6
                     },
                     {
-                      "name": "InstallingPackages",
+                      "name": "installingPackages",
                       "enumValue": 7
                     }
                   ]
                 }
               },
               {
-                "name": "ExecutionSubStateDetails",
+                "name": "executionSubStateDetails",
                 "schema": "string"
               }
             ]
           }
         },
         {
-          "name": "DesiredState",
-          "type": "MimObject",
+          "name": "desiredState",
+          "type": "mimObject",
           "desired": true,
           "schema": {
             "type": "object",
             "fields": [
               {
-                "name": "Packages",
+                "name": "packages",
                 "schema": {
                   "type": "array",
                   "elementSchema": "string"
                 }
               },
               {
-                "name": "Sources",
+                "name": "sources",
                 "schema": {
                   "type": "map",
                   "mapKey":  {
-                    "name": "Id",
+                    "name": "id",
                     "schema": "string"
                   },
                   "mapValue": {
-                    "name": "Entry",
+                    "name": "entry",
                     "schema": "string"
                   }
                 }

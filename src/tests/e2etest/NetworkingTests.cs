@@ -13,7 +13,7 @@ namespace E2eTesting
     public class NetworkingTests : E2ETest
     {
         private static readonly string _componentName = "Networking";
-        private static readonly string _reportedPropertyName = "NetworkConfiguration";
+        private static readonly string _reportedPropertyName = "networkConfiguration";
 
         private static readonly string _interfaceDelimiter =";";
         private static readonly string _propertyDelimiter =",";
