@@ -61,7 +61,7 @@ const char* g_twoDots = "..";
 const char g_spaceCharacter = ' ';
 const std::string g_spaceString = " ";
 
-const char* g_templateWithDots = R"""({"InterfaceTypes":"..","MacAddresses":"..","IpAddresses":"..","SubnetMasks":"..","DefaultGateways":"..","DnsServers":"..","DhcpEnabled":"..","Enabled":"..","Connected":".."})""";
+const char* g_templateWithDots = R"""({"interfaceTypes":"..","macAddresses":"..","ipAddresses":"..","subnetMasks":"..","defaultGateways":"..","dnsServers":"..","dhcpEnabled":"..","enabled":"..","connected":".."})""";
 
 const char* g_ipv4 = "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
 const char* g_ipv6 =  
@@ -87,7 +87,7 @@ std::regex g_ipv6Pattern(g_ipv6);
 std::regex g_interfaceNamePrefixPatternDnsServers(g_interfaceNamePrefixSystemdResolve);
 std::regex g_dnsServersPrefixPattern(g_dnsServersPrefix);
 
-const std::vector<std::string> g_fields = {"InterfaceTypes", "MacAddresses", "IpAddresses", "SubnetMasks","DefaultGateways","DnsServers", "DhcpEnabled", "Enabled", "Connected"};
+const std::vector<std::string> g_fields = {"interfaceTypes", "macAddresses", "ipAddresses", "subnetMasks", "defaultGateways","dnsServers", "dhcpEnabled", "enabled", "connected"};
 
 const unsigned int g_numFields = g_fields.size();
 const unsigned int g_twoDotsSize = strlen(g_twoDots);
