@@ -61,7 +61,7 @@
     },
     {
       "ComponentName": "PackageManagerConfiguration",
-      "ObjectName": "State"
+      "ObjectName": "state"
     },
     {
       "ComponentName": "Tpm",

@@ -53,7 +53,7 @@
                       "enumValue": 2
                     },
                     {
-                      "name": "Failed",
+                      "name": "failed",
                       "enumValue": 3
                     },
                     {

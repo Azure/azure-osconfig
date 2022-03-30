@@ -13,13 +13,13 @@
 #include <PmcBase.h>
 
 static const std::string g_componentName = "PackageManagerConfiguration";
-static const std::string g_reportedObjectName = "State";
-static const std::string g_desiredObjectName = "DesiredState";
-static const std::string g_packages = "Packages";
-static const std::string g_executionState = "ExecutionState";
-static const std::string g_executionSubState = "ExecutionSubState";
-static const std::string g_executionSubStateDetails = "ExecutionSubStateDetails";
-static const std::string g_packagesFingerprint = "PackagesFingerprint";
+static const std::string g_reportedObjectName = "state";
+static const std::string g_desiredObjectName = "desiredState";
+static const std::string g_packages = "packages";
+static const std::string g_executionState = "executionState";
+static const std::string g_executionSubState = "executionSubState";
+static const std::string g_executionSubStateDetails = "executionSubStateDetails";
+static const std::string g_packagesFingerprint = "packagesFingerprint";
 static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query"};
 
 constexpr const char* g_commandCheckToolPresence = "command -v $value";
@@ -121,13 +121,13 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
     }
 
     int status = MMI_OK;
-    m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::DeserializingJsonPayload);
+    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingJsonPayload);
 
     int maxPayloadSizeBytes = static_cast<int>(GetMaxPayloadSizeBytes());
     if ((0 != maxPayloadSizeBytes) && (payloadSizeBytes > maxPayloadSizeBytes))
     {
         OsConfigLogError(PmcLog::Get(), "%s %s payload too large. Max payload expected %d, actual payload size %d", componentName, objectName, maxPayloadSizeBytes, payloadSizeBytes);
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingJsonPayload);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingJsonPayload);
         return E2BIG;
     }
 
@@ -136,7 +136,7 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
         OsConfigLogError(PmcLog::Get(), "Unabled to parse JSON payload: %s", payload);
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingJsonPayload);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingJsonPayload);
         status = EINVAL;
     }
     else
@@ -148,7 +148,7 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
                 if (document.IsObject())
                 {
                     PmcBase::DesiredState desiredState;
-                    m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::DeserializingDesiredState);
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingDesiredState);
 
                     if (0 == DeserializeDesiredState(document, desiredState))
                     {
@@ -166,28 +166,28 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
                     else
                     {
                         OsConfigLogError(PmcLog::Get(), "Failed to deserialize %s", g_desiredObjectName.c_str());
-                        m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingDesiredState);
+                        m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingDesiredState);
                         status = EINVAL;
                     }
                 }
                 else
                 {
                     OsConfigLogError(PmcLog::Get(), "JSON payload is not a %s object", g_desiredObjectName.c_str());
-                    m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingDesiredState);
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingDesiredState);
                     status = EINVAL;
                 }
             }
             else
             {
                 OsConfigLogError(PmcLog::Get(), "Invalid objectName: %s", objectName);
-                m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingDesiredState);
+                m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingDesiredState);
                 status = EINVAL;
             }
         }
         else
         {
             OsConfigLogError(PmcLog::Get(), "Invalid componentName: %s", componentName);
-            m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingJsonPayload);
+            m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingJsonPayload);
             status = EINVAL;
         }
     }
@@ -275,7 +275,7 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
 
     if (document.HasMember(g_packages.c_str()))
     {
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::DeserializingPackages);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingPackages);
         if (document[g_packages.c_str()].IsArray())
         {
             for (rapidjson::SizeType i = 0; i < document[g_packages.c_str()].Size(); ++i)
@@ -283,13 +283,13 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
                 if (document[g_packages.c_str()][i].IsString())
                 {
                     std::string package = document[g_packages.c_str()][i].GetString();
-                    m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::DeserializingPackages, package);
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingPackages, package);
                     object.packages.push_back(package);
                 }
                 else
                 {
                     OsConfigLogError(PmcLog::Get(), "Invalid string in JSON object string array at position %d", i);
-                    m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingPackages, "index " + i);
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingPackages, "index " + i);
                     status = EINVAL;
                 }
             }
@@ -297,7 +297,7 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
         else
         {
             OsConfigLogError(PmcLog::Get(), "%s is not an array", g_packages.c_str());
-            m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingPackages);
+            m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingPackages);
             status = EINVAL;
         }
     }
@@ -305,7 +305,7 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
     if (!document.HasMember(g_packages.c_str()))
     {
         OsConfigLogError(PmcLog::Get(), "JSON object does not contain '%s'", g_packages.c_str());
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingDesiredState);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingDesiredState);
         status = EINVAL;
     }
 
@@ -369,13 +369,13 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages, bool update
 
     if (updatePackageLists)
     {
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::UpdatingPackagesLists);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::updatingPackagesLists);
 
         status = RunCommand(g_commandAptUpdate, nullptr);
         if (status != MMI_OK)
         {
-            status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::TimedOut, ExecutionState::SubStateComponent::UpdatingPackagesLists)
-                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::UpdatingPackagesLists);
+            status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
+                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
             return status;
         }
     }
@@ -383,19 +383,19 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages, bool update
     for (std::string package : packages)
     {
         OsConfigLogInfo(PmcLog::Get(), "Starting to update package(s): %s", package.c_str());
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::InstallingPackages, package);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::installingPackages, package);
         status = ExecuteUpdate(package);
         if (status != MMI_OK)
         {
             OsConfigLogError(PmcLog::Get(), "Failed to update package(s): %s", package.c_str());
-            status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::TimedOut, ExecutionState::SubStateComponent::InstallingPackages, package)
-                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::InstallingPackages, package);
+            status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::installingPackages, package)
+                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::installingPackages, package);
             return status;
         }
         OsConfigLogInfo(PmcLog::Get(), "Successfully updated package(s): %s", package.c_str());
     }
 
-    m_executionState.SetExecutionState(ExecutionState::StateComponent::Succeeded, ExecutionState::SubStateComponent::None);
+    m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
     return status;
 }
 
@@ -463,7 +463,7 @@ int PmcBase::ValidateAndGetPackagesNames(std::vector<std::string> packagesLines)
 
     for (auto& packagesLine : packagesLines)
     {
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::DeserializingPackages, packagesLine);
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingPackages, packagesLine);
 
         // Validate packages input
         std::regex pattern(g_regexPackages);
@@ -471,7 +471,7 @@ int PmcBase::ValidateAndGetPackagesNames(std::vector<std::string> packagesLines)
         {
             OsConfigLogError(PmcLog::Get(), "Invalid package(s) argument provided: %s", packagesLine.c_str());
             m_desiredPackages.clear();
-            m_executionState.SetExecutionState(ExecutionState::StateComponent::Failed, ExecutionState::SubStateComponent::DeserializingPackages, packagesLine);
+            m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingPackages, packagesLine);
             return EINVAL;
         }
 
