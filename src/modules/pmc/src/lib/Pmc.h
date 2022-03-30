@@ -8,4 +8,6 @@ class Pmc : public PmcBase
 public:
     Pmc(unsigned int maxPayloadSizeBytes);
     ~Pmc() = default;
+
+    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
 };
