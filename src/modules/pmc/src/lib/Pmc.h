@@ -9,5 +9,5 @@ public:
     Pmc(unsigned int maxPayloadSizeBytes);
     ~Pmc() = default;
 
-    int RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds) override;
+    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
 };

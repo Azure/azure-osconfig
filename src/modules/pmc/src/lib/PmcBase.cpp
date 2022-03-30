@@ -255,7 +255,7 @@ bool PmcBase::CanRunOnThisPlatform()
     for (auto& tool : g_requiredTools)
     {
         std::string command = std::regex_replace(g_commandCheckToolPresence, std::regex("\\$value"), tool);
-        if (RunCommand(command.c_str(), nullptr, 0) != MMI_OK)
+        if (RunCommand(command.c_str(), nullptr) != MMI_OK)
         {
             if (IsFullLoggingEnabled())
             {
@@ -355,7 +355,7 @@ int PmcBase::ExecuteUpdate(const std::string &value)
 {
     std::string command = std::regex_replace(g_commandExecuteUpdate, std::regex("\\$value"), value);
 
-    int status = RunCommand(command.c_str(), nullptr, 600);
+    int status = RunCommand(command.c_str(), nullptr, true);
     if (status != MMI_OK && IsFullLoggingEnabled())
     {
         OsConfigLogError(PmcLog::Get(), "ExecuteUpdate failed with status %d and arguments '%s'", status, value.c_str());
@@ -371,7 +371,7 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages, bool update
     {
         m_executionState.SetExecutionState(ExecutionState::StateComponent::Running, ExecutionState::SubStateComponent::UpdatingPackagesLists);
 
-        status = RunCommand(g_commandAptUpdate, nullptr, 0);
+        status = RunCommand(g_commandAptUpdate, nullptr);
         if (status != MMI_OK)
         {
             status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::TimedOut, ExecutionState::SubStateComponent::UpdatingPackagesLists)
@@ -452,7 +452,7 @@ int PmcBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* 
 std::string PmcBase::GetFingerprint()
 {
     std::string hashString = "";
-    RunCommand(g_commandGetInstalledPackagesHash, &hashString, 0);
+    RunCommand(g_commandGetInstalledPackagesHash, &hashString);
     return hashString;
 }
 
@@ -499,7 +499,7 @@ std::vector<std::string> PmcBase::GetReportedPackages(std::vector<std::string> p
             std::string command = std::regex_replace(g_commandGetInstalledPackageVersion, std::regex("\\$value"), packageName);
 
             std::string rawVersion = "";
-            status = RunCommand(command.c_str(), &rawVersion, 0);
+            status = RunCommand(command.c_str(), &rawVersion);
             if (status != MMI_OK && IsFullLoggingEnabled())
             {
                 OsConfigLogError(PmcLog::Get(), "Get the installed version of package %s failed with status %d", packageName.c_str(), status);

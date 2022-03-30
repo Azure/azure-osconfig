@@ -16,6 +16,7 @@
 
 #define PMC_LOGFILE "/var/log/osconfig_pmc.log"
 #define PMC_ROLLEDLOGFILE "/var/log/osconfig_pmc.bak"
+#define TIMEOUT_LONG_RUNNING 600
 
 class PmcLog
 {
@@ -61,7 +62,7 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual unsigned int GetMaxPayloadSizeBytes();
-    virtual int RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds) = 0;
+    virtual int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) = 0;
 
 private:
     bool CanRunOnThisPlatform();

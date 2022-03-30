@@ -12,11 +12,11 @@ class PmcTestImpl : public PmcBase
 {
 public:
     PmcTestImpl(unsigned int maxPayloadSizeBytes);
-    int RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds) override;
-    void SetTextResult(const std::map<std::string, std::string> &textResults);
+    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
+    void SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults);
 
 private:
-    std::map<std::string, std::string> m_textResults;
+    std::map<std::string, std::tuple<int, std::string>> m_textResults;
 };
 
 PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes)
@@ -24,32 +24,23 @@ PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes)
 {
 }
 
-void PmcTestImpl::SetTextResult(const std::map<std::string, std::string> &textResults)
+void PmcTestImpl::SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults)
 {
     m_textResults = textResults;
 }
 
-int PmcTestImpl::RunCommand(const char* command, std::string* textResult, unsigned int timeoutSeconds)
+int PmcTestImpl::RunCommand(const char* command, std::string* textResult, bool isLongRunning)
 {
-    UNUSED(timeoutSeconds);
+    UNUSED(isLongRunning);
 
-    std::map<std::string, std::string>::const_iterator it = m_textResults.find(command);
+    std::map<std::string, std::tuple<int, std::string>>::const_iterator it = m_textResults.find(command);
     if (it != m_textResults.end())
     {
-        if (it->second == "COMMAND_ERROR")
-        {
-            return 100;
-        }
-        else if (it->second == "TIMEOUT_ERROR")
-        {
-            return ETIME;
-        }
-
         if (textResult)
         {
-            *textResult = it->second;
+            *textResult = std::get<1>(it->second);
         }
-        return MMI_OK;
+        return std::get<0>(it->second);
     }
     return ENOSYS;
 }
@@ -82,14 +73,14 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, ValidSet)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
-            {"apt-get update", ""},
-            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", ""},
-            {"apt-get install bar- -y --allow-downgrades --auto-remove", ""}
+            {"command -v apt-get",  std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")}
         };
 
         testModule->SetTextResult(textResults);
@@ -100,12 +91,12 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, ValidGetInitialValues)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")}
         };
         char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[],\"ExecutionState\":0,\"ExecutionSubState\":0,\"ExecutionSubStateDetails\":\"\"}";
         int payloadSizeBytes = 0;
@@ -121,18 +112,18 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, ValidSetGet)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
-            {"apt-get update", ""},
-            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", ""},
-            {"apt-get install bar- -y --allow-downgrades --auto-remove", ""},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
-            {"apt-cache policy cowsay | grep Installed", "  Installed: 3.03+dfsg2-7:1 "},
-            {"apt-cache policy sl | grep Installed", "  Installed: 5.02-1 "},
-            {"apt-cache policy bar | grep Installed", "  Installed: (none) "}           
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 3.03+dfsg2-7:1 ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 5.02-1 ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")}           
         };
         char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],\"ExecutionState\":2,\"ExecutionSubState\":0,\"ExecutionSubStateDetails\":\"\"}";
         int payloadSizeBytes = 0;
@@ -152,17 +143,17 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetGetPackageInstallationTimeoutFailure)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
-            {"apt-get update", ""},
-            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", "TIMEOUT_ERROR"},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"},
-            {"apt-cache policy cowsay | grep Installed", "  Installed: (none) "},
-            {"apt-cache policy sl | grep Installed", "  Installed: (none) "},
-            {"apt-cache policy bar | grep Installed", "  Installed: (none) "}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(ETIME,"")},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")}
         };
         char reportedJsonPayload[] = "{\"PackagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"Packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"ExecutionState\":4,\"ExecutionSubState\":5,\"ExecutionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\"}";
         int payloadSizeBytes = 0;
@@ -182,11 +173,11 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, InvalidPackageInputSet)
     {
-        const std::map<std::string, std::string> textResults = 
+        const std::map<std::string, std::tuple<int, std::string>> textResults = 
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
         };
         int status;
         testModule->SetTextResult(textResults);
@@ -210,12 +201,12 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, InvalidPackageInputSetGet)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4"}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")}
         };
         
         char invalidJsonPayload[] = "{\"Packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
@@ -237,11 +228,11 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetInvalidComponentObjectName)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
         };
         std::string invalidName = "invalid";
         int status;
@@ -255,11 +246,11 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, GetInvalidComponentObjectName)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""}
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
         };
         std::string invalidName = "invalid";
 
@@ -276,11 +267,11 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetInvalidPayloadString)
     {
-        const std::map<std::string, std::string> textResults =
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", ""},
-            {"command -v apt-cache", ""},
-            {"command -v dpkg-query", ""},
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
         };
         char invalidPayload[] = "C++ PackageManagerConfiguration Module";
         testModule->SetTextResult(textResults);
