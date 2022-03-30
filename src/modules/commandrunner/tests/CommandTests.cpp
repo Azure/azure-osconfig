@@ -97,11 +97,11 @@ namespace Tests
     TEST(CommandArgumentsTests, Deserialize)
     {
         const std::string json = R"""({
-            "CommandId": "id",
-            "Arguments": "echo 'hello world'",
-            "Action": 3,
-            "Timeout": 123,
-            "SingleLineTextResult": true
+            "commandId": "id",
+            "arguments": "echo 'hello world'",
+            "action": 3,
+            "timeout": 123,
+            "singleLineTextResult": true
         })""";
 
         rapidjson::Document document;
@@ -122,10 +122,10 @@ namespace Tests
         Command::Status status("id", 123, "text result...", Command::State::Succeeded);
 
         const std::string expected = R"""({
-            "CommandId": "id",
-            "ResultCode": 123,
-            "TextResult": "text result...",
-            "CurrentState": 2
+            "commandId": "id",
+            "resultCode": 123,
+            "textResult": "text result...",
+            "currentState": 2
         })""";
 
         rapidjson::StringBuffer buffer;
@@ -140,9 +140,9 @@ namespace Tests
         Command::Status status("id", 123, "text result...", Command::State::Succeeded);
 
         const std::string expected = R"""({
-            "CommandId": "id",
-            "ResultCode": 123,
-            "CurrentState": 2
+            "commandId": "id",
+            "resultCode": 123,
+            "currentState": 2
         })""";
 
         rapidjson::StringBuffer buffer;
@@ -155,10 +155,10 @@ namespace Tests
     TEST(CommandStatusTests, Deserialize)
     {
         const std::string json = R"""({
-            "CommandId": "id",
-            "ResultCode": 123,
-            "TextResult": "text result...",
-            "CurrentState": 2
+            "commandId": "id",
+            "resultCode": 123,
+            "textResult": "text result...",
+            "currentState": 2
         })""";
 
         rapidjson::Document document;

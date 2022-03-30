@@ -11,25 +11,25 @@
 
 static const std::string g_componentName = "SampleComponent";
 
-static const std::string g_desiredStringObjectName = "DesiredStringObject";
-static const std::string g_reportedStringObjectName = "ReportedStringObject";
-static const std::string g_desiredIntegerObjectName = "DesiredIntegerObject";
-static const std::string g_reportedIntegerObjectName = "ReportedIntegerObject";
-static const std::string g_desiredBooleanObjectName = "DesiredBooleanObject";
-static const std::string g_reportedBooleanObjectName = "ReportedBooleanObject";
-static const std::string g_desiredObjectName = "DesiredObject";
-static const std::string g_reportedObjectName = "ReportedObject";
-static const std::string g_desiredArrayObjectName = "DesiredArrayObject";
-static const std::string g_reportedArrayObjectName = "ReportedArrayObject";
+static const std::string g_desiredStringObjectName = "desiredStringObject";
+static const std::string g_reportedStringObjectName = "reportedStringObject";
+static const std::string g_desiredIntegerObjectName = "desiredIntegerObject";
+static const std::string g_reportedIntegerObjectName = "reportedIntegerObject";
+static const std::string g_desiredBooleanObjectName = "desiredBooleanObject";
+static const std::string g_reportedBooleanObjectName = "reportedBooleanObject";
+static const std::string g_desiredObjectName = "desiredObject";
+static const std::string g_reportedObjectName = "reportedObject";
+static const std::string g_desiredArrayObjectName = "desiredArrayObject";
+static const std::string g_reportedArrayObjectName = "reportedArrayObject";
 
-static const std::string g_stringSettingName = "StringSetting";
-static const std::string g_integerSettingName = "IntegerSetting";
-static const std::string g_booleanSettingName = "BooleanSetting";
-static const std::string g_integerEnumerationSettingName = "IntegerEnumerationSetting";
-static const std::string g_stringArraySettingName = "StringsArraySetting";
-static const std::string g_integerArraySettingName = "IntegerArraySetting";
-static const std::string g_stringMapSettingName = "StringMapSetting";
-static const std::string g_integerMapSettingName = "IntegerMapSetting";
+static const std::string g_stringSettingName = "stringSetting";
+static const std::string g_integerSettingName = "integerSetting";
+static const std::string g_booleanSettingName = "booleanSetting";
+static const std::string g_integerEnumerationSettingName = "integerEnumerationSetting";
+static const std::string g_stringArraySettingName = "stringsArraySetting";
+static const std::string g_integerArraySettingName = "integerArraySetting";
+static const std::string g_stringMapSettingName = "stringMapSetting";
+static const std::string g_integerMapSettingName = "integerMapSetting";
 
 constexpr const char info[] = R""""({
     "Name": "C++ Sample",

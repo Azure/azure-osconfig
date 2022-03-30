@@ -14,7 +14,7 @@
         "type": {
           "type": "string",
           "enum": [
-            "MimComponent"
+            "mimComponent"
           ]
         },
         "contents": {
@@ -37,7 +37,7 @@
         "type": {
           "type": "string",
           "enum": [
-            "MimObject"
+            "mimObject"
           ]
         },
         "desired": {
@@ -270,7 +270,7 @@
     "type": {
       "type": "string",
       "enum": [
-        "MimModel"
+        "mimModel"
       ]
     },
     "contents": {

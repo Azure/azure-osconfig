@@ -11,9 +11,9 @@
 #define TPM_ROLLEDLOGFILE "/var/log/osconfig_tpm.bak"
 
 #define TPM "Tpm"
-#define TPM_STATUS "TpmStatus"
-#define TPM_VERSION "TpmVersion"
-#define TPM_MANUFACTURER "TpmManufacturer"
+#define TPM_STATUS "tpmStatus"
+#define TPM_VERSION "tpmVersion"
+#define TPM_MANUFACTURER "tpmManufacturer"
 
 class TpmLog
 {

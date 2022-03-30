@@ -12,10 +12,10 @@
 #define HOST_NAME_CONFIGURATOR_ROLLEDLOGFILE "/var/log/osconfig_hostname.bak"
 
 constexpr const char* g_componentName = "HostName";
-constexpr const char* g_propertyDesiredName = "DesiredName";
-constexpr const char* g_propertyDesiredHosts = "DesiredHosts";
-constexpr const char* g_propertyName = "Name";
-constexpr const char* g_propertyHosts = "Hosts";
+constexpr const char* g_propertyDesiredName = "desiredName";
+constexpr const char* g_propertyDesiredHosts = "desiredHosts";
+constexpr const char* g_propertyName = "name";
+constexpr const char* g_propertyHosts = "hosts";
 
 class HostNameLog
 {

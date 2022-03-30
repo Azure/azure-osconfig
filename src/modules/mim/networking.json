@@ -1,51 +1,51 @@
 {
   "name": "NetworkingModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "Networking",
-      "type": "MimComponent",
+      "type": "mimComponent",
       "contents": [
         {
-          "name": "NetworkConfiguration",
-          "type": "MimObject",
+          "name": "networkConfiguration",
+          "type": "mimObject",
           "desired": false,
           "schema": {
             "fields": [
               {
-                "name": "InterfaceTypes",
+                "name": "interfaceTypes",
                 "schema": "string"
               },
               {
-                "name": "MacAddresses",
+                "name": "macAddresses",
                 "schema": "string"
               },
               {
-                "name": "IpAddresses",
+                "name": "ipAddresses",
                 "schema": "string"
               },
               {
-                "name": "SubnetMasks",
+                "name": "subnetMasks",
                 "schema": "string"
               },
               {
-                "name": "DefaultGateways",
+                "name": "defaultGateways",
                 "schema": "string"
               },
               {
-                "name": "DnsServers",
+                "name": "dnsServers",
                 "schema": "string"
               },
               {
-                "name": "DhcpEnabled",
+                "name": "dhcpEnabled",
                 "schema": "string"
               },
               {
-                "name": "Enabled",
+                "name": "enabled",
                 "schema": "string"
               },
               {
-                "name": "Connected",
+                "name": "connected",
                 "schema": "string"
               }
             ]

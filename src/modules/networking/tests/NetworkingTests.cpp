@@ -140,15 +140,15 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_Success)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
@@ -168,15 +168,15 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_Success_Mangled_Names)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         std::string testIpDataMangledNames =
             "1: docker0@if123: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
@@ -209,37 +209,37 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_InterfaceTypes)
     {
         const char* payloadInterfaceTypesDataMissing =
-            "{\"InterfaceTypes\":\"\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         const char* payloadNetworkManagerEnabled =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         const char* payloadSystemdNetworkdEnabled =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ether\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ether\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         std::string testCommandOutputInterfaceTypesNmcliDataMissing =
             "GENERAL.DEVICE:                         docker0\n"
@@ -302,37 +302,37 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_DnsServers)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
 
         const char* payloadExpectedGlobalDnsServers =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=1.1.1.1,172.29.64.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
-            "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8,fe80::215:5dff:fe26:cf91;eth0=1.1.1.1,172.29.64.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
+            "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
 
         const char* payloadExpectedOnlyGlobalDnsServers =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8;eth0=1.1.1.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
-            "\"DhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
-            "\"Connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"br-1234=1.1.1.1,8.8.8.8;docker0=1.1.1.1,8.8.8.8;eth0=1.1.1.1,8.8.8.8;veth=1.1.1.1,8.8.8.8\","
+            "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
 
         std::string testCommandOutputInterfaceNames = "br-1234\ndocker0\nveth\neth0";
 
@@ -533,26 +533,26 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_Success_Multiple_Calls)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         const char* payloadExpectedAddedAddress =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,10.1.1.1,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/16,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,10.1.1.1,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/16,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         std::string testIpDataDocker0AddedAddress =
             "1: docker0: <BROADCAST,UP,LOWER_UP> mtu 65536 qdisc noqueue state UP group default qlen 1000\n"
@@ -597,15 +597,15 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_Success_EmptyData_InterfaceNames)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"\","
-            "\"MacAddresses\":\"\","
-            "\"IpAddresses\":\"\","
-            "\"SubnetMasks\":\"\","
-            "\"DefaultGateways\":\"\","
-            "\"DnsServers\":\"\","
-            "\"DhcpEnabled\":\"\","
-            "\"Enabled\":\"\","
-            "\"Connected\":\"\"}";
+            "{\"interfaceTypes\":\"\","
+            "\"macAddresses\":\"\","
+            "\"ipAddresses\":\"\","
+            "\"subnetMasks\":\"\","
+            "\"defaultGateways\":\"\","
+            "\"dnsServers\":\"\","
+            "\"dhcpEnabled\":\"\","
+            "\"enabled\":\"\","
+            "\"connected\":\"\"}";
 
         std::string testCommandOutputNamesEmpty = "";
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
@@ -626,15 +626,15 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, Get_Success_EmptyData_Eth0)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1\","
-            "\"SubnetMasks\":\"docker0=/8,/128\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=unknown\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1\","
+            "\"subnetMasks\":\"docker0=/8,/128\","
+            "\"defaultGateways\":\"docker0=172.17.128.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=unknown\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         std::string testInterfaceTypesDataEth0Empty =
             "GENERAL.DEVICE:                         docker0\n"
@@ -711,15 +711,15 @@ namespace OSConfig::Platform::Tests
 
         std::string resultString = std::string(payload, payloadSizeBytes);
         std::string expectedString =
-            "{\"InterfaceTypes\":\"..\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:..\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10...\","
-            "\"SubnetMasks\":\"..\","
-            "\"DefaultGateways\":\"docker0..\","
-            "\"DnsServers\":\"docker0=8.8.8..\","
-            "\"DhcpEnabled\":\"..\","
-            "\"Enabled\":\"..\","
-            "\"Connected\":\"..\"}";
+            "{\"interfaceTypes\":\"..\","
+            "\"macAddresses\":\"docker0=0a:25:3g:..\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10...\","
+            "\"subnetMasks\":\"..\","
+            "\"defaultGateways\":\"docker0..\","
+            "\"dnsServers\":\"docker0=8.8.8..\","
+            "\"dhcpEnabled\":\"..\","
+            "\"enabled\":\"..\","
+            "\"connected\":\"..\"}";
 
         EXPECT_STREQ(resultString.c_str(), expectedString.c_str());
 
@@ -735,15 +735,15 @@ namespace OSConfig::Platform::Tests
 
         resultString = std::string(payload, payloadSizeBytes);
         expectedString =
-            "{\"InterfaceTypes\":\"..\","
-            "\"MacAddresses\":\"..\","
-            "\"IpAddresses\":\"..\","
-            "\"SubnetMasks\":\"..\","
-            "\"DefaultGateways\":\"..\","
-            "\"DnsServers\":\"..\","
-            "\"DhcpEnabled\":\"..\","
-            "\"Enabled\":\"..\","
-            "\"Connected\":\"..\"}";
+            "{\"interfaceTypes\":\"..\","
+            "\"macAddresses\":\"..\","
+            "\"ipAddresses\":\"..\","
+            "\"subnetMasks\":\"..\","
+            "\"defaultGateways\":\"..\","
+            "\"dnsServers\":\"..\","
+            "\"dhcpEnabled\":\"..\","
+            "\"enabled\":\"..\","
+            "\"connected\":\"..\"}";
 
         EXPECT_STREQ(resultString.c_str(), expectedString.c_str());
 
@@ -759,15 +759,15 @@ namespace OSConfig::Platform::Tests
 
         resultString = std::string(payload, payloadSizeBytes);
         expectedString =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         EXPECT_STREQ(resultString.c_str(), expectedString.c_str());
 
@@ -817,15 +817,15 @@ namespace OSConfig::Platform::Tests
     TEST(NetworkingTests, MmiGet)
     {
         const char* payloadExpected =
-            "{\"InterfaceTypes\":\"docker0=bridge;eth0=ethernet\","
-            "\"MacAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
-            "\"IpAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
-            "\"SubnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
-            "\"DefaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"DnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
-            "\"DhcpEnabled\":\"docker0=true;eth0=false\","
-            "\"Enabled\":\"docker0=true;eth0=false\","
-            "\"Connected\":\"docker0=true;eth0=false\"}";
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
 
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;

@@ -11,8 +11,8 @@ namespace E2eTesting
     public class ZtsiTests : E2ETest
     {
         private static readonly string _componentName = "Ztsi";
-        private static readonly string _desiredEnabled = "DesiredEnabled";
-        private static readonly string _desiredServiceUrl = "DesiredServiceUrl";
+        private static readonly string _desiredEnabled = "desiredEnabled";
+        private static readonly string _desiredServiceUrl = "desiredServiceUrl";
 
         private static readonly Regex _urlPattern = new Regex("((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 

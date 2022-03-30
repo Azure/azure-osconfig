@@ -27,8 +27,8 @@ namespace Tests
     };
 
     const char CommandRunnerTests::m_component[] = "CommandRunner";
-    const char CommandRunnerTests::m_desiredObject[] = "CommandArguments";
-    const char CommandRunnerTests::m_reportedObject[] = "CommandStatus";
+    const char CommandRunnerTests::m_desiredObject[] = "commandArguments";
+    const char CommandRunnerTests::m_reportedObject[] = "commandStatus";
 
     void CommandRunnerTests::SetUp()
     {

@@ -14,15 +14,15 @@
 #include <Networking.h>
 #include <CommonUtils.h>
 
-std::string g_interfaceTypes = "InterfaceTypes";
-std::string g_macAddresses = "MacAddresses";
-std::string g_ipAddresses = "IpAddresses";
-std::string g_subnetMasks = "SubnetMasks";
-std::string g_defaultGateways = "DefaultGateways";
-std::string g_dnsServers = "DnsServers";
-std::string g_dhcpEnabled = "DhcpEnabled";
-std::string g_enabled = "Enabled";
-std::string g_connected = "Connected";
+std::string g_interfaceTypes = "interfaceTypes";
+std::string g_macAddresses = "macAddresses";
+std::string g_ipAddresses = "ipAddresses";
+std::string g_subnetMasks = "subnetMasks";
+std::string g_defaultGateways = "defaultGateways";
+std::string g_dnsServers = "dnsServers";
+std::string g_dhcpEnabled = "dhcpEnabled";
+std::string g_enabled = "enabled";
+std::string g_connected = "connected";
 
 const char* g_getInterfaceNames = "ls -A /sys/class/net";
 const char* g_getInterfaceTypesNmcli = "nmcli device show";
@@ -61,7 +61,7 @@ const char* g_twoDots = "..";
 const char g_spaceCharacter = ' ';
 const std::string g_spaceString = " ";
 
-const char* g_templateWithDots = R"""({"InterfaceTypes":"..","MacAddresses":"..","IpAddresses":"..","SubnetMasks":"..","DefaultGateways":"..","DnsServers":"..","DhcpEnabled":"..","Enabled":"..","Connected":".."})""";
+const char* g_templateWithDots = R"""({"interfaceTypes":"..","macAddresses":"..","ipAddresses":"..","subnetMasks":"..","defaultGateways":"..","dnsServers":"..","dhcpEnabled":"..","enabled":"..","connected":".."})""";
 
 const char* g_ipv4 = "(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
 const char* g_ipv6 =  
@@ -87,7 +87,7 @@ std::regex g_ipv6Pattern(g_ipv6);
 std::regex g_interfaceNamePrefixPatternDnsServers(g_interfaceNamePrefixSystemdResolve);
 std::regex g_dnsServersPrefixPattern(g_dnsServersPrefix);
 
-const std::vector<std::string> g_fields = {"InterfaceTypes", "MacAddresses", "IpAddresses", "SubnetMasks","DefaultGateways","DnsServers", "DhcpEnabled", "Enabled", "Connected"};
+const std::vector<std::string> g_fields = {"interfaceTypes", "macAddresses", "ipAddresses", "subnetMasks", "defaultGateways","dnsServers", "dhcpEnabled", "enabled", "connected"};
 
 const unsigned int g_numFields = g_fields.size();
 const unsigned int g_twoDotsSize = strlen(g_twoDots);

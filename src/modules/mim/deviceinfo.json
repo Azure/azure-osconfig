@@ -1,56 +1,56 @@
 {
   "name": "DeviceInfoModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "DeviceInfo",
       "type": "MimComponent",
       "contents": [
         {
-          "name": "OsName",
-          "type": "MimObject",
+          "name": "osName",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "OsVersion",
-          "type": "MimObject",
+          "name": "osVersion",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "CpuType",
-          "type": "MimObject",
+          "name": "cpuType",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "KernelName",
-          "type": "MimObject",
+          "name": "kernelName",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "KernelRelease",
-          "type": "MimObject",
+          "name": "kernelRelease",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "KernelVersion",
-          "type": "MimObject",
+          "name": "kernelVersion",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "Manufacturer",
-          "type": "MimObject",
+          "name": "manufacturer",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "Model",
-          "type": "MimObject",
+          "name": "model",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
         }

@@ -28,10 +28,10 @@ static const unsigned int g_lockWait = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
 const std::string Ztsi::m_componentName = "Ztsi";
-const std::string Ztsi::m_desiredServiceUrl = "DesiredServiceUrl";
-const std::string Ztsi::m_desiredEnabled = "DesiredEnabled";
-const std::string Ztsi::m_reportedServiceUrl = "ServiceUrl";
-const std::string Ztsi::m_reportedEnabled = "Enabled";
+const std::string Ztsi::m_desiredServiceUrl = "desiredServiceUrl";
+const std::string Ztsi::m_desiredEnabled = "desiredEnabled";
+const std::string Ztsi::m_reportedServiceUrl = "serviceUrl";
+const std::string Ztsi::m_reportedEnabled = "enabled";
 
 int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
