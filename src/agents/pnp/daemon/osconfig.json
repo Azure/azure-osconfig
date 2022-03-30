@@ -60,6 +60,10 @@
       "ObjectName": "networkConfiguration"
     },
     {
+      "ComponentName": "PackageManagerConfiguration",
+      "ObjectName": "state"
+    },
+    {
       "ComponentName": "Tpm",
       "ObjectName": "tpmStatus"
     },
