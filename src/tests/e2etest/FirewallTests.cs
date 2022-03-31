@@ -23,19 +23,19 @@ namespace E2eTesting
 
         public partial class Firewall
         {
-            public FirewallStateCode FirewallState { get; set; }
-            public string FirewallFingerprint { get; set; }
+            public FirewallStateCode firewallState { get; set; }
+            public string firewallFingerprint { get; set; }
         }
 
         [Test]
         public async Task FirewallTest_Regex()
         {
-            Firewall reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.FirewallState != FirewallStateCode.Unknown) && (firewall.FirewallFingerprint != null));
+            Firewall reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.firewallState != FirewallStateCode.Unknown) && (firewall.firewallFingerprint != null));
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_statePattern, reported.FirewallState);
-                RegexAssert.IsMatch(_fingerprintPattern, reported.FirewallFingerprint);
+                RegexAssert.IsMatch(_statePattern, reported.firewallState);
+                RegexAssert.IsMatch(_fingerprintPattern, reported.firewallFingerprint);
             });
         }
     }
