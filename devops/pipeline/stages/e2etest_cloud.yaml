@@ -1,0 +1,206 @@
+# E2E Cloud Test Stage Definition
+# Parameters:
+#  - (Required) target [object]: The cloud test target object, defined as follows:
+#       distroName [string]: The name to give this vm cloud distro
+#       image_publisher [string]: The image publisher to use. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
+#       image_offer [string]: The image offer to use. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
+#       image_sku [string]: The image sku to use. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
+#       image_version [string]: the image version to use. See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
+#       packagePattern [string]: Package to install on the target host from the Package Build pipeline (example '**/*focal_x86_64.deb')
+#       device_id [string]: The device ID to use on provisioning the device to the IoT Hub
+#       pre_script [string]: The script to run on the target machine BEFORE OSConfig is installed
+#  - (Optional) skipTeardown [boolean]: Leave test infrastructure in-place - default: false
+#  - (Optional) twinTimeout [number]: Timeout for twin updates - default: 90 seconds
+#  - (Optional) postScript [string]: bash script to perform post osconfig install (before agent start)
+#  - (Optional) testExpression [string]: the test expression to use to filter the tests (see https://docs.microsoft.com/dotnet/core/testing/selective-unit-tests?pivots=mstest) - default: all tests
+#  - (Optional) sourceBranch [string]: package branch to use - default: Uses source branch
+# 
+# Find different VM variants on the Azure Marketplace
+# See https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage
+
+parameters:
+- name: target
+  displayName: The Cloud VM to target
+  type: object
+- name: skipTeardown
+  displayName: Leave test infrastructure in-place
+  type: boolean
+  default: false
+- name: twinTimeout
+  displayName: Timeout for twin updates
+  type: number
+  default: 90
+- name: postScript
+  displayName: 'Shell script to execute after osconfig install'
+  type: string
+  default: ' '
+- name: testExpression
+  type: string
+  default: ' '
+- name: sourceBranch
+  displayName: 'Branch to use package from (default: source branch if empty)'
+  type: string
+  default: ' '
+
+stages:
+- stage: Terraform_VM_${{ parameters.target.device_id }}
+  displayName: Cloud ${{ parameters.target.distroName }}
+  dependsOn: Terraform_iothub
+  variables:
+    IOTHUB_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['iothub_name_step.IOTHUB_NAME'] ]
+    RESOURCE_GROUP_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['resource_group_name_step.RESOURCE_GROUP_NAME'] ]
+  pool:
+    vmImage: 'ubuntu-18.04'
+  jobs:
+  - job: TerraformJobVM
+    steps:
+      - ${{ if ne(parameters.sourceBranch, ' ') }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download OSConfig from pipeline (${{ parameters.sourceBranch }})
+          inputs:
+            source: 'specific'
+            project: 'AzOsConfig'
+            pipeline: $(package_pipeline)
+            runVersion: 'latestFromBranch'
+            runBranch: ${{ parameters.sourceBranch }}
+            itemPattern: ${{ parameters.target.packagePattern }}
+            allowFailedBuilds: true
+      - ${{ if eq(parameters.sourceBranch, ' ') }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download OSConfig from pipeline ($(Build.SourceBranch))
+          inputs:
+            source: 'specific'
+            project: 'AzOsConfig'
+            pipeline: $(package_pipeline)
+            runVersion: 'latestFromBranch'
+            runBranch: $(Build.SourceBranch)
+            itemPattern: ${{ parameters.target.packagePattern }}
+            allowFailedBuilds: true
+
+      # Note: Although the output is always osconfig.deb, also works on RPMs as the files are explicitly referenced
+      - script: |
+          cp `find . -name '*.deb' -o -name '*.rpm' | head -n 1` $(Build.SourcesDirectory)/devops/terraform/host/osconfig.deb
+        displayName: Stage OSConfig
+        workingDirectory: $(Pipeline.Workspace)
+
+      - task: AzureCLI@2
+        displayName: Create device identity
+        name: azcli_device_identity
+        inputs:
+          azureSubscription: $(SERVICE_CONNECTION)
+          scriptType: bash
+          scriptLocation: inlineScript
+          inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt
+            az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "$(TENANT_ID)"
+            az iot hub device-identity create --device-id "${{ parameters.target.device_id }}" --hub-name $(IOTHUB_NAME) --output none
+            DEVICE_CONN_STR=`az iot hub device-identity connection-string show --hub-name $(IOTHUB_NAME) --device-id ${{ parameters.target.device_id }} --output tsv`
+            echo "##vso[task.setvariable variable=DEVICE_CONN_STR;issecret=true]$DEVICE_CONN_STR"
+
+      - script: 'terraform init'
+        displayName: terraform init (VM)
+        continueOnError: true
+        workingDirectory: $(Build.SourcesDirectory)/devops/terraform/host
+
+      - script: terraform apply -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr='$(DEVICE_CONN_STR)' -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var vm_name=${{parameters.target.distroName}} -var image_offer=${{parameters.target.image_offer}} -var image_publisher=${{parameters.target.image_publisher}} -var image_sku=${{parameters.target.image_sku}} -var image_version=${{parameters.target.image_version}} -var sas_token="$(SAS_TOKEN)" -var vm_pre_osconfig_install_script="${{parameters.target.pre_script}}" -var vm_post_osconfig_install_script="${{ parameters.postScript }}" -auto-approve
+        displayName: terraform apply
+        continueOnError: false
+        workingDirectory: $(Build.SourcesDirectory)/devops/terraform/host
+
+      - script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/terraform/host
+          cp -R $(Build.SourcesDirectory)/devops/terraform/host/* $(Build.ArtifactStagingDirectory)/terraform/host
+        displayName: Copy terraform state (vm)
+        continueOnError: false
+
+      - publish: '$(Build.ArtifactStagingDirectory)/terraform/host'
+        displayName: 'Publish Terraform state for destroy stage (vm)'
+        continueOnError: false
+        artifact: terraformStateVM_${{parameters.target.distroName}}
+
+- template: e2etest_testdriver.yaml
+  parameters:
+    deviceId: ${{ parameters.target.device_id }}
+    testRunName: ${{ parameters.target.device_id }}
+    deviceStageName: Terraform_VM_${{ parameters.target.device_id }}
+    testExpression: ${{ parameters.testExpression }}
+    twinTimeout: ${{ parameters.twinTimeout }}
+
+- stage: Terraform_destroy_vm_${{parameters.target.device_id}}
+  displayName: Deallocate ${{ parameters.target.distroName }}
+  dependsOn:
+    - Terraform_iothub
+    - Terraform_VM_${{ parameters.target.device_id }}
+    - Run_Test_Driver_${{ parameters.target.device_id }}
+  variables:
+    IOTHUB_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['iothub_name_step.IOTHUB_NAME'] ]
+    RESOURCE_GROUP_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['resource_group_name_step.RESOURCE_GROUP_NAME'] ]
+  pool:
+    vmImage: 'ubuntu-18.04'
+  condition: eq(${{ parameters.skipTeardown }}, False)
+  jobs:
+  - job: TerraformDestroy
+    steps:
+    - script: |
+        sudo apt update && sudo apt install curl
+        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+        sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+        sudo apt install terraform
+      displayName: Installing Terraform
+
+    - download: current
+      artifact: terraformStateVM_${{parameters.target.distroName}}
+      displayName: Fetching terraform state (VM)
+
+    - script: |
+        terraform init
+        terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)" -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -var device_identity_connstr="null" -var resource_group_name=$(RESOURCE_GROUP_NAME) -var osconfig_package_path="./osconfig.deb" -var sas_token="NULL" -auto-approve || true
+      workingDirectory: $(Pipeline.Workspace)/terraformStateVM_${{parameters.target.distroName}}
+      displayName: Destroy cloud resources (VM)
+      continueOnError: true
+
+    - task: AzureCLI@2
+      displayName: Get twin from IoTHub
+      continueOnError: true
+      name: azcli_dt
+      inputs:
+        azureSubscription: $(SERVICE_CONNECTION)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "72f988bf-86f1-41af-91ab-2d7cd011db47"
+          az iot hub device-twin show --hub-name $(IOTHUB_NAME) --device-id ${{ parameters.target.device_id }} > $(Build.ArtifactStagingDirectory)/${{ parameters.target.device_id }}_twin.json
+
+    - publish: '$(Build.ArtifactStagingDirectory)/${{ parameters.target.device_id }}_twin.json'
+      displayName: 'Publish twin for ${{ parameters.target.device_id }}'
+      continueOnError: true
+      artifact: DeviceTwin_${{parameters.target.distroName}}
+
+- stage: Terraform_stop_vm_${{ parameters.target.device_id }}
+  displayName: Stop ${{ parameters.target.distroName }}
+  condition: succeededOrFailed()
+  dependsOn:
+    - Terraform_iothub
+    - Terraform_VM_${{ parameters.target.device_id }}
+    - Run_Test_Driver_${{ parameters.target.device_id }}
+  variables:
+    RESOURCE_GROUP_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['resource_group_name_step.RESOURCE_GROUP_NAME'] ]
+  pool:
+    vmImage: 'ubuntu-18.04'
+  jobs:
+  - job: StopVMs
+    steps:
+    - task: AzureCLI@2
+      displayName: Stop running VM
+      continueOnError: true
+      name: azcli_dt
+      inputs:
+        azureSubscription: $(SERVICE_CONNECTION)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "72f988bf-86f1-41af-91ab-2d7cd011db47"
+          # Add new distros as needed
+          az vm deallocate --no-wait --resource-group $(RESOURCE_GROUP_NAME) --name myVM-${{parameters.target.distroName}}
