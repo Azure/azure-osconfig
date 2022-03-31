@@ -35,19 +35,19 @@ namespace E2eTesting
 
         public class CommandArguments
         {
-            public string CommandId { get; set; }
-            public string Arguments { get; set; }
-            public Action Action { get; set; }
-            public int Timeout { get; set; }
-            public bool SingleLineTextResult { get; set; }
+            public string commandId { get; set; }
+            public string arguments { get; set; }
+            public Action action { get; set; }
+            public int timeout { get; set; }
+            public bool singleLineTextResult { get; set; }
         }
 
         public class CommandStatus
         {
-            public string CommandId { get; set; }
-            public long ResultCode { get; set; }
-            public string TextResult { get; set; }
-            public CommandState CurrentState { get; set; }
+            public string commandId { get; set; }
+            public long resultCode { get; set; }
+            public string textResult { get; set; }
+            public CommandState currentState { get; set; }
         }
 
         public static string GenerateId()
@@ -60,48 +60,48 @@ namespace E2eTesting
             return CreateCommand(GenerateId(), arguments, action, timeout, singleLineTextResult);
         }
 
-        public static CommandArguments CreateCommand(string commandId, string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLinetextResult = false)
+        public static CommandArguments CreateCommand(string newCommandId, string newArguments, Action newAction = Action.RunCommand, int newTimeout = 0, bool newSingleLinetextResult = false)
         {
             return new CommandArguments
             {
-                CommandId = commandId,
-                Arguments = arguments,
-                Action = action,
-                Timeout = timeout,
-                SingleLineTextResult = singleLinetextResult
+                commandId = newCommandId,
+                arguments = newArguments,
+                action = newAction,
+                timeout = newTimeout,
+                singleLineTextResult = newSingleLinetextResult
             };
         }
 
-        public static CommandArguments CreateLongRunningCommand(string commandId, int timeout = 120)
+        public static CommandArguments CreateLongRunningCommand(string newCommandId, int newTimeout = 120)
         {
             return new CommandArguments
             {
-                CommandId = commandId,
-                Arguments = "sleep 1000s",
-                Action = Action.RunCommand,
-                Timeout = timeout
+                commandId = newCommandId,
+                arguments = "sleep 1000s",
+                action = Action.RunCommand,
+                timeout = newTimeout
             };
         }
 
-        public static CommandArguments CreateCancelCommand(string commandId)
+        public static CommandArguments CreateCancelCommand(string newCommandId)
         {
             return new CommandArguments
             {
-                CommandId = commandId,
-                Arguments = "",
-                Action = Action.CancelCommand,
-                Timeout = 0
+                commandId = newCommandId,
+                arguments = "",
+                action = Action.CancelCommand,
+                timeout = 0
             };
         }
 
-        public static CommandStatus CreateCommandStatus(string commandId, string textResult = "", CommandState commandState = CommandState.Succeeded, int resultCode = 0)
+        public static CommandStatus CreateCommandStatus(string newCommandId, string newTextResult = "", CommandState newCommandState = CommandState.Succeeded, int newResultCode = 0)
         {
             return new CommandStatus
             {
-                CommandId = commandId,
-                TextResult = textResult,
-                CurrentState = commandState,
-                ResultCode = resultCode
+                commandId = newCommandId,
+                textResult = newTextResult,
+                currentState = newCommandState,
+                resultCode = newResultCode
             };
         }
 
@@ -133,13 +133,13 @@ namespace E2eTesting
             SendCommand(CreateCancelCommand(commandId));
         }
 
-        public void RefreshCommandStatus(string commandId, int expectedAckCode = ACK_SUCCESS)
+        public void RefreshCommandStatus(string newCommandId, int expectedAckCode = ACK_SUCCESS)
         {
             var refreshCommand = new CommandArguments
             {
-                CommandId = commandId,
-                Arguments = "",
-                Action = Action.RefreshCommandStatus
+                commandId = newCommandId,
+                arguments = "",
+                action = Action.RefreshCommandStatus
             };
 
             SendCommand(refreshCommand, expectedAckCode);
@@ -159,7 +159,7 @@ namespace E2eTesting
         [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
         [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
         [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
-        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
+        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", commandState.Failed)]
         public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
