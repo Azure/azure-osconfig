@@ -170,15 +170,11 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
                             return status;
                         }
 
-                        bool updateSources = !desiredState.sources.empty();
-                        if (updateSources)
-                        {
-                            status = PmcBase::ConfigureSources(desiredState.sources);
-                        }
+                        status = PmcBase::ConfigureSources(desiredState.sources);
 
                         if (status == MMI_OK)
                         {
-                            status = PmcBase::ExecuteUpdates(desiredState.packages, !updateSources);
+                            status = PmcBase::ExecuteUpdates(desiredState.packages);
                         }
                     }
                     else
@@ -415,22 +411,9 @@ int PmcBase::ExecuteUpdate(const std::string &value)
     return status;
 }
 
-int PmcBase::ExecuteUpdates(const std::vector<std::string> packages, bool updatePackageLists)
+int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
 {
     int status = MMI_OK;
-
-    if (updatePackageLists)
-    {
-        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::updatingPackagesLists);
-
-        status = RunCommand(g_commandAptUpdate, nullptr);
-        if (status != MMI_OK)
-        {
-            status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
-                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
-            return status;
-        }
-    }
 
     for (std::string package : packages)
     {
@@ -690,7 +673,6 @@ std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* f
 int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
 {
     int status = MMI_OK;
-    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::modifyingSources);
 
     for (auto& source : sources)
     {
@@ -740,13 +722,13 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
 
     if (status != MMI_OK)
     {
-        OsConfigLogError(PmcLog::Get(), "Refresh sources failed with status %d", status);
+        OsConfigLogError(PmcLog::Get(), "Refresh package lists failed with status %d", status);
         status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
                         : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
     }
     else
     {
-        OsConfigLogInfo(PmcLog::Get(), "Successfully configured sources");
+        OsConfigLogInfo(PmcLog::Get(), "Successfully updated package lists");
         m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
     }
 

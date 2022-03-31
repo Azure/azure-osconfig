@@ -71,7 +71,7 @@ public:
 private:
     bool CanRunOnThisPlatform();
     int ExecuteUpdate(const std::string& value);
-    int ExecuteUpdates(const std::vector<std::string> packages, bool updatePackageLists);
+    int ExecuteUpdates(const std::vector<std::string> packages);
     std::string GetFingerprint();
     std::vector<std::string> GetReportedPackages(std::vector<std::string> packages);
     int ConfigureSources(const std::map<std::string, std::string> sources);
