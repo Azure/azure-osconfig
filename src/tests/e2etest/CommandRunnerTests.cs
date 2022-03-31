@@ -159,7 +159,7 @@ namespace E2eTesting
         [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
         [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
         [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
-        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", commandState.Failed)]
+        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
         public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
