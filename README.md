@@ -52,7 +52,7 @@ cmake --build . --config Release|Debug  --target install
 ```
 The following OSConfig files are binplaced at build time:
 
-Source | Destination | Descriptiopn
+Source | Destination | Description
 -----|-----|-----
 [src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The main OSConfig binary
 [src/agents/pnp/daemon/osconfig.conn](src/agents/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
@@ -122,7 +122,7 @@ OSConfig uses two local files as local digital twins in MIM JSON format:
 
 ## Configuration
 
-OSConfig has a general configuration file at '/etc/osconfig/osconfig.json' that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
+OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
 
 ```bash
 sudo systemctl kill -s SIGHUP osconfig.service
@@ -130,7 +130,7 @@ sudo systemctl kill -s SIGHUP osconfig.service
 
 ### Adjusting the reporting interval
 
-OSConfig periodically reports device data at a default time period of 30 seconds. This interval period can be adjusted between 1 second and 86,400 seconds (24 hours) via the OSConfig general configuration file at '/etc/osconfig/osconfig.json'. Edit there the integer value named "ReportingIntervalSeconds" to a value between 1 and 86400:
+OSConfig periodically reports device data at a default time period of 30 seconds. This interval period can be adjusted between 1 second and 86,400 seconds (24 hours) via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "ReportingIntervalSeconds" to a value between 1 and 86400:
 
 ```json
 {
