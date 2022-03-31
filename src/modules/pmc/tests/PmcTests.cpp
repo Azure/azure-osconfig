@@ -11,7 +11,7 @@
 class PmcTestImpl : public PmcBase
 {
 public:
-    PmcTestImpl(unsigned int maxPayloadSizeBytes);
+    PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
     int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
     void SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults);
 
@@ -19,8 +19,8 @@ private:
     std::map<std::string, std::tuple<int, std::string>> m_textResults;
 };
 
-PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes)
-: PmcBase(maxPayloadSizeBytes)
+PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory)
+: PmcBase(maxPayloadSizeBytes, sourcesDirectory)
 {
 }
 
@@ -52,12 +52,19 @@ namespace OSConfig::Platform::Tests
     protected:
         void SetUp() override
         {
-            testModule = new PmcTestImpl(g_maxPayloadSizeBytes);
+            mkdir(sourcesDirectory, 0775);
+            testModule = new PmcTestImpl(g_maxPayloadSizeBytes, sourcesDirectory);
         }
 
         void TearDown() override
         {
             delete testModule;
+            const std::string command = std::string("rm -r ") + sourcesDirectory;
+            int status = ExecuteCommand(nullptr, command.c_str(), true, true, 0, 0, nullptr, nullptr, PmcLog::Get());
+            if (status != MMI_OK)
+            {
+                throw std::runtime_error("Failed to execute command " + command);
+            }
         }
 
         static PmcTestImpl* testModule;
@@ -65,11 +72,12 @@ namespace OSConfig::Platform::Tests
         static constexpr const char* componentName = "PackageManagerConfiguration";
         static constexpr const char* desiredObjectName = "desiredState";
         static constexpr const char* reportedObjectName = "state";
+        static constexpr const char* sourcesDirectory = "sources/";
         static char validJsonPayload[];
     };
 
     PmcTestImpl* PmcTests::testModule;
-    char PmcTests::validJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7:1 sl\", \"bar-\"]}";
+    char PmcTests::validJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7:1 sl\", \"bar-\"], \"sources\":{\"key\":\"value\",\"sourceToDelete\":null}}";
 
     TEST_F(PmcTests, ValidSet)
     {
@@ -82,11 +90,19 @@ namespace OSConfig::Platform::Tests
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")}
         };
+        const std::string testFileToDeletePath = sourcesDirectory + std::string("sourceToDelete.list");
+        const std::string testData = "test data";
+        const std::string expectedFilePath = sourcesDirectory + std::string("key.list");
 
+        std::ofstream sourceFileToDelete(testFileToDeletePath);
+        sourceFileToDelete << testData << std::endl;
+        sourceFileToDelete.close();
         testModule->SetTextResult(textResults);
 
         int status = testModule->Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
+        ASSERT_TRUE(FileExists(expectedFilePath.c_str()));
+        ASSERT_FALSE(FileExists(testFileToDeletePath.c_str()));
     }
 
     TEST_F(PmcTests, ValidGetInitialValues)
@@ -96,9 +112,10 @@ namespace OSConfig::Platform::Tests
             {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")}
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
+            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\"}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         testModule->SetTextResult(textResults);
@@ -123,9 +140,10 @@ namespace OSConfig::Platform::Tests
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 3.03+dfsg2-7:1 ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 5.02-1 ")},
-            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")}           
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],\"executionState\":2,\"executionSubState\":0,\"executionSubStateDetails\":\"\"}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],\"executionState\":2,\"executionSubState\":0,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
@@ -133,6 +151,36 @@ namespace OSConfig::Platform::Tests
 
         status = testModule->Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, MMI_OK);
+
+        status = testModule->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
+        EXPECT_EQ(status, MMI_OK);
+
+        std::string payloadString(payload, payloadSizeBytes);
+        ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
+    }
+
+    TEST_F(PmcTests, SetGetUpdatingPackagesSourcesFailure)
+    {
+        const std::map<std::string, std::tuple<int, std::string>> textResults =
+        {
+            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"apt-get update", std::tuple<int, std::string>(EBUSY, "")},
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
+        };
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"executionState\":3,\"executionSubState\":6,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
+        int payloadSizeBytes = 0;
+        MMI_JSON_STRING payload = nullptr;
+        int status;
+        testModule->SetTextResult(textResults);
+
+        status = testModule->Set(componentName, desiredObjectName, validJsonPayload, strlen(validJsonPayload));
+        EXPECT_EQ(status, EBUSY);
 
         status = testModule->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, MMI_OK);
@@ -153,9 +201,10 @@ namespace OSConfig::Platform::Tests
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")}
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"executionState\":4,\"executionSubState\":5,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\"}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"executionState\":4,\"executionSubState\":7,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
@@ -206,11 +255,12 @@ namespace OSConfig::Platform::Tests
             {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")}
+            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
+            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
         
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":3,\"executionSubState\":3,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\"}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":3,\"executionSubState\":4,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;

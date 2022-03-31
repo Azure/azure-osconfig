@@ -46,6 +46,7 @@ public:
     struct DesiredState
     {
         std::vector<std::string> packages;
+        std::map<std::string, std::string> sources;
     };
 
     struct State
@@ -53,8 +54,11 @@ public:
         ExecutionState executionState;
         std::string packagesFingerprint;
         std::vector<std::string> packages;
+        std::string sourcesFingerprint;
+        std::vector<std::string> sourcesFilenames;
     };
 
+    PmcBase(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
     PmcBase(unsigned int maxPayloadSizeBytes);
     virtual ~PmcBase() = default;
 
@@ -70,6 +74,8 @@ private:
     int ExecuteUpdates(const std::vector<std::string> packages, bool updatePackageLists);
     std::string GetFingerprint();
     std::vector<std::string> GetReportedPackages(std::vector<std::string> packages);
+    int ConfigureSources(const std::map<std::string, std::string> sources);
+    std::string GetSourcesFingerprint(const char* sourcesDirectory);
     int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
     int ValidateAndGetPackagesNames(std::vector<std::string> packagesLines);
     static std::vector<std::string> ListFiles(const char* directory, const char* fileNameExtension);
@@ -84,4 +90,5 @@ private:
     std::vector<std::string> m_desiredPackages;
     unsigned int m_maxPayloadSizeBytes;
     size_t m_lastReachedStateHash;
+    const char* m_sourcesConfigurationDirectory;
 };

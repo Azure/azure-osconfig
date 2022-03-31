@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <dirent.h>
 #include <fstream>
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -16,10 +17,13 @@ static const std::string g_componentName = "PackageManagerConfiguration";
 static const std::string g_reportedObjectName = "state";
 static const std::string g_desiredObjectName = "desiredState";
 static const std::string g_packages = "packages";
+static const std::string g_sources = "sources";
 static const std::string g_executionState = "executionState";
 static const std::string g_executionSubState = "executionSubState";
 static const std::string g_executionSubStateDetails = "executionSubStateDetails";
 static const std::string g_packagesFingerprint = "packagesFingerprint";
+static const std::string g_sourcesFingerprint = "sourcesFingerprint";
+static const std::string g_sourcesFilenames = "sourcesFilenames";
 static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query"};
 
 constexpr const char* g_commandCheckToolPresence = "command -v $value";
@@ -27,8 +31,10 @@ constexpr const char* g_commandAptUpdate = "apt-get update";
 constexpr const char* g_commandExecuteUpdate = "apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
 constexpr const char* g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
+constexpr const char* g_commandGetSourcesFingerprint = "find $value -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64";
 constexpr const char* g_regexPackages = "(?:[a-zA-Z\\d\\-]+(?:=[a-zA-Z\\d\\.\\+\\-\\~\\:]+|\\-| )*)+";
-
+constexpr const char* g_sourcesFolderPath = "/etc/apt/sources.list.d/";
+constexpr const char* g_listExtension = ".list";
 constexpr const char g_moduleInfo[] = R""""({
     "Name": "PMC",
     "Description": "Module designed to install DEB-packages using APT",
@@ -42,11 +48,17 @@ constexpr const char g_moduleInfo[] = R""""({
 
 OSCONFIG_LOG_HANDLE PmcLog::m_log = nullptr;
 
-PmcBase::PmcBase(unsigned int maxPayloadSizeBytes)
+PmcBase::PmcBase(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory)
 {
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
+    m_sourcesConfigurationDirectory = sourcesDirectory;
     m_executionState = ExecutionState();
     m_lastReachedStateHash = 0;
+}
+
+PmcBase::PmcBase(unsigned int maxPayloadSizeBytes)
+    : PmcBase(maxPayloadSizeBytes, g_sourcesFolderPath)
+{
 }
 
 int PmcBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
@@ -158,9 +170,15 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
                             return status;
                         }
 
+                        bool updateSources = !desiredState.sources.empty();
+                        if (updateSources)
+                        {
+                            status = PmcBase::ConfigureSources(desiredState.sources);
+                        }
+
                         if (status == MMI_OK)
                         {
-                            status = PmcBase::ExecuteUpdates(desiredState.packages, true);
+                            status = PmcBase::ExecuteUpdates(desiredState.packages, !updateSources);
                         }
                     }
                     else
@@ -227,6 +245,8 @@ int PmcBase::Get(const char* componentName, const char* objectName, MMI_JSON_STR
                 reportedState.executionState = m_executionState;
                 reportedState.packagesFingerprint = GetFingerprint();
                 reportedState.packages = GetReportedPackages(m_desiredPackages);
+                reportedState.sourcesFingerprint = GetSourcesFingerprint(m_sourcesConfigurationDirectory);
+                reportedState.sourcesFilenames = ListFiles(m_sourcesConfigurationDirectory, g_listExtension);
                 status = SerializeState(reportedState, payload, payloadSizeBytes, maxPayloadSizeBytes);
             }
             else
@@ -273,6 +293,38 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
 {
     int status = 0;
 
+    if (document.HasMember(g_sources.c_str()))
+    {
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingSources);
+        if (document[g_sources.c_str()].IsObject())
+        {
+            for (auto &member : document[g_sources.c_str()].GetObject())
+            {
+                if (member.value.IsString())
+                {
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingSources, member.name.GetString());
+                    object.sources[member.name.GetString()] = member.value.GetString();
+                }
+                else if (member.value.IsNull())
+                {
+                    object.sources[member.name.GetString()] = "";
+                }
+                else
+                {
+                    OsConfigLogError(PmcLog::Get(), "Invalid string in JSON object string map at key %s", member.name.GetString());
+                    m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingSources, member.name.GetString());
+                    status = EINVAL;
+                }
+            }
+        }
+        else
+        {
+            OsConfigLogError(PmcLog::Get(), "%s is not a map", g_sources.c_str());
+            m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingSources);
+            status = EINVAL;
+        }
+    }
+
     if (document.HasMember(g_packages.c_str()))
     {
         m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::deserializingPackages);
@@ -302,9 +354,9 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
         }
     }
 
-    if (!document.HasMember(g_packages.c_str()))
+    if (!document.HasMember(g_sources.c_str()) && !document.HasMember(g_packages.c_str()))
     {
-        OsConfigLogError(PmcLog::Get(), "JSON object does not contain '%s'", g_packages.c_str());
+        OsConfigLogError(PmcLog::Get(), "JSON object does not contain '%s', neither '%s'", g_sources.c_str(), g_packages.c_str());
         m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::deserializingDesiredState);
         status = EINVAL;
     }
@@ -427,6 +479,17 @@ int PmcBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* 
 
     writer.Key(g_executionSubStateDetails.c_str());
     writer.String(reportedState.executionState.GetExecutionSubStateDetails().c_str());
+
+    writer.Key(g_sourcesFingerprint.c_str());
+    writer.String(reportedState.sourcesFingerprint.c_str());
+
+    writer.Key(g_sourcesFilenames.c_str());
+    writer.StartArray();
+    for (auto& element : reportedState.sourcesFilenames)
+    {
+        writer.String(element.c_str());
+    }
+    writer.EndArray();
 
     writer.EndObject();
 
@@ -560,4 +623,132 @@ std::string PmcBase::TrimEnd(const std::string& str, const std::string& trim)
 std::string PmcBase::Trim(const std::string& str, const std::string& trim)
 {
     return TrimStart(TrimEnd(str, trim), trim);
+}
+
+std::string PmcBase::GetSourcesFingerprint(const char* sourcesDirectory)
+{
+    std::string hashString = "";
+    std::string command = std::regex_replace(g_commandGetSourcesFingerprint, std::regex("\\$value"), sourcesDirectory);
+    int status = RunCommand(command.c_str(), &hashString);
+
+    if (status != MMI_OK && IsFullLoggingEnabled())
+    {
+        OsConfigLogError(PmcLog::Get(), "Get the fingerprint of source files in directory %s failed with status %d", sourcesDirectory, status);
+    }
+
+    return !hashString.empty() ? hashString : "(failed)";
+}
+
+std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* fileNameExtension)
+{
+    struct dirent* entry = nullptr;
+    DIR* directoryStream = nullptr;
+    int extensionLength = nullptr != fileNameExtension ? strlen(fileNameExtension) : 0;
+    char* fileName;
+    int fileNameLength;
+    char* lastCharacters;
+    std::vector<std::string> result;
+
+    directoryStream = opendir(directory);
+    if (nullptr != directoryStream)
+    {
+        while ((entry = readdir(directoryStream)))
+        {
+            fileName = entry->d_name;
+            if ((0 == strcmp(fileName, ".")) || (0 == strcmp(fileName, "..")))
+            {
+                continue;
+            }
+
+            if (nullptr == fileNameExtension)
+            {
+                result.push_back(fileName);
+            }
+            else
+            {
+                fileNameLength = strlen(fileName);
+                if (fileNameLength >= extensionLength)
+                {
+                    lastCharacters = &fileName[fileNameLength-extensionLength];
+                    if (0 == strcmp(lastCharacters, fileNameExtension))
+                    {
+                        result.push_back(fileName);
+                    }
+                }
+            }
+        }
+        closedir(directoryStream);
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogError(PmcLog::Get(), "Failed to open directory %s, cannot list files", directory);
+    }
+
+    return result;
+}
+
+int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
+{
+    int status = MMI_OK;
+    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::modifyingSources);
+
+    for (auto& source : sources)
+    {
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::modifyingSources, source.first);
+        std::string sourceFileName = source.first + ".list";
+        std::string sourcesFilePath = m_sourcesConfigurationDirectory + sourceFileName;
+        OsConfigLogInfo(PmcLog::Get(), "Starting to configure source(s) file: %s", sourcesFilePath.c_str());
+
+        // Delete file when provided map value is empty
+        if (source.second.empty())
+        {
+            if (FileExists(sourcesFilePath.c_str()))
+            {
+                status = remove(sourcesFilePath.c_str());
+            }
+            else
+            {
+                OsConfigLogInfo(PmcLog::Get(), "Nothing to delete. Source(s) file: %s does not exist", sourcesFilePath.c_str());
+            }
+
+            if (status != MMI_OK)
+            {
+                OsConfigLogError(PmcLog::Get(), "Failed to delete source(s) file %s with status %d. Stopping configuration for further sources", sourcesFilePath.c_str(), status);
+                m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::modifyingSources, source.first);
+                return errno;
+            }
+        }
+        else
+        {
+            std::ofstream output(sourcesFilePath);
+
+            if (output.fail())
+            {
+                OsConfigLogError(PmcLog::Get(), "Failed to create source(s) file %s. Stopping configuration for further sources", sourcesFilePath.c_str());
+                m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::modifyingSources, source.first);
+                output.close();
+                return errno;
+            }
+
+            output << source.second << std::endl;
+            output.close();
+        }
+    }
+
+    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::updatingPackagesLists);
+    status = RunCommand(g_commandAptUpdate, nullptr);
+
+    if (status != MMI_OK)
+    {
+        OsConfigLogError(PmcLog::Get(), "Refresh sources failed with status %d", status);
+        status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
+                        : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
+    }
+    else
+    {
+        OsConfigLogInfo(PmcLog::Get(), "Successfully configured sources");
+        m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
+    }
+
+    return status;
 }
