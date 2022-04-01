@@ -5,6 +5,12 @@
 
 name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 
+trigger:
+  branches:
+    include:
+    - main
+pr: none
+
 resources:
   containers:
   - container: ubuntu
@@ -41,7 +47,7 @@ parameters:
   displayName: Shell script to execute after osconfig install
   type: string
   default: ' '
-  
+
 - name: cloud_targets
   type: object
   default:
@@ -115,7 +121,7 @@ stages:
 
 - template: stages/e2etest_iothub_delete.yaml
   parameters:
-    dependsOn: 
+    dependsOn:
     - ${{ each target in parameters.cloud_targets }}:
       - Run_Test_Driver_${{ target.device_id }}
     - ${{ each target in parameters.baremetal_targets }}:
