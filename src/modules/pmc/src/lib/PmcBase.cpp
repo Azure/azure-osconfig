@@ -128,7 +128,10 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
     size_t payloadHash = std::hash<std::string>{}(payload);
     if (m_lastReachedStateHash == payloadHash)
     {
-        OsConfigLogInfo(PmcLog::Get(), "Ignoring update, desired state equals current state.");
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(PmcLog::Get(), "Ignoring update, desired state equals current state.");
+        }
         return MMI_OK;
     }
 
@@ -417,7 +420,6 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
 
     for (std::string package : packages)
     {
-        OsConfigLogInfo(PmcLog::Get(), "Starting to update package(s): %s", package.c_str());
         m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::installingPackages, package);
         status = ExecuteUpdate(package);
         if (status != MMI_OK)
@@ -427,7 +429,10 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
                             : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::installingPackages, package);
             return status;
         }
-        OsConfigLogInfo(PmcLog::Get(), "Successfully updated package(s): %s", package.c_str());
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(PmcLog::Get(), "Successfully updated package(s): %s", package.c_str());
+        }
     }
 
     m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
@@ -679,7 +684,6 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
         m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::modifyingSources, source.first);
         std::string sourceFileName = source.first + ".list";
         std::string sourcesFilePath = m_sourcesConfigurationDirectory + sourceFileName;
-        OsConfigLogInfo(PmcLog::Get(), "Starting to configure source(s) file: %s", sourcesFilePath.c_str());
 
         // Delete file when provided map value is empty
         if (source.second.empty())
@@ -688,7 +692,7 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
             {
                 status = remove(sourcesFilePath.c_str());
             }
-            else
+            else if (IsFullLoggingEnabled())
             {
                 OsConfigLogInfo(PmcLog::Get(), "Nothing to delete. Source(s) file: %s does not exist", sourcesFilePath.c_str());
             }
@@ -728,7 +732,10 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
     }
     else
     {
-        OsConfigLogInfo(PmcLog::Get(), "Successfully updated package lists");
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(PmcLog::Get(), "Successfully updated packages lists");
+        }
         m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
     }
 
