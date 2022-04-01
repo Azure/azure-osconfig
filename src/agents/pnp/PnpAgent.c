@@ -295,6 +295,9 @@ static void SignalProcessDesired(int signal)
     OsConfigLogInfo(GetLog(), "Processing desired twin updates");
     ProcessDesiredTwinUpdates();
     UNUSED(signal);
+
+    // Reset the signal handler for the next use otherwise the default handler will be invoked instead
+    signal(SIGUSR1, SignalProcessDesired);
 }
 
 static void ForkDaemon()
