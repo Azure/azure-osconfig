@@ -225,7 +225,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
         }
 
-        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
+        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
         if (*payload)
         {
             // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
@@ -233,7 +233,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else
         {
-            OsConfigLogError(DeviceInfoGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes);
+            OsConfigLogError(DeviceInfoGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
             *payloadSizeBytes = 0;
             status = ENOMEM;
         }
