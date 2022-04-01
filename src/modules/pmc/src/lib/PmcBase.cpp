@@ -125,7 +125,7 @@ int PmcBase::Set(const char* componentName, const char* objectName, const MMI_JS
         return ENODEV;
     }
 
-    size_t payloadHash = std::hash<std::string>{}(payload);
+    size_t payloadHash = HashString(payload);
     if (m_lastReachedStateHash == payloadHash)
     {
         if (IsFullLoggingEnabled())
