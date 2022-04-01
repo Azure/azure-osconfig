@@ -41,6 +41,8 @@ static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult
 static const char g_commandSeparator[] = " > ";
 static const char g_commandTerminator[] = " 2>&1";
 
+static const char g_persistentHashTemplate[] = "echo %s | sha256sum | head -c 64";
+
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
     FILE* file = NULL;
@@ -1176,4 +1178,37 @@ bool LockFile(FILE* file, void* log)
 bool UnlockFile(FILE* file, void* log)
 {
     return LockUnlockFile(file, false, log);
+}
+
+char* PersistentHashString(const char* source, void* log)
+{
+    char* command = NULL;
+    char* hash = NULL;
+    int length = 0;
+    int status = -1;
+
+    if (NULL == source)
+    {
+        return NULL;
+    }
+
+    length = (int)(strlen(source) + strlen(g_persistentHashTemplate));
+    command = (char*)malloc(length);
+    if (NULL != command)
+    {
+        memset(command, 0, length);
+        snprintf(command, length, g_persistentHashTemplate, source);
+        
+        status = ExecuteCommand(NULL, command, false, true, 0, 0, &hash, NULL, log);
+        if (0 != status)
+        {
+            FREE_MEMMORY(hash);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "PersistentHashString: out of memory");
+    }
+
+    return (command && status) ? hash : NULL;
 }

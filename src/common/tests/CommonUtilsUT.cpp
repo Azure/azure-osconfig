@@ -511,6 +511,24 @@ TEST_F(CommonUtilsTest, HashString)
     EXPECT_EQ(dataHash, sameDataHash);
 }
 
+TEST_F(CommonUtilsTest, PersistentHashString)
+{
+    char* dataHash = PersistentHashString(m_data, nullptr);
+    EXPECT_NE(0, dataHash);
+    
+    char* dataWithEolHash = PersistentHashString(m_dataWithEol, nullptr);
+    EXPECT_NE(0, dataWithEolHash);
+    EXPECT_NE(dataHash, dataWithEolHash);
+
+    char* sameDataHash = PersistentHashString(m_data, nullptr);
+    EXPECT_NE(0, sameDataHash);
+    EXPECT_STREQ(dataHash, sameDataHash);
+
+    FREE_MEMORY(dataHash);
+    FREE_MEMORY(dataWithEolHash);
+    FREE_MEMORY(sameDataHash);
+}
+
 TEST_F(CommonUtilsTest, RestrictFileAccess)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));

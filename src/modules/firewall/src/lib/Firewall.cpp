@@ -10,8 +10,6 @@
 OSCONFIG_LOG_HANDLE FirewallLog::m_logFirewall = nullptr;
 const string g_iptablesUtility = "iptables";
 const string g_queryTableCommand = g_iptablesUtility + " -L -n -v --line-number -t ";
-const string g_echoCommandString = "echo ";
-const string g_sha256CommandString = " | sha256sum | head -c 64";
 const string g_fingerprintPattern = R"""(\"([a-z0-9]{64})\")""";
 const char g_firewallState[] = "firewallState";
 const char g_firewallFingerprint[] = "firewallFingerprint";
@@ -630,21 +628,8 @@ string FirewallObjectBase::FirewallRulesToString()
 
 string FirewallObjectBase::GetFingerprint()
 {
-    string hashString = "";
     string firewallRulesString = FirewallRulesToString();
-    string commandString = g_echoCommandString + firewallRulesString + g_sha256CommandString;
-    char* char_output = nullptr;
-    int commandStatus = ExecuteCommand(nullptr, commandString.c_str(), false, true, 0, 0, &char_output, nullptr, FirewallLog::Get());
-    if ((commandStatus == 0) && (char_output != nullptr))
-    {
-        hashString = string(char_output, strlen(char_output));
-    }
-
-    if (char_output != nullptr)
-    {
-        free(char_output);
-    }
-
+    string hashString = PersistentHashString(firewallRulesString, FirewallLog::Get());
     return hashString;
 }
 
