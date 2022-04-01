@@ -226,9 +226,9 @@ static void SignalInterrupt(int signal)
     }
 }
 
-static void SignalReloadConfiguration(int signal)
+static void SignalReloadConfiguration(int incomingSignal)
 {
-    g_refreshSignal = signal;
+    g_refreshSignal = incomingSignal;
     
     // Reset the handler
     signal(SIGHUP, SignalReloadConfiguration);
