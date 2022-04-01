@@ -56,7 +56,7 @@ stages:
       displayName: Generate build
 
     - script: |
-        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build && cmake --build . && cmake --build . --target dist && cd mkdir staging && cp -r /AzOsConfig/build/dist/* staging/"
+        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build && cmake --build . && cmake --build . --target dist && mkdir staging && cp -r /AzOsConfig/build/dist/* staging"
       displayName: Build & Stage Source Package
 
     - publish: $(Build.SourcesDirectory)/build/staging
