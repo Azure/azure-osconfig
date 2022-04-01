@@ -1,0 +1,36 @@
+# IoTHub creation stage definition
+
+parameters:
+- name: dependsOn
+  type: object
+  default: []
+
+stages:
+- stage: Terraform_destroy_iothub
+  displayName: Cloud - Destroy IoT Hub
+  dependsOn:
+  - Terraform_iothub
+  - ${{ each dependency in parameters.dependsOn }}:
+    - ${{ dependency }}
+  pool:
+      vmImage: 'ubuntu-18.04'
+  condition: succeeded()
+  jobs:
+  - job: TerraformDestroy
+    steps:
+      - script: |
+          sudo apt update && sudo apt install curl
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt install terraform
+        displayName: Installing Terraform
+
+      - download: current
+        artifact: terraformStateIoTHub
+        displayName: Fetching terraform state (IoTHub)
+
+      - script: |
+          terraform init
+          terraform destroy -var client_id="$(CLIENT_ID)" -var client_secret="$(CLIENT_SECRET)"  -var subscription_id="$(SUBSCRIPTION_ID)" -var tenant_id="$(TENANT_ID)" -var key_vault_id="$(KEY_VAULT_ID)" -auto-approve || true
+        workingDirectory: $(Pipeline.Workspace)/terraformStateIoTHub
+        displayName: Destroy cloud resources (IoTHub)
