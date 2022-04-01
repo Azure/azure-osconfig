@@ -1,0 +1,138 @@
+# E2E Baremetal Test Stage Definition
+# Parameters:
+#  - (Required) jobName [string]: Name to use for the job and stage
+#  - (Required) deviceId [string]:  the deviceId to use on the IoT Hub (pre-provisioned)
+#  - (Required) packagePattern [string]: the package to stage onto the host
+#  - (Required) environment [string]: the environment to target, targets a pipeline agent with that environment
+#  - (Optional) twinTimeout [number]: Timeout for twin updates - default: 90 seconds
+#  - (Optional) testExpression [string]: the test expression to use to filter the tests (see https://docs.microsoft.com/dotnet/core/testing/selective-unit-tests?pivots=mstest) - default: all tests
+#  - (Optional) sourceBranch [string]: package branch to use - default: Uses source branch
+#  - (Optional) sourceBuild [boolean]: perform a source build instead of using the package - default: false
+
+parameters:
+- name: jobName
+  type: string
+- name: deviceId
+  type: string
+- name: packagePattern
+  type: string
+  default: ' '
+- name: environment
+  type: string
+- name: twinTimeout
+  displayName: Timeout for twin updates
+  type: number
+  default: 90
+- name: testExpression
+  type: string
+  default: ' '
+- name: sourceBranch
+  displayName: 'Branch to use package from (default: source branch if empty)'
+  type: string
+  default: ' '
+- name: sourceBuild
+  displayName: Build and install source
+  type: boolean
+  default: false
+
+stages:
+- stage: Baremetal_${{ parameters.deviceId }}
+  displayName: Baremetal - ${{ parameters.environment }}
+  dependsOn: Terraform_iothub
+  variables:
+    IOTHUB_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['iothub_name_step.IOTHUB_NAME'] ]
+    RESOURCE_GROUP_NAME: $[ stageDependencies.Terraform_iothub.TerraformJobIotHub.outputs['resource_group_name_step.RESOURCE_GROUP_NAME'] ]
+  jobs:
+  - job: Baremetal
+
+    pool:
+      name: OSConfig
+      demands:
+      - ${{ parameters.environment }}
+
+    workspace:
+      clean: all
+
+    steps:
+    - task: AzureCLI@2
+      displayName: Create and apply device identity
+      name: azcli_device_identity
+      inputs:
+        azureSubscription: $(SERVICE_CONNECTION)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az config set extension.use_dynamic_install=yes_without_prompt
+          az login --service-principal -u "$(CLIENT_ID)" -p "$(CLIENT_SECRET)" --tenant "$(TENANT_ID)"
+          az iot hub device-identity create --device-id "${{parameters.deviceId}}" --hub-name $(IOTHUB_NAME) --output none
+          DEVICE_CONN_STR=`az iot hub device-identity connection-string show --hub-name $(IOTHUB_NAME) --device-id ${{parameters.deviceId}} --output tsv`
+          sudo aziotctl config mp -c "$DEVICE_CONN_STR" --force
+          sudo aziotctl config apply
+
+    - ${{ if and(eq(parameters.sourceBuild, False), ne(parameters.sourceBranch, ' ')) }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: Download OSConfig from pipeline (${{ parameters.sourceBranch }})
+        inputs:
+          source: 'specific'
+          project: 'AzOsConfig'
+          pipeline: $(package_pipeline)
+          runVersion: 'latestFromBranch'
+          runBranch: ${{ parameters.sourceBranch }}
+          itemPattern: ${{ parameters.packagePattern }}
+    - ${{ if and(eq(parameters.sourceBuild, False), eq(parameters.sourceBranch, ' ')) }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: Download OSConfig from pipeline ($(Build.SourceBranch))
+        inputs:
+          source: 'specific'
+          project: 'AzOsConfig'
+          pipeline: $(package_pipeline)
+          runVersion: 'latestFromBranch'
+          runBranch: $(Build.SourceBranch)
+          itemPattern: ${{ parameters.packagePattern }}
+
+    - ${{ if eq(parameters.sourceBuild, False) }}:
+      - script: |
+          sudo dpkg -i `find . -name '*.deb' | head -n 1`
+          sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo rm -rf /var/log/osconfig*
+          sudo systemctl daemon-reload
+          sudo systemctl enable osconfig.service
+          sudo systemctl start osconfig
+        displayName: Install OSConfig
+        workingDirectory: $(Pipeline.Workspace)
+        condition: succeeded()
+    - ${{ if eq(parameters.sourceBuild, True) }}:
+      - checkout: self
+        submodules: recursive
+      - script: |
+          sudo systemctl stop osconfig | true
+          cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B./build -H./src
+          sudo cmake --build ./build --target install
+          sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo rm -rf /var/log/osconfig*
+          sudo systemctl daemon-reload
+          sudo systemctl enable osconfig.service
+          sudo systemctl start osconfig
+          sudo rm -rf ./build
+        displayName: Build and Install OSConfig (from source)
+        workingDirectory: $(Build.SourcesDirectory)
+        condition: succeeded()
+
+- ${{ if ne(parameters.testExpression, ' ') }}:
+  - template: e2etest_testdriver.yaml
+    parameters:
+      deviceId: ${{parameters.deviceId}}
+      testRunName: ${{parameters.jobName}}
+      deviceStageName: Baremetal_${{ parameters.deviceId }}
+      testExpression: '${{ parameters.testExpression }} & TestCategory != BaremetalExclude'
+      twinTimeout: ${{ parameters.twinTimeout }}
+      environment: ${{ parameters.environment }}
+- ${{ else }}:
+  - template: e2etest_testdriver.yaml
+    parameters:
+      deviceId: ${{parameters.deviceId}}
+      testRunName: ${{parameters.jobName}}
+      deviceStageName: Baremetal_${{ parameters.deviceId }}
+      testExpression: 'TestCategory != BaremetalExclude'
+      twinTimeout: ${{ parameters.twinTimeout }}
+      environment: ${{ parameters.environment }}

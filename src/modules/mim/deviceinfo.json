@@ -1,0 +1,60 @@
+{
+  "name": "DeviceInfoModel",
+  "type": "mimModel",
+  "contents": [
+    {
+      "name": "DeviceInfo",
+      "type": "MimComponent",
+      "contents": [
+        {
+          "name": "osName",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "osVersion",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "cpuType",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "kernelName",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "kernelRelease",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "kernelVersion",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "manufacturer",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "model",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+}

@@ -66,7 +66,7 @@ private:
 
     virtual std::FILE* OpenAndLockFile(const char* mode);
     virtual std::FILE* OpenAndLockFile(const char* mode, unsigned int milliseconds, int count);
-    virtual void CloseAndUnlockFile(std::FILE* fp);
+    virtual void CloseAndUnlockFile(std::FILE* file);
 
     virtual int ReadAgentConfiguration(AgentConfiguration& configuration);
     virtual int WriteAgentConfiguration(const AgentConfiguration& configuration);

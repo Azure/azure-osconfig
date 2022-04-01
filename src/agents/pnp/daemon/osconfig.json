@@ -1,51 +1,87 @@
 {
-  "ModelVersion": 5,
+  "ModelVersion": 7,
   "FullLogging": 0,
   "Protocol": 2,
   "Reported": [
     {
       "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus"
+      "ObjectName": "commandStatus"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "osName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "osVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuType"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "kernelName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "kernelRelease"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "kernelVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "manufacturer"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "model"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "firewallState"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "firewallFingerprint"
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "name"
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "hosts"
     },
     {
       "ComponentName": "Networking",
-      "ObjectName": "NetworkConfiguration"
+      "ObjectName": "networkConfiguration"
     },
     {
-      "ComponentName": "Firewall",
-      "ObjectName": "FirewallState"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "FirewallFingerprint"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "Name"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "Hosts"
+      "ComponentName": "PackageManagerConfiguration",
+      "ObjectName": "state"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmStatus"
+      "ObjectName": "tpmStatus"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmVersion"
+      "ObjectName": "tpmVersion"
     },
     {
       "ComponentName": "Tpm",
-      "ObjectName": "TpmManufacturer"
+      "ObjectName": "tpmManufacturer"
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "Enabled"
+      "ObjectName": "enabled"
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "ServiceUrl"
+      "ObjectName": "serviceUrl"
     }
   ],
   "ReportingIntervalSeconds": 30,

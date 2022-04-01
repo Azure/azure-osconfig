@@ -584,7 +584,7 @@ static char* GetHttpProxyData()
         if (NULL != environmentVariable)
         {
             // The environment variable string must be treated as read-only, make a copy for our use:
-            proxyData = strdup(environmentVariable);
+            proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
                 LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
@@ -626,7 +626,7 @@ int main(int argc, char *argv[])
     forkDaemon = (bool)(((3 == argc) && (NULL != argv[2]) && (0 == strcmp(argv[2], FORK_ARG))) ||
         ((2 == argc) && (NULL != argv[1]) && (0 == strcmp(argv[1], FORK_ARG))));
 
-    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
@@ -658,7 +658,7 @@ int main(int argc, char *argv[])
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
 
     // Load remaining configuration
-    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false);
+    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
         GetModelVersionFromJsonConfig(jsonConfiguration);
@@ -700,7 +700,10 @@ int main(int argc, char *argv[])
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
     
-    OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
+    }
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
@@ -752,7 +755,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            connectionString = LoadStringFromFile(argv[1], true);
+            connectionString = LoadStringFromFile(argv[1], true, GetLog());
             if (NULL != connectionString)
             {
                 freeConnectionString = true;
@@ -876,7 +879,7 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false);
+    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
@@ -905,7 +908,7 @@ static void SaveReportedConfigurationToFile()
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
             {
-                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes))
+                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
                     g_reportedHash = payloadHash;

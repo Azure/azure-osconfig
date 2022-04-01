@@ -5,13 +5,13 @@
 #include <Logging.h>
 
 const std::string g_componentName = "Settings";
-const std::string g_deviceHealthTelemetry = "DeviceHealthTelemetryConfiguration";
-const std::string g_deliveryOptimization = "DeliveryOptimizationPolicies";
+const std::string g_deviceHealthTelemetry = "deviceHealthTelemetryConfiguration";
+const std::string g_deliveryOptimization = "deliveryOptimizationPolicies";
 
-const std::string g_percentageDownloadThrottle = "PercentageDownloadThrottle";
-const std::string g_cacheHostSource = "CacheHostSource";
-const std::string g_cacheHost = "CacheHost";
-const std::string g_cacheHostFallback = "CacheHostFallback";
+const std::string g_percentageDownloadThrottle = "percentageDownloadThrottle";
+const std::string g_cacheHostSource = "cacheHostSource";
+const std::string g_cacheHost = "cacheHost";
+const std::string g_cacheHostFallback = "cacheHostFallback";
 
 static const char g_healthTelemetryConfigFile[] = "/etc/azure-device-health-services/config.toml";
 static const char g_doConfigFile[] = "/etc/deliveryoptimization-agent/admin-config.json";

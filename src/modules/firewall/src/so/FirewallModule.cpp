@@ -13,8 +13,8 @@
 #include <string>
 
 const char g_componentName[] = "Firewall";
-const char g_firewallState[] = "FirewallState";
-const char g_firewallFingerprint[] = "FirewallFingerprint";
+const char g_firewallState[] = "firewallState";
+const char g_firewallFingerprint[] = "firewallFingerprint";
 
 using namespace std;
 
@@ -28,6 +28,17 @@ void __attribute__((destructor)) DestroyModule()
     OsConfigLogInfo(FirewallLog::Get(), "Firewall module unloaded");
     FirewallLog::CloseLog();
 }
+
+constexpr const char g_moduleInfo[] = R""""({
+    "Name": "Firewall",
+    "Description": "Provides functionality to remotely manage firewall rules on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 2,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Firewall"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
 
 int MmiGetInfoInternal(
     const char* clientName,
@@ -69,22 +80,11 @@ int MmiGetInfoInternal(
         return status;
     }
 
-    constexpr const char ret[] = R""""({
-        "Name": "Firewall",
-        "Description": "Provides functionality to remotely manage firewall rules on device",
-        "Manufacturer": "Microsoft",
-        "VersionMajor": 2,
-        "VersionMinor": 0,
-        "VersionInfo": "Nickel",
-        "Components": ["Firewall"],
-        "Lifetime": 1,
-        "UserAccount": 0})"""";
-
-    std::size_t len = sizeof(ret) - 1;
+    std::size_t len = sizeof(g_moduleInfo) - 1;
 
     *payloadSizeBytes = len;
     *payload = new char[len];
-    std::memcpy(*payload, ret, len);
+    std::memcpy(*payload, g_moduleInfo, len);
 
     return status;
 }

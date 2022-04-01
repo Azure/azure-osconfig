@@ -10,6 +10,10 @@ For more information on OSConfig see [OSConfig North Star Architecture](docs/arc
 
 For our code of conduct and contributing instructions see [CONTRIBUTING](CONTRIBUTING.md). For our approach to security see [SECURITY](SECURITY.md).
 
+### C Standard
+
+OSConfig's C/C++ code currently targets compliance with C11.
+
 ## Getting started
 
 ### Prerequisites
@@ -46,10 +50,9 @@ Build with the following commands issued from under the build subfolder:
 cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DBUILD_TESTS=ON|OFF
 cmake --build . --config Release|Debug  --target install
 ```
-
 The following OSConfig files are binplaced at build time:
 
-Source | Destination | Descriptiopn
+Source | Destination | Description
 -----|-----|-----
 [src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The main OSConfig binary
 [src/agents/pnp/daemon/osconfig.conn](src/agents/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
@@ -119,7 +122,7 @@ OSConfig uses two local files as local digital twins in MIM JSON format:
 
 ## Configuration
 
-OSConfig has a general configuration file at '/etc/osconfig/osconfig.json' that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
+OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
 
 ```bash
 sudo systemctl kill -s SIGHUP osconfig.service
@@ -127,7 +130,7 @@ sudo systemctl kill -s SIGHUP osconfig.service
 
 ### Adjusting the reporting interval
 
-OSConfig periodically reports device data at a default time period of 30 seconds. This interval period can be adjusted between 1 second and 86,400 seconds (24 hours) via the OSConfig general configuration file at '/etc/osconfig/osconfig.json'. Edit there the integer value named "ReportingIntervalSeconds" to a value between 1 and 86400:
+OSConfig periodically reports device data at a default time period of 30 seconds. This interval period can be adjusted between 1 second and 86,400 seconds (24 hours) via the OSConfig general configuration file at `/etc/osconfig/osconfig.json`. Edit there the integer value named "ReportingIntervalSeconds" to a value between 1 and 86400:
 
 ```json
 {
@@ -197,7 +200,7 @@ Value | Description
 
 ## HTTP proxy configuration
 
-When the configured protocol is 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
+When the configured protocol is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
 
 1. `http_proxy`
 1. `https_proxy`
@@ -214,11 +217,30 @@ Where the prefix is either lowercase `http` or uppercase `HTTP` and the username
 
 For example: `http://username\@mail.foo:p\@ssw\@rd@www.foo.org:100` where username is `username@mail.foo`, password is `p@ssw@rd`, the proxy server is `www.foo.org` and the port is 100.
 
-The environment variable needs to be set for the root user account. For example, for a fictive proxy server, user and password, the environment variable `http_proxy` can be set for the root user with:
+The environment variable needs to be set for the root user account. For example, for a fictive proxy server, user and password, the environment variable `http_proxy` can be set for the root user manually via console with:
 
 ```
 sudo -E su
 export http_proxy=http://user:password@wwww.foo.org:100//
+```
+
+The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service):
+
+```
+# Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
+# Environment="http_proxy=http://user:password@wwww.foo.org:100//"
+```
+
+After editing the service unit file, stop and disable osconfig.service, rebuild OSConfig, then enable and start osconfig.service:
+
+```bash
+sudo systemctl stop osconfig.service
+sudo systemctl disable osconfig.service
+cd build
+cmake ../src -DCMAKE_BUILD_TYPE=Release|Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DBUILD_TESTS=ON|OFF
+cmake --build . --config Release|Debug  --target install
+sudo systemctl enable osconfig.service
+sudo systemctl start osconfig.service
 ```
 
 ## Health Telemetry

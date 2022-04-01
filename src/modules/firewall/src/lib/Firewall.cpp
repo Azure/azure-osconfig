@@ -13,8 +13,8 @@ const string g_queryTableCommand = g_iptablesUtility + " -L -n -v --line-number 
 const string g_echoCommandString = "echo ";
 const string g_sha256CommandString = " | sha256sum | head -c 64";
 const string g_fingerprintPattern = R"""(\"([a-z0-9]{64})\")""";
-const char g_firewallState[] = "FirewallState";
-const char g_firewallFingerprint[] = "FirewallFingerprint";
+const char g_firewallState[] = "firewallState";
+const char g_firewallFingerprint[] = "firewallFingerprint";
 const vector<string> g_tableNames = {"filter", "nat", "raw", "mangle", "security"};
 
 FirewallObject::FirewallObject(unsigned int maxPayloadSizeBytes)

@@ -10,7 +10,7 @@
 #define NETWORKING_LOGFILE "/var/log/osconfig_networking.log"
 #define NETWORKING_ROLLEDLOGFILE "/var/log/osconfig_networking.bak"
 #define NETWORKING "Networking"
-#define NETWORK_CONFIGURATION "NetworkConfiguration"
+#define NETWORK_CONFIGURATION "networkConfiguration"
 
 class NetworkingLog
 {

@@ -28,10 +28,10 @@ static const unsigned int g_lockWait = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
 const std::string Ztsi::m_componentName = "Ztsi";
-const std::string Ztsi::m_desiredServiceUrl = "DesiredServiceUrl";
-const std::string Ztsi::m_desiredEnabled = "DesiredEnabled";
-const std::string Ztsi::m_reportedServiceUrl = "ServiceUrl";
-const std::string Ztsi::m_reportedEnabled = "Enabled";
+const std::string Ztsi::m_desiredServiceUrl = "desiredServiceUrl";
+const std::string Ztsi::m_desiredEnabled = "desiredEnabled";
+const std::string Ztsi::m_reportedServiceUrl = "serviceUrl";
+const std::string Ztsi::m_reportedEnabled = "enabled";
 
 int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
@@ -95,20 +95,20 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_lastEnabledState = false;
 }
 
+constexpr const char g_moduleInfo[] = R""""({
+    "Name": "Ztsi",
+    "Description": "Provides functionality to remotely configure the ZTSI Agent on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 1,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Ztsi"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-
-    constexpr const char info[] = R""""({
-        "Name": "Ztsi",
-        "Description": "Provides functionality to remotely configure the ZTSI Agent on device",
-        "Manufacturer": "Microsoft",
-        "VersionMajor": 1,
-        "VersionMinor": 0,
-        "VersionInfo": "Nickel",
-        "Components": ["Ztsi"],
-        "Lifetime": 1,
-        "UserAccount": 0})"""";
 
     if (nullptr == clientName)
     {
@@ -129,7 +129,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
     {
         try
         {
-            std::size_t len = ARRAY_SIZE(info) - 1;
+            std::size_t len = ARRAY_SIZE(g_moduleInfo) - 1;
             *payload = new (std::nothrow) char[len];
             if (nullptr == *payload)
             {
@@ -138,7 +138,7 @@ int Ztsi::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payload
             }
             else
             {
-                std::memcpy(*payload, info, len);
+                std::memcpy(*payload, g_moduleInfo, len);
                 *payloadSizeBytes = len;
             }
         }
@@ -382,27 +382,22 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 
 std::FILE* Ztsi::OpenAndLockFile(const char* mode)
 {
-    int fd = -1;
-    std::FILE* fp = nullptr;
+    std::FILE* file = nullptr;
 
-    if (nullptr != (fp = fopen(m_agentConfigurationFile.c_str(), mode)))
+    if (nullptr != (file = fopen(m_agentConfigurationFile.c_str(), mode)))
     {
-        if (0 == (fd = fileno(fp)))
-        {
-            OsConfigLogError(ZtsiLog::Get(), "Failed to get file descriptor for %s", m_agentConfigurationFile.c_str());
-        }
-        else if (0 != flock(fd, LOCK_EX | LOCK_NB))
+        if (!LockFile(file, ZtsiLog::Get()))
         {
             if (IsFullLoggingEnabled())
             {
                 OsConfigLogError(ZtsiLog::Get(), "Failed to lock file %s", m_agentConfigurationFile.c_str());
             }
-            fclose(fp);
-            fp = nullptr;
+            fclose(file);
+            file = nullptr;
         }
     }
 
-    return fp;
+    return file;
 }
 
 std::FILE* Ztsi::OpenAndLockFile(const char* mode, unsigned int milliseconds, int count)
@@ -411,24 +406,24 @@ std::FILE* Ztsi::OpenAndLockFile(const char* mode, unsigned int milliseconds, in
     time_t seconds = milliseconds / 1000;
     long nanoseconds = (milliseconds % 1000) * 1000000;
     struct timespec lockTimeToSleep = {seconds, nanoseconds};
-    std::FILE* fp = nullptr;
+    std::FILE* file = nullptr;
 
-    while ((nullptr == (fp = OpenAndLockFile(mode))) && (i < count))
+    while ((nullptr == (file = OpenAndLockFile(mode))) && (i < count))
     {
         nanosleep(&lockTimeToSleep, nullptr);
         i++;
     }
 
-    return fp;
+    return file;
 }
 
-void Ztsi::CloseAndUnlockFile(std::FILE* fp)
+void Ztsi::CloseAndUnlockFile(std::FILE* file)
 {
-    if ((nullptr != fp))
+    if ((nullptr != file))
     {
-        fflush(fp);
-        flock(fileno(fp), LOCK_UN);
-        fclose(fp);
+        fflush(file);
+        UnlockFile(file, ZtsiLog::Get());
+        fclose(file);
     }
 }
 
@@ -436,23 +431,23 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
 {
     int status = MMI_OK;
     std::string configurationJson;
-    std::FILE* fp = nullptr;
+    std::FILE* file = nullptr;
     long fileSize = 0;
     size_t bytesRead = 0;
     char* buffer = nullptr;
 
     if (FileExists(m_agentConfigurationFile.c_str()))
     {
-        if (nullptr != (fp = OpenAndLockFile("r")))
+        if (nullptr != (file = OpenAndLockFile("r")))
         {
-            fseek(fp, 0, SEEK_END);
-            fileSize = ftell (fp);
-            rewind(fp);
+            fseek(file, 0, SEEK_END);
+            fileSize = ftell(file);
+            rewind(file);
 
             buffer = new (std::nothrow) char[fileSize + 1];
             if (nullptr != buffer)
             {
-                bytesRead = fread(buffer, 1, fileSize, fp);
+                bytesRead = fread(buffer, 1, fileSize, file);
                 if ((0 < fileSize) && (bytesRead == static_cast<unsigned>(fileSize)))
                 {
                     buffer[fileSize] = '\0';
@@ -478,7 +473,7 @@ int Ztsi::ReadAgentConfiguration(AgentConfiguration& configuration)
                 status = ENOMEM;
             }
 
-            CloseAndUnlockFile(fp);
+            CloseAndUnlockFile(file);
         }
         else
         {
@@ -554,13 +549,13 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
 int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
     int status = MMI_OK;
-    std::FILE* fp = nullptr;
+    std::FILE* file = nullptr;
 
-    if (nullptr != (fp = OpenAndLockFile("r+", g_lockWait, g_lockWaitMaxRetries)))
+    if (nullptr != (file = OpenAndLockFile("r+", g_lockWait, g_lockWaitMaxRetries)))
     {
         std::string configurationJson = BuildConfigurationJson(configuration);
 
-        int rc = std::fwrite(configurationJson.c_str(), 1, configurationJson.length(), fp);
+        int rc = std::fwrite(configurationJson.c_str(), 1, configurationJson.length(), file);
         if ((0 > rc) || (EOF == rc))
         {
             OsConfigLogError(ZtsiLog::Get(), "Failed to write to file %s", m_agentConfigurationFile.c_str());
@@ -568,11 +563,11 @@ int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
         }
         else
         {
-            ftruncate(fileno(fp), rc);
+            ftruncate(fileno(file), rc);
             m_lastAvailableConfiguration = configuration;
         }
 
-        CloseAndUnlockFile(fp);
+        CloseAndUnlockFile(file);
     }
     else
     {

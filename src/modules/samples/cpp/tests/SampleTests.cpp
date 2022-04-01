@@ -42,16 +42,16 @@ namespace OSConfig::Platform::Tests
 
     const char* CppSampleTests::componentName = "SampleComponent";
 
-    const char* CppSampleTests::desiredStringObjectName = "DesiredStringObject";
-    const char* CppSampleTests::reportedStringObjectName = "ReportedStringObject";
-    const char* CppSampleTests::desiredIntegerObjectName = "DesiredIntegerObject";
-    const char* CppSampleTests::reportedIntegerObjectName = "ReportedIntegerObject";
-    const char* CppSampleTests::desiredBooleanObjectName = "DesiredBooleanObject";
-    const char* CppSampleTests::reportedBooleanObjectName = "ReportedBooleanObject";
-    const char* CppSampleTests::desiredObjectName = "DesiredObject";
-    const char* CppSampleTests::reportedObjectName = "ReportedObject";
-    const char* CppSampleTests::desiredArrayObjectName = "DesiredArrayObject";
-    const char* CppSampleTests::reportedArrayObjectName = "ReportedArrayObject";
+    const char* CppSampleTests::desiredStringObjectName = "desiredStringObject";
+    const char* CppSampleTests::reportedStringObjectName = "reportedStringObject";
+    const char* CppSampleTests::desiredIntegerObjectName = "desiredIntegerObject";
+    const char* CppSampleTests::reportedIntegerObjectName = "reportedIntegerObject";
+    const char* CppSampleTests::desiredBooleanObjectName = "desiredBooleanObject";
+    const char* CppSampleTests::reportedBooleanObjectName = "reportedBooleanObject";
+    const char* CppSampleTests::desiredObjectName = "desiredObject";
+    const char* CppSampleTests::reportedObjectName = "reportedObject";
+    const char* CppSampleTests::desiredArrayObjectName = "desiredArrayObject";
+    const char* CppSampleTests::reportedArrayObjectName = "reportedArrayObject";
 
     TEST_F(CppSampleTests, GetSetStringObject)
     {
@@ -95,19 +95,19 @@ namespace OSConfig::Platform::Tests
     TEST_F(CppSampleTests, GetSetObject)
     {
         char jsonPayload[] = "{"
-            "\"StringSetting\":\"C++ Sample Module\","
-            "\"BooleanSetting\":true,"
-            "\"IntegerSetting\":12345,"
-            "\"IntegerEnumerationSetting\":0,"
-            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
-            "\"IntegerArraySetting\":[1,2,3,4,5],"
-            "\"StringMapSetting\":{"
-                "\"Key1\":\"C++ Sample Module 1\","
-                "\"Key2\":\"C++ Sample Module 2\""
+            "\"stringSetting\":\"C++ Sample Module\","
+            "\"booleanSetting\":true,"
+            "\"integerSetting\":12345,"
+            "\"integerEnumerationSetting\":0,"
+            "\"stringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"integerArraySetting\":[1,2,3,4,5],"
+            "\"stringMapSetting\":{"
+                "\"key1\":\"C++ Sample Module 1\","
+                "\"key2\":\"C++ Sample Module 2\""
             "},"
-            "\"IntegerMapSetting\":{"
-                "\"Key1\":1,"
-                "\"Key2\":2"
+            "\"integerMapSetting\":{"
+                "\"key1\":1,"
+                "\"key2\":2"
             "}}";
 
         int payloadSizeBytes = 0;
@@ -123,35 +123,35 @@ namespace OSConfig::Platform::Tests
     TEST_F(CppSampleTests, GetSetObjectMapNullValues)
     {
         char jsonPayload[] = "{"
-            "\"StringSetting\":\"C++ Sample Module\","
-            "\"BooleanSetting\":true,"
-            "\"IntegerSetting\":12345,"
-            "\"IntegerEnumerationSetting\":0,"
-            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
-            "\"IntegerArraySetting\":[1,2,3,4,5],"
-            "\"StringMapSetting\":{"
-                "\"Key1\":\"C++ Sample Module 1\","
-                "\"Key2\":\"C++ Sample Module 2\""
+            "\"stringSetting\":\"C++ Sample Module\","
+            "\"booleanSetting\":true,"
+            "\"integerSetting\":12345,"
+            "\"integerEnumerationSetting\":0,"
+            "\"stringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"integerArraySetting\":[1,2,3,4,5],"
+            "\"stringMapSetting\":{"
+                "\"key1\":\"C++ Sample Module 1\","
+                "\"key2\":\"C++ Sample Module 2\""
             "},"
-            "\"IntegerMapSetting\":{"
-                "\"Key1\":1,"
-                "\"Key2\":2"
+            "\"integerMapSetting\":{"
+                "\"key1\":1,"
+                "\"key2\":2"
             "}}";
 
         char jsonPayloadWithNullMapValues[] = "{"
-            "\"StringSetting\":\"C++ Sample Module\","
-            "\"BooleanSetting\":true,"
-            "\"IntegerSetting\":12345,"
-            "\"IntegerEnumerationSetting\":0,"
-            "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
-            "\"IntegerArraySetting\":[1,2,3,4,5],"
-            "\"StringMapSetting\":{"
-                "\"Key1\":\"C++ Sample Module 1\","
-                "\"Key2\":null"
+            "\"stringSetting\":\"C++ Sample Module\","
+            "\"booleanSetting\":true,"
+            "\"integerSetting\":12345,"
+            "\"integerEnumerationSetting\":0,"
+            "\"stringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+            "\"integerArraySetting\":[1,2,3,4,5],"
+            "\"stringMapSetting\":{"
+                "\"key1\":\"C++ Sample Module 1\","
+                "\"key2\":null"
             "},"
-            "\"IntegerMapSetting\":{"
-                "\"Key1\":1,"
-                "\"Key2\":null"
+            "\"integerMapSetting\":{"
+                "\"key1\":1,"
+                "\"key2\":null"
             "}}";
 
         int payloadSizeBytes = 0;
@@ -174,19 +174,19 @@ namespace OSConfig::Platform::Tests
     {
         char jsonPayload[] = "["
             "{"
-                "\"StringSetting\":\"C++ Sample Module\","
-                "\"BooleanSetting\":true,"
-                "\"IntegerSetting\":12345,"
-                "\"IntegerEnumerationSetting\":0,"
-                "\"StringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
-                "\"IntegerArraySetting\":[1,2,3,4,5],"
-                "\"StringMapSetting\":{"
-                    "\"Key1\":\"C++ Sample Module 1\","
-                    "\"Key2\":\"C++ Sample Module 2\""
+                "\"stringSetting\":\"C++ Sample Module\","
+                "\"booleanSetting\":true,"
+                "\"integerSetting\":12345,"
+                "\"integerEnumerationSetting\":0,"
+                "\"stringsArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],"
+                "\"integerArraySetting\":[1,2,3,4,5],"
+                "\"stringMapSetting\":{"
+                    "\"key1\":\"C++ Sample Module 1\","
+                    "\"key2\":\"C++ Sample Module 2\""
                 "},"
-                "\"IntegerMapSetting\":{"
-                    "\"Key1\":1,"
-                    "\"Key2\":2"
+                "\"integerMapSetting\":{"
+                    "\"key1\":1,"
+                    "\"key2\":2"
                 "}"
             "}]";
 

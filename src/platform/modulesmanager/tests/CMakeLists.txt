@@ -3,7 +3,7 @@
 
 project(modulesmanagertests)
 
-cmake_minimum_required(VERSION 3.2.0)
+set(CMAKE_CXX_STANDARD 14)
 
 include(CTest)
 find_package(GTest REQUIRED)

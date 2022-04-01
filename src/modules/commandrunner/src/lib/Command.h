@@ -14,17 +14,17 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 
-const std::string g_commandArguments = "CommandArguments";
-const std::string g_commandId = "CommandId";
-const std::string g_arguments = "Arguments";
-const std::string g_action = "Action";
-const std::string g_timeout = "Timeout";
-const std::string g_singleLineTextResult = "SingleLineTextResult";
+const std::string g_commandArguments = "commandArguments";
+const std::string g_commandId = "commandId";
+const std::string g_arguments = "arguments";
+const std::string g_action = "action";
+const std::string g_timeout = "timeout";
+const std::string g_singleLineTextResult = "singleLineTextResult";
 
-const std::string g_commandStatus = "CommandStatus";
-const std::string g_resultCode = "ResultCode";
-const std::string g_textResult = "TextResult";
-const std::string g_currentState = "CurrentState";
+const std::string g_commandStatus = "commandStatus";
+const std::string g_resultCode = "resultCode";
+const std::string g_textResult = "textResult";
+const std::string g_currentState = "currentState";
 
 #define COMMANDRUNNER_LOGFILE "/var/log/osconfig_commandrunner.log"
 #define COMMADRUNNER_ROLLEDLOGFILE "/var/log/osconfig_commandrunner.bak"

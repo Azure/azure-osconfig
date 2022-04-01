@@ -179,7 +179,7 @@ int HostNameBase::Get(
     // Validate payload size.
     int status = MMI_OK;
     *payloadSizeBytes = buffer.GetSize();
-    if (*payloadSizeBytes > static_cast<int>(m_maxPayloadSizeBytes))
+    if ((0 != m_maxPayloadSizeBytes) && (*payloadSizeBytes > static_cast<int>(m_maxPayloadSizeBytes)))
     {
         if (IsFullLoggingEnabled())
         {
