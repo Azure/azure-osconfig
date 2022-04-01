@@ -20,8 +20,8 @@ class CommonUtilsTest : public ::testing::Test
 {
     protected:
         const char* m_path = "~test.test";
-        const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
-        const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
+        const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
+        const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
 
         bool CreateTestFile(const char* path, const char* data)
         {
@@ -1000,4 +1000,27 @@ TEST_F(CommonUtilsTest, DuplicateString)
     EXPECT_NE(nullptr, duplicate = DuplicateString(m_data));
     EXPECT_STREQ(m_data, duplicate);
     FREE_MEMORY(duplicate);
+}
+
+TEST_F(CommonUtilsTest, PersistentHashString)
+{
+    EXPECT_EQ(nullptr, PersistentHashString(nullptr, nullptr));
+
+    char* hashOne = nullptr;
+    char* hashTwo = nullptr;
+    char* hashThree = nullptr;
+    
+    const char testOne[] = "This is a test 1234567890";
+    const char testTwo[] = "This is a test 1234567890 test";
+
+    EXPECT_NE(nullptr, hashOne = PersistentHashString(testOne, nullptr));
+    EXPECT_NE(nullptr, hashTwo = PersistentHashString(testTwo, nullptr));
+    EXPECT_NE(nullptr, hashThree = PersistentHashString(testOne, nullptr));
+
+    EXPECT_NE(hashOne, hashTwo);
+    EXPECT_STREQ(hashOne, hashThree);
+
+    FREE_MEMORY(hashOne);
+    FREE_MEMORY(hashTwo);
+    FREE_MEMORY(hashThree);
 }
