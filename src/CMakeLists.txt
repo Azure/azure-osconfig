@@ -60,8 +60,14 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 find_package(Git QUIET)
-string(TIMESTAMP _timestamp "%Y%m%d")
-set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
+
+if(TWEAK_VERSION)
+    set(CMAKE_PROJECT_VERSION_TWEAK "${TWEAK_VERSION}")
+else()
+    string(TIMESTAMP _timestamp "%Y%m%d")
+    set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
+endif()
+
 
 set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Azure OSConfig")
