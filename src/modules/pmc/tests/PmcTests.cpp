@@ -115,7 +115,11 @@ namespace OSConfig::Platform::Tests
             {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"sourcesFilenames\":[]}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
+            "\"packages\":[],"
+            "\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\","
+            "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         testModule->SetTextResult(textResults);
@@ -143,7 +147,11 @@ namespace OSConfig::Platform::Tests
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],\"executionState\":2,\"executionSubState\":0,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
+            "\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],"
+            "\"executionState\":2,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
+            "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
@@ -173,7 +181,11 @@ namespace OSConfig::Platform::Tests
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"executionState\":3,\"executionSubState\":6,\"executionSubStateDetails\":\"\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
+            "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
+            "\"executionState\":3,\"executionSubState\":6,\"executionSubStateDetails\":\"\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
+            "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
@@ -204,7 +216,11 @@ namespace OSConfig::Platform::Tests
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],\"executionState\":4,\"executionSubState\":7,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[\"key.list\"]}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
+            "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
+            "\"executionState\":4,\"executionSubState\":7,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
+            "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
@@ -260,7 +276,11 @@ namespace OSConfig::Platform::Tests
         };
         
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
-        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\",\"packages\":[],\"executionState\":3,\"executionSubState\":4,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\",\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\",\"sourcesFilenames\":[]}";
+        char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
+            "\"packages\":[],"
+            "\"executionState\":3,\"executionSubState\":4,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
+            "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
         int status;
