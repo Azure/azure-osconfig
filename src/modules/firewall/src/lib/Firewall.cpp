@@ -629,7 +629,7 @@ string FirewallObjectBase::FirewallRulesToString()
 string FirewallObjectBase::GetFingerprint()
 {
     string firewallRulesString = FirewallRulesToString();
-    string hashString = PersistentHashString(firewallRulesString, FirewallLog::Get());
+    string hashString = PersistentHashString(firewallRulesString.c_str(), FirewallLog::Get());
     return hashString;
 }
 

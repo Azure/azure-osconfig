@@ -31,27 +31,6 @@ size_t HashString(const char* source)
     return hashString(std::string(source));
 }
 
-string FirewallObjectBase::GetFingerprint()
-{
-    string hashString = "";
-    string firewallRulesString = FirewallRulesToString();
-    string commandString = g_echoCommandString + firewallRulesString + g_sha256CommandString;
-    char* char_output = nullptr;
-    int commandStatus = ExecuteCommand(nullptr, commandString.c_str(), false, true, 0, 0, &char_output, nullptr, FirewallLog::Get());
-    if ((commandStatus == 0) && (char_output != nullptr))
-    {
-        hashString = string(char_output, strlen(char_output));
-    }
-
-    if (char_output != nullptr)
-    {
-        free(char_output);
-    }
-
-    return hashString;
-}
-
-
 bool IsValidClientName(const char* name)
 {
     bool isValid = true;

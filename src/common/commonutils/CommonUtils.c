@@ -1202,7 +1202,7 @@ char* PersistentHashString(const char* source, void* log)
         status = ExecuteCommand(NULL, command, false, true, 0, 0, &hash, NULL, log);
         if (0 != status)
         {
-            FREE_MEMMORY(hash);
+            FREE_MEMORY(hash);
         }
     }
     else
@@ -1210,5 +1210,5 @@ char* PersistentHashString(const char* source, void* log)
         OsConfigLogError(log, "PersistentHashString: out of memory");
     }
 
-    return (command && status) ? hash : NULL;
+    return (0 == status) ? hash : NULL;
 }
