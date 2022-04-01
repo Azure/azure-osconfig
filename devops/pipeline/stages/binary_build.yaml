@@ -81,20 +81,18 @@ stages:
         docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build-${{ parameters.architecture }}"
       displayName: Build osconfig
 
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && cpack -G DEB"
-      displayName: Create Deb package
-      condition: eq(${{ parameters.publishArtifact }}, true)
+    - ${{ if eq(parameters.publishArtifact, True) }}:
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && cpack -G DEB"
+        displayName: Create Deb package
 
-    - script: |
-        cp $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/osconfig_* $(Build.ArtifactStagingDirectory)
-      displayName: Stage Deb package
-      condition: eq(${{ parameters.publishArtifact }}, true)
+      - script: |
+          cp $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/osconfig_* $(Build.ArtifactStagingDirectory)
+        displayName: Stage Deb package
 
-    - publish: $(Build.ArtifactStagingDirectory)
-      displayName: Publishing deb package for ${{ parameters.variantName }}_${{ parameters.architecture }}
-      artifact: OSConfig_$(Build.BuildNumber)_${{ parameters.variantName }}_${{ parameters.architecture }}
-      condition: eq(${{ parameters.publishArtifact }}, true)
+      - publish: $(Build.ArtifactStagingDirectory)
+        displayName: Publishing deb package for ${{ parameters.variantName }}_${{ parameters.architecture }}
+        artifact: OSConfig_$(Build.BuildNumber)_${{ parameters.variantName }}_${{ parameters.architecture }}
 
     - ${{ if eq(parameters.runUnitTests, True) }}:
     # Runs, tests and records in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
@@ -135,27 +133,25 @@ stages:
           testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
           platform: ${{ parameters.architecture }}
 
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-${{ parameters.architecture }}/coverage.xml"
-      displayName: Run code coverage
-      condition: eq(${{ parameters.performCoverage }}, true)
-      workingDirectory: $(Agent.BuildDirectory)
+    - ${{ if eq(parameters.performCoverage, True) }}:
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-${{ parameters.architecture }}/coverage.xml"
+        displayName: Run code coverage
+        workingDirectory: $(Agent.BuildDirectory)
 
-    # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
-    - task: UseDotNet@2
-      displayName: Use .NET Core SDK
-      condition: eq(${{ parameters.performCoverage }}, true)
-      inputs:
-        packageType: sdk
-        version: 3.1.402
-        installationPath: $(Agent.ToolsDirectory)/dotnet
+      # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
+      - task: UseDotNet@2
+        displayName: Use .NET Core SDK
+        inputs:
+          packageType: sdk
+          version: 3.1.402
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    # Publish code coverage results
-    - task: PublishCodeCoverageResults@1
-      displayName: Publish code coverage results
-      condition: eq(${{ parameters.performCoverage }}, true)
-      inputs:
-        codeCoverageTool: 'Cobertura'
-        summaryFileLocation: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/coverage.xml
-        pathToSources: $(Build.SourcesDirectory)/src
-        #failIfCoverageEmpty: false # Optional
+      # Publish code coverage results
+      - task: PublishCodeCoverageResults@1
+        displayName: Publish code coverage results
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/coverage.xml
+          pathToSources: $(Build.SourcesDirectory)/src
+          #failIfCoverageEmpty: false # Optional
