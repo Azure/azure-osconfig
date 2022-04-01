@@ -229,6 +229,9 @@ static void SignalInterrupt(int signal)
 static void SignalReloadConfiguration(int signal)
 {
     g_refreshSignal = signal;
+    
+    // Reset the handler
+    signal(SIGHUP, SignalReloadConfiguration);
 }
 
 static void RefreshConnection()
@@ -281,7 +284,7 @@ static void RefreshConnection()
 void ScheduleRefreshConnection(void)
 {
     OsConfigLogInfo(GetLog(), "Scheduling refresh connection");
-    SignalReloadConfiguration(SIGHUP);
+    g_refreshSignal = SIGHUP;
 }
 
 static void SignalChild(int signal)
