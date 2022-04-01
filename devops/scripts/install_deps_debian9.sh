@@ -30,3 +30,7 @@ cmake --build . --target install
 
 # cleanup
 cd ~ && rm -rf googletest CMake rapidjson
+
+# Install Dotnet - Needed for e2e tests
+# See https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu#1804-
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
