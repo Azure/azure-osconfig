@@ -226,9 +226,12 @@ static void SignalInterrupt(int signal)
     }
 }
 
-static void SignalReloadConfiguration(int signal)
+static void SignalReloadConfiguration(int incomingSignal)
 {
-    g_refreshSignal = signal;
+    g_refreshSignal = incomingSignal;
+    
+    // Reset the handler
+    signal(SIGHUP, SignalReloadConfiguration);
 }
 
 static void RefreshConnection()
@@ -281,7 +284,7 @@ static void RefreshConnection()
 void ScheduleRefreshConnection(void)
 {
     OsConfigLogInfo(GetLog(), "Scheduling refresh connection");
-    SignalReloadConfiguration(SIGHUP);
+    g_refreshSignal = SIGHUP;
 }
 
 static void SignalChild(int signal)
@@ -290,11 +293,15 @@ static void SignalChild(int signal)
     UNUSED(signal);
 }
 
-static void SignalProcessDesired(int signal)
+static void SignalProcessDesired(int incomingSignal)
 {
     OsConfigLogInfo(GetLog(), "Processing desired twin updates");
     ProcessDesiredTwinUpdates();
-    UNUSED(signal);
+    
+    // Reset the signal handler for the next use otherwise the default handler will be invoked instead
+    signal(SIGUSR1, SignalProcessDesired);
+
+    UNUSED(incomingSignal);
 }
 
 static void ForkDaemon()
