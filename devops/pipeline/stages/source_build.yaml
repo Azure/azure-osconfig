@@ -56,10 +56,10 @@ stages:
       displayName: Generate build
 
     - script: |
-        docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build && cmake --build /AzOsConfig/build --target dist && mkdir /staging && cp -r /AzOsConfig/build/dist/* /staging"
+        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build && cmake --build . && cmake --build . --target dist && mkdir staging && cp -r /AzOsConfig/build/dist/* staging"
       displayName: Build & Stage Source Package
 
-    - publish: $(Build.ArtifactStagingDirectory)
+    - publish: $(Build.SourcesDirectory)/build/staging
       displayName: Publishing source package
       artifact: OSConfig_$(Build.BuildNumber)_SOURCES
       condition: eq(${{ parameters.publishArtifact }}, true)
