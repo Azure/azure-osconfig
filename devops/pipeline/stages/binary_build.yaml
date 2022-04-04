@@ -27,6 +27,9 @@ parameters:
 - name: performCoverage
   type: boolean
   default: false
+- name: runUnitTests
+  type: boolean
+  default: false
 - name: ignoreTestFailures
   type: boolean
   default: false
@@ -62,15 +65,20 @@ stages:
         CONTAINER_ID=`docker run -di -v $(Build.SourcesDirectory):/AzOsConfig --platform=${{ parameters.platform }} ${{ parameters.containerPath }}`
         echo CONTAINER_ID=$CONTAINER_ID
         echo "##vso[task.setvariable variable=CONTAINER_ID]$CONTAINER_ID"
+        # Extract TWEAK version from full version string
+        BUILD_VERSION_ARRAY=(`echo $(Build.BuildNumber) | tr '.' ' '`)
+        TWEAK_VERSION=${BUILD_VERSION_ARRAY[-1]}
+        echo TWEAK_VERSION=$TWEAK_VERSION
+        echo "##vso[task.setvariable variable=TWEAK_VERSION]$TWEAK_VERSION"
       displayName: Setup QEMU emulation
 
     - script: |
-        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
+        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -DTWEAK_VERSION=$(TWEAK_VERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
       displayName: Generate build
       condition: eq(${{ parameters.performCoverage }}, false)
 
     - script: |
-        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
+        docker exec $(CONTAINER_ID) bash -c "cmake -DCMAKE_BUILD_TYPE=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOVERAGE=ON -DCOMPILE_WITH_STRICTNESS=ON -DMAJOR_VERSION=$(MAJORVERSION) -DMINOR_VERSION=$(MINORVERSION) -DPATCH_VERSION=$(PATCHVERSION) -DTWEAK_VERSION=$(TWEAK_VERSION) -G Ninja -B/AzOsConfig/build-${{ parameters.architecture }} -H/AzOsConfig/src"
       displayName: Generate build (with coverage)
       condition: eq(${{ parameters.performCoverage }}, true)
 
@@ -78,80 +86,77 @@ stages:
         docker exec $(CONTAINER_ID) bash -c "cmake --build /AzOsConfig/build-${{ parameters.architecture }}"
       displayName: Build osconfig
 
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && cpack -G DEB"
-      displayName: Create Deb package
-      condition: eq(${{ parameters.publishArtifact }}, true)
+    - ${{ if eq(parameters.publishArtifact, True) }}:
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && cpack -G DEB"
+        displayName: Create Deb package
 
-    - script: |
-        cp $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/osconfig_* $(Build.ArtifactStagingDirectory)
-      displayName: Stage Deb package
-      condition: eq(${{ parameters.publishArtifact }}, true)
+      - script: |
+          cp $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/osconfig_* $(Build.ArtifactStagingDirectory)
+        displayName: Stage Deb package
 
-    - publish: $(Build.ArtifactStagingDirectory)
-      displayName: Publishing deb package for ${{ parameters.variantName }}_${{ parameters.architecture }}
-      artifact: OSConfig_$(Build.BuildNumber)_${{ parameters.variantName }}_${{ parameters.architecture }}
-      condition: eq(${{ parameters.publishArtifact }}, true)
+      - publish: $(Build.ArtifactStagingDirectory)
+        displayName: Publishing deb package for ${{ parameters.variantName }}_${{ parameters.architecture }}
+        artifact: OSConfig_$(Build.BuildNumber)_${{ parameters.variantName }}_${{ parameters.architecture }}
 
+    - ${{ if eq(parameters.runUnitTests, True) }}:
     # Runs, tests and records in dashboard mode (-T) which will create a report used below (See `PublishTestResults`)
     # See ctest test step - https://cmake.org/cmake/help/latest/manual/ctest.1.html#ctest-test-step
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log"
-      condition: and(eq(${{ parameters.ignoreTestFailures }}, false), eq(${{ parameters.performCoverage }}, false))
-      displayName: Run tests
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log"
+        condition: and(eq(${{ parameters.ignoreTestFailures }}, false), eq(${{ parameters.performCoverage }}, false))
+        displayName: Run tests
 
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log || true"
-      condition: and(eq(${{ parameters.ignoreTestFailures }}, true), eq(${{ parameters.performCoverage }}, false))
-      displayName: Run tests (ignore failures)
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "cd /AzOsConfig/build-${{ parameters.architecture }} && ctest -T test --verbose > TestOutput.log || true"
+        condition: and(eq(${{ parameters.ignoreTestFailures }}, true), eq(${{ parameters.performCoverage }}, false))
+        displayName: Run tests (ignore failures)
 
-    - publish: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/TestOutput.log
-      displayName: Publishing test outputs
-      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false))
-      artifact: Test_Logs_${{ parameters.variantName }}_${{ parameters.architecture }}
+      - publish: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/TestOutput.log
+        displayName: Publishing test outputs
+        condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false))
+        artifact: Test_Logs_${{ parameters.variantName }}_${{ parameters.architecture }}
 
-    # Publishes the results of the ctest test pass to be used in the Azure DevOps dashboard
-    - task: PublishTestResults@2
-      displayName: 'Publish test results'
-      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, false))
-      inputs:
-        testRunner: cTest
-        testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
-        failTaskOnFailedTests: true
-        testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
-        platform: ${{ parameters.architecture }}
+      # Publishes the results of the ctest test pass to be used in the Azure DevOps dashboard
+      - task: PublishTestResults@2
+        displayName: 'Publish test results'
+        condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, false))
+        inputs:
+          testRunner: cTest
+          testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
+          failTaskOnFailedTests: true
+          testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
+          platform: ${{ parameters.architecture }}
 
-    - task: PublishTestResults@2
-      displayName: 'Publish test results (ignore failures)'
-      condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, true))
-      inputs:
-        testRunner: cTest
-        testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
-        failTaskOnFailedTests: false
-        testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
-        platform: ${{ parameters.architecture }}
+      - task: PublishTestResults@2
+        displayName: 'Publish test results (ignore failures)'
+        condition: and(succeededOrFailed(), eq(${{ parameters.performCoverage }}, false), eq(${{ parameters.ignoreTestFailures }}, true))
+        inputs:
+          testRunner: cTest
+          testResultsFiles: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/Testing/*/Test.xml
+          failTaskOnFailedTests: false
+          testRunTitle: ${{ parameters.variantName }}-${{ parameters.architecture }}
+          platform: ${{ parameters.architecture }}
 
-    - script: |
-        docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-${{ parameters.architecture }}/coverage.xml"
-      displayName: Run code coverage
-      condition: eq(${{ parameters.performCoverage }}, true)
-      workingDirectory: $(Agent.BuildDirectory)
+    - ${{ if eq(parameters.performCoverage, True) }}:
+      - script: |
+          docker exec $(CONTAINER_ID) bash -c "gcovr -r /AzOsConfig/src . -e /AzOsConfig/src/agents/pnp/ --xml /AzOsConfig/build-${{ parameters.architecture }}/coverage.xml"
+        displayName: Run code coverage
+        workingDirectory: $(Agent.BuildDirectory)
 
-    # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
-    - task: UseDotNet@2
-      displayName: Use .NET Core SDK
-      condition: eq(${{ parameters.performCoverage }}, true)
-      inputs:
-        packageType: sdk
-        version: 3.1.402
-        installationPath: $(Agent.ToolsDirectory)/dotnet
+      # Needed for the code coverage report task below (See `PublishCodeCoverageResults`)
+      - task: UseDotNet@2
+        displayName: Use .NET Core SDK
+        inputs:
+          packageType: sdk
+          version: 3.1.402
+          installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    # Publish code coverage results
-    - task: PublishCodeCoverageResults@1
-      displayName: Publish code coverage results
-      condition: eq(${{ parameters.performCoverage }}, true)
-      inputs:
-        codeCoverageTool: 'Cobertura'
-        summaryFileLocation: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/coverage.xml
-        pathToSources: $(Build.SourcesDirectory)/src
-        #failIfCoverageEmpty: false # Optional
+      # Publish code coverage results
+      - task: PublishCodeCoverageResults@1
+        displayName: Publish code coverage results
+        inputs:
+          codeCoverageTool: 'Cobertura'
+          summaryFileLocation: $(Build.SourcesDirectory)/build-${{ parameters.architecture }}/coverage.xml
+          pathToSources: $(Build.SourcesDirectory)/src
+          #failIfCoverageEmpty: false # Optional
