@@ -429,10 +429,6 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
                             : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::installingPackages, package);
             return status;
         }
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(PmcLog::Get(), "Successfully updated package(s): %s", package.c_str());
-        }
     }
 
     m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
@@ -732,10 +728,6 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
     }
     else
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(PmcLog::Get(), "Successfully updated packages lists");
-        }
         m_executionState.SetExecutionState(ExecutionState::StateComponent::succeeded, ExecutionState::SubStateComponent::none);
     }
 
