@@ -126,7 +126,7 @@ stages:
   parameters:
     dependsOn:
     - ${{ each target in parameters.build_targets }}:
-      - binary__${{ target.friendlyVariantName }}_${{ target.architecture }}
+      - binary_${{ target.friendlyVariantName }}_${{ target.architecture }}
     performSigning: ${{ parameters.performSigning }}
     vaultName: $(VaultName)
     aadCertificateName: $(AADCertificateName)
