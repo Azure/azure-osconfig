@@ -100,9 +100,9 @@ namespace E2eTesting
                 // DefaultGateway
                 NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.defaultGateways);
                 // DnsServer
-                if (!string.IsNullOrEmpty(reported.DnsServers))
+                if (!string.IsNullOrEmpty(reported.dnsServers))
                 {
-                    NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.DnsServers);
+                    NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.dnsServers);
                 }
                 // dhcpEnabled
                 NetworkPropertyPatternMatch(_statePattern, reported.dhcpEnabled);

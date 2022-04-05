@@ -147,7 +147,7 @@ namespace E2eTesting
 
         public CommandStatus WaitForStatus(string commandId, CommandState state)
         {
-            Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.CommandId == commandId) && (status.CurrentState == state));
+            Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.commandId == commandId) && (status.currentState == state));
             var reportedTask = GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
             reportedTask.Wait();
             return reportedTask.Result;
@@ -165,8 +165,8 @@ namespace E2eTesting
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
             SendCommand(command);
 
-            CommandStatus status = WaitForStatus(command.CommandId, state);
-            JsonAssert.AreEqual(CreateCommandStatus(command.CommandId, textResult, state, resultCode), status);
+            CommandStatus status = WaitForStatus(command.commandId, state);
+            JsonAssert.AreEqual(CreateCommandStatus(command.commandId, textResult, state, resultCode), status);
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace E2eTesting
             SendCommand(command);
             CommandStatus runningStatus = WaitForStatus(commandId, CommandState.Running);
 
-            CancelCommand(command.CommandId);
+            CancelCommand(command.commandId);
             CommandStatus canceledStatus = WaitForStatus(commandId, CommandState.Canceled);
 
             Assert.Multiple(() =>
@@ -211,28 +211,28 @@ namespace E2eTesting
             var command3 = CreateCommand("sleep 10s && echo 'command 3'", timeout: 1);
             var command4 = CreateCommand("blah");
 
-            var expectedCommandStatus1 = CreateCommandStatus(command1.CommandId, "", CommandState.Canceled, 125);
-            var expectedCommandStatus2 = CreateCommandStatus(command2.CommandId, "command 2\n", CommandState.Succeeded, 0);
-            var expectedCommandStatus3 = CreateCommandStatus(command3.CommandId, "", CommandState.TimedOut, 62);
-            var expectedCommandStatus4 = CreateCommandStatus(command4.CommandId, "sh: 1: blah: not found\n", CommandState.Failed, 127);
+            var expectedCommandStatus1 = CreateCommandStatus(command1.commandId, "", CommandState.Canceled, 125);
+            var expectedCommandStatus2 = CreateCommandStatus(command2.commandId, "command 2\n", CommandState.Succeeded, 0);
+            var expectedCommandStatus3 = CreateCommandStatus(command3.commandId, "", CommandState.TimedOut, 62);
+            var expectedCommandStatus4 = CreateCommandStatus(command4.commandId, "sh: 1: blah: not found\n", CommandState.Failed, 127);
 
             SendCommand(command1);
             SendCommand(command2);
             SendCommand(command3);
             SendCommand(command4);
-            SendCommand(CreateCancelCommand(command1.CommandId));
+            SendCommand(CreateCancelCommand(command1.commandId));
 
             // Wait for the last command to complete before checking all command statuses
-            CommandStatus actualCommandStatus4 = WaitForStatus(command4.CommandId, CommandState.Failed);
+            CommandStatus actualCommandStatus4 = WaitForStatus(command4.commandId, CommandState.Failed);
 
-            RefreshCommandStatus(command1.CommandId);
-            CommandStatus actualCommandStatus1 = WaitForStatus(command1.CommandId, CommandState.Canceled);
+            RefreshCommandStatus(command1.commandId);
+            CommandStatus actualCommandStatus1 = WaitForStatus(command1.commandId, CommandState.Canceled);
 
-            RefreshCommandStatus(command2.CommandId);
-            CommandStatus actualCommandStatus2 = WaitForStatus(command2.CommandId, CommandState.Succeeded);
+            RefreshCommandStatus(command2.commandId);
+            CommandStatus actualCommandStatus2 = WaitForStatus(command2.commandId, CommandState.Succeeded);
 
-            RefreshCommandStatus(command3.CommandId);
-            CommandStatus actualCommandStatus3 = WaitForStatus(command3.CommandId, CommandState.TimedOut);
+            RefreshCommandStatus(command3.commandId);
+            CommandStatus actualCommandStatus3 = WaitForStatus(command3.commandId, CommandState.TimedOut);
 
             Assert.Multiple(() =>
             {
