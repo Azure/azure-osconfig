@@ -12,6 +12,11 @@ stages:
     prefix: Validate
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
 
+- template: stages/dotnet_validate.yaml
+  parameters:
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    sourcePath: src/tests/e2etest
+
 - template: stages/binary_build.yaml
   parameters:
     variantName: ubuntu20.04

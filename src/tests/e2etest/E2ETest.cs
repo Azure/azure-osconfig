@@ -105,7 +105,7 @@ namespace E2eTesting
                 {
                     Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
                     {
-                        return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
+                        return (status.commandId == command.commandId) && (status.currentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
                     var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "commandStatus", condition, 2 * _maxWaitTimeSeconds);
@@ -114,7 +114,7 @@ namespace E2eTesting
 
                     if (!condition(reportedStatus))
                     {
-                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.commandId, reportedStatus.commandId, reportedStatus.currentState, reportedStatus.textResult);
                         success = false;
                     }
                 }
