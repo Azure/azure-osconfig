@@ -63,6 +63,9 @@ rm -rf $RPM_BUILD_ROOT
 %systemd_preun osconfig.service
 
 %post
+if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+    cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
+fi
 %systemd_post osconfig.service
 systemctl enable osconfig.service
 systemctl start osconfig.service
@@ -73,11 +76,11 @@ systemctl start osconfig.service
 %files
 %defattr(-, root, root, -)
 %{_bindir}/osconfig
-/etc/aziot/identityd/config.d/osconfig.toml
 /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
 /etc/osconfig/osconfig_commandrunner.cache
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
+/etc/osconfig/osconfig.toml
 /etc/systemd/system/osconfig.service
 /usr/lib/osconfig/commandrunner.so
 /usr/lib/osconfig/firewall.so
