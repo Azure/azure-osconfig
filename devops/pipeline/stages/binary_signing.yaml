@@ -5,6 +5,7 @@
 #  - (Optional) vaultName [string]: the Key Vault name for the signing certificates - default: my-vault-name
 #  - (Optional) aadCertificateName [string]: the name for the AAD Certificate - default: my-aadCertificate-name
 #  - (Optional) esrpCertificateName [string]: the name for the ESRP Signing Request Certificate - default: my-esrpCertificate-name
+#  - (Optional) dependsOn [object]: the stages that produce the artifacts to be signed - default: []
 
 parameters:
   - name: prefix
