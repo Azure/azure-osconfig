@@ -41,7 +41,7 @@ static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult
 static const char g_commandSeparator[] = " > ";
 static const char g_commandTerminator[] = " 2>&1";
 
-static const char g_persistentHashTemplate[] = "echo %s | sha256sum | head -c 64";
+static const char g_persistentHashTemplate[] = "echo \"%s\" | sha256sum | head -c 64";
 
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {

@@ -27,7 +27,7 @@ namespace E2eTesting
         {
             public string tpmVersion { get; set; }
             public string tpmManufacturer { get; set; }
-            public tpmStatusCode TpmStatus { get; set; }
+            public TpmStatusCode tpmStatus { get; set; }
         }
 
         [Test]
