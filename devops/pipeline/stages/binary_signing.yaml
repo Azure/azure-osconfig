@@ -27,8 +27,15 @@ parameters:
     type: string
     default: my-esrpCertificate-name
 
+  - name: dependsOn
+    type: stageList
+    default: []
+
 stages:
 - stage: ${{ parameters.prefix }}_code_signing
+  dependsOn:
+  - ${{ each stage in parameters.dependsOn }}:
+    - ${{ stage }}
   condition: eq(${{ parameters.performSigning }}, true)
   displayName: Code Signing
   jobs:

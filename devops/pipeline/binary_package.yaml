@@ -10,7 +10,90 @@ parameters:
     type: boolean
     displayName: 'Perform code signing'
     default: true
-
+  - name: build_targets
+    type: object
+    default:
+      - variantName: ubuntu20.04
+        friendlyVariantName: ubuntu2004
+        architecture: amd64_debug
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+        platform: linux/amd64
+        performCoverage: true
+        ignoreTestFailures: true
+        publishArtifact: false
+      - variantName: ubuntu20.04
+        friendlyVariantName: ubuntu2004
+        architecture: amd64
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+        platform: linux/amd64
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: ubuntu20.04
+        friendlyVariantName: ubuntu2004
+        architecture: arm
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:latest
+        platform: linux/arm/v7
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: ubuntu20.04
+        friendlyVariantName: ubuntu2004
+        architecture: arm64
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
+        platform: linux/arm64/v8
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: ubuntu18.04
+        friendlyVariantName: ubuntu1804
+        architecture: amd64
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
+        platform: linux/amd64
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: ubuntu18.04
+        friendlyVariantName: ubuntu1804
+        architecture: arm
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
+        platform: linux/arm/v7
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: ubuntu18.04
+        friendlyVariantName: ubuntu1804
+        architecture: arm64
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
+        platform: linux/arm64/v8
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian9
+        friendlyVariantName: debian9
+        architecture: amd64
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
+        platform: linux/amd64
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian9
+        friendlyVariantName: debian9
+        architecture: arm
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
+        platform: linux/arm/v7
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian9
+        friendlyVariantName: debian9
+        architecture: arm64
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
+        platform: linux/arm64/v8
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
   CONTAINER_REGISTRY: osconfig.azurecr.io
@@ -27,92 +110,23 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
     publishArtifact: true
 
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu20.04
-    friendlyVariantName: ubuntu2004
-    architecture: amd64_debug
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
-    platform: linux/amd64
-    performCoverage: true
-    ignoreTestFailures: true
-    publishArtifact: false
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu20.04
-    friendlyVariantName: ubuntu2004
-    architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
-    platform: linux/amd64
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu20.04
-    friendlyVariantName: ubuntu2004
-    architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:latest
-    platform: linux/arm/v7
-    ignoreTestFailures: true
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu20.04
-    friendlyVariantName: ubuntu2004
-    architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
-    platform: linux/arm64/v8
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu18.04
-    friendlyVariantName: ubuntu1804
-    architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
-    platform: linux/amd64
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu18.04
-    friendlyVariantName: ubuntu1804
-    architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
-    platform: linux/arm/v7
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: ubuntu18.04
-    friendlyVariantName: ubuntu1804
-    architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
-    platform: linux/arm64/v8
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: debian9
-    friendlyVariantName: debian9
-    architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
-    platform: linux/amd64
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: debian9
-    friendlyVariantName: debian9
-    architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
-    platform: linux/arm/v7
-
-- template: stages/binary_build.yaml
-  parameters:
-    variantName: debian9
-    friendlyVariantName: debian9
-    architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
-    platform: linux/arm64/v8
+- ${{ each target in parameters.build_targets }}:
+  - template: stages/binary_build.yaml
+    parameters:
+      variantName: ${{ target.variantName }}
+      friendlyVariantName: ${{ target.friendlyVariantName }}
+      architecture: ${{ target.architecture }}
+      containerPath: ${{ target.containerPath }}
+      platform: ${{ target.platform }}
+      performCoverage: ${{ target.performCoverage }}
+      ignoreTestFailures: ${{ target.ignoreTestFailures }}
+      publishArtifact: ${{ target.publishArtifact }}
 
 - template: stages/binary_signing.yaml
   parameters:
+    dependsOn:
+    - ${{ each target in parameters.build_targets }}:
+      - binary__${{ target.friendlyVariantName }}_${{ target.architecture }}
     performSigning: ${{ parameters.performSigning }}
     vaultName: $(VaultName)
     aadCertificateName: $(AADCertificateName)
