@@ -47,7 +47,7 @@ char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
 
-char* PersistentHashString(const char* source, void* log);
+char* HashCommand(const char* source, void* log);
 
 bool IsValidClientName(const char* name);
 

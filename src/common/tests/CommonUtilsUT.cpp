@@ -1002,20 +1002,20 @@ TEST_F(CommonUtilsTest, DuplicateString)
     FREE_MEMORY(duplicate);
 }
 
-TEST_F(CommonUtilsTest, PersistentHashString)
+TEST_F(CommonUtilsTest, HashCommand)
 {
-    EXPECT_EQ(nullptr, PersistentHashString(nullptr, nullptr));
+    EXPECT_EQ(nullptr, HashCommand(nullptr, nullptr));
 
     char* hashOne = nullptr;
     char* hashTwo = nullptr;
     char* hashThree = nullptr;
     
-    const char testOne[] = "This is a test 1234567890";
-    const char testTwo[] = "This is a test 1234567890 test";
+    const char testOne[] = "echo \"This is a test 1234567890\"";
+    const char testTwo[] = "echo \"This is a test 1234567890 test\"";
 
-    EXPECT_NE(nullptr, hashOne = PersistentHashString(testOne, nullptr));
-    EXPECT_NE(nullptr, hashTwo = PersistentHashString(testTwo, nullptr));
-    EXPECT_NE(nullptr, hashThree = PersistentHashString(testOne, nullptr));
+    EXPECT_NE(nullptr, hashOne = HashCommand(testOne, nullptr));
+    EXPECT_NE(nullptr, hashTwo = HashCommand(testTwo, nullptr));
+    EXPECT_NE(nullptr, hashThree = HashCommand(testOne, nullptr));
 
     EXPECT_NE(hashOne, hashTwo);
     EXPECT_STREQ(hashOne, hashThree);
@@ -1025,11 +1025,11 @@ TEST_F(CommonUtilsTest, PersistentHashString)
     FREE_MEMORY(hashThree);
 }
 
-TEST_F(CommonUtilsTest, LargeTextPersistentHashString)
+TEST_F(CommonUtilsTest, LargeTextHashCommand)
 {
     char* hash = nullptr;
 
-    const char largeText[] = "accountsservice (=0.6.55-0ubuntu12~20.04.5) adduser (=3.118ubuntu2) alsa-topology-conf (=1.2.2-1) alsa-ucm-conf (=1.2.2-1ubuntu0.11) apparmor (=2.13.3-7ubuntu5.1) apport "
+    const char largeText[] = "echo \"accountsservice (=0.6.55-0ubuntu12~20.04.5) adduser (=3.118ubuntu2) alsa-topology-conf (=1.2.2-1) alsa-ucm-conf (=1.2.2-1ubuntu0.11) apparmor (=2.13.3-7ubuntu5.1) apport "
         "(=2.20.11-0ubuntu27.21) apport-symptoms (=0.23) apt (=2.0.6) apt-transport-https (=2.0.6) apt-utils (=2.0.6) at (=3.1.23-1ubuntu1) autoconf (=2.69-11.1) automake (=1:1.16.1-4ubuntu6) autopoint "
         "(=0.19.8.1-10build1) autotools-dev (=20180224.1) aziot-edge (=1.2.7-1) aziot-identity-service (=1.2.5-1) azure-cli (=2.0.81+ds-4ubuntu0.2) babeltrace (=1.5.8-1build1) base-files (=11ubuntu5.4) "
         "base-passwd (=3.5.47) bash (=5.0-6ubuntu1.1) bash-completion (=1:2.10-1ubuntu1) bc (=1.07.1-2build1) bcache-tools (=1.0.8-3ubuntu0.1) bind9-dnsutils (=1:9.16.1-0ubuntu2.10) bind9-host "
@@ -1162,9 +1162,9 @@ TEST_F(CommonUtilsTest, LargeTextPersistentHashString)
         "(=6.0-25ubuntu1) update-manager-core (=1:20.04.10.9) update-notifier-common (=3.192.30.9) usb.ids (=2020.03.19-1) usbutils (=1:012-2) util-linux (=2.34-0.1ubuntu9.3) uuid-dev (=2.34-0.1ubuntu9.3) "
         "uuid-runtime (=2.34-0.1ubuntu9.3) vim (=2:8.1.2269-1ubuntu5.7) vim-common (=2:8.1.2269-1ubuntu5.7) vim-runtime (=2:8.1.2269-1ubuntu5.7) vim-tiny (=2:8.1.2269-1ubuntu5.7) wget (=1.20.3-1ubuntu2) "
         "whiptail (=0.52.21-4ubuntu2) wireless-regdb (=2021.08.28-0ubuntu1~20.04.1) wpasupplicant (=2:2.9-1ubuntu4.3) xauth (=1:1.1-0ubuntu1) xdg-user-dirs (=0.17-2ubuntu1) xfsprogs (=5.3.0-1ubuntu2) xkb-data "
-        "(=2.29-2) xxd (=2:8.1.2269-1ubuntu5.7) xz-utils (=5.2.4-1ubuntu1) zip (=3.0-11build1) zlib1g (=1:1.2.11.dfsg-2ubuntu1.3) zlib1g-dev (=1:1.2.11.dfsg-2ubuntu1.3)";
+        "(=2.29-2) xxd (=2:8.1.2269-1ubuntu5.7) xz-utils (=5.2.4-1ubuntu1) zip (=3.0-11build1) zlib1g (=1:1.2.11.dfsg-2ubuntu1.3) zlib1g-dev (=1:1.2.11.dfsg-2ubuntu1.3)\"";
 
-    EXPECT_NE(nullptr, hash = PersistentHashString(largeText, nullptr));
+    EXPECT_NE(nullptr, hash = HashCommand(largeText, nullptr));
     EXPECT_NE(0, strlen(hash));
     
     FREE_MEMORY(hash);
