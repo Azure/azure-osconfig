@@ -36,6 +36,11 @@ esac
 
 # Automatically added by dh_installsystemd/12.10ubuntu1
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	# MSFT change: binplace osconfig.toml for the azure-identity-service only if not present
+	# Binplacing a pre-existing install breaks the current identity
+	if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+		cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
+	fi
 	if [ -d /run/systemd/system ]; then
 		systemctl --system daemon-reload >/dev/null || true
 		if [ -n "$2" ]; then
