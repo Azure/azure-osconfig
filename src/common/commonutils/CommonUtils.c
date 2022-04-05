@@ -1199,7 +1199,7 @@ char* HashCommand(const char* source, void* log)
         memset(command, 0, length);
         snprintf(command, length, g_hashCommandTemplate, source);
         
-        status = ExecuteCommand(NULL, command, false, true, 0, 0, &hash, NULL, log);
+        status = ExecuteCommand(NULL, command, false, false, 0, 0, &hash, NULL, log);
         if (0 != status)
         {
             FREE_MEMORY(hash);
