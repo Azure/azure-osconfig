@@ -12,10 +12,12 @@ class PmcTestImpl : public PmcBase
 {
 public:
     PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
-    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
     void SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults);
 
 private:
+    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
+    std::string GetPackagesFingerprint() override;
+    std::string GetSourcesFingerprint(const char* sourcesDirectory) override;
     std::map<std::string, std::tuple<int, std::string>> m_textResults;
 };
 
@@ -43,6 +45,17 @@ int PmcTestImpl::RunCommand(const char* command, std::string* textResult, bool i
         return std::get<0>(it->second);
     }
     return ENOSYS;
+}
+
+std::string PmcTestImpl::GetPackagesFingerprint()
+{
+    return "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4";
+}
+
+std::string PmcTestImpl::GetSourcesFingerprint(const char* sourcesDirectory)
+{
+    UNUSED(sourcesDirectory);
+    return "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877";
 }
 
 namespace OSConfig::Platform::Tests
@@ -112,13 +125,11 @@ namespace OSConfig::Platform::Tests
             {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
-            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")}
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
             "\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
-            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\","
+            "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -141,11 +152,9 @@ namespace OSConfig::Platform::Tests
             {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 3.03+dfsg2-7:1 ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 5.02-1 ")},
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],"
@@ -175,11 +184,9 @@ namespace OSConfig::Platform::Tests
             {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get update", std::tuple<int, std::string>(EBUSY, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
@@ -210,11 +217,9 @@ namespace OSConfig::Platform::Tests
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(ETIME,"")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
             {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
@@ -271,8 +276,6 @@ namespace OSConfig::Platform::Tests
             {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
             {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK, "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4")},
-            {"find sources/ -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64", std::tuple<int, std::string>(MMI_OK,"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877")}
         };
         
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";

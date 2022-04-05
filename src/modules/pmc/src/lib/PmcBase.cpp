@@ -30,8 +30,6 @@ constexpr const char* g_commandCheckToolPresence = "command -v $value";
 constexpr const char* g_commandAptUpdate = "apt-get update";
 constexpr const char* g_commandExecuteUpdate = "apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
-constexpr const char* g_commandGetInstalledPackagesHash = "dpkg-query --showformat='${Package} (=${Version})\n' --show | sha256sum | head -c 64";
-constexpr const char* g_commandGetSourcesFingerprint = "find $value -type f -name '*.list' -exec cat {} \\; | sha256sum | head -c 64";
 constexpr const char* g_regexPackages = "(?:[a-zA-Z\\d\\-]+(?:=[a-zA-Z\\d\\.\\+\\-\\~\\:]+|\\-| )*)+";
 constexpr const char* g_sourcesFolderPath = "/etc/apt/sources.list.d/";
 constexpr const char* g_listExtension = ".list";
@@ -242,7 +240,7 @@ int PmcBase::Get(const char* componentName, const char* objectName, MMI_JSON_STR
             {
                 State reportedState;
                 reportedState.executionState = m_executionState;
-                reportedState.packagesFingerprint = GetFingerprint();
+                reportedState.packagesFingerprint = GetPackagesFingerprint();
                 reportedState.packages = GetReportedPackages(m_desiredPackages);
                 reportedState.sourcesFingerprint = GetSourcesFingerprint(m_sourcesConfigurationDirectory);
                 reportedState.sourcesFilenames = ListFiles(m_sourcesConfigurationDirectory, g_listExtension);
@@ -496,13 +494,6 @@ int PmcBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* 
     return status;
 }
 
-std::string PmcBase::GetFingerprint()
-{
-    std::string hashString = "";
-    RunCommand(g_commandGetInstalledPackagesHash, &hashString);
-    return hashString;
-}
-
 int PmcBase::ValidateAndGetPackagesNames(std::vector<std::string> packagesLines)
 {
     // Clear previous packages names
@@ -607,20 +598,6 @@ std::string PmcBase::TrimEnd(const std::string& str, const std::string& trim)
 std::string PmcBase::Trim(const std::string& str, const std::string& trim)
 {
     return TrimStart(TrimEnd(str, trim), trim);
-}
-
-std::string PmcBase::GetSourcesFingerprint(const char* sourcesDirectory)
-{
-    std::string hashString = "";
-    std::string command = std::regex_replace(g_commandGetSourcesFingerprint, std::regex("\\$value"), sourcesDirectory);
-    int status = RunCommand(command.c_str(), &hashString);
-
-    if (status != MMI_OK && IsFullLoggingEnabled())
-    {
-        OsConfigLogError(PmcLog::Get(), "Get the fingerprint of source files in directory %s failed with status %d", sourcesDirectory, status);
-    }
-
-    return !hashString.empty() ? hashString : "(failed)";
 }
 
 std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* fileNameExtension)

@@ -66,16 +66,18 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual unsigned int GetMaxPayloadSizeBytes();
+
+protected:
     virtual int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) = 0;
+    virtual std::string GetPackagesFingerprint() = 0;
+    virtual std::string GetSourcesFingerprint(const char* sourcesDirectory) = 0;
 
 private:
     bool CanRunOnThisPlatform();
     int ExecuteUpdate(const std::string& value);
     int ExecuteUpdates(const std::vector<std::string> packages);
-    std::string GetFingerprint();
     std::vector<std::string> GetReportedPackages(std::vector<std::string> packages);
     int ConfigureSources(const std::map<std::string, std::string> sources);
-    std::string GetSourcesFingerprint(const char* sourcesDirectory);
     int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
     int ValidateAndGetPackagesNames(std::vector<std::string> packagesLines);
     static std::vector<std::string> ListFiles(const char* directory, const char* fileNameExtension);
