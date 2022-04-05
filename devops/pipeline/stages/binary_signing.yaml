@@ -28,7 +28,7 @@ parameters:
     default: my-esrpCertificate-name
 
   - name: dependsOn
-    type: stageList
+    type: object
     default: []
 
 stages:
