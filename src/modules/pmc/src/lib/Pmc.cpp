@@ -7,8 +7,8 @@
 #include <Mmi.h>
 #include <Pmc.h>
 
-constexpr const char* g_commandGetInstalledPackages = "$(dpkg-query --showformat='${Package} (=${Version})\n' --show)";
-constexpr const char* g_commandGetSourcesContent = "$(find $value -type f -name '*.list' -exec cat {} \\;)";
+constexpr const char* g_commandGetInstalledPackages = "dpkg-query --showformat='${Package} (=${Version})\n' --show";
+constexpr const char* g_commandGetSourcesContent = "find $value -type f -name '*.list' -exec cat {} \\;";
 
 Pmc::Pmc(unsigned int maxPayloadSizeBytes)
     : PmcBase(maxPayloadSizeBytes)
@@ -35,7 +35,7 @@ int Pmc::RunCommand(const char* command, std::string* textResult, bool isLongRun
 
 std::string Pmc::GetPackagesFingerprint()
 {
-    char* hash = PersistentHashString(g_commandGetInstalledPackages, PmcLog::Get());
+    char* hash = HashCommand(g_commandGetInstalledPackages, PmcLog::Get());
     std::string hashString = hash != nullptr ? hash : "(failed)";
     FREE_MEMORY(hash)
     return hashString;
@@ -47,7 +47,7 @@ std::string Pmc::GetSourcesFingerprint(const char* sourcesDirectory)
     if (FileExists(sourcesDirectory))
     {
         std::string command = std::regex_replace(g_commandGetSourcesContent, std::regex("\\$value"), sourcesDirectory);
-        hash = PersistentHashString(command.c_str(), PmcLog::Get());
+        hash = HashCommand(command.c_str(), PmcLog::Get());
     }
     else if (IsFullLoggingEnabled())
     {
