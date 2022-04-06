@@ -378,6 +378,7 @@ static bool InitializeAgent(void)
         {
             if (FromAis == g_connectionStringSource)
             {
+                // We will try to get a new connnection string from AIS and try to connect with that
                 FREE_MEMORY(g_iotHubConnectionString);
             }
             else if (!g_localManagement)
@@ -679,7 +680,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry later");
+            OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry");
         }
     }
     else
@@ -701,8 +702,12 @@ int main(int argc, char *argv[])
             if (NULL == connectionString)
             {
                 LogErrorWithTelemetry(GetLog(), "Failed to load a connection string from %s", argv[1]);
-                g_exitState = NoConnectionString;
-                goto done;
+
+                if (!g_localManagement)
+                {
+                    g_exitState = NoConnectionString;
+                    goto done;
+                }
             }
         }
     }
