@@ -12,15 +12,6 @@
 TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
     (0xcf452c24, 0x662b, 0x4cc5, 0x97, 0x26, 0x5e, 0xfe, 0x82, 0x7d, 0xb2, 0x81));
 
-// 30 seconds
-#define DEFAULT_REPORTING_INTERVAL 30
-
-// 1 second
-#define MIN_REPORTING_INTERVAL 1
-
-// 24 hours
-#define MAX_REPORTING_INTERVAL 86400
-
 // 100 milliseconds
 #define DOWORK_SLEEP 100
 

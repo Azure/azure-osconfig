@@ -4,6 +4,15 @@
 #ifndef CONFIGUTILS_H
 #define CONFIGUTILS_H
 
+// 30 seconds
+#define DEFAULT_REPORTING_INTERVAL 30
+
+// 1 second
+#define MIN_REPORTING_INTERVAL 1
+
+// 24 hours
+#define MAX_REPORTING_INTERVAL 86400
+
 #define FULL_LOGGING "FullLogging"
 #define REPORTED_NAME "Reported"
 #define REPORTED_COMPONENT_NAME "ComponentName"
