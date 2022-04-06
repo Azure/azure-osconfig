@@ -33,7 +33,7 @@ int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int 
 
     if (NULL == valueName)
     {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no %s value, using default (%d)", valueName, defaultValue);
+        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
         return valueToReturn;
     }
 
