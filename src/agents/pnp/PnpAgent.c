@@ -217,7 +217,7 @@ static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 
     if (NULL == moduleHandle)
     {
-        LogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+        OsConfigLogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
         IotHubDeInitialize();
     }
 
