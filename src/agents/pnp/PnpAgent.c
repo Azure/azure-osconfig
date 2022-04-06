@@ -38,24 +38,15 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 // The optional second command line argument that when present instructs the agent to run as a traditional daemon
 #define FORK_ARG "fork"
 
-#define MODEL_VERSION_NAME "ModelVersion"
-#define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
-#define LOCAL_MANAGEMENT "LocalManagement"
-#define LOCAL_PRIORITY "LocalPriority"
-#define FULL_LOGGING "FullLogging"
-
-#define PROTOCOL "Protocol"
-#define PROTOCOL_AUTO 0
-#define PROTOCOL_MQTT 1
-#define PROTOCOL_MQTT_WS 2
-static int g_protocol = PROTOCOL_AUTO;
-
-#define DEFAULT_DEVICE_MODEL_ID 4
-#define MIN_DEVICE_MODEL_ID 3
+#define DEFAULT_DEVICE_MODEL_ID 7
+#define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
+
 #define DEVICE_MODEL_ID_SIZE 40
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
+
+static int g_protocol = PROTOCOL_AUTO;
 
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;

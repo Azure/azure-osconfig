@@ -4,9 +4,20 @@
 #ifndef CONFIGUTILS_H
 #define CONFIGUTILS_H
 
+#define FULL_LOGGING "FullLogging"
 #define REPORTED_NAME "Reported"
 #define REPORTED_COMPONENT_NAME "ComponentName"
 #define REPORTED_SETTING_NAME "ObjectName"
+#define MODEL_VERSION_NAME "ModelVersion"
+#define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
+#define LOCAL_MANAGEMENT "LocalManagement"
+#define LOCAL_PRIORITY "LocalPriority"
+
+#define PROTOCOL "Protocol"
+#define PROTOCOL_AUTO 0
+#define PROTOCOL_MQTT 1
+#define PROTOCOL_MQTT_WS 2
+
 #define MAX_COMPONENT_NAME 256
 
 #ifdef __cplusplus
