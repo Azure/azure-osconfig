@@ -6,6 +6,7 @@
 #include "inc/MpiProxy.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
+#include "inc/ConfigUtils.h"
 
 // TraceLogging Provider UUID: CF452C24-662B-4CC5-9726-5EFE827DB281
 TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
@@ -38,9 +39,6 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define FORK_ARG "fork"
 
 #define MODEL_VERSION_NAME "ModelVersion"
-#define REPORTED_NAME "Reported"
-#define REPORTED_COMPONENT_NAME "ComponentName"
-#define REPORTED_SETTING_NAME "ObjectName"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_MANAGEMENT "LocalManagement"
 #define LOCAL_PRIORITY "LocalPriority"
@@ -58,14 +56,6 @@ static int g_protocol = PROTOCOL_AUTO;
 #define DEVICE_MODEL_ID_SIZE 40
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
-
-#define MAX_COMPONENT_NAME 256
-typedef struct REPORTED_PROPERTY
-{
-    char componentName[MAX_COMPONENT_NAME];
-    char propertyName[MAX_COMPONENT_NAME];
-    size_t lastPayloadHash;
-} REPORTED_PROPERTY;
 
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
@@ -242,6 +232,12 @@ static void SignalReloadConfiguration(int incomingSignal)
     signal(SIGHUP, SignalReloadConfiguration);
 }
 
+static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
+{
+    return IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, 
+        &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
+}
+
 static void RefreshConnection()
 {
     char* connectionString = NULL;
@@ -273,8 +269,7 @@ static void RefreshConnection()
     
     if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
     {
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
-            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
             LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
@@ -366,250 +361,6 @@ static void ForkDaemon()
     }
 }
 
-static bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
-{
-    bool result = false;
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                result = (0 == (int)json_object_get_number(rootObject, FULL_LOGGING)) ? false : true;
-            }
-            json_value_free(rootValue);
-        }
-    }
-    return result;
-}
-
-static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)
-{
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-    int valueToReturn = defaultValue;
-
-    if (NULL == valueName)
-    {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no %s value, using default (%d)", valueName, defaultValue);
-        return valueToReturn;
-    }
-
-    if (minValue >= maxValue)
-    {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)",
-            minValue, maxValue, valueName, defaultValue);
-        return valueToReturn;
-    }
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                valueToReturn = (int)json_object_get_number(rootObject, valueName);
-                if (0 == valueToReturn)
-                {
-                    valueToReturn = defaultValue;
-                    OsConfigLogInfo(GetLog(), "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
-                }
-                else if (valueToReturn < minValue)
-                {
-                    LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
-                    valueToReturn = minValue;
-                }
-                else if (valueToReturn > maxValue)
-                {
-                    LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
-                    valueToReturn = maxValue;
-                }
-                else
-                {
-                    OsConfigLogInfo(GetLog(), "GetIntegerFromJsonConfig: %s: %d", valueName, valueToReturn);
-                }
-            }
-            else
-            {
-                LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
-            }
-            json_value_free(rootValue);
-        }
-        else
-        {
-            LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
-        }
-    }
-    else
-    {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
-    }
-
-    return valueToReturn;
-}
-
-static int GetReportingIntervalFromJsonConfig(const char* jsonString)
-{
-    return g_reportingInterval = GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL);
-}
-
-static int GetModelVersionFromJsonConfig(const char* jsonString)
-{
-    return g_modelVersion = GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID);
-}
-
-static int GetLocalPriorityFromJsonConfig(const char* jsonString)
-{
-    return g_localPriority = GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
-}
-
-static int GetLocalManagementFromJsonConfig(const char* jsonString)
-{
-    return g_localManagement = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
-}
-
-static int GetProtocolFromJsonConfig(const char* jsonString)
-{
-    return g_protocol = GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
-}
-
-static int LoadReportedFromJsonConfig(const char* jsonString)
-{
-    JSON_Value* rootValue = NULL;
-    JSON_Object* rootObject = NULL;
-    JSON_Object* itemObject = NULL;
-    JSON_Array* reportedArray = NULL;
-    const char* componentName = NULL;
-    const char* propertyName = NULL;
-    size_t numReported = 0;
-    size_t bufferSize = 0;
-    size_t i = 0;
-
-    g_numReportedProperties = 0;
-    FREE_MEMORY(g_reportedProperties);
-
-    if (NULL != jsonString)
-    {
-        if (NULL != (rootValue = json_parse_string(jsonString)))
-        {
-            if (NULL != (rootObject = json_value_get_object(rootValue)))
-            {
-                reportedArray = json_object_get_array(rootObject, REPORTED_NAME);
-                if (NULL != reportedArray)
-                {
-                    numReported = json_array_get_count(reportedArray);
-                    OsConfigLogInfo(GetLog(), "LoadReportedFromJsonConfig: found %d %s entries in configuration", (int)numReported, REPORTED_NAME);
-
-                    if (numReported > 0)
-                    {
-                        bufferSize = numReported * sizeof(REPORTED_PROPERTY);
-                        g_reportedProperties = (REPORTED_PROPERTY*)malloc(bufferSize);
-                        if (NULL != g_reportedProperties)
-                        {
-                            memset(g_reportedProperties, 0, bufferSize);
-                            g_numReportedProperties = (int)numReported;
-
-                            for (i = 0; i < numReported; i++)
-                            {
-                                itemObject = json_array_get_object(reportedArray, i);
-                                if (NULL != itemObject)
-                                {
-                                    componentName = json_object_get_string(itemObject, REPORTED_COMPONENT_NAME);
-                                    propertyName = json_object_get_string(itemObject, REPORTED_SETTING_NAME);
-
-                                    if ((NULL != componentName) && (NULL != propertyName))
-                                    {
-                                        strncpy(g_reportedProperties[i].componentName, componentName, ARRAY_SIZE(g_reportedProperties[i].componentName) - 1);
-                                        strncpy(g_reportedProperties[i].propertyName, propertyName, ARRAY_SIZE(g_reportedProperties[i].propertyName) - 1);
-
-                                        OsConfigLogInfo(GetLog(), "LoadReportedFromJsonConfig: found report property candidate at position %d of %d: %s.%s", (int)(i + 1),
-                                            g_numReportedProperties, g_reportedProperties[i].componentName, g_reportedProperties[i].propertyName);
-                                    }
-                                    else
-                                    {
-                                        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: %s or %s missing at position %d of %d, no property to report",
-                                            REPORTED_COMPONENT_NAME, REPORTED_SETTING_NAME, (int)(i + 1), (int)numReported);
-                                    }
-                                }
-                                else
-                                {
-                                    LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_array_get_object failed at position %d of %d, no reported property",
-                                        (int)(i + 1), (int)numReported);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: out of memory, cannot allocate %d bytes for %d reported properties",
-                                (int)bufferSize, (int)numReported);
-                        }
-                    }
-                }
-                else
-                {
-                    LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: no valid %s array in configuration, no properties to report", REPORTED_NAME);
-                }
-            }
-            else
-            {
-                LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_value_get_object(root) failed, no properties to report");
-            }
-
-            json_value_free(rootValue);
-        }
-        else
-        {
-            LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_parse_string failed, no properties to report");
-        }
-    }
-    else
-    {
-        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: no configuration data, no properties to report");
-    }
-
-    return g_numReportedProperties;
-}
-
-static char* GetHttpProxyData()
-{
-    const char* proxyVariables[] = {
-        "http_proxy",
-        "https_proxy",
-        "HTTP_PROXY",
-        "HTTPS_PROXY"
-    };
-    int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
-
-    char* proxyData = NULL;
-    char* environmentVariable = NULL;
-    int i = 0;
-
-    for (i = 0; i < proxyVariablesSize; i++)
-    {
-        environmentVariable = getenv(proxyVariables[i]);
-        if (NULL != environmentVariable)
-        {
-            // The environment variable string must be treated as read-only, make a copy for our use:
-            proxyData = DuplicateString(environmentVariable);
-            if (NULL == proxyData)
-            {
-                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
-            }
-            else
-            {
-                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
-            }
-            break;
-        }
-    }
-
-    return proxyData;
-}
-
-
 static bool InitializeAgent(void)
 {
     bool status = true;
@@ -637,8 +388,7 @@ static bool InitializeAgent(void)
 
     if (status && g_iotHubConnectionString)
     {
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
-            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+        if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
             LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
             status = false;
@@ -746,8 +496,7 @@ static void AgentDoWork(void)
             {
                 if (0 == mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
                 {
-                    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
-                        g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+                    if (NULL == (g_moduleHandle = CallIotHubInitialize()))
                     {
                         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
                         g_exitState = IotHubInitializationFailure;
@@ -851,12 +600,12 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        GetModelVersionFromJsonConfig(jsonConfiguration);
-        LoadReportedFromJsonConfig(jsonConfiguration);
-        GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        GetLocalPriorityFromJsonConfig(jsonConfiguration);
-        GetLocalManagementFromJsonConfig(jsonConfiguration);
-        GetProtocolFromJsonConfig(jsonConfiguration);
+        g_modelVersion = GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonConfiguration, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID);
+        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, g_reportedProperties);
+        g_reportingInterval = GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonConfiguration, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL);
+        g_localPriority = GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonConfiguration, 0, 0, 1);
+        g_localManagement = GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonConfiguration, 0, 0, 1);
+        g_protocol = GetIntegerFromJsonConfig(PROTOCOL, jsonConfiguration, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
         FREE_MEMORY(jsonConfiguration);
     }
 
