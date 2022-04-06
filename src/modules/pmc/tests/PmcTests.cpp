@@ -74,7 +74,7 @@ namespace OSConfig::Platform::Tests
             delete testModule;
             const std::string command = std::string("rm -r ") + sourcesDirectory;
             int status = ExecuteCommand(nullptr, command.c_str(), true, true, 0, 0, nullptr, nullptr, PmcLog::Get());
-            if (status != MMI_OK)
+            if (status != 0)
             {
                 throw std::runtime_error("Failed to execute command " + command);
             }
@@ -96,12 +96,12 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get",  std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")}
+            {"command -v apt-get",  std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
+            {"apt-get update", std::tuple<int, std::string>(0, "")},
+            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
+            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")}
         };
         const std::string testFileToDeletePath = sourcesDirectory + std::string("sourceToDelete.list");
         const std::string testData = "test data";
@@ -122,9 +122,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
@@ -146,15 +146,15 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 3.03+dfsg2-7:1 ")},
-            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: 5.02-1 ")},
-            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
+            {"apt-get update", std::tuple<int, std::string>(0, "")},
+            {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
+            {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(0, "  Installed: 3.03+dfsg2-7:1 ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(0, "  Installed: 5.02-1 ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],"
@@ -180,13 +180,13 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
             {"apt-get update", std::tuple<int, std::string>(EBUSY, "")},
-            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
@@ -212,14 +212,14 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
-            {"apt-get update", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
+            {"apt-get update", std::tuple<int, std::string>(0, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(ETIME,"")},
-            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
-            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(MMI_OK, "  Installed: (none) ")},
+            {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
+            {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
+            {"apt-cache policy bar | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
@@ -245,9 +245,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults = 
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
         };
         int status;
         testModule->SetTextResult(textResults);
@@ -273,9 +273,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
         };
         
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
@@ -303,9 +303,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
         };
         std::string invalidName = "invalid";
         int status;
@@ -321,9 +321,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")}
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
         };
         std::string invalidName = "invalid";
 
@@ -342,9 +342,9 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(MMI_OK, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(MMI_OK, "")},
+            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
+            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
+            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
         };
         char invalidPayload[] = "C++ PackageManagerConfiguration Module";
         testModule->SetTextResult(textResults);
