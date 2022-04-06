@@ -601,7 +601,7 @@ int main(int argc, char *argv[])
     if (NULL != jsonConfiguration)
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration);
-        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, g_reportedProperties);
+        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &&g_reportedProperties);
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
         g_localPriority = GetLocalPriorityFromJsonConfig(jsonConfiguration);
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);

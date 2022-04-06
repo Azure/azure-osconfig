@@ -52,7 +52,7 @@ int GetLocalPriorityFromJsonConfig(const char* jsonString);
 int GetLocalManagementFromJsonConfig(const char* jsonString);
 int GetProtocolFromJsonConfig(const char* jsonString);
 
-int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* reportedProperties);
+int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties);
 
 char* GetHttpProxyData(void);
 

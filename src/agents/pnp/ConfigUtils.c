@@ -115,7 +115,7 @@ int GetProtocolFromJsonConfig(const char* jsonString)
     return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
 }
 
-int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* reportedProperties)
+int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -128,7 +128,13 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* report
     size_t i = 0;
     int numReportedProperties = 0;
 
-    FREE_MEMORY(reportedProperties);
+    if (NULL == reportedProperties)
+    {
+        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
+        return 0;
+    }
+    
+    FREE_MEMORY(*reportedProperties);
 
     if (NULL != jsonString)
     {
@@ -145,10 +151,10 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* report
                     if (numReported > 0)
                     {
                         bufferSize = numReported * sizeof(REPORTED_PROPERTY);
-                        reportedProperties = (REPORTED_PROPERTY*)malloc(bufferSize);
-                        if (NULL != reportedProperties)
+                        *reportedProperties = (REPORTED_PROPERTY*)malloc(bufferSize);
+                        if (NULL != *reportedProperties)
                         {
-                            memset(reportedProperties, 0, bufferSize);
+                            memset(*reportedProperties, 0, bufferSize);
                             numReportedProperties = (int)numReported;
 
                             for (i = 0; i < numReported; i++)
@@ -161,11 +167,11 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* report
 
                                     if ((NULL != componentName) && (NULL != propertyName))
                                     {
-                                        strncpy(reportedProperties[i].componentName, componentName, ARRAY_SIZE(reportedProperties[i].componentName) - 1);
-                                        strncpy(reportedProperties[i].propertyName, propertyName, ARRAY_SIZE(reportedProperties[i].propertyName) - 1);
+                                        strncpy(*reportedProperties[i].componentName, componentName, ARRAY_SIZE(*reportedProperties[i].componentName) - 1);
+                                        strncpy(*reportedProperties[i].propertyName, propertyName, ARRAY_SIZE(*reportedProperties[i].propertyName) - 1);
 
                                         OsConfigLogInfo(GetLog(), "LoadReportedFromJsonConfig: found report property candidate at position %d of %d: %s.%s", (int)(i + 1),
-                                            numReportedProperties, reportedProperties[i].componentName, reportedProperties[i].propertyName);
+                                            numReportedProperties, *reportedProperties[i].componentName, *reportedProperties[i].propertyName);
                                     }
                                     else
                                     {
