@@ -108,7 +108,7 @@ enum ConnectionStringSource
     FromCommandline = 2
 };
 typedef enum ConnectionStringSource ConnectionStringSource;
-static ConnectionStringSource g_connectionStringSource = Ais;
+static ConnectionStringSource g_connectionStringSource = FromAis;
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
@@ -266,7 +266,6 @@ static void RefreshConnection()
             // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
             OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
         }
-        connectionString = g_iotHubConnectionString;
     }
 
     IotHubDeInitialize();
@@ -274,7 +273,7 @@ static void RefreshConnection()
     
     if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
     {
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
             g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
@@ -638,8 +637,8 @@ static bool InitializeAgent(void)
 
     if (status && g_iotHubConnectionString)
     {
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
-            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
+            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
             LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
             status = false;
@@ -712,6 +711,26 @@ static void ReportProperties()
     }
 }
 
+static void LoadDesiredConfigurationFromFile()
+{
+    size_t payloadHash = 0;
+    int payloadSizeBytes = 0;
+    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
+    if (payload && (0 != (payloadSizeBytes = strlen(payload))))
+    {
+        // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
+        if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
+        {
+            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
+            {
+                g_desiredHash = payloadHash;
+            }
+        }
+        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+    }
+    FREE_MEMORY(payload);
+}
+
 static void AgentDoWork(void)
 {
     char* connectionString = NULL;
@@ -723,12 +742,12 @@ static void AgentDoWork(void)
     {
         if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource) && (NULL == g_moduleHandle))
         {
-            if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+            if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle)))
             {
                 if (0 == mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
                 {
-                    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
-                        g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))))
+                    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, 
+                        g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
                     {
                         LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
                         g_exitState = IotHubInitializationFailure;
@@ -902,7 +921,7 @@ int main(int argc, char *argv[])
     if ((argc < 2) || ((2 == argc) && forkDaemon))
     {
         g_connectionStringSource = FromAis;
-        if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+        if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle)))
         {
             if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
             {
@@ -1004,24 +1023,4 @@ done:
     }
 
     return 0;
-}
-
-static void LoadDesiredConfigurationFromFile()
-{
-    size_t payloadHash = 0;
-    int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
-    if (payload && (0 != (payloadSizeBytes = strlen(payload))))
-    {
-        // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
-        if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
-        {
-            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
-            {
-                g_desiredHash = payloadHash;
-            }
-        }
-        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-    }
-    FREE_MEMORY(payload);
 }
