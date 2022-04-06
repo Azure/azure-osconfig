@@ -101,12 +101,20 @@ enum AgentExitState
 typedef enum AgentExitState AgentExitState;
 static AgentExitState g_exitState = NoError;
 
+enum ConnectionStringSource
+{
+    FromAis = 0,
+    FromFile = 1,
+    FromCommandline = 2
+};
+typedef enum ConnectionStringSource ConnectionStringSource;
+static ConnectionStringSource g_connectionStringSource = Ais;
+
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 
 static char* g_iotHubConnectionString = NULL;
 const char* g_iotHubConnectionStringPrefix = "HostName=";
-static bool g_iotHubConnectionStringFromAis = false;
 
 // Obtained from AIS alongside the connection string in case of X.509 authentication
 static char* g_x509Certificate = NULL;
@@ -242,7 +250,7 @@ static void RefreshConnection()
     FREE_MEMORY(g_x509PrivateKeyHandle);
 
     // If initialized with AIS, try to get a new connection string same way:
-    if (g_iotHubConnectionStringFromAis && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+    if ((FromAis == g_connectionStringSource) && (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
     {
         FREE_MEMORY(g_iotHubConnectionString);
         if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
@@ -253,7 +261,7 @@ static void RefreshConnection()
     }
     else
     {
-        if (g_iotHubConnectionStringFromAis)
+        if (FromAis == g_connectionStringSource)
         {
             // No new connection string from AIS, try to refresh using the existing connection string before bailing out:
             OsConfigLogError(GetLog(), "RefreshConnection: failed to obtain a new connection string from AIS, trying refresh with existing connection string");
@@ -261,23 +269,18 @@ static void RefreshConnection()
         connectionString = g_iotHubConnectionString;
     }
 
-    if (NULL != connectionString)
+    IotHubDeInitialize();
+    g_moduleHandle = NULL;
+    
+    if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
     {
-        // Reinitialize communication with the IoT Hub:
-        IotHubDeInitialize();
-        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, 
-            g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
+            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol)))
         {
-            LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
+            LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
             g_exitState = IotHubInitializationFailure;
             SignalInterrupt(SIGQUIT);
         }
-    }
-    else
-    {
-        LogErrorWithTelemetry(GetLog(), "RefreshConnection: no connection string");
-        g_exitState = NoConnectionString;
-        SignalInterrupt(SIGQUIT);
     }
 }
 
@@ -607,6 +610,164 @@ static char* GetHttpProxyData()
     return proxyData;
 }
 
+
+static bool InitializeAgent(void)
+{
+    bool status = true;
+
+    if (NULL == (g_tickCounter = tickcounter_create()))
+    {
+        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
+        status = false;
+    }
+
+    if (status)
+    {
+        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+
+        CallMpiInitialize();
+
+        // Open the MPI session for this PnP Module instance:
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+        {
+            LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+            g_exitState = MpiInitializationFailure;
+            status = false;
+        }
+    }
+
+    if (status && g_iotHubConnectionString)
+    {
+        if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
+            g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))))
+        {
+            LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+            status = false;
+        }
+    }
+
+    if (status)
+    {
+        OsConfigLogInfo(GetLog(), "OSConfig PnP Agent intialized");
+    }
+
+    return status;
+}
+
+void CloseAgent(void)
+{
+    IotHubDeInitialize();
+
+    if (NULL != g_mpiHandle)
+    {
+        CallMpiClose(g_mpiHandle);
+        g_mpiHandle = NULL;
+    }
+
+    FREE_MEMORY(g_reportedProperties);
+
+    CallMpiShutdown();
+
+    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
+}
+
+static void SaveReportedConfigurationToFile()
+{
+    char* payload = NULL;
+    int payloadSizeBytes = 0;
+    size_t payloadHash = 0;
+    int mpiResult = MPI_OK;
+    if (g_localManagement)
+    {
+        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
+        {
+            if (g_reportedHash != (payloadHash = HashString(payload)))
+            {
+                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
+                {
+                    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
+                    g_reportedHash = payloadHash;
+                }
+            }
+        }
+        CallMpiFree(payload);
+    }
+}
+
+static void ReportProperties()
+{
+    if ((g_numReportedProperties <= 0) || (NULL == g_reportedProperties))
+    {
+        // No properties to report
+        return;
+    }
+
+    for (int i = 0; i < g_numReportedProperties; i++)
+    {
+        if ((strlen(g_reportedProperties[i].componentName) > 0) && (strlen(g_reportedProperties[i].propertyName) > 0))
+        {
+            ReportPropertyToIotHub(g_reportedProperties[i].componentName, g_reportedProperties[i].propertyName, &(g_reportedProperties[i].lastPayloadHash));
+        }
+    }
+}
+
+static void AgentDoWork(void)
+{
+    char* connectionString = NULL;
+    tickcounter_ms_t nowTick = 0;
+    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
+    tickcounter_get_current_ms(g_tickCounter, &nowTick);
+
+    if (intervalTick <= (nowTick - g_lastTick))
+    {
+        if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource) && (NULL == g_moduleHandle))
+        {
+            if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
+            {
+                if (0 == mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+                {
+                    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, 
+                        g_x509PrivateKeyHandle, &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))))
+                    {
+                        LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+                        g_exitState = IotHubInitializationFailure;
+                        SignalInterrupt(SIGQUIT);
+                    }
+                }
+                else
+                {
+                    LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string");
+                    g_exitState = IotHubInitializationFailure;
+                    SignalInterrupt(SIGQUIT);
+                }
+            }
+        }
+
+        // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1) and reported updates to the RC file
+        if (g_localManagement)
+        {
+            LoadDesiredConfigurationFromFile();
+            SaveReportedConfigurationToFile();
+        }
+
+        // If connected to the IoT Hub, process reported updates
+        if (g_moduleHandle)
+        {
+            ReportProperties();
+        }
+
+        // Allow the inproc (for now) platform to unload unused modules
+        CallMpiDoWork();
+
+        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+    }
+    else
+    {
+        IotHubDoWork();
+    }
+}
+
 int main(int argc, char *argv[])
 {
     char* connectionString = NULL;
@@ -616,7 +777,6 @@ int main(int argc, char *argv[])
     int proxyPort = 0;
     char* proxyUsername = NULL;
     char* proxyPassword = NULL;
-    bool freeConnectionString = false;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
     bool forkDaemon = false;
     pid_t pid = 0;
@@ -648,7 +808,7 @@ int main(int argc, char *argv[])
         ForkDaemon();
     }
 
-    g_iotHubConnectionStringFromAis = false;
+    g_connectionStringSource = FromAis;
 
     // Re-open the log
     CloseLog(&g_agentLog);
@@ -741,33 +901,34 @@ int main(int argc, char *argv[])
 
     if ((argc < 2) || ((2 == argc) && forkDaemon))
     {
-        connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle);
-        if (NULL != connectionString)
+        g_connectionStringSource = FromAis;
+        if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle))))
         {
-            freeConnectionString = true;
-            g_iotHubConnectionStringFromAis = true;
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS");
-            g_exitState = NoConnectionString;
-            goto done;
+            if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+            {
+                LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string from AIS");
+                g_exitState = NoConnectionString;
+                goto done;
+            }
         }
     }
     else
     {
         if (0 == strncmp(argv[1], g_iotHubConnectionStringPrefix, strlen(g_iotHubConnectionStringPrefix)))
         {
-            connectionString = argv[1];
+            g_connectionStringSource = FromCommandline;
+            if (0 != mallocAndStrcpy_s(&connectionString, argv[1]))
+            {
+                LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string from the command line");
+                g_exitState = NoConnectionString;
+                goto done;
+            }
         }
         else
         {
+            g_connectionStringSource = FromFile;
             connectionString = LoadStringFromFile(argv[1], true, GetLog());
-            if (NULL != connectionString)
-            {
-                freeConnectionString = true;
-            }
-            else
+            if (NULL == connectionString)
             {
                 LogErrorWithTelemetry(GetLog(), "Failed to load a connection string from %s", argv[1]);
                 g_exitState = NoConnectionString;
@@ -789,7 +950,7 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (0 != InitializeAgent(connectionString, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol))
+    if (!InitializeAgent())
     {
         LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
         goto done;
@@ -818,11 +979,8 @@ done:
 
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
+    FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
-    if (freeConnectionString)
-    {
-        FREE_MEMORY(connectionString);
-    }
 
     CloseAgent();
     CloseTraceLogging();
@@ -848,40 +1006,6 @@ done:
     return 0;
 }
 
-int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol)
-{
-    if (NULL == (g_tickCounter = tickcounter_create()))
-    {
-        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
-        return -1;
-    }
-
-    // Initialize the Management Platform
-    CallMpiInitialize();
-
-    // Open the MPI session for this PnP Module instance:
-    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
-    {
-        LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-        g_exitState = MpiInitializationFailure;
-        return -1;
-    }
-
-    // Initialize communication with the IoT Hub:
-    if (NULL == (g_moduleHandle = IotHubInitialize(g_modelId, g_productInfo, connectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, &g_proxyOptions, protocol)))
-    {
-        LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
-        g_exitState = IotHubInitializationFailure;
-        return -1;
-    }
-
-    tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent initialized");
-
-    return 0;
-}
-
 static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
@@ -900,88 +1024,4 @@ static void LoadDesiredConfigurationFromFile()
         RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
     FREE_MEMORY(payload);
-}
-
-static void SaveReportedConfigurationToFile()
-{
-    char* payload = NULL;
-    int payloadSizeBytes = 0;
-    size_t payloadHash = 0;
-    int mpiResult = MPI_OK;
-    if (g_localManagement)
-    {
-        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
-        if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
-        {
-            if (g_reportedHash != (payloadHash = HashString(payload)))
-            {
-                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
-                {
-                    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-                    g_reportedHash = payloadHash;
-                }
-            }
-        }
-        CallMpiFree(payload);
-    }
-}
-
-static void ReportProperties()
-{
-    if ((g_numReportedProperties <= 0) || (NULL == g_reportedProperties))
-    {
-        // No properties to report
-        return;
-    }
-
-    for (int i = 0; i < g_numReportedProperties; i++)
-    {
-        if ((strlen(g_reportedProperties[i].componentName) > 0) && (strlen(g_reportedProperties[i].propertyName) > 0))
-        {
-            ReportPropertyToIotHub(g_reportedProperties[i].componentName, g_reportedProperties[i].propertyName, &(g_reportedProperties[i].lastPayloadHash));
-        }
-    }
-}
-
-void AgentDoWork(void)
-{
-    tickcounter_ms_t nowTick = 0;
-    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-    tickcounter_get_current_ms(g_tickCounter, &nowTick);
-
-    if (intervalTick <= (nowTick - g_lastTick))
-    {
-        // Process desired updates from local DC file (for Iot Hub this is signaled to be done with SIGUSR1)
-        LoadDesiredConfigurationFromFile();
-
-        // Send reported to both Iot Hub and local RC file
-        ReportProperties();
-        SaveReportedConfigurationToFile();
-
-        // Allow the inproc (for now) platform to unload unused modules
-        CallMpiDoWork();
-
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-    }
-    else
-    {
-        IotHubDoWork();
-    }
-}
-
-void CloseAgent(void)
-{
-    IotHubDeInitialize();
-
-    if (NULL != g_mpiHandle)
-    {
-        CallMpiClose(g_mpiHandle);
-        g_mpiHandle = NULL;
-    }
-
-    FREE_MEMORY(g_reportedProperties);
-
-    CallMpiShutdown();
-
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
