@@ -88,7 +88,7 @@ systemctl start osconfig.service
 /usr/lib/osconfig/ztsi.so
 
 %changelog
-* Fri Mar 18 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.2.2022031901
+* Mon Apr 4 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.2.20220404
 - Bumped version to 1.0.2.x
 - Added HTTP proxy support for connection to Iot Hub.
 - Added support to MQTT for WS protocol alogside MQTT.
