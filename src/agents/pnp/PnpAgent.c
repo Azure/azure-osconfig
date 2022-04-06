@@ -212,8 +212,16 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
-    return IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle, 
+    IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
         &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
+
+    if (NULL == moduleHandle)
+    {
+        LogError(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
+        IotHubDeInitialize(void);
+    }
+
+    return moduleHandle;
 }
 
 static void RefreshConnection()
@@ -249,8 +257,6 @@ static void RefreshConnection()
     {
         if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
-            LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
-
             if (FromAis == g_connectionStringSource)
             {
                 FREE_MEMORY(g_iotHubConnectionString);
@@ -386,8 +392,6 @@ static bool InitializeAgent(void)
                 g_exitState = IotHubInitializationFailure;
                 status = false;
             }
-
-            LogErrorWithTelemetry(GetLog(), "InitializeAgent: IotHubInitialize failed, failed to initialize connection to IoT Hub");
         }
     }
 
@@ -494,7 +498,6 @@ static void AgentDoWork(void)
                 {
                     if (NULL == (g_moduleHandle = CallIotHubInitialize()))
                     {
-                        LogErrorWithTelemetry(GetLog(), "AgentDoWork: IotHubInitialize failed, failed to initialize connection to IoT Hub, to retry");
                         FREE_MEMORY(g_iotHubConnectionString);
                     }
                 }
@@ -701,7 +704,7 @@ int main(int argc, char *argv[])
             connectionString = LoadStringFromFile(argv[1], true, GetLog());
             if (NULL == connectionString)
             {
-                LogErrorWithTelemetry(GetLog(), "Failed to load a connection string from %s", argv[1]);
+                OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
 
                 if (!g_localManagement)
                 {
