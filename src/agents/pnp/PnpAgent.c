@@ -249,9 +249,17 @@ static void RefreshConnection()
     {
         if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
-            LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
-            g_exitState = IotHubInitializationFailure;
-            SignalInterrupt(SIGQUIT);
+            LogErrorWithTelemetry(GetLog(), "RefreshConnection: IotHubInitialize failed");
+
+            if (FromAis == g_connectionStringSource)
+            {
+                FREE_MEMORY(g_iotHubConnectionString);
+            }
+            else
+            {
+                g_exitState = IotHubInitializationFailure;
+                SignalInterrupt(SIGQUIT);
+            }
         }
     }
 }
@@ -368,8 +376,17 @@ static bool InitializeAgent(void)
     {
         if (NULL == (g_moduleHandle = CallIotHubInitialize()))
         {
-            LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
-            status = false;
+            if (FromAis == g_connectionStringSource)
+            {
+                FREE_MEMORY(g_iotHubConnectionString);
+            }
+            else
+            {
+                g_exitState = IotHubInitializationFailure;
+                status = false;
+            }
+
+            LogErrorWithTelemetry(GetLog(), "InitializeAgent: IotHubInitialize failed, failed to initialize connection to IoT Hub");
         }
     }
 
@@ -476,21 +493,20 @@ static void AgentDoWork(void)
                 {
                     if (NULL == (g_moduleHandle = CallIotHubInitialize()))
                     {
-                        LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed, failed to initialize connection to IoT Hub");
-                        g_exitState = IotHubInitializationFailure;
-                        SignalInterrupt(SIGQUIT);
+                        LogErrorWithTelemetry(GetLog(), "AgentDoWork: IotHubInitialize failed, failed to initialize connection to IoT Hub, to retry");
+                        FREE_MEMORY(g_iotHubConnectionString);
                     }
                 }
                 else
                 {
-                    LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string");
+                    LogErrorWithTelemetry(GetLog(), "AgentDoWork: out of memory making copy of the connection string");
                     g_exitState = IotHubInitializationFailure;
                     SignalInterrupt(SIGQUIT);
                 }
             }
             else
             {
-                OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry later");
+                OsConfigLogError(GetLog(), "AgentDoWork: failed to obtain a connection string from AIS, to retry");
             }
         }
 
