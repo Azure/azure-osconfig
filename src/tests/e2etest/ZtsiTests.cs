@@ -99,7 +99,7 @@ namespace E2eTesting
                 reportedTask.Wait();
                 var reportedConfiguration = reportedTask.Result;
 
-                return (reportedConfiguration.ServiceUrl, reportedConfiguration.Enabled);
+                return (reportedConfiguration.serviceUrl, reportedConfiguration.enabled);
             }
             catch (Exception e)
             {
@@ -114,7 +114,7 @@ namespace E2eTesting
             {
                 var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.serviceUrl == expectedServiceUrl));
                 reportedTask.Wait();
-                return reportedTask.Result.ServiceUrl;
+                return reportedTask.Result.serviceUrl;
             }
             catch (Exception e)
             {
@@ -129,7 +129,7 @@ namespace E2eTesting
             {
                 var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.enabled == expectedEnabled));
                 reportedTask.Wait();
-                return reportedTask.Result.Enabled;
+                return reportedTask.Result.enabled;
             }
             catch (Exception e)
             {
