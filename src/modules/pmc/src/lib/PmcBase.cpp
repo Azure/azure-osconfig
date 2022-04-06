@@ -424,7 +424,7 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
         {
             OsConfigLogError(PmcLog::Get(), "Failed to update package(s): %s", package.c_str());
             status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::installingPackages, package)
-                            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::installingPackages, package);
+                : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::installingPackages, package);
             return status;
         }
     }
@@ -604,7 +604,7 @@ std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* f
 {
     struct dirent* entry = nullptr;
     DIR* directoryStream = nullptr;
-    int extensionLength = nullptr != fileNameExtension ? strlen(fileNameExtension) : 0;
+    int extensionLength = (nullptr != fileNameExtension) ? strlen(fileNameExtension) : 0;
     char* fileName;
     int fileNameLength;
     char* lastCharacters;
@@ -701,7 +701,7 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
     {
         OsConfigLogError(PmcLog::Get(), "Refresh package lists failed with status %d", status);
         status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
-                        : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
+            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
     }
     else
     {
