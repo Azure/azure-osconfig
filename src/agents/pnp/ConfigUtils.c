@@ -167,11 +167,11 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 
                                     if ((NULL != componentName) && (NULL != propertyName))
                                     {
-                                        strncpy(*reportedProperties[i]->componentName, componentName, ARRAY_SIZE(*reportedProperties[i]->componentName) - 1);
-                                        strncpy(*reportedProperties[i]->propertyName, propertyName, ARRAY_SIZE(*reportedProperties[i]->propertyName) - 1);
+                                        strncpy((*reportedProperties)[i].componentName, componentName, ARRAY_SIZE((*reportedProperties)[i].componentName) - 1);
+                                        strncpy((*reportedProperties)[i].propertyName, propertyName, ARRAY_SIZE((*reportedProperties)[i].propertyName) - 1);
 
                                         OsConfigLogInfo(GetLog(), "LoadReportedFromJsonConfig: found report property candidate at position %d of %d: %s.%s", (int)(i + 1),
-                                            numReportedProperties, *reportedProperties[i]->componentName, *reportedProperties[i]->propertyName);
+                                            numReportedProperties, (*reportedProperties)[i].componentName, (*reportedProperties)[i].propertyName);
                                     }
                                     else
                                     {
