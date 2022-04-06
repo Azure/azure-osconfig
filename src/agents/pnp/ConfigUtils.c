@@ -25,7 +25,7 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
     return result;
 }
 
-int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)
+static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
@@ -88,6 +88,31 @@ int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int 
     }
 
     return valueToReturn;
+}
+
+int GetReportingIntervalFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(REPORTING_INTERVAL_SECONDS, jsonString, DEFAULT_REPORTING_INTERVAL, MIN_REPORTING_INTERVAL, MAX_REPORTING_INTERVAL);
+}
+
+int GetModelVersionFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID);
+}
+
+int GetLocalPriorityFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
+}
+
+int GetLocalManagementFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
+}
+
+int GetProtocolFromJsonConfig(const char* jsonString)
+{
+    return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
 }
 
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY* reportedProperties)
@@ -222,3 +247,4 @@ char* GetHttpProxyData()
 
     return proxyData;
 }
+
