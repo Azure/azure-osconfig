@@ -255,7 +255,7 @@ static void RefreshConnection()
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else
+            else if (!g_localManagement)
             {
                 g_exitState = IotHubInitializationFailure;
                 SignalInterrupt(SIGQUIT);
@@ -380,7 +380,7 @@ static bool InitializeAgent(void)
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else
+            else if (!g_localManagement)
             {
                 g_exitState = IotHubInitializationFailure;
                 status = false;
