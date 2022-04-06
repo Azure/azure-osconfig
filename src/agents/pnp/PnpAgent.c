@@ -761,6 +761,10 @@ static void AgentDoWork(void)
                     SignalInterrupt(SIGQUIT);
                 }
             }
+            else
+            {
+                OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry later");
+            }
         }
 
         // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1) and reported updates to the RC file
@@ -930,6 +934,10 @@ int main(int argc, char *argv[])
                 goto done;
             }
         }
+        else
+        {
+            OsConfigLogError(GetLog(), "Failed to obtain a connection string from AIS, to retry later");
+        }
     }
     else
     {
@@ -956,7 +964,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
+    if (connectionString && (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString)))
     {
         LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string");
         goto done;
