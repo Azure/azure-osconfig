@@ -490,8 +490,10 @@ static void AgentDoWork(void)
 
     if (intervalTick <= (nowTick - g_lastTick))
     {
-        if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource) && (NULL == g_moduleHandle))
+        if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
+            IotHubDeInitialize();
+
             if (NULL != (connectionString = RequestConnectionStringFromAis(&g_x509Certificate, &g_x509PrivateKeyHandle)))
             {
                 if (0 == mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
