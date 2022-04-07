@@ -253,4 +253,3 @@ char* GetHttpProxyData()
 
     return proxyData;
 }
-
