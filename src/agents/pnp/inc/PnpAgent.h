@@ -9,9 +9,6 @@ extern "C"
 {
 #endif
 
-int InitializeAgent(const char* connectionString, IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol);
-void AgentDoWork(void);
-void CloseAgent(void);
 void ScheduleRefreshConnection(void);
 
 #ifdef __cplusplus
