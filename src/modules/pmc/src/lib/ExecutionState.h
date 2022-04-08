@@ -19,7 +19,7 @@ public:
         deserializingJsonPayload,
         deserializingDesiredState,
         deserializingPackages,
-        updatingPackagesLists,
+        updatingPackageLists,
         installingPackages
     };
 

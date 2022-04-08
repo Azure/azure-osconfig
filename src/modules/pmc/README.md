@@ -37,15 +37,15 @@ The `ExecutionState`, `ExecutionSubState` and `ExecutionSubStateDetails` propert
 | 1 (Running)    | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object                                        |
 | 1 (Running)    | 2 (DeserializingDesiredState) | empty                    | Deserializing DesiredState JSON object                                                       |
 | 1 (Running)    | 3 (DeserializingPackages)     | package_name(s)          | Deserializing Packages JSON array                                                            |
-| 1 (Running)    | 4 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages before updating packages (by running `apt-get update` command)   |
+| 1 (Running)    | 4 (UpdatingPackageLists)     | empty                    | Refreshing list of packages before updating packages (by running `apt-get update` command)   |
 | 1 (Running)    | 5 (InstallingPackages)        | package_name(s)          | Installing packages (by running `apt-get install` command)                                   |
 | 2 (Succeeded)  | 0 (None)                      | empty                    | All desired properties were applied successfully                                             |
 | 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object failed                                 |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Deserializing DesiredState JSON object failed                                                |
 | 3 (Failed)     | 3 (DeserializingPackages)     | package_name(s)          | Deserializing Packages JSON array failed                                                     |
-| 3 (Failed)     | 4 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages packages failed                                                  |
+| 3 (Failed)     | 4 (UpdatingPackageLists)     | empty                    | Refreshing list of packages packages failed                                                  |
 | 3 (Failed)     | 5 (InstallingPackages)        | package_name(s)          | Installing packages failed                                                                   |
-| 4 (TimedOut)   | 4 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages timed out                                                        |
+| 4 (TimedOut)   | 4 (UpdatingPackageLists)     | empty                    | Refreshing list of packages timed out                                                        |
 | 4 (TimedOut)   | 5 (InstallingPackages)        | package_name(s)          | Installing packages timed out                                                                |
 
 ### Example of reported payload:
@@ -73,7 +73,7 @@ Package Manager Configuration module can fail in different stages. To be able to
 | 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Payload too large, unabled to parse JSON payload, not specified PackageManagerConfiguration     |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Invalid DesiredState payload, incorrect types specified, not specified Packages                 |
 | 3 (Failed)     | 4 (DeserializingPackages)     | package_name(s)          | Packages is not an array type, invalid array element                                            |
-| 3 (Failed)     | 4 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) failed. A source repository may be unreachable or access may be unauthorized |
+| 3 (Failed)     | 4 (UpdatingPackageLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) failed. A source repository may be unreachable or access may be unauthorized |
 | 3 (Failed)     | 5 (InstallingPackages)        | package_name(s)          | Installation of package(s) failed because they (or any of their dependencies) weren't found in the source repositories |
-| 4 (TimedOut)   | 4 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) took more than 10 min         |
+| 4 (TimedOut)   | 4 (UpdatingPackageLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) took more than 10 min         |
 | 4 (TimedOut)   | 5 (InstallingPackages)        | package_name(s)          | Installing packages took more than 10 min                                                       |
