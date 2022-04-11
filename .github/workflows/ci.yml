@@ -16,7 +16,7 @@ jobs:
         arch: [amd64]
 
     container:
-      image: osconfig.azurecr.io/${{ matrix.os }}-${{ matrix.arch }}-dev:latest
+      image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
       options: "--priviledged"
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
