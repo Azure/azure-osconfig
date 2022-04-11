@@ -12,12 +12,14 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
-        arch: [arm, arm64, amd64]
+        os: [ubuntu18.04]
+        arch: [amd64]
+        # os: [ubuntu18.04, ubuntu20.04, debian9]
+        # arch: [arm, arm64, amd64]
 
     container:
       image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
-      options: "--priviledged"
+      options: --privileged
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}
@@ -29,6 +31,7 @@ jobs:
           clean: true
       
       - uses: docker/setup-qemu-action@v1
+        # TODO: only if container is ARM
         with: 
           platforms: ${{ matrix.arch }}
 
