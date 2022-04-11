@@ -8,8 +8,6 @@ on:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
         os: [ubuntu-20.04]
