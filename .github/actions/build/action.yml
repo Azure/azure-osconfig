@@ -1,0 +1,26 @@
+name: Build
+description: Build azure-osconfig with CMake
+
+inputs:
+  build-type:
+    description: The build type to use
+    default: Release
+  source-path:
+    description: The source directory to use
+    required: true
+  build-path:
+    description: The build directory to use
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: CMake Generate Build
+      working-directory: ${{ inputs.source-path }}
+      run: cmake -B ${{ inputs.build-path }} -DCMAKE_build-type=${{ inputs.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON
+      shell: bash
+
+    - name: CMake Build
+      working-directory: ${{ github.workspace }}/build
+      run: cmake --build . --config ${{ inputs.build-type }}
+      shell: bash

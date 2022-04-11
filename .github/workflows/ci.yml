@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - "src/"
+  workflow_dispatch:
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        arch: [amd64]
+
+    container:
+      image: osconfig/${{ matrix.os }}-${{ matrix.arch }}-dev:latest
+      options: "--priviledged"
+      credentials:
+        username: ${{ secrets.ACR_CLIENT_ID }}
+        password: ${{ secrets.ACR_CLIENT_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          clean: true
+      
+      - uses: docker/setup-qemu-action@v1
+        with: 
+          platforms: ${{ matrix.arch }}
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/build
+        with: 
+          build-type: Release
+          source-directory: src
+          build-directory: build
+
+      - name: Set test output
+        run: echo '::set-output name=file-name::${{ matrix.os }}-${{ matrix.arch }}-tests.xml'
+        id: test-output
+
+      - name: Run Unit Tests
+        working-directory: ${{ github.workspace }}/build
+        run: ctest --verbose --output-junit ${{ steps.test-output.outputs.file-name }}
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: unit-test-results
+          path: ${{ github.workspace }}/${{ env.build_directory }}/${{ steps.test-output.outputs.file-name }}
