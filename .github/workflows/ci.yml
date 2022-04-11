@@ -19,13 +19,13 @@ jobs:
 
     container:
       image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
-      options: --privileged --user root
+      options: --privileged
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           clean: true
