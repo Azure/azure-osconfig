@@ -16,11 +16,11 @@ jobs:
         arch: [amd64]
 
     container:
-      image: osconfig/${{ matrix.os }}-${{ matrix.arch }}-dev:latest
+      image: osconfig.azurecr.io/${{ matrix.os }}-${{ matrix.arch }}-dev:latest
       options: "--priviledged"
       credentials:
-        username: "${{ secrets.ACR_CLIENT_ID }}"
-        password: "${{ secrets.ACR_CLIENT_SECRET }}"
+        username: ${{ secrets.ACR_CLIENT_ID }}
+        password: ${{ secrets.ACR_CLIENT_SECRET }}
 
     steps:
       - uses: actions/checkout@v2
