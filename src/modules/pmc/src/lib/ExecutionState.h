@@ -18,7 +18,9 @@ public:
         none,
         deserializingJsonPayload,
         deserializingDesiredState,
+        deserializingSources,
         deserializingPackages,
+        modifyingSources,
         updatingPackageLists,
         installingPackages
     };
