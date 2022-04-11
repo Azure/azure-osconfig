@@ -8,6 +8,8 @@ on:
 
 jobs:
   unit-test:
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -17,8 +19,8 @@ jobs:
       image: osconfig/${{ matrix.os }}-${{ matrix.arch }}-dev:latest
       options: "--priviledged"
       credentials:
-        username: ${{ secrets.ACR_CLIENT_ID }}
-        password: ${{ secrets.ACR_CLIENT_SECRET }}
+        username: "${{ secrets.ACR_CLIENT_ID }}"
+        password: "${{ secrets.ACR_CLIENT_SECRET }}"
 
     steps:
       - uses: actions/checkout@v2
