@@ -26,14 +26,14 @@ jobs:
 
     steps:
       
-      - run: echo git --version
+      - run: git --version
         
       - name: test install git 
         run: | 
           apt update
           apt install -y git
 
-      - run: echo git --version
+      - run: git --version
 
       - uses: actions/checkout@v3
         with:
