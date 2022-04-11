@@ -19,7 +19,7 @@ jobs:
 
     container:
       image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
-      options: --privileged
+      options: --privileged --user root
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}
