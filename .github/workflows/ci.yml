@@ -25,6 +25,16 @@ jobs:
         password: ${{ secrets.ACR_CLIENT_SECRET }}
 
     steps:
+      
+      - run: echo git --version
+        
+      - name: test install git 
+        run: | 
+          apt update
+          apt install -y git
+
+      - run: echo git --version
+
       - uses: actions/checkout@v3
         with:
           submodules: recursive
