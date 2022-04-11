@@ -1,5 +1,6 @@
 # OSConfig
 
+[![.github/workflows/ci.yml](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
 Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
