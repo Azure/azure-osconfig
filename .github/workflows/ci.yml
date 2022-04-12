@@ -12,9 +12,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu18.04]
-        # os: [ubuntu18.04, ubuntu20.04, debian9]
-        arch: [arm, arm64, amd64]
+        os: [ubuntu18.04, ubuntu20.04, debian9]
+        arch: [amd64]
 
     container:
       image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
@@ -23,19 +22,16 @@ jobs:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}
 
-    steps:      
-      - uses: docker/setup-qemu-action@v1
-        # TODO: only if container is ARM
-        with: 
-          platforms: ${{ matrix.arch }}
-      
-      - run: git --version
-         
-      - uses: actions/checkout@v1
+    steps:               
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           clean: true
 
+      - uses: docker/setup-qemu-action@v1
+        with: 
+          platforms: ${{ matrix.arch }}
+      
       - name: Build azure-osconfig
         uses: ./.github/actions/build
         with: 
@@ -52,7 +48,7 @@ jobs:
         run: ctest --verbose --output-junit ${{ steps.test-output.outputs.file-name }}
 
       - uses: actions/upload-artifact@v2
-        if: always()
+        if: success() || failure()
         with:
           name: unit-test-results
           path: ${{ github.workspace }}/${{ env.build_directory }}/${{ steps.test-output.outputs.file-name }}
