@@ -50,5 +50,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: success() || failure()
         with:
-          name: unit-test-results
+          name: unit-test-output
           path: ${{ github.workspace }}/${{ env.build_directory }}/${{ steps.test-output.outputs.file-name }}
