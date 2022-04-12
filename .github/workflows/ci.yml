@@ -36,8 +36,8 @@ jobs:
         uses: ./.github/actions/build
         with: 
           build-type: Release
-          source-directory: src
-          build-directory: build
+          source-path: src
+          build-path: build
 
       - name: Set test output
         run: echo '::set-output name=file-name::${{ matrix.os }}-${{ matrix.arch }}-tests.xml'
