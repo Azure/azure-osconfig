@@ -26,7 +26,7 @@ jobs:
     steps:
       - run: git --version
          
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
         with:
           submodules: recursive
           clean: true
