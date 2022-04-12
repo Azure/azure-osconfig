@@ -23,18 +23,18 @@ jobs:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}
 
-    steps:
+    steps:      
+      - uses: docker/setup-qemu-action@v1
+        # TODO: only if container is ARM
+        with: 
+          platforms: ${{ matrix.arch }}
+      
       - run: git --version
          
       - uses: actions/checkout@v1
         with:
           submodules: recursive
           clean: true
-      
-      - uses: docker/setup-qemu-action@v1
-        # TODO: only if container is ARM
-        with: 
-          platforms: ${{ matrix.arch }}
 
       - name: Build azure-osconfig
         uses: ./.github/actions/build
