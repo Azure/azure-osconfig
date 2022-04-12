@@ -13,9 +13,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu18.04]
-        arch: [amd64]
         # os: [ubuntu18.04, ubuntu20.04, debian9]
-        # arch: [arm, arm64, amd64]
+        arch: [arm, arm64, amd64]
 
     container:
       image: osconfig.azurecr.io/${{ matrix.os }}-dev-${{ matrix.arch }}:latest
@@ -25,16 +24,8 @@ jobs:
         password: ${{ secrets.ACR_CLIENT_SECRET }}
 
     steps:
-      
       - run: git --version
-        
-      - name: test install git 
-        run: | 
-          apt update
-          apt install -y git
-
-      - run: git --version
-
+         
       - uses: actions/checkout@v3
         with:
           submodules: recursive
