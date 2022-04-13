@@ -75,14 +75,14 @@ protected:
 private:
     bool CanRunOnThisPlatform();
     int ExecuteUpdate(const std::string& value);
-    int ExecuteUpdates(const std::vector<std::string> packages);
-    std::vector<std::string> GetReportedPackages(std::vector<std::string> packages);
-    int ConfigureSources(const std::map<std::string, std::string> sources);
-    int DeserializeDesiredState(rapidjson::Document& document, DesiredState& object);
-    int ValidateAndGetPackagesNames(std::vector<std::string> packagesLines);
+    int ExecuteUpdates(const std::vector<std::string>& packages);
+    std::vector<std::string> GetReportedPackages(const std::vector<std::string>& packages);
+    int ConfigureSources(const std::map<std::string, std::string>& sources);
+    int DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object);
+    int ValidateAndGetPackagesNames(const std::vector<std::string>& packagesLines);
     static std::vector<std::string> ListFiles(const char* directory, const char* fileNameExtension);
-    static int SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
-    static int CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    static int SerializeState(const State& reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
+    static int CopyJsonPayload(const rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     static std::vector<std::string> Split(const std::string& text, const std::string& delimiter);
     static std::string TrimStart(const std::string& text, const std::string& trim);
     static std::string TrimEnd(const std::string& text, const std::string& trim);

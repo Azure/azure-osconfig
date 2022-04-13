@@ -286,7 +286,7 @@ bool PmcBase::CanRunOnThisPlatform()
     return true;
 }
 
-int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState& object)
+int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object)
 {
     int status = 0;
 
@@ -361,7 +361,7 @@ int PmcBase::DeserializeDesiredState(rapidjson::Document& document, DesiredState
     return status;
 }
 
-int PmcBase::CopyJsonPayload(rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int PmcBase::CopyJsonPayload(const rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -412,7 +412,7 @@ int PmcBase::ExecuteUpdate(const std::string &value)
     return status;
 }
 
-int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
+int PmcBase::ExecuteUpdates(const std::vector<std::string>& packages)
 {
     int status = 0;
 
@@ -433,7 +433,7 @@ int PmcBase::ExecuteUpdates(const std::vector<std::string> packages)
     return status;
 }
 
-int PmcBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
+int PmcBase::SerializeState(const State& reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -494,7 +494,7 @@ int PmcBase::SerializeState(State reportedState, MMI_JSON_STRING* payload, int* 
     return status;
 }
 
-int PmcBase::ValidateAndGetPackagesNames(std::vector<std::string> packagesLines)
+int PmcBase::ValidateAndGetPackagesNames(const std::vector<std::string>& packagesLines)
 {
     // Clear previous packages names
     m_desiredPackages.clear();
@@ -524,7 +524,7 @@ int PmcBase::ValidateAndGetPackagesNames(std::vector<std::string> packagesLines)
     return 0;
 }
 
-std::vector<std::string> PmcBase::GetReportedPackages(std::vector<std::string> packages)
+std::vector<std::string> PmcBase::GetReportedPackages(const std::vector<std::string>& packages)
 {
     std::vector<std::string> result;
     std::set<std::string> uniquePackages;
@@ -648,7 +648,7 @@ std::vector<std::string> PmcBase::ListFiles(const char* directory, const char* f
     return result;
 }
 
-int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
+int PmcBase::ConfigureSources(const std::map<std::string, std::string>& sources)
 {
     int status = 0;
 

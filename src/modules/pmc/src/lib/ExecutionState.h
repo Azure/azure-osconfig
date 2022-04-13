@@ -30,10 +30,10 @@ public:
 
     void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent, std::string processingArgument);
     void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent);
-    bool IsSuccessful();
-    StateComponent GetExecutionState();
-    SubStateComponent GetExecutionSubState();
-    std::string GetExecutionSubStateDetails();
+    bool IsSuccessful() const;
+    StateComponent GetExecutionState() const;
+    SubStateComponent GetExecutionSubState() const;
+    std::string GetExecutionSubStateDetails() const;
 
 private:
     StateComponent m_stateComponent;

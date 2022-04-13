@@ -23,22 +23,22 @@ void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateCo
     SetExecutionState(stateComponent, subStateComponent, "");
 }
 
-bool ExecutionState::IsSuccessful()
+bool ExecutionState::IsSuccessful() const
 {
     return m_stateComponent == StateComponent::succeeded;
 }
 
-ExecutionState::StateComponent ExecutionState::GetExecutionState()
+ExecutionState::StateComponent ExecutionState::GetExecutionState() const
 {
     return m_stateComponent;
 }
 
-ExecutionState::SubStateComponent ExecutionState::GetExecutionSubState()
+ExecutionState::SubStateComponent ExecutionState::GetExecutionSubState() const
 {
     return m_subStateComponent;
 }
 
-std::string ExecutionState::GetExecutionSubStateDetails()
+std::string ExecutionState::GetExecutionSubStateDetails() const
 {
     return m_processingArgument;
 }
