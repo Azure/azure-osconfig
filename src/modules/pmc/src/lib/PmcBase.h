@@ -81,10 +81,13 @@ private:
     int ExecuteUpdates(const std::vector<std::string>& packages);
     std::vector<std::string> GetReportedPackages(const std::vector<std::string>& packages);
     int ConfigureSources(const std::map<std::string, std::string>& sources, const std::map<std::string, std::string>& gpgKeys);
-    int DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object);
     int ValidateAndGetPackagesNames(const std::vector<std::string>& packagesLines);
+    int ValidateDocument(const rapidjson::Document& document);
     int DownloadGpgKeys(const std::map<std::string, std::string>& gpgKeys);
-    int DeserializeGpgKeys(const rapidjson::Document& document, DesiredState& state);
+    int DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object);
+    int DeserializeGpgKeys(const rapidjson::Document& document, DesiredState& object);
+    int DeserializeSources(const rapidjson::Document& document, DesiredState& object);
+    int DeserializePackages(const rapidjson::Document& document, DesiredState& object);
     static std::vector<std::string> ListFiles(const char* directory, const char* fileNameExtension);
     static int SerializeState(const State& reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
     static int CopyJsonPayload(const rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);

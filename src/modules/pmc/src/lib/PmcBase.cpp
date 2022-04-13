@@ -278,23 +278,23 @@ unsigned int PmcBase::GetMaxPayloadSizeBytes()
     return m_maxPayloadSizeBytes;
 }
 
-int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object)
+int PmcBase::ValidateDocument(const rapidjson::Document& document)
 {
-    int status = PMC_0K;
-
     if (!document.HasMember(g_sources.c_str()) && !document.HasMember(g_packages.c_str()) && !document.HasMember(g_gpgKeys.c_str()))
     {
         OsConfigLogError(PmcLog::Get(), "JSON object does not contain any of ['%s', '%s', '%s']", g_sources.c_str(), g_packages.c_str(), g_gpgKeys.c_str());
         m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingDesiredState);
-        status = EINVAL;
+        return EINVAL;
     }
 
-    if (status == PMC_0K)
-    {
-        status = DeserializeGpgKeys(document, object);
-    }
+    return PMC_0K;
+}
 
-    if (status == PMC_0K && document.HasMember(g_sources.c_str()))
+int PmcBase::DeserializeSources(const rapidjson::Document& document, DesiredState& object)
+{
+    int status = PMC_0K;
+
+    if (document.HasMember(g_sources.c_str()))
     {
         m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingSources);
         if (document[g_sources.c_str()].IsObject())
@@ -326,7 +326,14 @@ int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, Desire
         }
     }
 
-    if (status == PMC_0K && document.HasMember(g_packages.c_str()))
+    return status;
+}
+
+int PmcBase::DeserializePackages(const rapidjson::Document& document, DesiredState& object)
+{
+    int status = PMC_0K;
+
+    if (document.HasMember(g_packages.c_str()))
     {
         m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingPackages);
         if (document[g_packages.c_str()].IsArray())
@@ -353,6 +360,27 @@ int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, Desire
             m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingPackages);
             status = EINVAL;
         }
+    }
+
+    return status;
+}
+
+int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object)
+{
+    int status = ValidateDocument(document);
+    if (status == PMC_0K)
+    {
+        status = DeserializeGpgKeys(document, object);
+    }
+
+    if (status == PMC_0K)
+    {
+        status = DeserializeSources(document, object);
+    }
+
+    if (status == PMC_0K)
+    {
+        status = DeserializePackages(document, object);
     }
 
     return status;
