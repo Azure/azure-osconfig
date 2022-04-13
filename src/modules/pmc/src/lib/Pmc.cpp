@@ -7,6 +7,9 @@
 #include <Mmi.h>
 #include <Pmc.h>
 
+static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query", "bash", "curl", "gpg", "tee"};
+
+constexpr const char* g_commandCheckToolPresence = "command -v $value";
 constexpr const char* g_commandGetInstalledPackages = "dpkg-query --showformat='${Package} (=${Version})\n' --show";
 constexpr const char* g_commandGetSourcesContent = "find $value -type f -name '*.list' -exec cat {} \\;";
 
@@ -18,7 +21,7 @@ Pmc::Pmc(unsigned int maxPayloadSizeBytes)
 int Pmc::RunCommand(const char* command, std::string* textResult, bool isLongRunning)
 {
     char* buffer = nullptr;
-    int status = ExecuteCommand(nullptr, command, true, true, 0, isLongRunning ? TIMEOUT_LONG_RUNNING : 0, &buffer, nullptr, PmcLog::Get()); 
+    int status = ExecuteCommand(nullptr, command, true, true, 0, isLongRunning ? TIMEOUT_LONG_RUNNING : 0, &buffer, nullptr, PmcLog::Get());
 
     if (status == 0)
     {
@@ -57,4 +60,23 @@ std::string Pmc::GetSourcesFingerprint(const char* sourcesDirectory)
     std::string hashString = hash ? hash : "(failed)";
     FREE_MEMORY(hash)
     return hashString;
+}
+
+bool Pmc::CanRunOnThisPlatform()
+{
+    for (auto& tool : g_requiredTools)
+    {
+        std::string command = std::regex_replace(g_commandCheckToolPresence, std::regex("\\$value"), tool);
+        if (RunCommand(command.c_str(), nullptr) != 0)
+        {
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(PmcLog::Get(), "Cannot run on this platform, could not find required tool %s", tool.c_str());
+            }
+
+            return false;
+        }
+    }
+
+    return true;
 }

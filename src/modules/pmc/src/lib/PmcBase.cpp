@@ -18,20 +18,26 @@ static const std::string g_reportedObjectName = "state";
 static const std::string g_desiredObjectName = "desiredState";
 static const std::string g_packages = "packages";
 static const std::string g_sources = "sources";
+static const std::string g_gpgKeys = "gpgKeys";
 static const std::string g_executionState = "executionState";
 static const std::string g_executionSubState = "executionSubState";
 static const std::string g_executionSubStateDetails = "executionSubStateDetails";
 static const std::string g_packagesFingerprint = "packagesFingerprint";
 static const std::string g_sourcesFingerprint = "sourcesFingerprint";
 static const std::string g_sourcesFilenames = "sourcesFilenames";
-static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query"};
 
-constexpr const char* g_commandCheckToolPresence = "command -v $value";
 constexpr const char* g_commandAptUpdate = "apt-get update";
 constexpr const char* g_commandExecuteUpdate = "apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
+constexpr const char* g_commandDownloadGpgKey = "bash -c 'set -o pipefail && curl $url | gpg --dearmor | tee $destination'";
+
 constexpr const char* g_regexPackages = "(?:[a-zA-Z\\d\\-]+(?:=[a-zA-Z\\d\\.\\+\\-\\~\\:]+|\\-| )*)+";
+constexpr const char* g_regexSources = "^(deb|deb-src)(?:\\s+\\[(.*)\\])?\\s+(https?:\\/\\/\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$";
+constexpr const char* g_regexSignedByOption = "^.*signed-by=(\\S*).*$";
+
 constexpr const char* g_sourcesFolderPath = "/etc/apt/sources.list.d/";
+constexpr const char* g_keysFolderPath = "/usr/share/keyrings/";
+
 constexpr const char* g_listExtension = ".list";
 constexpr const char g_moduleInfo[] = R""""({
     "Name": "PMC",
@@ -265,25 +271,6 @@ int PmcBase::Get(const char* componentName, const char* objectName, MMI_JSON_STR
 unsigned int PmcBase::GetMaxPayloadSizeBytes()
 {
     return m_maxPayloadSizeBytes;
-}
-
-bool PmcBase::CanRunOnThisPlatform()
-{
-    for (auto& tool : g_requiredTools)
-    {
-        std::string command = std::regex_replace(g_commandCheckToolPresence, std::regex("\\$value"), tool);
-        if (RunCommand(command.c_str(), nullptr) != 0)
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(PmcLog::Get(), "Cannot run on this platform, could not find required tool %s", tool.c_str());
-            }
-
-            return false;
-        }
-    }
-
-    return true;
 }
 
 int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object)
@@ -709,4 +696,44 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string>& sources)
     }
 
     return status;
+}
+
+bool PmcBase::ValidateAndUpdatePackageSource(std::string& packageSource, const std::map<std::string, std::string>& gpgKeys)
+{
+    std::smatch sourceMatches;
+
+    if (std::regex_match(packageSource, sourceMatches, std::regex(g_regexSources)))
+    {
+        std::smatch signedByMatches;
+        std::string matchedString = sourceMatches[2].matched ? sourceMatches[2].str() : std::string();
+        if (std::regex_match(matchedString, signedByMatches, std::regex(g_regexSignedByOption)))
+        {
+            if (signedByMatches[1].matched)
+            {
+                std::string gpgKeyFileId = signedByMatches[1].str();
+                const auto &key = gpgKeys.find(gpgKeyFileId);
+                if (key != gpgKeys.end())
+                {
+                    const std::string signedByPrefix = "signed-by=";
+                    std::string placeholder = signedByPrefix + gpgKeyFileId;
+                    std::size_t index = packageSource.find(placeholder);
+
+                    if (index != std::string::npos)
+                    {
+                        std::string gpgKeyConfiguration = signedByPrefix + GenerateGpgKeyPath(gpgKeyFileId);
+                        packageSource.replace(index, placeholder.length(), gpgKeyConfiguration);
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+std::string PmcBase::GenerateGpgKeyPath(const std::string& gpgKeyId)
+{
+    return g_keysFolderPath + gpgKeyId + ".gpg";
 }

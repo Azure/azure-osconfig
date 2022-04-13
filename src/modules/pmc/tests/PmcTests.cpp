@@ -8,58 +8,67 @@
 #include <Mmi.h>
 #include <PmcBase.h>
 
-class PmcTestImpl : public PmcBase
-{
-public:
-    PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
-    void SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults);
-
-private:
-    int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
-    std::string GetPackagesFingerprint() override;
-    std::string GetSourcesFingerprint(const char* sourcesDirectory) override;
-    std::map<std::string, std::tuple<int, std::string>> m_textResults;
-};
-
-PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory)
-: PmcBase(maxPayloadSizeBytes, sourcesDirectory)
-{
-}
-
-void PmcTestImpl::SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults)
-{
-    m_textResults = textResults;
-}
-
-int PmcTestImpl::RunCommand(const char* command, std::string* textResult, bool isLongRunning)
-{
-    UNUSED(isLongRunning);
-
-    std::map<std::string, std::tuple<int, std::string>>::const_iterator it = m_textResults.find(command);
-    if (it != m_textResults.end())
-    {
-        if (textResult)
-        {
-            *textResult = std::get<1>(it->second);
-        }
-        return std::get<0>(it->second);
-    }
-    return ENOSYS;
-}
-
-std::string PmcTestImpl::GetPackagesFingerprint()
-{
-    return "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4";
-}
-
-std::string PmcTestImpl::GetSourcesFingerprint(const char* sourcesDirectory)
-{
-    UNUSED(sourcesDirectory);
-    return "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877";
-}
-
 namespace OSConfig::Platform::Tests
 {
+    class PmcTestImpl : public PmcBase
+    {
+        FRIEND_TEST(PmcTests, SignedByOptionGetsReplaced);
+        FRIEND_TEST(PmcTests, InvalidPackageSourcesAreRejected);
+
+    public:
+        PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
+        void SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults);
+
+    private:
+        bool CanRunOnThisPlatform() override;
+        int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
+        std::string GetPackagesFingerprint() override;
+        std::string GetSourcesFingerprint(const char* sourcesDirectory) override;
+        std::map<std::string, std::tuple<int, std::string>> m_textResults;
+    };
+
+    PmcTestImpl::PmcTestImpl(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory)
+    : PmcBase(maxPayloadSizeBytes, sourcesDirectory)
+    {
+    }
+
+    void PmcTestImpl::SetTextResult(const std::map<std::string, std::tuple<int, std::string>> &textResults)
+    {
+        m_textResults = textResults;
+    }
+
+    int PmcTestImpl::RunCommand(const char* command, std::string* textResult, bool isLongRunning)
+    {
+        UNUSED(isLongRunning);
+
+        std::map<std::string, std::tuple<int, std::string>>::const_iterator it = m_textResults.find(command);
+        if (it != m_textResults.end())
+        {
+            if (textResult)
+            {
+                *textResult = std::get<1>(it->second);
+            }
+            return std::get<0>(it->second);
+        }
+        return ENOSYS;
+    }
+
+    std::string PmcTestImpl::GetPackagesFingerprint()
+    {
+        return "25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4";
+    }
+
+    std::string PmcTestImpl::GetSourcesFingerprint(const char* sourcesDirectory)
+    {
+        UNUSED(sourcesDirectory);
+        return "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877";
+    }
+
+    bool PmcTestImpl::CanRunOnThisPlatform()
+    {
+        return true;
+    }
+
     class PmcTests : public testing::Test
     {
     protected:
@@ -96,9 +105,6 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get",  std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
             {"apt-get update", std::tuple<int, std::string>(0, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
             {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")}
@@ -120,12 +126,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, ValidGetInitialValues)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults =
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
-        };
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
             "\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
@@ -146,9 +147,6 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
             {"apt-get update", std::tuple<int, std::string>(0, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
             {"apt-get install bar- -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(0, "")},
@@ -180,9 +178,6 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
             {"apt-get update", std::tuple<int, std::string>(EBUSY, "")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
             {"apt-cache policy sl | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
@@ -212,9 +207,6 @@ namespace OSConfig::Platform::Tests
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
             {"apt-get update", std::tuple<int, std::string>(0, "")},
             {"apt-get install cowsay=3.03+dfsg2-7:1 sl -y --allow-downgrades --auto-remove", std::tuple<int, std::string>(ETIME,"")},
             {"apt-cache policy cowsay | grep Installed", std::tuple<int, std::string>(0, "  Installed: (none) ")},
@@ -243,12 +235,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, InvalidPackageInputSet)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults = 
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
-        };
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
         int status;
         testModule->SetTextResult(textResults);
 
@@ -271,13 +258,8 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, InvalidPackageInputSetGet)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults =
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
-        };
-        
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
+
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
@@ -291,22 +273,17 @@ namespace OSConfig::Platform::Tests
 
         status = testModule->Set(componentName, desiredObjectName, invalidJsonPayload, strlen(invalidJsonPayload));
         EXPECT_EQ(status, EINVAL);
-        
+
         status = testModule->Get(componentName, reportedObjectName, &payload, &payloadSizeBytes);
         EXPECT_EQ(status, MMI_OK);
-        
+
         std::string payloadString(payload, payloadSizeBytes);
         ASSERT_STREQ(reportedJsonPayload, payloadString.c_str());
     }
 
     TEST_F(PmcTests, SetInvalidComponentObjectName)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults =
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
-        };
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
         std::string invalidName = "invalid";
         int status;
         testModule->SetTextResult(textResults);
@@ -319,12 +296,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, GetInvalidComponentObjectName)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults =
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")}
-        };
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
         std::string invalidName = "invalid";
 
         int payloadSizeBytes = 0;
@@ -340,12 +312,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetInvalidPayloadString)
     {
-        const std::map<std::string, std::tuple<int, std::string>> textResults =
-        {
-            {"command -v apt-get", std::tuple<int, std::string>(0, "")},
-            {"command -v apt-cache", std::tuple<int, std::string>(0, "")},
-            {"command -v dpkg-query", std::tuple<int, std::string>(0, "")},
-        };
+        const std::map<std::string, std::tuple<int, std::string>> textResults;
         char invalidPayload[] = "C++ PackageManagerConfiguration Module";
         testModule->SetTextResult(textResults);
 
@@ -356,5 +323,60 @@ namespace OSConfig::Platform::Tests
         //test invalid payload
         status = testModule->Set(componentName, desiredObjectName, invalidPayload, strlen(validJsonPayload));
         EXPECT_EQ(status, EINVAL);
+    }
+
+    TEST_F(PmcTests, SignedByOptionGetsReplaced)
+    {
+        std::vector<std::string> inputs =
+        {
+            "deb [arch=amd64,arm64,armhf signed-by=microsoft-key] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [signed-by=microsoft-key arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/another-key.gpg] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [signed-by=/usr/share/keyrings/another-key.gpg arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+        };
+
+        std::vector<std::string> outputs =
+        {
+            "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/microsoft-key.gpg] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [signed-by=/usr/share/keyrings/microsoft-key.gpg arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/another-key.gpg] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb [signed-by=/usr/share/keyrings/another-key.gpg arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main"
+        };
+
+        const std::map<std::string, std::string> gpgKeys
+        {
+            {"microsoft-key", "https://packages.microsoft.com/keys/microsoft.asc"},
+            {"random-key", "https://www.example.com"},
+        };
+
+        for (size_t i = 0; i < inputs.size(); i++)
+        {
+            ASSERT_TRUE(testModule->ValidateAndUpdatePackageSource(inputs[i], gpgKeys));
+            ASSERT_EQ(inputs[i], outputs[i]);
+        }
+    }
+
+    TEST_F(PmcTests, InvalidPackageSourcesAreRejected)
+    {
+        std::vector<std::string> inputs =
+        {
+            "deb [arch=amd64,arm64,armhf signed-by=microsoft-key] ftp://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "debz [signed-by=microsoft-key arch=amd64,arm64,armhf] https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb (arch=amd64,arm64,armhf) https://packages.microsoft.com/ubuntu/20.04/prod focal main",
+            "deb",
+            "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/another-key.gpg] https://packages.microsoft.com/ubuntu/20.04/prod",
+            "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/another-key.gpg] https://packages.microsoft.com/ubuntu/20.04/prod focal"
+        };
+
+        const std::map<std::string, std::string> emptyKeys {};
+
+        for (size_t i = 0; i < inputs.size(); i++)
+        {
+            ASSERT_FALSE(testModule->ValidateAndUpdatePackageSource(inputs[i], emptyKeys));
+        }
     }
 }

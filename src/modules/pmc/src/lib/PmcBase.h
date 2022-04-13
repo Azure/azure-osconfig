@@ -71,9 +71,10 @@ protected:
     virtual int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) = 0;
     virtual std::string GetPackagesFingerprint() = 0;
     virtual std::string GetSourcesFingerprint(const char* sourcesDirectory) = 0;
+    static bool ValidateAndUpdatePackageSource(std::string& packageSource, const std::map<std::string, std::string>& gpgKeys);
 
 private:
-    bool CanRunOnThisPlatform();
+    virtual bool CanRunOnThisPlatform() = 0;
     int ExecuteUpdate(const std::string& value);
     int ExecuteUpdates(const std::vector<std::string>& packages);
     std::vector<std::string> GetReportedPackages(const std::vector<std::string>& packages);
@@ -87,6 +88,7 @@ private:
     static std::string TrimStart(const std::string& text, const std::string& trim);
     static std::string TrimEnd(const std::string& text, const std::string& trim);
     static std::string Trim(const std::string& text, const std::string& trim);
+    static std::string GenerateGpgKeyPath(const std::string& gpgKeyId);
 
     ExecutionState m_executionState;
     std::vector<std::string> m_desiredPackages;
