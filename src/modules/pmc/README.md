@@ -99,9 +99,9 @@ The `executionState`, `executionSubState` and `executionSubStateDetails` propert
 
 ## Error reporting
 
-Package Manager Configuration module can fail in different stages. To be able to identify the cause, take a closer look at `ExecutionState`, `ExecutionSubState` and `ExecutionSubStateDetails`. The following table shows failure codes and their possible causes:
+Package Manager Configuration module can fail in different stages. To be able to identify the cause, take a closer look at `executionState`, `executionSubState` and `executionSubStateDetails`. The following table shows failure codes and their possible causes:
 
-| ExecutionState | ExecutionSubState             | ExecutionSubStateDetails | Possible error causes                                                                           |
+| executionState | executionSubState             | executionSubStateDetails | Possible error causes                                                                           |
 | -------------- |------------------------------ | ------------------------ | ----------------------------------------------------------------------------------------------- |
 | 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Payload too large, unabled to parse JSON payload, not specified PackageManagerConfiguration     |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Invalid DesiredState payload, incorrect types specified, neither specified Sources nor Packages |
