@@ -44,7 +44,7 @@ The `executionState`, `executionSubState` and `executionSubStateDetails` propert
 | 1 (running)    | 3 (deserializingSources)      | source_name              | Deserializing Sources JSON object                                                            |
 | 1 (running)    | 4 (deserializingPackages)     | package_name(s)          | Deserializing Packages JSON array                                                            |
 | 1 (running)    | 5 (modifyingSources)          | source_name              | Modifying (creating/updating/deleting) Sources files in `/etc/apt/sources.list.d/` directory |
-| 1 (running)    | 6 (updatingPackagesLists)     | empty                    | Refreshing list of packages before updating packages (by running `apt-get update` command)   |
+| 1 (running)    | 6 (updatingPackageLists)     | empty                    | Refreshing list of packages before updating packages (by running `apt-get update` command)   |
 | 1 (running)    | 7 (installingPackages)        | package_name(s)          | Installing packages (by running `apt-get install` command)                                   |
 | 2 (succeeded)  | 0 (none)                      | empty                    | All desired properties were applied successfully                                             |
 | 3 (failed)     | 1 (deserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object failed                                 |
@@ -52,9 +52,9 @@ The `executionState`, `executionSubState` and `executionSubStateDetails` propert
 | 3 (failed)     | 3 (deserializingSources)      | source_name              | Deserializing Sources JSON object failed                                                     |
 | 3 (failed)     | 4 (deserializingPackages)     | package_name(s)          | Deserializing Packages JSON array failed                                                     |
 | 3 (failed)     | 5 (modifyingSources)          | source_name              | Modifying Sources files failed                                                               |
-| 3 (failed)     | 6 (updatingPackagesLists)     | empty                    | Refreshing list of packages packages failed                                                  |
+| 3 (failed)     | 6 (updatingPackageLists)     | empty                    | Refreshing list of packages packages failed                                                  |
 | 3 (failed)     | 7 (installingPackages)        | package_name(s)          | Installing packages failed                                                                   |
-| 4 (timedOut)   | 6 (updatingPackagesLists)     | empty                    | Refreshing list of packages timed out                                                        |
+| 4 (timedOut)   | 6 (updatingPackageLists)     | empty                    | Refreshing list of packages timed out                                                        |
 | 4 (timedOut)   | 7 (installingPackages)        | package_name(s)          | Installing packages timed out                                                                |
 
 ### Example of reported payload:
@@ -88,7 +88,7 @@ Package Manager Configuration module can fail in different stages. To be able to
 | 3 (failed)     | 3 (deserializingSources)      | source_name              | Sources is not a map type, invalid map value                                                    |
 | 3 (failed)     | 4 (deserializingPackages)     | package_name(s)          | Packages is not an array type, invalid array element                                            |
 | 3 (failed)     | 5 (modifyingSources)          | source_name              | Failed to delete or create source file                                                          |
-| 3 (failed)     | 4 (updatingPackagesLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) failed. A source repository may be unreachable or access may be unauthorized |
+| 3 (failed)     | 4 (updatingPackageLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) failed. A source repository may be unreachable or access may be unauthorized |
 | 3 (failed)     | 5 (installingPackages)        | package_name(s)          | Installation of package(s) failed because they (or any of their dependencies) weren't found in the source repositories |
-| 4 (timedOut)   | 4 (updatingPackagesLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) took more than 1 min         |
+| 4 (timedOut)   | 4 (updatingPackageLists)     | empty                    | Refreshing list of packages (by running `apt-get update` command) took more than 1 min         |
 | 4 (timedOut)   | 5 (installingPackages)        | package_name(s)          | Installing packages took more than 10 min                                                       |

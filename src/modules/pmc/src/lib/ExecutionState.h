@@ -21,7 +21,7 @@ public:
         deserializingSources,
         deserializingPackages,
         modifyingSources,
-        updatingPackagesLists,
+        updatingPackageLists,
         installingPackages
     };
 

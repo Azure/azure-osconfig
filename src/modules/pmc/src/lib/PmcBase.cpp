@@ -694,14 +694,14 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string> sources)
         }
     }
 
-    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::updatingPackagesLists);
+    m_executionState.SetExecutionState(ExecutionState::StateComponent::running, ExecutionState::SubStateComponent::updatingPackageLists);
     status = RunCommand(g_commandAptUpdate, nullptr);
 
     if (status != 0)
     {
         OsConfigLogError(PmcLog::Get(), "Refresh package lists failed with status %d", status);
-        status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackagesLists)
-            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackagesLists);
+        status == ETIME ? m_executionState.SetExecutionState(ExecutionState::StateComponent::timedOut, ExecutionState::SubStateComponent::updatingPackageLists)
+            : m_executionState.SetExecutionState(ExecutionState::StateComponent::failed, ExecutionState::SubStateComponent::updatingPackageLists);
     }
     else
     {

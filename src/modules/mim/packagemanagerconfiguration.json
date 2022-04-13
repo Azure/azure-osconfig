@@ -86,20 +86,28 @@
                       "enumValue": 3
                     },
                     {
-                      "name": "deserializingSources",
+                      "name": "deserializingGpgKeys",
                       "enumValue": 4
                     },
                     {
-                      "name": "modifyingSources",
+                      "name": "deserializingSources",
                       "enumValue": 5
                     },
                     {
-                      "name": "updatingPackagesLists",
+                      "name": "downloadingGpgKeys",
                       "enumValue": 6
                     },
                     {
-                      "name": "installingPackages",
+                      "name": "modifyingSources",
                       "enumValue": 7
+                    },
+                    {
+                      "name": "updatingPackageLists",
+                      "enumValue": 8
+                    },
+                    {
+                      "name": "installingPackages",
+                      "enumValue": 9
                     }
                   ]
                 }
@@ -135,6 +143,20 @@
                   },
                   "mapValue": {
                     "name": "entry",
+                    "schema": "string"
+                  }
+                }
+              },
+              {
+                "name": "gpgKeys",
+                "schema": {
+                  "type": "map",
+                  "mapKey": {
+                    "name": "id",
+                    "schema": "string"
+                  },
+                  "mapValue": {
+                    "name": "url",
                     "schema": "string"
                   }
                 }
