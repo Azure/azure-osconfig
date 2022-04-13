@@ -25,6 +25,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
     platform: linux/amd64
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -35,6 +36,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:latest
     platform: linux/arm/v7
     publishArtifact: false
+    runUnitTests: false
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -45,6 +47,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
     platform: linux/arm64/v8
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -55,6 +58,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
     platform: linux/amd64
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -65,6 +69,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
     platform: linux/arm/v7
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -75,6 +80,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
     platform: linux/arm64/v8
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -85,6 +91,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
     platform: linux/amd64
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -95,6 +102,7 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
     platform: linux/arm/v7
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
 
 - template: stages/binary_build.yaml
@@ -105,4 +113,5 @@ stages:
     containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
     platform: linux/arm64/v8
     publishArtifact: false
+    runUnitTests: true
     prefix: pkg
