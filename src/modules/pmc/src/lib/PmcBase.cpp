@@ -360,9 +360,50 @@ int PmcBase::DeserializeDesiredState(const rapidjson::Document& document, Desire
     return status;
 }
 
+int PmcBase::DeserializeGpgKeys(const rapidjson::Document& document, DesiredState& state)
+{
+    if (!document.HasMember(g_gpgKeys.c_str()))
+    {
+        return PMC_0K;
+    }
+
+    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingGpgKeys);
+    auto& section = document[g_gpgKeys.c_str()];
+
+    if (!section.IsObject())
+    {
+        OsConfigLogError(PmcLog::Get(), "%s is not a map", g_gpgKeys.c_str());
+        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingGpgKeys);
+        return EINVAL;
+    }
+
+    for (auto& member : section.GetObject())
+    {
+        auto key = member.name.GetString();
+        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingGpgKeys, key);
+
+        if (member.value.IsString())
+        {
+            state.GpgKeys[key] = member.value.GetString();
+        }
+        else if (member.value.IsNull())
+        {
+            state.GpgKeys[key] = std::string();
+        }
+        else
+        {
+            OsConfigLogError(PmcLog::Get(), "Invalid string in JSON object string map at key %s", key);
+            m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingGpgKeys, key);
+            return EINVAL;
+        }
+    }
+
+    return PMC_0K;
+}
+
 int PmcBase::CopyJsonPayload(const rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    int status = MMI_OK;
+    int status = PMC_0K;
 
     try
     {
@@ -708,7 +749,7 @@ int PmcBase::ConfigureSources(const std::map<std::string, std::string>& sources,
     }
 
     m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::UpdatingPackageLists);
-    status = RunCommand(g_commandAptUpdate, nullptr);
+    status = RunCommand(g_commandAptUpdate, nullptr, true);
 
     if (status != PMC_0K)
     {
@@ -811,45 +852,4 @@ int PmcBase::DownloadGpgKeys(const std::map<std::string, std::string>& gpgKeys)
     }
 
     return status;
-}
-
-int PmcBase::DeserializeGpgKeys(const rapidjson::Document& document, DesiredState& state)
-{
-    if (!document.HasMember(g_gpgKeys.c_str()))
-    {
-        return PMC_0K;
-    }
-
-    m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingGpgKeys);
-    auto& section = document[g_gpgKeys.c_str()];
-
-    if (!section.IsObject())
-    {
-        OsConfigLogError(PmcLog::Get(), "%s is not a map", g_gpgKeys.c_str());
-        m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingGpgKeys);
-        return EINVAL;
-    }
-
-    for (auto& member : section.GetObject())
-    {
-        auto key = member.name.GetString();
-        m_executionState.SetExecutionState(StateComponent::Running, SubStateComponent::DeserializingGpgKeys, key);
-
-        if (member.value.IsString())
-        {
-            state.GpgKeys[key] = member.value.GetString();
-        }
-        else if (member.value.IsNull())
-        {
-            state.GpgKeys[key] = std::string();
-        }
-        else
-        {
-            OsConfigLogError(PmcLog::Get(), "Invalid string in JSON object string map at key %s", key);
-            m_executionState.SetExecutionState(StateComponent::Failed, SubStateComponent::DeserializingGpgKeys, key);
-            return EINVAL;
-        }
-    }
-
-    return PMC_0K;
 }
