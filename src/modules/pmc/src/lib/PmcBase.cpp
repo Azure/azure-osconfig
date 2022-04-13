@@ -13,8 +13,6 @@
 #include <Mmi.h>
 #include <PmcBase.h>
 
-#define PMC_0K 0
-
 static const std::string g_componentName = "PackageManagerConfiguration";
 static const std::string g_reportedObjectName = "state";
 static const std::string g_desiredObjectName = "desiredState";

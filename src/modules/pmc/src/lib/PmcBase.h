@@ -17,6 +17,7 @@
 #define PMC_LOGFILE "/var/log/osconfig_pmc.log"
 #define PMC_ROLLEDLOGFILE "/var/log/osconfig_pmc.bak"
 #define TIMEOUT_LONG_RUNNING 600
+#define PMC_0K 0
 
 class PmcLog
 {

@@ -23,7 +23,7 @@ int Pmc::RunCommand(const char* command, std::string* textResult, bool isLongRun
     char* buffer = nullptr;
     int status = ExecuteCommand(nullptr, command, true, true, 0, isLongRunning ? TIMEOUT_LONG_RUNNING : 0, &buffer, nullptr, PmcLog::Get());
 
-    if (status == 0)
+    if (status == PMC_0K)
     {
         if (buffer && textResult)
         {
