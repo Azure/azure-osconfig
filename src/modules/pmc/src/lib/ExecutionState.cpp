@@ -6,8 +6,8 @@
 
 ExecutionState::ExecutionState()
 {
-    m_stateComponent = StateComponent::unknown;
-    m_subStateComponent = SubStateComponent::none;
+    m_stateComponent = StateComponent::Unknown;
+    m_subStateComponent = SubStateComponent::None;
     m_processingArgument = "";
 }
 
@@ -25,7 +25,7 @@ void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateCo
 
 bool ExecutionState::IsSuccessful() const
 {
-    return m_stateComponent == StateComponent::succeeded;
+    return m_stateComponent != StateComponent::Failed && m_stateComponent != StateComponent::TimedOut;
 }
 
 ExecutionState::StateComponent ExecutionState::GetExecutionState() const

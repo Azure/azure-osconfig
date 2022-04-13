@@ -99,7 +99,15 @@ namespace OSConfig::Platform::Tests
     };
 
     PmcTestImpl* PmcTests::testModule;
-    char PmcTests::validJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7:1 sl\", \"bar-\"], \"sources\":{\"key\":\"value\",\"sourceToDelete\":null}}";
+    char PmcTests::validJsonPayload[] =
+    "{"
+        "\"packages\":[\"cowsay=3.03+dfsg2-7:1 sl\", \"bar-\"],"
+        "\"sources\":"
+        "{"
+            "\"key\":\"deb https://packages.microsoft.com/ubuntu/20.04/prod focal main\","
+            "\"sourceToDelete\":null"
+        "}"
+    "}";
 
     TEST_F(PmcTests, ValidSet)
     {
@@ -185,7 +193,7 @@ namespace OSConfig::Platform::Tests
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
-            "\"executionState\":3,\"executionSubState\":6,\"executionSubStateDetails\":\"\","
+            "\"executionState\":3,\"executionSubState\":8,\"executionSubStateDetails\":\"\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
@@ -215,7 +223,7 @@ namespace OSConfig::Platform::Tests
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
-            "\"executionState\":4,\"executionSubState\":7,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\","
+            "\"executionState\":4,\"executionSubState\":9,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
@@ -263,7 +271,7 @@ namespace OSConfig::Platform::Tests
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
-            "\"executionState\":3,\"executionSubState\":4,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\","
+            "\"executionState\":3,\"executionSubState\":3,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;

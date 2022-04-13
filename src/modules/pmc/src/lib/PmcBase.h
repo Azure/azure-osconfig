@@ -45,17 +45,18 @@ class PmcBase
 public:
     struct DesiredState
     {
-        std::vector<std::string> packages;
-        std::map<std::string, std::string> sources;
+        std::vector<std::string> Packages;
+        std::map<std::string, std::string> Sources;
+        std::map<std::string, std::string> GpgKeys;
     };
 
     struct State
     {
-        ExecutionState executionState;
-        std::string packagesFingerprint;
-        std::vector<std::string> packages;
-        std::string sourcesFingerprint;
-        std::vector<std::string> sourcesFilenames;
+        ::ExecutionState ExecutionState;
+        std::string PackagesFingerprint;
+        std::vector<std::string> Packages;
+        std::string SourcesFingerprint;
+        std::vector<std::string> SourcesFilenames;
     };
 
     PmcBase(unsigned int maxPayloadSizeBytes, const char* sourcesDirectory);
@@ -78,9 +79,11 @@ private:
     int ExecuteUpdate(const std::string& value);
     int ExecuteUpdates(const std::vector<std::string>& packages);
     std::vector<std::string> GetReportedPackages(const std::vector<std::string>& packages);
-    int ConfigureSources(const std::map<std::string, std::string>& sources);
+    int ConfigureSources(const std::map<std::string, std::string>& sources, const std::map<std::string, std::string>& gpgKeys);
     int DeserializeDesiredState(const rapidjson::Document& document, DesiredState& object);
     int ValidateAndGetPackagesNames(const std::vector<std::string>& packagesLines);
+    int DownloadGpgKeys(const std::map<std::string, std::string>& gpgKeys);
+    int DeserializeGpgKeys(const rapidjson::Document& document, DesiredState& state);
     static std::vector<std::string> ListFiles(const char* directory, const char* fileNameExtension);
     static int SerializeState(const State& reportedState, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);
     static int CopyJsonPayload(const rapidjson::StringBuffer& buffer, MMI_JSON_STRING* payload, int* payloadSizeBytes);

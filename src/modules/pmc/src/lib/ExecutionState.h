@@ -6,23 +6,25 @@ class ExecutionState
 public:
     enum StateComponent
     {
-        unknown = 0,
-        running,
-        succeeded,
-        failed,
-        timedOut
+        Unknown = 0,
+        Running,
+        Succeeded,
+        Failed,
+        TimedOut
     };
 
     enum SubStateComponent
     {
-        none,
-        deserializingJsonPayload,
-        deserializingDesiredState,
-        deserializingSources,
-        deserializingPackages,
-        modifyingSources,
-        updatingPackageLists,
-        installingPackages
+        None,
+        DeserializingJsonPayload,
+        DeserializingDesiredState,
+        DeserializingPackages,
+        DeserializingGpgKeys,
+        DeserializingSources,
+        DownloadingGpgKeys,
+        ModifyingSources,
+        UpdatingPackageLists,
+        InstallingPackages
     };
 
     ExecutionState();
