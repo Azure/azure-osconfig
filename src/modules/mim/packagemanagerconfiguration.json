@@ -82,15 +82,15 @@
                       "enumValue": 2
                     },
                     {
-                      "name": "deserializingPackages",
+                      "name": "deserializingGpgKeys",
                       "enumValue": 3
                     },
                     {
-                      "name": "deserializingGpgKeys",
+                      "name": "deserializingSources",
                       "enumValue": 4
                     },
                     {
-                      "name": "deserializingSources",
+                      "name": "deserializingPackages",
                       "enumValue": 5
                     },
                     {
