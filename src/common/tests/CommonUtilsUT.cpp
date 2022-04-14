@@ -276,6 +276,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOutOnWorkerThread)
 {
     pthread_t tid = 0;
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
+    EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
@@ -378,6 +379,7 @@ TEST_F(CommonUtilsTest, CancelCommandWithContextOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
+    EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
 TEST_F(CommonUtilsTest, CancelCommandWithContext)
