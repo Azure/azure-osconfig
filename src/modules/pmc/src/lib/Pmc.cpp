@@ -67,7 +67,7 @@ bool Pmc::CanRunOnThisPlatform()
     for (auto& tool : g_requiredTools)
     {
         std::string command = std::regex_replace(g_commandCheckToolPresence, std::regex("\\$value"), tool);
-        if (RunCommand(command.c_str(), nullptr) != 0)
+        if (RunCommand(command.c_str(), nullptr) != PMC_0K)
         {
             if (IsFullLoggingEnabled())
             {
