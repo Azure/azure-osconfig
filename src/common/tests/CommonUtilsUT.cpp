@@ -340,6 +340,7 @@ TEST_F(CommonUtilsTest, CancelCommandOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+    EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
 TEST_F(CommonUtilsTest, CancelCommand)
@@ -805,7 +806,7 @@ char* AllocateAndCopyTestString(const char* source)
 {
     char* output = nullptr;
     int length = 0;
-    
+
     EXPECT_NE(nullptr, source);
     EXPECT_NE(0, length = (int)strlen(source));
     EXPECT_NE(nullptr, output = (char*)malloc(length + 1));
@@ -952,7 +953,7 @@ TEST_F(CommonUtilsTest, UrlEncodeDecode)
         { "(\"name1\"=\"value1\"&\"name2\"=\"value2\")", "%28%22name1%22%3D%22value1%22%26%22name2%22%3D%22value2%22%29" },
         { "Azure OSConfig 5;1.0.1.20220308 (\"os_name\"=\"Ubuntu\"&os_version\"=\"20.04.4\"&\"cpu_architecture\"=\"x86_64\"&"
         "\"kernel_name\"=\"Linux\"&\"kernel_release\"=\"5.13.0-30-generic\"&\"kernel_version\"=\"#33~20.04.1-Ubuntu SMP Mon "
-        "Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"Foo 123\")", 
+        "Feb 7 14:25:10 UTC 2022\"&\"product_vendor\"=\"Acme Inc.\"&\"product_name\"=\"Foo 123\")",
         "Azure%20OSConfig%205%3B1.0.1.20220308%20%28%22os_name%22%3D%22Ubuntu%22%26os_version%22%3D%2220.04.4%22%26%22cpu_"
         "architecture%22%3D%22x86_64%22%26%22kernel_name%22%3D%22Linux%22%26%22kernel_release%22%3D%225.13.0-30-generic%22%26"
         "%22kernel_version%22%3D%22%2333~20.04.1-Ubuntu%20SMP%20Mon%20Feb%207%2014%3A25%3A10%20UTC%202022%22%26%22"
@@ -1009,7 +1010,7 @@ TEST_F(CommonUtilsTest, HashCommand)
     char* hashOne = nullptr;
     char* hashTwo = nullptr;
     char* hashThree = nullptr;
-    
+
     const char testOne[] = "echo \"This is a test 1234567890\"";
     const char testTwo[] = "echo \"This is a test 1234567890 test\"";
 
