@@ -1,0 +1,51 @@
+name: Build Containers
+
+on: [workflow_dispatch]
+
+jobs:
+  list-containers:
+    name: List containers
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: set-matrix
+        working-directory: ./devops/docker
+        run: echo "::set-output name=matrix::$(ls **/Dockerfile | jq -R -s -c 'split("\n")[:-1]')"
+
+  docker:
+    name: Build
+    needs: list-containers
+    runs-on: ubuntu-latest
+    strategy:
+        matrix:
+            container: ${{ fromJson(needs.list-containers.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set image
+        id: image
+        run: |
+          DOCKERFILE=${{ matrix.container }}
+          echo "::set-output name=name::$(echo ${DOCKERFILE%/*}-dev)"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to ACR
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.ACR_CLIENT_ID }}
+          password: ${{ secrets.ACR_CLIENT_SECRET }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./devops/docker/${{ matrix.container }}
+          push: true
+          tags: ${{ steps.image.outputs.name }}
