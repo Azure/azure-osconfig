@@ -1105,7 +1105,7 @@ char* UrlDecode(char* target)
     int i = 0, j = 0;
     char buffer[3] = {0};
     int value = 0;
-    int targetLength = (int)strlen(target);
+    int targetLength = (int)strlen(target) + 1;
     char* decodedTarget = (char*)malloc(targetLength);
     if (NULL != decodedTarget)
     {
