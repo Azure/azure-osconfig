@@ -275,7 +275,10 @@ void* TestTimeoutCommand(void*)
 TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOutOnWorkerThread)
 {
     pthread_t tid = 0;
+    
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestTimeoutCommand, NULL));
+    
+    // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
@@ -341,6 +344,8 @@ TEST_F(CommonUtilsTest, CancelCommandOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommand, NULL));
+    
+    // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
@@ -379,6 +384,8 @@ TEST_F(CommonUtilsTest, CancelCommandWithContextOnWorkerThread)
     ::numberOfTimes = 0;
 
     EXPECT_EQ(0, pthread_create(&tid, NULL, &TestCancelCommandWithContext, NULL));
+    
+    // Wait for the worker thread to finish so test errors will be captured for this test case
     EXPECT_EQ(0, pthread_join(tid, NULL));
 }
 
