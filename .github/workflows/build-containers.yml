@@ -1,6 +1,9 @@
 name: Build Containers
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches: [main]
+    paths: [./devops/docker/**/Dockerfile]
 
 jobs:
   list-containers:
@@ -11,9 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v18.7
+        with:
+          files: ./devops/docker/**/Dockerfile
+          files_separator: '  '
+
       - id: set-matrix
-        working-directory: ./devops/docker
-        run: echo "::set-output name=matrix::$(ls **/Dockerfile | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "::set-output name=matrix::$(echo -n ${{ steps.changed-files.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')"
 
   docker:
     name: Build
@@ -23,8 +32,6 @@ jobs:
         matrix:
             container: ${{ fromJson(needs.list-containers.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v2
-
       - name: Set image
         id: image
         run: |
@@ -46,6 +53,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: ./devops/docker/${{ matrix.container }}
+          context: ${{ matrix.container }}
           push: true
-          tags: ${{ steps.image.outputs.name }}
+          tags: ${{ steps.image.outputs.name }}:latest, ${{ steps.image.outputs.name }}:${{ github.run_number }}
