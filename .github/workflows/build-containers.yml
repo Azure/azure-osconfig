@@ -19,7 +19,6 @@ jobs:
         uses: tj-actions/changed-files@v18.7
         with:
           files: ./devops/docker/**/Dockerfile
-          files_separator: '  '
 
       - id: set-matrix
         run: echo "::set-output name=matrix::$(echo -n ${{ steps.changed-files.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')"
