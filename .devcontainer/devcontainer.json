@@ -1,14 +1,18 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json
 {
-	"name": "OSConfig",
+	"name": "azure-osconfig",
 	"dockerFile": "Dockerfile",
-	"workspaceFolder": "/AzOsConfig",
-	"mounts": ["source=${localWorkspaceFolder},target=/AzOsConfig,type=bind,consistency=cached"],
+	"features": {
+		"github-cli": "latest"
+	},
+	"workspaceFolder": "/azure-osconfig",
+	"mounts": ["source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"],
 	"overrideCommand": true,
 	"postCreateCommand": "git submodule update --init --recursive",
 
 	"extensions": [
 		"eamodio.gitlens",
+		"GitHub.copilot",
 		"GitHub.vscode-pull-request-github",
 		"hashicorp.terraform",
 		"ms-azure-devops.azure-pipelines",
@@ -17,5 +21,7 @@
 		"twxs.cmake",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
+		"mhutchie.git-graph",
+		"me-dutour-mathieu.vscode-github-actions"
     ]
 }
