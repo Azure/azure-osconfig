@@ -797,24 +797,30 @@ bool PmcBase::ValidateAndUpdatePackageSource(std::string& packageSource, const s
 
     if (std::regex_match(packageSource, sourceMatches, std::regex(g_regexSources)))
     {
-        std::smatch signedByMatches;
-        std::string matchedString = sourceMatches[2].matched ? sourceMatches[2].str() : std::string();
-        if (std::regex_match(matchedString, signedByMatches, std::regex(g_regexSignedByOption)))
+        if (sourceMatches.size() >= 3)
         {
-            if (signedByMatches[1].matched)
+            std::smatch signedByMatches;
+            std::string matchedString = sourceMatches[2].matched ? sourceMatches[2].str() : std::string();
+            if (std::regex_match(matchedString, signedByMatches, std::regex(g_regexSignedByOption)))
             {
-                std::string gpgKeyFileId = signedByMatches[1].str();
-                const auto &key = gpgKeys.find(gpgKeyFileId);
-                if (key != gpgKeys.end())
+                if (signedByMatches.size() >= 2)
                 {
-                    const std::string signedByPrefix = "signed-by=";
-                    std::string placeholder = signedByPrefix + gpgKeyFileId;
-                    std::size_t index = packageSource.find(placeholder);
-
-                    if (index != std::string::npos)
+                    if (signedByMatches[1].matched)
                     {
-                        std::string gpgKeyConfiguration = signedByPrefix + GenerateGpgKeyPath(gpgKeyFileId);
-                        packageSource.replace(index, placeholder.length(), gpgKeyConfiguration);
+                        std::string gpgKeyFileId = signedByMatches[1].str();
+                        const auto &key = gpgKeys.find(gpgKeyFileId);
+                        if (key != gpgKeys.end())
+                        {
+                            const std::string signedByPrefix = "signed-by=";
+                            std::string placeholder = signedByPrefix + gpgKeyFileId;
+                            std::size_t index = packageSource.find(placeholder);
+
+                            if (index != std::string::npos)
+                            {
+                                std::string gpgKeyConfiguration = signedByPrefix + GenerateGpgKeyPath(gpgKeyFileId);
+                                packageSource.replace(index, placeholder.length(), gpgKeyConfiguration);
+                            }
+                        }
                     }
                 }
             }
