@@ -29,7 +29,7 @@ static const std::string g_sourcesFilenames = "sourcesFilenames";
 constexpr const char* g_commandAptUpdate = "apt-get update";
 constexpr const char* g_commandExecuteUpdate = "apt-get install $value -y --allow-downgrades --auto-remove";
 constexpr const char* g_commandGetInstalledPackageVersion = "apt-cache policy $value | grep Installed";
-constexpr const char *g_commandDownloadGpgKey = "curl -sSL $url | gpg --dearmor --yes -o $destination";
+constexpr const char* g_commandDownloadGpgKey = "curl -sSL $url | gpg --dearmor --yes -o $destination";
 
 constexpr const char* g_regexPackages = "(?:[a-zA-Z\\d\\-]+(?:=[a-zA-Z\\d\\.\\+\\-\\~\\:]+|\\-| )*)+";
 constexpr const char* g_regexSources = "^(deb|deb-src)(?:\\s+\\[(.*)\\])?\\s+(https?:\\/\\/\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$";
