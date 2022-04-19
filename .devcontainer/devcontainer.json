@@ -9,7 +9,6 @@
 	"mounts": ["source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"],
 	"overrideCommand": true,
 	"postCreateCommand": "git submodule update --init --recursive",
-
 	"extensions": [
 		"eamodio.gitlens",
 		"GitHub.copilot",
