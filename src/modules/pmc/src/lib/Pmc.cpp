@@ -7,7 +7,7 @@
 #include <Mmi.h>
 #include <Pmc.h>
 
-static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query", "bash", "curl", "gpg", "tee"};
+static const std::string g_requiredTools[] = {"apt-get", "apt-cache", "dpkg-query", "curl", "gpg"};
 
 constexpr const char* g_commandCheckToolPresence = "command -v $value";
 constexpr const char* g_commandGetInstalledPackages = "dpkg-query --showformat='${Package} (=${Version})\n' --show";
