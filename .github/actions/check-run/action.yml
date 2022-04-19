@@ -1,0 +1,59 @@
+name: Check Run
+description: Creates markdown report via the Checks API
+# https://docs.github.com/en/rest/reference/checks#runs
+
+inputs:
+  repository:
+    description: The GitHub repository {owner}/{repo}
+    required: false
+    default: ${{ github.repository }}
+  token:
+    description: Github token to use to publish the check.
+    required: false
+    default: ${{ github.token }}
+  name:
+    description:  The name of the check.
+    required: true
+  sha:
+    description: The SHA of the commit.
+    required: false
+    default: ${{ github.ref }}
+  conclusion:
+    description: The final conclusion of the check. Can be one of action_required, cancelled, failure, neutral, success, skipped, stale, or timed_out.
+    required: false
+    default: ${{ job.status }}
+  title:
+    description: The title of the check run.
+    required: true
+  markdown:
+    description: Path to the Markdown summary of the check run.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup jq
+      run: apt-get install jo -y
+      shell: bash
+
+    - name: Publish report summary
+      if: always()
+      env:
+        repository: ${{ inputs.repository }}
+        token: ${{ inputs.token }}
+        name: ${{ inputs.name }}
+        sha: ${{ inputs.sha }}
+        conclusion: ${{ inputs.conclusion }}
+        title: ${{ inputs.title }}
+        markdown: ${{ inputs.markdown }}
+      run: |
+        summary=$(<${markdown})
+        url=https://api.github.com/repos/${repository}/check-runs
+        output=$(jo -- -s title="$title" -s summary="$summary")
+        jo name="$name" head_sha="$sha" status="completed" conclusion="$conclusion" output="$output" > data.json
+        curl \
+          -X POST $url \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer $token" \
+          -d @data.json
+      shell: bash

@@ -1,0 +1,49 @@
+name: Container run
+description: Run a docker container
+
+inputs:
+  registry:
+    description: Server address ofthe  Docker registry.
+    required: false
+    default: osconfig.azurecr.io
+  username:
+    description: Username used to login to the Docker registry.
+    required: true
+  password:
+    description: Password or personal access token used to login to the Docker registry.
+    required: true
+  os:
+    description: The container OS.
+    required: true
+  arch:
+    description: The container architecture.
+    required: true
+  platform:
+    description: The multiarch platform.
+    required: true
+  mount:
+    description: The volume to mount.
+    required: true
+
+outputs:
+  id:
+    description: The container id of the running container.
+    value: ${{ steps.container.outputs.id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Login to container registry
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v1
+
+    - name: Setup container
+      id: container
+      run: echo '::set-output name=id::$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ inputs.registry }}/${{ inputs.os }}-dev-${{ inputs.arch }})'
+      shell: bash

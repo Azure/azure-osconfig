@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+  pull_request:
+    paths:
+      - src/**
+
+env:
+  build-type: Release
+  container-workspace: /azure-osconfig
+
+jobs:
+  unit-test:
+    name: Unit test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu18.04, ubuntu20.04, debian9]
+        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
+        exclude:
+          - os: ubuntu20.04
+            variant: {arch: arm, platform: linux/arm/v7}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          username: ${{ secrets.ACR_CLIENT_ID }}
+          password: ${{ secrets.ACR_CLIENT_SECRET }}
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
+          platform: ${{ matrix.variant.platform }}
+          mount: ${{ github.workspace }}:${{ env.container-workspace }}
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_build-type=${{ env.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build
+          cmd: cmake --build . --config ${{ env.build-type }}
+
+      - name: Set test output
+        id: test-results
+        run: echo '::set-output name=log::${{ matrix.os }}-${{ matrix.variant.arch }}-test.log'
+
+      - name: Run ctest
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build
+          cmd: ctest -T test --verbose > ${{ steps.test-results.outputs.log }}
+
+      - uses: actions/upload-artifact@v2
+        if: (success() || failure())
+        with:
+          name: unit-test
+          path: ./build/${{ steps.test-results.outputs.log }}
+
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    container:
+      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:latest
+      credentials:
+        username: ${{ secrets.ACR_CLIENT_ID }}
+        password: ${{ secrets.ACR_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build azure-osconfig
+        run: |
+          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
+          cmake --build ./build --config Debug
+
+      - name: Run ctest
+        working-directory: ./build
+        run: ctest
+
+      - name: Run gcovr
+        working-directory: ./build
+        run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
+
+      - name: Generate markdown report
+        uses: irongut/CodeCoverageSummary@v1.2.0
+        with:
+          filename: ./build/coverage.xml
+          fail_below_min: true
+          format: markdown
+          hide_complexity: true
+          output: both
+          badge: true
+          thresholds: '60 80'
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: code-coverage
+          path: |
+            ./build/coverage.xml
+            ./code-coverage-results.md
