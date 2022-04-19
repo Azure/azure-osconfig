@@ -13,16 +13,16 @@ namespace E2eTesting
 
         public class DeliveryOptimizationPolicies
         {
-            public int percentageDownloadThrottle { get; set; }
-            public int cacheHostSource { get; set; }
-            public string cacheHost { get; set; }
-            public int cacheHostFallback { get; set; }
+            public int PercentageDownloadThrottle { get; set; }
+            public int CacheHostSource { get; set; }
+            public string CacheHost { get; set; }
+            public int CacheHostFallback { get; set; }
         }
 
         public class Settings
         {
-            public int deviceHealthTelemetryConfiguration { get; set; }
-            public DeliveryOptimizationPolicies deliveryOptimizationPolicies { get; set; }
+            public int DeviceHealthTelemetryConfiguration { get; set; }
+            public DeliveryOptimizationPolicies DeliveryOptimizationPolicies { get; set; }
         }
 
         [Test]
@@ -31,7 +31,7 @@ namespace E2eTesting
             int desiredValue = 2;
             var response = await SetDesired<int>(_componentName, "DeviceHealthTelemetryConfiguration", desiredValue);
 
-            Assert.AreEqual(desiredValue, response.value);
+            Assert.AreEqual(desiredValue, response.Value);
         }
 
         [Test]
@@ -39,20 +39,20 @@ namespace E2eTesting
         {
             var desiredDeliveryOptimizationPolicies = new DeliveryOptimizationPolicies
             {
-                percentageDownloadThrottle = 50,
-                cacheHostSource = 1,
-                cacheHost = "127.0.1.1",
-                cacheHostFallback = 90
+                PercentageDownloadThrottle = 50,
+                CacheHostSource = 1,
+                CacheHost = "127.0.1.1",
+                CacheHostFallback = 90
             };
 
             var response = await SetDesired<DeliveryOptimizationPolicies>(_componentName, "DeliveryOptimizationPolicies", desiredDeliveryOptimizationPolicies);
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(desiredDeliveryOptimizationPolicies.percentageDownloadThrottle, response.value.percentageDownloadThrottle);
-                Assert.AreEqual(desiredDeliveryOptimizationPolicies.cacheHostSource, response.value.cacheHostSource);
-                Assert.AreEqual(desiredDeliveryOptimizationPolicies.cacheHost, response.value.cacheHost);
-                Assert.AreEqual(desiredDeliveryOptimizationPolicies.cacheHostFallback, response.value.cacheHostFallback);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.PercentageDownloadThrottle, response.Value.PercentageDownloadThrottle);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostSource, response.Value.CacheHostSource);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHost, response.Value.CacheHost);
+                Assert.AreEqual(desiredDeliveryOptimizationPolicies.CacheHostFallback, response.Value.CacheHostFallback);
             });
         }
     }
