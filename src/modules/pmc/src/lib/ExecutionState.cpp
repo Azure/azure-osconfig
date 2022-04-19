@@ -25,7 +25,7 @@ void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateCo
 
 bool ExecutionState::IsSuccessful() const
 {
-    return m_stateComponent != StateComponent::Failed && m_stateComponent != StateComponent::TimedOut;
+    return (m_stateComponent != StateComponent::Failed) && (m_stateComponent != StateComponent::TimedOut);
 }
 
 ExecutionState::StateComponent ExecutionState::GetExecutionState() const
