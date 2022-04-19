@@ -7,20 +7,20 @@
 ExecutionState::ExecutionState()
 {
     m_stateComponent = StateComponent::Unknown;
-    m_subStateComponent = SubStateComponent::None;
+    m_substateComponent = SubstateComponent::None;
     m_processingArgument = "";
 }
 
-void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent, std::string processingArgument)
+void ExecutionState::SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent, std::string processingArgument)
 {
     m_stateComponent = stateComponent;
-    m_subStateComponent = subStateComponent;
+    m_substateComponent = substateComponent;
     m_processingArgument = processingArgument;
 }
 
-void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent)
+void ExecutionState::SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent)
 {
-    SetExecutionState(stateComponent, subStateComponent, "");
+    SetExecutionState(stateComponent, substateComponent, "");
 }
 
 bool ExecutionState::IsSuccessful() const
@@ -33,12 +33,12 @@ ExecutionState::StateComponent ExecutionState::GetExecutionState() const
     return m_stateComponent;
 }
 
-ExecutionState::SubStateComponent ExecutionState::GetExecutionSubState() const
+ExecutionState::SubstateComponent ExecutionState::GetExecutionSubstate() const
 {
-    return m_subStateComponent;
+    return m_substateComponent;
 }
 
-std::string ExecutionState::GetExecutionSubStateDetails() const
+std::string ExecutionState::GetExecutionSubstateDetails() const
 {
     return m_processingArgument;
 }

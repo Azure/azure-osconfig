@@ -13,7 +13,7 @@ public:
         TimedOut
     };
 
-    enum SubStateComponent
+    enum SubstateComponent
     {
         None,
         DeserializingJsonPayload,
@@ -30,15 +30,15 @@ public:
     ExecutionState();
     virtual ~ExecutionState() = default;
 
-    void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent, std::string processingArgument);
-    void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent);
+    void SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent, std::string processingArgument);
+    void SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent);
     bool IsSuccessful() const;
     StateComponent GetExecutionState() const;
-    SubStateComponent GetExecutionSubState() const;
-    std::string GetExecutionSubStateDetails() const;
+    SubstateComponent GetExecutionSubstate() const;
+    std::string GetExecutionSubstateDetails() const;
 
 private:
     StateComponent m_stateComponent;
-    SubStateComponent m_subStateComponent;
+    SubstateComponent m_substateComponent;
     std::string m_processingArgument;
 };

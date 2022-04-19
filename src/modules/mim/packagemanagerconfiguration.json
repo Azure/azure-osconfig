@@ -64,7 +64,7 @@
                 }
               },
               {
-                "name": "executionSubState",
+                "name": "executionSubstate",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
@@ -113,7 +113,7 @@
                 }
               },
               {
-                "name": "executionSubStateDetails",
+                "name": "executionSubstateDetails",
                 "schema": "string"
               }
             ]

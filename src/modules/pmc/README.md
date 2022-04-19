@@ -50,9 +50,9 @@ The state of the sources  is reported by listing all files from `/etc/apt/source
 Only versions of the packages that were last set as desired are reported.
 When changing the desired packages, the previously modified packages won't be reported anymore, even though they might still be installed on the system.
 
-The `executionState`, `executionSubState` and `executionSubStateDetails` properties reflect the current state and can have the following values:
+The `executionState`, `executionSubstate` and `executionSubstateDetails` properties reflect the current state and can have the following values:
 
-| executionState | executionSubState             | executionSubStateDetails | Meaning                                                                                      |
+| executionState | executionSubstate             | executionSubstateDetails | Meaning                                                                                      |
 | -------------- |------------------------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
 | 0 (Unknown)    | 0 (None)                      | empty                    | No desired properties are known to the module. This is the initial default state.            |
 | 1 (Running)    | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object                                        |
@@ -88,8 +88,8 @@ The `executionState`, `executionSubState` and `executionSubStateDetails` propert
         "fortune=(none)"
     ],
     "executionState": 2,
-    "executionSubState": 0,
-    "executionSubStateDetails": "",
+    "executionSubstate": 0,
+    "executionSubstateDetails": "",
     "sourcesFingerprint": "94ed99a55df5ff3264dc0e8175d438e7219fcc216e49845cbd426895bbdbeaa9",
     "sourcesFilenames": [
         "microsoft-custom"
@@ -99,9 +99,9 @@ The `executionState`, `executionSubState` and `executionSubStateDetails` propert
 
 ## Error reporting
 
-Package Manager Configuration module can fail in different stages. To be able to identify the cause, take a closer look at `executionState`, `executionSubState` and `executionSubStateDetails`. The following table shows failure codes and their possible causes:
+Package Manager Configuration module can fail in different stages. To be able to identify the cause, take a closer look at `executionState`, `executionSubstate` and `executionSubstateDetails`. The following table shows failure codes and their possible causes:
 
-| executionState | executionSubState             | executionSubStateDetails | Possible error causes                                                                           |
+| executionState | executionSubstate             | executionSubstateDetails | Possible error causes                                                                           |
 | -------------- |------------------------------ | ------------------------ | ----------------------------------------------------------------------------------------------- |
 | 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Payload too large, unabled to parse JSON payload, not specified PackageManagerConfiguration     |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Invalid DesiredState payload, incorrect types specified, neither specified Sources nor Packages |

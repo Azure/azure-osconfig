@@ -137,7 +137,7 @@ namespace OSConfig::Platform::Tests
         const std::map<std::string, std::tuple<int, std::string>> textResults;
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
-            "\"executionState\":0,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
+            "\"executionState\":0,\"executionSubstate\":0,\"executionSubstateDetails\":\"\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
@@ -164,7 +164,7 @@ namespace OSConfig::Platform::Tests
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=3.03+dfsg2-7:1\",\"sl=5.02-1\",\"bar=(none)\"],"
-            "\"executionState\":2,\"executionSubState\":0,\"executionSubStateDetails\":\"\","
+            "\"executionState\":2,\"executionSubstate\":0,\"executionSubstateDetails\":\"\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
@@ -193,7 +193,7 @@ namespace OSConfig::Platform::Tests
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
-            "\"executionState\":3,\"executionSubState\":8,\"executionSubStateDetails\":\"\","
+            "\"executionState\":3,\"executionSubstate\":8,\"executionSubstateDetails\":\"\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
@@ -223,7 +223,7 @@ namespace OSConfig::Platform::Tests
         };
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[\"cowsay=(none)\",\"sl=(none)\",\"bar=(none)\"],"
-            "\"executionState\":4,\"executionSubState\":9,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\","
+            "\"executionState\":4,\"executionSubstate\":9,\"executionSubstateDetails\":\"cowsay=3.03+dfsg2-7:1 sl\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[\"key.list\"]}";
         int payloadSizeBytes = 0;
@@ -271,7 +271,7 @@ namespace OSConfig::Platform::Tests
         char invalidJsonPayload[] = "{\"packages\":[\"cowsay=3.03+dfsg2-7 sl && echo foo\", \"bar-\"]}";
         char reportedJsonPayload[] = "{\"packagesFingerprint\":\"25abefbfdb34fd48872dea4e2339f2a17e395196945c77a6c7098c203b87fca4\","
             "\"packages\":[],"
-            "\"executionState\":3,\"executionSubState\":5,\"executionSubStateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\","
+            "\"executionState\":3,\"executionSubstate\":5,\"executionSubstateDetails\":\"cowsay=3.03+dfsg2-7 sl && echo foo\","
             "\"sourcesFingerprint\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b877\","
             "\"sourcesFilenames\":[]}";
         int payloadSizeBytes = 0;
