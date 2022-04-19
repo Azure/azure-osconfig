@@ -32,7 +32,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup jq
+    - name: Setup jo
       run: apt-get install jo -y
       shell: bash
 
