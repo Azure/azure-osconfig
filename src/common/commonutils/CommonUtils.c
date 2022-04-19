@@ -1097,19 +1097,24 @@ char* UrlEncode(char* target)
 
 char* UrlDecode(char* target)
 {
+    int i = 0, j = 0;
+    char buffer[3] = {0};
+    int value = 0;
+    int targetLength = 0;
+    char* decodedTarget = NULL;
+
     if (NULL == target)
     {
         return NULL;
     }
 
-    int i = 0, j = 0;
-    char buffer[3] = {0};
-    int value = 0;
-    int targetLength = (int)strlen(target);
-    char* decodedTarget = (char*)malloc(targetLength);
+    targetLength = (int)strlen(target);
+    
+    // The length of the decoded string is the same as the length of the encoded string or smaller
+    decodedTarget = (char*)malloc(targetLength + 1);
     if (NULL != decodedTarget)
     {
-        memset(decodedTarget, 0, targetLength);
+        memset(decodedTarget, 0, targetLength + 1);
 
         for (i = 0, j = 0; (i < targetLength) && (j < targetLength); i++)
         {
