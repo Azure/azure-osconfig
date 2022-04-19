@@ -115,7 +115,7 @@ namespace E2eTesting
             {
                 var setDesiredTask = SetDesired<CommandArguments>(_componentName, _desiredObjectName, command);
                 setDesiredTask.Wait();
-                ackCode = setDesiredTask.Result.ac;
+                ackCode = setDesiredTask.Result.Ac;
             }
             catch (Exception e)
             {

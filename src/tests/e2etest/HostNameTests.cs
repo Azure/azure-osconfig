@@ -54,7 +54,7 @@ namespace E2eTesting
 
             await SetDesired<DesiredHostName>(_componentName, desired);
 
-            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.ac == ACK_SUCCESS;
+            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.Ac == ACK_SUCCESS;
 
             var desiredNameTask = GetReported<GenericResponse<string>>(_componentName, _desiredHostName, condition);
             desiredNameTask.Wait();
@@ -67,8 +67,8 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.ac);
-                Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.ac);
+                Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.Ac);
+                Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.Ac);
                 Assert.AreEqual(desired.DesiredName, reported.Name);
                 Assert.AreEqual(desired.DesiredHosts, reported.Hosts);
             });

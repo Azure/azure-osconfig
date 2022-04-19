@@ -40,7 +40,7 @@ namespace E2eTesting
             {
                 var setDesiredTask = SetDesired<string>(_componentName, _desiredServiceUrl, serviceUrl);
                 setDesiredTask.Wait();
-                return setDesiredTask.Result.ac;
+                return setDesiredTask.Result.Ac;
             }
             catch (Exception e)
             {
@@ -55,7 +55,7 @@ namespace E2eTesting
             {
                 var setDesiredTask = SetDesired<bool>(_componentName, _desiredEnabled, enabled);
                 setDesiredTask.Wait();
-                return setDesiredTask.Result.ac;
+                return setDesiredTask.Result.Ac;
             }
             catch (Exception e)
             {
@@ -77,12 +77,12 @@ namespace E2eTesting
                 var setDesiredTask = SetDesired<DesiredZtsi>(_componentName, desiredConfiguration);
                 setDesiredTask.Wait();
 
-                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled, (GenericResponse<bool> response) => response.ac == ACK_SUCCESS);
+                var desiredEnabledTask = GetReported<GenericResponse<bool>>(_componentName, _desiredEnabled, (GenericResponse<bool> response) => response.Ac == ACK_SUCCESS);
                 desiredEnabledTask.Wait();
-                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl, (GenericResponse<string> response) => response.ac == ACK_SUCCESS);
+                var desiredServiceUrlTask = GetReported<GenericResponse<string>>(_componentName, _desiredServiceUrl, (GenericResponse<string> response) => response.Ac == ACK_SUCCESS);
                 desiredServiceUrlTask.Wait();
 
-                return (desiredServiceUrlTask.Result.ac, desiredEnabledTask.Result.ac);
+                return (desiredServiceUrlTask.Result.Ac, desiredEnabledTask.Result.Ac);
             }
             catch (Exception e)
             {

@@ -35,8 +35,8 @@ namespace E2eTesting
 
         public class GenericResponse<T>
         {
-            public T value { get; set; }
-            public int ac { get; set; }
+            public T Value { get; set; }
+            public int Ac { get; set; }
         }
 
         [OneTimeSetUp]
@@ -101,7 +101,7 @@ namespace E2eTesting
             {
                 var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "commandArguments", command);
                 desiredResult.Wait();
-                int ackCode = desiredResult.Result.ac;
+                int ackCode = desiredResult.Result.Ac;
 
                 if (ACK_SUCCESS != ackCode)
                 {
