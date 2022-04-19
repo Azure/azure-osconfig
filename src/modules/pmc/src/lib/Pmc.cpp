@@ -21,7 +21,9 @@ Pmc::Pmc(unsigned int maxPayloadSizeBytes)
 int Pmc::RunCommand(const char* command, std::string* textResult, bool isLongRunning)
 {
     char* buffer = nullptr;
-    int status = ExecuteCommand(nullptr, command, true, true, 0, isLongRunning ? TIMEOUT_LONG_RUNNING : 0, &buffer, nullptr, PmcLog::Get());
+    const bool replaceEol = true;
+    const bool forJson = false;
+    int status = ExecuteCommand(nullptr, command, replaceEol, forJson, 0, isLongRunning ? TIMEOUT_LONG_RUNNING : 0, &buffer, nullptr, PmcLog::Get());
 
     if (status == PMC_0K)
     {
