@@ -3,9 +3,11 @@
 
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using NUnit.Framework;
 using System;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -33,13 +35,18 @@ namespace E2eTesting
 
         public class GenericResponse<T>
         {
-            public T value { get; set; }
-            public int ac { get; set; }
+            public T Value { get; set; }
+            public int Ac { get; set; }
         }
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+
             _registryManager = RegistryManager.CreateFromConnectionString(_iotHubConnectionString);
 
             if (null != Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"))
@@ -94,7 +101,7 @@ namespace E2eTesting
             {
                 var desiredResult = SetDesired<CommandRunnerTests.CommandArguments>("CommandRunner", "commandArguments", command);
                 desiredResult.Wait();
-                int ackCode = desiredResult.Result.ac;
+                int ackCode = desiredResult.Result.Ac;
 
                 if (ACK_SUCCESS != ackCode)
                 {
@@ -105,7 +112,7 @@ namespace E2eTesting
                 {
                     Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
                     {
-                        return (status.commandId == command.commandId) && (status.currentState == CommandRunnerTests.CommandState.Succeeded);
+                        return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
                     var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "commandStatus", condition, 2 * _maxWaitTimeSeconds);
@@ -114,7 +121,7 @@ namespace E2eTesting
 
                     if (!condition(reportedStatus))
                     {
-                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.commandId, reportedStatus.commandId, reportedStatus.currentState, reportedStatus.textResult);
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
                         success = false;
                     }
                 }
@@ -170,7 +177,7 @@ namespace E2eTesting
         {
             try
             {
-                return JsonSerializer.Deserialize<T>(twinCollection.ToString());
+                return JsonConvert.DeserializeObject<T>(twinCollection.ToString());
             }
             catch (Exception e)
             {
@@ -243,7 +250,7 @@ namespace E2eTesting
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[componentName] = new { __t = 'c' };
-            twinPatch.Properties.Desired[componentName][objectName] = Newtonsoft.Json.Linq.JToken.FromObject(value);
+            twinPatch.Properties.Desired[componentName][objectName] = JToken.FromObject(value);
 
             DateTime start = DateTime.Now;
             Twin updatedTwin = await _registryManager.UpdateTwinAsync(_deviceId, _moduleId, twinPatch, twin.ETag);
@@ -356,8 +363,8 @@ namespace E2eTesting
     {
         public static void AreEqual(object expected, object actual)
         {
-            var expectedJson = JsonSerializer.Serialize(expected);
-            var actualJson = JsonSerializer.Serialize(actual);
+            var expectedJson = JsonConvert.SerializeObject(expected);
+            var actualJson = JsonConvert.SerializeObject(actual);
             Assert.AreEqual(expectedJson, actualJson);
         }
     }
@@ -366,7 +373,7 @@ namespace E2eTesting
     {
         public static void IsMatch(Regex pattern, object value)
         {
-            string jsonValue = JsonSerializer.Serialize(value);
+            string jsonValue = JsonConvert.SerializeObject(value);
             if (!pattern.IsMatch(jsonValue))
             {
                 Assert.Fail("Regex does not match.\nPattern: {0},\n String: {1}", pattern, value);

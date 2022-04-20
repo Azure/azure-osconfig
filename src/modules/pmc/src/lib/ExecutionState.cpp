@@ -6,39 +6,39 @@
 
 ExecutionState::ExecutionState()
 {
-    m_stateComponent = StateComponent::unknown;
-    m_subStateComponent = SubStateComponent::none;
+    m_stateComponent = StateComponent::Unknown;
+    m_substateComponent = SubstateComponent::None;
     m_processingArgument = "";
 }
 
-void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent, std::string processingArgument)
+void ExecutionState::SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent, std::string processingArgument)
 {
     m_stateComponent = stateComponent;
-    m_subStateComponent = subStateComponent;
+    m_substateComponent = substateComponent;
     m_processingArgument = processingArgument;
 }
 
-void ExecutionState::SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent)
+void ExecutionState::SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent)
 {
-    SetExecutionState(stateComponent, subStateComponent, "");
+    SetExecutionState(stateComponent, substateComponent, "");
 }
 
-bool ExecutionState::IsSuccessful()
+bool ExecutionState::IsSuccessful() const
 {
-    return m_stateComponent == StateComponent::succeeded;
+    return (m_stateComponent != StateComponent::Failed) && (m_stateComponent != StateComponent::TimedOut);
 }
 
-ExecutionState::StateComponent ExecutionState::GetExecutionState()
+ExecutionState::StateComponent ExecutionState::GetExecutionState() const
 {
     return m_stateComponent;
 }
 
-ExecutionState::SubStateComponent ExecutionState::GetExecutionSubState()
+ExecutionState::SubstateComponent ExecutionState::GetExecutionSubstate() const
 {
-    return m_subStateComponent;
+    return m_substateComponent;
 }
 
-std::string ExecutionState::GetExecutionSubStateDetails()
+std::string ExecutionState::GetExecutionSubstateDetails() const
 {
     return m_processingArgument;
 }

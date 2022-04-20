@@ -6,37 +6,39 @@ class ExecutionState
 public:
     enum StateComponent
     {
-        unknown = 0,
-        running,
-        succeeded,
-        failed,
-        timedOut
+        Unknown = 0,
+        Running,
+        Succeeded,
+        Failed,
+        TimedOut
     };
 
-    enum SubStateComponent
+    enum SubstateComponent
     {
-        none,
-        deserializingJsonPayload,
-        deserializingDesiredState,
-        deserializingSources,
-        deserializingPackages,
-        modifyingSources,
-        updatingPackageLists,
-        installingPackages
+        None,
+        DeserializingJsonPayload,
+        DeserializingDesiredState,
+        DeserializingGpgKeys,
+        DeserializingSources,
+        DeserializingPackages,
+        DownloadingGpgKeys,
+        ModifyingSources,
+        UpdatingPackageLists,
+        InstallingPackages
     };
 
     ExecutionState();
     virtual ~ExecutionState() = default;
 
-    void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent, std::string processingArgument);
-    void SetExecutionState(StateComponent stateComponent, SubStateComponent subStateComponent);
-    bool IsSuccessful();
-    StateComponent GetExecutionState();
-    SubStateComponent GetExecutionSubState();
-    std::string GetExecutionSubStateDetails();
+    void SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent, std::string processingArgument);
+    void SetExecutionState(StateComponent stateComponent, SubstateComponent substateComponent);
+    bool IsSuccessful() const;
+    StateComponent GetExecutionState() const;
+    SubstateComponent GetExecutionSubstate() const;
+    std::string GetExecutionSubstateDetails() const;
 
 private:
     StateComponent m_stateComponent;
-    SubStateComponent m_subStateComponent;
+    SubstateComponent m_substateComponent;
     std::string m_processingArgument;
 };

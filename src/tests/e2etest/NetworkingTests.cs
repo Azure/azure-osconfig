@@ -26,15 +26,15 @@ namespace E2eTesting
 
         public class NetworkConfiguration
         {
-            public string interfaceTypes { get; set; }
-            public string macAddresses { get; set; }
-            public string ipAddresses { get; set; }
-            public string subnetMasks { get; set; }
-            public string defaultGateways { get; set; }
-            public string dnsServers { get; set; }
-            public string dhcpEnabled { get; set; }
-            public string enabled { get; set; }
-            public string connected { get; set; }
+            public string InterfaceTypes { get; set; }
+            public string MacAddresses { get; set; }
+            public string IpAddresses { get; set; }
+            public string SubnetMasks { get; set; }
+            public string DefaultGateways { get; set; }
+            public string DnsServers { get; set; }
+            public string DhcpEnabled { get; set; }
+            public string Enabled { get; set; }
+            public string Connected { get; set; }
         }
 
         public void NetworkPropertyPatternMatch(Regex pattern, string value)
@@ -77,39 +77,39 @@ namespace E2eTesting
         public async Task NetworkingTest_Get()
         {
             NetworkConfiguration reported = await GetReported<NetworkConfiguration>(_componentName, _reportedPropertyName, (NetworkConfiguration network) => {
-                return network.interfaceTypes != null &&
-                       network.macAddresses != null &&
-                       network.ipAddresses != null &&
-                       network.subnetMasks != null &&
-                       network.defaultGateways != null &&
-                       network.dhcpEnabled != null &&
-                       network.enabled != null &&
-                       network.connected != null;
+                return network.InterfaceTypes != null &&
+                       network.MacAddresses != null &&
+                       network.IpAddresses != null &&
+                       network.SubnetMasks != null &&
+                       network.DefaultGateways != null &&
+                       network.DhcpEnabled != null &&
+                       network.Enabled != null &&
+                       network.Connected != null;
             });
 
             Assert.Multiple(() =>
             {
                 // Interface
-                NetworkPropertyPatternMatch(_interfacePattern, reported.interfaceTypes);
+                NetworkPropertyPatternMatch(_interfacePattern, reported.InterfaceTypes);
                 // MacAddress
-                NetworkPropertyPatternMatch(_macAddressPattern, _delimiterPattern, reported.macAddresses);
+                NetworkPropertyPatternMatch(_macAddressPattern, _delimiterPattern, reported.MacAddresses);
                 // IpAddress
-                NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.ipAddresses);
+                NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.IpAddresses);
                 // SubnetMask
-                NetworkPropertyPatternMatch(_subnetMaskPattern, _delimiterPattern, reported.subnetMasks);
+                NetworkPropertyPatternMatch(_subnetMaskPattern, _delimiterPattern, reported.SubnetMasks);
                 // DefaultGateway
-                NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.defaultGateways);
+                NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.DefaultGateways);
                 // DnsServer
-                if (!string.IsNullOrEmpty(reported.dnsServers))
+                if (!string.IsNullOrEmpty(reported.DnsServers))
                 {
-                    NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.dnsServers);
+                    NetworkPropertyPatternMatch(_ipAddressPattern, _delimiterPattern, reported.DnsServers);
                 }
                 // dhcpEnabled
-                NetworkPropertyPatternMatch(_statePattern, reported.dhcpEnabled);
+                NetworkPropertyPatternMatch(_statePattern, reported.DhcpEnabled);
                 // enabled
-                NetworkPropertyPatternMatch(_statePattern, reported.enabled);
+                NetworkPropertyPatternMatch(_statePattern, reported.Enabled);
                 // connected
-                NetworkPropertyPatternMatch(_statePattern, reported.connected);
+                NetworkPropertyPatternMatch(_statePattern, reported.Connected);
             });
         }
     }
