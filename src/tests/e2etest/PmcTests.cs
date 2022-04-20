@@ -115,9 +115,9 @@ namespace E2eTesting
             await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
             var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
             {
-                return (response.ac == desiredResponseAck)
-                    && (response.value.Packages.Contains(packageNameToInstall))
-                    && (response.value.Sources.ContainsKey(_packageSourceName) == packageSourceRequired);
+                return (response.Ac == desiredResponseAck)
+                    && (response.Value.Packages.Contains(packageNameToInstall))
+                    && (response.Value.Sources.ContainsKey(_packageSourceName) == packageSourceRequired);
             });
 
             var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
@@ -130,7 +130,7 @@ namespace E2eTesting
             var installedPackagePattern = new Regex($"{packageNameToInstall}={versionPattern}");
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(desiredResponseAck, desiredTask.ac);
+                Assert.AreEqual(desiredResponseAck, desiredTask.Ac);
                 Assert.IsNotNull(reported.Packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
                 Assert.IsNotNull(reported.Packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
                 Assert.AreEqual(packageSourceRequired, reported.SourcesFilenames.Contains($"{_packageSourceName}.list"));
@@ -154,7 +154,7 @@ namespace E2eTesting
             await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
             var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
             {
-                return (response.ac == ACK_ERROR) && (response.value.Packages.Contains(invalidPackageName));
+                return (response.Ac == ACK_ERROR) && (response.Value.Packages.Contains(invalidPackageName));
             });
 
             var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
@@ -165,7 +165,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.ac);
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(0, reported.Packages.Count);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.ExecutionSubstate);
@@ -188,7 +188,7 @@ namespace E2eTesting
             await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
             var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
             {
-                return (response.ac == ACK_ERROR) && (response.value.Sources.ContainsKey(_packageSourceName));
+                return (response.Ac == ACK_ERROR) && (response.Value.Sources.ContainsKey(_packageSourceName));
             });
 
             var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
@@ -199,7 +199,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.ac);
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.ExecutionSubstate);
                 Assert.AreEqual(_packageSourceName, reported.ExecutionSubstateDetails);
@@ -221,7 +221,7 @@ namespace E2eTesting
             await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
             var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
             {
-                return (response.ac == ACK_ERROR) && (response.value.GpgKeys.ContainsKey(_gpgKeyId));
+                return (response.Ac == ACK_ERROR) && (response.Value.GpgKeys.ContainsKey(_gpgKeyId));
             });
 
             var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
@@ -232,7 +232,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.ac);
+                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.ExecutionSubstate);
                 Assert.AreEqual(_gpgKeyId, reported.ExecutionSubstateDetails);
