@@ -194,11 +194,11 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    result = MpiGetReported(g_mpiHandle, maxPayloadSizeBytes, payload, payloadSizeBytes);
+    result = MpiGetReported(g_mpiHandle, payload, payloadSizeBytes);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %d, %.*s, %d bytes)", g_mpiHandle, maxPayloadSizeBytes, *payloadSizeBytes, *payload, *payloadSizeBytes);
+        OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %.*s, %d bytes)", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes);
     }
 
     return result;

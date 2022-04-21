@@ -155,9 +155,14 @@ int MpiSetDesired(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = nullptr;
+    
+    UNUSED(handle);
+    UNUSED(payload);
+    UNUSED(payloadSizeBytes);
 
-    /*if (nullptr != clientName)
+    /*MpiSession* session = nullptr;
+    
+    if (nullptr != clientName)
     {
         if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName))) && (0 == session->Open()))
         {
@@ -190,9 +195,14 @@ int MpiGetReported(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = nullptr;
 
-    /*if (nullptr != clientName)
+    UNUSED(handle);
+    UNUSED(payload);
+    UNUSED(payloadSizeBytes);
+
+    /*MpiSession* session = nullptr;
+
+    if (nullptr != clientName)
     {
         if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes))) && (0 == session->Open()))
         {
