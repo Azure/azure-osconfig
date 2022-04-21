@@ -21,25 +21,25 @@ namespace E2eTesting
 
         public class HostName
         {
-            public string name { get; set; }
-            public string hosts { get; set; }
+            public string Name { get; set; }
+            public string Hosts { get; set; }
         }
 
         public class DesiredHostName
         {
-            public string desiredName { get; set; }
-            public string desiredHosts { get; set; }
+            public string DesiredName { get; set; }
+            public string DesiredHosts { get; set; }
         }
 
         [Test]
         public async Task HostNameTest_Get()
         {
-            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => (hostname.name != null) && (hostname.hosts != null));
+            HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => (hostname.Name != null) && (hostname.Hosts != null));
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_namePattern, reported.name);
-                RegexAssert.IsMatch(_hostsPattern, reported.hosts);
+                RegexAssert.IsMatch(_namePattern, reported.Name);
+                RegexAssert.IsMatch(_hostsPattern, reported.Hosts);
             });
         }
 
@@ -48,13 +48,13 @@ namespace E2eTesting
         {
             var desired = new DesiredHostName
             {
-                desiredName = "TestHost",
-                desiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
+                DesiredName = "TestHost",
+                DesiredHosts = "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"
             };
 
             await SetDesired<DesiredHostName>(_componentName, desired);
 
-            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.ac == ACK_SUCCESS;
+            Func<GenericResponse<string>, bool> condition = (GenericResponse<string> response) => response.Ac == ACK_SUCCESS;
 
             var desiredNameTask = GetReported<GenericResponse<string>>(_componentName, _desiredHostName, condition);
             desiredNameTask.Wait();
@@ -62,15 +62,15 @@ namespace E2eTesting
             desiredHostsTask.Wait();
 
             HostName reported = await GetReported<HostName>(_componentName, (HostName hostname) => {
-                return (hostname.name == desired.desiredName) && (hostname.hosts == desired.desiredHosts);
+                return (hostname.Name == desired.DesiredName) && (hostname.Hosts == desired.DesiredHosts);
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.ac);
-                Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.ac);
-                Assert.AreEqual(desired.desiredName, reported.name);
-                Assert.AreEqual(desired.desiredHosts, reported.hosts);
+                Assert.AreEqual(ACK_SUCCESS, desiredNameTask.Result.Ac);
+                Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.Ac);
+                Assert.AreEqual(desired.DesiredName, reported.Name);
+                Assert.AreEqual(desired.DesiredHosts, reported.Hosts);
             });
         }
     }

@@ -12,4 +12,5 @@ private:
     int RunCommand(const char* command, std::string* textResult, bool isLongRunning = false) override;
     std::string GetPackagesFingerprint() override;
     std::string GetSourcesFingerprint(const char* sourcesDirectory) override;
+    bool CanRunOnThisPlatform() override;
 };
