@@ -117,7 +117,6 @@ static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
-static int g_localPriority = 0;
 static int g_localManagement = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
@@ -468,8 +467,8 @@ static void LoadDesiredConfigurationFromFile()
     char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
-        // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
-        if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
+        // Do not call MpiSetDesired unless this desired configuration is different from previous
+        if (g_desiredHash != (payloadHash = HashString(payload)))
         {
             if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
             {
@@ -603,7 +602,6 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration);
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        g_localPriority = GetLocalPriorityFromJsonConfig(jsonConfiguration);
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
         g_protocol = GetProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);

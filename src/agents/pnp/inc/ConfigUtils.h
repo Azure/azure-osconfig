@@ -48,7 +48,6 @@ typedef struct REPORTED_PROPERTY
 bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString);
 int GetModelVersionFromJsonConfig(const char* jsonString);
-int GetLocalPriorityFromJsonConfig(const char* jsonString);
 int GetLocalManagementFromJsonConfig(const char* jsonString);
 int GetProtocolFromJsonConfig(const char* jsonString);
 
