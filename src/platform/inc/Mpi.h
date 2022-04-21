@@ -32,17 +32,15 @@ int MpiGet(
     const char* objectName,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes);
-void MpiClose(MPI_HANDLE clientSession);
-
 int MpiSetDesired(
-    const char* clientName,
+    MPI_HANDLE clientSession,
     const MPI_JSON_STRING payload,
     const int payloadSizeBytes);
 int MpiGetReported(
-    const char* clientName,
-    const unsigned int maxPayloadSizeBytes,
+    MPI_HANDLE clientSession,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes);
+void MpiClose(MPI_HANDLE clientSession);
 
 void MpiFree(MPI_JSON_STRING payload);
      

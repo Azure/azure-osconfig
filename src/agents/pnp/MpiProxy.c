@@ -139,36 +139,48 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     return result;
 };
 
-int CallMpiSetDesired(const char* clientName, const MPI_JSON_STRING payload, const int payloadSizeBytes)
+int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int result = MPI_OK;
 
-    LogAssert(GetLog(), NULL != clientName);
+    if (NULL == g_mpiHandle)
+    {
+        result = EPERM;
+        OsConfigLogError(GetLog(), "Cannot call MpiSetDesired without an MPI handle, %d", result);
+        return result;
+    }
+
     LogAssert(GetLog(), NULL != payload);
     LogAssert(GetLog(), 0 < payloadSizeBytes);
 
-    if ((NULL == clientName) || (NULL == payload) || (0 >= payloadSizeBytes))
+    if ((NULL == payload) || (0 >= payloadSizeBytes))
     {
         result = EINVAL;
         OsConfigLogError(GetLog(), "Invalid argument(s), cannot call MpiSetDesired, %d", result);
         return result;
     }
 
-    result = MpiSetDesired(clientName, payload, payloadSizeBytes);
+    result = MpiSetDesired(g_mpiHandle, payload, payloadSizeBytes);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiSetDesired(%s, %.*s, %d bytes) returned %d", clientName, payloadSizeBytes, payload, payloadSizeBytes, result);
+        OsConfigLogInfo(GetLog(), "MpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, result);
     }
 
     return MPI_OK;
 }
 
-int CallMpiGetReported(const char* clientName, const unsigned int maxPayloadSizeBytes, MPI_JSON_STRING* payload, int* payloadSizeBytes)
+int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int result = MPI_OK;
 
-    LogAssert(GetLog(), NULL != clientName);
+    if (NULL == g_mpiHandle)
+    {
+        result = EPERM;
+        OsConfigLogError(GetLog(), "Cannot call MpiGetReported without an MPI handle, %d", result);
+        return result;
+    }
+
     LogAssert(GetLog(), NULL != payload);
     LogAssert(GetLog(), NULL != payloadSizeBytes);
 
@@ -182,11 +194,11 @@ int CallMpiGetReported(const char* clientName, const unsigned int maxPayloadSize
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    result = MpiGetReported(clientName, maxPayloadSizeBytes, payload, payloadSizeBytes);
+    result = MpiGetReported(g_mpiHandle, maxPayloadSizeBytes, payload, payloadSizeBytes);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiGetReported(%s, %d, %.*s, %d bytes)", clientName, maxPayloadSizeBytes, *payloadSizeBytes, *payload, *payloadSizeBytes);
+        OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %d, %.*s, %d bytes)", g_mpiHandle, maxPayloadSizeBytes, *payloadSizeBytes, *payload, *payloadSizeBytes);
     }
 
     return result;
