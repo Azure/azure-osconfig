@@ -150,13 +150,18 @@ int MpiGet(
 }
 
 int MpiSetDesired(
-    const char* clientName,
+    MPI_HANDLE handle,
     const MPI_JSON_STRING payload,
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = nullptr;
+    
+    UNUSED(handle);
+    UNUSED(payload);
+    UNUSED(payloadSizeBytes);
 
+    /*MpiSession* session = nullptr;
+    
     if (nullptr != clientName)
     {
         if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName))) && (0 == session->Open()))
@@ -179,19 +184,23 @@ int MpiSetDesired(
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired called without an invalid client name");
         status = EINVAL;
-    }
+    }*/
 
     return status;
 }
 
 int MpiGetReported(
-    const char* clientName,
-    const unsigned int maxPayloadSizeBytes,
+    MPI_HANDLE handle,
     MPI_JSON_STRING* payload,
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = nullptr;
+
+    UNUSED(handle);
+    UNUSED(payload);
+    UNUSED(payloadSizeBytes);
+
+    /*MpiSession* session = nullptr;
 
     if (nullptr != clientName)
     {
@@ -215,7 +224,7 @@ int MpiGetReported(
     {
         OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported called without an invalid client name");
         status = EINVAL;
-    }
+    }*/
 
     return status;
 }
