@@ -100,11 +100,6 @@ int GetModelVersionFromJsonConfig(const char* jsonString)
     return GetIntegerFromJsonConfig(MODEL_VERSION_NAME, jsonString, DEFAULT_DEVICE_MODEL_ID, MIN_DEVICE_MODEL_ID, MAX_DEVICE_MODEL_ID);
 }
 
-int GetLocalPriorityFromJsonConfig(const char* jsonString)
-{
-    return GetIntegerFromJsonConfig(LOCAL_PRIORITY, jsonString, 0, 0, 1);
-}
-
 int GetLocalManagementFromJsonConfig(const char* jsonString)
 {
     return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
