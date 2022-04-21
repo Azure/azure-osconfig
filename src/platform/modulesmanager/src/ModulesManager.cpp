@@ -155,36 +155,20 @@ int MpiSetDesired(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    
-    UNUSED(handle);
-    UNUSED(payload);
-    UNUSED(payloadSizeBytes);
+    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    /*MpiSession* session = nullptr;
-    
-    if (nullptr != clientName)
+    if (nullptr != session)
     {
-        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName))) && (0 == session->Open()))
+        if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
         {
-            if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%s, %p, %d) failed to set the desired state", clientName, payload, payloadSizeBytes);
-            }
-
-            session->Close();
-            delete session;
-        }
-        else
-        {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%s, %p, %d) failed to open a new client session", clientName, payload, payloadSizeBytes);
-            status = ENOMEM;
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%p, %p, %d) failed to set the desired state", handle, payload, payloadSizeBytes);
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired called without an invalid client name");
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiSetDesired(%p, %p, %d) called without an invalid handle", handle, payload, payloadSizeBytes);
         status = EINVAL;
-    }*/
+    }
 
     return status;
 }
@@ -195,36 +179,20 @@ int MpiGetReported(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
+    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    UNUSED(handle);
-    UNUSED(payload);
-    UNUSED(payloadSizeBytes);
-
-    /*MpiSession* session = nullptr;
-
-    if (nullptr != clientName)
+    if (nullptr != session)
     {
-        if ((nullptr != (session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes))) && (0 == session->Open()))
+        if (MPI_OK != (status = session->GetReported(payload, payloadSizeBytes)))
         {
-            if (MPI_OK != (status = session->GetReported(payload, payloadSizeBytes)))
-            {
-                OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%s, %u, %p, %p) failed to get the reported state", clientName, maxPayloadSizeBytes, payload, payloadSizeBytes);
-            }
-
-            session->Close();
-            delete session;
-        }
-        else
-        {
-            OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%s, %u, %p, %p) failed to open a new client session", clientName, maxPayloadSizeBytes, payload, payloadSizeBytes);
-            status = ENOMEM;
+            OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%p, %p, %p) failed to get the reported state", handle, payload, payloadSizeBytes);
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported called without an invalid client name");
+        OsConfigLogError(ModulesManagerLog::Get(), "MpiGetReported(%p, %p, %p) called without an invalid handle", handle, payload, payloadSizeBytes);
         status = EINVAL;
-    }*/
+    }
 
     return status;
 }

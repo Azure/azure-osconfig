@@ -170,7 +170,7 @@ namespace Tests
         ASSERT_EQ(nullptr, payload);
     }
 
-    /*TEST_F(MpiTests, MpiSetDesired_InvalidClientName)
+    TEST_F(MpiTests, MpiSetDesired_InvalidHandle)
     {
         char payload[] = R"""({
             "component": {
@@ -182,7 +182,7 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiSetDesired(nullptr, payload, payloadSizeBytes));
     }
 
-    TEST_F(MpiTests, MpiGetReported_InvalidClientName)
+    TEST_F(MpiTests, MpiGetReported_InvalidHandle)
     {
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -190,5 +190,5 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiGetReported(nullptr, &payload, &payloadSizeBytes));
         ASSERT_EQ(nullptr, payload);
         ASSERT_EQ(0, payloadSizeBytes);
-    }*/
+    }
 }

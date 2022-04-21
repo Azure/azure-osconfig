@@ -20,7 +20,6 @@ void __attribute__((constructor)) InitModule()
 void __attribute__((destructor)) DestroyModule()
 {
     OsConfigLogInfo(CommandRunnerLog::Get(), "CommandRunner module unloaded");
-    CommandRunner::Factory::Clear();
     CommandRunnerLog::CloseLog();
 }
 
@@ -84,10 +83,10 @@ MMI_HANDLE MmiOpen(
 
     if (nullptr != clientName)
     {
-        std::shared_ptr<CommandRunner> commandRunner = CommandRunner::Factory::Create(clientName);
+        CommandRunner* commandRunner = new (std::nothrow) CommandRunner(clientName, maxPayloadSizeBytes);
         if (nullptr != commandRunner)
         {
-            handle = reinterpret_cast<MMI_HANDLE>(commandRunner.get());
+            handle = reinterpret_cast<MMI_HANDLE>(commandRunner);
         }
         else
         {
@@ -108,7 +107,7 @@ void MmiClose(MMI_HANDLE clientSession)
     CommandRunner* commandRunner = reinterpret_cast<CommandRunner*>(clientSession);
     if (nullptr != commandRunner)
     {
-        CommandRunner::Factory::Destroy(commandRunner);
+        delete commandRunner;
     }
 }
 
