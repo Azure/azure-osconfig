@@ -167,19 +167,6 @@ To enable local management, edit the OSConfig general configuration file `/etc/o
 ```
 To disable local management, set "LocalManagement" to 0.
 
-### Changing priority for local versus remote desired configuration
-
-By default the remote management has priority over local management which means desired settings from `/etc/osconfig/osconfig_desired.json` are applied only when changed (set new) and then only once. When priority is set for local management, the desired settings from `/etc/osconfig/osconfig_desired.json` overwrite any desired configuration from the remote management.
-
-To enable local priority, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "LocalPriority" to a non zero value:
-
-```json
-{
-    "LocalPriority": 1
-}
-```
-To configure for remote priority, set "LocalPriority" to 0.
-
 ### Changing the protocol OSConfig uses to connect to the IoT Hub
 
 The networking protocol that OSConfig uses to connect to the IoT Hub is configured in the OSConfig general configuration file `/etc/osconfig/osconfig.json`:
