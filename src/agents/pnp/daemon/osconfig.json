@@ -85,6 +85,5 @@
     }
   ],
   "ReportingIntervalSeconds": 30,
-  "LocalPriority": 0,
   "LocalManagement": 0
 }
