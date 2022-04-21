@@ -427,7 +427,7 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localManagement)
     {
-        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
@@ -470,7 +470,7 @@ static void LoadDesiredConfigurationFromFile()
         // Do not call MpiSetDesired unless this desired configuration is different from previous
         if (g_desiredHash != (payloadHash = HashString(payload)))
         {
-            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
+            if (MPI_OK == CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes))
             {
                 g_desiredHash = payloadHash;
             }
