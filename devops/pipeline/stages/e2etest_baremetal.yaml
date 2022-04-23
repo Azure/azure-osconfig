@@ -127,6 +127,7 @@ stages:
       testExpression: '${{ parameters.testExpression }} & TestCategory != BaremetalExclude'
       twinTimeout: ${{ parameters.twinTimeout }}
       environment: ${{ parameters.environment }}
+      distroName: debian9
 - ${{ else }}:
   - template: e2etest_testdriver.yaml
     parameters:
@@ -136,3 +137,4 @@ stages:
       testExpression: 'TestCategory != BaremetalExclude'
       twinTimeout: ${{ parameters.twinTimeout }}
       environment: ${{ parameters.environment }}
+      distroName: debian9
