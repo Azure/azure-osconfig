@@ -25,4 +25,4 @@ target_link_libraries(settingstests
     configfileutils
     commonutils)
 
-gtest_discover_tests(settingstests)
+gtest_discover_tests(settingstests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

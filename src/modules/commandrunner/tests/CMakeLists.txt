@@ -14,8 +14,8 @@ target_link_libraries(testutils gtest gtest_main)
 
 add_executable(commandrunnertests CommandRunnerTests.cpp)
 target_link_libraries(commandrunnertests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging testutils)
-gtest_discover_tests(commandrunnertests)
+gtest_discover_tests(commandrunnertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(commandtests CommandTests.cpp)
 target_link_libraries(commandtests gtest gtest_main gmock gmock_main pthread commandrunnerlib commonutils logging testutils)
-gtest_discover_tests(commandtests)
+gtest_discover_tests(commandtests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

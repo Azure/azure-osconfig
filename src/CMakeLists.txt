@@ -68,7 +68,6 @@ else()
     set(CMAKE_PROJECT_VERSION_TWEAK "${_timestamp}")
 endif()
 
-
 set(OsConfigProjectName "osconfig")
 set(OsConfigProjectLongName "Azure OSConfig")
 set(OsConfigProjectVendor "Microsoft")
@@ -97,6 +96,7 @@ endif()
 
 if (BUILD_TESTS)
     enable_testing()
+    set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
 
 add_subdirectory(common)

@@ -11,4 +11,4 @@ find_package(GTest REQUIRED)
 add_executable(tpmtests TpmTests.cpp)
 target_link_libraries(tpmtests gtest gtest_main pthread tpmlib tpm logging commonutils)
 
-gtest_discover_tests(tpmtests)
+gtest_discover_tests(tpmtests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

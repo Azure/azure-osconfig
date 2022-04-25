@@ -52,12 +52,12 @@ target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DI
 
 add_executable(managementmoduletests ManagementModuleTests.cpp)
 target_link_libraries(managementmoduletests modulesmanagermocks)
-gtest_discover_tests(managementmoduletests)
+gtest_discover_tests(managementmoduletests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(modulesmanagertests ModulesManagerTests.cpp)
 target_link_libraries(modulesmanagertests modulesmanagermocks)
-gtest_discover_tests(modulesmanagertests)
+gtest_discover_tests(modulesmanagertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(mpitests MpiTests.cpp)
 target_link_libraries(mpitests modulesmanagermocks)
-gtest_discover_tests(mpitests)
+gtest_discover_tests(mpitests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

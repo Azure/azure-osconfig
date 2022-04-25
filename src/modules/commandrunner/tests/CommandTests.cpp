@@ -32,6 +32,11 @@ namespace Tests
 
     const std::string CommandTests::m_id = "CommandTest_Id";
 
+    TEST_F(CommandTests, ThisShouldFail)
+    {
+        EXPECT_EQ(0, 1);
+    }
+
     TEST_F(CommandTests, Execute)
     {
         EXPECT_EQ(0, m_command->Execute(0));

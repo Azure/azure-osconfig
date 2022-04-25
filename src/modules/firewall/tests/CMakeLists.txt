@@ -11,4 +11,4 @@ find_package(GTest REQUIRED)
 add_executable(firewalltests FirewallTests.cpp)
 target_link_libraries(firewalltests gtest gtest_main pthread firewalllib commonutils logging)
 
-gtest_discover_tests(firewalltests)
+gtest_discover_tests(firewalltests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

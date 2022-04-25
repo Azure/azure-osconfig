@@ -11,4 +11,4 @@ find_package(GTest REQUIRED)
 add_executable(hostnametests HostNameBaseTests.cpp)
 target_link_libraries(hostnametests gtest gtest_main pthread hostnamelib logging commonutils)
 
-gtest_discover_tests(hostnametests)
+gtest_discover_tests(hostnametests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.2.0)
 include(CTest)
 find_package(GTest REQUIRED)
 
-add_executable(commontests  
+add_executable(commontests
     CommonUtilsUT.cpp)
 
 target_link_libraries(commontests
@@ -20,4 +20,4 @@ target_link_libraries(commontests
     logging
     commonutils)
 
-gtest_discover_tests(commontests)
+gtest_discover_tests(commontests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
