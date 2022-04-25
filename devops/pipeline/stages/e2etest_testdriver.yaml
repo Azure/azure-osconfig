@@ -24,6 +24,8 @@ parameters:
 - name: environment
   type: string
   default: ' '
+- name: distroName
+  type: string
 
 stages:
 - stage: Run_Test_Driver_${{parameters.deviceId}}
@@ -55,6 +57,7 @@ stages:
             E2E_OSCONFIG_UPLOAD_URL: $(UPLOAD_URL_BASE_PATH)
             E2E_OSCONFIG_RESOURCE_GROUP_NAME: $(RESOURCE_GROUP_NAME)
             E2E_OSCONFIG_TWIN_TIMEOUT: ${{ parameters.twinTimeout }}
+            E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ parameters.distroName }}
           workingDirectory: $(Build.SourcesDirectory)/src/tests/e2etest
       - ${{ if eq(parameters.testExpression, ' ') }}:
         - script: dotnet test --logger trx
@@ -66,6 +69,7 @@ stages:
             E2E_OSCONFIG_UPLOAD_URL: $(UPLOAD_URL_BASE_PATH)
             E2E_OSCONFIG_RESOURCE_GROUP_NAME: $(RESOURCE_GROUP_NAME)
             E2E_OSCONFIG_TWIN_TIMEOUT: ${{ parameters.twinTimeout }}
+            E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ parameters.distroName }}
           workingDirectory: $(Build.SourcesDirectory)/src/tests/e2etest
 
       - task: PublishTestResults@2
