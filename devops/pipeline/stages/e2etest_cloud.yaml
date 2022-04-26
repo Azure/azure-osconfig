@@ -125,6 +125,7 @@ stages:
     deviceStageName: Terraform_VM_${{ parameters.target.device_id }}
     testExpression: ${{ parameters.testExpression }}
     twinTimeout: ${{ parameters.twinTimeout }}
+    distroName: ${{ parameters.target.distroName }}
 
 - stage: Terraform_destroy_vm_${{parameters.target.device_id}}
   displayName: Deallocate ${{ parameters.target.distroName }}
