@@ -1217,3 +1217,126 @@ char* HashCommand(const char* source, void* log)
 
     return (0 == status) ? hash : NULL;
 }
+
+static char* ReadUntilStringFound(int socketHandle, char* what)
+{
+    char* buffer = NULL;
+    char* found = NULL;
+    char* result = NULL;
+    int size = 1;
+
+    if ((NULL == what) || (socketHandle < 0))
+    {
+        return found;
+    }
+
+    buffer = (chart*)malloc(size);
+    if (NULL == found)
+    {
+        return found;
+    }
+
+    while (1 == read(socketHandle, &(buffer[size - 1]), 1))
+    {
+        size + 1;
+        buffer = (char*)realloc(buffer, size);
+        if (NULL == buffer)
+        {
+            break;
+        }
+        
+        if (NULL != (found = strstr(buffer, what)))
+        {
+            // Move the found string pointer to the end of the read buffer
+            found += strlen(what);
+            break;
+        }
+    }
+
+    if (NULL == found)
+    {
+        FREE_MEMORY(buffer);
+    }
+
+    return buffer;
+}
+
+int ReadHttpStatus(int socketHandle, void* log)
+{
+    int httpStatus = 404;
+    char* buffer = NULL;
+    char status[4] = {0};
+        
+    if (socketHandle < 0)
+    {
+        OsConfigLogError(log, "ReadHttpStatus: invalid socket (%d)", socketHandle);
+        return httpStatus;
+    }
+
+    buffer = ReadUntilStringFound(socketHandle, "HTTP / 1.0 ");
+
+    if (NULL == buffer)
+    {
+        OsConfigLogError(log, "ReadHttpStatus: 'HTTP / 1.0 ' prefix not found");
+        return httpStatus;
+    }
+
+    read(socketHandle, status, 3);
+    
+    if (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2]))
+    {
+        httpStatus = atoi(status);
+    }
+
+    FREE_MEMORY(buffer);
+
+    return httpStatus;
+}
+
+int ReadHttpContentLength(int socketHandle, void* log)
+{
+    int httpContentLength = 0;
+    char* buffer = NULL;
+    char* contentLength = NULL;
+    char isolatedContentLength[64] = {0};
+    int i = 0;
+
+    if (socketHandle < 0)
+    {
+        OsConfigLogError(log, "ReadHttpContentLength: invalid socket (%d)", socketHandle);
+        return httpStatus;
+    }
+
+    buffer = ReadUntilStringFound(socketHandle, "\r\n\r\n");
+
+    if (NULL != buffer)
+    {
+        contentLength = strstr(buffer, "Content-Length: ");
+
+        if (NULL != contentLength)
+        {
+            contentLength += strlen(contentLength);
+            
+            for (i = 0; i < sizeof(isolatedContentLength) - 1; i++)
+            {
+                if (isdigit(contentLength[i]))
+                {
+                    isolatedContentLength = contentLength[i];
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (isdigit(isolatedContentLength[0]))
+            {
+                httpContentLength = atoi(isolatedContentLength);
+            }
+        }
+    }
+
+    FREE_MEMORY(buffer);
+
+    return httpContentLength;
+}
