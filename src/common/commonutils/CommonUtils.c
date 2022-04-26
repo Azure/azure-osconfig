@@ -1230,7 +1230,7 @@ static char* ReadUntilStringFound(int socketHandle, char* what)
         return found;
     }
 
-    buffer = (chart*)malloc(size);
+    buffer = (char*)malloc(size);
     if (NULL == found)
     {
         return found;
@@ -1281,9 +1281,7 @@ int ReadHttpStatus(int socketHandle, void* log)
         return httpStatus;
     }
 
-    read(socketHandle, status, 3);
-    
-    if (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2]))
+    if ((3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
     }
@@ -1304,7 +1302,7 @@ int ReadHttpContentLength(int socketHandle, void* log)
     if (socketHandle < 0)
     {
         OsConfigLogError(log, "ReadHttpContentLength: invalid socket (%d)", socketHandle);
-        return httpStatus;
+        return httpContentLength;
     }
 
     buffer = ReadUntilStringFound(socketHandle, "\r\n\r\n");
@@ -1321,7 +1319,7 @@ int ReadHttpContentLength(int socketHandle, void* log)
             {
                 if (isdigit(contentLength[i]))
                 {
-                    isolatedContentLength = contentLength[i];
+                    isolatedContentLength[i] = contentLength[i];
                 }
                 else
                 {
