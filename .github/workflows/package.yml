@@ -1,0 +1,162 @@
+name: Package
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: The list of operating systems to use in the strategy matrix.
+        type: string
+        required: false
+        default: '["ubuntu18.04", "ubuntu20.04", "debian9"]'
+      variant:
+        description: The list of variants to use in the strategy matrix.
+        type: string
+        required: false
+        default: '[{"arch": "arm", "platform": "linux/arm/v7"}, {"arch": "arm64", "platform": "linux/arm64/v8"}, {"arch": "amd64", "platform": "linux/amd64"}]'
+      artifact:
+        description: The artifact to publish.
+        type: string
+        required: false
+        default: 'package'
+      build-type:
+        description: The build type to use.
+        type: string
+        default: Release
+        required: false
+      signed:
+        description: If the packages should be signed. This will create a second artifact for the signed packages (<artifact_name>-signed).
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      acr-client-id:
+        description: The username to login to the Azure Container Registry
+        required: true
+      acr-client-secret:
+        description: The password to login to the Azure Container Registry
+        required: true
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJson(inputs.os) }}
+        variant: ${{ fromJson(inputs.variant) }}
+    env:
+      container-workspace: /azure-osconfig
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Set version
+        id: version
+        run: echo "::set-output name=tweak::$(echo $(date +'%Y%m%d')${{ github.run_id }})"
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          username: ${{ secrets.acr-client-id }}
+          password: ${{ secrets.acr-client-secret }}
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
+          platform: ${{ matrix.variant.platform }}
+          mount: ${{ github.workspace }}:${{ env.container-workspace }}
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_build-type=${{ inputs.build-type }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build
+          cmd: cmake --build . --config ${{ inputs.build-type }}
+
+      - name: Run cpack
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build
+          cmd: cpack -G DEB
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}
+          path: ./build/osconfig_*
+
+  signing:
+    name: Signing
+    runs-on: windows-latest
+    if: inputs.signed
+    needs: [package]
+    environment:
+      name: esrp
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+          path: ${{ github.workspace }}/osconfig_bin
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install ESRPClient
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            $context = New-AzStorageContext -ConnectionString "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}"
+            Get-AzStorageBlobContent -Blob esrpclient.zip -Container esrpclient -Destination esrpclient.zip -Context $context
+            Expand-Archive esrpclient.zip
+
+      - name: Stage artifacts for signing
+        working-directory: ${{ github.workspace }}/osconfig_bin
+        run: Get-ChildItem -Recurse -File -Filter *.deb | Move-Item -Destination ${{ github.workspace }}/esrpclient/Input
+
+      - name: Download certificates
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az keyvault secret download --file certAAD.pfx --encoding base64 --name ${{ secrets.AAD_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
+            az keyvault secret download --file certESRP.pfx --encoding base64 --name ${{ secrets.ESRP_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
+
+      - name: Import certificates
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Set-Location -Path cert:\CurrentUser\My
+            Import-PfxCertificate -FilePath ${{ github.workspace }}\certAAD.pfx
+            Import-PfxCertificate -FilePath ${{ github.workspace }}\certESRP.pfx
+
+      - name: Sign packages
+        working-directory: ${{ github.workspace }}/esrpclient
+        run: |
+          mkdir Output
+          ${{ github.workspace }}\devops\scripts\create_esrp_job.ps1 (ls .\Input\ | select -expand Name) ($pwd.Path + '\Input') ($pwd.Path + '\Output')
+          cat Job.json
+          .\EsrpClient.exe Sign -a "Config\Auth.json" -c "Config\Config.json" -i "Job.json" -o "Output\output.json" -p "Config\Policy.json" -l Verbose
+
+      - name: Validate ESRP signing
+        run: |
+          $result = (((cat .\Output\output.json | ConvertFrom-Json).submissionResponses | where { $_.statusCode -eq "pass" }).statusCode).Count -eq (ls .\Input\).Count
+          if ($result -eq $false)
+          {
+            Write-Error "Failed signing" -TargetObject $result
+          }
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}-signed
+          path: ${{ github.workspace }}/esrpclient/Output/
