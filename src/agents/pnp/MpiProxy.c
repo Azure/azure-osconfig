@@ -7,8 +7,14 @@
 
 extern MPI_HANDLE g_mpiHandle;
 
+// TBD - to be moved to Platform
+// Use these as following in the process that makes MPI calls:
+// At the beginning and end of each call:
+// memset(g_mpiCall, 0, sizeof(g_mpiCall));
+// At the beginning of the MPI execution within each call, for example:
+// snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiGet", componentName, propertyName);
 char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
-static const char g_mpiCallTemplate[] = " during %s to %s.%s\n";
+//static const char g_mpiCallTemplate[] = " during %s to %s.%s\n";
 
 int CallMpi(const char* request, char** response, int* responseSize)
 {
@@ -214,8 +220,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     int responseSize = 0;
     int status = MPI_OK;
 
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle))
     {
         status = EPERM;
@@ -229,8 +233,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         OsConfigLogError(GetLog(), "CallMpiSet: invalid arguments (%d)", status);
         return result;
     }
-
-    //snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiSet", componentName, propertyName);
 
     if (!IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
     {
@@ -268,8 +270,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         OsConfigLogInfo(GetLog(), "MpiSet(%p, %s, %s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, status);
     }
 
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return result;
 };
 
@@ -282,8 +282,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     int requestSize = 0;
     int responseSize = 0;
     int status = MPI_OK;
-
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle))
     {
@@ -298,8 +296,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         OsConfigLogError(GetLog(), "CallMpiGet: called with invalid arguments (%d)", status);
         return result;
     }
-
-    //snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiGet", componentName, propertyName);
 
     *payload = NULL;
     *payloadSizeBytes = 0;
@@ -342,8 +338,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         *payloadSizeBytes = 0;
     }
 
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return result;
 };
 
@@ -356,8 +350,6 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     int requestSize = 0;
     int responseSize = 0;
     int status = MPI_OK;
-
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle))
     {
@@ -399,8 +391,6 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
         OsConfigLogInfo(GetLog(), "MpiSettDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
 
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
-
     return result;
 }
 
@@ -413,8 +403,6 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
     int requestSize = 0;
     int responseSize = 0;
     int status = MPI_OK;
-
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle))
     {
@@ -429,8 +417,6 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
         OsConfigLogError(GetLog(), "CallMpiGetReported: called with invalid arguments (%d)", status);
         return result;
     }
-
-    //snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiGet", componentName, propertyName);
 
     *payload = NULL;
     *payloadSizeBytes = 0;
@@ -463,8 +449,6 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
     {
         OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
-
-    //memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     return result;
 }
