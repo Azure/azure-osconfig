@@ -1218,7 +1218,7 @@ char* HashCommand(const char* source, void* log)
     return (0 == status) ? hash : NULL;
 }
 
-static char* ReadUntilStringFound(int socketHandle, char* what)
+static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
 {
     char* found = NULL;
     char* buffer = NULL;
@@ -1227,29 +1227,39 @@ static char* ReadUntilStringFound(int socketHandle, char* what)
 
     if ((NULL == what) || (socketHandle < 0))
     {
-        return found;
+        OsConfigLogError(log, "ReadUntilStringFound: invalid arguments");
+        return NULL;
     }
 
-    buffer = (char*)malloc(size);
-    if (NULL == found)
+    buffer = (char*)malloc(size + 1);
+    if (NULL == buffer)
     {
-        return found;
+        OsConfigLogError(log, "ReadUntilStringFound: out of memory allocating initial buffer");
+        return NULL;
     }
+
+    memset(buffer, 0, size + 1);
 
     while (1 == read(socketHandle, &(buffer[size - 1]), 1))
     {
-        size += 1;
-        buffer = (char*)realloc(buffer, size);
-        if (NULL == buffer)
-        {
-            break;
-        }
-        
         if (NULL != (found = strstr(buffer, what)))
         {
-            // Move the found string pointer to the end of the read buffer
-            found += strlen(what);
+            buffer[size] = 0;
             break;
+        }
+        else
+        {
+            size += 1;
+            buffer = (char*)realloc(buffer, size + 1);
+            if (NULL == buffer)
+            {
+                OsConfigLogError(log, "ReadUntilStringFound: out of memory reallocating buffer");
+                break;
+            }
+            else
+            {
+                buffer[size] = 0;
+            }
         }
     }
 
@@ -1263,11 +1273,12 @@ static char* ReadUntilStringFound(int socketHandle, char* what)
 
 int ReadHttpStatusFromSocket(int socketHandle, void* log)
 {
-    const char* httpPrefix = "HTTP/1.1 ";
+    const char* httpPrefix = "HTTP/1.1";
 
     int httpStatus = 404;
     char* buffer = NULL;
     char status[4] = {0};
+    char expectedSpace = 'x';
         
     if (socketHandle < 0)
     {
@@ -1275,15 +1286,15 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
         return httpStatus;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, httpPrefix);
-
+    buffer = ReadUntilStringFound(socketHandle, httpPrefix, log);
     if (NULL == buffer)
     {
         OsConfigLogError(log, "ReadHttpStatusFromSocket: '%s' prefix not found", httpPrefix);
         return httpStatus;
     }
 
-    if ((3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
+    if ((1 == read(socketHandle, &expectedSpace, 1)) && (' ' == expectedSpace) && 
+        (3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
         OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
@@ -1311,15 +1322,13 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
         return httpContentLength;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, doubleTerminator);
-
+    buffer = ReadUntilStringFound(socketHandle, doubleTerminator, log);
     if (NULL != buffer)
     {
         contentLength = strstr(buffer, contentLengthLabel);
-
         if (NULL != contentLength)
         {
-            contentLength += strlen(contentLength);
+            contentLength += strlen(contentLengthLabel);
             
             for (i = 0; i < sizeof(isolatedContentLength) - 1; i++)
             {
@@ -1339,9 +1348,9 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
                 OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
             }
         }
+        
+        FREE_MEMORY(buffer);
     }
-
-    FREE_MEMORY(buffer);
 
     return httpContentLength;
 }

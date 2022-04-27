@@ -7,6 +7,8 @@
 #include <string>
 #include <list>
 #include <time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
 
@@ -1044,28 +1046,31 @@ struct TestHttpHeader
 
 TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
 {
+    const char* testPath = "~socket.test";
+    
     TestHttpHeader testHttpHeaders[] = {
-        { "HTTP/1.1\r\nblah blah\r\n\r\n\"", 0, 0 },
+        { "HTTP/1.1\r\nblah blah\r\n\r\n\"", 404, 0 },
         { "HTTP/1.1 301\r\ntest 123\r\n\r\n\"", 301, 0 },
-        { "HTTP/1.1\r\ntest test test\r\nContent-Length: 10\r\n\r\n\"1234567890\"", 0, 10 },
+        { "HTTP/1.1 402 something \r\ntest 123\r\n\r\n\"", 402, 0 },
+        { "HTTP/1.1\r\nContent-Length: 2\r\n here 123\r\n\r\n\"12\"", 404, 2 },
+        { "HTTP/1.1\r\ntest test test\r\nContent-Length: 10\r\n\r\n\"1234567890\"", 404, 10 },
         { "HTTP/1.1 400 Boom! \r\test abc\r\nContent-Length: 1\r\n\r\n\"1\"", 400, 1 },
-        { "POST /mpi HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 12\r\n\r\n\"{1234567890}\"", 0, 12},
-        { "POST /mpi HTTP/1.1 200 OK\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 5\r\n\r\n\"{123}\"", 200, 5 },
+        { "POST /mpi HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 12\r\n\r\n\"{1234567890}\"", 404, 12},
+        { "HTTP/1.1 200 OK\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 5\r\n\r\n\"{123}\"", 200, 5 }
     };
 
     int testHttpHeadersSize = ARRAY_SIZE(testHttpHeaders);
-
-    char* header = nullptr;
 
     int fileDescriptor = -1;
 
     for (int i = 0; i < testHttpHeadersSize; i++)
     {
-        EXPECT_TRUE(CreateTestFile(m_path, testHttpHeaders[i].httpRequest));
-        EXPECT_NE(-1, fileDescriptor = open(m_path, O_RDONLY));
+        EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(0, close(fileDescriptor));
-        EXPECT_TRUE(Cleanup(m_path));
+        EXPECT_TRUE(Cleanup(testPath));
     }
 }
