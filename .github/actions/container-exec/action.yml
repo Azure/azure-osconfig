@@ -1,0 +1,22 @@
+name: Container exec
+description: Execute a command on a running container
+
+inputs:
+  container:
+    description: Container to execute the command on.
+    required: true
+  working-directory:
+    description: The working directory to execute the command in.
+    required: false
+    default: /azure-osconfig
+  cmd:
+    description: The command to execute on the container.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - id: execute
+      run: |
+        docker exec ${{ inputs.container }} bash -c "cd ${{ inputs.working-directory }}; ${{ inputs.cmd }}"
+      shell: bash
