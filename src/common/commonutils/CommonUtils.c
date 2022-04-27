@@ -1220,8 +1220,8 @@ char* HashCommand(const char* source, void* log)
 
 static char* ReadUntilStringFound(int socketHandle, char* what)
 {
-    char* buffer = NULL;
     char* found = NULL;
+    char* buffer = NULL;
     char* result = NULL;
     int size = 1;
 
@@ -1238,7 +1238,7 @@ static char* ReadUntilStringFound(int socketHandle, char* what)
 
     while (1 == read(socketHandle, &(buffer[size - 1]), 1))
     {
-        size + 1;
+        size += 1;
         buffer = (char*)realloc(buffer, size);
         if (NULL == buffer)
         {
@@ -1261,29 +1261,32 @@ static char* ReadUntilStringFound(int socketHandle, char* what)
     return buffer;
 }
 
-int ReadHttpStatus(int socketHandle, void* log)
+int ReadHttpStatusFromSocket(int socketHandle, void* log)
 {
+    const char* httpPrefix = "HTTP/1.1 ";
+
     int httpStatus = 404;
     char* buffer = NULL;
     char status[4] = {0};
         
     if (socketHandle < 0)
     {
-        OsConfigLogError(log, "ReadHttpStatus: invalid socket (%d)", socketHandle);
+        OsConfigLogError(log, "ReadHttpStatusFromSocket: invalid socket (%d)", socketHandle);
         return httpStatus;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, "HTTP / 1.0 ");
+    buffer = ReadUntilStringFound(socketHandle, httpPrefix);
 
     if (NULL == buffer)
     {
-        OsConfigLogError(log, "ReadHttpStatus: 'HTTP / 1.0 ' prefix not found");
+        OsConfigLogError(log, "ReadHttpStatusFromSocket: '%s' prefix not found", httpPrefix);
         return httpStatus;
     }
 
     if ((3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
+        OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
     }
 
     FREE_MEMORY(buffer);
@@ -1291,8 +1294,11 @@ int ReadHttpStatus(int socketHandle, void* log)
     return httpStatus;
 }
 
-int ReadHttpContentLength(int socketHandle, void* log)
+int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
 {
+    const char* contentLengthLabel = "Content-Length: ";
+    const char* doubleTerminator = "\r\n\r\n";
+
     int httpContentLength = 0;
     char* buffer = NULL;
     char* contentLength = NULL;
@@ -1301,15 +1307,15 @@ int ReadHttpContentLength(int socketHandle, void* log)
 
     if (socketHandle < 0)
     {
-        OsConfigLogError(log, "ReadHttpContentLength: invalid socket (%d)", socketHandle);
+        OsConfigLogError(log, "ReadHttpContentLengthFromSocket: invalid socket (%d)", socketHandle);
         return httpContentLength;
     }
 
-    buffer = ReadUntilStringFound(socketHandle, "\r\n\r\n");
+    buffer = ReadUntilStringFound(socketHandle, doubleTerminator);
 
     if (NULL != buffer)
     {
-        contentLength = strstr(buffer, "Content-Length: ");
+        contentLength = strstr(buffer, contentLengthLabel);
 
         if (NULL != contentLength)
         {
@@ -1330,6 +1336,7 @@ int ReadHttpContentLength(int socketHandle, void* log)
             if (isdigit(isolatedContentLength[0]))
             {
                 httpContentLength = atoi(isolatedContentLength);
+                OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
             }
         }
     }

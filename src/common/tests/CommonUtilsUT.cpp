@@ -1034,3 +1034,41 @@ TEST_F(CommonUtilsTest, HashCommand)
     FREE_MEMORY(hashTwo);
     FREE_MEMORY(hashThree);
 }
+
+struct TestHttpHeader
+{
+    const char* httpRequest;
+    int expectedHttpStatus;
+    int expectedHttpContentLength;
+};
+
+TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
+{
+    TestHttpHeader testHttpHeaders[] = {
+        { "HTTP/1.1\r\nblah blah\r\n\r\n\"", 0, 0 },
+        { "HTTP/1.1 301\r\ntest 123\r\n\r\n\"", 301, 0 },
+        { "HTTP/1.1\r\ntest test test\r\nContent-Length: 10\r\n\r\n\"1234567890\"", 0, 10 },
+        { "HTTP/1.1 400 Boom! \r\test abc\r\nContent-Length: 1\r\n\r\n\"1\"", 400, 1 },
+        { "POST /mpi HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 12\r\n\r\n\"{1234567890}\"", 0, 12},
+        { "POST /mpi HTTP/1.1 200 OK\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 5\r\n\r\n\"{123}\"", 200, 5 },
+    };
+
+    int testHttpHeadersSize = ARRAY_SIZE(testHttpHeaders);
+
+    char* header = nullptr;
+
+    int fileDescriptor = -1;
+
+    for (int i = 0; i < testHttpHeadersSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, testHttpHeaders[i].httpRequest));
+        EXPECT_NE(-1, fileDescriptor = open(m_path, O_RDONLY));
+        EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
+        EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
+        EXPECT_EQ(0, close(fileDescriptor));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+
+    EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
+    EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
+}
