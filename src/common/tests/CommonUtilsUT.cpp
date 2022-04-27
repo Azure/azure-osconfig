@@ -1068,7 +1068,4 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
         EXPECT_EQ(0, close(fileDescriptor));
         EXPECT_TRUE(Cleanup(m_path));
     }
-
-    EXPECT_EQ(nullptr, url = UrlEncode(nullptr));
-    EXPECT_EQ(nullptr, url = UrlDecode(nullptr));
 }
