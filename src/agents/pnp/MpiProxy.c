@@ -35,7 +35,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *responseSize = 0;
 
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
-    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString);
+    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 1;
 
     data = (char*)malloc(dataSize);
     if (NULL == data)
@@ -44,6 +44,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         OsConfigLogError(GetLog(), "CallMpi(%s): failed to allocate memory for request (%d)", name, status);
         return status;
     }
+
+    memset(data, 0, dataSize);
 
     socketHandle = socket(AF_UNIX, SOCK_STREAM, 0);
     if (0 > socketHandle)
