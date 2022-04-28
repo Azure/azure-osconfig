@@ -89,7 +89,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         }
         else if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(GetLog(), "CallMpi(%s): sent to '%s' '' (%d bytes)", name, mpiSocket, dataSize);
+            OsConfigLogInfo(GetLog(), "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, dataSize);
         }
     }
 
