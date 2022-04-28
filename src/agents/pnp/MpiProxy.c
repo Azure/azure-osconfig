@@ -35,7 +35,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *responseSize = 0;
 
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
-    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 1;
+    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 3;
 
     data = (char*)malloc(dataSize);
     if (NULL == data)
