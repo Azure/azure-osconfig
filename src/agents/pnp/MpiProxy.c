@@ -49,7 +49,7 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     if (0 > socketHandle)
     {
         status = errno ? errno : EIO;
-        OsConfigLogError(GetLog(), "CallMpi(%s): failed to open socket (%d)", name, status);
+        OsConfigLogError(GetLog(), "CallMpi(%s): failed to open socket '%s' (%d)", name, mpiSocket, status);
     }
     else
     {
@@ -68,7 +68,7 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
         else
         {
             status = errno ? errno : EIO;
-            OsConfigLogError(GetLog(), "CallMpi(%s): failed to connect to socket (%d)", name, status);
+            OsConfigLogError(GetLog(), "CallMpi(%s): failed to connect to socket '%s' (%d)", name, mpiSocket, status);
         }
     }
 
@@ -78,7 +78,14 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
         if (bytes != (int)strlen(data))
         {
             status = errno ? errno : EIO;
-            OsConfigLogError(GetLog(), "CallMpi (%s): failed to send request to socket (%d)", name, status);
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(GetLog(), "CallMpi (%s): failed to send request '%s' to socket '%s' (%d)", name, data, mpiSocket, status);
+            }
+            else
+            {
+                OsConfigLogError(GetLog(), "CallMpi (%s): failed to send request to socket '%s' (%d)", name, mpiSocket, status);
+            }
         }
     }
 
@@ -99,7 +106,7 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
             if ((*responseSize - 1) != read(socketHandle, *response, *responseSize - 1))
             {
                 status = errno ? errno : EIO;
-                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket (%d)", name, *responseSize - 1, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize - 1, mpiSocket, status);
             }
         }
         else
@@ -117,11 +124,11 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "CallMpi(%s, %s, %s, %d) returned %d", name, request, *response, *responseSize, status);
+        OsConfigLogInfo(GetLog(), "CallMpi(%s, %s, %s, %d) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
     }
     else
     {
-        OsConfigLogInfo(GetLog(), "CallMpi(%s) returned %d response bytes and %d", name, *responseSize, status);
+        OsConfigLogInfo(GetLog(), "CallMpi(%s) to socket '%s' returned %d response bytes and %d", name, mpiSocket, *responseSize, status);
     }
     
     return status;
@@ -164,7 +171,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
     
-    OsConfigLogInfo(GetLog(), "MpiOpen(%s, %u): %p", clientName, maxPayloadSizeBytes, mpiHandle);
+    OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, (char*)mpiHandle);
 
     return mpiHandle;
 }
@@ -201,7 +208,7 @@ void CallMpiClose(MPI_HANDLE clientSession)
     FREE_MEMORY(request);
     FREE_MEMORY(response);
     
-    OsConfigLogInfo(GetLog(), "MpiClose(%p)", clientSession);
+    OsConfigLogInfo(GetLog(), "CallMpiClose(%p)", clientSession);
 }
 
 int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes)
@@ -259,11 +266,11 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "CallMpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
     else
     {
-        OsConfigLogInfo(GetLog(), "MpiSet(%p, %s, %s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "CallMpiSet(%p, %s, %s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, status);
     }
 
     return status;
@@ -384,7 +391,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
 
     return status;
@@ -442,7 +449,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "CallMpiGetReported(%p, %.*s, %d bytes): %d", g_mpiHandle, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
     return status;
