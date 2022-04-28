@@ -17,6 +17,9 @@
 #include "Logging.h"
 #include "Http.h"
 
+void MpiApiInitialize();
+void MpiApiShutdown();
+
 class Router
 {
 public:
@@ -40,23 +43,17 @@ class Server
 {
     public:
         Server() = default;
-        // Server(const Router& router);
-
-        // TODO: need proper tear down
         ~Server() = default;
 
-        // TODO: listen over socket (maybe in a separate thread???)
         void Listen(Router& router);
+        void DoWork(Router& router);
         void Stop();
-
-        // http::Response HandleRequest(http::Request& request);
 
 private:
     int sockfd;
     struct sockaddr_un addr;
     socklen_t socklen;
 
-    Router m_router;
     std::promise<void> m_exitSignal;
     std::thread m_worker;
 

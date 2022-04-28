@@ -3,14 +3,14 @@
 
 project(orchestrator)
 
-add_executable(mpiapi
+add_executable(orchestrator
     ./src/Http.cpp
     ./src/MpiApi.cpp)
 
-target_include_directories(mpiapi PUBLIC
+target_include_directories(orchestrator PUBLIC
     PUBLIC
         ./src
         ./inc
         ${PLATFORM_INC_DIR})
 
-target_link_libraries(mpiapi pthread logging commonutils modulesmanager)
+target_link_libraries(orchestrator pthread logging commonutils modulesmanager)

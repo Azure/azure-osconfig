@@ -12,7 +12,6 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 
-// TODO: static const char* for all string constants used for parsing JSON
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
 static const char* g_clientSession = "ClientSession";
@@ -59,17 +58,26 @@ void MpiOpenRequest(const http::Request& request, http::Response& response)
             int maxPayloadSizeBytes = document[g_maxPayloadSizeBytes].GetInt();
             OsConfigLogInfo(PlatformLog::Get(), "Received MPI open request for client '%s' with max payload size %d", clientName.c_str(), maxPayloadSizeBytes);
 
-            // Create unique session ID
+            // TODO: change to be <date>-<time>-<random number>
             std::string sessionId = GenerateRandomString(16);
 
-            // Create session
             MPI_HANDLE session = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
-            g_sessions[sessionId] = session;
 
-            response.SetStatus(http::StatusCode::OK);
-            response.SetHeader(g_contentType, g_contentTypeJson);
-            response.SetHeader(g_contentLength, std::to_string(sessionId.size()));
-            response.SetBody("\"" + sessionId + "\"");
+            if (session != nullptr)
+            {
+                g_sessions[sessionId] = session;
+
+                response.SetStatus(http::StatusCode::OK);
+                response.SetHeader(g_contentType, g_contentTypeJson);
+                response.SetHeader(g_contentLength, std::to_string(sessionId.size()));
+                response.SetBody("\"" + sessionId + "\"");
+            }
+            else
+            {
+                response.SetHeader(g_contentLength,std::to_string( std::string("\"\"").size()));
+                response.SetBody("error");
+                OsConfigLogError(PlatformLog::Get(), "Failed to create MPI session for client '%s'", clientName.c_str());
+            }
         }
         else
         {
@@ -258,21 +266,30 @@ void MpiApiInitialize()
 {
     PlatformLog::OpenLog();
 
-    router.Post("/MpiOpen", MpiOpenRequest);
-    router.Post("/MpiClose", MpiCloseRequest);
-    router.Post("/MpiSet", MpiSetRequest);
-    router.Post("/MpiGet", MpiGetRequest);
-    router.Post("/MpiSetDesired", MpiSetDesiredRequest);
-    router.Post("/MpiGetReported", MpiGetReportedRequest);
+    router.Post("/MpiOpen/", MpiOpenRequest);
+    router.Post("/MpiClose/", MpiCloseRequest);
+    router.Post("/MpiSet/", MpiSetRequest);
+    router.Post("/MpiGet/", MpiGetRequest);
+    router.Post("/MpiSetDesired/", MpiSetDesiredRequest);
+    router.Post("/MpiGetReported/", MpiGetReportedRequest);
 
     server.Listen(router);
 }
 
 void MpiApiShutdown()
 {
-    // TODO: close all open sessions via MpiClose()
+    for (auto session : g_sessions)
+    {
+        MpiClose(session.second);
+    }
+
     server.Stop();
     PlatformLog::CloseLog();
+}
+
+void MpiDoWork()
+{
+    server.DoWork(router);
 }
 
 void Router::Get(const std::string& uri, const Handler& handler)
@@ -465,7 +482,6 @@ int main()
     MpiInitialize();
     MpiApiInitialize();
 
-    // sleep
     std::this_thread::sleep_for(std::chrono::seconds(100000));
 
     MpiApiShutdown();
