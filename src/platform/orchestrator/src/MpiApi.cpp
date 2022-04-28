@@ -244,7 +244,7 @@ void MpiGetReportedRequest(const http::Request& request, http::Response& respons
 
                 response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
                 response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetBody("{\"payload\":" + payloadString + "}");
+                response.SetBody(payloadString);
             }
             else
             {
