@@ -23,11 +23,13 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     int socketHandle = -1;
     char* data = {0};
     int dataSize = 0;
+    char contentLengthString[50] = {0};
     struct sockaddr_un socketAddress = {0};
     socklen_t socketLength = 0;
     ssize_t bytes = 0;
     int status = MPI_OK;
     int httpStatus = -1;
+    
 
     if ((NULL == name) || (NULL == request) || (NULL == response) || (NULL == responseSize))
     {
@@ -39,7 +41,9 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     *response = NULL;
     *responseSize = 0;
 
-    dataSize = strlen(dataFormat) + strlen(request) + 10;
+    snprintf(contentLengthString, sizeof(contentLengthString), "%d", strlen(request));
+    dataSize = strlen(dataFormat) + strlen(request) + contentLengthString;
+
     data = (char*)malloc(dataSize);
     if (NULL == data)
     {

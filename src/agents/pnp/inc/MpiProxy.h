@@ -4,8 +4,6 @@
 #ifndef MPIPROXY_H
 #define MPIPROXY_H
 
-#define MPI_CALL_MESSAGE_LENGTH 256
-
 #ifdef __cplusplus
 extern "C"
 {
