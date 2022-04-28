@@ -19,7 +19,6 @@
 #include <tuple>
 #include <vector>
 
-// #include <MpiApi.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <ModulesManager.h>

@@ -15,9 +15,6 @@
 #include "Logging.h"
 #include "Http.h"
 
-void MpiApiInitialize();
-void MpiApiShutdown();
-
 class Router
 {
 public:

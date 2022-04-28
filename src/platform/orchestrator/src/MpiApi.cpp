@@ -27,6 +27,9 @@ static const char* g_contentTypeJson = "application/json";
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
+static const std::string g_moduleDir = "/usr/lib/osconfig";
+static const std::string g_configJson = "/etc/osconfig/osconfig.json";
+
 static const size_t g_maxPayloadSize = 4096;
 
 static std::map<std::string, MPI_HANDLE> g_sessions;
@@ -284,6 +287,7 @@ void MpiApiShutdown()
 
 void MpiDoWork()
 {
+    OsConfigLogInfo(PlatformLog::Get(), "MPI API thread started");
     server.DoWork(router);
 }
 
