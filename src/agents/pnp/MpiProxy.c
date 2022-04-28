@@ -80,12 +80,16 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
             status = errno ? errno : EIO;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "CallMpi (%s): failed to send request '%s' to socket '%s' (%d)", name, data, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request '%s' to socket '%s' (%d)", name, data, mpiSocket, status);
             }
             else
             {
-                OsConfigLogError(GetLog(), "CallMpi (%s): failed to send request to socket '%s' (%d)", name, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request to socket '%s' (%d)", name, mpiSocket, status);
             }
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetLog(), "CallMpi(%s): sent to '%s' '' (%d bytes)", name, mpiSocket, dataSize);
         }
     }
 
