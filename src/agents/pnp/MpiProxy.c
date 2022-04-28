@@ -109,6 +109,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         *response = (char*)malloc(*responseSize);
         if (NULL != *response)
         {
+            memset(*response, 0, *responseSize);
+            
             if ((*responseSize - 1) != read(socketHandle, *response, *responseSize - 1))
             {
                 status = errno ? errno : EIO;
