@@ -96,8 +96,6 @@ static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
 static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
 
-extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
-
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 
@@ -146,9 +144,9 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    size_t errorMessageSize = 0;
-    size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
+
+    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -180,7 +178,7 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            write(logDescriptor, (const void*)errorMessage, strlen(errorMessage))))
+            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
             close(logDescriptor);
         }
         _exit(signal);

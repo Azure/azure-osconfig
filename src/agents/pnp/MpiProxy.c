@@ -7,14 +7,6 @@
 
 extern MPI_HANDLE g_mpiHandle;
 
-// TBD - to be moved to Platform
-// Use these as following in the process that makes MPI calls:
-// At the beginning and end of each call:
-// memset(g_mpiCall, 0, sizeof(g_mpiCall));
-// At the beginning of the MPI execution within each call, for example:
-// snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallTemplate, "MpiGet", componentName, propertyName);
-char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
-
 int CallMpi(const char* name, const char* request, char** response, int* responseSize)
 {
     const char* mpiSocket = "/run/osconfig/platformd.sock";
@@ -41,8 +33,8 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     *response = NULL;
     *responseSize = 0;
 
-    snprintf(contentLengthString, sizeof(contentLengthString), "%d", strlen(request));
-    dataSize = strlen(dataFormat) + strlen(request) + contentLengthString;
+    snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
+    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString);
 
     data = (char*)malloc(dataSize);
     if (NULL == data)
