@@ -27,6 +27,9 @@ static const char* g_contentTypeJson = "application/json";
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
+// TODO: dynamic size for reading
+static const size_t g_maxPayloadSize = 4096;
+
 // TEMPORARY: global map of all the sessions (will be maintained by orchestrator)
 static std::map<std::string, MPI_HANDLE> g_sessions;
 
@@ -44,7 +47,7 @@ std::string GenerateRandomString(int length)
     return s;
 }
 
-void ProcessMpiOpenRequest(const http::Request& request, http::Response& response)
+void MpiOpenRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -66,8 +69,7 @@ void ProcessMpiOpenRequest(const http::Request& request, http::Response& respons
             response.SetStatus(http::StatusCode::OK);
             response.SetHeader(g_contentType, g_contentTypeJson);
             response.SetHeader(g_contentLength, std::to_string(sessionId.size()));
-            // response.SetBody("\"" + sessionId + "\"");
-            response.SetBody(sessionId);
+            response.SetBody("\"" + sessionId + "\"");
         }
         else
         {
@@ -76,277 +78,192 @@ void ProcessMpiOpenRequest(const http::Request& request, http::Response& respons
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiOpen request");
+        OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiOpen request: %s", request.body.c_str());
     }
 }
 
-// void ProcessMpiCloseRequest(rapidjson::Value& request, http::Response& response)
-// {
-//     if (request.HasMember(g_clientSession) && request[g_clientSession].IsString())
-//     {
-//         std::string session = request[g_clientSession].GetString();
-//         OsConfigLogInfo(PlatformLog::Get(), "Received MPI close request for session '%s'", session.c_str());
-
-//         // TODO: validate the session ID
-//         if (g_sessions.find(session) != g_sessions.end())
-//         {
-//             MpiClose(g_sessions[session]);
-//             g_sessions.erase(session);
-//         }
-//         else
-//         {
-//             OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
-//         }
-
-//         response.SetStatus(http::StatusCode::OK);
-//         response.SetHeader(g_contentType, g_contentTypeJson);
-//         response.SetBody("{\"status\": \"OK\"}");
-//     }
-//     else
-//     {
-//         OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
-//     }
-// }
-
-// void ProcessMpiSetRequest(rapidjson::Value& request, http::Response& response)
-// {
-//     if (request.HasMember(g_clientSession) && request[g_clientSession].IsString() && request.HasMember(g_componentName) && request[g_componentName].IsString() && request.HasMember(g_objectName) && request[g_objectName].IsString() && request.HasMember(g_payload) && request[g_payload].IsString())
-//     {
-//         std::string session = request[g_clientSession].GetString();
-//         std::string component = request[g_componentName].GetString();
-//         std::string object = request[g_objectName].GetString();
-
-//         // Serialize request[g_payload] to string
-//         rapidjson::StringBuffer buffer;
-//         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-//         request[g_payload].Accept(writer);
-//         std::string payload = buffer.GetString();
-
-//         // TODO: full logging only
-//         OsConfigLogInfo(PlatformLog::Get(), "Received MPI set request for session '%s' component '%s' object '%s' payload '%s'", session.c_str(), component.c_str(), object.c_str(), payload.c_str());
-
-//         if (g_sessions.find(session) != g_sessions.end())
-//         {
-//             int status = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
-//             response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-//             response.SetHeader(g_contentType, g_contentTypeJson);
-//             response.SetBody("{\"status\": \"" + std::to_string(status) + "\"}");
-//         }
-//         else
-//         {
-//             OsConfigLogError(PlatformLog::Get(), "Invalid MPI set request");
-//         }
-//     }
-//     else
-//     {
-//         OsConfigLogError(PlatformLog::Get(), "Invalid MPI set request");
-//     }
-// }
-
-// void ProcessMpiGetRequest(rapidjson::Value& request, http::Response& response)
-// {
-//     if (request.HasMember(g_clientSession) && request[g_clientSession].IsString() && request.HasMember(g_componentName) && request[g_componentName].IsString() && request.HasMember(g_objectName) && request[g_objectName].IsString())
-//     {
-//         std::string session = request[g_clientSession].GetString();
-//         std::string component = request[g_componentName].GetString();
-//         std::string object = request[g_objectName].GetString();
-
-//         OsConfigLogInfo(PlatformLog::Get(), "Received MPI get request for session '%s' component '%s' object '%s'", session.c_str(), component.c_str(), object.c_str());
-
-//         if (g_sessions.find(session) != g_sessions.end())
-//         {
-//             MPI_JSON_STRING payload;
-//             int payloadSizeBytes = 0;
-//             int status = MpiGet(g_sessions[session], component.c_str(), object.c_str(), &payload, &payloadSizeBytes);
-
-//             std::string payloadString = std::string(payload, payloadSizeBytes);
-
-//             response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-//             response.SetHeader(g_contentType, g_contentTypeJson);
-//             response.SetBody("{\"payload\":" + payloadString + "}");
-//         }
-//         else
-//         {
-//             OsConfigLogError(PlatformLog::Get(), "Invalid MPI get request");
-//         }
-//     }
-//     else
-//     {
-//         OsConfigLogError(PlatformLog::Get(), "Invalid MPI get request");
-//     }
-// }
-
-void MpiApiInitialize()
+void MpiCloseRequest(const http::Request& request, http::Response& response)
 {
-    PlatformLog::OpenLog();
+    rapidjson::Document document;
 
-    router.Post("/mpiopen", ProcessMpiOpenRequest);
-    router.Post("/mpiclose", [](const http::Request& request, http::Response& response) {
-        rapidjson::Document document;
-
-        if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    {
+        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
         {
-            if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
+            std::string session = document[g_clientSession].GetString();
+            OsConfigLogInfo(PlatformLog::Get(), "Received MPI close request for session '%s'", session.c_str());
+
+            if (g_sessions.find(session) != g_sessions.end())
             {
-                std::string session = document[g_clientSession].GetString();
-                OsConfigLogInfo(PlatformLog::Get(), "Received MPI close request for session '%s'", session.c_str());
-
-                if (g_sessions.find(session) != g_sessions.end())
-                {
-                    MpiClose(g_sessions[session]);
-                    g_sessions.erase(session);
-                    response.SetStatus(http::StatusCode::OK);
-                }
-                else
-                {
-                    OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
-                    response.SetStatus(http::StatusCode::BAD_REQUEST);
-                }
-            }
-        }
-    });
-
-    router.Post("/mpiset", [](const http::Request& request, http::Response& response) {
-        rapidjson::Document document;
-
-        if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
-        {
-            if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString() && document.HasMember(g_payload) && document[g_payload].IsString())
-            {
-                std::string session = document[g_clientSession].GetString();
-                std::string component = document[g_componentName].GetString();
-                std::string object = document[g_objectName].GetString();
-
-                // Serialize request[g_payload] to string
-                rapidjson::StringBuffer buffer;
-                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                document[g_payload].Accept(writer);
-                std::string payload = buffer.GetString();
-
-                // TODO: full logging only
-                OsConfigLogInfo(PlatformLog::Get(), "Received MPI set request for session '%s' component '%s' object '%s' payload '%s'", session.c_str(), component.c_str(), object.c_str(), payload.c_str());
-
-                if (g_sessions.find(session) != g_sessions.end())
-                {
-                    int status = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
-                    std::string responsePayload = "\""+ std::to_string(status) + "\"";
-
-                    response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                    response.SetHeader(g_contentType, g_contentTypeJson);
-                    response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
-                    response.SetBody(responsePayload);
-                }
-                else
-                {
-                    OsConfigLogError(PlatformLog::Get(), "Invalid MPI set request");
-                }
+                MpiClose(g_sessions[session]);
+                g_sessions.erase(session);
+                response.SetStatus(http::StatusCode::OK);
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MPI set request");
+                OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
+                response.SetStatus(http::StatusCode::BAD_REQUEST);
             }
         }
-    });
+    }
+}
 
-    router.Get("/mpiget", [](const http::Request& request, http::Response& response) {
-        rapidjson::Document document;
+void MpiSetRequest(const http::Request& request, http::Response& response)
+{
+    rapidjson::Document document;
 
-        if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    {
+        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString() && document.HasMember(g_payload))
         {
-            if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString())
+            std::string session = document[g_clientSession].GetString();
+            std::string component = document[g_componentName].GetString();
+            std::string object = document[g_objectName].GetString();
+
+            // Serialize request[g_payload] to string
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            document[g_payload].Accept(writer);
+            std::string payload = buffer.GetString();
+
+            // TODO: full logging only
+            OsConfigLogInfo(PlatformLog::Get(), "Received MPI set request for session '%s' component '%s' object '%s' payload '%s'", session.c_str(), component.c_str(), object.c_str(), payload.c_str());
+
+            if (g_sessions.find(session) != g_sessions.end())
             {
-                std::string session = document[g_clientSession].GetString();
-                std::string component = document[g_componentName].GetString();
-                std::string object = document[g_objectName].GetString();
+                int status = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
+                std::string responsePayload = "\""+ std::to_string(status) + "\"";
 
-                // TODO: full logging only
-                OsConfigLogInfo(PlatformLog::Get(), "Received MPI get request for session '%s' component '%s' object '%s'", session.c_str(), component.c_str(), object.c_str());
+                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                response.SetHeader(g_contentType, g_contentTypeJson);
+                response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
+                response.SetBody(responsePayload);
+            }
+            else
+            {
+                OsConfigLogError(PlatformLog::Get(), "No session found for MPI set request: %s", session.c_str());
+            }
+        }
+        else
+        {
+            OsConfigLogError(PlatformLog::Get(), "Invalid MPI set request");
+        }
+    }
+}
 
-                if (g_sessions.find(session) != g_sessions.end())
-                {
-                    MPI_JSON_STRING payload;
-                    int payloadSizeBytes = 0;
-                    int status = MpiGet(g_sessions[session], component.c_str(), object.c_str(), &payload, &payloadSizeBytes);
+void MpiGetRequest(const http::Request& request, http::Response& response)
+{
+    rapidjson::Document document;
 
-                    std::string payloadString = std::string(payload, payloadSizeBytes);
+    if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    {
+        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString())
+        {
+            std::string session = document[g_clientSession].GetString();
+            std::string component = document[g_componentName].GetString();
+            std::string object = document[g_objectName].GetString();
 
-                    response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                    response.SetHeader(g_contentType, g_contentTypeJson);
-                    response.SetHeader(g_contentLength, std::to_string(payloadString.size()));
-                    response.SetBody(payloadString);
-                }
-                else
-                {
-                    OsConfigLogError(PlatformLog::Get(), "Invalid MPI get request");
-                }
+            // TODO: full logging only
+            OsConfigLogInfo(PlatformLog::Get(), "Received MPI get request for session '%s' component '%s' object '%s'", session.c_str(), component.c_str(), object.c_str());
+
+            if (g_sessions.find(session) != g_sessions.end())
+            {
+                MPI_JSON_STRING payload;
+                int payloadSizeBytes = 0;
+                int status = MpiGet(g_sessions[session], component.c_str(), object.c_str(), &payload, &payloadSizeBytes);
+
+                std::string payloadString = std::string(payload, payloadSizeBytes);
+
+                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                response.SetHeader(g_contentType, g_contentTypeJson);
+                response.SetHeader(g_contentLength, std::to_string(payloadString.size()));
+                response.SetBody(payloadString);
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MPI get request");
             }
         }
-    });
-
-    router.Post("/mpisetdesired", [](const http::Request& request, http::Response& response) {
-        rapidjson::Document document;
-
-        if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+        else
         {
-            if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_payload) && document[g_payload].IsString())
+            OsConfigLogError(PlatformLog::Get(), "Invalid MPI get request");
+        }
+    }
+}
+
+void MpiSetDesiredRequest(const http::Request& request, http::Response& response)
+{
+    rapidjson::Document document;
+
+    if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    {
+        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_payload) && document[g_payload].IsString())
+        {
+            std::string session = document[g_clientSession].GetString();
+
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            document[g_payload].Accept(writer);
+            std::string payload = buffer.GetString();
+
+            if (g_sessions.find(session) != g_sessions.end())
             {
-                std::string session = document[g_clientSession].GetString();
+                int status = MpiSetDesired(g_sessions[session], (MPI_JSON_STRING)payload.c_str(), payload.size());
+                std::string responsePayload = "\"" + std::to_string(status) + "\"";
 
-                rapidjson::StringBuffer buffer;
-                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                document[g_payload].Accept(writer);
-                std::string payload = buffer.GetString();
-
-                if (g_sessions.find(session) != g_sessions.end())
-                {
-                    int status = MpiSetDesired(g_sessions[session], (MPI_JSON_STRING)payload.c_str(), payload.size());
-                    std::string responsePayload = "\"" + std::to_string(status) + "\"";
-
-                    response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                    response.SetHeader(g_contentType, g_contentTypeJson);
-                    response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
-                    response.SetBody(responsePayload);
-                }
-                else
-                {
-                    OsConfigLogError(PlatformLog::Get(), "Invalid MPI set desired request");
-                }
+                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                response.SetHeader(g_contentType, g_contentTypeJson);
+                response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
+                response.SetBody(responsePayload);
+            }
+            else
+            {
+                OsConfigLogError(PlatformLog::Get(), "Invalid MPI set desired request");
             }
         }
-    });
+    }
+}
 
-    router.Get("/mpigetreported", [](const http::Request& request, http::Response& response) {
-        rapidjson::Document document;
+void MpiGetReportedRequest(const http::Request& request, http::Response& response)
+{
+    rapidjson::Document document;
 
-        if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    if (!document.Parse(request.body.c_str(), request.body.size()).HasParseError())
+    {
+        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
         {
-            if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
+            std::string session = document[g_clientSession].GetString();
+
+            if (g_sessions.find(session) != g_sessions.end())
             {
-                std::string session = document[g_clientSession].GetString();
+                MPI_JSON_STRING payload;
+                int payloadSizeBytes = 0;
+                int status = MpiGetReported(g_sessions[session], &payload, &payloadSizeBytes);
 
-                if (g_sessions.find(session) != g_sessions.end())
-                {
-                    MPI_JSON_STRING payload;
-                    int payloadSizeBytes = 0;
-                    int status = MpiGetReported(g_sessions[session], &payload, &payloadSizeBytes);
+                std::string payloadString = std::string(payload, payloadSizeBytes);
 
-                    std::string payloadString = std::string(payload, payloadSizeBytes);
-
-                    response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                    response.SetHeader(g_contentType, g_contentTypeJson);
-                    response.SetBody("{\"payload\":" + payloadString + "}");
-                }
-                else
-                {
-                    OsConfigLogError(PlatformLog::Get(), "Invalid MPI get desired request");
-                }
+                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                response.SetHeader(g_contentType, g_contentTypeJson);
+                response.SetBody("{\"payload\":" + payloadString + "}");
+            }
+            else
+            {
+                OsConfigLogError(PlatformLog::Get(), "Invalid MPI get desired request");
             }
         }
-    });
+    }
+}
+
+void MpiApiInitialize()
+{
+    PlatformLog::OpenLog();
+
+    router.Post("/MpiOpen", MpiOpenRequest);
+    router.Post("/MpiClose", MpiCloseRequest);
+    router.Post("/MpiSet", MpiSetRequest);
+    router.Post("/MpiGet", MpiGetRequest);
+    router.Post("/MpiSetDesired", MpiSetDesiredRequest);
+    router.Post("/MpiGetReported", MpiGetReportedRequest);
 
     server.Listen(router);
 }
@@ -481,14 +398,17 @@ void Server::Worker(Server& server, Router& router)
             OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: '%s' %d", server.addr.sun_path, connfd);
 
             // TODO: read the request dynamically, do not use a fixed size buffer
-            char buffer[1024];
-            ssize_t bytesRead = read(connfd, buffer, 1024);
+            char buffer[g_maxPayloadSize];
+            ssize_t bytesRead = read(connfd, buffer, g_maxPayloadSize);
             if (bytesRead > 0)
             {
+                OsConfigLogInfo(PlatformLog::Get(), "Read %d bytes from socket", (int)bytesRead);
+                OsConfigLogInfo(PlatformLog::Get(), "Recieved HTTP request:\n%s\n", std::string(buffer, bytesRead).c_str());
+
                 http::Request request = http::Request::Parse(std::string(buffer, bytesRead));
 
                 // TODO: full logging only
-                OsConfigLogInfo(PlatformLog::Get(), "Received HTTP request %d %s %s", (int)(request.method), request.uri.c_str(), request.body.c_str());
+                // OsConfigLogInfo(PlatformLog::Get(), "Received HTTP request %d %s %s", (int)(request.method), request.uri.c_str(), request.body.c_str());
 
                 // Route the request to the correct handler
                 http::Response response = router.HandleRequest(request);
@@ -508,6 +428,8 @@ void Server::Worker(Server& server, Router& router)
                 ss << "Connection: Closed" << http::CRLF << http::CRLF;
                 ss << response.body.c_str();
                 std::string s = ss.str();
+
+                OsConfigLogInfo(PlatformLog::Get(), "Sending HTTP response:\n%s\n", s.c_str());
 
                 int n = write(connfd, s.c_str(), s.size());
                 if (n != (int)s.size())

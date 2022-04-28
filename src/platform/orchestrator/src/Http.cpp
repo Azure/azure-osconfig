@@ -159,14 +159,16 @@ Request Request::Parse(const std::string& data)
             }
         }
 
+        // std::string body = httpRequest[1];
         std::string body = "";
-        if (httpRequest.size() > 1)
+        if (headers.find("Content-Length") != headers.end())
         {
-            body = httpRequest[1];
+            size_t contentLength = std::stoi(headers["Content-Length"]);
+            body = httpRequest[1].substr(0, contentLength);
         }
 
         std::string uri = requestLineParts[1];
-        transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
+        // transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
 
         return Request(uri, method, headers, body, version);
     }

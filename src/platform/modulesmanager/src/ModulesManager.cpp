@@ -19,6 +19,7 @@
 #include <tuple>
 #include <vector>
 
+// #include <MpiApi.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <ModulesManager.h>
@@ -34,6 +35,7 @@ static const char g_configComponentName[] = "ComponentName";
 static const char g_configObjectName[] = "ObjectName";
 
 static ModulesManager modulesManager;
+// static Server server;
 
 OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
 
@@ -43,12 +45,14 @@ void MpiInitialize(void)
 {
     ModulesManagerLog::OpenLog();
     modulesManager.LoadModules(g_moduleDir, g_configJson);
+    // server.Listen();
 };
 
 void MpiShutdown(void)
 {
     modulesManager.UnloadModules();
     ModulesManagerLog::CloseLog();
+    // server.Stop();
 };
 
 MPI_HANDLE MpiOpen(
