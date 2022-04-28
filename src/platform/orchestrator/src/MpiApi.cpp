@@ -287,10 +287,10 @@ void MpiApiShutdown()
     PlatformLog::CloseLog();
 }
 
-void MpiDoWork()
-{
-    server.DoWork(router);
-}
+// void MpiDoWork()
+// {
+//     server.DoWork(router);
+// }
 
 void Router::Get(const std::string& uri, const Handler& handler)
 {
