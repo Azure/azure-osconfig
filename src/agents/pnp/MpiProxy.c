@@ -9,8 +9,8 @@ extern MPI_HANDLE g_mpiHandle;
 
 int CallMpi(const char* name, const char* request, char** response, int* responseSize)
 {
-    const char* mpiSocket = "/run/osconfig/platformd.sock";
-    const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
+    const char* mpiSocket = "/run/osconfig/mpid.sock";
+    const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
     
     int socketHandle = -1;
     char* data = {0};
