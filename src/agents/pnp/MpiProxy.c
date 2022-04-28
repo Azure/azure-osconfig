@@ -137,7 +137,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 static char* ParseString(char* jsonString)
 {
     JSON_Value* jsonValue = NULL;
-    char* parsedValue = NULL;
+    const char* parsedValue = NULL;
     char* returnValue = NULL;
 
     jsonValue = json_parse_string(jsonString);
