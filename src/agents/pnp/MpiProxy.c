@@ -150,7 +150,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     }
 
     snprintf(maxPayloadSizeBytesString, sizeof(maxPayloadSizeBytesString), "%d", maxPayloadSizeBytes);
-    requestSize = strlen(requestBodyFormatMpiOpen) + strlen(clientName) + strlen(maxPayloadSizeBytesString);
+    requestSize = strlen(requestBodyFormat) + strlen(clientName) + strlen(maxPayloadSizeBytesString);
 
     request = (char*)malloc(requestSize);
     if (NULL == request)
