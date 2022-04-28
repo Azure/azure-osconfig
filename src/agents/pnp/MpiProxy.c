@@ -13,7 +13,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 {
     const char* mpiSocket = "/run/osconfig/mpid.sock";
     const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
-    
+
     int socketHandle = -1;
     char* data = {0};
     int dataSize = 0;
@@ -30,7 +30,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         OsConfigLogError(GetLog(), "CallMpi(%s): invalid arguments (%d)", name, status);
         return status;
     }
-    
+
     *response = NULL;
     *responseSize = 0;
 
@@ -110,7 +110,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         if (NULL != *response)
         {
             memset(*response, 0, *responseSize);
-            
+
             if ((*responseSize - 1) != read(socketHandle, *response, *responseSize - 1))
             {
                 status = errno ? errno : EIO;
@@ -138,7 +138,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     {
         OsConfigLogInfo(GetLog(), "CallMpi(%s) to socket '%s' returned %d response bytes and %d", name, mpiSocket, *responseSize, status);
     }
-    
+
     return status;
 }
 
@@ -178,8 +178,8 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 {
     const char *name = "MpiOpen";
     const char *requestBodyFormat = "{ \"ClientName\": \"%s\", \"MaxPayloadSizeBytes\": %d }";
-    
-    char* request = NULL; 
+
+    char* request = NULL;
     char *response = NULL;
     int requestSize = 0;
     int responseSize = 0;
@@ -211,13 +211,13 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     FREE_MEMORY(request);
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
-    
+
     if ((NULL != mpiHandle) && (NULL == (mpiHandleValue = ParseString((char*)mpiHandle))))
     {
         OsConfigLogError(GetLog(), "CallMpiOpen: invalid MPI handle '%s'", (char*)mpiHandle);
         mpiHandle = NULL;
     }
-    
+
     OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, mpiHandleValue);
 
     FREE_MEMORY(mpiHandleValue);
@@ -229,8 +229,8 @@ void CallMpiClose(MPI_HANDLE clientSession)
 {
     const char *name = "MpiClose";
     const char *requestBodyFormat = "{ \"ClientSession\": \"%s\" }";
-    
-    char* request = NULL; 
+
+    char* request = NULL;
     char *response = NULL;
     int requestSize = 0;
     int responseSize = 0;
@@ -256,7 +256,7 @@ void CallMpiClose(MPI_HANDLE clientSession)
 
     FREE_MEMORY(request);
     FREE_MEMORY(response);
-    
+
     OsConfigLogInfo(GetLog(), "CallMpiClose(%p)", clientSession);
 }
 
@@ -399,7 +399,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 {
     const char *name = "MpiSetDesired";
     static const char *requestBodyFormat = "{ \"ClientName\": \"%s\", \"Payload\": %s }";
-    
+
     char* request = NULL;
     char *response = NULL;
     int requestSize = 0;
@@ -524,12 +524,10 @@ void CallMpiInitialize(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
     MpiInitialize();
-    MpiApiInitialize();
 }
 
 void CallMpiShutdown(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
-    MpiApiShutdown();
     MpiShutdown();
 }

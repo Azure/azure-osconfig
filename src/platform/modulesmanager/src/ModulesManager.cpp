@@ -42,12 +42,14 @@ OSCONFIG_LOG_HANDLE ModulesManagerLog::m_log = nullptr;
 void MpiInitialize(void)
 {
     ModulesManagerLog::OpenLog();
+    MpiApiInitialize();
     modulesManager.LoadModules(g_moduleDir, g_configJson);
 };
 
 void MpiShutdown(void)
 {
     modulesManager.UnloadModules();
+    MpiApiShutdown();
     ModulesManagerLog::CloseLog();
 };
 

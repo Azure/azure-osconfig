@@ -262,33 +262,36 @@ void MpiGetReportedRequest(const http::Request& request, http::Response& respons
 
 void MpiApiInitialize()
 {
-    PlatformLog::OpenLog();
+    // OsConfigLogInfo(PlatformLog::Get(), "---------------------------------- 1");
+    // // PlatformLog::OpenLog();
 
-    router.Post("/MpiOpen/", MpiOpenRequest);
-    router.Post("/MpiClose/", MpiCloseRequest);
-    router.Post("/MpiSet/", MpiSetRequest);
-    router.Post("/MpiGet/", MpiGetRequest);
-    router.Post("/MpiSetDesired/", MpiSetDesiredRequest);
-    router.Post("/MpiGetReported/", MpiGetReportedRequest);
+    // router.Post("/MpiOpen/", MpiOpenRequest);
+    // router.Post("/MpiClose/", MpiCloseRequest);
+    // router.Post("/MpiSet/", MpiSetRequest);
+    // router.Post("/MpiGet/", MpiGetRequest);
+    // router.Post("/MpiSetDesired/", MpiSetDesiredRequest);
+    // router.Post("/MpiGetReported/", MpiGetReportedRequest);
 
-    server.Listen();
+    // server.Listen();
 }
 
 void MpiApiShutdown()
 {
-    for (auto session : g_sessions)
-    {
-        MpiClose(session.second);
-    }
+    // for (auto session : g_sessions)
+    // {
+    //     MpiClose(session.second);
+    // }
 
-    server.Stop();
-    PlatformLog::CloseLog();
+    // server.Stop();
+    // PlatformLog::CloseLog();
 }
 
 void MpiDoWork()
 {
-    OsConfigLogInfo(PlatformLog::Get(), "MPI API thread started");
-    server.DoWork(router);
+    //     OsConfigLogInfo(PlatformLog::Get(), "---------------------------------- 1");
+
+    // OsConfigLogInfo(PlatformLog::Get(), "MPI API thread started");
+    // server.DoWork(router);
 }
 
 int Router::Post(const std::string& uri, const Handler& handler)
@@ -467,6 +470,4 @@ void Server::DoWork(Router& router)
             OsConfigLogInfo(PlatformLog::Get(), "Closed connection: '%s' %d", server.addr.sun_path, connfd);
         }
     }
-
-    OsConfigLogInfo(PlatformLog::Get(), "MPI server stopped");
 }
