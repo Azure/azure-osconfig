@@ -41,13 +41,13 @@ private:
 
 class Server
 {
-    public:
-        Server() = default;
-        ~Server() = default;
+public:
+    Server() = default;
+    ~Server() = default;
 
-        void Listen(Router& router);
-        void DoWork(Router& router);
-        void Stop();
+    void Listen(Router& router);
+    void DoWork(Router& router);
+    void Stop();
 
 private:
     int sockfd;

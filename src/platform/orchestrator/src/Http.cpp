@@ -10,7 +10,6 @@
 
 OSCONFIG_LOG_HANDLE PlatformLog::m_log = nullptr;
 
-
 std::string TrimStart(const std::string &str, const std::string &trim)
 {
     size_t pos = str.find_first_not_of(trim);
@@ -46,34 +45,6 @@ std::vector<std::string> Split(const std::string &str, const std::string &delimi
         end = str.find(delimiter, start);
         result.push_back(str.substr(start, end - start));
     }
-    return result;
-}
-
-std::string RemoveRepeatedCharacters(const std::string &str, const char c)
-{
-    std::string result = str;
-    for (size_t i = 1; i < result.length(); i++)
-    {
-        if ((result[i] == c) && (result[i - 1] == result[i]))
-        {
-            result.erase(i, 1);
-            i--;
-        }
-    }
-    return result;
-}
-
-std::string ToUpper(const std::string &str)
-{
-    std::string result = str;
-    std::for_each(result.begin(), result.end(), [](char &c) { c = std::toupper(c); });
-    return result;
-}
-
-std::string ToLower(const std::string &str)
-{
-    std::string result = str;
-    std::for_each(result.begin(), result.end(), [](char &c) { c = std::tolower(c); });
     return result;
 }
 
