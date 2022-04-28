@@ -4,3 +4,4 @@
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 add_subdirectory(modulesmanager)
+add_subdirectory(orchestrator)
