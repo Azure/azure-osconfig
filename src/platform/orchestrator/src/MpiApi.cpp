@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+
 #include "CommonUtils.h"
 #include "MpiApi.h"
 #include "Http.h"
 #include "ModulesManager.h"
-
-#include <sstream>
-#include <iostream>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
@@ -26,24 +27,20 @@ static const char* g_contentTypeJson = "application/json";
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
-// TODO: dynamic size for reading
 static const size_t g_maxPayloadSize = 4096;
 
-// TEMPORARY: global map of all the sessions (will be maintained by orchestrator)
 static std::map<std::string, MPI_HANDLE> g_sessions;
 
 static Router router;
 static Server server;
 
-std::string GenerateRandomString(int length)
+std::string CreateGUID()
 {
-    std::string s;
-    s.resize(length);
-    for (int i = 0; i < length; i++)
-    {
-        s[i] = 'a' + (rand() % 26);
-    }
-    return s;
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    ss << std::setw(8) << std::time(nullptr);
+    ss << std::setw(4) << std::rand();
+    return ss.str();
 }
 
 void MpiOpenRequest(const http::Request& request, http::Response& response)
@@ -58,9 +55,7 @@ void MpiOpenRequest(const http::Request& request, http::Response& response)
             int maxPayloadSizeBytes = document[g_maxPayloadSizeBytes].GetInt();
             OsConfigLogInfo(PlatformLog::Get(), "Received MPI open request for client '%s' with max payload size %d", clientName.c_str(), maxPayloadSizeBytes);
 
-            // TODO: change to be <date>-<time>-<random number>
-            std::string sessionId = GenerateRandomString(16);
-
+            std::string sessionId = CreateGUID();
             MPI_HANDLE session = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
 
             if (session != nullptr)
@@ -273,7 +268,7 @@ void MpiApiInitialize()
     router.Post("/MpiSetDesired/", MpiSetDesiredRequest);
     router.Post("/MpiGetReported/", MpiGetReportedRequest);
 
-    server.Listen(router);
+    server.Listen();
 }
 
 void MpiApiShutdown()
@@ -287,30 +282,27 @@ void MpiApiShutdown()
     PlatformLog::CloseLog();
 }
 
-// void MpiDoWork()
-// {
-//     server.DoWork(router);
-// }
-
-void Router::Get(const std::string& uri, const Handler& handler)
+void MpiDoWork()
 {
-    AddRoute(http::Method::GET, uri, handler);
+    server.DoWork(router);
 }
 
-void Router::Post(const std::string& uri, const Handler& handler)
+int Router::Post(const std::string& uri, const Handler& handler)
 {
-    AddRoute(http::Method::POST, uri, handler);
+    return AddRoute(http::Method::POST, uri, handler);
 }
 
-void Router::AddRoute(const http::Method method, const std::string& uri, const Handler& handler)
+int Router::AddRoute(const http::Method method, const std::string& uri, const Handler& handler)
 {
+    int status = 0;
+
     if (m_routes.find(uri) != m_routes.end())
     {
         // Check if the method already exists for the uri
         if (m_routes[uri].find(method) != m_routes[uri].end())
         {
-            // TODO: log error and change to not throw
-            throw std::runtime_error("Route already exists for method and uri");
+            OsConfigLogError(PlatformLog::Get(), "Route already exists for method and uri");
+            status = EINVAL;
         }
     }
     else
@@ -318,7 +310,12 @@ void Router::AddRoute(const http::Method method, const std::string& uri, const H
         m_routes[uri] = std::map<http::Method, Handler>();
     }
 
-    m_routes[uri][method] = handler;
+    if (status == 0)
+    {
+        m_routes[uri][method] = handler;
+    }
+
+    return status;
 }
 
 http::Response Router::HandleRequest(const http::Request& request)
@@ -348,12 +345,11 @@ http::Response Router::HandleRequest(const http::Request& request)
     return response;
 }
 
-void Server::Listen(Router& router)
+void Server::Listen()
 {
     struct stat st;
     if (stat(g_socketPrefix, &st) == -1)
     {
-        // TODO: use modes for root user
         mkdir(g_socketPrefix, 0700);
     }
 
@@ -366,67 +362,57 @@ void Server::Listen(Router& router)
 
         // Unlink socket if already in-use
         unlink(g_mpiSocket);
+
         if (bind(sockfd, (struct sockaddr*)&addr, socklen) == 0)
         {
             if (listen(sockfd, 5) == 0)
             {
                 OsConfigLogInfo(PlatformLog::Get(), "Listening on socket: '%s'", g_mpiSocket);
-
-                m_worker = std::thread(&Server::Worker, std::ref(*this), std::ref(router));
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to listen on IPC socket: '%s'", g_mpiSocket);
+                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket: '%s'", g_mpiSocket);
             }
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to bind IPC socket: '%s'", g_mpiSocket);
+            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket: '%s'", g_mpiSocket);
         }
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to create IPC socket: '%s'", g_mpiSocket);
+        OsConfigLogError(PlatformLog::Get(), "Failed to create socket: '%s'", g_mpiSocket);
     }
 }
 
 void Server::Stop()
 {
-    m_exitSignal.set_value();
-    m_worker.join();
-
     OsConfigLogInfo(PlatformLog::Get(), "Server stopped");
 
     close(sockfd);
     unlink(g_mpiSocket);
 }
 
-void Server::Worker(Server& server, Router& router)
+void Server::DoWork(Router& router)
 {
+    int status = 0;
     int connfd = -1;
-    std::future<void> exitSignal = server.m_exitSignal.get_future();
-
-    while (exitSignal.wait_for(std::chrono::milliseconds(1)) == std::future_status::timeout)
+    if (0 <= (connfd = accept(server.sockfd, (struct sockaddr*)&server.addr, &server.socklen)))
     {
-        // OsConfigLogInfo(PlatformLog::Get(), "Waiting for IPC connection");
+        OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: '%s' %d", server.addr.sun_path, connfd);
 
-        if (0 <= (connfd = accept(server.sockfd, (struct sockaddr*)&server.addr, &server.socklen)))
+        // TODO: read the request dynamically, do not use a fixed size buffer
+        char buffer[g_maxPayloadSize];
+        ssize_t bytesRead = read(connfd, buffer, g_maxPayloadSize);
+
+        if (bytesRead > 0)
         {
-            OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: '%s' %d", server.addr.sun_path, connfd);
+            OsConfigLogInfo(PlatformLog::Get(), "Read %d bytes from socket", (int)bytesRead);
+            OsConfigLogInfo(PlatformLog::Get(), "Recieved HTTP request:\n%s\n", std::string(buffer, bytesRead).c_str());
 
-            // TODO: read the request dynamically, do not use a fixed size buffer
-            char buffer[g_maxPayloadSize];
-            ssize_t bytesRead = read(connfd, buffer, g_maxPayloadSize);
-            if (bytesRead > 0)
+            http::Request request;
+            if (0 == (status = http::Request::Parse(std::string(buffer, bytesRead), request)))
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Read %d bytes from socket", (int)bytesRead);
-                OsConfigLogInfo(PlatformLog::Get(), "Recieved HTTP request:\n%s\n", std::string(buffer, bytesRead).c_str());
-
-                http::Request request = http::Request::Parse(std::string(buffer, bytesRead));
-
-                // TODO: full logging only
-                // OsConfigLogInfo(PlatformLog::Get(), "Received HTTP request %d %s %s", (int)(request.method), request.uri.c_str(), request.body.c_str());
-
                 // Route the request to the correct handler
                 http::Response response = router.HandleRequest(request);
 
@@ -460,30 +446,23 @@ void Server::Worker(Server& server, Router& router)
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read request");
+                OsConfigLogError(PlatformLog::Get(), "Failed to parse HTTP request: '%s' '%d'", g_mpiSocket, connfd);
             }
-
-            // TODO: check return value
-            close(connfd);
-
-            // TODO: full logging only
-            OsConfigLogInfo(PlatformLog::Get(), "Closed connection: '%s' %d", server.addr.sun_path, connfd);
+        }
+        else
+        {
+            OsConfigLogError(PlatformLog::Get(), "Failed to read request");
         }
 
-        // TODO: may want to sleep here between each accept() call
+        if (0 != close(connfd))
+        {
+            OsConfigLogError(PlatformLog::Get(), "Failed to close socket: '%s' '%d'", g_mpiSocket, connfd);
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(PlatformLog::Get(), "Closed connection: '%s' %d", server.addr.sun_path, connfd);
+        }
     }
 
-    OsConfigLogInfo(PlatformLog::Get(), "IPC server stopped");
-}
-
-// TEMPORARY MAIN FOR TESTING
-int main()
-{
-    MpiInitialize();
-    MpiApiInitialize();
-
-    std::this_thread::sleep_for(std::chrono::seconds(100000));
-
-    MpiApiShutdown();
-    MpiShutdown();
+    OsConfigLogInfo(PlatformLog::Get(), "MPI server stopped");
 }

@@ -46,6 +46,7 @@ namespace http
 
     enum class Method
     {
+        UNKNOWN,
         GET,
         POST,
         PUT,
@@ -55,6 +56,7 @@ namespace http
 
     enum class Version
     {
+        UNKNOWN,
         HTTP_1_0,
         HTTP_1_1,
         HTTP_2_0
@@ -68,22 +70,15 @@ namespace http
         INTERNAL_SERVER_ERROR = 500
     };
 
-    class Request
+    struct Request
     {
-    public:
+        Method method;
+        Version version;
+        std::string uri;
+        std::map<std::string, std::string> headers;
+        std::string body;
 
-        Request(const std::string& url, Method method, Version version = Version::HTTP_1_1);
-        Request(const std::string& url, Method method, const std::string& body, Version version = Version::HTTP_1_1);
-        Request(const std::string& url, Method method, const std::map<std::string, std::string>& headers, const std::string& body, Version version = Version::HTTP_1_1);
-        ~Request() = default;
-
-        static Request Parse(const std::string& request);
-
-        const Method method;
-        const Version version;
-        const std::string uri;
-        const std::map<std::string, std::string> headers;
-        const std::string body;
+        static int Parse(const std::string& data, Request& request);
     };
 
     class Response

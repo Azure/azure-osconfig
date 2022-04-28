@@ -5,12 +5,13 @@
 #include <sstream>
 
 #include <CommonUtils.h>
-
-#include "Http.h"
+#include <Http.h>
 
 OSCONFIG_LOG_HANDLE PlatformLog::m_log = nullptr;
 
-std::string TrimStart(const std::string &str, const std::string &trim)
+using namespace http;
+
+std::string TrimStart(const std::string& str, const std::string& trim)
 {
     size_t pos = str.find_first_not_of(trim);
     if (pos == std::string::npos)
@@ -48,47 +49,67 @@ std::vector<std::string> Split(const std::string &str, const std::string &delimi
     return result;
 }
 
-using namespace http;
-
-Request::Request(const std::string& uri, Method method, Version version) :
-    Request(uri, method, std::map<std::string, std::string>(), std::string(), version)
+Method MethodFromString(std::string& method)
 {
-}
+    Method result = Method::UNKNOWN;
+    std::transform(method.begin(), method.end(), method.begin(), ::toupper);
 
-Request::Request(const std::string& uri, Method method, const std::string& body, Version version) :
-    Request::Request(uri, method, std::map<std::string, std::string>(), body, version)
-{
-}
-
-Request::Request(const std::string& uri, Method method, const std::map<std::string, std::string>& headers, const std::string& body, Version version) :
-    method(method),
-    version(version),
-    uri(uri),
-    headers(headers),
-    body(body)
-{
-}
-
-// TODO: put this function somewhere better
-std::vector<std::string> Split(const std::string& string)
-{
-    std::vector<std::string> result;
-    std::stringstream ss(string);
-    std::string item;
-    while (std::getline(ss, item, ','))
+    if (method == "GET")
     {
-        result.push_back(item);
+        result = Method::GET;
     }
+    else if (method == "POST")
+    {
+        result = Method::POST;
+    }
+    else if (method == "PUT")
+    {
+        result = Method::PUT;
+    }
+    else if (method == "DELETE")
+    {
+        result = Method::DELETE;
+    }
+    else if (method == "PATCH")
+    {
+        result = Method::PATCH;
+    }
+    else
+    {
+        result = Method::UNKNOWN;
+    }
+
     return result;
 }
 
-// TODO: refactor to parse stream dynmaically instead of static buffer
-Request Request::Parse(const std::string& data)
+Version VersionFromString(std::string& version)
 {
-    // int status = 0;
-    // TODO: read these values from the header data
-    Method method = Method::POST;
-    Version version = Version::HTTP_1_1;
+    Version result = Version::UNKNOWN;
+    std::transform(version.begin(), version.end(), version.begin(), ::toupper);
+
+    if (version == "HTTP/1.0")
+    {
+        result = Version::HTTP_1_0;
+    }
+    else if (version == "HTTP/1.1")
+    {
+        result = Version::HTTP_1_1;
+    }
+    else if (version == "HTTP/2.0")
+    {
+        result = Version::HTTP_2_0;
+    }
+    else
+    {
+        result = Version::UNKNOWN;
+    }
+
+    return result;
+}
+
+int Request::Parse(const std::string& data, Request& request)
+{
+    int status = 0;
 
     if (!data.empty())
     {
@@ -97,27 +118,18 @@ Request Request::Parse(const std::string& data)
         std::vector<std::string> headerLines = Split(headerData, "\r\n");
         std::string requestLine = headerLines[0];
 
-        std::string requestMethod = Trim(Split(requestLine, " ")[0], " ");
-        if (requestMethod == "GET")
+        std::vector<std::string> requestLineParts = Split(requestLine, " ");
+        std::string requestMethod = Trim(requestLineParts[0], " ");
+
+        if (requestLineParts.size() == 3)
         {
-            method = Method::GET;
-        }
-        else if (requestMethod == "POST")
-        {
-            method = Method::POST;
+            request.method = MethodFromString(requestLineParts[0]);
+            request.uri = requestLineParts[1];
+            request.version = VersionFromString(requestLineParts[2]);
         }
         else
         {
-            // TODO: need to catch this somewhere
-            throw std::runtime_error("Unknown HTTP method: " + requestMethod);
-        }
-
-        std::vector<std::string> requestLineParts = Split(requestLine, " ");
-        if (requestLineParts.size() == 3)
-        {
-            // TODO:
-            // method = MethodFromString(requestLineParts[0]);
-            // version = VersionFromString(requestLineParts[2]);
+            status = EINVAL;
         }
 
         std::map<std::string, std::string> headers;
@@ -128,24 +140,20 @@ Request Request::Parse(const std::string& data)
             {
                 headers[headerParts[0]] = headerParts[1];
             }
+            else
+            {
+                status = EINVAL;
+            }
         }
 
-        // std::string body = httpRequest[1];
-        std::string body = "";
         if (headers.find("Content-Length") != headers.end())
         {
             size_t contentLength = std::stoi(headers["Content-Length"]);
-            body = httpRequest[1].substr(0, contentLength);
+            request.body = httpRequest[1].substr(0, contentLength);
         }
-
-        std::string uri = requestLineParts[1];
-        // transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
-
-        return Request(uri, method, headers, body, version);
     }
 
-    // TODO: return error
-    return Request("", method);
+    return status;
 }
 
 Response::Response(StatusCode status, const std::string& body, const std::map<std::string, std::string>& headers) :

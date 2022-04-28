@@ -3,7 +3,7 @@
 
 project(orchestrator)
 
-add_executable(orchestrator
+add_library(orchestrator
     ./src/Http.cpp
     ./src/MpiApi.cpp)
 

@@ -68,7 +68,8 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         tracelogging
         logging
         commonutils
-        modulesmanager)
+        modulesmanager
+        orchestrator)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result)
 

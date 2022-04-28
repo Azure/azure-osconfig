@@ -221,10 +221,12 @@ void CallMpiInitialize(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
     MpiInitialize();
+    MpiApiInitialize();
 }
 
 void CallMpiShutdown(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
+    MpiApiShutdown();
     MpiShutdown();
 }
