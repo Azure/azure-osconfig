@@ -74,8 +74,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (MPI_OK == status)
     {
-        bytes = send(socketHandle, data, strlen(data), 0);
-        if (bytes != (int)strlen(data))
+        bytes = send(socketHandle, data, dataSize, 0);
+        if (bytes != dataSize)
         {
             status = errno ? errno : EIO;
             if (IsFullLoggingEnabled())
