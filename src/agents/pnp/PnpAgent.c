@@ -96,8 +96,6 @@ static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
 static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
 
-extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
-
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 
@@ -134,21 +132,21 @@ void CloseTraceLogging(void)
     TraceLoggingUnregister(g_providerHandle);
 }
 
-#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
-#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)"
-#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)"
-#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
-#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
-#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
 #define EOL_TERMINATOR "\n"
+#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
+#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)" EOL_TERMINATOR
 
 static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    size_t errorMessageSize = 0;
-    size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
+
+    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -178,25 +176,11 @@ static void SignalInterrupt(int signal)
 
     if (NULL != errorMessage)
     {
-        errorMessageSize = strlen(errorMessage);
-
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, errorMessageSize)))
-            {
-                sizeOfMpiMessage = strlen(g_mpiCall);
-                if (sizeOfMpiMessage > 0)
-                {
-                    writeResult = write(logDescriptor, (const void*)(&g_mpiCall[0]), sizeOfMpiMessage);
-                }
-                else
-                {
-                    writeResult = write(logDescriptor, (const void*)EOL_TERMINATOR, sizeof(char));
-                }
-            }
+            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
             close(logDescriptor);
         }
-
         _exit(signal);
     }
 }
