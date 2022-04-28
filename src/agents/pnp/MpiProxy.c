@@ -9,7 +9,7 @@
 
 extern MPI_HANDLE g_mpiHandle;
 
-int CallMpi(const char* name, const char* request, char** response, int* responseSize)
+static int CallMpi(const char* name, const char* request, char** response, int* responseSize)
 {
     const char* mpiSocket = "/run/osconfig/mpid.sock";
     const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
@@ -134,6 +134,38 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     return status;
 }
 
+static char* ParseString(char* jsonString)
+{
+    JSON_Value* jsonValue = NULL;
+    char* parsedValue = NULL;
+    char* returnValue = NULL;
+
+    jsonValue = json_parse_string(jsonString);
+    if (NULL == jsonValue)
+    {
+        OsConfigLogError(GetLog(), "ParseString: json_parse_string on '%s' failed", jsonString);
+    }
+    else
+    {
+        parsedValue = json_value_get_string(jsonValue);
+        if (NULL == parsedValue)
+        {
+            OsConfigLogError(GetLog(), "ParseString: json_value_get_string on '%s' failed", jsonString);
+        }
+        else
+        {
+            returnValue = strdup(parsedValue);
+            if (NULL == returnValue)
+            {
+                OsConfigLogError(GetLog(), "ParseString: strdup on '%s' failed", parsedValue);
+            }
+        }
+        json_value_free(jsonValue);
+    }
+
+    return returnValue;
+}
+
 MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     const char *name = "MpiOpen";
@@ -146,6 +178,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     int status = MPI_OK;
     MPI_HANDLE mpiHandle = NULL;
     char maxPayloadSizeBytesString[MPI_MAX_CONTENT_LENGTH] = {0};
+    char* mpiHandleValue = NULL;
 
     if (NULL == clientName)
     {
@@ -171,7 +204,15 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
     
-    OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, json_parse_string((char*)mpiHandle));
+    if (NULL == (mpiHandleValue = ParseString((char*)mpiHandle)))
+    {
+        OsConfigLogError(GetLog(), "CallMpiOpen: invalid MPI handle '%s'", (char*)mpiHandle);
+        mpiHandle = NULL;
+    }
+    
+    OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, mpiHandleValue);
+
+    FREE_MEMORY(mpiHandleValue);
 
     return mpiHandle;
 }
@@ -221,6 +262,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     int requestSize = 0;
     int responseSize = 0;
     int status = MPI_OK;
+    char* statusFromResponse = NULL;
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
@@ -261,7 +303,9 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     if ((NULL != response) && (responseSize > 0))
     {
-        status = atoi(json_parse_string(response));
+        statusFromResponse = ParseString(response);
+        status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
+        FREE_MEMORY(statusFromResponse);
     }
 
     if (IsFullLoggingEnabled())
@@ -353,6 +397,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     int requestSize = 0;
     int responseSize = 0;
     int status = MPI_OK;
+    char* statusFromResponse = NULL;
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
@@ -386,7 +431,9 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 
     if ((NULL != response) && (responseSize > 0))
     {
-        status = atoi(json_parse_string(response));
+        statusFromResponse = ParseString(response);
+        status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
+        FREE_MEMORY(statusFromResponse);
     }
 
     if (IsFullLoggingEnabled())
