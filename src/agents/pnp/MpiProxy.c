@@ -171,7 +171,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     mpiHandle = (MPI_OK == status) ? (MPI_HANDLE)response : NULL;
     
-    OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, (char*)mpiHandle);
+    OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, json_parse_string((char*)mpiHandle));
 
     return mpiHandle;
 }
@@ -261,7 +261,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     if ((NULL != response) && (responseSize > 0))
     {
-        status = atoi(response);
+        status = atoi(json_parse_string(response));
     }
 
     if (IsFullLoggingEnabled())
@@ -386,7 +386,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 
     if ((NULL != response) && (responseSize > 0))
     {
-        status = atoi(response);
+        status = atoi(json_parse_string(response));
     }
 
     if (IsFullLoggingEnabled())
