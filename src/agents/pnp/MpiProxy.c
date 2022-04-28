@@ -5,6 +5,8 @@
 #include "inc/PnpUtils.h"
 #include "inc/MpiProxy.h"
 
+#define MPI_MAX_CONTENT_LENGTH 64
+
 extern MPI_HANDLE g_mpiHandle;
 
 int CallMpi(const char* name, const char* request, char** response, int* responseSize)
@@ -15,13 +17,12 @@ int CallMpi(const char* name, const char* request, char** response, int* respons
     int socketHandle = -1;
     char* data = {0};
     int dataSize = 0;
-    char contentLengthString[50] = {0};
+    char contentLengthString[MPI_MAX_CONTENT_LENGTH] = {0};
     struct sockaddr_un socketAddress = {0};
     socklen_t socketLength = 0;
     ssize_t bytes = 0;
     int status = MPI_OK;
     int httpStatus = -1;
-    
 
     if ((NULL == name) || (NULL == request) || (NULL == response) || (NULL == responseSize))
     {
@@ -137,7 +138,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     int responseSize = 0;
     int status = MPI_OK;
     MPI_HANDLE mpiHandle = NULL;
-    char maxPayloadSizeBytesString[30] = {0};
+    char maxPayloadSizeBytesString[MPI_MAX_CONTENT_LENGTH] = {0};
 
     if (NULL == clientName)
     {
@@ -230,8 +231,9 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
 
     if (!IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
     {
-        // Error is logged by IsValidMimObjectPayload
-        return EINVAL;
+        status = EINVAL;
+        OsConfigLogError(GetLog(), "CallMpiSet: invalid payload (%d)", status);
+        return status;
     }
 
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName) + payloadSizeBytes + 1;
@@ -319,13 +321,13 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
     if (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()))
     {
-        // Error is logged by IsValidMimObjectPayload
         status = EINVAL;
+        OsConfigLogError(GetLog(), "CallMpiGet: invalid payload (%d)", status);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
@@ -348,14 +350,14 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
-        OsConfigLogError(GetLog(), "CallMpiSettDesired: called without a valid MPI handle (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiSetDesired: called without a valid MPI handle (%d)", status);
         return status;
     }
 
     if ((NULL == payload) || (0 >= payloadSizeBytes))
     {
         status = EINVAL;
-        OsConfigLogError(GetLog(), "CallMpiSettDesired: invalid arguments (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiSetDesired: invalid arguments (%d)", status);
         return status;
     }
 
@@ -365,7 +367,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     if (NULL == request)
     {
         status = ENOMEM;
-        OsConfigLogError(GetLog(), "CallMpiSettDesired: failed to allocate memory for request (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiSetDesired: failed to allocate memory for request (%d)", status);
         return status;
     }
 
@@ -382,7 +384,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "MpiSettDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
+        OsConfigLogInfo(GetLog(), "MpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
 
     return status;
