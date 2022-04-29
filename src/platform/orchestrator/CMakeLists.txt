@@ -7,10 +7,9 @@ add_library(orchestrator STATIC ./src/MpiApi.cpp)
 
 target_include_directories(orchestrator PUBLIC
     PUBLIC
-        ./src
-        ./inc
-        ${PLATFORM_INC_DIR}
         ${MODULESMANAGER_INC_DIR}
-        ${MODULES_INCLUDE_DIR})
+        ${ORCHESTRATOR_INC_DIR}
+        ${PLATFORM_INC_DIR}
+        ${MODULES_INC_DIR})
 
 target_link_libraries(orchestrator pthread logging commonutils)
