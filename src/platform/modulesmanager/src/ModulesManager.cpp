@@ -22,6 +22,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <ModulesManager.h>
+#include <MpiApi.h>
 #include <Mpi.h>
 #include <ScopeGuard.h>
 
@@ -43,10 +44,12 @@ void MpiInitialize(void)
 {
     ModulesManagerLog::OpenLog();
     modulesManager.LoadModules(g_moduleDir, g_configJson);
+    MpiApiInitialize();
 };
 
 void MpiShutdown(void)
 {
+    MpiApiShutdown();
     modulesManager.UnloadModules();
     ModulesManagerLog::CloseLog();
 };
