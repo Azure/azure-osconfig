@@ -545,22 +545,12 @@ void Server::Stop()
 static bool ReadRequestFromSocket(int connfd, Request& request)
 {
     bool result = false;
-    // int bytesRead = 0;
     char buffer[4096];
     std::stringstream requestStream;
 
     read(connfd, buffer, sizeof(buffer));
     requestStream << buffer;
-    // while (0 < (bytesRead = read(connfd, buffer, sizeof(buffer))))
-    // {
-    //     requestStream << std::string(buffer, bytesRead);
-    // }
 
-    // if (0 <= bytesRead)
-    // {
-    //     OsConfigLogError(PlatformLog::Get(), "Failed to read request from socket");
-    // }
-    // else
     if (requestStream.str().empty())
     {
         OsConfigLogError(PlatformLog::Get(), "Empty request from socket");
