@@ -188,7 +188,7 @@ static void SignalInterrupt(int signal)
 static void SignalReloadConfiguration(int incomingSignal)
 {
     g_refreshSignal = incomingSignal;
-    
+
     // Reset the handler
     signal(SIGHUP, SignalReloadConfiguration);
 }
@@ -235,7 +235,7 @@ static void RefreshConnection()
 
     IotHubDeInitialize();
     g_moduleHandle = NULL;
-    
+
     if ((NULL == g_moduleHandle) && (NULL != g_iotHubConnectionString))
     {
         if (NULL == (g_moduleHandle = CallIotHubInitialize()))
@@ -269,7 +269,7 @@ static void SignalProcessDesired(int incomingSignal)
 {
     OsConfigLogInfo(GetLog(), "Processing desired twin updates");
     ProcessDesiredTwinUpdates();
-    
+
     // Reset the signal handler for the next use otherwise the default handler will be invoked instead
     signal(SIGUSR1, SignalProcessDesired);
 
@@ -606,21 +606,21 @@ int main(int argc, char *argv[])
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, 
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION,
         osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
-        
+
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
         if (strlen(encodedProductInfo) >= sizeof(g_productInfo))
         {
-            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated", 
+            OsConfigLogError(GetLog(), "Encoded product info string is too long (%d bytes, over maximum of %d bytes) and will be truncated",
                 (int)strlen(encodedProductInfo), (int)sizeof(g_productInfo));
-        } 
-        
+        }
+
         memset(g_productInfo, 0, sizeof(g_productInfo));
         memcpy(g_productInfo, encodedProductInfo, sizeof(g_productInfo) - 1);
     }
-    
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "Product info: '%s' (%d bytes)", g_productInfo, (int)strlen(g_productInfo));
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
-    
+
     OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
 
     if (PROTOCOL_MQTT_WS == g_protocol)
