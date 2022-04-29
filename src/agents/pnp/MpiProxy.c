@@ -469,7 +469,7 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     if (MPI_OK != status)
     {
         OsConfigLogError(GetLog(), "CallMpiSetDesired: retry via the MPI C API");
-        status = MpiSetDesired(clientName, payload, payloadSizeBytes);
+        status = MpiSetDesired(g_mpiHandle, payload, payloadSizeBytes);
     }
 
     if (IsFullLoggingEnabled())
@@ -534,7 +534,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
     if (MPI_OK != status)
     {
         OsConfigLogError(GetLog(), "CallMpiGetReported: retry via the MPI C API");
-        status = MpiGetReported(clientName, maxPayloadSizeBytes, payload, payloadSizeBytes);
+        status = MpiGetReported(g_mpiHandle, payload, payloadSizeBytes);
     }
 
     if (IsFullLoggingEnabled())
