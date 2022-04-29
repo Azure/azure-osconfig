@@ -105,16 +105,16 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (MPI_OK == status)
     {
-        *responseSize = ReadHttpContentLengthFromSocket(socketHandle, GetLog()) + 1;
-        *response = (char*)malloc(*responseSize);
+        *responseSize = ReadHttpContentLengthFromSocket(socketHandle, GetLog());
+        *response = (char*)malloc(*responseSize + 1);
         if (NULL != *response)
         {
-            memset(*response, 0, *responseSize);
+            memset(*response, 0, *responseSize + 1);
             
-            if ((*responseSize - 1) != read(socketHandle, *response, *responseSize - 1))
+            if (*responseSize != read(socketHandle, *response, *responseSize))
             {
                 status = errno ? errno : EIO;
-                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize - 1, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
             }
         }
         else
@@ -218,13 +218,6 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
         mpiHandle = NULL;
     }
 
-    // Temporary workaround
-    if (NULL == mpiHandle)
-    {
-        OsConfigLogError(GetLog(), "CallMpiOpen: retry via the MPI C API");
-        mpiHandle = MpiOpen(clientName, maxPayloadSizeBytes);
-    }
-    
     OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, mpiHandleValue);
 
     FREE_MEMORY(mpiHandleValue);
@@ -323,13 +316,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         FREE_MEMORY(statusFromResponse);
     }
 
-    // Temporary workaround
-    if (MPI_OK != status)
-    {
-        OsConfigLogError(GetLog(), "CallMpiSet: retry via the MPI C API");
-        status = MpiSet(g_mpiHandle, componentName, propertyName, payload, payloadSizeBytes);
-    }
-
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "CallMpiSet(%p, %s, %s, %.*s, %d bytes) returned %d", g_mpiHandle, componentName, propertyName, payloadSizeBytes, payload, payloadSizeBytes, status);
@@ -390,13 +376,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
-    }
-
-    // Temporary workaround
-    if (MPI_OK != status)
-    {
-        OsConfigLogError(GetLog(), "CallMpiGet: retry via the MPI C API");
-        status = MpiGet(g_mpiHandle, componentName, propertyName, payload, payloadSizeBytes);
     }
 
     if (IsFullLoggingEnabled())
@@ -465,13 +444,6 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
         FREE_MEMORY(statusFromResponse);
     }
 
-    // Temporary workaround
-    if (MPI_OK != status)
-    {
-        OsConfigLogError(GetLog(), "CallMpiSetDesired: retry via the MPI C API");
-        status = MpiSetDesired(g_mpiHandle, payload, payloadSizeBytes);
-    }
-
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
@@ -528,13 +500,6 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
-    }
-
-    // Temporary workaround
-    if (MPI_OK != status)
-    {
-        OsConfigLogError(GetLog(), "CallMpiGetReported: retry via the MPI C API");
-        status = MpiGetReported(g_mpiHandle, payload, payloadSizeBytes);
     }
 
     if (IsFullLoggingEnabled())
