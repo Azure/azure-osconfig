@@ -68,20 +68,20 @@ namespace http
 
     struct Request
     {
-        Method method;
-        std::string version;
-        std::string uri;
-        std::map<std::string, std::string> headers;
-        std::string body;
+        Method m_method;
+        std::string m_version;
+        std::string m_uri;
+        std::map<std::string, std::string> m_headers;
+        std::string m_body;
 
         bool Parse(const std::string& request);
     };
 
     struct Response
     {
-        StatusCode status;
-        std::map<std::string, std::string> headers;
-        std::string body;
+        StatusCode m_status;
+        std::map<std::string, std::string> m_headers;
+        std::string m_body;
 
         std::string ToString();
     };
@@ -98,9 +98,9 @@ public:
     void Stop();
 
 private:
-    int socketfd;
-    struct sockaddr_un addr;
-    socklen_t socketlen;
+    int m_socketfd;
+    struct sockaddr_un m_addr;
+    socklen_t m_socketlen;
 
     std::thread m_worker;
     std::promise<void> m_exitSignal;

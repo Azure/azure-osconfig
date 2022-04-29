@@ -523,7 +523,6 @@ void CallMpiDoWork(void)
 void CallMpiInitialize(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
-    MpiApiInitialize();
     MpiInitialize();
 }
 
@@ -531,5 +530,4 @@ void CallMpiShutdown(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
     MpiShutdown();
-    MpiApiShutdown();
 }

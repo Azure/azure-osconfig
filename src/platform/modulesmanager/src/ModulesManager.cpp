@@ -43,10 +43,12 @@ void MpiInitialize(void)
 {
     ModulesManagerLog::OpenLog();
     modulesManager.LoadModules(g_moduleDir, g_configJson);
+    MpiApiInitialize();
 };
 
 void MpiShutdown(void)
 {
+    MpiApiShutdown();
     modulesManager.UnloadModules();
     ModulesManagerLog::CloseLog();
 };
@@ -202,7 +204,7 @@ void MpiFree(MPI_JSON_STRING payload)
     delete[] payload;
 }
 
-void MpiDoWork() {}
+void MpiDoWork() {};
 
 ModulesManager::ModulesManager() {}
 
