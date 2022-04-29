@@ -3,12 +3,13 @@
 
 project(orchestrator)
 
-add_library(orchestrator ./src/MpiApi.cpp)
+add_library(orchestrator STATIC ./src/MpiApi.cpp)
 
 target_include_directories(orchestrator PUBLIC
     PUBLIC
         ./src
         ./inc
-        ${PLATFORM_INC_DIR})
+        ${PLATFORM_INC_DIR}
+        ${MODULESMANAGER_INC_DIR})
 
-target_link_libraries(orchestrator pthread logging commonutils modulesmanager)
+target_link_libraries(orchestrator pthread logging commonutils)

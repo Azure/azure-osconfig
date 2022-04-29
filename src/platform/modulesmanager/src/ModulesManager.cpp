@@ -22,6 +22,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <ModulesManager.h>
+#include <MpiApi.h>
 #include <Mpi.h>
 #include <ScopeGuard.h>
 
@@ -204,7 +205,7 @@ void MpiFree(MPI_JSON_STRING payload)
     delete[] payload;
 }
 
-void MpiDoWork() {};
+void MpiDoWork() {}
 
 ModulesManager::ModulesManager() {}
 

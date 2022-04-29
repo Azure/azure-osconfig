@@ -15,6 +15,7 @@ target_link_libraries(modulesmanager
 target_include_directories(modulesmanager
     PUBLIC
         ${MODULE_MANAGER_INCLUDE_DIR}
+        ${ORCHESTRATOR_INC_DIR}
         ${MODULES_INCLUDE_DIR}
         ${PLATFORM_INC_DIR}
 )
