@@ -167,7 +167,6 @@ static void MpiOpenRequest(const Request& request, Response& response)
                 g_sessions[sessionId] = session;
 
                 response.m_status = StatusCode::OK;
-                // response.m_headers[contentType] = contentTypeJson;
                 response.m_headers[contentLength] = std::to_string(sessionId.size() + 2);
                 response.m_body = ("\"" + sessionId + "\"");
             }
@@ -232,8 +231,10 @@ static void MpiSetRequest(const Request& request, Response& response)
             document[g_payload].Accept(writer);
             std::string payload = buffer.GetString();
 
-            // TODO: full logging only
-            OsConfigLogInfo(PlatformLog::Get(), "Received MPI set request for session '%s' component '%s' object '%s' payload '%s'", session.c_str(), component.c_str(), object.c_str(), payload.c_str());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(PlatformLog::Get(), "Received MPI set request for session '%s' component '%s' object '%s' payload '%s'", session.c_str(), component.c_str(), object.c_str(), payload.c_str());
+            }
 
             if (g_sessions.find(session) != g_sessions.end())
             {
@@ -241,7 +242,6 @@ static void MpiSetRequest(const Request& request, Response& response)
                 std::string responsePayload = "\""+ std::to_string(status) + "\"";
 
                 response.m_status = ((status == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
-                // response.headers[contentType] = contentTypeJson;
                 response.m_headers[contentLength] = std::to_string(responsePayload.size());
                 response.m_body = responsePayload;
             }
@@ -269,8 +269,10 @@ static void MpiGetRequest(const Request& request, Response& response)
             std::string component = document[g_componentName].GetString();
             std::string object = document[g_objectName].GetString();
 
-            // TODO: full logging only
-            OsConfigLogInfo(PlatformLog::Get(), "Received MPI get request for session '%s' component '%s' object '%s'", session.c_str(), component.c_str(), object.c_str());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(PlatformLog::Get(), "Received MPI get request for session '%s' component '%s' object '%s'", session.c_str(), component.c_str(), object.c_str());
+            }
 
             if (g_sessions.find(session) != g_sessions.end())
             {
@@ -281,7 +283,6 @@ static void MpiGetRequest(const Request& request, Response& response)
                 std::string payloadString = std::string(payload, payloadSizeBytes);
 
                 response.m_status = ((status == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
-                // response.headers[contentType] = contentTypeJson;
                 response.m_headers[contentLength] = std::to_string(payloadString.size());
                 response.m_body = payloadString;
             }
@@ -318,7 +319,6 @@ static void MpiSetDesiredRequest(const Request& request, Response& response)
                 std::string responsePayload = "\"" + std::to_string(status) + "\"";
 
                 response.m_status = ((status == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
-                // response.m_headers[contentType] = contentTypeJson;
                 response.m_headers[contentLength] = std::to_string(responsePayload.size());
                 response.m_body = responsePayload;
             }
@@ -349,7 +349,6 @@ static void MpiGetReportedRequest(const Request& request, Response& response)
                 std::string payloadString = std::string(payload, payloadSizeBytes);
 
                 response.m_status = ((status == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
-                // response.m_headers[contentType] = contentTypeJson;
                 response.m_body = payloadString;
             }
             else
