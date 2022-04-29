@@ -8,8 +8,10 @@
 extern "C"
 {
 #endif
+
 void MpiApiInitialize(void);
 void MpiApiShutdown(void);
+
 #ifdef __cplusplus
 }
 #endif
