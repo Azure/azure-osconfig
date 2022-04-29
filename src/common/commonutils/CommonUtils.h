@@ -75,6 +75,7 @@ char* UrlDecode(char* target);
 bool LockFile(FILE* file, void* log);
 bool UnlockFile(FILE* file, void* log);
 
+char* ReadUriFromSocket(int socketHandle, void* log);
 int ReadHttpStatusFromSocket(int socketHandle, void* log);
 int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 

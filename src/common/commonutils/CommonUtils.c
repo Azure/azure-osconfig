@@ -1278,6 +1278,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
     const char* postPrefix = "POST /";
     char* returnUri = NULL;
+    char* buffer = NULL;
     char bufferUri[MAX_MPI_URI_LENGTH] = {0};
     int uriLength = 0;
     int i = 0;
@@ -1295,6 +1296,8 @@ char* ReadUriFromSocket(int socketHandle, void* log)
         return NULL;
     }
 
+    FREE_MEMORY(buffer);
+    
     for (i = 0; i < sizeof(bufferUri); i++)
     {
         if (1 == read(socketHandle, &(bufferUri[i]), 1))
