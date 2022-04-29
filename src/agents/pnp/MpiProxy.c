@@ -134,10 +134,6 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     {
         OsConfigLogInfo(GetLog(), "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
     }
-    else
-    {
-        OsConfigLogInfo(GetLog(), "CallMpi(%s) to socket '%s' returned %d response bytes and %d", name, mpiSocket, *responseSize, status);
-    }
     
     return status;
 }
