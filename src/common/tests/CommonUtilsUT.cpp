@@ -1040,6 +1040,7 @@ TEST_F(CommonUtilsTest, HashCommand)
 struct TestHttpHeader
 {
     const char* httpRequest;
+    const char* expectedUri;
     int expectedHttpStatus;
     int expectedHttpContentLength;
 };
@@ -1049,27 +1050,49 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     const char* testPath = "~socket.test";
     
     TestHttpHeader testHttpHeaders[] = {
-        { "HTTP/1.1\r\nblah blah\r\n\r\n\"", 404, 0 },
-        { "HTTP/1.1 301\r\ntest 123\r\n\r\n\"", 301, 0 },
-        { "HTTP/1.1 402 something \r\ntest 123\r\n\r\n\"", 402, 0 },
-        { "HTTP/1.1\r\nContent-Length: 2\r\n here 123\r\n\r\n\"12\"", 404, 2 },
-        { "HTTP/1.1\r\ntest test test\r\nContent-Length: 10\r\n\r\n\"1234567890\"", 404, 10 },
-        { "HTTP/1.1 400 Boom! \r\test abc\r\nContent-Length: 1\r\n\r\n\"1\"", 400, 1 },
-        { "POST /mpi HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 12\r\n\r\n\"{1234567890}\"", 404, 12},
-        { "HTTP/1.1 200 OK\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 5\r\n\r\n\"{123}\"", 200, 5 }
+        { "POST /foo/ HTTP/1.1\r\nblah blah\r\n\r\n\"", "foo", 404, 0 },
+        { "HTTP/1.1 301\r\ntest 123\r\n\r\n\"", NULL, 301, 0 },
+        { "POST /blah HTTP/1.1 402 something \r\ntest 123\r\n\r\n\"", "blah", 402, 0 },
+        { "PUT /MpiOpen/ HTTP/1.1\r\nContent-Length: 2\r\n here 123\r\n\r\n\"12\"", NULL, 404, 2 },
+        { "POST /MpiGetReported/ HTTP/1.1\r\ntest test test\r\nContent-Length: 10\r\n\r\n\"1234567890\"", "MpiGetReported", 404, 10 },
+        { "POST /MpiSetDesired HTTP/1.1 400 Boom! \r\test abc\r\nContent-Length: 1\r\n\r\n\"1\"", "MpiSetDesired", 400, 1 },
+        { "POST /mpi HTTP/1.1\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 12\r\n\r\n\"{1234567890}\"", "mpi", 404, 12},
+        { "HTTP/1.1 200 OK\r\nHost: osconfig\r\nUser-Agent: osconfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: 5\r\n\r\n\"{123}\"", NULL, 200, 5 }
     };
 
     int testHttpHeadersSize = ARRAY_SIZE(testHttpHeaders);
 
     int fileDescriptor = -1;
 
-    for (int i = 0; i < testHttpHeadersSize; i++)
+    char* uri = NULL;
+
+    int i = 0;
+
+    for (i = 0; i < testHttpHeadersSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
         EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
         EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpStatus, ReadHttpStatusFromSocket(fileDescriptor, nullptr));
         EXPECT_EQ(testHttpHeaders[i].expectedHttpContentLength, ReadHttpContentLengthFromSocket(fileDescriptor, nullptr));
+        EXPECT_EQ(0, close(fileDescriptor));
+        EXPECT_TRUE(Cleanup(testPath));
+    }
+
+    for (i = 0; i < testHttpHeadersSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(testPath, testHttpHeaders[i].httpRequest));
+        EXPECT_STREQ(testHttpHeaders[i].httpRequest, LoadStringFromFile(testPath, false, nullptr));
+        EXPECT_NE(-1, fileDescriptor = open(testPath, O_RDONLY));
+        if (NULL == testHttpHeaders[i].expectedUri)
+        {
+            EXPECT_EQ(testHttpHeaders[i].expectedUri, ReadUriFromSocket(fileDescriptor, nullptr));
+        }
+        else
+        {
+            EXPECT_STREQ(testHttpHeaders[i].expectedUri, uri = ReadUriFromSocket(fileDescriptor, nullptr));
+            FREE_MEMORY(uri);
+        }
         EXPECT_EQ(0, close(fileDescriptor));
         EXPECT_TRUE(Cleanup(testPath));
     }
