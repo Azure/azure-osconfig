@@ -1275,7 +1275,6 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
 
 char* ReadUriFromSocket(int socketHandle, void* log)
 {
-    const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
     const char* postPrefix = "POST /";
     char* returnUri = NULL;
     char* buffer = NULL;
