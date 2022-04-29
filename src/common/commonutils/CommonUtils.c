@@ -1271,6 +1271,62 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
     return buffer;
 }
 
+#define MAX_MPI_URI_LENGTH 32
+
+char* ReadUriFromSocket(int socketHandle, void* log)
+{
+    const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
+    const char* postPrefix = "POST /";
+    char* returnUri = NULL;
+    char bufferUri[MAX_MPI_URI_LENGTH] = {0};
+    int uriLength = 0;
+    int i = 0;
+
+    if (socketHandle < 0)
+    {
+        OsConfigLogError(log, "ReadUriFromSocket: invalid socket (%d)", socketHandle);
+        return NULL;
+    }
+
+    buffer = ReadUntilStringFound(socketHandle, postPrefix, log);
+    if (NULL == buffer)
+    {
+        OsConfigLogError(log, "ReadUriFromSocket: '%s' prefix not found", postPrefix);
+        return NULL;
+    }
+
+    for (i = 0; i < sizeof(bufferUri); i++)
+    {
+        if (1 == read(socketHandle, &(bufferUri[i]), 1))
+        {
+            if (isalpha(bufferUri[i]))
+            {
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    uriLength = i;
+
+    returnUri = (char*)malloc(uriLength + 1);
+    if (NULL != returnUri)
+    {
+        memset(returnUri, 0, uriLength + 1);
+        strncpy(returnUri, bufferUri, uriLength);
+        OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
+    }
+    else
+    {
+        OsConfigLogError(log, "ReadUriFromSocket: out of memory");
+    }
+
+    return returnUri;
+}
+
 int ReadHttpStatusFromSocket(int socketHandle, void* log)
 {
     const char* httpPrefix = "HTTP/1.1";
