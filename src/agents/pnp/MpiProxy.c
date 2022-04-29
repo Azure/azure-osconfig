@@ -132,7 +132,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "CallMpi(%s, %s, %s, %d) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
+        OsConfigLogInfo(GetLog(), "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
     }
     else
     {
