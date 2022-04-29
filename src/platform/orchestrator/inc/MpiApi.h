@@ -5,6 +5,9 @@
 #define MPI_API_H
 
 #include <cstdio>
+#include <chrono>
+#include <future>
+#include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -13,23 +16,76 @@
 #include <unistd.h>
 
 #include "Logging.h"
-#include "Http.h"
 
-class Router
+#define PLATFORM_LOGFILE "/var/log/osconfig_platform.log"
+#define PLATFORM_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
+
+class PlatformLog
 {
 public:
-    using Handler = std::function<void(const http::Request&, http::Response&)>;
+    static OSCONFIG_LOG_HANDLE Get()
+    {
+        return m_log;
+    }
 
-    Router() = default;
-    ~Router() = default;
+    static void OpenLog()
+    {
+        m_log = ::OpenLog(PLATFORM_LOGFILE, PLATFORM_ROLLEDLOGFILE);
+    }
 
-    int Post(const std::string& path, const Handler& handler);
-    http::Response HandleRequest(const http::Request& request);
-private:
-    std::map<std::string, std::map<http::Method, Handler>> m_routes;
+    static void CloseLog()
+    {
+        ::CloseLog(&m_log);
+    }
 
-    int AddRoute(const http::Method method, const std::string& path, const Handler& handler);
+    static OSCONFIG_LOG_HANDLE m_log;
 };
+
+namespace http
+{
+    const std::string CRLF = "\r\n";
+    const std::string contentLength = "Content-Length";
+    const std::string contentType = "Content-Type";
+    const std::string contentTypeJson = "application/json";
+
+    enum class Method
+    {
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        PATCH,
+        INVALID
+    };
+
+    enum class StatusCode
+    {
+        OK = 200,
+        BAD_REQUEST = 400,
+        NOT_FOUND = 404,
+        INTERNAL_SERVER_ERROR = 500
+    };
+
+    struct Request
+    {
+        Method method;
+        std::string version;
+        std::string uri;
+        std::map<std::string, std::string> headers;
+        std::string body;
+
+        bool Parse(const std::string& request);
+    };
+
+    struct Response
+    {
+        StatusCode status;
+        std::map<std::string, std::string> headers;
+        std::string body;
+
+        std::string ToString();
+    };
+} // namespace http
 
 class Server
 {
@@ -38,13 +94,16 @@ public:
     ~Server() = default;
 
     void Listen();
-    void DoWork(Router& router);
+    static void Worker(Server& server);
     void Stop();
 
 private:
-    int sockfd;
+    int socketfd;
     struct sockaddr_un addr;
-    socklen_t socklen;
+    socklen_t socketlen;
+
+    std::thread m_worker;
+    std::promise<void> m_exitSignal;
 };
 
 #endif // MPI_API_H

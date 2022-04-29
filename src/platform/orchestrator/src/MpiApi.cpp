@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <algorithm>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -10,8 +11,10 @@
 
 #include "CommonUtils.h"
 #include "MpiApi.h"
-#include "Http.h"
 #include "ModulesManager.h"
+
+static const char* g_socketPrefix = "/run/osconfig";
+static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
@@ -20,22 +23,14 @@ static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 static const char* g_payload = "Payload";
 
-static const char* g_contentLength = "Content-Length";
-static const char* g_contentType = "Content-Type";
-static const char* g_contentTypeJson = "application/json";
-
-static const char* g_socketPrefix = "/run/osconfig";
-static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
-
-static const std::string g_moduleDir = "/usr/lib/osconfig";
-static const std::string g_configJson = "/etc/osconfig/osconfig.json";
-
+// TODO: use dynamic memory allocation
 static const size_t g_maxPayloadSize = 4096;
 
 static std::map<std::string, MPI_HANDLE> g_sessions;
 
-static Router router;
 static Server server;
+
+OSCONFIG_LOG_HANDLE PlatformLog::m_log = nullptr;
 
 std::string CreateGUID()
 {
@@ -46,7 +41,24 @@ std::string CreateGUID()
     return ss.str();
 }
 
-void MpiOpenRequest(const http::Request& request, http::Response& response)
+void MpiApiInitialize()
+{
+    PlatformLog::OpenLog();
+    server.Listen();
+}
+
+void MpiApiShutdown()
+{
+    for (auto session : g_sessions)
+    {
+        MpiClose(session.second);
+    }
+
+    server.Stop();
+    PlatformLog::CloseLog();
+}
+
+static void MpiOpenRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -65,15 +77,15 @@ void MpiOpenRequest(const http::Request& request, http::Response& response)
             {
                 g_sessions[sessionId] = session;
 
-                response.SetStatus(http::StatusCode::OK);
-                response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetHeader(g_contentLength, std::to_string(sessionId.size()));
-                response.SetBody("\"" + sessionId + "\"");
+                response.status = http::StatusCode::OK;
+                // response.headers[http::contentType] = http::contentTypeJson;
+                response.headers[http::contentLength] = std::to_string(sessionId.size() + 2);
+                response.body = ("\"" + sessionId + "\"");
             }
             else
             {
-                response.SetHeader(g_contentLength,std::to_string( std::string("\"\"").size()));
-                response.SetBody("error");
+                response.headers[http::contentLength] = std::to_string( std::string("\"\"").size());
+                response.body = "\"\"";
                 OsConfigLogError(PlatformLog::Get(), "Failed to create MPI session for client '%s'", clientName.c_str());
             }
         }
@@ -88,7 +100,7 @@ void MpiOpenRequest(const http::Request& request, http::Response& response)
     }
 }
 
-void MpiCloseRequest(const http::Request& request, http::Response& response)
+static void MpiCloseRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -103,18 +115,18 @@ void MpiCloseRequest(const http::Request& request, http::Response& response)
             {
                 MpiClose(g_sessions[session]);
                 g_sessions.erase(session);
-                response.SetStatus(http::StatusCode::OK);
+                response.status = http::StatusCode::OK;
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
-                response.SetStatus(http::StatusCode::BAD_REQUEST);
+                response.status = http::StatusCode::BAD_REQUEST;
             }
         }
     }
 }
 
-void MpiSetRequest(const http::Request& request, http::Response& response)
+static void MpiSetRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -126,7 +138,6 @@ void MpiSetRequest(const http::Request& request, http::Response& response)
             std::string component = document[g_componentName].GetString();
             std::string object = document[g_objectName].GetString();
 
-            // Serialize request[g_payload] to string
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document[g_payload].Accept(writer);
@@ -140,10 +151,10 @@ void MpiSetRequest(const http::Request& request, http::Response& response)
                 int status = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
                 std::string responsePayload = "\""+ std::to_string(status) + "\"";
 
-                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
-                response.SetBody(responsePayload);
+                response.status = ((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                // response.headers[http::contentType] = http::contentTypeJson;
+                response.headers[http::contentLength] = std::to_string(responsePayload.size());
+                response.body = responsePayload;
             }
             else
             {
@@ -157,7 +168,7 @@ void MpiSetRequest(const http::Request& request, http::Response& response)
     }
 }
 
-void MpiGetRequest(const http::Request& request, http::Response& response)
+static void MpiGetRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -180,10 +191,10 @@ void MpiGetRequest(const http::Request& request, http::Response& response)
 
                 std::string payloadString = std::string(payload, payloadSizeBytes);
 
-                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetHeader(g_contentLength, std::to_string(payloadString.size()));
-                response.SetBody(payloadString);
+                response.status = ((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                // response.headers[http::contentType] = http::contentTypeJson;
+                response.headers[http::contentLength] = std::to_string(payloadString.size());
+                response.body = payloadString;
             }
             else
             {
@@ -197,7 +208,7 @@ void MpiGetRequest(const http::Request& request, http::Response& response)
     }
 }
 
-void MpiSetDesiredRequest(const http::Request& request, http::Response& response)
+static void MpiSetDesiredRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -217,10 +228,10 @@ void MpiSetDesiredRequest(const http::Request& request, http::Response& response
                 int status = MpiSetDesired(g_sessions[session], (MPI_JSON_STRING)payload.c_str(), payload.size());
                 std::string responsePayload = "\"" + std::to_string(status) + "\"";
 
-                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetHeader(g_contentLength, std::to_string(responsePayload.size()));
-                response.SetBody(responsePayload);
+                response.status = ((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                // response.headers[http::contentType] = http::contentTypeJson;
+                response.headers[http::contentLength] = std::to_string(responsePayload.size());
+                response.body = responsePayload;
             }
             else
             {
@@ -230,7 +241,7 @@ void MpiSetDesiredRequest(const http::Request& request, http::Response& response
     }
 }
 
-void MpiGetReportedRequest(const http::Request& request, http::Response& response)
+static void MpiGetReportedRequest(const http::Request& request, http::Response& response)
 {
     rapidjson::Document document;
 
@@ -248,9 +259,9 @@ void MpiGetReportedRequest(const http::Request& request, http::Response& respons
 
                 std::string payloadString = std::string(payload, payloadSizeBytes);
 
-                response.SetStatus((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
-                response.SetHeader(g_contentType, g_contentTypeJson);
-                response.SetBody(payloadString);
+                response.status = ((status == MPI_OK) ? http::StatusCode::OK : http::StatusCode::BAD_REQUEST);
+                // response.headers[http::contentType] = http::contentTypeJson;
+                response.body = payloadString;
             }
             else
             {
@@ -260,93 +271,155 @@ void MpiGetReportedRequest(const http::Request& request, http::Response& respons
     }
 }
 
-void MpiApiInitialize()
+static std::vector<std::string> Split(const std::string& string, const std::string& delimiter)
 {
-    PlatformLog::OpenLog();
+    std::vector<std::string> tokens;
+    size_t start = 0;
+    size_t end = 0;
 
-    router.Post("/MpiOpen/", MpiOpenRequest);
-    router.Post("/MpiClose/", MpiCloseRequest);
-    router.Post("/MpiSet/", MpiSetRequest);
-    router.Post("/MpiGet/", MpiGetRequest);
-    router.Post("/MpiSetDesired/", MpiSetDesiredRequest);
-    router.Post("/MpiGetReported/", MpiGetReportedRequest);
-
-    server.Listen();
-}
-
-void MpiApiShutdown()
-{
-    for (auto session : g_sessions)
+    while ((end = string.find(delimiter, start)) != std::string::npos)
     {
-        MpiClose(session.second);
+        tokens.push_back(string.substr(start, end - start));
+        start = end + delimiter.length();
     }
 
-    server.Stop();
-    PlatformLog::CloseLog();
+    tokens.push_back(string.substr(start));
+
+    return tokens;
 }
 
-void MpiApiDoWork()
+std::string StatusText(http::StatusCode statusCode)
 {
-    OsConfigLogInfo(PlatformLog::Get(), "MPI API thread started");
-    server.DoWork(router);
-}
-
-int Router::Post(const std::string& uri, const Handler& handler)
-{
-    return AddRoute(http::Method::POST, uri, handler);
-}
-
-int Router::AddRoute(const http::Method method, const std::string& uri, const Handler& handler)
-{
-    int status = 0;
-
-    if (m_routes.find(uri) != m_routes.end())
+    std::string result;
+    switch (statusCode)
     {
-        // Check if the method already exists for the uri
-        if (m_routes[uri].find(method) != m_routes[uri].end())
-        {
-            OsConfigLogError(PlatformLog::Get(), "Route already exists for method and uri");
-            status = EINVAL;
-        }
+        case http::StatusCode::OK:
+            result = "OK";
+            break;
+        case http::StatusCode::BAD_REQUEST:
+            result = "BAD_REQUEST";
+            break;
+        case http::StatusCode::NOT_FOUND:
+            result = "NOT_FOUND";
+            break;
+        default:
+            result = "INTERNAL_SERVER_ERROR";
+            break;
+    }
+    return result;
+}
+
+static http::Method MethodFromString(const std::string& string)
+{
+    if (string == "GET")
+    {
+        return http::Method::GET;
+    }
+    else if (string == "POST")
+    {
+        return http::Method::POST;
+    }
+    else if (string == "PUT")
+    {
+        return http::Method::PUT;
+    }
+    else if (string == "DELETE")
+    {
+        return http::Method::DELETE;
     }
     else
     {
-        m_routes[uri] = std::map<http::Method, Handler>();
+        return http::Method::INVALID;
     }
-
-    if (status == 0)
-    {
-        m_routes[uri][method] = handler;
-    }
-
-    return status;
 }
 
-http::Response Router::HandleRequest(const http::Request& request)
+bool http::Request::Parse(const std::string& request)
 {
-    http::Response response;
+    bool result = false;
 
-    if (m_routes.find(request.uri) != m_routes.end())
+    // Split the request into header and body
+    size_t headerEnd = request.find(http::CRLF + http::CRLF);
+    if (headerEnd == std::string::npos)
     {
-        if (m_routes[request.uri].find(request.method) != m_routes[request.uri].end())
+        result = false;
+    }
+    else
+    {
+        std::string header = request.substr(0, headerEnd);
+        body = request.substr(headerEnd + (2 * http::CRLF.length()));
+
+        // Split the header into lines
+        std::vector<std::string> lines = Split(header, http::CRLF);
+
+        // Parse the first line
+        std::vector<std::string> requestLine = Split(lines[0], " ");
+        if (requestLine.size() != 3)
         {
-            OsConfigLogInfo(PlatformLog::Get(), "Received request for uri '%s' method '%d'", request.uri.c_str(), (int)request.method);
-            // TODO: validate request (Host/Accept/Content-Type)
-            m_routes[request.uri][request.method](request, response);
+            result = false;
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Invalid request method '%d' for uri '%s'", (int)request.method, request.uri.c_str());
-            response.SetStatus(http::StatusCode::NOT_FOUND);
+            method = MethodFromString(requestLine[0]);
+            uri = requestLine[1];
+            version = requestLine[2];
+
+            // Parse the header lines
+            for (size_t i = 1; i < lines.size(); i++)
+            {
+                std::vector<std::string> headerLine = Split(lines[i], ": ");
+                if (headerLine.size() != 2)
+                {
+                    continue;
+                }
+                else
+                {
+                    headers[headerLine[0]] = headerLine[1];
+                }
+            }
+
+            // Parse the body
+            // if (body.length() > 0)
+            // {
+            //     if (headers.find(http::contentType) != headers.end())
+            //     {
+            //         if (headers[http::contentType] == http::contentTypeJson)
+            //         {
+            //             rapidjson::Document document;
+            //             if (!document.Parse(body.c_str(), body.size()).HasParseError())
+            //             {
+            //                 body = document.GetString();
+            //             }
+            //             else
+            //             {
+            //                 result = false;
+            //             }
+            //         }
+            //     }
+            // }
+
+            // this->body = body;
+            result = true;
         }
     }
-    else
+
+    return result;
+}
+
+std::string http::Response::ToString()
+{
+    std::string result;
+
+    result += "HTTP/1.1 " + std::to_string(static_cast<int>(status)) + " " + StatusText(status) + http::CRLF;
+
+    for (auto header : headers)
     {
-        OsConfigLogError(PlatformLog::Get(), "Invalid request for uri '%s'", request.uri.c_str());
-        response.SetStatus(http::StatusCode::NOT_FOUND);
+        result += header.first + ": " + header.second + http::CRLF;
     }
 
-    return response;
+    result += http::CRLF;
+    result += body;
+
+    return result;
 }
 
 void Server::Listen()
@@ -357,21 +430,23 @@ void Server::Listen()
         mkdir(g_socketPrefix, 0700);
     }
 
-    if (0 <= (sockfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
+    if (0 <= (socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
     {
         memset(&addr, 0, sizeof(addr));
         addr.sun_family = AF_UNIX;
         strncpy(addr.sun_path, g_mpiSocket, sizeof(addr.sun_path) - 1);
-        socklen = sizeof(addr);
+        socketlen = sizeof(addr);
 
         // Unlink socket if already in-use
         unlink(g_mpiSocket);
 
-        if (bind(sockfd, (struct sockaddr*)&addr, socklen) == 0)
+        if (bind(socketfd, (struct sockaddr*)&addr, socketlen) == 0)
         {
-            if (listen(sockfd, 5) == 0)
+            if (listen(socketfd, 5) == 0)
             {
                 OsConfigLogInfo(PlatformLog::Get(), "Listening on socket: '%s'", g_mpiSocket);
+
+                m_worker = std::thread(Server::Worker, std::ref(*this));
             }
             else
             {
@@ -393,78 +468,135 @@ void Server::Stop()
 {
     OsConfigLogInfo(PlatformLog::Get(), "Server stopped");
 
-    close(sockfd);
+    m_exitSignal.set_value();
+    m_worker.join();
+
+    close(socketfd);
     unlink(g_mpiSocket);
 }
 
-void Server::DoWork(Router& router)
+static bool ReadRequestFromSocket(int connfd, http::Request& request)
 {
-    int status = 0;
-    int connfd = -1;
-    if (0 <= (connfd = accept(server.sockfd, (struct sockaddr*)&server.addr, &server.socklen)))
-    {
-        OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: '%s' %d", server.addr.sun_path, connfd);
+    bool result = false;
+    // int bytesRead = 0;
+    char buffer[4096];
+    std::stringstream requestStream;
 
-        // TODO: read the request dynamically, do not use a fixed size buffer
-        char buffer[g_maxPayloadSize];
-        ssize_t bytesRead = read(connfd, buffer, g_maxPayloadSize);
+    read(connfd, buffer, sizeof(buffer));
+    requestStream << buffer;
+    // while (0 < (bytesRead = read(connfd, buffer, sizeof(buffer))))
+    // {
+    //     requestStream << std::string(buffer, bytesRead);
+    // }
 
-        if (bytesRead > 0)
+    // if (0 <= bytesRead)
+    // {
+    //     OsConfigLogError(PlatformLog::Get(), "Failed to read request from socket");
+    // }
+    // else
+        if (requestStream.str().empty())
         {
-            OsConfigLogInfo(PlatformLog::Get(), "Read %d bytes from socket", (int)bytesRead);
-            OsConfigLogInfo(PlatformLog::Get(), "Recieved HTTP request:\n%s\n", std::string(buffer, bytesRead).c_str());
+        OsConfigLogError(PlatformLog::Get(), "Empty request from socket");
+    }
+    else if (!request.Parse(requestStream.str()))
+    {
+        OsConfigLogError(PlatformLog::Get(), "Failed to parse request from socket");
+    }
+    else
+    {
+        result = true;
+    }
+
+    return result;
+}
+
+static http::Response HandleRequest(const http::Request& request)
+{
+    http::Response response;
+
+    if (request.method == http::Method::POST)
+    {
+        if (request.uri == "/MpiOpen/")
+        {
+            MpiOpenRequest(request, response);
+        }
+        else if (request.uri == "/MpiClose/")
+        {
+            MpiCloseRequest(request, response);
+        }
+        else if (request.uri == "/MpiSet/")
+        {
+            MpiSetRequest(request, response);
+        }
+        else if (request.uri == "/MpiGet/")
+        {
+            MpiGetRequest(request, response);
+        }
+        else if (request.uri == "/MpiSetDesired/")
+        {
+            MpiSetDesiredRequest(request, response);
+        }
+        else if (request.uri == "/MpiGetReported/")
+        {
+            MpiGetReportedRequest(request, response);
+        }
+        else
+        {
+            OsConfigLogError(PlatformLog::Get(), "Invalid request for uri '%s'", request.uri.c_str());
+            response.status = http::StatusCode::NOT_FOUND;
+        }
+    }
+    else
+    {
+        OsConfigLogError(PlatformLog::Get(), "Invalid request method '%d' for uri '%s'", (int)request.method, request.uri.c_str());
+        response.status = http::StatusCode::NOT_FOUND;
+    }
+
+    return response;
+}
+
+void Server::Worker(Server& server)
+{
+    int connfd = -1;
+    std::future<void> exitSignal = server.m_exitSignal.get_future();
+
+    while (exitSignal.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
+    {
+        if (0 <= (connfd = accept(server.socketfd, (struct sockaddr*)&server.addr, &server.socketlen)))
+        {
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: %s %d", server.addr.sun_path, connfd);
+            }
 
             http::Request request;
-            if (0 == (status = http::Request::Parse(std::string(buffer, bytesRead), request)))
+            if (ReadRequestFromSocket(connfd, request))
             {
-                // Route the request to the correct handler
-                http::Response response = router.HandleRequest(request);
+                http::Response response = HandleRequest(request);
+                std::string responseString = response.ToString();
 
-                std::time_t t = std::time(NULL);
-                struct tm *tm = std::localtime(&t);
-                char now[64];
-                std::strftime(now, sizeof(now), "%c", tm);
-
-                // TEMPORARY: static response header
-                std::stringstream ss;
-                ss << "HTTP/1.1" << " 200 OK" << http::CRLF;
-                ss << "Date: " << now << http::CRLF;
-                ss << "Server: OSConfig" << http::CRLF;
-                ss << "Content-Type: " << g_contentTypeJson << http::CRLF;
-                ss << "Content-Length: " << response.body.size() << http::CRLF;
-                ss << "Connection: Closed" << http::CRLF << http::CRLF;
-                ss << response.body.c_str();
-                std::string s = ss.str();
-
-                OsConfigLogInfo(PlatformLog::Get(), "Sending HTTP response:\n%s\n", s.c_str());
-
-                int n = write(connfd, s.c_str(), s.size());
-                if (n != (int)s.size())
+                if (write(connfd, responseString.c_str(), responseString.size()) < 0)
                 {
-                    OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket: '%s' '%d'", g_mpiSocket, connfd);
+                    OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket");
                 }
-                else
+                else if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogInfo(PlatformLog::Get(), "Sent response to socket: '%s' '%d'", g_mpiSocket, connfd);
+                    OsConfigLogInfo(PlatformLog::Get(), "Sending response: %s %d (%d bytes)", server.addr.sun_path, connfd, (int)responseString.size());
                 }
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to parse HTTP request: '%s' '%d'", g_mpiSocket, connfd);
+                OsConfigLogError(PlatformLog::Get(), "Failed to read request from socket");
             }
-        }
-        else
-        {
-            OsConfigLogError(PlatformLog::Get(), "Failed to read request");
-        }
 
-        if (0 != close(connfd))
-        {
-            OsConfigLogError(PlatformLog::Get(), "Failed to close socket: '%s' '%d'", g_mpiSocket, connfd);
-        }
-        else if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(PlatformLog::Get(), "Closed connection: '%s' %d", server.addr.sun_path, connfd);
+            if (0 != close(connfd))
+            {
+                OsConfigLogError(PlatformLog::Get(), "Failed to close socket: '%s' '%d'", g_mpiSocket, connfd);
+            }
+            else if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(PlatformLog::Get(), "Closed connection: '%s' %d", server.addr.sun_path, connfd);
+            }
         }
     }
 }

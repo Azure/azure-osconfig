@@ -12,7 +12,7 @@ extern MPI_HANDLE g_mpiHandle;
 static int CallMpi(const char* name, const char* request, char** response, int* responseSize)
 {
     const char* mpiSocket = "/run/osconfig/mpid.sock";
-    const char* dataFormat = "POST /%s HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
+    const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
 
     int socketHandle = -1;
     char* data = {0};
@@ -105,16 +105,16 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (MPI_OK == status)
     {
-        *responseSize = ReadHttpContentLengthFromSocket(socketHandle, GetLog()) + 1;
-        *response = (char*)malloc(*responseSize);
+        *responseSize = ReadHttpContentLengthFromSocket(socketHandle, GetLog());
+        *response = (char*)malloc(*responseSize + 1);
         if (NULL != *response)
         {
-            memset(*response, 0, *responseSize);
+            memset(*response, 0, *responseSize + 1);
 
-            if ((*responseSize - 1) != read(socketHandle, *response, *responseSize - 1))
+            if ((*responseSize) != read(socketHandle, *response, *responseSize))
             {
                 status = errno ? errno : EIO;
-                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize - 1, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
             }
         }
         else
@@ -220,9 +220,9 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     OsConfigLogInfo(GetLog(), "CallMpiOpen(%s, %u): %p ('%s')", clientName, maxPayloadSizeBytes, mpiHandle, mpiHandleValue);
 
-    FREE_MEMORY(mpiHandleValue);
+    FREE_MEMORY(mpiHandle);
 
-    return mpiHandle;
+    return mpiHandleValue;
 }
 
 void CallMpiClose(MPI_HANDLE clientSession)

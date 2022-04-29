@@ -3,9 +3,7 @@
 
 project(orchestrator)
 
-add_library(orchestrator
-    ./src/Http.cpp
-    ./src/MpiApi.cpp)
+add_library(orchestrator ./src/MpiApi.cpp)
 
 target_include_directories(orchestrator PUBLIC
     PUBLIC
