@@ -47,7 +47,7 @@ add_library(modulesmanagermocks
     CommonTests.cpp
     MockManagementModule.cpp
     MockModulesManager.cpp)
-target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread modulesmanager commonutils)
+target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread modulesmanager orchestrator commonutils)
 target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_executable(managementmoduletests ManagementModuleTests.cpp)
