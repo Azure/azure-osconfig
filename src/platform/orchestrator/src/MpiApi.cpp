@@ -17,6 +17,11 @@
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
+const std::string CRLF = "\r\n";
+const std::string contentLength = "Content-Length";
+const std::string contentType = "Content-Type";
+const std::string contentTypeJson = "application/json";
+
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
 static const char* g_clientSession = "ClientSession";
@@ -53,53 +58,43 @@ public:
 
 OSCONFIG_LOG_HANDLE PlatformLog::m_log = nullptr;
 
-namespace http
+enum class Method
 {
-    const std::string CRLF = "\r\n";
-    const std::string contentLength = "Content-Length";
-    const std::string contentType = "Content-Type";
-    const std::string contentTypeJson = "application/json";
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    PATCH,
+    INVALID
+};
 
-    enum class Method
-    {
-        GET,
-        POST,
-        PUT,
-        DELETE,
-        PATCH,
-        INVALID
-    };
+enum class StatusCode
+{
+    OK = 200,
+    BAD_REQUEST = 400,
+    NOT_FOUND = 404,
+    INTERNAL_SERVER_ERROR = 500
+};
 
-    enum class StatusCode
-    {
-        OK = 200,
-        BAD_REQUEST = 400,
-        NOT_FOUND = 404,
-        INTERNAL_SERVER_ERROR = 500
-    };
+struct Request
+{
+    Method m_method;
+    std::string m_version;
+    std::string m_uri;
+    std::map<std::string, std::string> m_headers;
+    std::string m_body;
 
-    struct Request
-    {
-        Method m_method;
-        std::string m_version;
-        std::string m_uri;
-        std::map<std::string, std::string> m_headers;
-        std::string m_body;
+    bool Parse(const std::string& request);
+};
 
-        bool Parse(const std::string& request);
-    };
+struct Response
+{
+    StatusCode m_status;
+    std::map<std::string, std::string> m_headers;
+    std::string m_body;
 
-    struct Response
-    {
-        StatusCode m_status;
-        std::map<std::string, std::string> m_headers;
-        std::string m_body;
-
-        std::string ToString();
-    };
-} // namespace http
-
-
+    std::string ToString();
+};
 class Server
 {
 public:

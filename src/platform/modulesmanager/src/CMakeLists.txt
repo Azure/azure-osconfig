@@ -3,7 +3,6 @@
 
 project(modulesmanager)
 set(MODULE_MANAGER_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../inc/)
-set(MODULES_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../modules/inc)
 
 add_library(modulesmanager STATIC ModulesManager.cpp ManagementModule.cpp)
 target_link_libraries(modulesmanager
@@ -14,8 +13,8 @@ target_link_libraries(modulesmanager
 )
 target_include_directories(modulesmanager
     PUBLIC
+        ${MODULES_INCLUDE_DIR}
         ${MODULE_MANAGER_INCLUDE_DIR}
         ${ORCHESTRATOR_INC_DIR}
-        ${MODULES_INCLUDE_DIR}
         ${PLATFORM_INC_DIR}
 )

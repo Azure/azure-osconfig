@@ -10,6 +10,7 @@ target_include_directories(orchestrator PUBLIC
         ./src
         ./inc
         ${PLATFORM_INC_DIR}
-        ${MODULESMANAGER_INC_DIR})
+        ${MODULESMANAGER_INC_DIR}
+        ${MODULES_INCLUDE_DIR})
 
 target_link_libraries(orchestrator pthread logging commonutils)
