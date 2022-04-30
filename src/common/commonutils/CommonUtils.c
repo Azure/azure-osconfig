@@ -1319,7 +1319,11 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     {
         memset(returnUri, 0, uriLength + 1);
         strncpy(returnUri, bufferUri, uriLength);
-        OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
+        
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(log, "ReadUriFromSocket: %s", returnUri);
+        }
     }
     else
     {
@@ -1355,7 +1359,11 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log)
         (3 == read(socketHandle, status, 3)) && (isdigit(status[0]) && (status[0] >= '1') && (status[0] <= '5') && isdigit(status[1]) && isdigit(status[2])))
     {
         httpStatus = atoi(status);
-        OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
+        
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(log, "ReadHttpStatusFromSocket: %d ('%s')", httpStatus, status);
+        }
     }
 
     FREE_MEMORY(buffer);
@@ -1403,7 +1411,11 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
             if (isdigit(isolatedContentLength[0]))
             {
                 httpContentLength = atoi(isolatedContentLength);
-                OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
+                
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogInfo(log, "ReadHttpContentLengthFromSocket: %d ('%s')", httpContentLength, isolatedContentLength);
+                }
             }
         }
         
