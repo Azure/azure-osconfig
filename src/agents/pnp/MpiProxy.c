@@ -132,7 +132,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", name, request, *response, *responseSize, mpiSocket, status);
+        OsConfigLogInfo(GetLog(), "CallMpi(name: '%s', request: '%s', response: '%s', response size: %d bytes) to socket '%s' returned %d", 
+            name, request, *response, *responseSize, mpiSocket, status);
     }
     
     return status;
@@ -186,7 +187,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
 
     if (NULL == clientName)
     {
-        OsConfigLogError(GetLog(), "CallMpiOpen: invalid arguments");
+        OsConfigLogError(GetLog(), "CallMpiOpen: invalid NULL MPI handle");
         return NULL;
     }
 
@@ -196,7 +197,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     request = (char*)malloc(requestSize);
     if (NULL == request)
     {
-        OsConfigLogError(GetLog(), "CallMpiOpen: failed to allocate memory for request");
+        OsConfigLogError(GetLog(), "CallMpiOpen(%s, %u): failed to allocate memory for request", clientName, maxPayloadSizeBytes);
         return NULL;
     }
 
@@ -243,7 +244,7 @@ void CallMpiClose(MPI_HANDLE clientSession)
     request = (char*)malloc(requestSize);
     if (NULL == request)
     {
-        OsConfigLogError(GetLog(), "CallMpiClose: failed to allocate memory for request");
+        OsConfigLogError(GetLog(), "CallMpiClose(%p): failed to allocate memory for request", clientSession);
         return;
     }
 
@@ -286,7 +287,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     if (!IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
     {
         status = EINVAL;
-        OsConfigLogError(GetLog(), "CallMpiSet: invalid payload (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiSet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
         return status;
     }
 
@@ -296,7 +297,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
     if (NULL == request)
     {
         status = ENOMEM;
-        OsConfigLogError(GetLog(), "CallMpiSet: failed to allocate memory for request (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiSet(%s, %s): failed to allocate memory for request (%d)", componentName, propertyName, status);
         return status;
     }
 
@@ -357,7 +358,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if (NULL == request)
     {
         status = ENOMEM;
-        OsConfigLogError(GetLog(), "CallMpiGet: failed to allocate memory for request (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): failed to allocate memory for request (%d)", componentName, propertyName, status);
         return status;
     }
 
@@ -369,7 +370,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     if ((NULL == *payload) || (*payloadSizeBytes != (int)strlen(*payload)))
     {
-        OsConfigLogError(GetLog(), "CallMpiGet: invalid response (%p, %d)", *payload, *payloadSizeBytes);
+        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid response (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
@@ -380,10 +381,10 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         OsConfigLogInfo(GetLog(), "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
-    if (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()))
+    if ((NULL != *payload) && (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog())))
     {
         status = EINVAL;
-        OsConfigLogError(GetLog(), "CallMpiGet: invalid payload (%d)", status);
+        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
