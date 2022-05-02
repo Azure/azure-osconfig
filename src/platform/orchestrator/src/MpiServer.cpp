@@ -581,7 +581,7 @@ static bool ReadRequest(int connfd, Request& request)
     }
     else if (0 >= (contentLength = ReadHttpContentLengthFromSocket(connfd, PlatformLog::Get())))
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to read HTTP Content-Length");
+        OsConfigLogError(PlatformLog::Get(), "Failed to read HTTP Content-Length: %s", uri);
         success = false;
     }
     else
@@ -594,16 +594,24 @@ static bool ReadRequest(int connfd, Request& request)
         {
             if (contentLength != (bytesRead = read(connfd, buffer, contentLength)))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: %s Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytesRead));
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: '%s' Content-Length %d, bytes read %d, body ' %.*s'", uri, contentLength, static_cast<int>(bytesRead), static_cast<int>(bytesRead), buffer);
+                }
+                else
+                {
+                    OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: '%s' Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytesRead));
+                }
+
                 success = false;
             }
 
-            request.m_body = std::string(buffer, contentLength);
+            request.m_body = std::string(buffer, bytesRead);
             FREE_MEMORY(buffer);
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to allocate memory for HTTP body");
+            OsConfigLogError(PlatformLog::Get(), "Failed to allocate memory for HTTP body: '%s' Content-Length %d", uri, contentLength);
             success = false;
         }
     }
