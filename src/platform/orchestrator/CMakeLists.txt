@@ -3,7 +3,7 @@
 
 project(orchestrator)
 
-add_library(orchestrator STATIC ./src/MpiApi.cpp)
+add_library(orchestrator STATIC ./src/MpiServer.cpp)
 
 target_include_directories(orchestrator PUBLIC
     PUBLIC
