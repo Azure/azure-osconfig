@@ -594,7 +594,7 @@ static bool ReadRequest(int connfd, Request& request)
         {
             if (contentLength != (bytesRead = read(connfd, buffer, contentLength)))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: Content-Length %d, bytes read %d", contentLength, (int)bytesRead);
+                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: %s Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytesRead));
                 success = false;
             }
 
