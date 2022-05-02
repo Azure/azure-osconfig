@@ -586,7 +586,7 @@ StatusCode RouteRequest(const char* uri, const std::string& request, std::string
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Invalid request for uri '%s'", uri);
+        OsConfigLogError(PlatformLog::Get(), "%s: invalid request", uri);
         status = StatusCode::NOT_FOUND;
     }
 
@@ -604,13 +604,13 @@ static void HandleClient(int connfd)
 
     if (nullptr == (uri = ReadUriFromSocket(connfd, PlatformLog::Get())))
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to read request URI");
+        OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", connfd);
         return;
     }
 
     if (0 >= (contentLength = ReadHttpContentLengthFromSocket(connfd, PlatformLog::Get())))
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to read HTTP Content-Length for '%s'", uri);
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to read HTTP Content-Length", uri);
         return;
     }
 
@@ -620,11 +620,11 @@ static void HandleClient(int connfd)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body for '%s': Content-Length %d, bytes read %d, body ' %.*s'", uri, contentLength, static_cast<int>(bytes), static_cast<int>(bytes), requestPayload);
+                OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d '%.*s'", uri, contentLength, static_cast<int>(bytes), static_cast<int>(bytes), requestPayload);
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body for '%s': Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytes));
+                OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytes));
             }
         }
 
@@ -633,7 +633,7 @@ static void HandleClient(int connfd)
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to allocate memory for HTTP body '%s': Content-Length %d", uri, contentLength);
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
     }
 
     std::string response = SerializeResponse(status, responsePayload);
@@ -642,11 +642,11 @@ static void HandleClient(int connfd)
     {
         if (bytes < 0)
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket '%s': %s", uri, strerror(errno));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket %s", uri, strerror(errno));
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket '%s': %d, bytes written %d", uri, static_cast<int>(response.size()), static_cast<int>(bytes));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket %d, bytes written %d", uri, static_cast<int>(response.size()), static_cast<int>(bytes));
         }
     }
 
