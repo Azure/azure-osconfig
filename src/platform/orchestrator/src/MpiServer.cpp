@@ -626,7 +626,7 @@ static bool SendResponse(int connfd, Response response)
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket: %d Bytes written %d", (int)payload.size(), (int)bytesWritten);
+            OsConfigLogError(PlatformLog::Get(), "Failed to write response to socket: %d, bytes written %d", static_cast<int>(payload.size()), static_cast<int>(bytesWritten));
         }
     }
 
