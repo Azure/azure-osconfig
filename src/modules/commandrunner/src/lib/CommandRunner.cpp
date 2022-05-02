@@ -570,7 +570,7 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
                 for (auto& it : client.GetArray())
                 {
-                    if (it.HasMember(g_commandId.c_str()) && it[g_commandId.c_str()].IsString() && it[g_commandId.c_str()].GetString() == commandStatus.m_id)
+                    if (it.HasMember(g_commandId.c_str()) && it[g_commandId.c_str()].IsString() && (it[g_commandId.c_str()].GetString() == commandStatus.m_id))
                     {
                         it.CopyFrom(statusDocument, allocator);
                         updated = true;
