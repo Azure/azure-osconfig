@@ -594,7 +594,7 @@ static bool ReadRequest(int connfd, Request& request)
         {
             if (contentLength != (bytesRead = read(connfd, buffer, contentLength)))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: Content-Length %d, Bytes read %d", contentLength, (int)bytesRead);
+                OsConfigLogError(PlatformLog::Get(), "Failed to read complete HTTP body: Content-Length %d, bytes read %d", contentLength, (int)bytesRead);
                 success = false;
             }
 
@@ -692,7 +692,6 @@ void Server::Worker(Server& server)
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to read request from socket");
                 response.m_status = StatusCode::BAD_REQUEST;
             }
 
