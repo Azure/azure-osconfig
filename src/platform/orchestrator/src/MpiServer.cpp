@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #include "CommonUtils.h"
-#include "MpiApi.h"
+#include "MpiServer.h"
 #include "ModulesManager.h"
 #include "Logging.h"
 

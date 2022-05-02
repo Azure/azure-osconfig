@@ -22,7 +22,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <ModulesManager.h>
-#include <MpiApi.h>
+#include <MpiServer.h>
 #include <Mpi.h>
 #include <ScopeGuard.h>
 
