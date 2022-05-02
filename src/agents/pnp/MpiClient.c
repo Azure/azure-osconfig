@@ -67,7 +67,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         if (0 == connect(socketHandle, (struct sockaddr*)&socketAddress, socketLength))
         {
             snprintf(data, estimatedDataSize, dataFormat, name, strlen(request), request);
-            actualDataSize = strlen(data);
+            actualDataSize = (int)strlen(data);
         }
         else
         {
@@ -79,7 +79,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     if (MPI_OK == status)
     {
         bytes = send(socketHandle, data, actualDataSize, 0);
-        if (bytes != estimatedDataSize)
+        if (bytes != actualDataSize)
         {
             status = errno ? errno : EIO;
             if (IsFullLoggingEnabled())
