@@ -155,23 +155,23 @@ void Server::Listen()
         {
             if (listen(m_socketfd, 5) == 0)
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Listening on socket: '%s'", g_mpiSocket);
+                OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
 
                 m_worker = std::thread(Server::Worker, std::ref(*this));
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket: '%s'", g_mpiSocket);
+                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket '%s'", g_mpiSocket);
             }
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket: '%s'", g_mpiSocket);
+            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket '%s'", g_mpiSocket);
         }
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to create socket: '%s'", g_mpiSocket);
+        OsConfigLogError(PlatformLog::Get(), "Failed to create socket '%s'", g_mpiSocket);
     }
 }
 
@@ -642,11 +642,11 @@ static void HandleClient(int connfd)
     {
         if (bytes < 0)
         {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket %s", uri, strerror(errno));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket '%s'", uri, strerror(errno));
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket %d, bytes written %d", uri, static_cast<int>(response.size()), static_cast<int>(bytes));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket '%d', bytes written %d", uri, static_cast<int>(response.size()), static_cast<int>(bytes));
         }
     }
 
@@ -664,18 +664,18 @@ void Server::Worker(Server& server)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: %s %d", server.m_addr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection %s '%d'", server.m_addr.sun_path, connfd);
             }
 
             HandleClient(connfd);
 
             if (0 != close(connfd))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to close socket: %s %d", g_mpiSocket, connfd);
+                OsConfigLogError(PlatformLog::Get(), "Failed to close socket %s '%d'", g_mpiSocket, connfd);
             }
             else if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Closed connection: %s %d", server.m_addr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Closed connection %s '%d'", server.m_addr.sun_path, connfd);
             }
         }
     }
