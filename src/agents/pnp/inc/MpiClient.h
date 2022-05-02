@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef MPIPROXY_H
-#define MPIPROXY_H
+#ifndef MPICLIENT_H
+#define MPICLIENT_H
 
 #ifdef __cplusplus
 extern "C"
@@ -24,4 +24,4 @@ void CallMpiShutdown(void);
 }
 #endif
 
-#endif // MPIPROXY_H
+#endif // MPIPCLIENT_H

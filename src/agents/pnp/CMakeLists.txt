@@ -19,7 +19,7 @@ project(osconfig)
 set(osconfig_files
     ./AisUtils.c
     ./ConfigUtils.c
-    ./MpiProxy.c
+    ./MpiClient.c
     ./PnpAgent.c
     ./PnpUtils.c)
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "inc/PnpUtils.h"
-#include "inc/MpiProxy.h"
+#include "inc/MpiClient.h"
 #include "inc/PnpAgent.h"
 
 #define PNP_STATUS_SUCCESS 200

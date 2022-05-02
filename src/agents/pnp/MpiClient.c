@@ -3,7 +3,7 @@
 
 #include "inc/AgentCommon.h"
 #include "inc/PnpUtils.h"
-#include "inc/MpiProxy.h"
+#include "inc/MpiClient.h"
 
 #define MPI_MAX_CONTENT_LENGTH 64
 
@@ -16,7 +16,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     
     int socketHandle = -1;
     char* data = {0};
-    int dataSize = 0;
+    int estimatedDataSize = 0;
+    int actualDataSize = 0;
     char contentLengthString[MPI_MAX_CONTENT_LENGTH] = {0};
     struct sockaddr_un socketAddress = {0};
     socklen_t socketLength = 0;
@@ -35,9 +36,9 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *responseSize = 0;
 
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
-    dataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 3;
+    estimatedDataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 3;
 
-    data = (char*)malloc(dataSize);
+    data = (char*)malloc(estimatedDataSize);
     if (NULL == data)
     {
         status = ENOMEM;
@@ -45,7 +46,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
         return status;
     }
 
-    memset(data, 0, dataSize);
+    memset(data, 0, estimatedDataSize);
 
     socketHandle = socket(AF_UNIX, SOCK_STREAM, 0);
     if (0 > socketHandle)
@@ -65,7 +66,8 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     {
         if (0 == connect(socketHandle, (struct sockaddr*)&socketAddress, socketLength))
         {
-            snprintf(data, dataSize, dataFormat, name, strlen(request), request);
+            snprintf(data, estimatedDataSize, dataFormat, name, strlen(request), request);
+            actualDataSize = strlen(data);
         }
         else
         {
@@ -76,22 +78,22 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
 
     if (MPI_OK == status)
     {
-        bytes = send(socketHandle, data, dataSize, 0);
-        if (bytes != dataSize)
+        bytes = send(socketHandle, data, actualDataSize, 0);
+        if (bytes != estimatedDataSize)
         {
             status = errno ? errno : EIO;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request '%s' to socket '%s' (%d)", name, data, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request '%s' (%d bytes) to socket '%s' (%d)", name, data, actualDataSize, mpiSocket, status);
             }
             else
             {
-                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request to socket '%s' (%d)", name, mpiSocket, status);
+                OsConfigLogError(GetLog(), "CallMpi(%s): failed to send request to socket '%s' of %d bytes (%d)", name, mpiSocket, actualDataSize, status);
             }
         }
         else if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(GetLog(), "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, dataSize);
+            OsConfigLogInfo(GetLog(), "CallMpi(%s): sent to '%s' '%s' (%d bytes)", name, mpiSocket, data, actualDataSize);
         }
     }
 
@@ -192,7 +194,7 @@ MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSize
     }
 
     snprintf(maxPayloadSizeBytesString, sizeof(maxPayloadSizeBytesString), "%d", maxPayloadSizeBytes);
-    requestSize = strlen(requestBodyFormat) + strlen(clientName) + strlen(maxPayloadSizeBytesString);
+    requestSize = strlen(requestBodyFormat) + strlen(clientName) + strlen(maxPayloadSizeBytesString) + 1;
 
     request = (char*)malloc(requestSize);
     if (NULL == request)
@@ -239,7 +241,7 @@ void CallMpiClose(MPI_HANDLE clientSession)
         return;
     }
 
-    requestSize = strlen(requestBodyFormat) + strlen((char*)clientSession);
+    requestSize = strlen(requestBodyFormat) + strlen((char*)clientSession) + 1;
 
     request = (char*)malloc(requestSize);
     if (NULL == request)
@@ -352,7 +354,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName);
+    requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName) + 1;
 
     request = (char*)malloc(requestSize);
     if (NULL == request)
@@ -476,7 +478,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle);
+    requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + 1;
 
     request = (char*)malloc(requestSize);
     if (NULL == request)
