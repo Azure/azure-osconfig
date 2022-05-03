@@ -339,12 +339,6 @@ static bool InitializeAgent(void)
 {
     bool status = true;
 
-    if (NULL == (g_tickCounter = tickcounter_create()))
-    {
-        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
-        status = false;
-    }
-
     if (status)
     {
         g_lastTime = (unsigned int)time(NULL);
