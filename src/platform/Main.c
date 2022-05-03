@@ -39,8 +39,7 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
-//static TICK_COUNTER_HANDLE g_tickCounter = NULL;
-//static tickcounter_ms_t g_lastTick = 0;
+static unsigned int g_lastTime = 0;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -144,25 +143,10 @@ void ScheduleRefresh(void)
 
 static bool InitializePlatform(void)
 {
-    bool status = true;
-
-    /*if (g_tickCounter = tickcounter_create())
-    {
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "tickcounter_create failed");
-        status = false;
-    }*/
-
-    if (status)
-    {
-        MpiInitialize();
-        OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
-    }
-
-    return status;
+    g_lastTime = (unsigned int)time(NULL);
+    MpiInitialize();
+    OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
+    return true;
 }
 
 void TerminatePlatform(void)
@@ -173,15 +157,14 @@ void TerminatePlatform(void)
 
 static void PlatformDoWork(void)
 {
-    /*tickcounter_ms_t nowTick = 0;
-    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-    tickcounter_get_current_ms(g_tickCounter, &nowTick);
+    unsigned int currentTime = time(NULL);
+    unsigned int timeInterval = g_reportingInterval;
 
-    if (intervalTick <= (nowTick - g_lastTick))
+    if (timeInterval <= (currentTime - g_lastTime))
     {
-        //MpiDoWork
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-    }*/
+        MpiDoWork
+        g_lastTime = (unsigned int)time(NULL);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -233,7 +216,8 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         PlatformDoWork();
-        //ThreadAPI_Sleep(DOWORK_SLEEP);
+        
+        sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
         {

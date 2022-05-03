@@ -339,19 +339,16 @@ static bool InitializeAgent(void)
 {
     bool status = true;
 
-    if (status)
+    g_lastTime = (unsigned int)time(NULL);
+
+    //CallMpiInitialize();
+
+    // Open the MPI session for this PnP Module instance:
+    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
-        g_lastTime = (unsigned int)time(NULL);
-
-        //CallMpiInitialize();
-
-        // Open the MPI session for this PnP Module instance:
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
-        {
-            LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-            g_exitState = MpiInitializationFailure;
-            status = false;
-        }
+        LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+        g_exitState = MpiInitializationFailure;
+        status = false;
     }
 
     if (status && g_iotHubConnectionString)
