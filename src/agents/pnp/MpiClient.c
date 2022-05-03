@@ -517,17 +517,14 @@ void CallMpiFree(MPI_JSON_STRING payload)
 
 void CallMpiDoWork(void)
 {
-    MpiDoWork();
 }
 
-void CallMpiInitialize(void)
+/*void CallMpiInitialize(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
-    MpiInitialize();
 }
 
 void CallMpiShutdown(void)
 {
     OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
-    MpiShutdown();
-}
+}*/

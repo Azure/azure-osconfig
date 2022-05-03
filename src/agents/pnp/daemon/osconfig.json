@@ -84,6 +84,6 @@
       "ObjectName": "serviceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 30,
+  "ReportingIntervalSeconds": 10,
   "LocalManagement": 0
 }

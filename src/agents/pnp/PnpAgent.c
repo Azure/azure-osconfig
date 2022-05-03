@@ -350,7 +350,7 @@ static bool InitializeAgent(void)
     {
         tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
 
-        CallMpiInitialize();
+        //CallMpiInitialize();
 
         // Open the MPI session for this PnP Module instance:
         if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
@@ -398,7 +398,7 @@ void CloseAgent(void)
 
     FREE_MEMORY(g_reportedProperties);
 
-    CallMpiShutdown();
+    //CallMpiShutdown();
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }

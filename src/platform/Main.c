@@ -1,6 +1,30 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <libgen.h>
+#include <errno.h>
+#include <assert.h>
+#include <signal.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+#include <CommonUtils.h>
+#include <Logging.h>
+#include <Mpi.h>
+#include <version.h>
+
 // 100 milliseconds
 #define DOWORK_SLEEP 100
 
@@ -15,91 +39,8 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
-/////////////////////////////////////////////////////////
-#include <stdint.h>
-#include <time.h>
-#include <pthread.h>
-
-#ifndef __MACH__
-extern clockid_t time_basis;
-#endif
-
-extern void set_time_basis(void);
-extern int get_time_ns(struct timespec* ts);
-extern int64_t get_time_ms(void);
-
-#define INVALID_TIME_VALUE (int64_t)(-1)
-
-#define NANOSECONDS_IN_1_SECOND 1000000000L
-#define MILLISECONDS_IN_1_SECOND 1000
-#define NANOSECONDS_IN_1_MILLISECOND 1000000L
-
-typedef struct TICK_COUNTER_INSTANCE_TAG
-{
-    int64_t init_time_value;
-    tickcounter_ms_t current_ms;
-} TICK_COUNTER_INSTANCE;
-
-TICK_COUNTER_HANDLE tickcounter_create(void)
-{
-    TICK_COUNTER_INSTANCE* result = (TICK_COUNTER_INSTANCE*)malloc(sizeof(TICK_COUNTER_INSTANCE));
-    if (result != NULL)
-    {
-        set_time_basis();
-
-        result->init_time_value = get_time_ms();
-        if (result->init_time_value == INVALID_TIME_VALUE)
-        {
-            free(result);
-            result = NULL;
-        }
-        else
-        {
-            result->current_ms = 0;
-        }
-    }
-    return result;
-}
-
-void tickcounter_destroy(TICK_COUNTER_HANDLE tick_counter)
-{
-    if (tick_counter != NULL)
-    {
-        free(tick_counter);
-    }
-}
-
-int tickcounter_get_current_ms(TICK_COUNTER_HANDLE tick_counter, tickcounter_ms_t * current_ms)
-{
-    int result;
-
-    if (tick_counter == NULL || current_ms == NULL)
-    {
-        result = MU_FAILURE;
-    }
-    else
-    {
-        int64_t time_value = get_time_ms();
-        if (time_value == INVALID_TIME_VALUE)
-        {
-            result = MU_FAILURE;
-        }
-        else
-        {
-            TICK_COUNTER_INSTANCE* tick_counter_instance = (TICK_COUNTER_INSTANCE*)tick_counter;
-            tick_counter_instance->current_ms = (tickcounter_ms_t)time_value - tick_counter_instance->init_time_value;
-            *current_ms = tick_counter_instance->current_ms;
-            result = 0;
-        }
-    }
-
-    return result;
-}
-
-/////////////////////////////////////////////////////////
-
-static TICK_COUNTER_HANDLE g_tickCounter = NULL;
-static tickcounter_ms_t g_lastTick = 0;
+//static TICK_COUNTER_HANDLE g_tickCounter = NULL;
+//static tickcounter_ms_t g_lastTick = 0;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -119,9 +60,9 @@ static int g_stopSignals[] = {
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
-static int g_localManagement = 0;
+//static int g_localManagement = 0;
 
-static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
+//static int g_reportingInterval = 30/*DEFAULT_REPORTING_INTERVAL*/;
 
 static OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 OSCONFIG_LOG_HANDLE GetLog()
@@ -201,29 +142,23 @@ void ScheduleRefresh(void)
     g_refreshSignal = SIGHUP;
 }
 
-static void SignalChild(int signal)
-{
-    // No-op
-    UNUSED(signal);
-}
-
 static bool InitializePlatform(void)
 {
     bool status = true;
 
-    if (g_tickCounter = tickcounter_create())
+    /*if (g_tickCounter = tickcounter_create())
     {
         tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
+        OsConfigLogError(GetLog(), "tickcounter_create failed");
         status = false;
-    }
+    }*/
 
     if (status)
     {
-        //MpiInitialize()
+        MpiInitialize();
         OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
     }
 
@@ -232,13 +167,13 @@ static bool InitializePlatform(void)
 
 void TerminatePlatform(void)
 {
-    //MpiShutdown()
+    MpiShutdown();
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
 
 static void PlatformDoWork(void)
 {
-    tickcounter_ms_t nowTick = 0;
+    /*tickcounter_ms_t nowTick = 0;
     tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
     tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
@@ -246,18 +181,21 @@ static void PlatformDoWork(void)
     {
         //MpiDoWork
         tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-    }
+    }*/
 }
 
 int main(int argc, char *argv[])
 {
+    UNUSED(argc);
+    UNUSED(argv);
+    
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
-    char* jsonConfiguration LoadStringFromFile(CONFIG_FILE, false, GetLog());
+    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        //SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -275,8 +213,8 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
+        //g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
+        //g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -288,14 +226,14 @@ int main(int argc, char *argv[])
 
     if (!InitializePlatform())
     {
-        LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig Platform");
+        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Platform");
         goto done;
     }
 
     while (0 == g_stopSignal)
     {
         PlatformDoWork();
-        ThreadAPI_Sleep(DOWORK_SLEEP);
+        //ThreadAPI_Sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
         {
