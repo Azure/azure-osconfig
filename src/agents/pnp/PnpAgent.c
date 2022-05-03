@@ -38,8 +38,7 @@ static int g_protocol = PROTOCOL_AUTO;
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
 
-static TICK_COUNTER_HANDLE g_tickCounter = NULL;
-static tickcounter_ms_t g_lastTick = 0;
+static unsigned int g_lastTime = 0;
 
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
 
@@ -348,7 +347,7 @@ static bool InitializeAgent(void)
 
     if (status)
     {
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+        g_lastTime = (unsigned int)time(NULL);
 
         //CallMpiInitialize();
 
@@ -467,11 +466,11 @@ static void LoadDesiredConfigurationFromFile()
 static void AgentDoWork(void)
 {
     char* connectionString = NULL;
-    tickcounter_ms_t nowTick = 0;
-    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-    tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
-    if (intervalTick <= (nowTick - g_lastTick))
+    unsigned int currentTime = time(NULL);
+    unsigned int timeInterval = g_reportingInterval;
+
+    if (timeInterval <= (currentTime - g_lastTime))
     {
         if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
@@ -515,7 +514,7 @@ static void AgentDoWork(void)
         // Allow the inproc (for now) platform to unload unused modules
         CallMpiDoWork();
 
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+        g_lastTime = (unsigned int)time(NULL);
     }
     else
     {
