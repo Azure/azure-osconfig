@@ -1,5 +1,5 @@
 [Unit]
-Description=OSConfig PnP Agent Daemon
+Description=OSConfig Agent Daemon
 After=network-online.target
 Wants=network.target network-online.target nss-lookup.target
 # Allow restart up to 3 times every 16 minutes (3 times x 5 minutes + 1 minute)
@@ -12,7 +12,7 @@ StartLimitBurst=3
 # ExecStart=/usr/bin/osconfig $CONN_STR
 # Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
 # Environment="http_proxy=http://user:password@wwww.foo.org:100//"
-ExecStart=/usr/bin/osconfig
+ExecStart=/usr/bin/osconfig-agent
 Type=simple
 User=root
 Restart=always

@@ -14,18 +14,18 @@ endif()
 
 SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
-project(osconfig)
+project(osconfig-agent)
 
-set(osconfig_files
+set(osconfig_agent_files
     ./AisUtils.c
     ./ConfigUtils.c
     ./MpiClient.c
     ./PnpAgent.c
     ./PnpUtils.c)
 
-set(target_name osconfig)
+set(target_name osconfig-agent)
 
-add_executable(${target_name} ${osconfig_files})
+add_executable(${target_name} ${osconfig_agent_files})
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")
@@ -67,9 +67,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         aziotsharedutil
         tracelogging
         logging
-        commonutils
-        modulesmanager
-        orchestrator)
+        commonutils)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result)
 
@@ -105,12 +103,10 @@ else()
         ${CMAKE_DL_LIBS})
 endif()
 
-# Installation
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
-install(FILES daemon/${target_name}.json DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
-# install osconfig.toml breaks a current install only binplace to final destination (${CMAKE_INSTALL_SYSCONFDIR}/aziot/identityd/config.d) if non-existent
 install(FILES daemon/${target_name}.toml DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES telemetryevents/OsConfigAgentTelemetry.conf DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/azure-device-telemetryd)
+install(FILES daemon/osconfig.json DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)

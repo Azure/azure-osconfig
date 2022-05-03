@@ -1,0 +1,12 @@
+[Unit]
+Description=OSConfig Management Platform Daemon
+After=osconfig-agent.target
+Wants=osconfig-agent.target
+
+[Service]
+ExecStart=/usr/bin/osconfig-platform
+Type=simple
+User=root
+
+[Install]
+WantedBy=multi-user.target
