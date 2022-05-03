@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
 #include <pthread.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -23,11 +19,6 @@
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
-static const std::string g_CRLF = "\r\n";
-static const std::string g_httpVersion = "HTTP/1.1";
-static const std::string g_contentTypeJson = "Content-Type: application/json";
-static const std::string g_contentLength = "Content-Length: ";
-
 static int g_socketfd;
 static struct sockaddr_un g_socketaddr;
 static socklen_t g_socketlen;
@@ -41,6 +32,10 @@ static const char* g_clientSession = "ClientSession";
 static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 static const char* g_payload = "Payload";
+
+#define UUID_LENGTH 36
+#define MAX_REASON_PHRASE_LENGTH 32
+#define MAX_STATUS_CODE_LENGTH 3
 
 #define PLATFORM_LOGFILE "/var/log/osconfig_platform.log"
 #define PLATFORM_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
@@ -81,11 +76,10 @@ enum StatusCode
 const char* CreateUuid()
 {
     char* uuid = NULL;
-    const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
+    static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
     const char* hex = "0123456789ABCDEF-";
-    int templateLength = strlen(uuidTemplate);
 
-    uuid = (char*)malloc(templateLength + 1);
+    uuid = (char*)malloc(UUID_LENGTH + 1);
     if (uuid == NULL)
     {
         return NULL;
@@ -93,7 +87,7 @@ const char* CreateUuid()
 
     srand(clock());
 
-    for (int i = 0; i < templateLength + 1; i++)
+    for (int i = 0; i < UUID_LENGTH + 1; i++)
     {
         int r = rand() % 16;
         char c = ' ';
@@ -106,42 +100,32 @@ const char* CreateUuid()
             case 'N': { c = '4'; } break;
         }
 
-        uuid[i] = (i < templateLength) ? c : 0x00;
+        uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
     }
 
     return uuid;
 }
 
-std::string StatusText(StatusCode statusCode)
+void GetReasonPhrase(StatusCode statusCode, char* phrase)
 {
-    std::string result;
     switch (statusCode)
     {
-        case StatusCode::OK:
-            result = "OK";
+        case OK:
+            strcpy(phrase, "OK");
             break;
-        case StatusCode::BAD_REQUEST:
-            result = "BAD_REQUEST";
+        case BAD_REQUEST:
+            strcpy(phrase, "Bad Request");
             break;
-        case StatusCode::NOT_FOUND:
-            result = "NOT_FOUND";
+        case NOT_FOUND:
+            strcpy(phrase, "Not Found");
+            break;
+        case INTERNAL_SERVER_ERROR:
+            strcpy(phrase, "Internal Server Error");
             break;
         default:
-            result = "INTERNAL_SERVER_ERROR";
+            strcpy(phrase, "Unknown");
             break;
     }
-    return result;
-}
-
-std::string SerializeResponse(StatusCode status, const std::string& payload)
-{
-    std::string result;
-    result += g_httpVersion + " " + std::to_string(static_cast<int>(status)) + " " + StatusText(status) + g_CRLF;
-    result += g_contentTypeJson + g_CRLF;
-    result += g_contentLength + std::to_string(payload.size()) + g_CRLF;
-    result += g_CRLF;
-    result += payload;
-    return result;
 }
 
 static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string& responsePayload)
@@ -161,7 +145,7 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
             std::string sessionId = CreateUuid();
             MPI_HANDLE handle = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
 
-            if (handle != nullptr)
+            if (handle != NULL)
             {
                 g_sessions[sessionId] = handle;
                 status = StatusCode::OK;
@@ -239,7 +223,6 @@ static StatusCode MpiCloseRequest(const std::string& requestPayload, std::string
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MpiClose request");
             }
-            OsConfigLogError(PlatformLog::Get(), "Invalid MpiClose request body: %s", requestPayload.c_str());
         }
     }
     else
@@ -550,16 +533,22 @@ StatusCode RouteRequest(const char* uri, const std::string& request, std::string
     return status;
 }
 
-static void HandleClient(int connfd)
+static void HandleConnection(int connfd)
 {
-    char* uri = nullptr;
-    char* requestPayload = nullptr;
-    int contentLength = 0;
-    std::string responsePayload;
+    const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
+
     StatusCode status = StatusCode::OK;
+    char* uri = NULL;
+    char* requestPayload = NULL;
+    int contentLength = 0;
+    std::string responseBody;
+    char* responseBuffer = NULL;
+    char reasonPhrase[MAX_REASON_PHRASE_LENGTH];
+    int estimatedSize = 0;
+    int actualSize = 0;
     ssize_t bytes = 0;
 
-    if (nullptr == (uri = ReadUriFromSocket(connfd, PlatformLog::Get())))
+    if (NULL == (uri = ReadUriFromSocket(connfd, PlatformLog::Get())))
     {
         OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", connfd);
         return;
@@ -571,7 +560,7 @@ static void HandleClient(int connfd)
         return;
     }
 
-    if (nullptr != (requestPayload = new (std::nothrow) char[contentLength]))
+    if (NULL != (requestPayload = new (std::nothrow) char[contentLength]))
     {
         if (contentLength != static_cast<int>(bytes = read(connfd, requestPayload, contentLength)))
         {
@@ -585,7 +574,9 @@ static void HandleClient(int connfd)
             }
         }
 
-        status = RouteRequest(uri, std::string(requestPayload, contentLength), responsePayload);
+        status = RouteRequest(uri, std::string(requestPayload, contentLength), responseBody);
+        GetReasonPhrase(status, reasonPhrase);
+
         FREE_MEMORY(requestPayload);
     }
     else
@@ -593,24 +584,31 @@ static void HandleClient(int connfd)
         OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
     }
 
-    std::string response = SerializeResponse(status, responsePayload);
+    estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(reasonPhrase) + responseBody.length() + 1;
 
-    if (response.size() != static_cast<size_t>(bytes = write(connfd, response.c_str(), response.size())))
+    if (NULL != (responseBuffer = (char*)malloc(estimatedSize)))
     {
-        if (bytes < 0)
+        snprintf(responseBuffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseBody.length(), responseBody.c_str());
+
+        bytes = write(connfd, responseBuffer, strlen(responseBuffer));
+        actualSize = (int)strlen(responseBuffer);
+
+        if (bytes != actualSize)
         {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket '%s'", uri, strerror(errno));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, bytes written %d", uri, static_cast<int>(bytes));
         }
-        else
-        {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write response to socket '%d', bytes written %d", uri, static_cast<int>(response.size()), static_cast<int>(bytes));
-        }
+
+        FREE_MEMORY(responseBuffer);
+    }
+    else
+    {
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response", uri);
     }
 
     FREE_MEMORY(uri);
 }
 
-void* Worker(void*)
+static void* Worker(void*)
 {
     int connfd = -1;
 
@@ -623,7 +621,7 @@ void* Worker(void*)
                 OsConfigLogInfo(PlatformLog::Get(), "Accepted connection %s '%d'", g_socketaddr.sun_path, connfd);
             }
 
-            HandleClient(connfd);
+            HandleConnection(connfd);
 
             if (0 != close(connfd))
             {
@@ -667,7 +665,7 @@ void MpiApiInitialize(void)
                 OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
-                g_worker = pthread_create(&g_worker, nullptr, Worker, nullptr);;
+                g_worker = pthread_create(&g_worker, NULL, Worker, NULL);;
             }
             else
             {
@@ -693,7 +691,7 @@ void MpiApiShutdown(void)
     }
 
     g_serverActive = false;
-    pthread_join(g_worker, nullptr);
+    pthread_join(g_worker, NULL);
 
     close(g_socketfd);
     unlink(g_mpiSocket);
