@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <pthread.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -26,6 +27,13 @@ static const std::string g_CRLF = "\r\n";
 static const std::string g_httpVersion = "HTTP/1.1";
 static const std::string g_contentTypeJson = "Content-Type: application/json";
 static const std::string g_contentLength = "Content-Length: ";
+
+static int g_socketfd;
+static struct sockaddr_un g_socketaddr;
+static socklen_t g_socketlen;
+
+static pthread_t g_worker;
+static bool g_serverActive = false;
 
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
@@ -60,9 +68,9 @@ public:
     static OSCONFIG_LOG_HANDLE m_log;
 };
 
-OSCONFIG_LOG_HANDLE PlatformLog::m_log = nullptr;
+OSCONFIG_LOG_HANDLE PlatformLog::m_log = NULL;
 
-enum class StatusCode
+enum StatusCode
 {
     OK = 200,
     BAD_REQUEST = 400,
@@ -70,35 +78,38 @@ enum class StatusCode
     INTERNAL_SERVER_ERROR = 500
 };
 
-class Server
+const char* CreateUuid()
 {
-public:
-    Server() = default;
-    ~Server() = default;
+    char* uuid = NULL;
+    const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
+    const char* hex = "0123456789ABCDEF-";
+    int templateLength = strlen(uuidTemplate);
 
-    void Listen();
-    void Stop();
+    uuid = (char*)malloc(templateLength + 1);
+    if (uuid == NULL)
+    {
+        return NULL;
+    }
 
-private:
-    int m_socketfd;
-    struct sockaddr_un m_addr;
-    socklen_t m_socketlen;
+    srand(clock());
 
-    std::thread m_worker;
-    std::promise<void> m_exitSignal;
+    for (int i = 0; i < templateLength + 1; i++)
+    {
+        int r = rand() % 16;
+        char c = ' ';
 
-    static void Worker(Server& server);
-};
+        switch (uuidTemplate[i])
+        {
+            case 'x': { c = hex[r]; } break;
+            case 'M': { c = hex[(r & 0x03) | 0x08]; } break;
+            case '-': { c = '-'; } break;
+            case 'N': { c = '4'; } break;
+        }
 
-static Server server;
+        uuid[i] = (i < templateLength) ? c : 0x00;
+    }
 
-std::string CreateGUID()
-{
-    std::stringstream ss;
-    std::srand(std::time(nullptr));
-    ss << std::hex << std::setfill('0');
-    ss << std::setw(8) << std::rand();
-    return ss.str();
+    return uuid;
 }
 
 std::string StatusText(StatusCode statusCode)
@@ -133,59 +144,6 @@ std::string SerializeResponse(StatusCode status, const std::string& payload)
     return result;
 }
 
-void Server::Listen()
-{
-    struct stat st;
-    if (stat(g_socketPrefix, &st) == -1)
-    {
-        mkdir(g_socketPrefix, 0700);
-    }
-
-    if (0 <= (m_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
-    {
-        memset(&m_addr, 0, sizeof(m_addr));
-        m_addr.sun_family = AF_UNIX;
-        strncpy(m_addr.sun_path, g_mpiSocket, sizeof(m_addr.sun_path) - 1);
-        m_socketlen = sizeof(m_addr);
-
-        // Unlink socket if it is already in use
-        unlink(g_mpiSocket);
-
-        if (bind(m_socketfd, (struct sockaddr*)&m_addr, m_socketlen) == 0)
-        {
-            if (listen(m_socketfd, 5) == 0)
-            {
-                OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
-
-                m_worker = std::thread(Server::Worker, std::ref(*this));
-            }
-            else
-            {
-                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket '%s'", g_mpiSocket);
-            }
-        }
-        else
-        {
-            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket '%s'", g_mpiSocket);
-        }
-    }
-    else
-    {
-        OsConfigLogError(PlatformLog::Get(), "Failed to create socket '%s'", g_mpiSocket);
-    }
-}
-
-void Server::Stop()
-{
-    OsConfigLogInfo(PlatformLog::Get(), "Server stopped");
-
-    m_exitSignal.set_value();
-    m_worker.join();
-
-    close(m_socketfd);
-    unlink(g_mpiSocket);
-}
-
 static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string& responsePayload)
 {
     StatusCode status = StatusCode::OK;
@@ -200,13 +158,12 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
 
             OsConfigLogInfo(PlatformLog::Get(), "Received MpiOpen request for client '%s' with max payload size %d", clientName.c_str(), maxPayloadSizeBytes);
 
-            std::string sessionId = CreateGUID();
-            MPI_HANDLE session = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
+            std::string sessionId = CreateUuid();
+            MPI_HANDLE handle = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
 
-            if (session != nullptr)
+            if (handle != nullptr)
             {
-                g_sessions[sessionId] = session;
-
+                g_sessions[sessionId] = handle;
                 status = StatusCode::OK;
                 responsePayload = ("\"" + sessionId + "\"");
             }
@@ -653,18 +610,17 @@ static void HandleClient(int connfd)
     FREE_MEMORY(uri);
 }
 
-void Server::Worker(Server& server)
+void* Worker(void*)
 {
     int connfd = -1;
-    std::future<void> exitSignal = server.m_exitSignal.get_future();
 
-    while (exitSignal.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
+    while (g_serverActive)
     {
-        if (0 <= (connfd = accept(server.m_socketfd, (struct sockaddr*)&server.m_addr, &server.m_socketlen)))
+        if (0 <= (connfd = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection %s '%d'", server.m_addr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection %s '%d'", g_socketaddr.sun_path, connfd);
             }
 
             HandleClient(connfd);
@@ -673,27 +629,74 @@ void Server::Worker(Server& server)
             {
                 OsConfigLogError(PlatformLog::Get(), "Failed to close socket %s '%d'", g_mpiSocket, connfd);
             }
-            else if (IsFullLoggingEnabled())
+
+            if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Closed connection %s '%d'", server.m_addr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Closed connection %s '%d'", g_socketaddr.sun_path, connfd);
             }
         }
     }
+
+    return NULL;
 }
 
-void MpiApiInitialize()
+void MpiApiInitialize(void)
 {
     PlatformLog::OpenLog();
-    server.Listen();
+
+    struct stat st;
+    if (stat(g_socketPrefix, &st) == -1)
+    {
+        mkdir(g_socketPrefix, 0700);
+    }
+
+    if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
+    {
+        memset(&g_socketaddr, 0, sizeof(g_socketaddr));
+        g_socketaddr.sun_family = AF_UNIX;
+        strncpy(g_socketaddr.sun_path, g_mpiSocket, sizeof(g_socketaddr.sun_path) - 1);
+        g_socketlen = sizeof(g_socketaddr);
+
+        // Unlink socket if it is already in use
+        unlink(g_mpiSocket);
+
+        if (bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen) == 0)
+        {
+            if (listen(g_socketfd, 5) == 0)
+            {
+                OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
+
+                g_serverActive = true;
+                g_worker = pthread_create(&g_worker, nullptr, Worker, nullptr);;
+            }
+            else
+            {
+                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket '%s'", g_mpiSocket);
+            }
+        }
+        else
+        {
+            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket '%s'", g_mpiSocket);
+        }
+    }
+    else
+    {
+        OsConfigLogError(PlatformLog::Get(), "Failed to create socket '%s'", g_mpiSocket);
+    }
 }
 
-void MpiApiShutdown()
+void MpiApiShutdown(void)
 {
     for (auto session : g_sessions)
     {
         MpiClose(session.second);
     }
 
-    server.Stop();
+    g_serverActive = false;
+    pthread_join(g_worker, nullptr);
+
+    close(g_socketfd);
+    unlink(g_mpiSocket);
+
     PlatformLog::CloseLog();
 }
