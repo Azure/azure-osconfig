@@ -61,7 +61,7 @@ static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
 //static int g_localManagement = 0;
 
-//static int g_reportingInterval = 30/*DEFAULT_REPORTING_INTERVAL*/;
+static int g_reportingInterval = 30/*DEFAULT_REPORTING_INTERVAL*/;
 
 static OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 OSCONFIG_LOG_HANDLE GetLog()
@@ -162,7 +162,7 @@ static void PlatformDoWork(void)
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        MpiDoWork
+        MpiDoWork();
         g_lastTime = (unsigned int)time(NULL);
     }
 }
