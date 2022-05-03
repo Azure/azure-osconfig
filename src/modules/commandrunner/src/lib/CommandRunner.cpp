@@ -501,15 +501,19 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
         else if (document.HasMember(clientName.c_str()))
         {
             const rapidjson::Value& client = document[clientName.c_str()];
-            Command::Status commandStatus = Command::Status::Deserialize(client);
 
-            std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
-            command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
-
-            if (0 != CacheCommand(command))
+            for (auto& it : client.GetArray())
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
-                status = -1;
+                Command::Status commandStatus = Command::Status::Deserialize(it);
+
+                std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
+                command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
+
+                if (0 != CacheCommand(command))
+                {
+                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
+                    status = -1;
+                }
             }
         }
         else if (IsFullLoggingEnabled())
@@ -561,12 +565,35 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
             if (document.HasMember(clientName.c_str()))
             {
-                document[clientName.c_str()].CopyFrom(statusDocument, allocator);
+                rapidjson::Value& client = document[clientName.c_str()];
+                bool updated = false;
+
+                for (auto& it : client.GetArray())
+                {
+                    if (it.HasMember(g_commandId.c_str()) && it[g_commandId.c_str()].IsString() && (it[g_commandId.c_str()].GetString() == commandStatus.m_id))
+                    {
+                        it.CopyFrom(statusDocument, allocator);
+                        updated = true;
+                        break;
+                    }
+                }
+
+                if (!updated)
+                {
+                    if (document[clientName.c_str()].Size() >= CommandRunner::MAX_CACHE_SIZE)
+                    {
+                        client.Erase(client.Begin());
+                    }
+
+                    client.PushBack(statusDocument, allocator);
+                }
+
+                document[clientName.c_str()].CopyFrom(client, allocator);
             }
             else
             {
-                rapidjson::Value object(rapidjson::kObjectType);
-                object.CopyFrom(statusDocument, allocator);
+                rapidjson::Value object(rapidjson::kArrayType);
+                object.PushBack(statusDocument, allocator);
                 document.AddMember(rapidjson::Value(clientName.c_str(), allocator), object, allocator);
             }
 
