@@ -65,15 +65,15 @@ public:
 
 OSCONFIG_LOG_HANDLE PlatformLog::m_log = NULL;
 
-enum StatusCode
+typedef enum StatusCode
 {
     OK = 200,
     BAD_REQUEST = 400,
     NOT_FOUND = 404,
     INTERNAL_SERVER_ERROR = 500
-};
+} StatusCode;
 
-const char* CreateUuid()
+static char* CreateUuid()
 {
     char* uuid = NULL;
     static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
@@ -94,12 +94,19 @@ const char* CreateUuid()
 
         switch (uuidTemplate[i])
         {
-            case 'x': { c = hex[r]; } break;
-            case 'M': { c = hex[(r & 0x03) | 0x08]; } break;
-            case '-': { c = '-'; } break;
-            case 'N': { c = '4'; } break;
+            case 'x':
+                c = hex[r];
+                break;
+            case '-':
+                c = '-';
+                break;
+            case 'M':
+                c = hex[(r & 0x03) | 0x08];
+                break;
+            case 'N':
+                c = '4';
+                break;
         }
-
         uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
     }
 
@@ -124,7 +131,6 @@ void GetReasonPhrase(StatusCode statusCode, char* phrase)
             break;
         default:
             strcpy(phrase, "Unknown");
-            break;
     }
 }
 
@@ -145,7 +151,7 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
             std::string sessionId = CreateUuid();
             MPI_HANDLE handle = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
 
-            if (handle != NULL)
+            if (handle)
             {
                 g_sessions[sessionId] = handle;
                 status = StatusCode::OK;
@@ -533,7 +539,7 @@ StatusCode RouteRequest(const char* uri, const std::string& request, std::string
     return status;
 }
 
-static void HandleConnection(int connfd)
+static void HandleConnection(int socketHandle)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
 
@@ -543,18 +549,18 @@ static void HandleConnection(int connfd)
     int contentLength = 0;
     std::string responseBody;
     char* responseBuffer = NULL;
-    char reasonPhrase[MAX_REASON_PHRASE_LENGTH];
+    char reasonPhrase[MAX_REASON_PHRASE_LENGTH] = {0};
     int estimatedSize = 0;
     int actualSize = 0;
     ssize_t bytes = 0;
 
-    if (NULL == (uri = ReadUriFromSocket(connfd, PlatformLog::Get())))
+    if (NULL == (uri = ReadUriFromSocket(socketHandle, PlatformLog::Get())))
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", connfd);
+        OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", socketHandle);
         return;
     }
 
-    if (0 >= (contentLength = ReadHttpContentLengthFromSocket(connfd, PlatformLog::Get())))
+    if (0 >= (contentLength = ReadHttpContentLengthFromSocket(socketHandle, PlatformLog::Get())))
     {
         OsConfigLogError(PlatformLog::Get(), "%s: failed to read HTTP Content-Length", uri);
         return;
@@ -562,7 +568,7 @@ static void HandleConnection(int connfd)
 
     if (NULL != (requestPayload = new (std::nothrow) char[contentLength]))
     {
-        if (contentLength != static_cast<int>(bytes = read(connfd, requestPayload, contentLength)))
+        if (contentLength != static_cast<int>(bytes = read(socketHandle, requestPayload, contentLength)))
         {
             if (IsFullLoggingEnabled())
             {
@@ -588,21 +594,23 @@ static void HandleConnection(int connfd)
 
     if (NULL != (responseBuffer = (char*)malloc(estimatedSize)))
     {
-        snprintf(responseBuffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseBody.length(), responseBody.c_str());
+        memset(responseBuffer, 0, estimatedSize);
 
-        bytes = write(connfd, responseBuffer, strlen(responseBuffer));
+        snprintf(responseBuffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseBody.length(), responseBody.c_str());
         actualSize = (int)strlen(responseBuffer);
+
+        bytes = write(socketHandle, responseBuffer, strlen(responseBuffer));
 
         if (bytes != actualSize)
         {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, bytes written %d", uri, static_cast<int>(bytes));
+            OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, static_cast<int>(bytes), actualSize);
         }
 
         FREE_MEMORY(responseBuffer);
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response", uri);
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
     }
 
     FREE_MEMORY(uri);
@@ -610,27 +618,27 @@ static void HandleConnection(int connfd)
 
 static void* Worker(void*)
 {
-    int connfd = -1;
+    int socketHandle = -1;
 
     while (g_serverActive)
     {
-        if (0 <= (connfd = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
+        if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection %s '%d'", g_socketaddr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
-            HandleConnection(connfd);
+            HandleConnection(socketHandle);
 
-            if (0 != close(connfd))
+            if (0 != close(socketHandle))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to close socket %s '%d'", g_mpiSocket, connfd);
+                OsConfigLogError(PlatformLog::Get(), "Failed to close socket: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Closed connection %s '%d'", g_socketaddr.sun_path, connfd);
+                OsConfigLogInfo(PlatformLog::Get(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
         }
     }
@@ -652,10 +660,10 @@ void MpiApiInitialize(void)
     {
         memset(&g_socketaddr, 0, sizeof(g_socketaddr));
         g_socketaddr.sun_family = AF_UNIX;
+
         strncpy(g_socketaddr.sun_path, g_mpiSocket, sizeof(g_socketaddr.sun_path) - 1);
         g_socketlen = sizeof(g_socketaddr);
 
-        // Unlink socket if it is already in use
         unlink(g_mpiSocket);
 
         if (bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen) == 0)
