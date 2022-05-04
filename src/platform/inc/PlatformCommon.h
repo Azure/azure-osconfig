@@ -64,6 +64,15 @@
 
 #endif //#ifdef __cplusplus
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 OSCONFIG_LOG_HANDLE GetLog();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PLATFORMCOMMON_H
