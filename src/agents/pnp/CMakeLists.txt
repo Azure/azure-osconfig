@@ -54,7 +54,8 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         ${UMOCK_C_INC_FOLDER}
         ${MACRO_UTILS_INC_FOLDER}
         ${IOTHUB_CLIENT_INC_FOLDER}
-        ${UHTTP_C_INC_FOLDER})
+        ${UHTTP_C_INC_FOLDER},
+        ${PLATFORM_INC_DIR})
 
     target_link_libraries(${target_name}
         parson
@@ -67,9 +68,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         aziotsharedutil
         tracelogging
         logging
-        commonutils
-        modulesmanager
-        orchestrator)
+        commonutils)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result)
 
@@ -94,7 +93,6 @@ else()
         aziotsharedutil
         logging
         commonutils
-        modulesmanager
         lttngh
         hsm_security_client
         msr_riot
@@ -105,12 +103,10 @@ else()
         ${CMAKE_DL_LIBS})
 endif()
 
-# Installation
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.json DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
-install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
-# install osconfig.toml breaks a current install only binplace to final destination (${CMAKE_INSTALL_SYSCONFDIR}/aziot/identityd/config.d) if non-existent
+install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.toml DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
+install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
 install(FILES telemetryevents/OsConfigAgentTelemetry.conf DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/azure-device-telemetryd)

@@ -38,8 +38,7 @@ static int g_protocol = PROTOCOL_AUTO;
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
 
-static TICK_COUNTER_HANDLE g_tickCounter = NULL;
-static tickcounter_ms_t g_lastTick = 0;
+static unsigned int g_lastTime = 0;
 
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
 
@@ -64,7 +63,7 @@ enum AgentExitState
     NoError = 0,
     NoConnectionString = 1,
     IotHubInitializationFailure = 2,
-    MpiInitializationFailure = 3
+    PlatformInitializationFailure = 3
 };
 typedef enum AgentExitState AgentExitState;
 static AgentExitState g_exitState = NoError;
@@ -336,27 +335,46 @@ static void ForkDaemon()
     }
 }
 
+static bool StartPlatform(void)
+{
+   const char* enablePlatform = "sudo systemctl enable osconfig-platform";
+   const char* startPlatform = "sudo systemctl start osconfig-platform";
+
+   return ((0 == ExecuteCommand(NULL, enablePlatform, false, false, 0, 0, NULL, NULL, GetLog())) &&
+       (0 == ExecuteCommand(NULL, startPlatform, false, false, 0, 0, NULL, NULL, GetLog())));
+}
+
+static bool StopPlatform(void)
+{
+   const char* stopPlatform = "sudo systemctl stop osconfig-platform";
+
+   return (0 == ExecuteCommand(NULL, stopPlatform, false, false, 0, 0, NULL, NULL, GetLog()));
+}
+
 static bool InitializeAgent(void)
 {
     bool status = true;
 
-    if (NULL == (g_tickCounter = tickcounter_create()))
+    g_lastTime = (unsigned int)time(NULL);
+
+    // Open the MPI session for this PnP Module instance:
+    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
-        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
-        status = false;
-    }
-
-    if (status)
-    {
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-
-        CallMpiInitialize();
-
-        // Open the MPI session for this PnP Module instance:
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+        OsConfigLogInfo(GetLog(), "Start the platform");
+        if (StartPlatform())
         {
-            LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-            g_exitState = MpiInitializationFailure;
+            sleep(1);
+            if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+            {
+                LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+                g_exitState = PlatformInitializationFailure;
+                status = false;
+            }
+        }
+        else
+        {
+            LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+            g_exitState = PlatformInitializationFailure;
             status = false;
         }
     }
@@ -397,8 +415,6 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-
-    CallMpiShutdown();
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
@@ -467,11 +483,11 @@ static void LoadDesiredConfigurationFromFile()
 static void AgentDoWork(void)
 {
     char* connectionString = NULL;
-    tickcounter_ms_t nowTick = 0;
-    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-    tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
-    if (intervalTick <= (nowTick - g_lastTick))
+    unsigned int currentTime = time(NULL);
+    unsigned int timeInterval = g_reportingInterval;
+
+    if (timeInterval <= (currentTime - g_lastTime))
     {
         if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
@@ -512,10 +528,7 @@ static void AgentDoWork(void)
             ReportProperties();
         }
 
-        // Allow the inproc (for now) platform to unload unused modules
-        CallMpiDoWork();
-
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+        g_lastTime = (unsigned int)time(NULL);
     }
     else
     {
@@ -764,6 +777,9 @@ done:
     {
         free((void *)g_proxyOptions.password);
     }
+
+    // Stop the platform when agent terminates
+    StopPlatform();
 
     return 0;
 }
