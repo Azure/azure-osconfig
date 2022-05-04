@@ -11,516 +11,6 @@ static const char g_configReported[] = "Reported";
 static const char g_configComponentName[] = "ComponentName";
 static const char g_configObjectName[] = "ObjectName";
 
-static const std::string g_mmiFuncMmiGetInfo = "MmiGetInfo";
-static const std::string g_mmiFuncMmiOpen = "MmiOpen";
-static const std::string g_mmiFuncMmiClose = "MmiClose";
-static const std::string g_mmiFuncMmiSet = "MmiSet";
-static const std::string g_mmiFuncMmiGet = "MmiGet";
-static const std::string g_mmiFuncMmiFree = "MmiFree";
-
-static const char g_mmiGetInfoName[] = "Name";
-static const char g_mmiGetInfoDescription[] = "Description";
-static const char g_mmiGetInfoManufacturer[] = "Manufacturer";
-static const char g_mmiGetInfoVersionMajor[] = "VersionMajor";
-static const char g_mmiGetInfoVersionMinor[] = "VersionMinor";
-static const char g_mmiGetInfoVersionPatch[] = "VersionPatch";
-static const char g_mmiGetInfoVersionTweak[] = "VersionTweak";
-static const char g_mmiGetInfoVersionInfo[] = "VersionInfo";
-static const char g_mmiGetInfoComponents[] = "Components";
-static const char g_mmiGetInfoLifetime[] = "Lifetime";
-static const char g_mmiGetInfoLicenseUri[] = "LicenseUri";
-static const char g_mmiGetInfoProjectUri[] = "ProjectUri";
-static const char g_mmiGetInfoUserAccount[] = "UserAccount";
-
-typedef void (*mmi_t)();
-
-ManagementModule::ManagementModule() : ManagementModule("") {}
-
-ManagementModule::ManagementModule(const std::string path) :
-    m_modulePath(path),
-    m_handle(nullptr)
-{
-    m_info.lifetime = Lifetime::Undefined;
-    m_info.userAccount= 0;
-}
-
-ManagementModule::~ManagementModule()
-{
-    Unload();
-}
-
-int ManagementModule::Load()
-{
-    int status = 0;
-
-    if (nullptr != m_handle)
-    {
-        return status;
-    }
-
-    void* m_handle = dlopen(m_modulePath.c_str(), RTLD_LAZY);
-    if (nullptr != m_handle)
-    {
-        const std::vector<std::string> symbols = {g_mmiFuncMmiGetInfo, g_mmiFuncMmiOpen, g_mmiFuncMmiClose, g_mmiFuncMmiSet, g_mmiFuncMmiGet, g_mmiFuncMmiFree};
-
-        for (auto &symbol : symbols)
-        {
-            mmi_t funcPtr = (mmi_t)dlsym(m_handle, symbol.c_str());
-            if (nullptr == funcPtr)
-            {
-                OsConfigLogError(GetLog(), "Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
-                status = EINVAL;
-            }
-        }
-
-        if (0 == status)
-        {
-            m_mmiOpen = reinterpret_cast<Mmi_Open>(dlsym(m_handle, g_mmiFuncMmiOpen.c_str()));
-            m_mmiGetInfo = reinterpret_cast<Mmi_GetInfo>(dlsym(m_handle, g_mmiFuncMmiGetInfo.c_str()));
-            m_mmiClose = reinterpret_cast<Mmi_Close>(dlsym(m_handle, g_mmiFuncMmiClose.c_str()));
-            m_mmiSet = reinterpret_cast<Mmi_Set>(dlsym(m_handle, g_mmiFuncMmiSet.c_str()));
-            m_mmiGet = reinterpret_cast<Mmi_Get>(dlsym(m_handle, g_mmiFuncMmiGet.c_str()));
-            m_mmiFree = reinterpret_cast<Mmi_Free>(dlsym(m_handle, g_mmiFuncMmiFree.c_str()));
-
-            MMI_JSON_STRING payload = nullptr;
-            int payloadSizeBytes = 0;
-
-            if (MMI_OK == CallMmiGetInfo("Azure OsConfig", &payload, &payloadSizeBytes))
-            {
-                rapidjson::Document document;
-                if (document.Parse(payload, payloadSizeBytes).HasParseError())
-                {
-                    OsConfigLogError(GetLog(), "Failed to parse info JSON for module '%s'", m_modulePath.c_str());
-                    status = EINVAL;
-                }
-                else if (0 != Info::Deserialize(document, m_info))
-                {
-                    status = EINVAL;
-                }
-            }
-            else
-            {
-                OsConfigLogError(GetLog(), "Failed to get info for module '%s'", m_modulePath.c_str());
-                status = EINVAL;
-            }
-        }
-    }
-    else
-    {
-        status = EINVAL;
-    }
-
-    if (0 == status)
-    {
-        std::stringstream ss;
-        ss << "[";
-        if (m_info.components.size() != 0)
-        {
-            std::copy(m_info.components.begin(), m_info.components.end() - 1, std::ostream_iterator<std::string>(ss, ", "));
-            ss << m_info.components.back();
-        }
-        ss << "]";
-
-        OsConfigLogInfo(GetLog(), "Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Failed to load module '%s'", m_modulePath.c_str());
-        if (nullptr != m_handle)
-        {
-            dlclose(m_handle);
-            m_handle = nullptr;
-        }
-    }
-
-    return status;
-}
-
-void ManagementModule::Unload()
-{
-    if (nullptr != m_handle)
-    {
-        dlclose(m_handle);
-        m_handle = nullptr;
-    }
-}
-
-ManagementModule::Info ManagementModule::GetInfo() const
-{
-    return m_info;
-}
-
-int ManagementModule::CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
-{
-    return (nullptr != m_mmiGetInfo) ? m_mmiGetInfo(clientName, payload, payloadSizeBytes) : EINVAL;
-}
-
-MMI_HANDLE ManagementModule::CallMmiOpen(const char* clientName, unsigned int maxPayloadSizeBytes)
-{
-    return (nullptr != m_mmiOpen) ? m_mmiOpen(clientName, maxPayloadSizeBytes) : nullptr;
-}
-
-void ManagementModule::CallMmiClose(MMI_HANDLE handle)
-{
-    if (nullptr != m_mmiClose)
-    {
-        m_mmiClose(handle);
-    }
-}
-
-int ManagementModule::CallMmiSet(MMI_HANDLE handle, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
-{
-    int status = MMI_OK;
-
-    if (nullptr != m_mmiSet && IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
-    {
-        status = m_mmiSet(handle, componentName, objectName, payload, payloadSizeBytes);
-    }
-    else
-    {
-        status = EINVAL;
-    }
-
-    return status;
-}
-
-int ManagementModule::CallMmiGet(MMI_HANDLE handle, const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes)
-{
-    int status = MMI_OK;
-
-    if ((nullptr != m_mmiGet) && (MMI_OK == (status = m_mmiGet(handle, componentName, objectName, payload, payloadSizeBytes))))
-    {
-        // Validate payload from MmiGet
-        status = IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()) ? MMI_OK : EINVAL;
-    }
-
-    return status;
-}
-
-int ManagementModule::Info::Deserialize(const rapidjson::Value& object, ManagementModule::Info& info)
-{
-    int status = 0;
-
-    if (!object.IsObject())
-    {
-        OsConfigLogError(GetLog(), "Failed to deserialize info JSON, expected object");
-        return EINVAL;
-    }
-
-    // Required fields
-
-    // Name
-    if (object.HasMember(g_mmiGetInfoName))
-    {
-        if (object[g_mmiGetInfoName].IsString())
-        {
-            info.name = object[g_mmiGetInfoName].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoName);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoName);
-        status = EINVAL;
-    }
-
-    // Description
-    if (object.HasMember(g_mmiGetInfoDescription))
-    {
-        if (object[g_mmiGetInfoDescription].IsString())
-        {
-            info.description = object[g_mmiGetInfoDescription].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoDescription);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoDescription);
-        status = EINVAL;
-    }
-
-    // Manufacturer
-    if (object.HasMember(g_mmiGetInfoManufacturer))
-    {
-        if (object[g_mmiGetInfoManufacturer].IsString())
-        {
-            info.manufacturer = object[g_mmiGetInfoManufacturer].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
-        status = EINVAL;
-    }
-
-    // Version Major
-    if (object.HasMember(g_mmiGetInfoVersionMajor))
-    {
-        if (object[g_mmiGetInfoVersionMajor].IsInt())
-        {
-            info.version.major = object[g_mmiGetInfoVersionMajor].GetInt();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
-        status = EINVAL;
-    }
-
-    // Version Minor
-    if (object.HasMember(g_mmiGetInfoVersionMinor))
-    {
-        if (object[g_mmiGetInfoVersionMinor].IsInt())
-        {
-            info.version.minor = object[g_mmiGetInfoVersionMinor].GetInt();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
-        status = EINVAL;
-    }
-
-    // Version Info
-    if (object.HasMember(g_mmiGetInfoVersionInfo))
-    {
-        if (object[g_mmiGetInfoVersionInfo].IsString())
-        {
-            info.versionInfo = object[g_mmiGetInfoVersionInfo].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
-        status = EINVAL;
-    }
-
-    // Components
-    if (object.HasMember(g_mmiGetInfoComponents))
-    {
-        if (object[g_mmiGetInfoComponents].IsArray())
-        {
-            std::unordered_set<std::string> components;
-            for (auto& component : object[g_mmiGetInfoComponents].GetArray())
-            {
-                if (component.IsString() && (components.find(component.GetString()) == components.end()))
-                {
-                    info.components.push_back(component.GetString());
-                    components.insert(component.GetString());
-                }
-                else
-                {
-                    OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoComponents);
-                }
-            }
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an array", g_mmiGetInfoComponents);
-            status = EINVAL;
-        }
-    }
-
-    // Lifetime
-    if (object.HasMember(g_mmiGetInfoLifetime))
-    {
-        if (object[g_mmiGetInfoLifetime].IsInt())
-        {
-            int lifetime = object[g_mmiGetInfoLifetime].GetInt();
-            if (0 <= lifetime && lifetime <= 2)
-            {
-                info.lifetime = static_cast<Lifetime>(lifetime);
-            }
-            else
-            {
-                OsConfigLogError(GetLog(), "Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
-                info.lifetime = Lifetime::Undefined;
-                status = EINVAL;
-            }
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
-            status = EINVAL;
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
-        status = EINVAL;
-    }
-
-    // Optional fields
-
-    // Version Patch
-    if (object.HasMember(g_mmiGetInfoVersionPatch))
-    {
-        if (object[g_mmiGetInfoVersionPatch].IsInt())
-        {
-            info.version.patch = object[g_mmiGetInfoVersionPatch].GetInt();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
-        }
-    }
-
-    // Version Tweak
-    if (object.HasMember(g_mmiGetInfoVersionTweak))
-    {
-        if (object[g_mmiGetInfoVersionTweak].IsInt())
-        {
-            info.version.tweak = object[g_mmiGetInfoVersionTweak].GetInt();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
-        }
-    }
-
-
-    // License URI
-    if (object.HasMember(g_mmiGetInfoLicenseUri))
-    {
-        if (object[g_mmiGetInfoLicenseUri].IsString())
-        {
-            info.licenseUri = object[g_mmiGetInfoLicenseUri].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
-        }
-    }
-
-    // Project URI
-    if (object.HasMember(g_mmiGetInfoProjectUri))
-    {
-        if (object[g_mmiGetInfoProjectUri].IsString())
-        {
-            info.projectUri = object[g_mmiGetInfoProjectUri].GetString();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
-        }
-    }
-
-    // User Account
-    if (object.HasMember(g_mmiGetInfoUserAccount))
-    {
-        if (object[g_mmiGetInfoUserAccount].IsUint())
-        {
-            info.userAccount = object[g_mmiGetInfoUserAccount].GetUint();
-        }
-        else
-        {
-            OsConfigLogError(GetLog(), "Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
-        }
-    }
-
-    return status;
-}
-
-MmiSession::MmiSession(std::shared_ptr<ManagementModule> module, const std::string& clientName, unsigned int maxPayloadSizeBytes) :
-    m_clientName(clientName),
-    m_maxPayloadSizeBytes(maxPayloadSizeBytes),
-    m_module(module),
-    m_mmiHandle(nullptr) {}
-
-MmiSession::~MmiSession()
-{
-    Close();
-}
-
-int MmiSession::Open()
-{
-    int status = 0;
-
-    if (nullptr != m_module)
-    {
-        if (nullptr == m_mmiHandle)
-        {
-            if (nullptr == (m_mmiHandle = m_module->CallMmiOpen(m_clientName.c_str(), m_maxPayloadSizeBytes)))
-            {
-                OsConfigLogError(GetLog(), "Failed to open MMI session for client '%s'", m_clientName.c_str());
-            }
-        }
-        else
-        {
-            status = EINVAL;
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(GetLog(), "MMI session already open");
-            }
-        }
-    }
-    else
-    {
-        status = EINVAL;
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(GetLog(), "MMI session not attached to a valid module");
-        }
-    }
-
-    return status;
-}
-
-void MmiSession::Close()
-{
-    if (nullptr != m_module)
-    {
-        if (nullptr != m_mmiHandle)
-        {
-            m_module->CallMmiClose(m_mmiHandle);
-            m_mmiHandle = nullptr;
-        }
-    }
-}
-
-int MmiSession::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
-{
-    return (nullptr != m_module) ? m_module->CallMmiSet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
-}
-
-int MmiSession::Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes)
-{
-    return (nullptr != m_module) ? m_module->CallMmiGet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
-}
-
-ManagementModule::Info MmiSession::GetInfo()
-{
-    return (nullptr != m_module) ? m_module->GetInfo() : ManagementModule::Info();
-}
-
 static ModulesManager modulesManager;
 
 // MPI
@@ -547,11 +37,11 @@ MPI_HANDLE MpiOpen(
     {
         if (nullptr != handle)
         {
-            OsConfigLogInfo(GetLog(), "MpiOpen(%s, %u) returned %p", clientName, maxPayloadSizeBytes, handle);
+            OsConfigLogInfo(::GetLog(), "MpiOpen(%s, %u) returned %p", clientName, maxPayloadSizeBytes, handle);
         }
         else
         {
-            OsConfigLogError(GetLog(), "MpiOpen(%s, %u) failed", clientName, maxPayloadSizeBytes);
+            OsConfigLogError(::GetLog(), "MpiOpen(%s, %u) failed", clientName, maxPayloadSizeBytes);
         }
     }};
 
@@ -564,12 +54,12 @@ MPI_HANDLE MpiOpen(
         }
         else
         {
-            OsConfigLogError(GetLog(), "MpiOpen(%s, %u) failed to open a new client session", clientName, maxPayloadSizeBytes);
+            OsConfigLogError(::GetLog(), "MpiOpen(%s, %u) failed to open a new client session", clientName, maxPayloadSizeBytes);
         }
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiOpen(%s, %u) called without an invalid client name", clientName, maxPayloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiOpen(%s, %u) called without an invalid client name", clientName, maxPayloadSizeBytes);
     }
 
     return handle;
@@ -585,7 +75,7 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiClose(%p) called with an invalid session", handle);
+        OsConfigLogError(::GetLog(), "MpiClose(%p) called with an invalid session", handle);
     }
 }
 
@@ -605,7 +95,7 @@ int MpiSet(
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiSet called with invalid client session '%p'", handle);
+        OsConfigLogError(::GetLog(), "MpiSet called with invalid client session '%p'", handle);
         status = EINVAL;
     }
 
@@ -628,7 +118,7 @@ int MpiGet(
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiGet called with invalid client session '%p'", handle);
+        OsConfigLogError(::GetLog(), "MpiGet called with invalid client session '%p'", handle);
         status = EINVAL;
     }
 
@@ -647,12 +137,12 @@ int MpiSetDesired(
     {
         if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
         {
-            OsConfigLogError(GetLog(), "MpiSetDesired(%p, %p, %d) failed to set the desired state", handle, payload, payloadSizeBytes);
+            OsConfigLogError(::GetLog(), "MpiSetDesired(%p, %p, %d) failed to set the desired state", handle, payload, payloadSizeBytes);
         }
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiSetDesired(%p, %p, %d) called without an invalid handle", handle, payload, payloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiSetDesired(%p, %p, %d) called without an invalid handle", handle, payload, payloadSizeBytes);
         status = EINVAL;
     }
 
@@ -671,12 +161,12 @@ int MpiGetReported(
     {
         if (MPI_OK != (status = session->GetReported(payload, payloadSizeBytes)))
         {
-            OsConfigLogError(GetLog(), "MpiGetReported(%p, %p, %p) failed to get the reported state", handle, payload, payloadSizeBytes);
+            OsConfigLogError(::GetLog(), "MpiGetReported(%p, %p, %p) failed to get the reported state", handle, payload, payloadSizeBytes);
         }
     }
     else
     {
-        OsConfigLogError(GetLog(), "MpiGetReported(%p, %p, %p) called without an invalid handle", handle, payload, payloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiGetReported(%p, %p, %p) called without an invalid handle", handle, payload, payloadSizeBytes);
         status = EINVAL;
     }
 
@@ -705,7 +195,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
     struct dirent* ent;
     std::vector<std::string> fileList;
 
-    OsConfigLogInfo(GetLog(), "Loading modules from: %s", modulePath.c_str());
+    OsConfigLogInfo(::GetLog(), "Loading modules from: %s", modulePath.c_str());
 
     if ((dir = opendir(modulePath.c_str())) != NULL)
     {
@@ -737,14 +227,14 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
                     // Use the module with the latest version
                     if (currentInfo.version < info.version)
                     {
-                        OsConfigLogInfo(GetLog(), "Found newer version of '%s' module (v%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
+                        OsConfigLogInfo(::GetLog(), "Found newer version of '%s' module (v%s), loading newer version from '%s'", info.name.c_str(), info.version.ToString().c_str(), filePath.c_str());
                         m_modules[info.name] = mm;
 
                         RegisterModuleComponents(info.name, info.components, true);
                     }
                     else
                     {
-                        OsConfigLogInfo(GetLog(), "Newer version of '%s' module already loaded (v%s), skipping '%s'", info.name.c_str(), currentInfo.version.ToString().c_str(), filePath.c_str());
+                        OsConfigLogInfo(::GetLog(), "Newer version of '%s' module already loaded (v%s), skipping '%s'", info.name.c_str(), currentInfo.version.ToString().c_str(), filePath.c_str());
                     }
                 }
                 else
@@ -759,7 +249,7 @@ int ModulesManager::LoadModules(std::string modulePath, std::string configJson)
     }
     else
     {
-        OsConfigLogError(GetLog(), "Unable to open directory: %s", modulePath.c_str());
+        OsConfigLogError(::GetLog(), "Unable to open directory: %s", modulePath.c_str());
         status = ENOENT;
     }
 
@@ -773,7 +263,7 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
 
     if (!ifs.good())
     {
-        OsConfigLogError(GetLog(), "Unable to open configuration file: %s", configJson.c_str());
+        OsConfigLogError(::GetLog(), "Unable to open configuration file: %s", configJson.c_str());
         return ENOENT;
     }
 
@@ -781,22 +271,22 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
     rapidjson::Document document;
     if (document.ParseStream(isw).HasParseError())
     {
-        OsConfigLogError(GetLog(), "Unable to parse configuration file: %s", configJson.c_str());
+        OsConfigLogError(::GetLog(), "Unable to parse configuration file: %s", configJson.c_str());
         status = EINVAL;
     }
     else if (!document.IsObject())
     {
-        OsConfigLogError(GetLog(), "Root configuration JSON is not an object: %s", configJson.c_str());
+        OsConfigLogError(::GetLog(), "Root configuration JSON is not an object: %s", configJson.c_str());
         status = EINVAL;
     }
     else if (!document.HasMember(g_configReported))
     {
-        OsConfigLogError(GetLog(), "No valid %s array in configuration: %s", g_configReported, configJson.c_str());
+        OsConfigLogError(::GetLog(), "No valid %s array in configuration: %s", g_configReported, configJson.c_str());
         status = EINVAL;
     }
     else if (!document[g_configReported].IsArray())
     {
-        OsConfigLogError(GetLog(), "%s is not an array in configuration: %s", g_configReported, configJson.c_str());
+        OsConfigLogError(::GetLog(), "%s is not an array in configuration: %s", g_configReported, configJson.c_str());
         status = EINVAL;
     }
     else
@@ -825,13 +315,13 @@ int ModulesManager::SetReportedObjects(const std::string& configJson)
                 }
                 else
                 {
-                    OsConfigLogError(GetLog(), "'%s' or '%s' missing at index %d", g_configComponentName, g_configObjectName, index);
+                    OsConfigLogError(::GetLog(), "'%s' or '%s' missing at index %d", g_configComponentName, g_configObjectName, index);
                     status = EINVAL;
                 }
             }
             else
             {
-                OsConfigLogError(GetLog(), "%s array element %d is not an object: %s", g_configReported, index, configJson.c_str());
+                OsConfigLogError(::GetLog(), "%s array element %d is not an object: %s", g_configReported, index, configJson.c_str());
                 status = EINVAL;
             }
         }
@@ -850,7 +340,7 @@ void ModulesManager::RegisterModuleComponents(const std::string& moduleName, con
         }
         else
         {
-            OsConfigLogError(GetLog(), "Component '%s' is already registered to module '%s'", component.c_str(), m_moduleComponentName[component].c_str());
+            OsConfigLogError(::GetLog(), "Component '%s' is already registered to module '%s'", component.c_str(), m_moduleComponentName[component].c_str());
         }
     }
 }
@@ -891,7 +381,7 @@ int MpiSession::Open()
         }
         else
         {
-            OsConfigLogError(GetLog(), "Unable to open MMI session for module '%s'", module.first.c_str());
+            OsConfigLogError(::GetLog(), "Unable to open MMI session for module '%s'", module.first.c_str());
             status = EINVAL;
         }
     }
@@ -923,12 +413,12 @@ std::shared_ptr<MmiSession> MpiSession::GetSession(const std::string& componentN
         }
         else
         {
-            OsConfigLogError(GetLog(), "Unable to find MMI session for component '%s'", componentName.c_str());
+            OsConfigLogError(::GetLog(), "Unable to find MMI session for component '%s'", componentName.c_str());
         }
     }
     else
     {
-        OsConfigLogError(GetLog(), "Unable to find module for component '%s'", componentName.c_str());
+        OsConfigLogError(::GetLog(), "Unable to find module for component '%s'", componentName.c_str());
     }
 
     return mmiSession;
@@ -944,44 +434,44 @@ int MpiSession::Set(const char* componentName, const char* objectName, const MPI
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(GetLog(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogInfo(::GetLog(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
+                OsConfigLogInfo(::GetLog(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
             }
         }
         else
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogError(::GetLog(), "MpiSet(%s, %s, %.*s, %d) returned %d", componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(GetLog(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
+                OsConfigLogError(::GetLog(), "MpiSet(%s, %s, -, %d) returned %d", componentName, objectName, payloadSizeBytes, status);
             }
         }
     }};
 
     if (nullptr == componentName)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid componentName: %s", componentName);
+        OsConfigLogError(::GetLog(), "MpiSet invalid componentName: %s", componentName);
         status = EINVAL;
     }
     else if (nullptr == objectName)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid objectName: %s", objectName);
+        OsConfigLogError(::GetLog(), "MpiSet invalid objectName: %s", objectName);
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid payload");
+        OsConfigLogError(::GetLog(), "MpiSet invalid payload");
         status = EINVAL;
     }
     else if (0 >= payloadSizeBytes)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid payloadSizeBytes: %d", payloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiSet invalid payloadSizeBytes: %d", payloadSizeBytes);
         status = EINVAL;
     }
     else
@@ -993,7 +483,7 @@ int MpiSession::Set(const char* componentName, const char* objectName, const MPI
         }
         else
         {
-            OsConfigLogError(GetLog(), "MpiSet componentName %s not found", componentName);
+            OsConfigLogError(::GetLog(), "MpiSet componentName %s not found", componentName);
             status = EINVAL;
         }
     }
@@ -1011,36 +501,36 @@ int MpiSession::Get(const char* componentName, const char* objectName, MPI_JSON_
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(GetLog(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+                OsConfigLogInfo(::GetLog(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
         else
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+                OsConfigLogError(::GetLog(), "MpiGet(%s, %s, %.*s, %d) returned %d", componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
     }};
 
     if (nullptr == componentName)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid componentName: %s", componentName);
+        OsConfigLogError(::GetLog(), "MpiSet invalid componentName: %s", componentName);
         status = EINVAL;
     }
     else if (nullptr == objectName)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid objectName: %s", objectName);
+        OsConfigLogError(::GetLog(), "MpiSet invalid objectName: %s", objectName);
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid payload");
+        OsConfigLogError(::GetLog(), "MpiSet invalid payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(GetLog(), "MpiSet invalid payloadSizeBytes");
+        OsConfigLogError(::GetLog(), "MpiSet invalid payloadSizeBytes");
         status = EINVAL;
     }
     else
@@ -1052,7 +542,7 @@ int MpiSession::Get(const char* componentName, const char* objectName, MPI_JSON_
         }
         else
         {
-            OsConfigLogError(GetLog(), "MpiSet componentName %s not found", componentName);
+            OsConfigLogError(::GetLog(), "MpiSet componentName %s not found", componentName);
             status = EINVAL;
         }
     }
@@ -1070,23 +560,23 @@ int MpiSession::SetDesired(const MPI_JSON_STRING payload, int payloadSizeBytes)
         {
             if (MPI_OK == status)
             {
-                OsConfigLogInfo(GetLog(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogInfo(::GetLog(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(GetLog(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
+                OsConfigLogError(::GetLog(), "MpiSetDesired(%.*s, %d) returned %d", payloadSizeBytes, payload, payloadSizeBytes, status);
             }
         }
     }};
 
     if (nullptr == payload)
     {
-        OsConfigLogError(GetLog(), "MpiSetDesired invalid payload: %s", payload);
+        OsConfigLogError(::GetLog(), "MpiSetDesired invalid payload: %s", payload);
         status = EINVAL;
     }
     else if (0 == payloadSizeBytes)
     {
-        OsConfigLogError(GetLog(), "MpiSetDesired invalid payloadSizeBytes: %d", payloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiSetDesired invalid payloadSizeBytes: %d", payloadSizeBytes);
         status = EINVAL;
     }
     else
@@ -1098,7 +588,7 @@ int MpiSession::SetDesired(const MPI_JSON_STRING payload, int payloadSizeBytes)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
+                OsConfigLogError(::GetLog(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
             }
 
             status = EINVAL;
@@ -1107,7 +597,7 @@ int MpiSession::SetDesired(const MPI_JSON_STRING payload, int payloadSizeBytes)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
+                OsConfigLogError(::GetLog(), "MpiSetDesired invalid payload: %.*s", payloadSizeBytes, payload);
             }
 
             status = EINVAL;
@@ -1147,7 +637,7 @@ int MpiSession::SetDesiredPayload(rapidjson::Document& document)
 
                     if ((moduleStatus != MMI_OK) && IsFullLoggingEnabled())
                     {
-                        OsConfigLogError(GetLog(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), module->GetInfo().name.c_str(), moduleStatus);
+                        OsConfigLogError(::GetLog(), "MmiSet(%s, %s, %s, %d) to %s returned %d", componentName.c_str(), objectName.c_str(), buffer.GetString(), static_cast<int>(buffer.GetSize()), module->GetInfo().name.c_str(), moduleStatus);
                     }
                 }
             }
@@ -1156,7 +646,7 @@ int MpiSession::SetDesiredPayload(rapidjson::Document& document)
                 status = EINVAL;
                 if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogError(GetLog(), "Unable to find module for component %s", componentName.c_str());
+                    OsConfigLogError(::GetLog(), "Unable to find module for component %s", componentName.c_str());
                 }
             }
         }
@@ -1165,7 +655,7 @@ int MpiSession::SetDesiredPayload(rapidjson::Document& document)
             status = EINVAL;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(GetLog(), "Component value is not an object");
+                OsConfigLogError(::GetLog(), "Component value is not an object");
             }
         }
     }
@@ -1183,23 +673,23 @@ int MpiSession::GetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
         {
             if (MPI_OK == status)
             {
-                OsConfigLogInfo(GetLog(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
+                OsConfigLogInfo(::GetLog(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
             }
             else
             {
-                OsConfigLogError(GetLog(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
+                OsConfigLogError(::GetLog(), "MpiGetReported(%p, %p) returned %d", payload, payloadSizeBytes, status);
             }
         }
     }};
 
     if (nullptr == payload)
     {
-        OsConfigLogError(GetLog(), "MpiGetReported invalid payload: %p", payload);
+        OsConfigLogError(::GetLog(), "MpiGetReported invalid payload: %p", payload);
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(GetLog(), "MpiGetReported invalid payloadSizeBytes: %p", payloadSizeBytes);
+        OsConfigLogError(::GetLog(), "MpiGetReported invalid payloadSizeBytes: %p", payloadSizeBytes);
         status = EINVAL;
     }
     else
@@ -1250,12 +740,12 @@ int MpiSession::GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeByt
                     }
                     else if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogError(GetLog(), "MmiGet(%s, %s) returned invalid payload: %s", componentName.c_str(), objectName.c_str(), objectPayloadString.c_str());
+                        OsConfigLogError(::GetLog(), "MmiGet(%s, %s) returned invalid payload: %s", componentName.c_str(), objectName.c_str(), objectPayloadString.c_str());
                     }
                 }
                 else if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogError(GetLog(), "MmiGet(%s, %s) returned %d", componentName.c_str(), objectName.c_str(), moduleStatus);
+                    OsConfigLogError(::GetLog(), "MmiGet(%s, %s) returned %d", componentName.c_str(), objectName.c_str(), moduleStatus);
                 }
             }
             document.AddMember(rapidjson::Value(componentName.c_str(), allocator), component, allocator);
@@ -1273,7 +763,7 @@ int MpiSession::GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeByt
         *payload = new (std::nothrow) char[*payloadSizeBytes];
         if (nullptr == *payload)
         {
-            OsConfigLogError(GetLog(), "MpiGetReported unable to allocate %d bytes", *payloadSizeBytes);
+            OsConfigLogError(::GetLog(), "MpiGetReported unable to allocate %d bytes", *payloadSizeBytes);
             status = ENOMEM;
         }
         else
@@ -1285,7 +775,7 @@ int MpiSession::GetReportedPayload(MPI_JSON_STRING* payload, int* payloadSizeByt
     }
     catch (const std::exception& e)
     {
-        OsConfigLogError(GetLog(), "Could not allocate payload: %s", e.what());
+        OsConfigLogError(::GetLog(), "Could not allocate payload: %s", e.what());
         status = EINTR;
 
         if (nullptr != *payload)

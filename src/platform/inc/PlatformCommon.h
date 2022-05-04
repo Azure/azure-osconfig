@@ -4,8 +4,6 @@
 #ifndef PLATFORMCOMMON_H
 #define PLATFORMCOMMON_H
 
-// C  headers:
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -35,8 +33,6 @@
 
 #ifdef __cplusplus
     
-// C++ headers:
-
 #include <map>
 #include <memory>
 #include <mutex>

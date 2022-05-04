@@ -28,13 +28,13 @@ add_executable(${target_name} ${osconfig_platform_files})
 target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
 
 target_include_directories(${target_name} PUBLIC
+    ${MODULES_INC_DIR}
     ${PLATFORM_INC_DIR})
 
 target_link_libraries(${target_name}
+    ${CMAKE_DL_LIBS}
     logging
     commonutils
-    modulesmanager
-    orchestrator
     parsonlib)
 
 include(GNUInstallDirs)
