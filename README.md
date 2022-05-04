@@ -55,7 +55,7 @@ The following OSConfig files are binplaced at build time:
 Source | Destination | Description
 -----|-----|-----
 [src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
-[src/platform](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
+[src/platform/](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
 [src/agents/pnp/daemon/osconfig.conn](src/agents/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
 [src/agents/pnp/daemon/osconfig.json](src/agents/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
 [src/modules/commandrunner/assets/osconfig_commandrunner.cache](src/modules/commandrunner/assets/osconfig_commandrunner.cache) | /etc/osconfig/osconfig_commandrunner.cache | Persistent cache for the CommandRunner module
@@ -82,7 +82,7 @@ sudo systemctl start osconfig
 
 The OSConfig Agent service is configured to be allowed to be restarted (automatically by systemd or manually by user) for a maximum number of 3 times at 5 minutes intervals. There is a total delay of 16 minutes before the OSConfig Agent service could be restarted again by the user unless the user reboots the device.
 
-The OSCOnfig Management Platform Daemon (`osconfig-platform`) is automatically started and stopped by the OSConfig Agent service (`osconfig`). 
+The OSCOnfig Management Platform Daemon (`osconfig-platform`) is automatically started and stopped by the OSConfig Agent service (`osconfig`) but also can be manually started and stopped separately by itself.
 
 Other daemon control operations:
 
