@@ -115,7 +115,7 @@ static void Refresh()
 
 void ScheduleRefresh(void)
 {
-    OsConfigLogInfo(GetLog(), "Scheduling refresh");
+    OsConfigLogInfo(GetPlatformLog(), "Scheduling refresh");
     g_refreshSignal = SIGHUP;
 }
 
@@ -125,7 +125,7 @@ static bool InitializePlatform(void)
     
     MpiInitialize();
     
-    OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
     
     return true;
 }
@@ -134,7 +134,7 @@ void TerminatePlatform(void)
 {
     MpiShutdown();
     
-    OsConfigLogInfo(GetLog(), "OSConfig Platform terminated");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
 }
 
 static void PlatformDoWork(void)
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
-    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
+    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
@@ -187,12 +187,12 @@ int main(int argc, char *argv[])
 
     g_platformLog = OpenPlatformLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    OsConfigLogInfo(GetLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
-    OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 
     if (!InitializePlatform())
     {
-        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Platform");
+        OsConfigLogError(GetPlatformLog(), "Failed to initialize the OSConfig Platform");
         goto done;
     }
 
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
     }
 
 done:
-    OsConfigLogInfo(GetLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
     CloseLog(&g_platformLog);
