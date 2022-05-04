@@ -55,12 +55,12 @@ OSConfig continues to run as a monolithic process and can accept requests from a
  
 # 4. Detached Platform (codename Copper)
 
-The Management Platform runs in its own process, separate of the PnP Agent, and can accept request from multiple management authorities.
+The Management Platform runs in its own process, separate of the PnP Agent. OSConfig can accept request from both local and remote management authorities.
 
-- The OSConfig separates the PnP Agent and the Management Platform into two separate daemon processes.
-- The IPC REST API over Unix Domain Sockets (UDS) for MPI is introduced.
-- The Management Platform can accept requests from other Agent Authorities (like ADU).
-- Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Modules Manager loads these libraries in-proc.
+- The OSConfig separates the Agent and the Management Platform into two separate daemon processes.
+- The IPC REST API over Unix Domain Sockets (UDS) and HTTP for MPI is introduced.
+- The Management Platform can accept MPI requests from other Agent Authorities (like ADU).
+- Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Platform loads these libraries in-proc.
 - Other Management Modules appear (not shown in diagram).
 
 <img src="assets/4_platform.png" alt="Copper" width=70%/>
