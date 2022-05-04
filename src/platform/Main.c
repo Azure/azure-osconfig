@@ -9,12 +9,6 @@
 // 30 seconds
 #define DOWORK_INTERVAL 30
 
-// The log file for the platform
-#define LOG_FILE "/var/log/osconfig_platform.log"
-#define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
-
-//TBD: replace the log objects in MM and Orchestrator with the one here and export: OSCONFIG_LOG_HANDLE GetLog();
-
 // The local Desired Configuration (DC) and Reported Configuration (RC) files
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
@@ -22,9 +16,15 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
+// The log file for the platform
+#define LOG_FILE "/var/log/osconfig_platform.log"
+#define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
+
 #define FULL_LOGGING "FullLogging"
 
 static unsigned int g_lastTime = 0;
+
+extern OSCONFIG_LOG_HANDLE g_platformLog;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -44,12 +44,6 @@ static int g_stopSignals[] = {
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
-
-static OSCONFIG_LOG_HANDLE g_platformLog = NULL;
-OSCONFIG_LOG_HANDLE GetLog()
-{
-    return g_platformLog;
-}
 
 #define EOL_TERMINATOR "\n"
 #define ERROR_MESSAGE_CRASH "[ERROR] OSConfig Platform crash due to "
@@ -121,7 +115,7 @@ static void Refresh()
 
 void ScheduleRefresh(void)
 {
-    OsConfigLogInfo(GetLog(), "Scheduling refresh");
+    OsConfigLogInfo(GetPlatformLog(), "Scheduling refresh");
     g_refreshSignal = SIGHUP;
 }
 
@@ -131,7 +125,7 @@ static bool InitializePlatform(void)
     
     MpiInitialize();
     
-    OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
     
     return true;
 }
@@ -140,7 +134,7 @@ void TerminatePlatform(void)
 {
     MpiShutdown();
     
-    OsConfigLogInfo(GetLog(), "OSConfig Platform terminated");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
 }
 
 static void PlatformDoWork(void)
@@ -184,7 +178,7 @@ int main(int argc, char *argv[])
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
-    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
+    char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetPlatformLog());
     if (NULL != jsonConfiguration)
     {
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
@@ -193,12 +187,12 @@ int main(int argc, char *argv[])
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    OsConfigLogInfo(GetLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
-    OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
@@ -209,7 +203,7 @@ int main(int argc, char *argv[])
 
     if (!InitializePlatform())
     {
-        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig Platform");
+        OsConfigLogError(GetPlatformLog(), "Failed to initialize the OSConfig Platform");
         goto done;
     }
 
@@ -227,7 +221,7 @@ int main(int argc, char *argv[])
     }
 
 done:
-    OsConfigLogInfo(GetLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
     CloseLog(&g_platformLog);

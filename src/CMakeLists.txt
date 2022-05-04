@@ -95,6 +95,7 @@ else ()
 endif()
 
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
+set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
     enable_testing()

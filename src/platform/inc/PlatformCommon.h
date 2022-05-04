@@ -27,9 +27,52 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mpi.h>
+#include <Mmi.h>
 
 #include <parson.h>
 
-OSCONFIG_LOG_HANDLE GetLog();
+#ifdef __cplusplus
+    
+#include <map>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <vector>
+#include <algorithm>
+#include <cinttypes>
+#include <condition_variable>
+#include <cstring>
+#include <fstream>
+#include <thread>
+#include <tuple>
+#include <dlfcn.h>
+#include <iostream>
+#include <unordered_set>
+#include <sstream>
+#include <future>
+#include <ctime>
+#include <chrono>
+
+#include <ScopeGuard.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+#endif //#ifdef __cplusplus
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+OSCONFIG_LOG_HANDLE GetPlatformLog();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PLATFORMCOMMON_H
