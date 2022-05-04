@@ -111,6 +111,13 @@ jobs:
           badge: true
           thresholds: '60 80'
 
+      - name: Create coverage report
+        uses: ./.github/actions/check-run
+        with:
+          name: Coverage report
+          title: Code coverage
+          markdown: ./code-coverage-results.md
+
       - uses: actions/upload-artifact@v2
         if: always()
         with:
