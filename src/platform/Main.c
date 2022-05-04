@@ -1,36 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdarg.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <libgen.h>
-#include <errno.h>
-#include <assert.h>
-#include <signal.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-
-#include <CommonUtils.h>
-#include <Logging.h>
-#include <Mpi.h>
-#include <version.h>
+#include <PlatformCommon.h>
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
 
+// 30 seconds
+#define DOWORK_INTERVAL 30
+
 // The log file for the platform
 #define LOG_FILE "/var/log/osconfig_platform.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
+
+//TBD: replace the log objects in MM and Orchestrator with the one here and export: OSCONFIG_LOG_HANDLE GetLog();
 
 // The local Desired Configuration (DC) and Reported Configuration (RC) files
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
@@ -59,9 +42,6 @@ static int g_stopSignals[] = {
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
-//static int g_localManagement = 0;
-
-static int g_reportingInterval = 30/*DEFAULT_REPORTING_INTERVAL*/;
 
 static OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 OSCONFIG_LOG_HANDLE GetLog()
@@ -132,39 +112,66 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static void Refresh()
 {
-    //TBD refresh the platform, reload modules, etc.
+    //TBD: add a MpiRefresh to MM?
+    MpiShutdown();
+    MpiInitialize();
 }
 
 void ScheduleRefresh(void)
 {
-    OsConfigLogInfo(GetLog(), "Scheduling refresh connection");
+    OsConfigLogInfo(GetLog(), "Scheduling refresh");
     g_refreshSignal = SIGHUP;
 }
 
 static bool InitializePlatform(void)
 {
     g_lastTime = (unsigned int)time(NULL);
+    
     MpiInitialize();
+    
     OsConfigLogInfo(GetLog(), "OSConfig Platform intialized");
+    
     return true;
 }
 
 void TerminatePlatform(void)
 {
     MpiShutdown();
-    OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
+    
+    OsConfigLogInfo(GetLog(), "OSConfig Platform terminated");
 }
 
 static void PlatformDoWork(void)
 {
     unsigned int currentTime = time(NULL);
-    unsigned int timeInterval = g_reportingInterval;
+    unsigned int timeInterval = DOWORK_INTERVAL;
 
     if (timeInterval <= (currentTime - g_lastTime))
     {
         MpiDoWork();
         g_lastTime = (unsigned int)time(NULL);
     }
+}
+
+static bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    bool result = false;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                result = (0 == (int)json_object_get_number(rootObject, FULL_LOGGING)) ? false : true;
+            }
+            json_value_free(rootValue);
+        }
+    }
+
+    return result;
 }
 
 int main(int argc, char *argv[])
@@ -178,7 +185,7 @@ int main(int argc, char *argv[])
     char* jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        //SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -190,15 +197,6 @@ int main(int argc, char *argv[])
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
-    }
-
-    // Load remaining configuration
-    jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
-    if (NULL != jsonConfiguration)
-    {
-        //g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        //g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
-        FREE_MEMORY(jsonConfiguration);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)

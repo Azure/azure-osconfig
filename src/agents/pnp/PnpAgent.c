@@ -337,16 +337,33 @@ static void ForkDaemon()
 
 static bool InitializeAgent(void)
 {
+    const char* enablePlatform = "sudo systemctl enable osconfig-platform";
+    const char* startPlatform = "sudo systemctl start osconfig-platform";
+    
     bool status = true;
+    int result = 0;
 
     g_lastTime = (unsigned int)time(NULL);
-
-    //CallMpiInitialize();
 
     // Open the MPI session for this PnP Module instance:
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
-        LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+        OsConfigLogError(GetLog(), "MpiOpen failed, try starting the Platform");
+        if (0 == ExecuteCommand(NULL, enablePlatform, FALSE, FALSE, 0, 0, NULL, NULL, GetLog()))
+        {
+            if (0 == ExecuteCommand(NULL, startPlatform, FALSE, FALSE, 0, 0, NULL, NULL, GetLog()))
+            {
+                // Wait half a second (500 msec) and retry MpiOpen
+                sleep(DOWORK_SLEEP * 5);
+                if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+                {
+                    LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+                    g_exitState = MpiInitializationFailure;
+                    status = false;
+                }
+            }
+        }
+        
         g_exitState = MpiInitializationFailure;
         status = false;
     }
@@ -387,8 +404,6 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-
-    //CallMpiShutdown();
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }

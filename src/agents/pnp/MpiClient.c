@@ -514,17 +514,3 @@ void CallMpiFree(MPI_JSON_STRING payload)
 {
     FREE_MEMORY(payload);
 }
-
-void CallMpiDoWork(void)
-{
-}
-
-/*void CallMpiInitialize(void)
-{
-    OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
-}
-
-void CallMpiShutdown(void)
-{
-    OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
-}*/
