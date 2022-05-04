@@ -69,7 +69,7 @@ extern "C"
 {
 #endif
 
-OSCONFIG_LOG_HANDLE GetLog();
+OSCONFIG_LOG_HANDLE GetPlatformLog();
 
 #ifdef __cplusplus
 }

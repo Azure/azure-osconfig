@@ -3,7 +3,8 @@
 
 project(modulesmanagertests)
 
-set(modulesmanagertests_files 
+set(modulesmanagertests_files
+    ../Log.c 
     ../ManagementModule.cpp
     ../ModulesManager.cpp
     ../MpiServer.cpp)

@@ -9,12 +9,6 @@
 // 30 seconds
 #define DOWORK_INTERVAL 30
 
-// The log file for the platform
-#define LOG_FILE "/var/log/osconfig_platform.log"
-#define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
-
-//TBD: replace the log objects in MM and Orchestrator with the one here and export: OSCONFIG_LOG_HANDLE GetLog();
-
 // The local Desired Configuration (DC) and Reported Configuration (RC) files
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
@@ -22,15 +16,15 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
+// The log file for the platform
+#define LOG_FILE "/var/log/osconfig_platform.log"
+#define ROLLED_LOG_FILE "/var/log/osconfig_platform.bak"
+
 #define FULL_LOGGING "FullLogging"
 
 static unsigned int g_lastTime = 0;
 
-OSCONFIG_LOG_HANDLE g_platformLog = NULL;
-OSCONFIG_LOG_HANDLE GetLog()
-{
-    return g_platformLog;
-}
+extern OSCONFIG_LOG_HANDLE g_platformLog;
 
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
@@ -191,7 +185,7 @@ int main(int argc, char *argv[])
         FREE_MEMORY(jsonConfiguration);
     }
 
-    g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+    g_platformLog = OpenPlatformLog(LOG_FILE, ROLLED_LOG_FILE);
 
     OsConfigLogInfo(GetLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
