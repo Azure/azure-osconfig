@@ -16,7 +16,7 @@ SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
 project(osconfig)
 
-set(osconfig_agent_files
+set(osconfig_files
     ./AisUtils.c
     ./ConfigUtils.c
     ./MpiClient.c
@@ -25,7 +25,7 @@ set(osconfig_agent_files
 
 set(target_name osconfig)
 
-add_executable(${target_name} ${osconfig_agent_files})
+add_executable(${target_name} ${osconfig_files})
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     message(STATUS "Using azure-iot-sdk-c as source")

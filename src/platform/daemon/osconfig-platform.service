@@ -1,7 +1,7 @@
 [Unit]
 Description=OSConfig Management Platform Daemon
-After=osconfig-agent.target
-Wants=osconfig-agent.target
+After=osconfig.target
+Wants=osconfig.target
 
 [Service]
 ExecStart=/usr/bin/osconfig-platform

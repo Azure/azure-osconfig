@@ -12,7 +12,7 @@ StartLimitBurst=3
 # ExecStart=/usr/bin/osconfig $CONN_STR
 # Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
 # Environment="http_proxy=http://user:password@wwww.foo.org:100//"
-ExecStart=/usr/bin/osconfig-agent
+ExecStart=/usr/bin/osconfig
 Type=simple
 User=root
 Restart=always
