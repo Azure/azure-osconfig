@@ -4,11 +4,4 @@ variable "client_secret" {}
 variable "subscription_id" {}
 variable "tenant_id" {}
 variable "key_vault_id" {}
-
-variable resource_group_name_prefix {
-    default = "osconfig"
-}
-
-variable "environment_tag" {
-    default = "osconfig-e2etest"
-}
+variable resource_group_name {}

@@ -1,0 +1,39 @@
+name: Provision Iot Hub
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The name of the target environment
+        type: string
+        required: true
+      resourceGroupName:
+        description: The name of the target environment
+        type: string
+        required: true
+
+jobs:
+  provision-hub:
+    name: Provision Iot Hub
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+
+      - name: Provision Iot Hub
+        id: provisionm-hub
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+        working-directory: ./devops/terraform/iothub
+        run: |
+          terraform init
+          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="${{ inputs.resourceGroupName }}" -auto-approve

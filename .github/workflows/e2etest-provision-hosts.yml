@@ -1,0 +1,77 @@
+name: Provision Host VM
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The name of the target environment
+        type: string
+        required: true
+      distroName:
+        description: The name of the target distro
+        type: string
+        required: true
+      resourceGroupName:
+        description: The name of the target environment
+        type: string
+        required: true
+
+jobs:
+  provision-hosts:
+    name: Provision Host VM
+    runs-on: ubuntu-latest
+    environment: e2e-prod
+    strategy:
+      fail-fast: false
+      matrix:
+        distroName: ${{ fromJson(inputs.distroName) }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+
+      - name: Get GitHub runner token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        id: runner_token
+        run: |
+          echo ::set-output name=RUNNER_TOKEN::$(gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/Azure/azure-osconfig/actions/runners/registration-token | jq '.token')
+
+      - name: Provision VM - ${{ matrix.distroName }}
+        id: provisionm-vm
+        env:
+          ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+        working-directory: ./devops/terraform/host
+        run: |
+          target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
+          distroName=${{ matrix.distroName }}
+          rg=${{ inputs.resourceGroupName }}
+          image_publisher=`echo $target | jq .image_publisher | tr -d \"`
+          image_offer=`echo $target | jq .image_offer | tr -d \"`
+          image_sku=`echo $target | jq .image_sku | tr -d \"`
+          image_version=`echo $target | jq .image_version | tr -d \"`
+          packagePattern=`echo $target | jq .packagePattern | tr -d \"`
+          device_id=`echo $target | jq .device_id | tr -d \"`
+          vm_script=`echo $target | jq -r '.vm_script | join(" && ")'`
+
+          echo ::set-output name=distroName::$distroName
+          echo ::set-output name=image_publisher::$image_publisher
+          echo ::set-output name=image_offer::$image_offer
+          echo ::set-output name=image_sku::$image_sku
+          echo ::set-output name=image_version::$image_version
+          echo ::set-output name=packagePattern::$packagePattern
+          echo ::set-output name=device_id::$device_id
+          echo ::set-output name=vm_script::$vm_script
+
+          terraform init
+          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token="${{ steps.runner_token.outputs.RUNNER_TOKEN }}" -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_script="$vm_script" -var github_runner_tar_gz_package="${{ secrets.GH_RUNNER_TAR_GZ }}" -auto-approve
+
+          runner=$rg-$distroName
+          echo Created self-hosted runner "$runner"

@@ -30,10 +30,17 @@ RUN apt -y update && apt-get -y install \
     libssl1.1 \
     libstdc++6 \
     zlib1g
+
+# .NET Install
 RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 5.0
 ENV PATH="${PATH}:/root/.dotnet"
 
+# ZSH
 ENV SHELL /bin/zsh
-
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.2/zsh-in-docker.sh)" -- \
     -t https://github.com/denysdovhan/spaceship-prompt
+
+# Terraform
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
+    apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    apt-get -y install terraform
