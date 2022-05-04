@@ -34,6 +34,7 @@ static const char* g_objectName = "ObjectName";
 static const char* g_payload = "Payload";
 
 #define UUID_LENGTH 36
+#define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASON_PHRASE_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
 
@@ -65,13 +66,13 @@ public:
 
 OSCONFIG_LOG_HANDLE PlatformLog::m_log = NULL;
 
-typedef enum StatusCode
+typedef enum HTTP_STATUS
 {
-    OK = 200,
-    BAD_REQUEST = 400,
-    NOT_FOUND = 404,
-    INTERNAL_SERVER_ERROR = 500
-} StatusCode;
+    HTTP_OK = 200,
+    HTTP_BAD_REQUEST = 400,
+    HTTP_NOT_FOUND = 404,
+    HTTP_INTERNAL_SERVER_ERROR = 500
+} HTTP_STATUS;
 
 static char* CreateUuid()
 {
@@ -113,33 +114,13 @@ static char* CreateUuid()
     return uuid;
 }
 
-void GetReasonPhrase(StatusCode statusCode, char* phrase)
+static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* responseSize)
 {
-    switch (statusCode)
-    {
-        case OK:
-            strcpy(phrase, "OK");
-            break;
-        case BAD_REQUEST:
-            strcpy(phrase, "Bad Request");
-            break;
-        case NOT_FOUND:
-            strcpy(phrase, "Not Found");
-            break;
-        case INTERNAL_SERVER_ERROR:
-            strcpy(phrase, "Internal Server Error");
-            break;
-        default:
-            strcpy(phrase, "Unknown");
-    }
-}
-
-static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string& responsePayload)
-{
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
+    const char* responseFormat = "\"%s\"";
 
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientName) && document.HasMember(g_maxPayloadSizeBytes) && document[g_clientName].IsString() && document[g_maxPayloadSizeBytes].IsInt())
         {
@@ -148,27 +129,28 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
 
             OsConfigLogInfo(PlatformLog::Get(), "Received MpiOpen request for client '%s' with max payload size %d", clientName.c_str(), maxPayloadSizeBytes);
 
-            std::string sessionId = CreateUuid();
+            char* sessionId = CreateUuid();
             MPI_HANDLE handle = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
 
             if (handle)
             {
                 g_sessions[sessionId] = handle;
-                status = StatusCode::OK;
-                responsePayload = ("\"" + sessionId + "\"");
+                status = HTTP_OK;
             }
             else
             {
-                responsePayload = "\"\"";
                 OsConfigLogError(PlatformLog::Get(), "Failed to create MPI session for client '%s'", clientName.c_str());
+                status = HTTP_INTERNAL_SERVER_ERROR;
             }
+
+            FREE_MEMORY(sessionId);
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiOpen request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiOpen request: %s", request);
             }
             else
             {
@@ -178,10 +160,10 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiOpen request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiOpen request: %s", request);
         }
         else
         {
@@ -192,14 +174,12 @@ static StatusCode MpiOpenRequest(const std::string& requestPayload, std::string&
     return status;
 }
 
-static StatusCode MpiCloseRequest(const std::string& requestPayload, std::string& responsePayload)
+static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
 
-    responsePayload = "";
-
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
         {
@@ -210,20 +190,20 @@ static StatusCode MpiCloseRequest(const std::string& requestPayload, std::string
             {
                 MpiClose(g_sessions[session]);
                 g_sessions.erase(session);
-                status = StatusCode::OK;
+                status = HTTP_OK;
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MPI close request");
-                status = StatusCode::BAD_REQUEST;
+                status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiClose request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiClose request: %s", request);
             }
             else
             {
@@ -233,10 +213,10 @@ static StatusCode MpiCloseRequest(const std::string& requestPayload, std::string
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiClose request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiClose request: %s", request);
         }
         else
         {
@@ -247,12 +227,12 @@ static StatusCode MpiCloseRequest(const std::string& requestPayload, std::string
     return status;
 }
 
-static StatusCode MpiSetRequest(const std::string& requestPayload, std::string& responsePayload)
+static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
 
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString() && document.HasMember(g_payload))
         {
@@ -273,21 +253,21 @@ static StatusCode MpiSetRequest(const std::string& requestPayload, std::string& 
             if (g_sessions.find(session) != g_sessions.end())
             {
                 int mpiStatus = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
-                status = ((mpiStatus == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
+                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
                 responsePayload = "\""+ std::to_string(mpiStatus) + "\"";
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "No session found for MpiSet request: %s", session.c_str());
-                status = StatusCode::BAD_REQUEST;
+                status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiSet request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiSet request: %s", request);
             }
             else
             {
@@ -297,10 +277,10 @@ static StatusCode MpiSetRequest(const std::string& requestPayload, std::string& 
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiSet request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiSet request: %s", request);
         }
         else
         {
@@ -311,12 +291,12 @@ static StatusCode MpiSetRequest(const std::string& requestPayload, std::string& 
     return status;
 }
 
-static StatusCode MpiGetRequest(const std::string& requestPayload, std::string& responsePayload)
+static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
 
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString())
         {
@@ -331,33 +311,21 @@ static StatusCode MpiGetRequest(const std::string& requestPayload, std::string& 
 
             if (g_sessions.find(session) != g_sessions.end())
             {
-                MPI_JSON_STRING payload;
-                int payloadSizeBytes = 0;
-                int mpiStatus = MpiGet(g_sessions[session], component.c_str(), object.c_str(), &payload, &payloadSizeBytes);
-
-                if (mpiStatus == MPI_OK)
-                {
-                    responsePayload = std::string(payload, payloadSizeBytes);
-                    status = StatusCode::OK;
-                }
-                else
-                {
-                    responsePayload = "\"" + std::to_string(mpiStatus) + "\"";
-                    status = StatusCode::BAD_REQUEST;
-                }
+                int mpiStatus = MpiGet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING*)response, responseSize);
+                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MpiGet request: %s", session.c_str());
-                status = StatusCode::BAD_REQUEST;
+                status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiGet request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiGet request: %s", request);
             }
             else
             {
@@ -367,10 +335,10 @@ static StatusCode MpiGetRequest(const std::string& requestPayload, std::string& 
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiGet request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiGet request: %s", request);
         }
         else
         {
@@ -381,12 +349,12 @@ static StatusCode MpiGetRequest(const std::string& requestPayload, std::string& 
     return status;
 }
 
-static StatusCode MpiSetDesiredRequest(const std::string& requestPayload, std::string& responsePayload)
+static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
 
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_payload))
         {
@@ -400,21 +368,21 @@ static StatusCode MpiSetDesiredRequest(const std::string& requestPayload, std::s
             if (g_sessions.find(session) != g_sessions.end())
             {
                 int mpiStatus = MpiSetDesired(g_sessions[session], (MPI_JSON_STRING)payload.c_str(), payload.size());
-                status = ((mpiStatus == MPI_OK) ? StatusCode::OK : StatusCode::BAD_REQUEST);
+                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
                 responsePayload = "\"" + std::to_string(mpiStatus) + "\"";
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MpiSetDesired request");
-                status = StatusCode::BAD_REQUEST;
+                status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiSetDesired request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiSetDesired request: %s", request);
             }
             else
             {
@@ -424,10 +392,10 @@ static StatusCode MpiSetDesiredRequest(const std::string& requestPayload, std::s
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiSetDesired request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiSetDesired request: %s", request);
         }
         else
         {
@@ -438,13 +406,13 @@ static StatusCode MpiSetDesiredRequest(const std::string& requestPayload, std::s
     return status;
 }
 
-static StatusCode MpiGetReportedRequest(const std::string& requestPayload, std::string& responsePayload)
+static HTTP_STATUS MpiGetReportedRequest(const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
     rapidjson::Document document;
-    responsePayload = "{}";
+    const char* defaultResponse = "{}";
 
-    if (!document.Parse(requestPayload.c_str()).HasParseError())
+    if (!document.Parse(request).HasParseError())
     {
         if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
         {
@@ -452,33 +420,21 @@ static StatusCode MpiGetReportedRequest(const std::string& requestPayload, std::
 
             if (g_sessions.find(session) != g_sessions.end())
             {
-                MPI_JSON_STRING payload;
-                int payloadSizeBytes = 0;
-                int mpiStatus = MpiGetReported(g_sessions[session], &payload, &payloadSizeBytes);
-
-                if (mpiStatus == MPI_OK)
-                {
-                    responsePayload = std::string(payload, payloadSizeBytes);
-                    status = StatusCode::OK;
-                }
-                else
-                {
-                    responsePayload = "\"" + std::to_string(mpiStatus) + "\"";
-                    status = StatusCode::BAD_REQUEST;
-                }
+                int mpiStatus = MpiGetReported(g_sessions[session], (MPI_JSON_STRING*)response, responseSize);
+                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
             }
             else
             {
                 OsConfigLogError(PlatformLog::Get(), "Invalid MpiGetReported request");
-                status = StatusCode::BAD_REQUEST;
+                status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
-            status = StatusCode::BAD_REQUEST;
+            status = HTTP_BAD_REQUEST;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(PlatformLog::Get(), "Invalid MpiGetReported request: %s", requestPayload.c_str());
+                OsConfigLogError(PlatformLog::Get(), "Invalid MpiGetReported request: %s", request);
             }
             else
             {
@@ -488,10 +444,10 @@ static StatusCode MpiGetReportedRequest(const std::string& requestPayload, std::
     }
     else
     {
-        status = StatusCode::BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiGetReported request: %s", requestPayload.c_str());
+            OsConfigLogError(PlatformLog::Get(), "Failed to parse MpiGetReported request: %s", request);
         }
         else
         {
@@ -502,54 +458,76 @@ static StatusCode MpiGetReportedRequest(const std::string& requestPayload, std::
     return status;
 }
 
-StatusCode RouteRequest(const char* uri, const std::string& request, std::string& response)
+HTTP_STATUS RouteRequest(const char* uri, const char* request, char** response, int* responseSize)
 {
-    StatusCode status = StatusCode::OK;
+    HTTP_STATUS status = HTTP_OK;
 
     if (0 == strcmp(uri, "MpiOpen"))
     {
-        status = MpiOpenRequest(request, response);
+        status = MpiOpenRequest(request, response, responseSize);
     }
     else if (0 == strcmp(uri, "MpiClose"))
     {
-        status = MpiCloseRequest(request, response);
+        status = MpiCloseRequest(request, response, responseSize);
     }
     else if (0 == strcmp(uri, "MpiSet"))
     {
-        status = MpiSetRequest(request, response);
+        status = MpiSetRequest(request, response, responseSize);
     }
     else if (0 == strcmp(uri, "MpiGet"))
     {
-        status = MpiGetRequest(request, response);
+        status = MpiGetRequest(request, response, responseSize);
     }
     else if (0 == strcmp(uri, "MpiSetDesired"))
     {
-        status = MpiSetDesiredRequest(request, response);
+        status = MpiSetDesiredRequest(request, response, responseSize);
     }
     else if (0 == strcmp(uri, "MpiGetReported"))
     {
-        status = MpiGetReportedRequest(request, response);
+        status = MpiGetReportedRequest(request, response, responseSize);
     }
     else
     {
         OsConfigLogError(PlatformLog::Get(), "%s: invalid request", uri);
-        status = StatusCode::NOT_FOUND;
+        status = HTTP_NOT_FOUND;
     }
 
     return status;
+}
+
+static void GetReasonPhrase(HTTP_STATUS statusCode, char* phrase)
+{
+    switch (statusCode)
+    {
+        case HTTP_OK:
+            strcpy(phrase, "HTTP_OK");
+            break;
+        case HTTP_BAD_REQUEST:
+            strcpy(phrase, "Bad Request");
+            break;
+        case HTTP_NOT_FOUND:
+            strcpy(phrase, "Not Found");
+            break;
+        case HTTP_INTERNAL_SERVER_ERROR:
+            strcpy(phrase, "Internal Server Error");
+            break;
+        default:
+            strcpy(phrase, "Unknown");
+    }
 }
 
 static void HandleConnection(int socketHandle)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
 
-    StatusCode status = StatusCode::OK;
     char* uri = NULL;
-    char* requestPayload = NULL;
     int contentLength = 0;
-    std::string responseBody;
-    char* responseBuffer = NULL;
+    char* requestBody = NULL;
+    HTTP_STATUS status = HTTP_OK;
     char reasonPhrase[MAX_REASON_PHRASE_LENGTH] = {0};
+    char* responseBody = NULL;
+    int responseSize = 0;
+    char* buffer = NULL;
     int estimatedSize = 0;
     int actualSize = 0;
     ssize_t bytes = 0;
@@ -557,62 +535,61 @@ static void HandleConnection(int socketHandle)
     if (NULL == (uri = ReadUriFromSocket(socketHandle, PlatformLog::Get())))
     {
         OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", socketHandle);
-        return;
     }
 
     if (0 >= (contentLength = ReadHttpContentLengthFromSocket(socketHandle, PlatformLog::Get())))
     {
         OsConfigLogError(PlatformLog::Get(), "%s: failed to read HTTP Content-Length", uri);
-        return;
     }
 
-    if (NULL != (requestPayload = new (std::nothrow) char[contentLength]))
-    {
-        if (contentLength != static_cast<int>(bytes = read(socketHandle, requestPayload, contentLength)))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d '%.*s'", uri, contentLength, static_cast<int>(bytes), static_cast<int>(bytes), requestPayload);
-            }
-            else
-            {
-                OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, static_cast<int>(bytes));
-            }
-        }
-
-        status = RouteRequest(uri, std::string(requestPayload, contentLength), responseBody);
-        GetReasonPhrase(status, reasonPhrase);
-
-        FREE_MEMORY(requestPayload);
-    }
-    else
+    if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
     {
         OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
     }
 
-    estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(reasonPhrase) + responseBody.length() + 1;
+    memset(requestBody, 0, contentLength + 1);
 
-    if (NULL != (responseBuffer = (char*)malloc(estimatedSize)))
+    if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
     {
-        memset(responseBuffer, 0, estimatedSize);
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
+    }
 
-        snprintf(responseBuffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseBody.length(), responseBody.c_str());
-        actualSize = (int)strlen(responseBuffer);
-
-        bytes = write(socketHandle, responseBuffer, strlen(responseBuffer));
-
-        if (bytes != actualSize)
-        {
-            OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, static_cast<int>(bytes), actualSize);
-        }
-
-        FREE_MEMORY(responseBuffer);
+    if ((NULL == uri) || (NULL == requestBody))
+    {
+        // TODO: need to malloc ???
+        responseBody = "{\"error\":\"Failed to read request\"}";
+        responseSize = strlen(responseBody);
+        status = HTTP_BAD_REQUEST;
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
+        status = RouteRequest(uri, requestBody, &responseBody, &responseSize);
+        GetReasonPhrase(status, reasonPhrase);
     }
 
+    FREE_MEMORY(requestBody);
+
+    estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(reasonPhrase) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
+
+    if (NULL == (buffer = (char*)malloc(estimatedSize)))
+    {
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
+        return;
+    }
+
+    memset(buffer, 0, estimatedSize);
+
+    snprintf(buffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseSize, (responseBody ? responseBody : ""));
+    actualSize = (int)strlen(buffer);
+
+    bytes = write(socketHandle, buffer, strlen(buffer));
+
+    if (bytes != actualSize)
+    {
+        OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
+    }
+
+    FREE_MEMORY(buffer);
     FREE_MEMORY(uri);
 }
 
