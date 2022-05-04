@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
         FREE_MEMORY(jsonConfiguration);
     }
 
-    g_platformLog = OpenPlatformLog(LOG_FILE, ROLLED_LOG_FILE);
+    g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
