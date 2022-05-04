@@ -34,7 +34,8 @@ target_link_libraries(${target_name}
     logging
     commonutils
     modulesmanager
-    orchestrator)
+    orchestrator
+    parson-common)
 
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

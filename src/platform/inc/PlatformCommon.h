@@ -26,8 +26,9 @@
 
 #include <CommonUtils.h>
 #include <Logging.h>
-#include <Parson.h>
 #include <Mpi.h>
+
+#include <parson.h>
 
 OSCONFIG_LOG_HANDLE GetLog();
 

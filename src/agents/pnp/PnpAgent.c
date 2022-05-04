@@ -63,7 +63,7 @@ enum AgentExitState
     NoError = 0,
     NoConnectionString = 1,
     IotHubInitializationFailure = 2,
-    MpiInitializationFailure = 3
+    PlatformInitializationFailure = 3
 };
 typedef enum AgentExitState AgentExitState;
 static AgentExitState g_exitState = NoError;
@@ -335,37 +335,48 @@ static void ForkDaemon()
     }
 }
 
+static bool StartPlatform(void)
+{
+   const char* enablePlatform = "sudo systemctl enable osconfig-platform";
+   const char* startPlatform = "sudo systemctl start osconfig-platform";
+
+   return ((0 == ExecuteCommand(NULL, enablePlatform, false, false, 0, 0, NULL, NULL, GetLog())) &&
+       (0 == ExecuteCommand(NULL, startPlatform, false, false, 0, 0, NULL, NULL, GetLog())));
+}
+
+static bool StopPlatform(void)
+{
+   const char* stopPlatform = "sudo systemctl stop osconfig-platform";
+
+   return (0 == ExecuteCommand(NULL, stopPlatform, false, false, 0, 0, NULL, NULL, GetLog()));
+}
+
 static bool InitializeAgent(void)
 {
-    const char* enablePlatform = "sudo systemctl enable osconfig-platform";
-    const char* startPlatform = "sudo systemctl start osconfig-platform";
-    
     bool status = true;
-    int result = 0;
 
     g_lastTime = (unsigned int)time(NULL);
 
     // Open the MPI session for this PnP Module instance:
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
-        OsConfigLogError(GetLog(), "MpiOpen failed, try starting the Platform");
-        if (0 == ExecuteCommand(NULL, enablePlatform, FALSE, FALSE, 0, 0, NULL, NULL, GetLog()))
+        OsConfigLogInfo(GetLog(), "Start the platform");
+        if (StartPlatform())
         {
-            if (0 == ExecuteCommand(NULL, startPlatform, FALSE, FALSE, 0, 0, NULL, NULL, GetLog()))
+            sleep(1);
+            if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
             {
-                // Wait half a second (500 msec) and retry MpiOpen
-                sleep(DOWORK_SLEEP * 5);
-                if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
-                {
-                    LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-                    g_exitState = MpiInitializationFailure;
-                    status = false;
-                }
+                LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+                g_exitState = PlatformInitializationFailure;
+                status = false;
             }
         }
-        
-        g_exitState = MpiInitializationFailure;
-        status = false;
+        else
+        {
+            LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+            g_exitState = PlatformInitializationFailure;
+            status = false;
+        }
     }
 
     if (status && g_iotHubConnectionString)
@@ -516,9 +527,6 @@ static void AgentDoWork(void)
         {
             ReportProperties();
         }
-
-        // Allow the inproc (for now) platform to unload unused modules
-        CallMpiDoWork();
 
         g_lastTime = (unsigned int)time(NULL);
     }
@@ -769,6 +777,9 @@ done:
     {
         free((void *)g_proxyOptions.password);
     }
+
+    // Stop the platform when agent terminates
+    StopPlatform();
 
     return 0;
 }

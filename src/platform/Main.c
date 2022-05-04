@@ -22,6 +22,8 @@
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
+#define FULL_LOGGING "FullLogging"
+
 static unsigned int g_lastTime = 0;
 
 // All signals on which we want the agent to cleanup before terminating process.
