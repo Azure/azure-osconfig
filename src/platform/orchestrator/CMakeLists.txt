@@ -7,9 +7,9 @@ add_library(orchestrator STATIC ./src/MpiServer.cpp)
 
 target_include_directories(orchestrator PUBLIC
     PUBLIC
-        ${MODULESMANAGER_INC_DIR}
-        ${ORCHESTRATOR_INC_DIR}
         ${PLATFORM_INC_DIR}
-        ${MODULES_INC_DIR})
+        ${MODULES_INC_DIR}
+        ${MODULESMANAGER_INC_DIR}
+        ${ORCHESTRATOR_INC_DIR})
 
-target_link_libraries(orchestrator pthread logging commonutils)
+target_link_libraries(orchestrator pthread logging commonutils parsonlib)

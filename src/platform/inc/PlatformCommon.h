@@ -33,11 +33,10 @@
 
 #include <parson.h>
 
+#ifdef __cplusplus
+    
 // C++ headers:
 
-#include <chrono>
-#include <ctime>
-#include <future>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -55,7 +54,9 @@
 #include <iostream>
 #include <unordered_set>
 #include <sstream>
-
+#include <future>
+#include <ctime>
+#include <chrono>
 
 #include <ScopeGuard.h>
 
@@ -65,6 +66,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
+#endif //#ifdef __cplusplus
 
 OSCONFIG_LOG_HANDLE GetLog();
 

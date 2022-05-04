@@ -44,7 +44,7 @@ void MpiClose(MPI_HANDLE clientSession);
 
 void MpiFree(MPI_JSON_STRING payload);
      
-void MpiInitialize(void);
+void MpiInitialize(void* log);
 void MpiDoWork(void);
 void MpiShutdown(void);
 

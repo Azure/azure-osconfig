@@ -9,6 +9,7 @@ target_link_libraries(modulesmanager
         ${CMAKE_DL_LIBS}
         logging
         commonutils
+        parsonlib
 )
 target_include_directories(modulesmanager
     PUBLIC

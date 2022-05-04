@@ -27,7 +27,8 @@ add_executable(${target_name} ${osconfig_platform_files})
 
 target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
 
-target_include_directories(${target_name} PUBLIC)
+target_include_directories(${target_name} PUBLIC
+    ${PLATFORM_INC_DIR})
 
 target_link_libraries(${target_name}
     logging
