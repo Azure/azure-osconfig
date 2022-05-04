@@ -4,6 +4,8 @@
 #ifndef PLATFORMCOMMON_H
 #define PLATFORMCOMMON_H
 
+// C  headers:
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -27,8 +29,42 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mpi.h>
+#include <Mmi.h>
 
 #include <parson.h>
+
+// C++ headers:
+
+#include <chrono>
+#include <ctime>
+#include <future>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <vector>
+#include <algorithm>
+#include <cinttypes>
+#include <condition_variable>
+#include <cstring>
+#include <fstream>
+#include <thread>
+#include <tuple>
+#include <dlfcn.h>
+#include <iostream>
+#include <unordered_set>
+#include <sstream>
+
+
+#include <ScopeGuard.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
 
 OSCONFIG_LOG_HANDLE GetLog();
 

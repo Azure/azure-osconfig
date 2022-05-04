@@ -4,11 +4,7 @@
 #ifndef MANAGEMENTMODULE_H
 #define MANAGEMENTMODULE_H
 
-#include <string>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <Mmi.h>
+#include <PlatformCommon.h>
 
 // MMI function definitions
 using Mmi_GetInfo = int (*)(const char*, MMI_JSON_STRING*, int*);

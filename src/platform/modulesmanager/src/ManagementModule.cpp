@@ -1,20 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <algorithm>
-#include <dlfcn.h>
-#include <iostream>
-#include <rapidjson/document.h>
-#include <rapidjson/schema.h>
-#include <rapidjson/stringbuffer.h>
-#include <unordered_set>
-#include <vector>
-
-#include <Logging.h>
-#include <CommonUtils.h>
-#include <ManagementModule.h>
 #include <ModulesManager.h>
-#include <ScopeGuard.h>
+#include <ManagementModule.h>
 
 static const std::string g_mmiFuncMmiGetInfo = "MmiGetInfo";
 static const std::string g_mmiFuncMmiOpen = "MmiOpen";
@@ -73,7 +61,7 @@ int ManagementModule::Load()
             mmi_t funcPtr = (mmi_t)dlsym(m_handle, symbol.c_str());
             if (nullptr == funcPtr)
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
+                OsConfigLogError(GetLog(), "Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
                 status = EINVAL;
             }
         }
@@ -95,7 +83,7 @@ int ManagementModule::Load()
                 rapidjson::Document document;
                 if (document.Parse(payload, payloadSizeBytes).HasParseError())
                 {
-                    OsConfigLogError(ModulesManagerLog::Get(), "Failed to parse info JSON for module '%s'", m_modulePath.c_str());
+                    OsConfigLogError(GetLog(), "Failed to parse info JSON for module '%s'", m_modulePath.c_str());
                     status = EINVAL;
                 }
                 else if (0 != Info::Deserialize(document, m_info))
@@ -105,7 +93,7 @@ int ManagementModule::Load()
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Failed to get info for module '%s'", m_modulePath.c_str());
+                OsConfigLogError(GetLog(), "Failed to get info for module '%s'", m_modulePath.c_str());
                 status = EINVAL;
             }
         }
@@ -126,11 +114,11 @@ int ManagementModule::Load()
         }
         ss << "]";
 
-        OsConfigLogInfo(ModulesManagerLog::Get(), "Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
+        OsConfigLogInfo(GetLog(), "Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Failed to load module '%s'", m_modulePath.c_str());
+        OsConfigLogError(GetLog(), "Failed to load module '%s'", m_modulePath.c_str());
         if (nullptr != m_handle)
         {
             dlclose(m_handle);
@@ -177,7 +165,7 @@ int ManagementModule::CallMmiSet(MMI_HANDLE handle, const char* componentName, c
 {
     int status = MMI_OK;
 
-    if (nullptr != m_mmiSet && IsValidMimObjectPayload(payload, payloadSizeBytes, ModulesManagerLog::Get()))
+    if (nullptr != m_mmiSet && IsValidMimObjectPayload(payload, payloadSizeBytes, GetLog()))
     {
         status = m_mmiSet(handle, componentName, objectName, payload, payloadSizeBytes);
     }
@@ -196,7 +184,7 @@ int ManagementModule::CallMmiGet(MMI_HANDLE handle, const char* componentName, c
     if ((nullptr != m_mmiGet) && (MMI_OK == (status = m_mmiGet(handle, componentName, objectName, payload, payloadSizeBytes))))
     {
         // Validate payload from MmiGet
-        status = IsValidMimObjectPayload(*payload, *payloadSizeBytes, ModulesManagerLog::Get()) ? MMI_OK : EINVAL;
+        status = IsValidMimObjectPayload(*payload, *payloadSizeBytes, GetLog()) ? MMI_OK : EINVAL;
     }
 
     return status;
@@ -208,7 +196,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
 
     if (!object.IsObject())
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Failed to deserialize info JSON, expected object");
+        OsConfigLogError(GetLog(), "Failed to deserialize info JSON, expected object");
         return EINVAL;
     }
 
@@ -223,13 +211,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoName);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoName);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoName);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoName);
         status = EINVAL;
     }
 
@@ -242,13 +230,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoDescription);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoDescription);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoDescription);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoDescription);
         status = EINVAL;
     }
 
@@ -261,13 +249,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
         status = EINVAL;
     }
 
@@ -280,13 +268,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
         status = EINVAL;
     }
 
@@ -299,13 +287,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
         status = EINVAL;
     }
 
@@ -318,13 +306,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
         status = EINVAL;
     }
 
@@ -343,13 +331,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
                 }
                 else
                 {
-                    OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoComponents);
+                    OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoComponents);
                 }
             }
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an array", g_mmiGetInfoComponents);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an array", g_mmiGetInfoComponents);
             status = EINVAL;
         }
     }
@@ -366,20 +354,20 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
             }
             else
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
+                OsConfigLogError(GetLog(), "Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
                 info.lifetime = Lifetime::Undefined;
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(ModulesManagerLog::Get(), "Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
+        OsConfigLogError(GetLog(), "Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
         status = EINVAL;
     }
 
@@ -394,7 +382,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
         }
     }
 
@@ -407,7 +395,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
         }
     }
 
@@ -421,7 +409,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
         }
     }
 
@@ -434,7 +422,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
         }
     }
 
@@ -447,7 +435,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
+            OsConfigLogError(GetLog(), "Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
         }
     }
 
@@ -475,7 +463,7 @@ int MmiSession::Open()
         {
             if (nullptr == (m_mmiHandle = m_module->CallMmiOpen(m_clientName.c_str(), m_maxPayloadSizeBytes)))
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "Failed to open MMI session for client '%s'", m_clientName.c_str());
+                OsConfigLogError(GetLog(), "Failed to open MMI session for client '%s'", m_clientName.c_str());
             }
         }
         else
@@ -483,7 +471,7 @@ int MmiSession::Open()
             status = EINVAL;
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(ModulesManagerLog::Get(), "MMI session already open");
+                OsConfigLogError(GetLog(), "MMI session already open");
             }
         }
     }
@@ -492,7 +480,7 @@ int MmiSession::Open()
         status = EINVAL;
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ModulesManagerLog::Get(), "MMI session not attached to a valid module");
+            OsConfigLogError(GetLog(), "MMI session not attached to a valid module");
         }
     }
 

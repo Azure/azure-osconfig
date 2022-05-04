@@ -4,45 +4,9 @@
 #ifndef MODULESMANAGER_H
 #define MODULESMANAGER_H
 
-#include <chrono>
-#include <ctime>
-#include <future>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <queue>
-#include <rapidjson/document.h>
-#include <set>
-#include <vector>
-
-#include <CommonUtils.h>
-#include <Logging.h>
+#include <PlatformCommon.h>
 #include <ManagementModule.h>
-#include <Mpi.h>
-
-#define MODULESMANAGER_LOGFILE "/var/log/osconfig_platform.log"
-#define MODULESMANAGER_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
-
-class ModulesManagerLog
-{
-public:
-    static OSCONFIG_LOG_HANDLE Get()
-    {
-        return m_log;
-    }
-
-    static void OpenLog()
-    {
-        m_log = ::OpenLog(MODULESMANAGER_LOGFILE, MODULESMANAGER_ROLLEDLOGFILE);
-    }
-
-    static void CloseLog()
-    {
-        ::CloseLog(&m_log);
-    }
-
-    static OSCONFIG_LOG_HANDLE m_log;
-};
+#include <MpiServer.h>
 
 class MpiSession;
 
