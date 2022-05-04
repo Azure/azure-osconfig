@@ -4,7 +4,7 @@
 
 Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
 
-OSConfig contains a PnP Agent, a Management Platform (Modules Manager) and several Management Modules that in the current version are all running inside a single process, osconfig.service.
+OSConfig contains an Agent, a Management Platform (Modules Manager) and several Management Modules.
 
 For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md), [OSConfig Roadmap](docs/roadmap.md) and [OSConfig Management Modules](docs/modules.md).
 
@@ -54,11 +54,13 @@ The following OSConfig files are binplaced at build time:
 
 Source | Destination | Description
 -----|-----|-----
-[src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The main OSConfig binary
+[src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
+[src/platform](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
 [src/agents/pnp/daemon/osconfig.conn](src/agents/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
 [src/agents/pnp/daemon/osconfig.json](src/agents/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
 [src/modules/commandrunner/assets/osconfig_commandrunner.cache](src/modules/commandrunner/assets/osconfig_commandrunner.cache) | /etc/osconfig/osconfig_commandrunner.cache | Persistent cache for the CommandRunner module
-[src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The OSConfig service unit
+[src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
+[src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
 [src/agents/pnp/daemon/osconfig.toml](src/agents/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
 [src/agents/pnp/telemetryevents/OsConfigAgentTelemetry.conf](src/agents/pnp/telemetryevents/OsConfigAgentTelemetry.conf) | /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf | Device health telemetry events (not active on Ubuntu and Debian)
 [src/modules/commandrunner/](src/modules/commandrunner/) | /usr/lib/osconfig/commandrunner.so | The CommandRunner module binary
@@ -70,26 +72,27 @@ Source | Destination | Description
 
 ### Enable and start OSConfig for the first time
 
-Enable and start OSConfig for the first time:
+Enable and start OSConfig for the first time by enabling and starting the OSConfig Agent Daemon (`osconfig`):
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable osconfig.service
-sudo systemctl start osconfig.service
+sudo systemctl enable osconfig
+sudo systemctl start osconfig
 ```
 
-The OSConfig service is configured to be allowed to be restarted (automatically by systemd or manually by user) for a maximum number of 3 times at 5 minutes intervals. There is a total delay of 16 minutes before the OSConfig service could be restarted again by the user unless the user reboots the device.
+The OSConfig Agent service is configured to be allowed to be restarted (automatically by systemd or manually by user) for a maximum number of 3 times at 5 minutes intervals. There is a total delay of 16 minutes before the OSConfig Agent service could be restarted again by the user unless the user reboots the device.
+
+The OSCOnfig Management Platform Daemon (`osconfig-platform`) is automatically started and stopped by the OSConfig Agent service (`osconfig`). 
 
 Other daemon control operations:
 
 ```bash
-sudo systemctl status osconfig.service
-sudo systemctl disable osconfig.service
-sudo systemctl stop osconfig.service
+sudo systemctl status osconfig | osconfig-platform
+sudo systemctl disable osconfig | osconfig-platform
+sudo systemctl stop osconfig  | osconfig-platform
 ```
-
-To replace the binary while the daemon is running: stop the daemon, rebuild, start the daemon.
-To replace the service unit while the daemon is running: stop the daemon, disable the daemon, rebuild, reload all daemons, start and enable the daemon.
+To replace a service binary while OSConfig is running: stop the Agent daemon, rebuild, start the Agent daemon.
+To replace a service unit while the daemon is running: stop the Agent daemon, disable the Agent amnd Platform daemons, rebuild, reload daemons, start and enable the Agent daemon.
 
 ## Logs
 

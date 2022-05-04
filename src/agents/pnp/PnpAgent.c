@@ -357,7 +357,6 @@ static bool InitializeAgent(void)
 
     g_lastTime = (unsigned int)time(NULL);
 
-    // Open the MPI session for this PnP Module instance:
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
         OsConfigLogInfo(GetLog(), "Start the platform");
