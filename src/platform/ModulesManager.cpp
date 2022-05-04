@@ -13,6 +13,13 @@ static const char g_configObjectName[] = "ObjectName";
 
 static ModulesManager modulesManager;
 
+// Common log for platform code
+OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+OSCONFIG_LOG_HANDLE GetLog()
+{
+    return g_platformLog;
+}
+
 // MPI
 
 void MpiInitialize(void)

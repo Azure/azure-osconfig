@@ -26,6 +26,12 @@
 
 static unsigned int g_lastTime = 0;
 
+OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+OSCONFIG_LOG_HANDLE GetLog()
+{
+    return g_platformLog;
+}
+
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
 static int g_stopSignals[] = {
@@ -44,12 +50,6 @@ static int g_stopSignals[] = {
 
 static int g_stopSignal = 0;
 static int g_refreshSignal = 0;
-
-static OSCONFIG_LOG_HANDLE g_platformLog = NULL;
-OSCONFIG_LOG_HANDLE GetLog()
-{
-    return g_platformLog;
-}
 
 #define EOL_TERMINATOR "\n"
 #define ERROR_MESSAGE_CRASH "[ERROR] OSConfig Platform crash due to "

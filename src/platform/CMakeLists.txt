@@ -33,6 +33,7 @@ target_include_directories(${target_name} PUBLIC
 
 target_link_libraries(${target_name}
     ${CMAKE_DL_LIBS}
+    pthread
     logging
     commonutils
     parsonlib)
