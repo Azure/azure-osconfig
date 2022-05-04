@@ -19,7 +19,7 @@ SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
 project(osconfig-platform)
 
-set(osconfig_platform_files
+set(osconfig_platform_files 
     ./Main.c)
 
 set(target_name osconfig-platform)
@@ -35,7 +35,7 @@ target_link_libraries(${target_name}
     commonutils
     modulesmanager
     orchestrator
-    parson-common)
+    parsonlib)
 
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -14,7 +14,7 @@ endif()
 
 SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
-project(osconfig-agent)
+project(osconfig)
 
 set(osconfig_agent_files
     ./AisUtils.c
@@ -23,7 +23,7 @@ set(osconfig_agent_files
     ./PnpAgent.c
     ./PnpUtils.c)
 
-set(target_name osconfig-agent)
+set(target_name osconfig)
 
 add_executable(${target_name} ${osconfig_agent_files})
 
@@ -105,8 +105,8 @@ endif()
 
 include(GNUInstallDirs)
 install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES daemon/${target_name}.json DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
-install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
 install(FILES daemon/${target_name}.toml DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
+install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
 install(FILES telemetryevents/OsConfigAgentTelemetry.conf DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/azure-device-telemetryd)
-install(FILES daemon/osconfig.json DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
