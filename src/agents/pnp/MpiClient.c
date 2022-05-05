@@ -370,9 +370,9 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     FREE_MEMORY(request);
 
-    if ((NULL == *payload) || (*payloadSizeBytes != (int)strlen(*payload)))
+    if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
-        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid response (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
+        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid response length (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
