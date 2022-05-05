@@ -108,7 +108,6 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static void Refresh()
 {
-    //TBD: add a MpiRefresh to MM?
     MpiShutdown();
     MpiInitialize();
 }
@@ -184,6 +183,8 @@ int main(int argc, char *argv[])
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
+
+    RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 

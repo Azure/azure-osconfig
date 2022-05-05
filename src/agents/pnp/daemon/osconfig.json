@@ -1,6 +1,10 @@
 {
+  "FullLogging": 0,  
+  "LocalManagement": 0,
   "ModelVersion": 7,
-  "FullLogging": 0,
+  "MpiClientNames": [
+    "Azure OSConfig #;#.#.#.########"
+  ],  
   "Protocol": 2,
   "Reported": [
     {
@@ -84,6 +88,5 @@
       "ObjectName": "serviceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 30,
-  "LocalManagement": 0
+  "ReportingIntervalSeconds": 30
 }

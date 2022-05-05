@@ -603,6 +603,8 @@ int main(int argc, char *argv[])
         FREE_MEMORY(jsonConfiguration);
     }
 
+    RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
+
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
