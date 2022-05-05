@@ -110,6 +110,8 @@ static void Refresh()
 {
     MpiShutdown();
     MpiInitialize();
+
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform reintialized");
 }
 
 void ScheduleRefresh(void)
@@ -118,15 +120,13 @@ void ScheduleRefresh(void)
     g_refreshSignal = SIGHUP;
 }
 
-static bool InitializePlatform(void)
+static void InitializePlatform(void)
 {
     g_lastTime = (unsigned int)time(NULL);
     
     MpiInitialize();
     
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
-    
-    return true;
 }
 
 void TerminatePlatform(void)
@@ -202,11 +202,7 @@ int main(int argc, char *argv[])
     }
     signal(SIGHUP, SignalReloadConfiguration);
 
-    if (!InitializePlatform())
-    {
-        OsConfigLogError(GetPlatformLog(), "Failed to initialize the OSConfig Platform");
-        goto done;
-    }
+    InitializePlatform();
 
     while (0 == g_stopSignal)
     {
@@ -216,12 +212,11 @@ int main(int argc, char *argv[])
 
         if (0 != g_refreshSignal)
         {
-            Refresh();
             g_refreshSignal = 0;
+            Refresh();
         }
     }
 
-done:
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
