@@ -21,7 +21,6 @@ on:
 
 jobs:
   fetch-targets:
-    name: Fetch Test Targets
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     outputs:
@@ -52,4 +51,4 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az group create --name ${{ steps.set-resource-group.outputs.resourceGroupName }} --location ${{ inputs.location }}
+            az group create --name ${{ steps.set-resource-group.outputs.resourceGroupName }} --location ${{ inputs.location }} --tags environment="osconfig-e2etest"

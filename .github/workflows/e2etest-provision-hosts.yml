@@ -17,16 +17,16 @@ on:
 
 jobs:
   provision-hosts:
-    name: Provision Host VM
+    name: ${{ matrix.distroName }}
     runs-on: ubuntu-latest
-    environment: e2e-prod
+    environment: ${{ inputs.environment }}
     strategy:
       fail-fast: false
       matrix:
         distroName: ${{ fromJson(inputs.distroName) }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
@@ -39,10 +39,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         id: runner_token
         run: |
-          echo ::set-output name=RUNNER_TOKEN::$(gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/Azure/azure-osconfig/actions/runners/registration-token | jq '.token')
+          RUNNER_TOKEN=$(gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/Azure/azure-osconfig/actions/runners/registration-token | jq '.token')
+          echo ::set-output name=RUNNER_TOKEN::$RUNNER_TOKEN
+          echo ::add-mask::$RUNNER_TOKEN
 
       - name: Provision VM - ${{ matrix.distroName }}
-        id: provisionm-vm
+        id: provision-vm
         env:
           ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
@@ -52,6 +54,7 @@ jobs:
         run: |
           target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
           distroName=${{ matrix.distroName }}
+          echo "Using Target JSON: `echo $target | jq .`"
           rg=${{ inputs.resourceGroupName }}
           image_publisher=`echo $target | jq .image_publisher | tr -d \"`
           image_offer=`echo $target | jq .image_offer | tr -d \"`
@@ -59,19 +62,29 @@ jobs:
           image_version=`echo $target | jq .image_version | tr -d \"`
           packagePattern=`echo $target | jq .packagePattern | tr -d \"`
           device_id=`echo $target | jq .device_id | tr -d \"`
+          vm_size=`echo $target | jq .vm_size | tr -d \"`
+          github_runner_tar_gz=`echo $target | jq .github_runner_tar_gz | tr -d \"`
           vm_script=`echo $target | jq -r '.vm_script | join(" && ")'`
 
-          echo ::set-output name=distroName::$distroName
-          echo ::set-output name=image_publisher::$image_publisher
-          echo ::set-output name=image_offer::$image_offer
-          echo ::set-output name=image_sku::$image_sku
-          echo ::set-output name=image_version::$image_version
-          echo ::set-output name=packagePattern::$packagePattern
           echo ::set-output name=device_id::$device_id
-          echo ::set-output name=vm_script::$vm_script
 
           terraform init
-          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token="${{ steps.runner_token.outputs.RUNNER_TOKEN }}" -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_script="$vm_script" -var github_runner_tar_gz_package="${{ secrets.GH_RUNNER_TAR_GZ }}" -auto-approve
+          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_size=$vm_size -var vm_script="$vm_script" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
 
           runner=$rg-$distroName
           echo Created self-hosted runner "$runner"
+        
+      - name: Create device identity
+        run: |
+          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p ${{ secrets.CLIENT_SECRET }} --tenant ${{ secrets.TENANT_ID }}
+          az extension add --name azure-iot
+          
+          # VM + IotHub provisioning happen in parallel - loop until hub is available
+          echo -n 'Creating Iot Hub Identity - ${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}'
+          function create_identity () { az iot hub device-identity create --device-id "${{ steps.provision-vm.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none; }
+          create_identity
+          while [ $? -ne 0 ]; do echo -n '.'; sleep 5s && create_identity; done
+
+          device_conn_str="`az iot hub device-identity connection-string show --hub-name ${{ inputs.resourceGroupName }}-iothub --device-id ${{ steps.provision-vm.outputs.device_id }} --output tsv`"
+          echo '' && echo Adding to Key Vault
+          az keyvault secret set --name "${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}" --vault-name ${{ secrets.KEY_VAULT_NAME }} --value $device_conn_str > /dev/null

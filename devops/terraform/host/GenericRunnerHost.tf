@@ -21,7 +21,7 @@ provider "azurerm" {
 # Create public IPs
 resource "azurerm_public_ip" "osconfigpublicip" {
   name                = "myPublicIP-${var.vm_name}"
-  location            = "eastus"
+  location            = var.location
   resource_group_name = var.resource_group_name
   allocation_method   = "Dynamic"
 
@@ -35,7 +35,7 @@ resource "azurerm_virtual_network" "osconfignetwork" {
   name                = "myVnet-${var.vm_name}"
   address_space       = ["10.0.0.0/16"]
   resource_group_name = var.resource_group_name
-  location            = "eastus"
+  location            = var.location
 
   tags = {
     environment = var.environment_tag
@@ -53,7 +53,7 @@ resource "azurerm_subnet" "osconfigsubnet" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "osconfignsg" {
   name                = "myNetworkSecurityGroup-${var.vm_name}"
-  location            = "eastus"
+  location            = var.location
   resource_group_name = var.resource_group_name
 
   security_rule {
@@ -76,7 +76,7 @@ resource "azurerm_network_security_group" "osconfignsg" {
 # Create network interface
 resource "azurerm_network_interface" "osconfignic" {
   name                = "myNIC-${var.vm_name}"
-  location            = "eastus"
+  location            = var.location
   resource_group_name = var.resource_group_name
 
   ip_configuration {
@@ -115,10 +115,10 @@ resource "azurerm_key_vault_secret" "vm_ssh_secret" {
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "osconfigvm" {
   name                  = "myVM-${var.vm_name}"
-  location              = "eastus"
+  location              = var.location
   resource_group_name   = var.resource_group_name
   network_interface_ids = [azurerm_network_interface.osconfignic.id]
-  size                  = "Standard_DS1_v2"
+  size                  = var.vm_size
 
   os_disk {
     name                 = "myOsDisk-${var.vm_name}"
@@ -154,6 +154,11 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
 
   provisioner "remote-exec" {
     inline = [
+      "export DEBIAN_FRONTEND=noninteractive",
+      "sudo systemctl stop apt-daily.timer && sudo systemctl disable apt-daily.timer && sudo systemctl mask apt-daily.service && sudo systemctl daemon-reload",
+      "sudo apt update && sudo apt install -y ca-certificates curl apt-transport-https lsb-release gnupg",
+      "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
+      "sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/",
       "mkdir actions-runner && cd actions-runner && curl -o runner.tar.gz -L ${var.github_runner_tar_gz_package} && tar xzf ./runner.tar.gz",
       "./config.sh --url https://github.com/Azure/azure-osconfig --unattended --ephemeral --name \"${var.resource_group_name}-${var.vm_name}\" --token \"${var.runner_token}\" --labels \"${var.resource_group_name}-${var.vm_name}\"",
       "sudo ./svc.sh install",

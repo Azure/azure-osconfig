@@ -40,6 +40,14 @@ variable "vm_script" {
     default = ""
 }
 
+variable "vm_size" {
+    default = "Standard_DS1_v2"
+}
+
+variable "location" {
+    default = "West US 2"
+}
+
 variable "github_runner_tar_gz_package" {
     default = "https://github.com/actions/runner/releases/download/v2.290.1/actions-runner-linux-x64-2.290.1.tar.gz"
 }

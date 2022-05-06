@@ -5,12 +5,14 @@ on:
 
 jobs:
   fetch-targets:
+    name: Fetch Test Targets
     uses: ./.github/workflows/e2etest-fetch-targets.yml
     with:
       environment: e2e-insiders-fast
     secrets: inherit
 
   provision-hub:
+    name: Provision IoT Hub
     uses: ./.github/workflows/e2etest-provision-hub.yml
     needs:
       - fetch-targets
@@ -20,6 +22,7 @@ jobs:
     secrets: inherit
 
   provision-hosts:
+    name: Provision Host VM
     uses: ./.github/workflows/e2etest-provision-hosts.yml
     needs:
       - fetch-targets
@@ -30,6 +33,7 @@ jobs:
     secrets: inherit
 
   run-tests:
+    name: Run Tests
     uses: ./.github/workflows/e2etest-run-tests.yml
     needs:
       - fetch-targets
