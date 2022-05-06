@@ -2,9 +2,6 @@
   "FullLogging": 0,  
   "LocalManagement": 0,
   "ModelVersion": 7,
-  "MpiClientNames": [
-    "Azure OSConfig #;#.#.#.########"
-  ],  
   "Protocol": 2,
   "Reported": [
     {

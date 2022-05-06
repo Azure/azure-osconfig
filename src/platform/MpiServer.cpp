@@ -153,6 +153,8 @@ void Server::Listen()
 
         if (bind(m_socketfd, (struct sockaddr*)&m_addr, m_socketlen) == 0)
         {
+            RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
+            
             if (listen(m_socketfd, 5) == 0)
             {
                 OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
