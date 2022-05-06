@@ -4,19 +4,16 @@ variable "client_secret" {}
 variable "subscription_id" {}
 variable "tenant_id" {}
 variable "key_vault_id" {}
-variable "sas_token" {}
-variable "osconfig_package_path" {}
+variable resource_group_name_prefix {
+    default = "osconfig"
+}
+variable "runner_token" {}
 
 # Provided by iothub.tf outputs
-variable "device_identity_connstr" {}
 variable resource_group_name {}
 
 variable "vm_name" {
     default = "test-device"
-}
-
-variable "upload_url" {
-    default = "https://osconfige2elogs.blob.core.windows.net/logs/"
 }
 
 variable "image_publisher" {
@@ -39,12 +36,10 @@ variable "environment_tag" {
     default = "osconfig-e2etest"
 }
 
-variable "vm_pre_osconfig_install_script" {
+variable "vm_script" {
     default = ""
 }
 
-variable "vm_post_osconfig_install_script" {
-    default = ""
+variable "github_runner_tar_gz_package" {
+    default = "https://github.com/actions/runner/releases/download/v2.290.1/actions-runner-linux-x64-2.290.1.tar.gz"
 }
-
-# TODO: List of env variables to have on VM

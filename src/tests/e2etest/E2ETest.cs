@@ -22,10 +22,6 @@ namespace E2eTesting
         private readonly string _moduleId = "osconfig";
         private readonly string _deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
 
-        private readonly string _sasToken = Environment.GetEnvironmentVariable("E2E_OSCONFIG_SAS_TOKEN");
-        private readonly string _uploadUrl = Environment.GetEnvironmentVariable("E2E_OSCONFIG_UPLOAD_URL")?.Trim('\"');
-        private readonly string _resourceGroupName = Environment.GetEnvironmentVariable("E2E_OSCONFIG_RESOURCE_GROUP_NAME")?.Trim('\"');
-
         private const int POLL_INTERVAL_MS = 1000;
         private const int DEFAULT_MAX_WAIT_SECONDS = 90;
         private int _maxWaitTimeSeconds = DEFAULT_MAX_WAIT_SECONDS;
@@ -53,37 +49,6 @@ namespace E2eTesting
             {
                 _maxWaitTimeSeconds = int.TryParse(Environment.GetEnvironmentVariable("E2E_OSCONFIG_TWIN_TIMEOUT"), out _maxWaitTimeSeconds) ? _maxWaitTimeSeconds : DEFAULT_MAX_WAIT_SECONDS;
                 Console.WriteLine($"Setting max wait time for twin updates to {_maxWaitTimeSeconds} seconds");
-            }
-
-            if ((null == _sasToken) || (null == _uploadUrl) || (null == _resourceGroupName))
-            {
-                Assert.Warn("Missing environment variables required for log upload to blob store");
-            }
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            if ((null != _sasToken) && (null != _uploadUrl) && (null != _resourceGroupName))
-            {
-                Console.WriteLine("[TearDown] Uploading logs to blob store");
-
-                string fileName = String.Format("{0}-{1}.tar.gz", _resourceGroupName, _deviceId);
-                string fullURL = String.Format("{0}{1}?{2}", _uploadUrl, fileName, _sasToken);
-
-                string tempFileCommand = "temp_file=`sudo mktemp`";
-                string tarCommand = "sudo tar -cvzf $temp_file osconfig*.log";
-                string curlCommand = String.Format("curl -X PUT -T $temp_file -H \"x-ms-date: $(date -u)\" -H \"x-ms-blob-type: BlockBlob\" \"{1}\"", fileName, fullURL);
-                string uploadCommand = String.Format("cd /var/log && {0} && {1} && {2}", tempFileCommand, tarCommand, curlCommand);
-
-                if (!ExecuteCommandViaCommandRunner(uploadCommand))
-                {
-                    Assert.Warn("[TearDown] Failed to upload logs to blob storage");
-                }
-            }
-            else
-            {
-                Console.WriteLine("[TearDown] Skipping upload of logs to blob store");
             }
         }
 
