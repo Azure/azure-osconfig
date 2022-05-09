@@ -231,7 +231,10 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
 
     if (document.Parse(payload, payloadSizeBytes).HasParseError())
     {
-        OsConfigLogError(log, "MIM object JSON payload parser error");
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "MIM object JSON payload pcannot be parsed");
+        }
         isValid = false;
     }
     else
@@ -239,14 +242,17 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         rapidjson::SchemaValidator validator(schema);
         if (!document.Accept(validator))
         {
-            OsConfigLogError(log, "MIM object JSON payload is invalid according to the schema");
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(log, "MIM object JSON payload is invalid according to the schema");
+            }
             isValid = false;
         }
     }
 
     if (IsFullLoggingEnabled() && (false == isValid))
     {
-        OsConfigLogError(log, "Invalid JSON: '%.*s' (%d bytes)", payloadSizeBytes, payload, payloadSizeBytes);
+        OsConfigLogError(log, "Invalid JSON payload: '%.*s' (%d bytes)", payloadSizeBytes, payload, payloadSizeBytes);
     }
 
     return isValid;
