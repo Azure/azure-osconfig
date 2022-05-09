@@ -13,7 +13,6 @@ on:
 
 jobs:
   provision-hub:
-    name: Provision Iot Hub
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 

@@ -7,12 +7,11 @@
         "image_version": "latest",
         "device_id": "ubuntu2004",
         "package_path": "*focal_x86_64.deb",
+        "vm_size": "Standard_DS1_v2",
+        "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
         [
-            "export DEBIAN_FRONTEND=noninteractive",
-            "sudo systemctl stop apt-daily.timer && sudo systemctl disable apt-daily.timer && sudo systemctl mask apt-daily.service && sudo systemctl daemon-reload",
-            "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
-            "sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/",
             "curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list",
             "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
             "AZ_REPO=$(lsb_release -cs) && echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
@@ -27,15 +26,32 @@
         "image_version": "latest",
         "device_id": "ubuntu1804",
         "package_path": "*bionic_x86_64.deb",
+        "vm_size": "Standard_DS1_v2",
+        "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
         [
-            "export DEBIAN_FRONTEND=noninteractive",
-            "sudo systemctl stop apt-daily.timer && sudo systemctl disable apt-daily.timer && sudo systemctl mask apt-daily.service && sudo systemctl daemon-reload",
-            "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
-            "sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/",
             "curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list",
             "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
             "AZ_REPO=$(lsb_release -cs) && echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
+            "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
+        ]
+    },
+    {
+        "distroName": "ubuntu-20.04-arm64",
+        "image_publisher": "canonical",
+        "image_offer": "0001-com-ubuntu-server-arm-preview-focal",
+        "image_sku": "20_04-lts",
+        "image_version": "latest",
+        "device_id": "ubuntu2004arm64",
+        "package_path": "*focal_aarch64.deb",
+        "vm_size": "Standard_D2plds_v5",
+        "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-arm64-2.291.1.tar.gz",
+        "vm_script":
+        [
+            "curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list",
+            "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
             "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
         ]
     }
