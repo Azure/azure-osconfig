@@ -79,7 +79,7 @@ jobs:
           az login --service-principal -u ${{ secrets.CLIENT_ID }} -p ${{ secrets.CLIENT_SECRET }} --tenant ${{ secrets.TENANT_ID }}
           az extension add --name azure-iot
           
-          # VM + IotHub provisioning happen in parallel - loop until hub is available
+          # VM + IotHub provisioning happening in parallel - loop until the IoT Hub is available
           echo -n 'Creating Iot Hub Identity - ${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}'
           function create_identity () { az iot hub device-identity create --device-id "${{ steps.provision-vm.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none; }
           create_identity
