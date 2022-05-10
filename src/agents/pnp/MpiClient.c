@@ -36,7 +36,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *responseSize = 0;
 
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
-    estimatedDataSize = strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + MPI_MAX_CONTENT_LENGTH;
+    estimatedDataSize = strlen(name) + strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 1;
 
     data = (char*)malloc(estimatedDataSize);
     if (NULL == data)
@@ -370,9 +370,9 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     FREE_MEMORY(request);
 
-    if ((NULL == *payload) || (*payloadSizeBytes != (int)strlen(*payload)))
+    if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
-        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid response (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
+        OsConfigLogError(GetLog(), "CallMpiGet(%s, %s): invalid response length (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
@@ -513,21 +513,4 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes)
 void CallMpiFree(MPI_JSON_STRING payload)
 {
     FREE_MEMORY(payload);
-}
-
-void CallMpiDoWork(void)
-{
-    MpiDoWork();
-}
-
-void CallMpiInitialize(void)
-{
-    OsConfigLogInfo(GetLog(), "Calling MpiInitialize");
-    MpiInitialize();
-}
-
-void CallMpiShutdown(void)
-{
-    OsConfigLogInfo(GetLog(), "Calling MpiShutdown");
-    MpiShutdown();
 }

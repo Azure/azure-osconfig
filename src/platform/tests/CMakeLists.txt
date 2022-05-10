@@ -3,6 +3,12 @@
 
 project(modulesmanagertests)
 
+set(modulesmanagertests_files
+    ../Log.c 
+    ../ManagementModule.cpp
+    ../ModulesManager.cpp
+    ../MpiServer.cpp)
+
 set(CMAKE_CXX_STANDARD 14)
 
 include(CTest)
@@ -47,17 +53,17 @@ add_library(modulesmanagermocks
     CommonTests.cpp
     MockManagementModule.cpp
     MockModulesManager.cpp)
-target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread modulesmanager orchestrator commonutils)
-target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
+target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${MODULES_INC_DIR}" "${PLATFORM_INC_DIR}")
 
-add_executable(managementmoduletests ManagementModuleTests.cpp)
+add_executable(managementmoduletests ${modulesmanagertests_files} ManagementModuleTests.cpp)
 target_link_libraries(managementmoduletests modulesmanagermocks)
 gtest_discover_tests(managementmoduletests)
 
-add_executable(modulesmanagertests ModulesManagerTests.cpp)
+add_executable(modulesmanagertests ${modulesmanagertests_files} ModulesManagerTests.cpp)
 target_link_libraries(modulesmanagertests modulesmanagermocks)
 gtest_discover_tests(modulesmanagertests)
 
-add_executable(mpitests MpiTests.cpp)
+add_executable(mpitests ${modulesmanagertests_files} MpiTests.cpp)
 target_link_libraries(mpitests modulesmanagermocks)
 gtest_discover_tests(mpitests)

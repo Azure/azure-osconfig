@@ -591,6 +591,8 @@ void MpiApiInitialize(void)
 
         if (bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen) == 0)
         {
+            RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
+
             if (listen(g_socketfd, 5) == 0)
             {
                 OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);

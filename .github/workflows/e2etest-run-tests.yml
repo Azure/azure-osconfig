@@ -1,0 +1,124 @@
+name: Run Tests
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The name of the target environment
+        type: string
+        required: true
+      distroName:
+        description: The name of the target distro
+        type: string
+        required: true
+      resourceGroupName:
+        description: The name of the target environment
+        type: string
+        required: true
+
+jobs:
+  run-tests:
+    name: ${{ matrix.distroName }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix:
+        distroName: ${{ fromJson(inputs.distroName) }}
+    runs-on: ${{ inputs.resourceGroupName }}-${{ matrix.distroName }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Retreive target test data
+        id: get-test-data
+        run: |
+          target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
+          echo ::set-output name=device_id::$(echo $target | jq .device_id | tr -d \")
+          
+          test_filter=$(echo $target | jq .test_filter | tr -d \")
+          [[ "$test_filter" != "null" ]] && test_filter="--filter \"${test_filter}\"" || test_filter=""
+          echo Using test filter: $test_filter
+          echo ::set-output name=test_filter::$test_filter
+
+          package_path=$(echo $target | jq .package_path | tr -d \")
+          [[ "$package_path" != "null" ]] && package_path="${package_path}" || package_path=""
+          echo Using package path: $package_path
+          echo ::set-output name=package_path::$package_path
+
+      - name: Retreive device identity
+        id: hub-identity
+        run: |
+          token=`curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' https://login.microsoftonline.com/${{ secrets.TENANT_ID }}/oauth2/v2.0/token --data-urlencode 'grant_type=client_credentials' --data-urlencode 'client_id=${{ secrets.CLIENT_ID }}' --data-urlencode 'client_secret=${{ secrets.CLIENT_SECRET }}' --data-urlencode 'scope=https://vault.azure.net/.default' | jq .access_token | tr -d \"`
+
+          iothubowner_connection_string=`curl -s "https://${{ secrets.KEY_VAULT_NAME }}.vault.azure.net/secrets/${{ inputs.resourceGroupName }}-iothubowner?api-version=2016-10-01" -H "Authorization: Bearer $token" | jq .value | tr -d \"`
+          echo iothubowner_connection_string=$iothubowner_connection_string
+          echo ::set-output name=iothubowner_connection_string::$iothubowner_connection_string
+
+          device_conn_str=`curl -s "https://${{ secrets.KEY_VAULT_NAME }}.vault.azure.net/secrets/${{ inputs.resourceGroupName }}-${{ steps.get-test-data.outputs.device_id }}?api-version=2016-10-01" -H "Authorization: Bearer $token" | jq .value | tr -d \"`
+          echo device_conn_str=$device_conn_str
+          echo ::set-output name=device_conn_str::$device_conn_str
+
+      - name: Apply device identity
+        run: |
+          sudo aziotctl config mp -c "${{ steps.hub-identity.outputs.device_conn_str }}" --force
+          sudo aziotctl config apply
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Download OSConfig from package workflow (main)
+        if: startsWith( steps.get-test-data.outputs.package_path, '*')
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: package.yml
+          branch: main
+          name: package
+
+      - name: Install OSConfig (GitHub)
+        if: startsWith( steps.get-test-data.outputs.package_path, '*')
+        run: |
+          sudo apt install -y `find . -name '${{ steps.get-test-data.outputs.package_path }}' | head -n 1`
+
+      - name: Install OSConfig (packages.microsoft.com)
+        if: (! startsWith( steps.get-test-data.outputs.package_path, '*'))
+        run: |
+          sudo apt install -y osconfig
+
+      - name: Configure OSConfig
+        run: |
+          sudo systemctl stop osconfig
+          sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo systemctl daemon-reload
+          sudo systemctl start osconfig
+
+      - name: Run E2E tests
+        env:
+          E2E_OSCONFIG_IOTHUB_CONNSTR: ${{ steps.hub-identity.outputs.iothubowner_connection_string }}
+          E2E_OSCONFIG_DEVICE_ID: ${{ steps.get-test-data.outputs.device_id }}
+          E2E_OSCONFIG_TWIN_TIMEOUT: ${{ secrets.TWIN_TIMEOUT }}
+        working-directory: ./src/tests/e2etest
+        run: | 
+          dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+          sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
+          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+
+      - name: Upload OSConfig Logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-logs-${{ matrix.distroName }}
+          path: ${{ runner.temp }}/osconfig*.log
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ matrix.distroName }}
+          path: ./src/tests/e2etest/TestResults/test-results-${{ matrix.distroName }}.trx
+
+      - uses: dorny/test-reporter@v1.5.0
+        if: always()
+        with:
+          name: E2E Test Report ${{ matrix.distroName }}
+          path: ./src/tests/e2etest/TestResults/test-results-${{ matrix.distroName }}.trx
+          reporter: dotnet-trx
