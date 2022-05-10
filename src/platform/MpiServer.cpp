@@ -43,29 +43,6 @@ static const char* g_payload = "Payload";
 
 static std::map<std::string, MPI_HANDLE> g_sessions;
 
-class PlatformLog
-{
-public:
-    static OSCONFIG_LOG_HANDLE Get()
-    {
-        return m_log;
-    }
-
-    static void OpenLog()
-    {
-        m_log = ::OpenLog(PLATFORM_LOGFILE, PLATFORM_ROLLEDLOGFILE);
-    }
-
-    static void CloseLog()
-    {
-        ::CloseLog(&m_log);
-    }
-
-    static OSCONFIG_LOG_HANDLE m_log;
-};
-
-OSCONFIG_LOG_HANDLE PlatformLog::m_log = NULL;
-
 typedef enum HTTP_STATUS
 {
     HTTP_OK = 200,
@@ -114,45 +91,82 @@ static char* CreateUuid()
     return uuid;
 }
 
+static void GetHttpReasonPhrase(HTTP_STATUS statusCode, char* phrase)
+{
+    switch (statusCode)
+    {
+        case HTTP_OK:
+            strcpy(phrase, "OK");
+            break;
+        case HTTP_BAD_REQUEST:
+            strcpy(phrase, "Bad Request");
+            break;
+        case HTTP_NOT_FOUND:
+            strcpy(phrase, "Not Found");
+            break;
+        case HTTP_INTERNAL_SERVER_ERROR:
+            strcpy(phrase, "Internal Server Error");
+            break;
+        default:
+            strcpy(phrase, "Unknown");
+    }
+}
+
+// static bool HasMember(JSON_Value* value, const char* name, json_value_type type)
+// {
+//     JSON_Object* object = json_value_get_object(value);
+//     return json_object_has_value(object, name) && (type == json_value_get_type(json_object_get_value(object, name)));
+// }
+
 static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientNameValue = NULL;
+    JSON_Value* maxPayloadSizeBytesValue = NULL;
+    char* clientName = NULL;
+    int maxPayloadSizeBytes = 0;
     const char* responseFormat = "\"%s\"";
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientName) && document.HasMember(g_maxPayloadSizeBytes) && document[g_clientName].IsString() && document[g_maxPayloadSizeBytes].IsInt())
+        clientNameValue = json_object_get_value(rootObject, g_clientName);
+        maxPayloadSizeBytesValue = json_object_get_value(rootObject, g_maxPayloadSizeBytes);
+
+        if (clientNameValue && maxPayloadSizeBytesValue && (JSONString == json_value_get_type(clientNameValue)) && (JSONNumber == json_value_get_type(maxPayloadSizeBytesValue)))
         {
-            std::string clientName = document[g_clientName].GetString();
-            int maxPayloadSizeBytes = document[g_maxPayloadSizeBytes].GetInt();
+            clientName = (char*)json_value_get_string(clientNameValue);
+            maxPayloadSizeBytes = (int)json_value_get_number(maxPayloadSizeBytesValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiOpen request for client '%s' with max payload size %d", clientName.c_str(), maxPayloadSizeBytes);
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
             }
 
             char* sessionId = CreateUuid();
-            MPI_HANDLE handle = MpiOpen(clientName.c_str(), maxPayloadSizeBytes);
+            MPI_HANDLE handle = MpiOpen(clientName, maxPayloadSizeBytes);
 
             if (handle)
             {
                 g_sessions[sessionId] = handle;
 
-                *responseSize = strlen(responseFormat) + UUID_LENGTH;
-                if (NULL != (*response = (char*)malloc(*responseSize)))
+                *responseSize =  UUID_LENGTH + 2;
+                if (NULL != (*response = (char*)malloc(*responseSize + 1)))
                 {
-                    snprintf(*response, *responseSize, responseFormat, sessionId);
+                    snprintf(*response, *responseSize + 1, responseFormat, sessionId);
                     FREE_MEMORY(sessionId);
                 }
                 else
                 {
-                    *responseSize = 0;
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
                     status = HTTP_INTERNAL_SERVER_ERROR;
+                    *responseSize = 0;
                 }
             }
             else
             {
+                OsConfigLogError(GetPlatformLog(), "Failed to open session for client '%s'", clientName);
                 status = HTTP_INTERNAL_SERVER_ERROR;
             }
 
@@ -174,40 +188,48 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
 static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientSessionValue = NULL;
+    char* clientSession = NULL;
 
     UNUSED(response);
     UNUSED(responseSize);
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
+        clientSessionValue = json_object_get_value(rootObject, g_clientSession);
+
+        if (clientSessionValue && (JSONString == json_value_get_type(clientSessionValue)))
         {
-            std::string session = document[g_clientSession].GetString();
+            clientSession = (char*)json_value_get_string(clientSessionValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiClose request, session '%s'", session.c_str());
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", clientSession);
             }
 
-            if (g_sessions.find(session) != g_sessions.end())
+            if (g_sessions.find(clientSession) != g_sessions.end())
             {
-                MpiClose(g_sessions[session]);
-                g_sessions.erase(session);
+                MpiClose(g_sessions[clientSession]);
+                g_sessions.erase(clientSession);
                 status = HTTP_OK;
             }
             else
             {
+                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
                 status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
+            OsConfigLogError(GetPlatformLog(),"Failed to parse '%s' from request", g_clientSession);
             status = HTTP_BAD_REQUEST;
         }
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(),"Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -217,30 +239,40 @@ static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* re
 static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientSessionValue = NULL;
+    JSON_Value* componentValue = NULL;
+    JSON_Value* objectValue = NULL;
+    JSON_Value* payloadValue = NULL;
+    char* clientSession = NULL;
+    char* component = NULL;
+    char* object = NULL;
+    char* payload = NULL;
     const char* responseFormat = "\"%d\"";
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString() && document.HasMember(g_payload))
-        {
-            std::string session = document[g_clientSession].GetString();
-            std::string component = document[g_componentName].GetString();
-            std::string object = document[g_objectName].GetString();
+        clientSessionValue = json_object_get_value(rootObject, g_clientSession);
+        componentValue = json_object_get_value(rootObject, g_componentName);
+        objectValue = json_object_get_value(rootObject, g_objectName);
+        payloadValue = json_object_get_value(rootObject, g_payload);
 
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            document[g_payload].Accept(writer);
-            std::string payload = buffer.GetString();
+        if (clientSessionValue && componentValue && objectValue && payloadValue && (JSONString == json_value_get_type(clientSessionValue)) && (JSONString == json_value_get_type(componentValue)) && (JSONString == json_value_get_type(objectValue)))
+        {
+            clientSession = (char*)json_value_get_string(clientSessionValue);
+            component = (char*)json_value_get_string(componentValue);
+            object = (char*)json_value_get_string(objectValue);
+            payload = (char*)json_serialize_to_string(payloadValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiSet(%s, %s) request, session '%s'", component.c_str(), object.c_str(), session.c_str());
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
             }
 
-            if (g_sessions.find(session) != g_sessions.end())
+            if (g_sessions.find(clientSession) != g_sessions.end())
             {
-                int mpiStatus = MpiSet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING)payload.c_str(), payload.size());
+                int mpiStatus = MpiSet(g_sessions[clientSession], component, object, (MPI_JSON_STRING)payload, strlen(payload));
                 status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
 
                 if (NULL != (*response = (char*)malloc(strlen(responseFormat) + MAX_STATUS_CODE_LENGTH)))
@@ -249,23 +281,26 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
                 }
                 else
                 {
-                    OsConfigLogError(PlatformLog::Get(), "Failed to allocate memory for response");
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
                     *responseSize = 0;
                     status = HTTP_INTERNAL_SERVER_ERROR;
                 }
             }
             else
             {
+                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
                 status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
+            OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -275,28 +310,40 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
 static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientSessionValue = NULL;
+    JSON_Value* componentValue = NULL;
+    JSON_Value* objectValue = NULL;
+    char* clientSession = NULL;
+    char* component = NULL;
+    char* object = NULL;
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_componentName) && document[g_componentName].IsString() && document.HasMember(g_objectName) && document[g_objectName].IsString())
+        clientSessionValue = json_object_get_value(rootObject, g_clientSession);
+        componentValue = json_object_get_value(rootObject, g_componentName);
+        objectValue = json_object_get_value(rootObject, g_objectName);
+
+        if (clientSessionValue && componentValue && objectValue && (JSONString == json_value_get_type(clientSessionValue)) && (JSONString == json_value_get_type(componentValue)) && (JSONString == json_value_get_type(objectValue)))
         {
-            std::string session = document[g_clientSession].GetString();
-            std::string component = document[g_componentName].GetString();
-            std::string object = document[g_objectName].GetString();
+            clientSession = (char*)json_value_get_string(clientSessionValue);
+            component = (char*)json_value_get_string(componentValue);
+            object = (char*)json_value_get_string(objectValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiGet(%s, %s) request, session '%s'", component.c_str(), object.c_str(), session.c_str());
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiGet(%s, %s) request, session '%s'", component, object, clientSession);
             }
 
-            if (g_sessions.find(session) != g_sessions.end())
+            if (g_sessions.find(clientSession) != g_sessions.end())
             {
-                int mpiStatus = MpiGet(g_sessions[session], component.c_str(), object.c_str(), (MPI_JSON_STRING*)response, responseSize);
+                int mpiStatus = MpiGet(g_sessions[clientSession], component, object, (MPI_JSON_STRING*)response, responseSize);
                 status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
             }
             else
             {
+
                 status = HTTP_BAD_REQUEST;
             }
         }
@@ -316,30 +363,34 @@ static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* resp
 static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientSessionValue = NULL;
+    JSON_Value* payloadValue = NULL;
+    char* clientSession = NULL;
+    char* payload = NULL;
 
     UNUSED(response);
     UNUSED(responseSize);
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString() && document.HasMember(g_payload))
-        {
-            std::string session = document[g_clientSession].GetString();
+        clientSessionValue = json_object_get_value(rootObject, g_clientSession);
+        payloadValue = json_object_get_value(rootObject, g_payload);
 
-            rapidjson::StringBuffer buffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-            document[g_payload].Accept(writer);
-            std::string payload = buffer.GetString();
+        if (clientSessionValue && payloadValue && (JSONString == json_value_get_type(clientSessionValue)))
+        {
+            clientSession = (char*)json_value_get_string(clientSessionValue);
+            payload = (char*)json_serialize_to_string(payloadValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiSetDesired request for '%s'", session.c_str());
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiSetDesired request for '%s'", clientSession);
             }
 
-            if (g_sessions.find(session) != g_sessions.end())
+            if (g_sessions.find(clientSession) != g_sessions.end())
             {
-                int mpiStatus = MpiSetDesired(g_sessions[session], (MPI_JSON_STRING)payload.c_str(), payload.size());
+                int mpiStatus = MpiSetDesired(g_sessions[clientSession], (MPI_JSON_STRING)payload, strlen(payload));
                 status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
             }
             else
@@ -363,22 +414,27 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
 static HTTP_STATUS MpiGetReportedRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
-    rapidjson::Document document;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* clientSessionValue = NULL;
+    char* clientSession = NULL;
 
-    if (!document.Parse(request).HasParseError())
+    if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
-        if (document.HasMember(g_clientSession) && document[g_clientSession].IsString())
+        clientSessionValue = json_object_get_value(rootObject, g_clientSession);
+
+        if (clientSessionValue && (JSONString == json_value_get_type(clientSessionValue)))
         {
-            std::string session = document[g_clientSession].GetString();
+            clientSession = (char*)json_value_get_string(clientSessionValue);
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Received MpiGetReported request for '%s'", session.c_str());
+                OsConfigLogInfo(GetPlatformLog(), "Received MpiGetReported request for '%s'", clientSession);
             }
 
-            if (g_sessions.find(session) != g_sessions.end())
+            if (g_sessions.find(clientSession) != g_sessions.end())
             {
-                int mpiStatus = MpiGetReported(g_sessions[session], (MPI_JSON_STRING*)response, responseSize);
+                int mpiStatus = MpiGetReported(g_sessions[clientSession], (MPI_JSON_STRING*)response, responseSize);
                 status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
             }
             else
@@ -402,6 +458,8 @@ static HTTP_STATUS MpiGetReportedRequest(const char* request, char** response, i
 HTTP_STATUS RouteRequest(const char* uri, const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
+
+    OsConfigLogInfo(GetPlatformLog(), "REQUEST %s\n %s", uri, request);
 
     if (0 == strcmp(uri, "MpiOpen"))
     {
@@ -429,37 +487,20 @@ HTTP_STATUS RouteRequest(const char* uri, const char* request, char** response, 
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: invalid request", uri);
+        OsConfigLogError(GetPlatformLog(), "%s: invalid request", uri);
         status = HTTP_NOT_FOUND;
     }
 
     if ((status != HTTP_OK) && (status != HTTP_NOT_FOUND) && IsFullLoggingEnabled())
     {
-        OsConfigLogError(PlatformLog::Get(), "Invalid %s request body: %s", uri, request);
+        OsConfigLogError(GetPlatformLog(), "Invalid %s request body: %s", uri, request);
     }
+
+    char phrase[MAX_REASON_PHRASE_LENGTH] = { 0 };
+    GetHttpReasonPhrase(status, phrase);
+    OsConfigLogInfo(GetPlatformLog(), "RESPONSE %s %s\n%.*s", uri, phrase, *responseSize, *response);
 
     return status;
-}
-
-static void GetReasonPhrase(HTTP_STATUS statusCode, char* phrase)
-{
-    switch (statusCode)
-    {
-        case HTTP_OK:
-            strcpy(phrase, "HTTP_OK");
-            break;
-        case HTTP_BAD_REQUEST:
-            strcpy(phrase, "Bad Request");
-            break;
-        case HTTP_NOT_FOUND:
-            strcpy(phrase, "Not Found");
-            break;
-        case HTTP_INTERNAL_SERVER_ERROR:
-            strcpy(phrase, "Internal Server Error");
-            break;
-        default:
-            strcpy(phrase, "Unknown");
-    }
 }
 
 static void HandleConnection(int socketHandle)
@@ -478,39 +519,37 @@ static void HandleConnection(int socketHandle)
     int actualSize = 0;
     ssize_t bytes = 0;
 
-    if (NULL == (uri = ReadUriFromSocket(socketHandle, PlatformLog::Get())))
+    if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to read request URI %d", socketHandle);
+        OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
     }
 
-    if (0 >= (contentLength = ReadHttpContentLengthFromSocket(socketHandle, PlatformLog::Get())))
+    if (0 >= (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to read HTTP Content-Length", uri);
+        OsConfigLogError(GetPlatformLog(), "%s: failed to read HTTP Content-Length", uri);
     }
 
     if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
+        OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
     }
 
     memset(requestBody, 0, contentLength + 1);
 
     if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
+        OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
     }
 
     if ((NULL == uri) || (NULL == requestBody))
     {
-        // TODO: need to malloc ???
-        // responseBody = "{\"error\":\"Failed to read request\"}";
-        // responseSize = strlen(responseBody);
         status = HTTP_BAD_REQUEST;
     }
     else
     {
+        // TODO: full logging traces for request/response (uri, body, size)
         status = RouteRequest(uri, requestBody, &responseBody, &responseSize);
-        GetReasonPhrase(status, reasonPhrase);
+        GetHttpReasonPhrase(status, reasonPhrase);
     }
 
     FREE_MEMORY(requestBody);
@@ -519,7 +558,7 @@ static void HandleConnection(int socketHandle)
 
     if (NULL == (buffer = (char*)malloc(estimatedSize)))
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
+        OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
         return;
     }
 
@@ -532,7 +571,11 @@ static void HandleConnection(int socketHandle)
 
     if (bytes != actualSize)
     {
-        OsConfigLogError(PlatformLog::Get(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
+        OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
+    }
+    else
+    {
+        OsConfigLogInfo(GetPlatformLog(), "%s: HTTP response sent (%d bytes)\n%s", uri, (int)bytes, buffer);
     }
 
     FREE_MEMORY(buffer);
@@ -549,19 +592,19 @@ static void* Worker(void*)
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
+                OsConfigLogInfo(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
             HandleConnection(socketHandle);
 
             if (0 != close(socketHandle))
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to close socket: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
+                OsConfigLogError(GetPlatformLog(), "Failed to close socket: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
+                OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
         }
     }
@@ -571,12 +614,14 @@ static void* Worker(void*)
 
 void MpiApiInitialize(void)
 {
-    PlatformLog::OpenLog();
-
     struct stat st;
     if (stat(g_socketPrefix, &st) == -1)
     {
-        mkdir(g_socketPrefix, 0700);
+        // S_IRUSR (0x00400): Read permission, owner
+        // S_IWUSR (0x00200): Write permission, owner
+        // S_IXUSR (0x00100): Execute/search permission, owner
+
+        mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
     if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
@@ -595,24 +640,24 @@ void MpiApiInitialize(void)
 
             if (listen(g_socketfd, 5) == 0)
             {
-                OsConfigLogInfo(PlatformLog::Get(), "Listening on socket '%s'", g_mpiSocket);
+                OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
                 g_worker = pthread_create(&g_worker, NULL, Worker, NULL);;
             }
             else
             {
-                OsConfigLogError(PlatformLog::Get(), "Failed to listen on socket '%s'", g_mpiSocket);
+                OsConfigLogError(GetPlatformLog(), "Failed to listen on socket '%s'", g_mpiSocket);
             }
         }
         else
         {
-            OsConfigLogError(PlatformLog::Get(), "Failed to bind socket '%s'", g_mpiSocket);
+            OsConfigLogError(GetPlatformLog(), "Failed to bind socket '%s'", g_mpiSocket);
         }
     }
     else
     {
-        OsConfigLogError(PlatformLog::Get(), "Failed to create socket '%s'", g_mpiSocket);
+        OsConfigLogError(GetPlatformLog(), "Failed to create socket '%s'", g_mpiSocket);
     }
 }
 
@@ -628,6 +673,4 @@ void MpiApiShutdown(void)
 
     close(g_socketfd);
     unlink(g_mpiSocket);
-
-    PlatformLog::CloseLog();
 }
