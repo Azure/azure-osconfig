@@ -800,7 +800,9 @@ TEST_F(CommonUtilsTest, OsProperties)
 
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
     EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
-    EXPECT_NE(nullptr, cpuType = GetCpu(nullptr));
+    EXPECT_NE(nullptr, cpuType = GetCpuType(nullptr));
+    EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
+    EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
@@ -808,6 +810,8 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
+    FREE_MEMORY(cpuVendor);
+    FREE_MEMORY(cpuModel);
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);

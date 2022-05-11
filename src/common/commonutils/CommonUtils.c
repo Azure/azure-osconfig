@@ -34,6 +34,8 @@
 #define OS_KERNEL_RELEASE_COMMAND "uname -r"
 #define OS_KERNEL_VERSION_COMMAND "uname -v"
 #define OS_CPU_COMMAND "lscpu | grep Architecture:"
+#define OS_CPU_VENDOR_COMMAND "lscpu | grep \"Vendor ID:\""
+#define OS_CPU_MODEL_COMMAND "lscpu | grep \"Model name:\""
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
 
@@ -1021,13 +1023,37 @@ char* GetOsKernelVersion(void* log)
     return textResult;
 }
 
-char* GetCpu(void* log)
+char* GetCpuType(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Processor: '%s'", textResult);
+        OsConfigLogInfo(log, "CPU type: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetCpuVendor(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_CPU_VENDOR_COMMAND, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "CPU vendor id: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetCpuModel(void* log)
+{
+    char* textResult = GetAnotherOsProperty(OS_CPU_MODEL_COMMAND, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "CPU model: '%s'", textResult);
     }
 
     return textResult;
