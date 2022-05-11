@@ -6,6 +6,7 @@
         "image_sku": "20_04-lts-gen2",
         "image_version": "latest",
         "device_id": "ubuntu2004",
+        "vm_size": "Standard_DS1_v2",
         "test_filter": "TpmTest",
         "vm_script":
         [
@@ -22,6 +23,7 @@
         "image_sku": "18.04-LTS",
         "image_version": "latest",
         "device_id": "ubuntu1804",
+        "vm_size": "Standard_DS1_v2",
         "test_filter": "TpmTest",
         "vm_script":
         [
@@ -38,7 +40,6 @@
         "image_sku": "20_04-lts",
         "image_version": "latest",
         "device_id": "ubuntu2004arm64",
-        "package_path": "*focal_aarch64.deb",
         "vm_size": "Standard_D2plds_v5",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-arm64-2.291.1.tar.gz",
