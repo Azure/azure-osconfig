@@ -107,7 +107,7 @@ static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 // Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s %s %s;%s %s %s;%s %s;"
 static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&"
-    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\&\"cpu_model\"=\"%s\"
+    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\"&\"cpu_model\"=\"%s\"&"
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
@@ -551,6 +551,8 @@ int main(int argc, char *argv[])
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
+    char* cpuVendor = NULL;
+    char* cpuModel = NULL;
     char* kernelName = NULL;
     char* kernelRelease = NULL;
     char* kernelVersion = NULL;

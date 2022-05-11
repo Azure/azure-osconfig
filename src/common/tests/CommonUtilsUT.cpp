@@ -794,6 +794,8 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
+    char* cpuVendor = NULL;
+    char* cpuModel = NULL;
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
