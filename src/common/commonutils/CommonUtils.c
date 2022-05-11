@@ -33,7 +33,7 @@
 #define OS_KERNEL_NAME_COMMAND "uname -s"
 #define OS_KERNEL_RELEASE_COMMAND "uname -r"
 #define OS_KERNEL_VERSION_COMMAND "uname -v"
-#define OS_CPU_COMMAND "file -Lb /usr/bin/ld | cut -d, -f2"
+#define OS_CPU_COMMAND "lscpu | grep Architecture:"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
 
