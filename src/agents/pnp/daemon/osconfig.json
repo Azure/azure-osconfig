@@ -22,6 +22,14 @@
     },
     {
       "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuVendorId"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuModel"
+    },
+    {
+      "ComponentName": "DeviceInfo",
       "ObjectName": "kernelName"
     },
     {
