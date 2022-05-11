@@ -983,8 +983,7 @@ static char* GetCpuProperty(const char* command, void* log)
 static char* GetAnotherOsProperty(const char* command, void* log)
 {
     char* textResult = NULL;
-    char* postEqual = NULL;
-
+    
     if (NULL == command)
     {
         return NULL;
