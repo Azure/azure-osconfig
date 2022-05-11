@@ -904,7 +904,6 @@ void TruncateAtFirst(char* target, char marker)
 char* GetOsName(void* log)
 {
     char* textResult = NULL;
-    char* postEqual = NULL;
 
     if (0 == ExecuteCommand(NULL, OS_PRETTY_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
@@ -941,7 +940,6 @@ char* GetOsName(void* log)
 char* GetOsVersion(void* log)
 {
     char* textResult = NULL;
-    char* postEqual = NULL;
 
     if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
     {
@@ -1023,9 +1021,26 @@ char* GetOsKernelVersion(void* log)
     return textResult;
 }
 
+static char* GetCpuPropertyValue(const char* command, void* log)
+{
+    char* textResult = NULL;
+
+    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &textResult, NULL, log))
+    {
+        RemovePrefixUpTo(textResult, ':');
+        RemovePrefixBlanks(textResult);
+    }
+    else
+    {
+        FREE_MEMORY(textResult);
+    }
+
+    return textResult;
+}
+
 char* GetCpuType(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_CPU_COMMAND, log);
+    char* textResult = GetCpuPropertyValue(OS_CPU_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -1037,7 +1052,7 @@ char* GetCpuType(void* log)
 
 char* GetCpuVendor(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_CPU_VENDOR_COMMAND, log);
+    char* textResult = GetCpuPropertyValue(OS_CPU_VENDOR_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -1049,7 +1064,7 @@ char* GetCpuVendor(void* log)
 
 char* GetCpuModel(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_CPU_MODEL_COMMAND, log);
+    char* textResult = GetCpuPropertyValue(OS_CPU_MODEL_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
