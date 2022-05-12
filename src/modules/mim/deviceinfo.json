@@ -37,6 +37,12 @@
           "schema": "string"
         },
         {
+          "name": "totalMemory",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "kernelName",
           "type": "mimObject",
           "desired": false,
