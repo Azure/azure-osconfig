@@ -25,6 +25,24 @@
           "schema": "string"
         },
         {
+          "name": "cpuVendorId",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "cpuModel",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "totalMemory",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "kernelName",
           "type": "mimObject",
           "desired": false,

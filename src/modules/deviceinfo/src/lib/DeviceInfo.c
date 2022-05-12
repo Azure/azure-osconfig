@@ -14,6 +14,9 @@ static char* g_deviceInfoComponentName = "DeviceInfo";
 static char* g_osNameObject = "osName";
 static char* g_osVersionObject = "osVersion";
 static char* g_cpuTypeObject = "cpuType";
+static char* g_cpuVendorObject = "cpuVendorId";
+static char* g_cpuModelObject = "cpuModel";
+static char* g_totalMemoryObject = "totalMemory";
 static char* g_kernelNameObject = "kernelName";
 static char* g_kernelReleaseObject = "kernelRelease";
 static char* g_kernelVersionObject = "kernelVersion";
@@ -38,6 +41,9 @@ static OSCONFIG_LOG_HANDLE g_log = NULL;
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
 static char* g_cpuType = NULL;
+static char* g_cpuVendor = NULL;
+static char* g_cpuModel = NULL;
+static char* g_totalMemory = NULL;
 static char* g_kernelName = NULL;
 static char* g_kernelRelease = NULL;
 static char* g_kernelVersion = NULL;
@@ -58,7 +64,10 @@ void DeviceInfoInitialize(void)
 
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());
-    g_cpuType = GetCpu(DeviceInfoGetLog());
+    g_cpuType = GetCpuType(DeviceInfoGetLog());
+    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog()); 
+    g_cpuModel = GetCpuModel(DeviceInfoGetLog());
+    g_totalMemory = GetTotalMemory(DeviceInfoGetLog());
     g_kernelName = GetOsKernelName(DeviceInfoGetLog());
     g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog());
     g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog());
@@ -73,6 +82,9 @@ void DeviceInfoShutdown(void)
     FREE_MEMORY(g_osName);
     FREE_MEMORY(g_osVersion);
     FREE_MEMORY(g_cpuType);
+    FREE_MEMORY(g_cpuVendor);
+    FREE_MEMORY(g_cpuModel);
+    FREE_MEMORY(g_totalMemory);
     FREE_MEMORY(g_kernelName);
     FREE_MEMORY(g_kernelRelease);
     FREE_MEMORY(g_kernelVersion);
@@ -184,6 +196,18 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         else if (0 == strcmp(objectName, g_cpuTypeObject))
         {
             value = g_cpuType;
+        }
+        else if (0 == strcmp(objectName, g_cpuVendorObject))
+        {
+            value = g_cpuVendor;
+        }
+        else if (0 == strcmp(objectName, g_cpuModelObject))
+        {
+            value = g_cpuModel;
+        }
+        else if (0 == strcmp(objectName, g_totalMemoryObject))
+        {
+            value = g_totalMemory;
         }
         else if (0 == strcmp(objectName, g_kernelNameObject))
         {

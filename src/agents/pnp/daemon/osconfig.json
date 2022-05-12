@@ -1,7 +1,7 @@
 {
   "FullLogging": 0,  
   "LocalManagement": 0,
-  "ModelVersion": 7,
+  "ModelVersion": 8,
   "Protocol": 2,
   "Reported": [
     {
@@ -19,6 +19,18 @@
     {
       "ComponentName": "DeviceInfo",
       "ObjectName": "cpuType"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuVendorId"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuModel"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "totalMemory"
     },
     {
       "ComponentName": "DeviceInfo",

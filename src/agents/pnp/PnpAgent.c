@@ -104,9 +104,10 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;"
+// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s %s %s %s;%s %s %s;%s %s;"
 static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
-    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&"
+    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&"
+    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\"&\"cpu_model\"=\"%s\"&\"total_memory\"=\"%s\"&"
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
@@ -550,6 +551,9 @@ int main(int argc, char *argv[])
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
+    char* cpuVendor = NULL;
+    char* cpuModel = NULL;
+    char* totalMemory = NULL;
     char* kernelName = NULL;
     char* kernelRelease = NULL;
     char* kernelVersion = NULL;
@@ -613,15 +617,18 @@ int main(int argc, char *argv[])
 
     osName = GetOsName(GetLog());
     osVersion = GetOsVersion(GetLog());
-    cpuType = GetCpu(GetLog());
+    cpuType = GetCpuType(GetLog());
+    cpuVendor = GetCpuVendor(GetLog());
+    cpuModel = GetCpuModel(GetLog());
+    totalMemory = GetTotalMemory(GetLog());
     kernelName = GetOsKernelName(GetLog());
     kernelRelease = GetOsKernelRelease(GetLog());
     kernelVersion = GetOsKernelVersion(GetLog());
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, 
-        osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, 
+        cpuType, cpuVendor, cpuModel, totalMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
         
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
@@ -643,6 +650,9 @@ int main(int argc, char *argv[])
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
+    FREE_MEMORY(cpuVendor);
+    FREE_MEMORY(cpuModel);
+    FREE_MEMORY(totalMemory);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
