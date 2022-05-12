@@ -2,29 +2,13 @@
 // Licensed under the MIT License.
 
 #include <pthread.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
 
-#include "CommonUtils.h"
-#include "MpiServer.h"
-#include "ModulesManager.h"
-#include "Logging.h"
+#include <PlatformCommon.h>
+#include <MpiServer.h>
+#include <ModulesManager.h>
 
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
-
-static int g_socketfd;
-static struct sockaddr_un g_socketaddr;
-static socklen_t g_socketlen;
-
-static pthread_t g_worker;
-static bool g_serverActive = false;
 
 static const char* g_clientName = "ClientName";
 static const char* g_maxPayloadSizeBytes = "MaxPayloadSizeBytes";
@@ -33,13 +17,18 @@ static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 static const char* g_payload = "Payload";
 
-#define UUID_LENGTH 36
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASON_PHRASE_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
 
-#define PLATFORM_LOGFILE "/var/log/osconfig_platform.log"
-#define PLATFORM_ROLLEDLOGFILE "/var/log/osconfig_platform.bak"
+static int g_socketfd;
+static struct sockaddr_un g_socketaddr;
+static socklen_t g_socketlen;
+
+static pthread_t g_worker;
+static bool g_serverActive = false;
+
+#define UUID_LENGTH 36
 
 static std::map<std::string, MPI_HANDLE> g_sessions;
 
@@ -67,19 +56,19 @@ static char* CreateUuid()
 
     for (int i = 0; i < UUID_LENGTH + 1; i++)
     {
-        int r = rand() % 16;
+        int random = rand() % 16;
         char c = ' ';
 
         switch (uuidTemplate[i])
         {
             case 'x':
-                c = hex[r];
+                c = hex[random];
                 break;
             case '-':
                 c = '-';
                 break;
             case 'M':
-                c = hex[(r & 0x03) | 0x08];
+                c = hex[(random & 0x03) | 0x08];
                 break;
             case 'N':
                 c = '4';
@@ -119,6 +108,8 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
     JSON_Object* rootObject = NULL;
     JSON_Value* clientNameValue = NULL;
     JSON_Value* maxPayloadSizeBytesValue = NULL;
+    MPI_HANDLE handle = NULL;
+    char* uuid = NULL;
     char* clientName = NULL;
     int maxPayloadSizeBytes = 0;
     const char* responseFormat = "\"%s\"";
@@ -138,22 +129,34 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
             }
 
-            char* sessionId = CreateUuid();
-            MPI_HANDLE handle = MpiOpen(clientName, maxPayloadSizeBytes);
-
-            if (handle)
+            if (NULL != (handle = MpiOpen(clientName, maxPayloadSizeBytes)))
             {
-                g_sessions[sessionId] = handle;
-
-                *responseSize =  UUID_LENGTH + 2;
-                if (NULL != (*response = (char*)malloc(*responseSize + 1)))
+                if (NULL != (uuid = CreateUuid()))
                 {
-                    snprintf(*response, *responseSize + 1, responseFormat, sessionId);
-                    FREE_MEMORY(sessionId);
+                    g_sessions[uuid] = handle;
+                    *responseSize = UUID_LENGTH + 2;
+
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, clientName);
+                    }
+
+                    if (NULL != (*response = (char*)malloc(*responseSize + 1)))
+                    {
+                        snprintf(*response, *responseSize + 1, responseFormat, uuid);
+                    }
+                    else
+                    {
+                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                        status = HTTP_INTERNAL_SERVER_ERROR;
+                        *responseSize = 0;
+                    }
+
+                    FREE_MEMORY(uuid);
                 }
                 else
                 {
-                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                    OsConfigLogError(GetPlatformLog(), "Failed to create UUID for client: %s", clientName);
                     status = HTTP_INTERNAL_SERVER_ERROR;
                     *responseSize = 0;
                 }
@@ -163,16 +166,16 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
                 OsConfigLogError(GetPlatformLog(), "Failed to open session for client '%s'", clientName);
                 status = HTTP_INTERNAL_SERVER_ERROR;
             }
-
-            FREE_MEMORY(sessionId);
         }
         else
         {
+            OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -462,7 +465,10 @@ HTTP_STATUS RouteRequest(const char* uri, const char* request, char** response, 
 {
     HTTP_STATUS status = HTTP_OK;
 
-    OsConfigLogInfo(GetPlatformLog(), "REQUEST %s\n %s", uri, request);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(GetPlatformLog(), "HTTP request recieved: %s\n %s", uri, request);
+    }
 
     if (0 == strcmp(uri, "MpiOpen"))
     {
