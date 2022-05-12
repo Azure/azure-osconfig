@@ -1081,7 +1081,7 @@ char* GetTotalMemory(void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "CPU model: '%s'", textResult);
+        OsConfigLogInfo(log, "Total memory: '%s'", textResult);
     }
 
     return textResult;
