@@ -1087,7 +1087,6 @@ char* GetTotalMemory(void* log)
     return textResult;
 }
 
-
 char* GetProductName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
