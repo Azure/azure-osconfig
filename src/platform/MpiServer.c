@@ -5,7 +5,6 @@
 
 #include <PlatformCommon.h>
 #include <MpiServer.h>
-#include <ModulesManager.h>
 
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
@@ -40,20 +39,20 @@ static void GetHttpReasonPhrase(HTTP_STATUS statusCode, char* phrase)
 {
     switch (statusCode)
     {
-        case HTTP_OK:
-            strcpy(phrase, "OK");
-            break;
-        case HTTP_BAD_REQUEST:
-            strcpy(phrase, "Bad Request");
-            break;
-        case HTTP_NOT_FOUND:
-            strcpy(phrase, "Not Found");
-            break;
-        case HTTP_INTERNAL_SERVER_ERROR:
-            strcpy(phrase, "Internal Server Error");
-            break;
-        default:
-            strcpy(phrase, "Unknown");
+    case HTTP_OK:
+        strcpy(phrase, "OK");
+        break;
+    case HTTP_BAD_REQUEST:
+        strcpy(phrase, "Bad Request");
+        break;
+    case HTTP_NOT_FOUND:
+        strcpy(phrase, "Not Found");
+        break;
+    case HTTP_INTERNAL_SERVER_ERROR:
+        strcpy(phrase, "Internal Server Error");
+        break;
+    default:
+        strcpy(phrase, "Unknown");
     }
 }
 
@@ -159,7 +158,7 @@ static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* re
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(),"Failed to parse '%s' from request", g_clientSession);
+            OsConfigLogError(GetPlatformLog(), "Failed to parse '%s' from request", g_clientSession);
             status = HTTP_BAD_REQUEST;
         }
 
@@ -167,7 +166,7 @@ static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* re
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(),"Failed to parse request");
+        OsConfigLogError(GetPlatformLog(), "Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -213,7 +212,7 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
             mpiStatus = MpiSet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING)payload, strlen(payload));
             status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
 
-            int estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH;
+            estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH;
 
             if (NULL != (*response = (char*)malloc(estimatedSize)))
             {
@@ -438,7 +437,7 @@ static void HandleConnection(int socketHandle)
     int contentLength = 0;
     char* requestBody = NULL;
     HTTP_STATUS status = HTTP_OK;
-    char reasonPhrase[MAX_REASON_PHRASE_LENGTH] = {0};
+    char reasonPhrase[MAX_REASON_PHRASE_LENGTH] = { 0 };
     char* responseBody = NULL;
     int responseSize = 0;
     char* buffer = NULL;
@@ -500,18 +499,20 @@ static void HandleConnection(int socketHandle)
         OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
     }
 
-    // if (IsFullLoggingEnabled())
-    // {
+    if (IsFullLoggingEnabled())
+    {
         OsConfigLogInfo(GetPlatformLog(), "%s: HTTP response sent (%d bytes)\n%s", uri, (int)bytes, buffer);
-    // }
+    }
 
     FREE_MEMORY(buffer);
     FREE_MEMORY(uri);
 }
 
-static void* Worker(void*)
+static void* Worker(void* arg)
 {
     int socketHandle = -1;
+
+    UNUSED(arg);
 
     while (g_serverActive)
     {
