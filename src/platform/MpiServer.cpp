@@ -112,12 +112,6 @@ static void GetHttpReasonPhrase(HTTP_STATUS statusCode, char* phrase)
     }
 }
 
-// static bool HasMember(JSON_Value* value, const char* name, json_value_type type)
-// {
-//     JSON_Object* object = json_value_get_object(value);
-//     return json_object_has_value(object, name) && (type == json_value_get_type(json_object_get_value(object, name)));
-// }
-
 static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* responseSize)
 {
     HTTP_STATUS status = HTTP_OK;
@@ -339,21 +333,27 @@ static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* resp
             if (g_sessions.find(clientSession) != g_sessions.end())
             {
                 int mpiStatus = MpiGet(g_sessions[clientSession], component, object, (MPI_JSON_STRING*)response, responseSize);
-                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
+                if (mpiStatus != MPI_OK)
+                {
+                    OsConfigLogError(GetPlatformLog(), "Failed to get value for component '%s' and object '%s'", component, object);
+                    status = HTTP_INTERNAL_SERVER_ERROR;
+                }
             }
             else
             {
-
+                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
                 status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
+            OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -395,16 +395,19 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
             }
             else
             {
+                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
                 status = HTTP_BAD_REQUEST;
             }
         }
         else
         {
+            OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "Failed to parse request");
         status = HTTP_BAD_REQUEST;
     }
 
@@ -496,16 +499,12 @@ HTTP_STATUS RouteRequest(const char* uri, const char* request, char** response, 
         OsConfigLogError(GetPlatformLog(), "Invalid %s request body: %s", uri, request);
     }
 
-    char phrase[MAX_REASON_PHRASE_LENGTH] = { 0 };
-    GetHttpReasonPhrase(status, phrase);
-    OsConfigLogInfo(GetPlatformLog(), "RESPONSE %s %s\n%.*s", uri, phrase, *responseSize, *response);
-
     return status;
 }
 
 static void HandleConnection(int socketHandle)
 {
-    const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
+    const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
     char* uri = NULL;
     int contentLength = 0;
@@ -522,16 +521,19 @@ static void HandleConnection(int socketHandle)
     if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
+        status = HTTP_BAD_REQUEST;
     }
 
     if (0 >= (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
     {
         OsConfigLogError(GetPlatformLog(), "%s: failed to read HTTP Content-Length", uri);
+        status = HTTP_BAD_REQUEST;
     }
 
     if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
     {
         OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
+        status = HTTP_BAD_REQUEST;
     }
 
     memset(requestBody, 0, contentLength + 1);
@@ -539,21 +541,17 @@ static void HandleConnection(int socketHandle)
     if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
     {
         OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
-    }
-
-    if ((NULL == uri) || (NULL == requestBody))
-    {
         status = HTTP_BAD_REQUEST;
     }
-    else
+
+    if (status == HTTP_OK)
     {
-        // TODO: full logging traces for request/response (uri, body, size)
         status = RouteRequest(uri, requestBody, &responseBody, &responseSize);
-        GetHttpReasonPhrase(status, reasonPhrase);
     }
 
     FREE_MEMORY(requestBody);
 
+    GetHttpReasonPhrase(status, reasonPhrase);
     estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(reasonPhrase) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
 
     if (NULL == (buffer = (char*)malloc(estimatedSize)))
@@ -564,16 +562,17 @@ static void HandleConnection(int socketHandle)
 
     memset(buffer, 0, estimatedSize);
 
-    snprintf(buffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseSize, (responseBody ? responseBody : ""));
+    snprintf(buffer, estimatedSize, responseFormat, (int)status, reasonPhrase, responseSize, responseSize, (responseBody ? responseBody : ""));
     actualSize = (int)strlen(buffer);
 
-    bytes = write(socketHandle, buffer, strlen(buffer));
+    bytes = write(socketHandle, buffer, actualSize);
 
     if (bytes != actualSize)
     {
         OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
     }
-    else
+
+    if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(GetPlatformLog(), "%s: HTTP response sent (%d bytes)\n%s", uri, (int)bytes, buffer);
     }
