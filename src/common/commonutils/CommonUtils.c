@@ -36,6 +36,7 @@
 #define OS_CPU_COMMAND "lscpu | grep Architecture:"
 #define OS_CPU_VENDOR_COMMAND "lscpu | grep \"Vendor ID:\""
 #define OS_CPU_MODEL_COMMAND "lscpu | grep \"Model name:\""
+#define OS_TOTAL_MEMORY_COMMAND "grep MemTotal /proc/meminfo"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
 
@@ -962,7 +963,7 @@ char* GetOsVersion(void* log)
     return textResult;
 }
 
-static char* GetCpuProperty(const char* command, void* log)
+static char* GetHardwareProperty(const char* command, void* log)
 {
     char* textResult = NULL;
 
@@ -1040,7 +1041,7 @@ char* GetOsKernelVersion(void* log)
 
 char* GetCpuType(void* log)
 {
-    char* textResult = GetCpuProperty(OS_CPU_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_COMMAND, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -1052,7 +1053,7 @@ char* GetCpuType(void* log)
 
 char* GetCpuVendor(void* log)
 {
-    char* textResult = GetCpuProperty(OS_CPU_VENDOR_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_VENDOR_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -1064,11 +1065,23 @@ char* GetCpuVendor(void* log)
 
 char* GetCpuModel(void* log)
 {
-    char* textResult = GetCpuProperty(OS_CPU_MODEL_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_MODEL_COMMAND, log);
 
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU model: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetTotalMemory(void* log)
+{
+    char* textResult = GetHardwareProperty(OS_TOTAL_MEMORY_COMMAND, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Total memory: '%s'", textResult);
     }
 
     return textResult;
