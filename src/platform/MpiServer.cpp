@@ -28,10 +28,6 @@ static socklen_t g_socketlen;
 static pthread_t g_worker;
 static bool g_serverActive = false;
 
-#define UUID_LENGTH 36
-
-static std::map<std::string, MPI_HANDLE> g_sessions;
-
 typedef enum HTTP_STATUS
 {
     HTTP_OK = 200,
@@ -39,46 +35,6 @@ typedef enum HTTP_STATUS
     HTTP_NOT_FOUND = 404,
     HTTP_INTERNAL_SERVER_ERROR = 500
 } HTTP_STATUS;
-
-static char* CreateUuid()
-{
-    char* uuid = NULL;
-    static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
-    const char* hex = "0123456789ABCDEF-";
-
-    uuid = (char*)malloc(UUID_LENGTH + 1);
-    if (uuid == NULL)
-    {
-        return NULL;
-    }
-
-    srand(clock());
-
-    for (int i = 0; i < UUID_LENGTH + 1; i++)
-    {
-        int random = rand() % 16;
-        char c = ' ';
-
-        switch (uuidTemplate[i])
-        {
-            case 'x':
-                c = hex[random];
-                break;
-            case '-':
-                c = '-';
-                break;
-            case 'M':
-                c = hex[(random & 0x03) | 0x08];
-                break;
-            case 'N':
-                c = '4';
-                break;
-        }
-        uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
-    }
-
-    return uuid;
-}
 
 static void GetHttpReasonPhrase(HTTP_STATUS statusCode, char* phrase)
 {
@@ -108,10 +64,10 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
     JSON_Object* rootObject = NULL;
     JSON_Value* clientNameValue = NULL;
     JSON_Value* maxPayloadSizeBytesValue = NULL;
-    MPI_HANDLE handle = NULL;
     char* uuid = NULL;
     char* clientName = NULL;
     int maxPayloadSizeBytes = 0;
+    int estimatedSize = 0;
     const char* responseFormat = "\"%s\"";
 
     if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
@@ -129,37 +85,28 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
             }
 
-            if (NULL != (handle = MpiOpen(clientName, maxPayloadSizeBytes)))
+            if (NULL != (uuid = (char*)MpiOpen(clientName, maxPayloadSizeBytes)))
             {
-                if (NULL != (uuid = CreateUuid()))
+                if (IsFullLoggingEnabled())
                 {
-                    g_sessions[uuid] = handle;
-                    *responseSize = UUID_LENGTH + 2;
+                    OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, clientName);
+                }
 
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, clientName);
-                    }
+                estimatedSize = strlen(responseFormat) + strlen(uuid);
 
-                    if (NULL != (*response = (char*)malloc(*responseSize + 1)))
-                    {
-                        snprintf(*response, *responseSize + 1, responseFormat, uuid);
-                    }
-                    else
-                    {
-                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
-                        status = HTTP_INTERNAL_SERVER_ERROR;
-                        *responseSize = 0;
-                    }
-
-                    FREE_MEMORY(uuid);
+                if (NULL != (*response = (char*)malloc(estimatedSize + 1)))
+                {
+                    *responseSize = snprintf(*response, estimatedSize + 1, responseFormat, uuid);
+                    OsConfigLogInfo(GetPlatformLog(), "RESPONSE: %s", *response);
                 }
                 else
                 {
-                    OsConfigLogError(GetPlatformLog(), "Failed to create UUID for client: %s", clientName);
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
                     status = HTTP_INTERNAL_SERVER_ERROR;
                     *responseSize = 0;
                 }
+
+                FREE_MEMORY(uuid);
             }
             else
             {
@@ -172,6 +119,8 @@ static HTTP_STATUS MpiOpenRequest(const char* request, char** response, int* res
             OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
+
+        json_value_free(rootValue);
     }
     else
     {
@@ -206,23 +155,15 @@ static HTTP_STATUS MpiCloseRequest(const char* request, char** response, int* re
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", clientSession);
             }
 
-            if (g_sessions.find(clientSession) != g_sessions.end())
-            {
-                MpiClose(g_sessions[clientSession]);
-                g_sessions.erase(clientSession);
-                status = HTTP_OK;
-            }
-            else
-            {
-                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
-                status = HTTP_BAD_REQUEST;
-            }
+            MpiClose((MPI_HANDLE)clientSession);
         }
         else
         {
             OsConfigLogError(GetPlatformLog(),"Failed to parse '%s' from request", g_clientSession);
             status = HTTP_BAD_REQUEST;
         }
+
+        json_value_free(rootValue);
     }
     else
     {
@@ -242,10 +183,12 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
     JSON_Value* componentValue = NULL;
     JSON_Value* objectValue = NULL;
     JSON_Value* payloadValue = NULL;
+    int mpiStatus = MPI_OK;
     char* clientSession = NULL;
     char* component = NULL;
     char* object = NULL;
     char* payload = NULL;
+    int estimatedSize = 0;
     const char* responseFormat = "\"%d\"";
 
     if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
@@ -267,26 +210,20 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
             }
 
-            if (g_sessions.find(clientSession) != g_sessions.end())
-            {
-                int mpiStatus = MpiSet(g_sessions[clientSession], component, object, (MPI_JSON_STRING)payload, strlen(payload));
-                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
+            mpiStatus = MpiSet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING)payload, strlen(payload));
+            status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
 
-                if (NULL != (*response = (char*)malloc(strlen(responseFormat) + MAX_STATUS_CODE_LENGTH)))
-                {
-                    *responseSize = snprintf(*response, strlen(responseFormat) + MAX_STATUS_CODE_LENGTH, responseFormat, mpiStatus);
-                }
-                else
-                {
-                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
-                    *responseSize = 0;
-                    status = HTTP_INTERNAL_SERVER_ERROR;
-                }
+            int estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH;
+
+            if (NULL != (*response = (char*)malloc(estimatedSize)))
+            {
+                *responseSize = snprintf(*response, estimatedSize, responseFormat, mpiStatus);
             }
             else
             {
-                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
-                status = HTTP_BAD_REQUEST;
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                *responseSize = 0;
+                status = HTTP_INTERNAL_SERVER_ERROR;
             }
         }
         else
@@ -294,6 +231,8 @@ static HTTP_STATUS MpiSetRequest(const char* request, char** response, int* resp
             OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
+
+        json_value_free(rootValue);
     }
     else
     {
@@ -312,6 +251,7 @@ static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* resp
     JSON_Value* clientSessionValue = NULL;
     JSON_Value* componentValue = NULL;
     JSON_Value* objectValue = NULL;
+    int mpiStatus = MPI_OK;
     char* clientSession = NULL;
     char* component = NULL;
     char* object = NULL;
@@ -333,19 +273,12 @@ static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* resp
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiGet(%s, %s) request, session '%s'", component, object, clientSession);
             }
 
-            if (g_sessions.find(clientSession) != g_sessions.end())
+            mpiStatus = MpiGet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING*)response, responseSize);
+
+            if (mpiStatus != MPI_OK)
             {
-                int mpiStatus = MpiGet(g_sessions[clientSession], component, object, (MPI_JSON_STRING*)response, responseSize);
-                if (mpiStatus != MPI_OK)
-                {
-                    OsConfigLogError(GetPlatformLog(), "Failed to get value for component '%s' and object '%s'", component, object);
-                    status = HTTP_INTERNAL_SERVER_ERROR;
-                }
-            }
-            else
-            {
-                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
-                status = HTTP_BAD_REQUEST;
+                OsConfigLogError(GetPlatformLog(), "Failed to get value for component '%s' and object '%s'", component, object);
+                status = HTTP_INTERNAL_SERVER_ERROR;
             }
         }
         else
@@ -353,6 +286,8 @@ static HTTP_STATUS MpiGetRequest(const char* request, char** response, int* resp
             OsConfigLogError(GetPlatformLog(), "Failed to parse request");
             status = HTTP_BAD_REQUEST;
         }
+
+        json_value_free(rootValue);
     }
     else
     {
@@ -370,6 +305,7 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
     JSON_Object* rootObject = NULL;
     JSON_Value* clientSessionValue = NULL;
     JSON_Value* payloadValue = NULL;
+    int mpiStatus = MPI_OK;
     char* clientSession = NULL;
     char* payload = NULL;
 
@@ -391,16 +327,8 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiSetDesired request for '%s'", clientSession);
             }
 
-            if (g_sessions.find(clientSession) != g_sessions.end())
-            {
-                int mpiStatus = MpiSetDesired(g_sessions[clientSession], (MPI_JSON_STRING)payload, strlen(payload));
-                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
-            }
-            else
-            {
-                OsConfigLogError(GetPlatformLog(), "No session found for client '%s'", clientSession);
-                status = HTTP_BAD_REQUEST;
-            }
+            mpiStatus = MpiSetDesired((MPI_HANDLE)clientSession, (MPI_JSON_STRING)payload, strlen(payload));
+            status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
         }
         else
         {
@@ -423,6 +351,7 @@ static HTTP_STATUS MpiGetReportedRequest(const char* request, char** response, i
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
     JSON_Value* clientSessionValue = NULL;
+    int mpiStatus = MPI_OK;
     char* clientSession = NULL;
 
     if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
@@ -438,15 +367,8 @@ static HTTP_STATUS MpiGetReportedRequest(const char* request, char** response, i
                 OsConfigLogInfo(GetPlatformLog(), "Received MpiGetReported request for '%s'", clientSession);
             }
 
-            if (g_sessions.find(clientSession) != g_sessions.end())
-            {
-                int mpiStatus = MpiGetReported(g_sessions[clientSession], (MPI_JSON_STRING*)response, responseSize);
-                status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
-            }
-            else
-            {
-                status = HTTP_BAD_REQUEST;
-            }
+            mpiStatus = MpiGetReported((MPI_HANDLE)clientSession, (MPI_JSON_STRING*)response, responseSize);
+            status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_INTERNAL_SERVER_ERROR);
         }
         else
         {
@@ -578,10 +500,10 @@ static void HandleConnection(int socketHandle)
         OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
     }
 
-    if (IsFullLoggingEnabled())
-    {
+    // if (IsFullLoggingEnabled())
+    // {
         OsConfigLogInfo(GetPlatformLog(), "%s: HTTP response sent (%d bytes)\n%s", uri, (int)bytes, buffer);
-    }
+    // }
 
     FREE_MEMORY(buffer);
     FREE_MEMORY(uri);
@@ -668,11 +590,6 @@ void MpiApiInitialize(void)
 
 void MpiApiShutdown(void)
 {
-    for (auto session : g_sessions)
-    {
-        MpiClose(session.second);
-    }
-
     g_serverActive = false;
     pthread_join(g_worker, NULL);
 

@@ -11,7 +11,10 @@ static const char g_configReported[] = "Reported";
 static const char g_configComponentName[] = "ComponentName";
 static const char g_configObjectName[] = "ObjectName";
 
+#define UUID_LENGTH 36
+
 static ModulesManager modulesManager;
+static std::map<std::string, std::shared_ptr<MpiSession>> g_sessions;
 
 // MPI
 
@@ -24,6 +27,13 @@ void MpiInitialize(void)
 void MpiShutdown(void)
 {
     MpiApiShutdown();
+
+    for (auto& session : g_sessions)
+    {
+        session.second->Close();
+    }
+
+    g_sessions.clear();
     modulesManager.UnloadModules();
 };
 
@@ -37,7 +47,7 @@ MPI_HANDLE MpiOpen(
     {
         if (nullptr != handle)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiOpen(%s, %u) returned %p", clientName, maxPayloadSizeBytes, handle);
+            OsConfigLogInfo(GetPlatformLog(), "MpiOpen(%s, %u) returned %s", clientName, maxPayloadSizeBytes, reinterpret_cast<char*>(handle));
         }
         else
         {
@@ -47,10 +57,13 @@ MPI_HANDLE MpiOpen(
 
     if (nullptr != clientName)
     {
-        MpiSession* session = new (std::nothrow) MpiSession(modulesManager, clientName, maxPayloadSizeBytes);
-        if (nullptr != session && (0 == session->Open()))
+        std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(modulesManager, clientName, maxPayloadSizeBytes);
+        if ((nullptr != session) && (0 == session->Open()))
         {
-            handle = reinterpret_cast<MPI_HANDLE>(session);
+            char* uuid = session->Uuid();
+            OsConfigLogInfo(GetPlatformLog(), "UUID: %s", uuid);
+            g_sessions[uuid] = session;
+            handle = reinterpret_cast<MPI_HANDLE>(uuid);
         }
         else
         {
@@ -69,9 +82,13 @@ void MpiClose(MPI_HANDLE handle)
 {
     if (nullptr != handle)
     {
-        MpiSession* session = reinterpret_cast<MpiSession*>(handle);
-        session->Close();
-        delete session;
+        std::string uuid = reinterpret_cast<const char*>(handle);
+
+        if (g_sessions.find(uuid) != g_sessions.end())
+        {
+            g_sessions[uuid]->Close();
+            g_sessions.erase(uuid);
+        }
     }
     else
     {
@@ -87,15 +104,24 @@ int MpiSet(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    if (nullptr != session)
+    if (nullptr != handle)
     {
-        status = session->Set(componentName, objectName, payload, payloadSizeBytes);
+        std::string uuid = reinterpret_cast<const char*>(handle);
+
+        if (g_sessions.find(uuid) != g_sessions.end())
+        {
+            status = g_sessions[uuid]->Set(componentName, objectName, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSet called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            status = EINVAL;
+        }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet called with invalid client session '%p'", handle);
+        OsConfigLogError(GetPlatformLog(), "MpiSet called with invalid handle");
         status = EINVAL;
     }
 
@@ -110,15 +136,24 @@ int MpiGet(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    if (nullptr != session)
+    if (nullptr != handle)
     {
-        status = session->Get(componentName, objectName, payload, payloadSizeBytes);
+        std::string uuid = reinterpret_cast<const char*>(handle);
+
+        if (g_sessions.find(uuid) != g_sessions.end())
+        {
+            status = g_sessions[uuid]->Get(componentName, objectName, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGet called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            status = EINVAL;
+        }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGet called with invalid client session '%p'", handle);
+        OsConfigLogError(GetPlatformLog(), "MpiGet called with invalid handle");
         status = EINVAL;
     }
 
@@ -131,18 +166,24 @@ int MpiSetDesired(
     const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    if (nullptr != session)
+    if (nullptr != handle)
     {
-        if (MPI_OK != (status = session->SetDesired(payload, payloadSizeBytes)))
+        std::string uuid = reinterpret_cast<const char*>(handle);
+
+        if (g_sessions.find(uuid) != g_sessions.end())
         {
-            OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) failed to set the desired state", handle, payload, payloadSizeBytes);
+            status = g_sessions[uuid]->SetDesired(payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) called without an invalid handle", handle, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with invalid handle");
         status = EINVAL;
     }
 
@@ -155,18 +196,24 @@ int MpiGetReported(
     int* payloadSizeBytes)
 {
     int status = MPI_OK;
-    MpiSession* session = reinterpret_cast<MpiSession*>(handle);
 
-    if (nullptr != session)
+    if (nullptr != handle)
     {
-        if (MPI_OK != (status = session->GetReported(payload, payloadSizeBytes)))
+        std::string uuid = reinterpret_cast<const char*>(handle);
+
+        if (g_sessions.find(uuid) != g_sessions.end())
         {
-            OsConfigLogError(GetPlatformLog(), "MpiGetReported(%p, %p, %p) failed to get the reported state", handle, payload, payloadSizeBytes);
+            status = g_sessions[uuid]->GetReported(payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGetReported called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGetReported(%p, %p, %p) called without an invalid handle", handle, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiGetReported called with invalid handle");
         status = EINVAL;
     }
 
@@ -356,14 +403,63 @@ void ModulesManager::UnloadModules()
     m_modules.clear();
 }
 
+static char* GenerateUuid()
+{
+    char* uuid = NULL;
+    static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
+    const char* hex = "0123456789ABCDEF-";
+
+    uuid = (char*)malloc(UUID_LENGTH + 1);
+    if (uuid == NULL)
+    {
+        return NULL;
+    }
+
+    srand(clock());
+
+    for (int i = 0; i < UUID_LENGTH + 1; i++)
+    {
+        int random = rand() % 16;
+        char c = ' ';
+
+        switch (uuidTemplate[i])
+        {
+            case 'x':
+                c = hex[random];
+                break;
+            case '-':
+                c = '-';
+                break;
+            case 'M':
+                c = hex[(random & 0x03) | 0x08];
+                break;
+            case 'N':
+                c = '4';
+                break;
+        }
+        uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
+    }
+
+    return uuid;
+}
+
 MpiSession::MpiSession(ModulesManager& modulesManager, std::string clientName, unsigned int maxPayloadSizeBytes) :
     m_modulesManager(modulesManager),
+    m_uuid(GenerateUuid()),
     m_clientName(clientName),
     m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
 
 MpiSession::~MpiSession()
 {
     Close();
+}
+
+char* MpiSession::Uuid()
+{
+    char * uuid = new char[m_uuid.size() + 1];
+    std::copy(m_uuid.begin(), m_uuid.end(), uuid);
+    uuid[m_uuid.size()] = '\0';
+    return uuid;
 }
 
 int MpiSession::Open()
