@@ -40,6 +40,13 @@
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
 
+#define OS_SYSTEM_DESCRIPTION_COMMAND "sudo lshw -c system | grep -m 1 \"description:\""
+#define OS_SYSTEM_PRODUCT_COMMAND "sudo lshw -c system | grep -m 1 \"product:\""
+#define OS_SYSTEM_VENDOR_COMMAND "sudo lshw -c system | grep -m 1 \"vendor:\""
+#define OS_SYSTEM_VERSION_COMMAND "sudo lshw -c system | grep -m 1 \"version:\""
+#define OS_SYSTEM_SERIAL_COMMAND "sudo lshw -c system | grep -m 1 \"serial:\""
+
+
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
 static const char g_commandTerminator[] = " 2>&1";
@@ -1089,7 +1096,7 @@ char* GetTotalMemory(void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Total memory: '%s' (%u kB)", textResult, atol(textResult));
+        OsConfigLogInfo(log, "Total memory: '%s' (%lu kB)", textResult, atol(textResult));
     }
 
     return textResult;
