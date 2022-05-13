@@ -40,7 +40,7 @@
           "name": "totalMemory",
           "type": "mimObject",
           "desired": false,
-          "schema": "string"
+          "schema": "integer"
         },
         {
           "name": "kernelName",
