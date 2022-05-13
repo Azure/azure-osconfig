@@ -43,7 +43,7 @@ static char* g_osVersion = NULL;
 static char* g_cpuType = NULL;
 static char* g_cpuVendor = NULL;
 static char* g_cpuModel = NULL;
-static char* g_totalMemory = NULL;
+static long g_totalMemory = 0;
 static char* g_kernelName = NULL;
 static char* g_kernelRelease = NULL;
 static char* g_kernelVersion = NULL;
@@ -84,7 +84,6 @@ void DeviceInfoShutdown(void)
     FREE_MEMORY(g_cpuType);
     FREE_MEMORY(g_cpuVendor);
     FREE_MEMORY(g_cpuModel);
-    FREE_MEMORY(g_totalMemory);
     FREE_MEMORY(g_kernelName);
     FREE_MEMORY(g_kernelRelease);
     FREE_MEMORY(g_kernelVersion);
@@ -160,6 +159,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 {
     int status = MMI_OK;
     char* value = NULL;
+    char buffer[10] = {0};
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -207,7 +207,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else if (0 == strcmp(objectName, g_totalMemoryObject))
         {
-            value = g_totalMemory;
+            snprintf(buffer, sizeof(buffer), "%lu", g_totalMemory);
+            value = buffer;
         }
         else if (0 == strcmp(objectName, g_kernelNameObject))
         {
