@@ -90,42 +90,6 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiSet(m_handle, m_defaultComponent, m_defaultObject, nullptr, 1));
     }
 
-    TEST_F(MpiTests, PayloadValidation)
-    {
-        std::vector<std::pair<std::string, std::string>> objects = {
-            {g_string, g_stringPayload},
-            {g_integer, g_integerPayload},
-            {g_boolean, g_booleanPayload},
-            {g_integerArray, g_integerArrayPayload},
-            {g_stringArray, g_stringArrayPayload},
-            {g_integerMap, g_integerMapPayload},
-            {g_stringMap, g_stringMapPayload},
-            {g_object, g_objectPayload},
-            {g_objectArray, g_objectArrayPayload}
-        };
-
-        ModulesManager modulesManager;
-        EXPECT_EQ(MPI_OK, modulesManager.LoadModules(g_moduleDir, g_configJsonNoneReported));
-
-        MpiSession mpiSession(modulesManager, m_defaultClient);
-        EXPECT_EQ(MPI_OK, mpiSession.Open());
-        MPI_HANDLE handle = reinterpret_cast<MPI_HANDLE>(&mpiSession);
-
-        for (auto object : objects)
-        {
-            MMI_JSON_STRING payload = nullptr;
-            int payloadSizeBytes = 0;
-            const char* objectName = object.first.c_str();
-            const char* validPayload = object.second.c_str();
-
-            EXPECT_EQ(MPI_OK, MpiSet(handle, g_testModuleComponent1, objectName, (MPI_JSON_STRING)validPayload, strlen(validPayload)));
-            EXPECT_EQ(MPI_OK, MpiGet(handle, g_testModuleComponent1, objectName, &payload, &payloadSizeBytes));
-
-            std::string jsonPayload(payload, payloadSizeBytes);
-            EXPECT_TRUE(JSON_EQ(validPayload, jsonPayload));
-        }
-    }
-
     TEST_F(MpiTests, MpiGet_InvalidClientSession)
     {
         int payloadSizeBytes = 0;
