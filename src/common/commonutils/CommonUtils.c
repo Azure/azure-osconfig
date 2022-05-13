@@ -39,13 +39,8 @@
 #define OS_TOTAL_MEMORY_COMMAND "grep MemTotal /proc/meminfo"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
-
-#define OS_SYSTEM_DESCRIPTION_COMMAND "sudo lshw -c system | grep -m 1 \"description:\""
-#define OS_SYSTEM_PRODUCT_COMMAND "sudo lshw -c system | grep -m 1 \"product:\""
-#define OS_SYSTEM_VENDOR_COMMAND "sudo lshw -c system | grep -m 1 \"vendor:\""
-#define OS_SYSTEM_VERSION_COMMAND "sudo lshw -c system | grep -m 1 \"version:\""
-#define OS_SYSTEM_SERIAL_COMMAND "sudo lshw -c system | grep -m 1 \"serial:\""
-
+#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"product:\""
+#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"vendor:\""
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
@@ -1105,6 +1100,10 @@ char* GetTotalMemory(void* log)
 char* GetProductName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
+    if ((NULL == textResult) || (0 == strlen(textResult))
+    {
+        textResult = GetHardwareProperty(OS_PRODUCT_NAME_ALTERNATE_COMMAND, false, log);
+    }
     
     if (IsFullLoggingEnabled())
     {
@@ -1117,6 +1116,11 @@ char* GetProductName(void* log)
 char* GetProductVendor(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
+
+    if ((NULL == textResult) || (0 == strlen(textResult))
+    {
+        textResult = GetHardwareProperty(OS_PRODUCT_VENDOR_ALTERNATE_COMMAND, false, log);
+    }
     
     if (IsFullLoggingEnabled())
     {
