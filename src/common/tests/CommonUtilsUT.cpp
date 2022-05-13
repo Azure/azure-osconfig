@@ -796,7 +796,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* cpuType = NULL;
     char* cpuVendor = NULL;
     char* cpuModel = NULL;
-    char* totalMemory = NULL;
+    long totalMemory = 0;
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
@@ -806,7 +806,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuType = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
-    EXPECT_NE(nullptr, totalMemory = GetTotalMemory(nullptr));
+    EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
@@ -816,7 +816,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
-    FREE_MEMORY(totalMemory);
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);
@@ -1011,6 +1010,7 @@ TEST_F(CommonUtilsTest, LockUnlockFile)
     EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(UnlockFile(testFile, nullptr));
     EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    fclose(testFile);
     EXPECT_TRUE(Cleanup(m_path));
 }
 

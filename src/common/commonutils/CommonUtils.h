@@ -62,8 +62,8 @@ char* GetOsKernelRelease(void* log);
 char* GetOsKernelVersion(void* log);
 char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
-char* GetTotalMemory(void* log);
 char* GetCpuModel(void* log);
+long GetTotalMemory(void* log);
 char* GetProductName(void* log);
 char* GetProductVendor(void* log);
 

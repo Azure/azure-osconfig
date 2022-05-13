@@ -104,10 +104,10 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s %s %s %s;%s %s %s;%s %s;"
+// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s %s %s %lu;%s %s %s;%s %s;"
 static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&"
-    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\"&\"cpu_model\"=\"%s\"&\"total_memory\"=\"%s\"&"
+    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\"&\"cpu_model\"=\"%s\"&\"total_memory\"=\"%lu\"&"
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
@@ -464,7 +464,11 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
+    char* payload = NULL; 
+
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+
+    payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless this desired configuration is different from previous
@@ -475,7 +479,6 @@ static void LoadDesiredConfigurationFromFile()
                 g_desiredHash = payloadHash;
             }
         }
-        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
     FREE_MEMORY(payload);
 }
@@ -553,7 +556,7 @@ int main(int argc, char *argv[])
     char* cpuType = NULL;
     char* cpuVendor = NULL;
     char* cpuModel = NULL;
-    char* totalMemory = NULL;
+    long totalMemory = 0;
     char* kernelName = NULL;
     char* kernelRelease = NULL;
     char* kernelVersion = NULL;
@@ -608,6 +611,8 @@ int main(int argc, char *argv[])
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
 
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
@@ -652,7 +657,6 @@ int main(int argc, char *argv[])
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
-    FREE_MEMORY(totalMemory);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
