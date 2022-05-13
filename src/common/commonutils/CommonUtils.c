@@ -963,7 +963,7 @@ char* GetOsVersion(void* log)
     return textResult;
 }
 
-static char* GetHardwareProperty(const char* command, void* log)
+static char* GetHardwareProperty(const char* command, bool truncateAtFirstSpace, void* log)
 {
     char* textResult = NULL;
 
@@ -971,7 +971,15 @@ static char* GetHardwareProperty(const char* command, void* log)
     {
         RemovePrefixUpTo(textResult, ':');
         RemovePrefixBlanks(textResult);
-        RemoveTrailingBlanks(textResult);
+        
+        if (truncateAtFirstSpace)
+        {
+            TruncateAtFirst(textResult, ' ');
+        }
+        else
+        {
+            RemoveTrailingBlanks(textResult);
+        }
     }
     else
     {
@@ -1041,7 +1049,7 @@ char* GetOsKernelVersion(void* log)
 
 char* GetCpuType(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_COMMAND, false, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -1053,7 +1061,7 @@ char* GetCpuType(void* log)
 
 char* GetCpuVendor(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_VENDOR_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_VENDOR_COMMAND, false, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -1065,7 +1073,7 @@ char* GetCpuVendor(void* log)
 
 char* GetCpuModel(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_MODEL_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_CPU_MODEL_COMMAND, false, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -1077,11 +1085,11 @@ char* GetCpuModel(void* log)
 
 char* GetTotalMemory(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_TOTAL_MEMORY_COMMAND, log);
+    char* textResult = GetHardwareProperty(OS_TOTAL_MEMORY_COMMAND, true, log);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Total memory: '%s'", textResult);
+        OsConfigLogInfo(log, "Total memory: '%s' (%u kB)", textResult, atol(textResult));
     }
 
     return textResult;

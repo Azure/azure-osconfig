@@ -464,7 +464,11 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
+    char* payload = NULL; 
+
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+
+    payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless this desired configuration is different from previous
@@ -475,7 +479,6 @@ static void LoadDesiredConfigurationFromFile()
                 g_desiredHash = payloadHash;
             }
         }
-        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
     FREE_MEMORY(payload);
 }
@@ -608,6 +611,8 @@ int main(int argc, char *argv[])
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
 
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
