@@ -466,7 +466,7 @@ static void HandleConnection(int socketHandle)
         status = HTTP_BAD_REQUEST;
     }
 
-    if (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog()))
+    if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
     {
         if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
         {
