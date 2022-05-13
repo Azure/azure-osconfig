@@ -47,7 +47,7 @@ MPI_HANDLE MpiOpen(
     {
         if (nullptr != handle)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiOpen(%s, %u) returned %s", clientName, maxPayloadSizeBytes, reinterpret_cast<char*>(handle));
+            OsConfigLogInfo(GetPlatformLog(), "MpiOpen(%s, %u) returned %p ('%s')", clientName, maxPayloadSizeBytes, handle, reinterpret_cast<char*>(handle));
         }
         else
         {
@@ -60,8 +60,7 @@ MPI_HANDLE MpiOpen(
         std::shared_ptr<MpiSession> session = std::make_shared<MpiSession>(modulesManager, clientName, maxPayloadSizeBytes);
         if ((nullptr != session) && (0 == session->Open()))
         {
-            char* uuid = session->Uuid();
-            OsConfigLogInfo(GetPlatformLog(), "UUID: %s", uuid);
+            char* uuid = session->GetUuid();
             g_sessions[uuid] = session;
             handle = reinterpret_cast<MPI_HANDLE>(uuid);
         }
@@ -72,7 +71,7 @@ MPI_HANDLE MpiOpen(
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiOpen(%s, %u) called without an invalid client name", clientName, maxPayloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiOpen(%s, %u) called without an invalid null client name", clientName, maxPayloadSizeBytes);
     }
 
     return handle;
@@ -92,7 +91,7 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiClose(%p) called with an invalid session", handle);
+        OsConfigLogError(GetPlatformLog(), "MpiClose(%p) called with an invalid null handle", handle);
     }
 }
 
@@ -115,13 +114,13 @@ int MpiSet(
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiSet called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            OsConfigLogError(GetPlatformLog(), "MpiSet called with an invalid handle: %p ('%s')", handle, reinterpret_cast<char*>(handle));
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet called with invalid handle");
+        OsConfigLogError(GetPlatformLog(), "MpiSet called with invalid null handle");
         status = EINVAL;
     }
 
@@ -147,13 +146,13 @@ int MpiGet(
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiGet called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            OsConfigLogError(GetPlatformLog(), "MpiGet called with an invalid handle: %p ('%s')", handle, reinterpret_cast<char*>(handle));
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGet called with invalid handle");
+        OsConfigLogError(GetPlatformLog(), "MpiGet called with invalid null handle");
         status = EINVAL;
     }
 
@@ -177,13 +176,13 @@ int MpiSetDesired(
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with an invalid handle: %p ('%s')", handle, reinterpret_cast<char*>(handle));
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with invalid handle");
+        OsConfigLogError(GetPlatformLog(), "MpiSetDesired called with invalid null handle");
         status = EINVAL;
     }
 
@@ -207,13 +206,13 @@ int MpiGetReported(
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiGetReported called with an invalid handle: %s", reinterpret_cast<char*>(handle));
+            OsConfigLogError(GetPlatformLog(), "MpiGetReported called with an invalid handle: %p ('%s')", handle, reinterpret_cast<char*>(handle));
             status = EINVAL;
         }
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGetReported called with invalid handle");
+        OsConfigLogError(GetPlatformLog(), "MpiGetReported called with invalid null handle");
         status = EINVAL;
     }
 
@@ -454,11 +453,16 @@ MpiSession::~MpiSession()
     Close();
 }
 
-char* MpiSession::Uuid()
+char* MpiSession::GetUuid()
 {
-    char * uuid = new char[m_uuid.size() + 1];
-    std::copy(m_uuid.begin(), m_uuid.end(), uuid);
-    uuid[m_uuid.size()] = '\0';
+    char* uuid = new (std::nothrow) char[m_uuid.size() + 1];
+
+    if (uuid != NULL)
+    {
+        std::copy(m_uuid.begin(), m_uuid.end(), uuid);
+        uuid[m_uuid.size()] = '\0';
+    }
+
     return uuid;
 }
 

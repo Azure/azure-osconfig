@@ -34,7 +34,7 @@ public:
     MpiSession(ModulesManager& modulesManager, std::string clientName, const unsigned int maxPayloadSizeBytes = 0);
     ~MpiSession();
 
-    char* Uuid();
+    char* GetUuid();
 
     int Open();
     void Close();
