@@ -33,6 +33,13 @@ typedef enum HTTP_STATUS
     HTTP_INTERNAL_SERVER_ERROR = 500
 } HTTP_STATUS;
 
+typedef MPI_HANDLE(*MPI_OPEN)(const char*, const unsigned int);
+typedef void(*MPI_CLOSE)(MPI_HANDLE);
+typedef int(*MPI_SET)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING, const int);
+typedef int(*MPI_GET)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING*, int*);
+typedef int(*MPI_SET_DESIRED)(MPI_HANDLE, const MPI_JSON_STRING, const int);
+typedef int(*MPI_GET_REPORTED)(MPI_HANDLE, MPI_JSON_STRING*, int*);
+
 static char* HttpReasonAsString(HTTP_STATUS statusCode)
 {
     char* reason = NULL;
@@ -109,7 +116,7 @@ static const char* JsonSerializeToString(JSON_Object* object, const char* member
     return value;
 }
 
-static HTTP_STATUS MpiOpenRequest(JSON_Object* requestObject, char** response, int* responseSize, MPI_HANDLE(*mpiOpen)(const char*, const unsigned int))
+static HTTP_STATUS MpiOpenRequest(JSON_Object* requestObject, char** response, int* responseSize, MPI_OPEN mpiOpen)
 {
     HTTP_STATUS status = HTTP_OK;
     char* uuid = NULL;
@@ -173,7 +180,7 @@ static HTTP_STATUS MpiOpenRequest(JSON_Object* requestObject, char** response, i
     return status;
 }
 
-static HTTP_STATUS MpiCloseRequest(JSON_Object* requestObject, char** response, int* responseSize, void(*mpiClose)(MPI_HANDLE))
+static HTTP_STATUS MpiCloseRequest(JSON_Object* requestObject, char** response, int* responseSize, MPI_CLOSE mpiClose)
 {
     HTTP_STATUS status = HTTP_OK;
     const char* clientSession = NULL;
@@ -204,7 +211,7 @@ static HTTP_STATUS MpiCloseRequest(JSON_Object* requestObject, char** response, 
     return status;
 }
 
-static HTTP_STATUS MpiSetRequest(JSON_Object* requestObject, char** response, int* responseSize, int(*mpiSet)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING, const int))
+static HTTP_STATUS MpiSetRequest(JSON_Object* requestObject, char** response, int* responseSize, MPI_SET mpiSet)
 {
     HTTP_STATUS status = HTTP_OK;
     const char* clientSession = NULL;
@@ -256,7 +263,7 @@ static HTTP_STATUS MpiSetRequest(JSON_Object* requestObject, char** response, in
     return status;
 }
 
-static HTTP_STATUS MpiGetRequest(JSON_Object* request, char** response, int* responseSize, int(*mpiGet)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING*, int*))
+static HTTP_STATUS MpiGetRequest(JSON_Object* request, char** response, int* responseSize, MPI_GET mpiGet)
 {
     HTTP_STATUS status = HTTP_OK;
     const char* clientSession = NULL;
@@ -299,7 +306,7 @@ static HTTP_STATUS MpiGetRequest(JSON_Object* request, char** response, int* res
     return status;
 }
 
-static HTTP_STATUS MpiSetDesiredRequest(JSON_Object* request, char** response, int* responseSize, int(*mpiSetDesired)(MPI_HANDLE, const MPI_JSON_STRING, const int))
+static HTTP_STATUS MpiSetDesiredRequest(JSON_Object* request, char** response, int* responseSize, MPI_SET_DESIRED mpiSetDesired)
 {
     HTTP_STATUS status = HTTP_OK;
     const char* clientSession = NULL;
@@ -339,7 +346,7 @@ static HTTP_STATUS MpiSetDesiredRequest(JSON_Object* request, char** response, i
     return status;
 }
 
-static HTTP_STATUS MpiGetReportedRequest(JSON_Object* request, char** response, int* responseSize, int(*mpiGetReported)(MPI_HANDLE, MPI_JSON_STRING*, int*))
+static HTTP_STATUS MpiGetReportedRequest(JSON_Object* request, char** response, int* responseSize, MPI_GET_REPORTED mpiGetReported)
 {
     HTTP_STATUS status = HTTP_OK;
     const char* clientSession = NULL;
