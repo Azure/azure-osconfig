@@ -1011,6 +1011,7 @@ TEST_F(CommonUtilsTest, LockUnlockFile)
     EXPECT_EQ(nullptr, LoadStringFromFile(m_path, true, nullptr));
     EXPECT_TRUE(UnlockFile(testFile, nullptr));
     EXPECT_STREQ(m_data, LoadStringFromFile(m_path, true, nullptr));
+    fclose(testFile);
     EXPECT_TRUE(Cleanup(m_path));
 }
 
