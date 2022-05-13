@@ -37,27 +37,25 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
 {
     char* reason = NULL;
 
-    if (NULL == (reason = (char*)malloc(MAX_REASONSTRING_LENGTH)))
+    if (NULL != (reason = (char*)malloc(MAX_REASONSTRING_LENGTH)))
     {
-        return NULL;
-    }
-
-    switch (statusCode)
-    {
-        case HTTP_OK:
-            strcpy(reason, "OK");
-            break;
-        case HTTP_BAD_REQUEST:
-            strcpy(reason, "Bad Request");
-            break;
-        case HTTP_NOT_FOUND:
-            strcpy(reason, "Not Found");
-            break;
-        case HTTP_INTERNAL_SERVER_ERROR:
-            strcpy(reason, "Internal Server Error");
-            break;
-        default:
-            strcpy(reason, "Unknown");
+        switch (statusCode)
+        {
+            case HTTP_OK:
+                strcpy(reason, "OK");
+                break;
+            case HTTP_BAD_REQUEST:
+                strcpy(reason, "Bad Request");
+                break;
+            case HTTP_NOT_FOUND:
+                strcpy(reason, "Not Found");
+                break;
+            case HTTP_INTERNAL_SERVER_ERROR:
+                strcpy(reason, "Internal Server Error");
+                break;
+            default:
+                strcpy(reason, "Unknown");
+        }
     }
 
     return reason;
@@ -68,7 +66,7 @@ static const char* JsonGetString(JSON_Object* object, const char* member)
     const char* value = NULL;
     JSON_Value* jsonValue = NULL;
 
-    if (object != NULL && member != NULL)
+    if ((NULL != object) && (NULL != member))
     {
         if (NULL != (jsonValue = json_object_get_value(object, member)))
         {
@@ -84,7 +82,7 @@ static int JsonGetNumber(JSON_Object* object, const char* member)
     int value = -1;
     JSON_Value* jsonValue = NULL;
 
-    if (object != NULL && member != NULL)
+    if ((NULL != object) && (NULL != member))
     {
         if (NULL != (jsonValue = json_object_get_value(object, member)))
         {
@@ -100,7 +98,7 @@ static const char* JsonSerializeToString(JSON_Object* object, const char* member
     const char* value = NULL;
     JSON_Value* jsonValue = NULL;
 
-    if (object != NULL && member != NULL)
+    if ((NULL != object) && (NULL != member))
     {
         if (NULL != (jsonValue = json_object_get_value(object, member)))
         {
@@ -123,53 +121,53 @@ static HTTP_STATUS MpiOpenRequest(JSON_Object* requestObject, char** response, i
     if (NULL == requestObject)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request object");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientName = JsonGetString(requestObject, g_clientName)))
+    else if (NULL == (clientName = JsonGetString(requestObject, g_clientName)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client name from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (0 > (maxPayloadSizeBytes = JsonGetNumber(requestObject, g_maxPayloadSizeBytes)))
+    else if (0 > (maxPayloadSizeBytes = JsonGetNumber(requestObject, g_maxPayloadSizeBytes)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse max payload size from request body");
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
-    }
-
-    if (NULL != (uuid = (char*)mpiOpen(clientName, maxPayloadSizeBytes)))
-    {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, clientName);
-        }
-
-        estimatedSize = strlen(responseFormat) + strlen(uuid) + 1;
-
-        if (NULL != (*response = (char*)malloc(estimatedSize)))
-        {
-            snprintf(*response, estimatedSize, responseFormat, uuid);
-            *responseSize = strlen(*response);
-        }
-        else
-        {
-            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
-            status = HTTP_INTERNAL_SERVER_ERROR;
-            *responseSize = 0;
-        }
-
-        FREE_MEMORY(uuid);
+        status = HTTP_BAD_REQUEST;
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiOpen failed to create a session for client '%s'", clientName);
-        status = HTTP_INTERNAL_SERVER_ERROR;
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
+        }
+
+        if (NULL != (uuid = (char*)mpiOpen(clientName, maxPayloadSizeBytes)))
+        {
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, clientName);
+            }
+
+            estimatedSize = strlen(responseFormat) + strlen(uuid) + 1;
+
+            if (NULL != (*response = (char*)malloc(estimatedSize)))
+            {
+                snprintf(*response, estimatedSize, responseFormat, uuid);
+                *responseSize = strlen(*response);
+            }
+            else
+            {
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                status = HTTP_INTERNAL_SERVER_ERROR;
+                *responseSize = 0;
+            }
+
+            FREE_MEMORY(uuid);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiOpen failed to create a session for client '%s'", clientName);
+            status = HTTP_INTERNAL_SERVER_ERROR;
+        }
     }
 
     return status;
@@ -186,21 +184,22 @@ static HTTP_STATUS MpiCloseRequest(JSON_Object* requestObject, char** response, 
     if (NULL == requestObject)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request object");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
+    else if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (IsFullLoggingEnabled())
+    else
     {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", clientSession);
-    }
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", clientSession);
+        }
 
-    mpiClose((MPI_HANDLE)clientSession);
+        mpiClose((MPI_HANDLE)clientSession);
+    }
 
     return status;
 }
@@ -219,41 +218,39 @@ static HTTP_STATUS MpiSetRequest(JSON_Object* requestObject, char** response, in
     if (NULL == requestObject)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request object");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
+    else if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (component = JsonGetString(requestObject, g_componentName)))
+    else if (NULL == (component = JsonGetString(requestObject, g_componentName)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse component from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (object = JsonGetString(requestObject, g_objectName)))
+    else if (NULL == (object = JsonGetString(requestObject, g_objectName)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse object from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (payload = JsonSerializeToString(requestObject, g_payload)))
+    else if (NULL == (payload = JsonSerializeToString(requestObject, g_payload)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse payload from request body");
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
-    }
-
-    if (MPI_OK != mpiSet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING)payload, strlen(payload)))
-    {
         status = HTTP_BAD_REQUEST;
+    }
+    else
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
+        }
+
+        if (MPI_OK != mpiSet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING)payload, strlen(payload)))
+        {
+            status = HTTP_BAD_REQUEST;
+        }
     }
 
     return status;
@@ -269,35 +266,34 @@ static HTTP_STATUS MpiGetRequest(JSON_Object* request, char** response, int* res
     if (NULL == request)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
+    else if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (component = JsonGetString(request, g_componentName)))
+    else if (NULL == (component = JsonGetString(request, g_componentName)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse component from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (object = JsonGetString(request, g_objectName)))
+    else if (NULL == (object = JsonGetString(request, g_objectName)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse object from request body");
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiGet(%s, %s) request, session '%s'", component, object, clientSession);
-    }
-
-    if (MPI_OK != mpiGet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING*)response, responseSize))
-    {
         status = HTTP_BAD_REQUEST;
+    }
+    else
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiGet(%s, %s) request, session '%s'", component, object, clientSession);
+        }
+
+        if (MPI_OK != mpiGet((MPI_HANDLE)clientSession, component, object, (MPI_JSON_STRING*)response, responseSize))
+        {
+            status = HTTP_BAD_REQUEST;
+        }
     }
 
     return status;
@@ -315,29 +311,29 @@ static HTTP_STATUS MpiSetDesiredRequest(JSON_Object* request, char** response, i
     if (NULL == request)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
+    else if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (payload = JsonSerializeToString(request, g_payload)))
+    else if (NULL == (payload = JsonSerializeToString(request, g_payload)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse payload from request body");
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiSetDesired request, session '%s'", clientSession);
-    }
-
-    if (MPI_OK != mpiSetDesired((MPI_HANDLE)clientSession, (MPI_JSON_STRING)payload, strlen(payload)))
-    {
         status = HTTP_BAD_REQUEST;
+    }
+    else
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiSetDesired request, session '%s'", clientSession);
+        }
+
+        if (MPI_OK != mpiSetDesired((MPI_HANDLE)clientSession, (MPI_JSON_STRING)payload, strlen(payload)))
+        {
+            status = HTTP_BAD_REQUEST;
+        }
     }
 
     return status;
@@ -351,23 +347,24 @@ static HTTP_STATUS MpiGetReportedRequest(JSON_Object* request, char** response, 
     if (NULL == request)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid null request");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
+    else if (NULL == (clientSession = JsonGetString(request, g_clientSession)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiGetReported request, session '%s'", clientSession);
-    }
-
-    if (MPI_OK != mpiGetReported((MPI_HANDLE)clientSession, (MPI_JSON_STRING*)response, responseSize))
-    {
         status = HTTP_BAD_REQUEST;
+    }
+    else
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Received MpiGetReported request, session '%s'", clientSession);
+        }
+
+        if (MPI_OK != mpiGetReported((MPI_HANDLE)clientSession, (MPI_JSON_STRING*)response, responseSize))
+        {
+            status = HTTP_BAD_REQUEST;
+        }
     }
 
     return status;
@@ -382,67 +379,64 @@ HTTP_STATUS MpiRequest(const char* uri, const char* requestBody, char** response
     if (NULL == uri)
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest: called with invalid null URI");
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == requestBody)
+    else if (NULL == requestBody)
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null request body", uri);
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == response)
+    else if (NULL == response)
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null response", uri);
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == responseSize)
+    else if (NULL == responseSize)
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null response size", uri);
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (rootValue = json_parse_string(requestBody)))
+    else if (NULL == (rootValue = json_parse_string(requestBody)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to parse request body", uri);
-        return HTTP_BAD_REQUEST;
+        status = HTTP_BAD_REQUEST;
     }
-
-    if (NULL == (request = json_value_get_object(rootValue)))
+    else if (NULL == (request = json_value_get_object(rootValue)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to parse request object", uri);
-        return HTTP_BAD_REQUEST;
-    }
-
-    if (0 == strcmp(uri, "MpiOpen"))
-    {
-        status = MpiOpenRequest(request, response, responseSize, MpiOpen);
-    }
-    else if (0 == strcmp(uri, "MpiClose"))
-    {
-        status = MpiCloseRequest(request, response, responseSize, MpiClose);
-    }
-    else if (0 == strcmp(uri, "MpiSet"))
-    {
-        status = MpiSetRequest(request, response, responseSize, MpiSet);
-    }
-    else if (0 == strcmp(uri, "MpiGet"))
-    {
-        status = MpiGetRequest(request, response, responseSize, MpiGet);
-    }
-    else if (0 == strcmp(uri, "MpiSetDesired"))
-    {
-        status = MpiSetDesiredRequest(request, response, responseSize, MpiSetDesired);
-    }
-    else if (0 == strcmp(uri, "MpiGetReported"))
-    {
-        status = MpiGetReportedRequest(request, response, responseSize, MpiGetReported);
+        status = HTTP_BAD_REQUEST;
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "%s: invalid request URI", uri);
-        status = HTTP_NOT_FOUND;
+        if (0 == strcmp(uri, "MpiOpen"))
+        {
+            status = MpiOpenRequest(request, response, responseSize, MpiOpen);
+        }
+        else if (0 == strcmp(uri, "MpiClose"))
+        {
+            status = MpiCloseRequest(request, response, responseSize, MpiClose);
+        }
+        else if (0 == strcmp(uri, "MpiSet"))
+        {
+            status = MpiSetRequest(request, response, responseSize, MpiSet);
+        }
+        else if (0 == strcmp(uri, "MpiGet"))
+        {
+            status = MpiGetRequest(request, response, responseSize, MpiGet);
+        }
+        else if (0 == strcmp(uri, "MpiSetDesired"))
+        {
+            status = MpiSetDesiredRequest(request, response, responseSize, MpiSetDesired);
+        }
+        else if (0 == strcmp(uri, "MpiGetReported"))
+        {
+            status = MpiGetReportedRequest(request, response, responseSize, MpiGetReported);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "%s: invalid request URI", uri);
+            status = HTTP_NOT_FOUND;
+        }
     }
 
     json_value_free(rootValue);
@@ -472,7 +466,7 @@ static void HandleConnection(int socketHandle)
         status = HTTP_BAD_REQUEST;
     }
 
-    if (0 != (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
+    if (contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog()))
     {
         if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
         {
@@ -567,7 +561,6 @@ void MpiApiInitialize(void)
         // S_IRUSR (0x00400): Read permission, owner
         // S_IWUSR (0x00200): Write permission, owner
         // S_IXUSR (0x00100): Execute/search permission, owner
-
         mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
