@@ -307,9 +307,8 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
     int mpiStatus = MPI_OK;
     char* clientSession = NULL;
     char* payload = NULL;
-
-    UNUSED(response);
-    UNUSED(responseSize);
+    int estimatedSize = 0;
+    const char* responseFormat = "\"%d\"";
 
     if ((NULL != (rootValue = json_parse_string(request))) && (NULL != (rootObject = json_value_get_object(rootValue))))
     {
@@ -328,6 +327,19 @@ static HTTP_STATUS MpiSetDesiredRequest(const char* request, char** response, in
 
             mpiStatus = MpiSetDesired((MPI_HANDLE)clientSession, (MPI_JSON_STRING)payload, strlen(payload));
             status = ((mpiStatus == MPI_OK) ? HTTP_OK : HTTP_BAD_REQUEST);
+
+            estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH;
+
+            if (NULL != (*response = (char*)malloc(estimatedSize)))
+            {
+                *responseSize = snprintf(*response, estimatedSize, responseFormat, mpiStatus);
+            }
+            else
+            {
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                *responseSize = 0;
+                status = HTTP_INTERNAL_SERVER_ERROR;
+            }
         }
         else
         {
