@@ -4,10 +4,10 @@
 project(modulesmanagertests)
 
 set(modulesmanagertests_files
-    ../Log.c 
+    ../Log.c
     ../ManagementModule.cpp
     ../ModulesManager.cpp
-    ../MpiServer.cpp)
+    ../MpiServer.c)
 
 set(CMAKE_CXX_STANDARD 14)
 
