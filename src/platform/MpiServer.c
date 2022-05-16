@@ -129,16 +129,18 @@ static void CallMpiClose(MPI_HANDLE handle)
 
 static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
 {
-    int status = MPI_OK;
+    int status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
-    }
-
-    if (MPI_OK != (status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize)))
-    {
-        OsConfigLogError(GetPlatformLog(), "MpiSet(%s, %s) failed, session %p ('%s'): %d", componentName, objectName, handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s'), failed: %d", componentName, objectName, handle, (char*)handle, status);
+        }
     }
 
     return status;
@@ -146,16 +148,18 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
 
 static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
 {
-    int status = MPI_OK;
+    int status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiGet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
-    }
-
-    if (MPI_OK != (status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize)))
-    {
-        OsConfigLogError(GetPlatformLog(), "MpiGet(%s, %s) failed, session %p ('%s'): %d", componentName, objectName, handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s'), failed: %d", componentName, objectName, handle, (char*)handle, status);
+        }
     }
 
     return status;
@@ -163,16 +167,18 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
 
 static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
 {
-    int status = MPI_OK;
+    int status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiSetDesired request, session %p ('%s'), payload '%s'", handle, (char*)handle, payload);
-    }
-
-    if (MPI_OK != (status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize)))
-    {
-        OsConfigLogError(GetPlatformLog(), "MpiSetDesired failed, session %p ('%s'): %d", handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired request, session %p ('%s')", handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
+        }
     }
 
     return status;
@@ -180,16 +186,18 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
 
 static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
 {
-    int status = MPI_OK;
+    int status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "Received MpiGetReported request, session %p ('%s')", handle, (char*)handle);
-    }
-
-    if (MPI_OK != (status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize)))
-    {
-        OsConfigLogError(GetPlatformLog(), "MpiGetReported failed, session %p ('%s'): %d", handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiGetReported request, session %p ('%s')", handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGetReported request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
+        }
     }
 
     return status;
