@@ -33,7 +33,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_kernelNameObject = "kernelName";
         const char* m_kernelReleaseObject = "kernelRelease";
         const char* m_kernelVersionObject = "kernelVersion";
-        const char* m_productVendorObject  = "manufacturer";
+        const char* m_productVendorObject  = "productVendor";
         const char* m_productNameObject = "productName";
         const char* m_productVersionObject = "productVersion";
         const char* m_systemCapabilitiesObject = "systemCapabilities";

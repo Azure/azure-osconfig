@@ -34,6 +34,10 @@
     },
     {
       "ComponentName": "DeviceInfo",
+      "ObjectName": "freeMemory"
+    },
+    {
+      "ComponentName": "DeviceInfo",
       "ObjectName": "kernelName"
     },
     {
@@ -46,11 +50,23 @@
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "manufacturer"
+      "ObjectName": "productVendor"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "model"
+      "ObjectName": "productName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "productVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "systemCapabilities"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "systemConfiguration"
     },
     {
       "ComponentName": "Firewall",

@@ -1107,7 +1107,7 @@ long GetTotalMemory(void* log)
     return totalMemory;
 }
 
-long GetTotalMemory(void* log)
+long GetFreeMemory(void* log)
 {
     long freeMemory = 0;
     char* textResult = GetHardwareProperty(OS_FREE_MEMORY_COMMAND, true, log);
@@ -1119,10 +1119,10 @@ long GetTotalMemory(void* log)
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(log, "Free memory: %lu kB", totalMemory);
+        OsConfigLogInfo(log, "Free memory: %lu kB", freeMemory);
     }
 
-    return totalMemory;
+    return freeMemory;
 }
 
 char* GetProductName(void* log)
