@@ -628,7 +628,7 @@ int main(int argc, char *argv[])
     cpuVendor = GetCpuVendor(GetLog());
     cpuModel = GetCpuModel(GetLog());
     totalMemory = GetTotalMemory(GetLog());
-    totalMemory = GetFreeMemory(GetLog());
+    freeMemory = GetFreeMemory(GetLog());
     kernelName = GetOsKernelName(GetLog());
     kernelRelease = GetOsKernelRelease(GetLog());
     kernelVersion = GetOsKernelVersion(GetLog());
