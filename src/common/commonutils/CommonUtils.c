@@ -37,10 +37,14 @@
 #define OS_CPU_VENDOR_COMMAND "lscpu | grep \"Vendor ID:\""
 #define OS_CPU_MODEL_COMMAND "lscpu | grep \"Model name:\""
 #define OS_TOTAL_MEMORY_COMMAND "grep MemTotal /proc/meminfo"
+#define OS_FREE_MEMORY_COMMAND "grep MemFree /proc/meminfo"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
-#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"product:\""
-#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"vendor:\""
+#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"product:\""
+#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"vendor:\""
+#define OS_PRODUCT_VERSION_COMMAND "lshw -c system | grep -m 1 \"version:\""
+#define OS_SYSTEM_CONFIGURATION_COMMAND "lshw -c system | grep -m 1 \"configuration:\""
+#define OS_SYSTEM_CAPABILITIES_COMMAND "lshw -c system | grep -m 1 \"capabilities:\""
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
@@ -1103,6 +1107,24 @@ long GetTotalMemory(void* log)
     return totalMemory;
 }
 
+long GetFreeMemory(void* log)
+{
+    long freeMemory = 0;
+    char* textResult = GetHardwareProperty(OS_FREE_MEMORY_COMMAND, true, log);
+
+    if (NULL != textResult)
+    {
+        freeMemory = atol(textResult);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Free memory: %lu kB", freeMemory);
+    }
+
+    return freeMemory;
+}
+
 char* GetProductName(void* log)
 {
     char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
@@ -1131,6 +1153,42 @@ char* GetProductVendor(void* log)
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Product vendor: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetProductVersion(void* log)
+{
+    char* textResult = GetHardwareProperty(OS_PRODUCT_VERSION_COMMAND, false, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product version: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetSystemCapabilities(void* log)
+{
+    char* textResult = GetHardwareProperty(OS_SYSTEM_CAPABILITIES_COMMAND, false, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product capabilities: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+char* GetSystemConfiguration(void* log)
+{
+    char* textResult = GetHardwareProperty(OS_SYSTEM_CONFIGURATION_COMMAND, false, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "Product configuration: '%s'", textResult);
     }
 
     return textResult;

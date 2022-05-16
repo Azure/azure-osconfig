@@ -64,8 +64,12 @@ char* GetCpuType(void* log);
 char* GetCpuVendor(void* log);
 char* GetCpuModel(void* log);
 long GetTotalMemory(void* log);
+long GetFreeMemory(void* log);
 char* GetProductName(void* log);
 char* GetProductVendor(void* log);
+char* GetProductVersion(void* log);
+char* GetSystemCapabilities(void* log);
+char* GetSystemConfiguration(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);

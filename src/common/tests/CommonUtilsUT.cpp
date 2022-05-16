@@ -797,6 +797,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* cpuVendor = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
+    long freeMemory = 0;
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
@@ -807,6 +808,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
     EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
+    EXPECT_NE(0, freeMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
