@@ -15,12 +15,12 @@ SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 
 project(osconfig-platform)
 
-set(osconfig_platform_files 
+set(osconfig_platform_files
     ./Log.c
     ./Main.c
     ./ManagementModule.cpp
     ./ModulesManager.cpp
-    ./MpiServer.cpp)
+    ./MpiServer.c)
 
 set(target_name osconfig-platform)
 

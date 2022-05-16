@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <libgen.h>
@@ -32,7 +33,7 @@
 #include <parson.h>
 
 #ifdef __cplusplus
-    
+
 #include <map>
 #include <memory>
 #include <mutex>
