@@ -801,7 +801,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
-    char* productVersion = NULL;
     char* systemCapabilities = NULL;
 
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
@@ -814,7 +813,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
-    EXPECT_NE(nullptr, productVersion = GetProductVersion(nullptr));
     EXPECT_NE(nullptr, systemCapabilities = GetSystemCapabilities(nullptr));
 
     FREE_MEMORY(osName);
@@ -825,7 +823,6 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);
-    FREE_MEMORY(productVersion);
     FREE_MEMORY(systemCapabilities);
 }
 
