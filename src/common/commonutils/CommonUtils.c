@@ -39,8 +39,13 @@
 #define OS_TOTAL_MEMORY_COMMAND "grep MemTotal /proc/meminfo"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
-#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"product:\""
-#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "sudo lshw -c system | grep -m 1 \"vendor:\""
+#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"product:\""
+#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"vendor:\""
+
+#define OS_FREE_MEMORY_COMMAND "grep MemFree /proc/meminfo"
+#define OS_PRODUCT_CONFIGURATION_COMMAND "lshw -c system | grep -m 1 \"configuration:\""
+#define OS_PRODUCT_CAPABILITIES_COMMAND "lshw -c system | grep -m 1 \"capabilities:\""
+#define OS_PRODUCT_VERSION_COMMAND "lshw -c system | grep -m 1 \"version:\""
 
 static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
 static const char g_commandSeparator[] = " > ";
