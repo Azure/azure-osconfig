@@ -797,9 +797,12 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* cpuVendor = NULL;
     char* cpuModel = NULL;
     long totalMemory = 0;
+    long freeMemory = 0;
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
+    char* productVersion = NULL;
+    char* systemCapabilities = NULL;
 
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
     EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
@@ -807,9 +810,12 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
     EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
+    EXPECT_NE(0, freeMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
+    EXPECT_NE(nullptr, productVersion = GetProductVersion(nullptr));
+    EXPECT_NE(nullptr, systemCapabilities = GetSystemCapabilities(nullptr));
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
@@ -819,6 +825,8 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);
+    FREE_MEMORY(productVersion);
+    FREE_MEMORY(systemCapabilities);
 }
 
 char* AllocateAndCopyTestString(const char* source)

@@ -43,6 +43,12 @@
           "schema": "integer"
         },
         {
+          "name": "freeMemory",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "integer"
+        },
+        {
           "name": "kernelName",
           "type": "mimObject",
           "desired": false,
@@ -61,13 +67,31 @@
           "schema": "string"
         },
         {
-          "name": "manufacturer",
+          "name": "productVendor",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "model",
+          "name": "productName",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "productVersion",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "systemCapabilities",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "systemConfiguration",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
