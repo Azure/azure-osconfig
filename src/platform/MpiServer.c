@@ -270,7 +270,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                     {
                         OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for response", uri);
                         status = HTTP_INTERNAL_SERVER_ERROR;
-                        *responseSize = 0;
                     }
 
                     FREE_MEMORY(uuid);
@@ -279,7 +278,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 {
                     OsConfigLogError(GetPlatformLog(), "%s: failed to open client '%s'", client, uri);
                     status = HTTP_INTERNAL_SERVER_ERROR;
-                    *responseSize = 0;
                 }
             }
         }
@@ -388,20 +386,20 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     {
         switch (statusCode)
         {
-        case HTTP_OK:
-            strcpy(reason, "OK");
-            break;
-        case HTTP_BAD_REQUEST:
-            strcpy(reason, "Bad Request");
-            break;
-        case HTTP_NOT_FOUND:
-            strcpy(reason, "Not Found");
-            break;
-        case HTTP_INTERNAL_SERVER_ERROR:
-            strcpy(reason, "Internal Server Error");
-            break;
-        default:
-            strcpy(reason, "Unknown");
+            case HTTP_OK:
+                strcpy(reason, "OK");
+                break;
+            case HTTP_BAD_REQUEST:
+                strcpy(reason, "Bad Request");
+                break;
+            case HTTP_NOT_FOUND:
+                strcpy(reason, "Not Found");
+                break;
+            case HTTP_INTERNAL_SERVER_ERROR:
+                strcpy(reason, "Internal Server Error");
+                break;
+            default:
+                strcpy(reason, "Unknown");
         }
     }
 
