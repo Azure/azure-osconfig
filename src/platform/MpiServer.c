@@ -57,54 +57,6 @@ typedef struct MPI_CALLS
     MpiGetReportedCall mpiGetReported;
 } MPI_CALLS;
 
-static const char* JsonGetString(JSON_Object* object, const char* member)
-{
-    const char* value = NULL;
-    JSON_Value* jsonValue = NULL;
-
-    if ((NULL != object) && (NULL != member))
-    {
-        if (NULL != (jsonValue = json_object_get_value(object, member)))
-        {
-            value = json_value_get_string(jsonValue);
-        }
-    }
-
-    return value;
-}
-
-static int JsonGetNumber(JSON_Object* object, const char* member)
-{
-    int value = -1;
-    JSON_Value* jsonValue = NULL;
-
-    if ((NULL != object) && (NULL != member))
-    {
-        if (NULL != (jsonValue = json_object_get_value(object, member)))
-        {
-            value = (int)json_value_get_number(jsonValue);
-        }
-    }
-
-    return value;
-}
-
-static const char* JsonSerializeToString(JSON_Object* object, const char* member)
-{
-    const char* value = NULL;
-    JSON_Value* jsonValue = NULL;
-
-    if ((NULL != object) && (NULL != member))
-    {
-        if (NULL != (jsonValue = json_object_get_value(object, member)))
-        {
-            value = json_serialize_to_string(jsonValue);
-        }
-    }
-
-    return value;
-}
-
 static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MPI_HANDLE handle = NULL;
@@ -205,18 +157,23 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
 
 HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers)
 {
-    HTTP_STATUS status = HTTP_OK;
     JSON_Value* rootValue = NULL;
-    JSON_Object* requestObject = NULL;
+    JSON_Value* clientValue = NULL;
+    JSON_Value* componentValue = NULL;
+    JSON_Value* objectValue = NULL;
+    JSON_Value* payloadValue = NULL;
+    JSON_Value* maxPayloadSizeValue = NULL;
+    JSON_Object* rootObject = NULL;
     int mpiStatus = MPI_OK;
     char* uuid = NULL;
     const char* client = NULL;
-    int maxPayloadSizeBytes = 0;
     const char* component = NULL;
     const char* object = NULL;
     const char* payload = NULL;
+    int maxPayloadSizeBytes = 0;
     int estimatedSize = 0;
     const char* responseFormat = "\"%s\"";
+    HTTP_STATUS status = HTTP_OK;
 
     if (NULL == uri)
     {
@@ -243,7 +200,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to parse request body", uri);
         status = HTTP_BAD_REQUEST;
     }
-    else if (NULL == (requestObject = json_value_get_object(rootValue)))
+    else if (NULL == (rootObject = json_value_get_object(rootValue)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to get object from request body", uri);
         status = HTTP_BAD_REQUEST;
@@ -252,14 +209,34 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     {
         if (0 == strcmp(uri, MPI_OPEN_URI))
         {
-            if (NULL == (client = JsonGetString(requestObject, g_clientName)))
+            if (NULL == (clientValue = json_object_get_value(rootObject, g_clientName)))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_clientName);
                 status = HTTP_BAD_REQUEST;
             }
-            else if (0 > (maxPayloadSizeBytes = JsonGetNumber(requestObject, g_maxPayloadSizeBytes)))
+            else if (JSONString != json_value_get_type(clientValue))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_clientName);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (NULL == (client = json_value_get_string(clientValue)))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: failed to get string from '%s'", uri, g_clientName);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (NULL == (maxPayloadSizeValue = json_object_get_value(rootObject, g_maxPayloadSizeBytes)))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_maxPayloadSizeBytes);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (JSONNumber != json_value_get_type(maxPayloadSizeValue))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a number", uri, g_maxPayloadSizeBytes);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (0 > (maxPayloadSizeBytes = (int)json_value_get_number(maxPayloadSizeValue)))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: '%s' is negative: %d", uri, g_maxPayloadSizeBytes, maxPayloadSizeBytes);
                 status = HTTP_BAD_REQUEST;
             }
             else
@@ -291,87 +268,119 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
         }
         else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || (0 == strcmp(uri, MPI_SET_URI)) || (0 == strcmp(uri, MPI_GET_URI)) || (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
         {
-            if (NULL != (client = JsonGetString(requestObject, g_clientSession)))
-            {
-                if (0 == strcmp(uri, MPI_CLOSE_URI))
-                {
-                    handlers.mpiClose((MPI_HANDLE)client);
-                    status = HTTP_OK;
-                }
-                else if ((0 == strcmp(uri, MPI_SET_URI)) || (0 == strcmp(uri, MPI_GET_URI)))
-                {
-                    if (NULL == (client = JsonGetString(requestObject, g_clientSession)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_clientSession);
-                        status = HTTP_BAD_REQUEST;
-                    }
-                    else if (NULL == (component = JsonGetString(requestObject, g_componentName)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_componentName);
-                        status = HTTP_BAD_REQUEST;
-                    }
-                    else if (NULL == (object = JsonGetString(requestObject, g_objectName)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_objectName);
-                        status = HTTP_BAD_REQUEST;
-                    }
-                    else
-                    {
-                        if (0 == strcmp(uri, MPI_SET_URI))
-                        {
-                            if (NULL != (payload = JsonSerializeToString(requestObject, g_payload)))
-                            {
-                                if (MPI_OK != (mpiStatus = handlers.mpiSet((MPI_HANDLE)client, component, object, (MPI_JSON_STRING)payload, strlen(payload))))
-                                {
-                                    status = HTTP_INTERNAL_SERVER_ERROR;
-                                    if (IsFullLoggingEnabled())
-                                    {
-                                        OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                OsConfigLogError(GetPlatformLog(), "%s: failed to serialize payload from request body", uri);
-                                status = HTTP_BAD_REQUEST;
-                            }
-                        }
-                        else if (MPI_OK != (mpiStatus = handlers.mpiGet((MPI_HANDLE)client, component, object, response, responseSize)))
-                        {
-                            status = HTTP_INTERNAL_SERVER_ERROR;
-                            if (IsFullLoggingEnabled())
-                            {
-                                OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
-                            }
-                        }
-                    }
-                }
-                else if (0 == strcmp(uri, MPI_SET_DESIRED_URI))
-                {
-                    if (NULL == (payload = JsonSerializeToString(requestObject, g_payload)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_payload);
-                        status = HTTP_BAD_REQUEST;
-                    }
-                    else if (MPI_OK != (mpiStatus = handlers.mpiSetDesired((MPI_HANDLE)client, (MPI_JSON_STRING)payload, strlen(payload))))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
-                        status = HTTP_INTERNAL_SERVER_ERROR;
-                    }
-                }
-                else if (0 == strcmp(uri, MPI_GET_REPORTED_URI))
-                {
-                    if (MPI_OK != (mpiStatus = handlers.mpiGetReported((MPI_HANDLE)client, response, responseSize)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
-                        status = HTTP_INTERNAL_SERVER_ERROR;
-                    }
-                }
-            }
-            else
+            if (NULL == (clientValue = json_object_get_value(rootObject, g_clientSession)))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_clientSession);
                 status = HTTP_BAD_REQUEST;
+            }
+            else if (JSONString != json_value_get_type(clientValue))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_clientSession);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (NULL == (client = json_value_get_string(clientValue)))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: failed to get string from '%s'", uri, g_clientSession);
+                status = HTTP_BAD_REQUEST;
+            }
+            else if (0 == strcmp(uri, MPI_CLOSE_URI))
+            {
+                handlers.mpiClose((MPI_HANDLE)client);
+                status = HTTP_OK;
+            }
+            else if ((0 == strcmp(uri, MPI_SET_URI)) || (0 == strcmp(uri, MPI_GET_URI)))
+            {
+                if (NULL == (componentValue = json_object_get_value(rootObject, g_componentName)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_componentName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (JSONString != json_value_get_type(componentValue))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_componentName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (NULL == (component = json_value_get_string(componentValue)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to get string from '%s'", uri, g_componentName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (NULL == (objectValue = json_object_get_value(rootObject, g_objectName)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_objectName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (JSONString != json_value_get_type(objectValue))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_objectName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (NULL == (object = json_value_get_string(objectValue)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to get string from '%s'", uri, g_objectName);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else
+                {
+                    if (0 == strcmp(uri, MPI_SET_URI))
+                    {
+                        if (NULL == (payloadValue = json_object_get_value(rootObject, g_payload)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_payload);
+                            status = HTTP_BAD_REQUEST;
+                        }
+                        else if (NULL == (payload = json_serialize_to_string(payloadValue)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "%s: failed to get payload string", uri);
+                            status = HTTP_BAD_REQUEST;
+                        }
+                        else
+                        {
+                            if (MPI_OK != (mpiStatus = handlers.mpiSet((MPI_HANDLE)client, component, object, (MPI_JSON_STRING)payload, strlen(payload))))
+                            {
+                                status = HTTP_INTERNAL_SERVER_ERROR;
+                                if (IsFullLoggingEnabled())
+                                {
+                                    OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
+                                }
+                            }
+                        }
+                    }
+                    else if (MPI_OK != (mpiStatus = handlers.mpiGet((MPI_HANDLE)client, component, object, response, responseSize)))
+                    {
+                        status = HTTP_INTERNAL_SERVER_ERROR;
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
+                        }
+                    }
+                }
+            }
+            else if (0 == strcmp(uri, MPI_SET_DESIRED_URI))
+            {
+                if (NULL == (payloadValue = json_object_get_value(rootObject, g_payload)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_payload);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (NULL == (payload = json_serialize_to_string(payloadValue)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to get payload string", uri);
+                    status = HTTP_BAD_REQUEST;
+                }
+                else if (MPI_OK != (mpiStatus = handlers.mpiSetDesired((MPI_HANDLE)client, (MPI_JSON_STRING)payload, strlen(payload))))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
+                    status = HTTP_INTERNAL_SERVER_ERROR;
+                }
+            }
+            else if (0 == strcmp(uri, MPI_GET_REPORTED_URI))
+            {
+                if (MPI_OK != (mpiStatus = handlers.mpiGetReported((MPI_HANDLE)client, response, responseSize)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
+                    status = HTTP_INTERNAL_SERVER_ERROR;
+                }
             }
         }
         else
@@ -414,10 +423,11 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-static void HandleConnection(int socketHandle, MPI_CALLS mpiCalls)
+static void* MpiServerWorker(void* arg)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
+    int socketHandle = -1;
     char* uri = NULL;
     int contentLength = 0;
     char* requestBody = NULL;
@@ -430,72 +440,7 @@ static void HandleConnection(int socketHandle, MPI_CALLS mpiCalls)
     int actualSize = 0;
     ssize_t bytes = 0;
 
-    if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
-    {
-        OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
-        status = HTTP_BAD_REQUEST;
-    }
-
-    if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
-    {
-        if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
-        {
-            OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
-            status = HTTP_BAD_REQUEST;
-        }
-
-        memset(requestBody, 0, contentLength + 1);
-
-        if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
-        {
-            OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
-            status = HTTP_BAD_REQUEST;
-        }
-    }
-
-    if (status == HTTP_OK)
-    {
-        status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
-    }
-
-    FREE_MEMORY(requestBody);
-
-    httpReason = HttpReasonAsString(status);
-    estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(httpReason) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
-
-    if (NULL == (buffer = (char*)malloc(estimatedSize)))
-    {
-        OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
-        return;
-    }
-
-    memset(buffer, 0, estimatedSize);
-
-    snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
-    actualSize = (int)strlen(buffer);
-
-    FREE_MEMORY(responseBody);
-
-    bytes = write(socketHandle, buffer, actualSize);
-
-    if (bytes != actualSize)
-    {
-        OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
-    }
-
-    if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(GetPlatformLog(), "%s: HTTP response sent (%d bytes)\n%s", uri, (int)bytes, buffer);
-    }
-
-    FREE_MEMORY(httpReason);
-    FREE_MEMORY(buffer);
-    FREE_MEMORY(uri);
-}
-
-static void* Worker(void* arg)
-{
-    int socketHandle = -1;
+    UNUSED(arg);
 
     MPI_CALLS mpiCalls = {
         CallMpiOpen,
@@ -506,8 +451,6 @@ static void* Worker(void* arg)
         CallMpiGetReported
     };
 
-    UNUSED(arg);
-
     while (g_serverActive)
     {
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
@@ -517,7 +460,58 @@ static void* Worker(void* arg)
                 OsConfigLogInfo(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
-            HandleConnection(socketHandle, mpiCalls);
+            if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
+            {
+                OsConfigLogError(GetPlatformLog(), "Failed to read request URI %d", socketHandle);
+                status = HTTP_BAD_REQUEST;
+            }
+
+            if ((contentLength = ReadHttpContentLengthFromSocket(socketHandle, GetPlatformLog())))
+            {
+                if (NULL == (requestBody = (char*)malloc(contentLength + 1)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP body, Content-Length %d", uri, contentLength);
+                    status = HTTP_BAD_REQUEST;
+                }
+
+                memset(requestBody, 0, contentLength + 1);
+
+                if (contentLength != (int)(bytes = read(socketHandle, requestBody, contentLength)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to read complete HTTP body, Content-Length %d, bytes read %d", uri, contentLength, (int)bytes);
+                    status = HTTP_BAD_REQUEST;
+                }
+            }
+
+            if (status == HTTP_OK)
+            {
+                status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
+            }
+
+            FREE_MEMORY(requestBody);
+
+            httpReason = HttpReasonAsString(status);
+            estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(httpReason) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
+
+            if (NULL == (buffer = (char*)malloc(estimatedSize)))
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
+                continue;
+            }
+
+            memset(buffer, 0, estimatedSize);
+
+            snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
+            actualSize = (int)strlen(buffer);
+
+            FREE_MEMORY(responseBody);
+
+            bytes = write(socketHandle, buffer, actualSize);
+
+            if (bytes != actualSize)
+            {
+                OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
+            }
 
             if (0 != close(socketHandle))
             {
@@ -528,6 +522,10 @@ static void* Worker(void* arg)
             {
                 OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
+
+            FREE_MEMORY(httpReason);
+            FREE_MEMORY(buffer);
+            FREE_MEMORY(uri);
         }
     }
 
@@ -564,7 +562,7 @@ void MpiApiInitialize(void)
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
-                g_worker = pthread_create(&g_worker, NULL, Worker, NULL);;
+                g_worker = pthread_create(&g_worker, NULL, MpiServerWorker, NULL);;
             }
             else
             {
