@@ -453,6 +453,8 @@ static void* MpiServerWorker(void* arg)
 
     while (g_serverActive)
     {
+        status = HTTP_OK;
+
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
             if (IsFullLoggingEnabled())
@@ -485,32 +487,32 @@ static void* MpiServerWorker(void* arg)
 
             if (status == HTTP_OK)
             {
+                OsConfigLogInfo(GetPlatformLog(), "%s: %d\n'%s'", uri, contentLength, requestBody);
                 status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
             }
 
-            FREE_MEMORY(requestBody);
 
             httpReason = HttpReasonAsString(status);
             estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(httpReason) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
 
-            if (NULL == (buffer = (char*)malloc(estimatedSize)))
+            if (NULL != (buffer = (char*)malloc(estimatedSize)))
+            {
+                memset(buffer, 0, estimatedSize);
+
+                snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
+                actualSize = (int)strlen(buffer);
+
+
+                bytes = write(socketHandle, buffer, actualSize);
+
+                if (bytes != actualSize)
+                {
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
+                }
+            }
+            else
             {
                 OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for HTTP response, %d bytes of %d", uri, 0, estimatedSize);
-                continue;
-            }
-
-            memset(buffer, 0, estimatedSize);
-
-            snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
-            actualSize = (int)strlen(buffer);
-
-            FREE_MEMORY(responseBody);
-
-            bytes = write(socketHandle, buffer, actualSize);
-
-            if (bytes != actualSize)
-            {
-                OsConfigLogError(GetPlatformLog(), "%s: failed to write complete HTTP response, %d bytes of %d", uri, (int)bytes, actualSize);
             }
 
             if (0 != close(socketHandle))
@@ -523,6 +525,8 @@ static void* MpiServerWorker(void* arg)
                 OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
+            FREE_MEMORY(requestBody);
+            FREE_MEMORY(responseBody);
             FREE_MEMORY(httpReason);
             FREE_MEMORY(buffer);
             FREE_MEMORY(uri);
