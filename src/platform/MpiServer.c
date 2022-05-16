@@ -177,32 +177,32 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
 
     if (NULL == uri)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest: called with invalid null URI");
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall: called with invalid null URI");
         status = HTTP_BAD_REQUEST;
     }
     else if (NULL == requestBody)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null request body", uri);
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall(%s): called with invalid null request body", uri);
         status = HTTP_BAD_REQUEST;
     }
     else if (NULL == response)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null response", uri);
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall(%s): called with invalid null response", uri);
         status = HTTP_BAD_REQUEST;
     }
     else if (NULL == responseSize)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): called with invalid null response size", uri);
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall(%s): called with invalid null response size", uri);
         status = HTTP_BAD_REQUEST;
     }
     else if (NULL == (rootValue = json_parse_string(requestBody)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to parse request body", uri);
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall(%s): failed to parse request body", uri);
         status = HTTP_BAD_REQUEST;
     }
     else if (NULL == (rootObject = json_value_get_object(rootValue)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiRequest(%s): failed to get object from request body", uri);
+        OsConfigLogError(GetPlatformLog(), "HandleMpiCall(%s): failed to get object from request body", uri);
         status = HTTP_BAD_REQUEST;
     }
     else
