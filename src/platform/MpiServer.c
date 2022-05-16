@@ -40,49 +40,14 @@ typedef int(*MPI_GET)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING*, in
 typedef int(*MPI_SET_DESIRED)(MPI_HANDLE, const MPI_JSON_STRING, const int);
 typedef int(*MPI_GET_REPORTED)(MPI_HANDLE, MPI_JSON_STRING*, int*);
 
-typedef struct MPI_OPEN_CONTEXT
-{
-    const char* clientName;
-    int maxPayloadSizeBytes;
-} MPI_OPEN_CONTEXT;
-
-typedef struct MPI_CLOSE_CONTEXT {
-    MPI_HANDLE clientSession;
-} MPI_CLOSE_CONTEXT;
-
-typedef struct MPI_SET_CONTEXT {
-    MPI_HANDLE clientSession;
-    const char* componentName;
-    const char* objectName;
-    MPI_JSON_STRING payload;
-    int payloadSizeBytes;
-} MPI_SET_CONTEXT;
-
-typedef struct MPI_GET_CONTEXT {
-    MPI_HANDLE clientSession;
-    const char* componentName;
-    const char* objectName;
-    MPI_JSON_STRING* payload;
-    int* payloadSizeBytes;
-} MPI_GET_CONTEXT;
-
-// typedef union MPI_CONTEXT
-// {
-//     MPI_OPEN_CONTEXT open;
-//     MPI_CLOSE_CONTEXT close;
-//     MPI_SET_CONTEXT set;
-//     MPI_GET_CONTEXT get;
-// } MPI_CONTEXT;
-
-// handler(response, responseLength, context)
-typedef HTTP_STATUS(*MPI_HANDLER)(char**, int*, void*);
-
 typedef struct
 {
-    MPI_HANDLER open;
-    MPI_HANDLER close;
-    MPI_HANDLER set;
-    MPI_HANDLER get;
+    MPI_OPEN mpiOpen;
+    MPI_CLOSE mpiClose;
+    MPI_SET mpiSet;
+    MPI_GET mpiGet;
+    MPI_SET_DESIRED mpiSetDesired;
+    MPI_GET_REPORTED mpiGetReported;
 } MPI_HANDLERS;
 
 static const char* JsonGetString(JSON_Object* object, const char* member)
@@ -133,44 +98,23 @@ static const char* JsonSerializeToString(JSON_Object* object, const char* member
     return value;
 }
 
-static HTTP_STATUS CallMpiOpen(char** response, int* responseSize, void* mpiContext)
+static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
-    HTTP_STATUS status = HTTP_OK;
-    char* uuid = NULL;
-    int estimatedSize = 0;
-    const char* responseFormat = "\"%s\"";
-    MPI_OPEN_CONTEXT* context = (MPI_OPEN_CONTEXT*)mpiContext;
+    MPI_HANDLE handle = NULL;
 
-    if (NULL != (uuid = (char*)MpiOpen(context->clientName, context->maxPayloadSizeBytes)))
+    if (NULL != (handle = MpiOpen(clientName, maxPayloadSizeBytes)))
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(GetPlatformLog(), "Created session '%s' for client '%s'", uuid, context->clientName);
+            OsConfigLogInfo(GetPlatformLog(), "Created session for client '%s': %p ('%s')", clientName, handle, (char*)handle);
         }
-
-        estimatedSize = strlen(responseFormat) + strlen(uuid) + 1;
-
-        if (NULL != (*response = (char*)malloc(estimatedSize)))
-        {
-            snprintf(*response, estimatedSize, responseFormat, uuid);
-            *responseSize = strlen(*response);
-        }
-        else
-        {
-            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
-            status = HTTP_INTERNAL_SERVER_ERROR;
-            *responseSize = 0;
-        }
-
-        FREE_MEMORY(uuid);
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiOpen failed to create a session for client '%s'", context->clientName);
-        status = HTTP_INTERNAL_SERVER_ERROR;
+        OsConfigLogError(GetPlatformLog(), "MpiOpen failed to create a session for client '%s'", clientName);
     }
 
-    return status;
+    return handle;
 }
 
 static HTTP_STATUS CallMpiClose(char** response, int* responseSize, void* mpiContext)
@@ -325,16 +269,17 @@ static HTTP_STATUS CallMpiGetReported(JSON_Object* request, char** response, int
 // make all the handlers as small as possible to only make calls in the the MPI C interface
 // create a typedef func ptr for the handler type that recieves the request params and response/ptrs
 
-HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_HANDLER handlers)
+HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_HANDLERS handlers)
 {
     HTTP_STATUS status = HTTP_OK;
     JSON_Value* rootValue = NULL;
     JSON_Object* requestObject = NULL;
 
-    MPI_OPEN_CONTEXT mpiOpenContext = { 0 };
-    MPI_CLOSE_CONTEXT mpiCloseContext = { 0 };
-    MPI_SET_CONTEXT mpiSetContext = { 0 };
-    MPI_GET_CONTEXT mpiGetContext = { 0 };
+    char* uuid = NULL;
+    char* clientName = NULL;
+    int maxPayloadSizeBytes = 0;
+    int estimatedSize = 0;
+    const char* responseFormat = "\"%s\"";
 
     if (NULL == uri)
     {
@@ -370,12 +315,12 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     {
         if (0 == strcmp(uri, "MpiOpen"))
         {
-            if (NULL == (mpiOpenContext.clientName = JsonGetString(requestObject, g_clientName)))
+            if (NULL == (clientName = JsonGetString(requestObject, g_clientName)))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to parse client name from request body");
                 status = HTTP_BAD_REQUEST;
             }
-            else if (0 > (mpiOpenContext.maxPayloadSizeBytes = JsonGetNumber(requestObject, g_maxPayloadSizeBytes)))
+            else if (0 > (maxPayloadSizeBytes = JsonGetNumber(requestObject, g_maxPayloadSizeBytes)))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to parse max payload size from request body");
                 status = HTTP_BAD_REQUEST;
@@ -384,60 +329,86 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
             {
                 if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", mpiOpenContext.clientName, mpiOpenContext.maxPayloadSizeBytes);
+                    OsConfigLogInfo(GetPlatformLog(), "Received MpiOpen request for client '%s' with max payload size %d", clientName, maxPayloadSizeBytes);
                 }
 
-                status = handlers.open(response, responseSize, &mpiOpenContext);
+                uuid = (char*)handlers.mpiOpen(clientName, maxPayloadSizeBytes);
+
+                if (uuid)
+                {
+                    estimatedSize = strlen(responseFormat) + strlen(uuid) + 1;
+
+                    if (NULL != (*response = (char*)malloc(estimatedSize)))
+                    {
+                        snprintf(*response, estimatedSize, responseFormat, uuid);
+                        *responseSize = strlen(*response);
+                    }
+                    else
+                    {
+                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for response");
+                        status = HTTP_INTERNAL_SERVER_ERROR;
+                        *responseSize = 0;
+                    }
+
+                    FREE_MEMORY(uuid);
+                }
+                else
+                {
+                    OsConfigLogError(GetPlatformLog(), "Failed to open client '%s'", clientName);
+                    status = HTTP_INTERNAL_SERVER_ERROR;
+                    *responseSize = 0;
+                }
+
             }
         }
         else if (0 == strcmp(uri, "MpiClose"))
         {
-            if (NULL == (mpiCloseContext.clientSession = JsonGetString(requestObject, g_clientSession)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-                status = HTTP_BAD_REQUEST;
-            }
-            else
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", mpiCloseContext.clientSession);
-                }
+            // if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
+            // {
+            //     OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
+            //     status = HTTP_BAD_REQUEST;
+            // }
+            // else
+            // {
+            //     if (IsFullLoggingEnabled())
+            //     {
+            //         OsConfigLogInfo(GetPlatformLog(), "Received MpiClose request, session '%s'", clientSession);
+            //     }
 
-                status = handlers.close(response, responseSize, &mpiCloseContext);
-            }
+            //     status = handlers.close(response, responseSize, &mpiCloseContext);
+            // }
         }
         else if (0 == strcmp(uri, "MpiSet"))
         {
-            if (NULL == (mpiCloseContext.clientSession = JsonGetString(requestObject, g_clientSession)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
-                status = HTTP_BAD_REQUEST;
-            }
-            else if (NULL == (mpiSetContext.componentName = JsonGetString(requestObject, g_componentName)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Failed to parse component from request body");
-                status = HTTP_BAD_REQUEST;
-            }
-            else if (NULL == (mpiSetContext.objectName = JsonGetString(requestObject, g_objectName)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Failed to parse object from request body");
-                status = HTTP_BAD_REQUEST;
-            }
-            else if (NULL == (mpiSetContext.payload = (MPI_JSON_STRING)JsonSerializeToString(requestObject, g_payload)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Failed to parse payload from request body");
-                status = HTTP_BAD_REQUEST;
-            }
-            else
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
-                }
+            // if (NULL == (clientSession = JsonGetString(requestObject, g_clientSession)))
+            // {
+            //     OsConfigLogError(GetPlatformLog(), "Failed to parse client session from request body");
+            //     status = HTTP_BAD_REQUEST;
+            // }
+            // else if (NULL == (componentName = JsonGetString(requestObject, g_componentName)))
+            // {
+            //     OsConfigLogError(GetPlatformLog(), "Failed to parse component from request body");
+            //     status = HTTP_BAD_REQUEST;
+            // }
+            // else if (NULL == (objectName = JsonGetString(requestObject, g_objectName)))
+            // {
+            //     OsConfigLogError(GetPlatformLog(), "Failed to parse object from request body");
+            //     status = HTTP_BAD_REQUEST;
+            // }
+            // else if (NULL == (mpiSetContext.payload = (MPI_JSON_STRING)JsonSerializeToString(requestObject, g_payload)))
+            // {
+            //     OsConfigLogError(GetPlatformLog(), "Failed to parse payload from request body");
+            //     status = HTTP_BAD_REQUEST;
+            // }
+            // else
+            // {
+            //     if (IsFullLoggingEnabled())
+            //     {
+            //         OsConfigLogInfo(GetPlatformLog(), "Received MpiSet(%s, %s) request, session '%s'", component, object, clientSession);
+            //     }
 
-                status = handlers.set(response, responseSize, &mpiSetContext);
-            }
+            //     status = handlers.set(response, responseSize, &mpiSetContext);
+            // }
         }
         else if (0 == strcmp(uri, "MpiGet"))
         {
@@ -499,8 +470,13 @@ static void HandleConnection(int socketHandle)
     int actualSize = 0;
     ssize_t bytes = 0;
 
-    MPI_HANDLER handlers = {
-        CallMpiOpen
+    MPI_HANDLERS handlers = {
+        CallMpiOpen,
+        CallMpiClose,
+        CallMpiSet,
+        CallMpiGet,
+        CallMpiSetDesired,
+        CallMpiGetReported
     };
 
     if (NULL == (uri = ReadUriFromSocket(socketHandle, GetPlatformLog())))
