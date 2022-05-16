@@ -83,7 +83,7 @@ typedef struct
     MPI_HANDLER close;
     MPI_HANDLER set;
     MPI_HANDLER get;
-} MPI_HANDLER;
+} MPI_HANDLERS;
 
 static const char* JsonGetString(JSON_Object* object, const char* member)
 {
