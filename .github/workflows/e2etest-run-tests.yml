@@ -99,6 +99,10 @@ jobs:
         working-directory: ./src/tests/e2etest
         run: | 
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+
+      - name: Stage logs
+        if: always()
+        run: | 
           sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
           sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
 
