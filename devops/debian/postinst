@@ -38,7 +38,7 @@ esac
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
 	# MSFT change: binplace osconfig.toml for the azure-identity-service only if not present
 	# Binplacing a pre-existing install breaks the current identity
-	if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+	if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ] && [ -d /etc/aziot/identityd/config.d/ ]; then
 		cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
 	fi
 	if [ -d /run/systemd/system ]; then
