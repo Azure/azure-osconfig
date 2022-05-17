@@ -167,7 +167,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     JSON_Object* rootObject = NULL;
     int mpiStatus = MPI_OK;
     char* uuid = NULL;
-
     const char* client = NULL;
     const char* component = NULL;
     const char* object = NULL;
@@ -279,7 +278,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_clientSession);
                 status = HTTP_BAD_REQUEST;
             }
-
             else if (JSONString != json_value_get_type(clientValue))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_clientSession);
@@ -430,7 +428,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-void* MpiServerWorker(void* arguments)
+static void* MpiServerWorker(void* arguments)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
