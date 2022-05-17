@@ -430,7 +430,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-void* MpiServerWorker(void)
+void* MpiServerWorker(void* arguments)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
@@ -455,6 +455,8 @@ void* MpiServerWorker(void)
         CallMpiSetDesired,
         CallMpiGetReported
     };
+
+    UNUSED(arguments);
 
     while (g_serverActive)
     {
@@ -545,7 +547,7 @@ void* MpiServerWorker(void)
     return NULL;
 }
 
-void MpiServerInitialize(void*)
+void MpiServerInitialize(void)
 {
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
