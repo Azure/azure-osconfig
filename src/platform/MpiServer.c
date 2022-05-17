@@ -30,9 +30,8 @@ static int g_socketfd = -1;
 static struct sockaddr_un g_socketaddr = {0};
 static socklen_t g_socketlen = 0;
 
-static pthread_t g_worker = 0;
+static pthread_t g_mpiServerWorker = 0;
 static bool g_serverActive = false;
-static bool g_modulesLoaded = false;
 
 typedef enum HTTP_STATUS
 {
@@ -268,7 +267,11 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 }
             }
         }
-        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || (0 == strcmp(uri, MPI_SET_URI)) || (0 == strcmp(uri, MPI_GET_URI)) || (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
+        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || 
+            (0 == strcmp(uri, MPI_SET_URI)) || 
+            (0 == strcmp(uri, MPI_GET_URI)) || 
+            (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || 
+            (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
         {
             if (NULL == (clientValue = json_object_get_value(rootObject, g_clientSession)))
             {
@@ -425,7 +428,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-static void* MpiServerWorker(void* arg)
+static void* MpiServerWorker(void* arguments)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
@@ -442,8 +445,6 @@ static void* MpiServerWorker(void* arg)
     int actualSize = 0;
     ssize_t bytes = 0;
 
-    UNUSED(arg);
-
     MPI_CALLS mpiCalls = {
         CallMpiOpen,
         CallMpiClose,
@@ -453,16 +454,15 @@ static void* MpiServerWorker(void* arg)
         CallMpiGetReported
     };
 
+    UNUSED(arguments);
+
     while (g_serverActive)
     {
         status = HTTP_OK;
 
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
-            if (!g_modulesLoaded)
-            {
-                LoadModules();
-            }
+            AreModulesLoadedAndLoadIfNot();
 
             if (IsFullLoggingEnabled())
             {
@@ -545,7 +545,7 @@ static void* MpiServerWorker(void* arg)
     return NULL;
 }
 
-void MpiApiInitialize(void)
+void MpiServerInitialize(void)
 {
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
@@ -578,7 +578,7 @@ void MpiApiInitialize(void)
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
-                g_worker = pthread_create(&g_worker, NULL, MpiServerWorker, NULL);;
+                g_mpiServerWorker = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
             }
             else
             {
@@ -596,17 +596,13 @@ void MpiApiInitialize(void)
     }
 }
 
-void MpiApiShutdown(void)
+void MpiServerShutdown(void)
 {
     g_serverActive = false;
-    pthread_join(g_worker, NULL);
+    pthread_join(g_mpiServerWorker, NULL);
 
-    if (g_modulesLoaded)
-    {
-        UnloadModules();
-        g_modulesLoaded = false;
-    }
-
+    UnloadModules();
+    
     close(g_socketfd);
     unlink(g_mpiSocket);
 }

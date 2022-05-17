@@ -72,6 +72,9 @@ extern "C"
 
 OSCONFIG_LOG_HANDLE GetPlatformLog();
 
+void AreModulesLoadedAndLoadIfNot(void);
+void UnloadModules(void);
+
 #ifdef __cplusplus
 }
 #endif

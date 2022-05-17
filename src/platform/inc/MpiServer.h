@@ -9,11 +9,8 @@ extern "C"
 {
 #endif
 
-void MpiApiInitialize(void);
-void MpiApiShutdown(void);
-
-int LoadModules(void);
-void UnloadModules(void);
+void MpiServerInitialize(void);
+void MpiServerShutdown(void);
 
 #ifdef __cplusplus
 }
