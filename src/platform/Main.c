@@ -141,13 +141,9 @@ static void PlatformDoWork(void)
     unsigned int currentTime = time(NULL);
     unsigned int timeInterval = DOWORK_INTERVAL;
 
-    OsConfigLogInfo(GetPlatformLog(), "...");
-
-    MpiDoWork();
-
     if (timeInterval <= (currentTime - g_lastTime))
     {
-        OsConfigLogInfo(GetPlatformLog(), "!!!");
+        MpiDoWork();
         g_lastTime = (unsigned int)time(NULL);
     }
 }
