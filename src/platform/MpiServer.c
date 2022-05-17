@@ -545,7 +545,7 @@ void* MpiServerWorker(void)
     return NULL;
 }
 
-void MpiServerInitialize(void)
+void MpiServerInitialize(void*)
 {
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
