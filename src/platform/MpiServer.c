@@ -267,10 +267,10 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 }
             }
         }
-        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || 
-            (0 == strcmp(uri, MPI_SET_URI)) || 
-            (0 == strcmp(uri, MPI_GET_URI)) || 
-            (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || 
+        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) ||
+            (0 == strcmp(uri, MPI_SET_URI)) ||
+            (0 == strcmp(uri, MPI_GET_URI)) ||
+            (0 == strcmp(uri, MPI_SET_DESIRED_URI)) ||
             (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
         {
             if (NULL == (clientValue = json_object_get_value(rootObject, g_clientSession)))
@@ -534,6 +534,11 @@ static void* MpiServerWorker(void* arguments)
                 OsConfigLogInfo(GetPlatformLog(), "Closed connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
             }
 
+            contentLength = 0;
+            responseSize = 0;
+            actualSize = 0;
+            estimatedSize = 0;
+
             FREE_MEMORY(requestBody);
             FREE_MEMORY(responseBody);
             FREE_MEMORY(httpReason);
@@ -602,7 +607,7 @@ void MpiServerShutdown(void)
     pthread_join(g_mpiServerWorker, NULL);
 
     UnloadModules();
-    
+
     close(g_socketfd);
     unlink(g_mpiSocket);
 }
