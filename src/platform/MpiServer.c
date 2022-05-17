@@ -7,6 +7,7 @@
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
+#define MAX_QUEUED_CONNECTIONS 5
 
 #define MPI_OPEN_URI "MpiOpen"
 #define MPI_CLOSE_URI "MpiClose"
@@ -31,6 +32,7 @@ static socklen_t g_socketlen = 0;
 
 static pthread_t g_worker = 0;
 static bool g_serverActive = false;
+static bool g_modulesLoaded = false;
 
 typedef enum HTTP_STATUS
 {
@@ -457,6 +459,11 @@ static void* MpiServerWorker(void* arg)
 
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
+            if (!g_modulesLoaded)
+            {
+                LoadModules();
+            }
+
             if (IsFullLoggingEnabled())
             {
                 OsConfigLogInfo(GetPlatformLog(), "Accepted connection: path %s, handle '%d'", g_socketaddr.sun_path, socketHandle);
@@ -487,10 +494,13 @@ static void* MpiServerWorker(void* arg)
 
             if (status == HTTP_OK)
             {
-                OsConfigLogInfo(GetPlatformLog(), "%s: %d\n'%s'", uri, contentLength, requestBody);
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogInfo(GetPlatformLog(), "%s: content-length %d, body, '%s'", uri, contentLength, requestBody);
+                }
+
                 status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
             }
-
 
             httpReason = HttpReasonAsString(status);
             estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(httpReason) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
@@ -501,7 +511,6 @@ static void* MpiServerWorker(void* arg)
 
                 snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
                 actualSize = (int)strlen(buffer);
-
 
                 bytes = write(socketHandle, buffer, actualSize);
 
@@ -539,12 +548,15 @@ static void* MpiServerWorker(void* arg)
 void MpiApiInitialize(void)
 {
     struct stat st;
-    if (stat(g_socketPrefix, &st) == -1)
+    if (-1 == stat(g_socketPrefix, &st))
     {
         // S_IRUSR (0x00400): Read permission, owner
         // S_IWUSR (0x00200): Write permission, owner
         // S_IXUSR (0x00100): Execute/search permission, owner
-        mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR);
+        if (0 != mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR))
+        {
+            OsConfigLogError(GetPlatformLog(), "Failed to create socket '%s'", g_socketPrefix);
+        }
     }
 
     if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
@@ -557,11 +569,11 @@ void MpiApiInitialize(void)
 
         unlink(g_mpiSocket);
 
-        if (bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen) == 0)
+        if (0 == bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen))
         {
             RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
 
-            if (listen(g_socketfd, 5) == 0)
+            if (0 == listen(g_socketfd, MAX_QUEUED_CONNECTIONS))
             {
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
@@ -588,6 +600,12 @@ void MpiApiShutdown(void)
 {
     g_serverActive = false;
     pthread_join(g_worker, NULL);
+
+    if (g_modulesLoaded)
+    {
+        UnloadModules();
+        g_modulesLoaded = false;
+    }
 
     close(g_socketfd);
     unlink(g_mpiSocket);

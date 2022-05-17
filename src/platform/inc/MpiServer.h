@@ -12,6 +12,9 @@ extern "C"
 void MpiApiInitialize(void);
 void MpiApiShutdown(void);
 
+int LoadModules(void);
+void UnloadModules(void);
+
 #ifdef __cplusplus
 }
 #endif
