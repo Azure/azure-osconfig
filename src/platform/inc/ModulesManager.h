@@ -4,9 +4,17 @@
 #ifndef MODULESMANAGER_H
 #define MODULESMANAGER_H
 
-#include <PlatformCommon.h>
-#include <ManagementModule.h>
-#include <MpiServer.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+void AreModulesLoadedAndLoadIfNot(void);
+void UnloadModules(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 class ModulesManager
 {

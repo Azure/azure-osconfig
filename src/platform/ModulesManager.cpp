@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <PlatformCommon.h>
+#include <ManagementModule.h>
 #include <ModulesManager.h>
+#include <MpiServer.h>
 
 static const std::string g_moduleDir = "/usr/lib/osconfig";
 static const std::string g_moduleExtension = ".so";
@@ -16,11 +19,14 @@ static const char g_configObjectName[] = "ObjectName";
 static ModulesManager modulesManager;
 static std::map<std::string, std::shared_ptr<MpiSession>> g_sessions;
 
-// MPI
+static bool g_modulesLoaded = false;
 
-int LoadModules()
+void AreModulesLoadedAndLoadIfNot()
 {
-    return modulesManager.LoadModules(g_moduleDir, g_configJson);
+    if (false == g_modulesLoaded)
+    {
+        g_modulesLoaded = (bool)(0 == modulesManager.LoadModules(g_moduleDir, g_configJson));
+    }
 }
 
 void UnloadModules()
@@ -36,12 +42,17 @@ void UnloadModules()
 
 void MpiInitialize(void)
 {
-    MpiApiInitialize();
+    MpiServerInitialize();
 }
 
 void MpiShutdown(void)
 {
-    MpiApiShutdown();
+    MpiServerShutdown();
+}
+
+void MpiDoWork() 
+{
+    MpiServerDoWork();
 }
 
 MPI_HANDLE MpiOpen(
@@ -230,8 +241,6 @@ void MpiFree(MPI_JSON_STRING payload)
 {
     delete[] payload;
 }
-
-void MpiDoWork() {}
 
 ModulesManager::ModulesManager() {}
 

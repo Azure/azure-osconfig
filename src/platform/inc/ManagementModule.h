@@ -4,8 +4,6 @@
 #ifndef MANAGEMENTMODULE_H
 #define MANAGEMENTMODULE_H
 
-#include <PlatformCommon.h>
-
 // MMI function definitions
 using Mmi_GetInfo = int (*)(const char*, MMI_JSON_STRING*, int*);
 using Mmi_Free = void (*)(MMI_JSON_STRING);

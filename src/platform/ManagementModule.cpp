@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <PlatformCommon.h>
 #include <ModulesManager.h>
 #include <ManagementModule.h>
+#include <MpiServer.h>
 
 static const std::string g_mmiFuncMmiGetInfo = "MmiGetInfo";
 static const std::string g_mmiFuncMmiOpen = "MmiOpen";
