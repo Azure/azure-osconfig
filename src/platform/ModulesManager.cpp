@@ -50,10 +50,7 @@ void MpiShutdown(void)
     MpiServerShutdown();
 }
 
-void MpiDoWork() 
-{
-    MpiServerDoWork();
-}
+void MpiDoWork() {}
 
 MPI_HANDLE MpiOpen(
     const char* clientName,

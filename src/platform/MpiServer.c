@@ -30,6 +30,7 @@ static int g_socketfd = -1;
 static struct sockaddr_un g_socketaddr = {0};
 static socklen_t g_socketlen = 0;
 
+static pthread_t g_mpiServerWorker = 0;
 static bool g_serverActive = false;
 
 typedef enum HTTP_STATUS
@@ -429,7 +430,7 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     return reason;
 }
 
-void MpiServerDoWork(void)
+void* MpiServerWorker(void)
 {
     const char* responseFormat = "HTTP/1.1 %d %s\r\nServer: OSConfig\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%.*s";
 
@@ -455,7 +456,7 @@ void MpiServerDoWork(void)
         CallMpiGetReported
     };
 
-    if (g_serverActive)
+    while (g_serverActive)
     {
         status = HTTP_OK;
 
@@ -540,6 +541,8 @@ void MpiServerDoWork(void)
             FREE_MEMORY(uri);
         }
     }
+
+    return NULL;
 }
 
 void MpiServerInitialize(void)
@@ -575,6 +578,7 @@ void MpiServerInitialize(void)
                 OsConfigLogInfo(GetPlatformLog(), "Listening on socket '%s'", g_mpiSocket);
 
                 g_serverActive = true;
+                g_mpiServerWorker = pthread_create(&g_mpiServerWorker, NULL, MpiServerWorker, NULL);
             }
             else
             {
@@ -595,7 +599,10 @@ void MpiServerInitialize(void)
 void MpiServerShutdown(void)
 {
     g_serverActive = false;
+    pthread_join(g_mpiServerWorker, NULL);
+
     UnloadModules();
+    
     close(g_socketfd);
     unlink(g_mpiSocket);
 }

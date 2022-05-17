@@ -11,7 +11,6 @@ extern "C"
 
 void MpiServerInitialize(void);
 void MpiServerShutdown(void);
-void MpiServerDoWork(void);
 
 #ifdef __cplusplus
 }
