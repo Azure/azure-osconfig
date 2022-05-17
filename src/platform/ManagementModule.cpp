@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 #include <PlatformCommon.h>
-#include <ModulesManager.h>
 #include <ManagementModule.h>
+#include <ModulesManager.h>
 #include <MpiServer.h>
 
 static const std::string g_mmiFuncMmiGetInfo = "MmiGetInfo";

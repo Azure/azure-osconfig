@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <PlatformCommon.h>
-#include <ModulesManager.h>
 #include <MpiServer.h>
 
 #define MAX_CONTENTLENGTH_LENGTH 16
@@ -167,6 +166,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     JSON_Object* rootObject = NULL;
     int mpiStatus = MPI_OK;
     char* uuid = NULL;
+
     const char* client = NULL;
     const char* component = NULL;
     const char* object = NULL;
@@ -267,13 +267,18 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 }
             }
         }
-        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || (0 == strcmp(uri, MPI_SET_URI)) || (0 == strcmp(uri, MPI_GET_URI)) || (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
+        else if ((0 == strcmp(uri, MPI_CLOSE_URI)) || 
+            (0 == strcmp(uri, MPI_SET_URI)) || 
+            (0 == strcmp(uri, MPI_GET_URI)) || 
+            (0 == strcmp(uri, MPI_SET_DESIRED_URI)) || 
+            (0 == strcmp(uri, MPI_GET_REPORTED_URI)))
         {
             if (NULL == (clientValue = json_object_get_value(rootObject, g_clientSession)))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: failed to parse '%s' from request body", uri, g_clientSession);
                 status = HTTP_BAD_REQUEST;
             }
+
             else if (JSONString != json_value_get_type(clientValue))
             {
                 OsConfigLogError(GetPlatformLog(), "%s: '%s' is not a string", uri, g_clientSession);
@@ -590,13 +595,7 @@ void MpiServerInitialize(void)
 void MpiServerShutdown(void)
 {
     g_serverActive = false;
-
-    if (g_modulesLoaded)
-    {
-        UnloadModules();
-        g_modulesLoaded = false;
-    }
-
+    UnloadModules();
     close(g_socketfd);
     unlink(g_mpiSocket);
 }

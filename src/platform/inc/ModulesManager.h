@@ -4,18 +4,6 @@
 #ifndef MODULESMANAGER_H
 #define MODULESMANAGER_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-void AreModulesLoadedAndLoadIfNot(void);
-void UnloadModules(void);
-
-#ifdef __cplusplus
-}
-#endif
-
 class ModulesManager
 {
 public:

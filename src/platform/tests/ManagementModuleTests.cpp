@@ -5,6 +5,7 @@
 #include <gmock/gmock.h>
 
 #include <CommonTests.h>
+#include <PlatformCommon.h>
 #include <ManagementModule.h>
 #include <MockManagementModule.h>
 #include <ModulesManagerTests.h>

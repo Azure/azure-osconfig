@@ -5,14 +5,14 @@
 #include <gmock/gmock.h>
 #include <rapidjson/document.h>
 
+#include <PlatformCommon.h>
+#include <ManagementModule.h>
+#include <ModulesManager.h>
+#include <MockManagementModule.h>
+#include <MockModulesManager.h>
 #include <CommonTests.h>
 #include <CommonUtils.h>
-#include <ManagementModule.h>
-#include <MockManagementModule.h>
-#include <ModulesManager.h>
-#include <MockModulesManager.h>
 #include <ModulesManagerTests.h>
-#include <Mpi.h>
 
 using ::testing::_;
 using ::testing::DoAll;

@@ -4,12 +4,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <CommonTests.h>
-#include <CommonUtils.h>
+#include <PlatformCommon.h>
 #include <ManagementModule.h>
 #include <ModulesManager.h>
-#include <ModulesManagerTests.h>
-#include <Mpi.h>
+#include <MockManagementModule.h>
+#include <MockModulesManager.h>
 
 using ::testing::Combine;
 using ::testing::Values;
