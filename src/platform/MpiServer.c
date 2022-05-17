@@ -487,7 +487,11 @@ static void* MpiServerWorker(void* arg)
 
             if (status == HTTP_OK)
             {
-                OsConfigLogInfo(GetPlatformLog(), "%s: %d\n'%s'", uri, contentLength, requestBody);
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogInfo(GetPlatformLog(), "%s: content-length %d, body, '%s'", uri, contentLength, requestBody);
+                }
+
                 status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
             }
 
@@ -544,7 +548,10 @@ void MpiApiInitialize(void)
         // S_IRUSR (0x00400): Read permission, owner
         // S_IWUSR (0x00200): Write permission, owner
         // S_IXUSR (0x00100): Execute/search permission, owner
-        mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR);
+        if (0 != mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR))
+        {
+            OsConfigLogError(GetPlatformLog(), "Failed to create socket directory '%s'", g_socketPrefix);
+        }
     }
 
     if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
