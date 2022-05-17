@@ -18,16 +18,13 @@ static std::map<std::string, std::shared_ptr<MpiSession>> g_sessions;
 
 // MPI
 
-void MpiInitialize(void)
+int LoadModules()
 {
-    modulesManager.LoadModules(g_moduleDir, g_configJson);
-    MpiApiInitialize();
-};
+    return modulesManager.LoadModules(g_moduleDir, g_configJson);
+}
 
-void MpiShutdown(void)
+void UnloadModules()
 {
-    MpiApiShutdown();
-
     for (auto& session : g_sessions)
     {
         session.second->Close();
@@ -35,7 +32,17 @@ void MpiShutdown(void)
 
     g_sessions.clear();
     modulesManager.UnloadModules();
-};
+}
+
+void MpiInitialize(void)
+{
+    MpiApiInitialize();
+}
+
+void MpiShutdown(void)
+{
+    MpiApiShutdown();
+}
 
 MPI_HANDLE MpiOpen(
     const char* clientName,
