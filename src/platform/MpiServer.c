@@ -495,7 +495,6 @@ static void* MpiServerWorker(void* arg)
                 status = HandleMpiCall(uri, requestBody, &responseBody, &responseSize, mpiCalls);
             }
 
-
             httpReason = HttpReasonAsString(status);
             estimatedSize = strlen(responseFormat) + MAX_STATUS_CODE_LENGTH + strlen(httpReason) + MAX_CONTENTLENGTH_LENGTH + responseSize + 1;
 
@@ -505,7 +504,6 @@ static void* MpiServerWorker(void* arg)
 
                 snprintf(buffer, estimatedSize, responseFormat, (int)status, httpReason, responseSize, responseSize, (responseBody ? responseBody : ""));
                 actualSize = (int)strlen(buffer);
-
 
                 bytes = write(socketHandle, buffer, actualSize);
 
