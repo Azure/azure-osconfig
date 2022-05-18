@@ -53,6 +53,8 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 		fi
 		# MSFT change: dh_installsystemd uses deb-systemd-invoke which fails
 		# when /usr/sbin/policy-rc.d fails, use systemctl directly
+		systemctl enable 'osconfig-platform.service' >/dev/null || true
+		systemctl $_dh_action 'osconfig-platform.service' >/dev/null || true
 		systemctl enable 'osconfig.service' >/dev/null || true
 		systemctl $_dh_action 'osconfig.service' >/dev/null || true
 	fi
