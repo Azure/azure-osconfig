@@ -1561,3 +1561,19 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
 
     return httpContentLength;
 }
+
+int SleepMilliseconds(long milliseconds)
+{
+    struct timespec remaining = {0};
+    struct timespec interval = {0}; 
+    
+    if ((milliseconds < 0) || (milliseconds > 999999999))
+    {
+        return EINVAL;
+    }
+    
+    interval.tv_sec = (int)(milliseconds / 1000; 
+    interval.tv_nsec = (miliseconds % 1000) * 1000000;
+
+    return nanosleep(&interval, &remaining);
+}

@@ -4,6 +4,9 @@
 #include <PlatformCommon.h>
 #include <MpiServer.h>
 
+// 100 milliseconds
+#define MPI_WORKER_SLEEP 100;
+
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
@@ -544,6 +547,8 @@ static void* MpiServerWorker(void* arguments)
             FREE_MEMORY(httpReason);
             FREE_MEMORY(buffer);
             FREE_MEMORY(uri);
+
+            SleepMilliseconds(MPI_WORKER_SLEEP);
         }
     }
 

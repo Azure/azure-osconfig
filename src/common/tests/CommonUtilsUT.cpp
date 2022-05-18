@@ -25,7 +25,7 @@ class CommonUtilsTest : public ::testing::Test
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
 
-        bool CreateTestFile(const char* path, const char* data)
+        bool CreateTestFile(const char* path, constchar* data)
         {
             bool result = false;
 
@@ -1107,4 +1107,15 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
         EXPECT_EQ(0, close(fileDescriptor));
         EXPECT_TRUE(Cleanup(testPath));
     }
+}
+
+TEST_F(CommonUtilsTest, Sleep)
+{
+    long validValue = 100;
+    long negativeValue = -100;
+    long tooBigValue = 999999999 + 1;
+
+    EXPECT_EQ(0, SleepMilliseconds(validValue));
+    EXPECT_EQ(EINVAL, SleepMilliseconds(negativeValue));
+    EXPECT_EQ(EINVAL, SleepMilliseconds(tooBigValue));
 }
