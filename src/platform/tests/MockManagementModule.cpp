@@ -8,6 +8,11 @@
 #include <rapidjson/prettywriter.h>
 #include <string>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include <PlatformCommon.h>
+#include <ManagementModule.h>
 #include <MockManagementModule.h>
 
 namespace Tests

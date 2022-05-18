@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <PlatformCommon.h>
+#include <ManagementModule.h>
 #include <ModulesManager.h>
+#include <MpiServer.h>
 
 static const std::string g_moduleDir = "/usr/lib/osconfig";
 static const std::string g_moduleExtension = ".so";
@@ -16,18 +19,18 @@ static const char g_configObjectName[] = "ObjectName";
 static ModulesManager modulesManager;
 static std::map<std::string, std::shared_ptr<MpiSession>> g_sessions;
 
-// MPI
+static bool g_modulesLoaded = false;
 
-void MpiInitialize(void)
+void AreModulesLoadedAndLoadIfNot()
 {
-    modulesManager.LoadModules(g_moduleDir, g_configJson);
-    MpiApiInitialize();
-};
+    if (false == g_modulesLoaded)
+    {
+        g_modulesLoaded = (bool)(0 == modulesManager.LoadModules(g_moduleDir, g_configJson));
+    }
+}
 
-void MpiShutdown(void)
+void UnloadModules()
 {
-    MpiApiShutdown();
-
     for (auto& session : g_sessions)
     {
         session.second->Close();
@@ -35,7 +38,19 @@ void MpiShutdown(void)
 
     g_sessions.clear();
     modulesManager.UnloadModules();
-};
+}
+
+void MpiInitialize(void)
+{
+    MpiServerInitialize();
+}
+
+void MpiShutdown(void)
+{
+    MpiServerShutdown();
+}
+
+void MpiDoWork() {}
 
 MPI_HANDLE MpiOpen(
     const char* clientName,
@@ -223,8 +238,6 @@ void MpiFree(MPI_JSON_STRING payload)
 {
     delete[] payload;
 }
-
-void MpiDoWork() {}
 
 ModulesManager::ModulesManager() {}
 

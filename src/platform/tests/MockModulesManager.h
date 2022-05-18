@@ -4,12 +4,6 @@
 #ifndef MOCKMODULESMANAGER_H
 #define MOCKMODULESMANAGER_H
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
-#include <ModulesManager.h>
-#include <MockManagementModule.h>
-
 using ::testing::StrictMock;
 
 namespace Tests

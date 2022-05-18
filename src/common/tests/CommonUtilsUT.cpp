@@ -1108,3 +1108,14 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
         EXPECT_TRUE(Cleanup(testPath));
     }
 }
+
+TEST_F(CommonUtilsTest, Sleep)
+{
+    long validValue = 100;
+    long negativeValue = -100;
+    long tooBigValue = 999999999 + 1;
+
+    EXPECT_EQ(0, SleepMilliseconds(validValue));
+    EXPECT_EQ(EINVAL, SleepMilliseconds(negativeValue));
+    EXPECT_EQ(EINVAL, SleepMilliseconds(tooBigValue));
+}

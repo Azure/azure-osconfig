@@ -8,6 +8,7 @@
         "device_id": "ubuntu2004",
         "vm_size": "Standard_DS1_v2",
         "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
         [
             "curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list",
@@ -25,6 +26,7 @@
         "device_id": "ubuntu1804",
         "vm_size": "Standard_DS1_v2",
         "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
         [
             "curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list",

@@ -4,11 +4,6 @@
 #ifndef MOCKMANAGEMENTMODULE_H
 #define MOCKMANAGEMENTMODULE_H
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
-#include <ManagementModule.h>
-
 namespace Tests
 {
     class MockManagementModule : public ManagementModule

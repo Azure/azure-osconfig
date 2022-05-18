@@ -4,10 +4,6 @@
 #ifndef MODULESMANAGER_H
 #define MODULESMANAGER_H
 
-#include <PlatformCommon.h>
-#include <ManagementModule.h>
-#include <MpiServer.h>
-
 class ModulesManager
 {
 public:

@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include <PlatformCommon.h>
+#include <ManagementModule.h>
+#include <ModulesManager.h>
+#include <MockManagementModule.h>
 #include <MockModulesManager.h>
 
 using ::testing::StrictMock;
