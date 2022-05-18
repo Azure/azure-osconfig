@@ -6,17 +6,17 @@
 
 #include <Mpi.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #define MPI_OPEN_URI "MpiOpen"
 #define MPI_CLOSE_URI "MpiClose"
 #define MPI_SET_URI "MpiSet"
 #define MPI_GET_URI "MpiGet"
 #define MPI_SET_DESIRED_URI "MpiSetDesired"
 #define MPI_GET_REPORTED_URI "MpiGetReported"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef enum HTTP_STATUS
 {
