@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stdatomic.h>
+#include <version.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
