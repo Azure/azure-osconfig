@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
+#include <version.h>
 #include <Mmi.h>
 #include <DeviceInfo.h>
 #include <CommonUtils.h>
@@ -143,7 +144,7 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject)
+        if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
         {
             EXPECT_STREQ(payloadString, OSCONFIG_VERSION);
         }
