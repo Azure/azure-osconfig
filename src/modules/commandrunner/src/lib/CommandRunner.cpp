@@ -640,6 +640,8 @@ int CommandRunner::WriteFile(const std::string& fileName, const rapidjson::Strin
 
             fflush(file);
             std::fclose(file);
+
+            RestrictFileAccessToCurrentAccountOnly(fileName.c_str());
         }
     }
 

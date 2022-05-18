@@ -11,14 +11,13 @@ target_link_libraries(commandrunner
     PUBLIC
         commandrunnerlib
 )
-target_include_directories(commandrunner 
+target_include_directories(commandrunner
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(commandrunner 
-    PROPERTIES 
+set_target_properties(commandrunner
+    PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
 install(TARGETS commandrunner DESTINATION ${MODULES_INSTALL_DIR})
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../assets/osconfig_commandrunner.cache DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
