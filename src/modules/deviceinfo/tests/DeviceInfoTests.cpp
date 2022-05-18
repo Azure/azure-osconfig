@@ -15,7 +15,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_expectedMmiInfo = "{\"Name\": \"DeviceInfo\","
             "\"Description\": \"Provides functionality to observe device information\","
             "\"Manufacturer\": \"Microsoft\","
-            "\"VersionMajor\": 2,"
+            "\"VersionMajor\": 3,"
             "\"VersionMinor\": 0,"
             "\"VersionInfo\": \"Copper\","
             "\"Components\": [\"DeviceInfo\"],"

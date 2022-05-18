@@ -175,8 +175,7 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
 int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char* stringValue = NULL;
-    long longValue = 0;
+    char* value = NULL;
     bool isStringValue = true;
     char buffer[10] = {0};
 
@@ -206,69 +205,71 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     {
         if (0 == strcmp(objectName, g_osNameObject))
         {
-            stringValue = g_osName;
+            value = g_osName;
         }
         else if (0 == strcmp(objectName, g_osVersionObject))
         {
-            stringValue = g_osVersion;
+            value = g_osVersion;
         }
         else if (0 == strcmp(objectName, g_cpuTypeObject))
         {
-            stringValue = g_cpuType;
+            value = g_cpuType;
         }
         else if (0 == strcmp(objectName, g_cpuVendorObject))
         {
-            stringValue = g_cpuVendor;
+            value = g_cpuVendor;
         }
         else if (0 == strcmp(objectName, g_cpuModelObject))
         {
-            stringValue = g_cpuModel;
+            value = g_cpuModel;
         }
         else if (0 == strcmp(objectName, g_totalMemoryObject))
         {
             isStringValue = false;
-            longValue = g_totalMemory;
+            snprintf(buffer, sizeof(buffer), "%lu", g_totalMemory);
+            value = buffer;
         }
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
             isStringValue = false;
-            longValue = g_freeMemory;
+            snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
+            value = buffer;
         }
         else if (0 == strcmp(objectName, g_kernelNameObject))
         {
-            stringValue = g_kernelName;
+            value = g_kernelName;
         }
         else if (0 == strcmp(objectName, g_kernelReleaseObject))
         {
-            stringValue = g_kernelRelease;
+            value = g_kernelRelease;
         }
         else if (0 == strcmp(objectName, g_kernelVersionObject))
         {
-            stringValue = g_kernelVersion;
+            value = g_kernelVersion;
         }
         else if (0 == strcmp(objectName, g_productVendorObject))
         {
-            stringValue = g_productVendor;
+            value = g_productVendor;
         }
         else if (0 == strcmp(objectName, g_productNameObject))
         {
-            stringValue = g_productName;
+            value = g_productName;
         }
         else if (0 == strcmp(objectName, g_productVersionObject))
         {
-            stringValue = g_productVersion;
+            value = g_productVersion;
         }
         else if (0 == strcmp(objectName, g_systemCapabilitiesObject))
         {
-            stringValue = g_systemCapabilities;
+            value = g_systemCapabilities;
         }
         else if (0 == strcmp(objectName, g_systemConfigurationObject))
         {
-            stringValue = g_systemConfiguration;
+            value = g_systemConfiguration;
         }
         else if (0 == strcmp(objectName, g_osConfigVersionObject))
         {
-            stringValue = OSCONFIG_VERSION;
+            value = OSCONFIG_VERSION;
         }
         else
         {
@@ -279,37 +280,22 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     if (MMI_OK == status)
     {
-        if (isStringValue)
-        {
-            // The string stringValue (can be empty string) is wrapped in "" and is not null terminated
-            *payloadSizeBytes = (stringValue ? strlen(stringValue) : 0) + 2;
+        // The string value (can be empty string) is wrapped in "" and is not null terminated
+        *payloadSizeBytes = (value ? strlen(value) : 0) + (isStringValue ? 2 : 0);
 
-            if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
-            {
-                OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported stringValue will be truncated",
-                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-
-                *payloadSizeBytes = g_maxPayloadSizeBytes;
-            }
-        }
-        else
+        if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            snprintf(buffer, sizeof(buffer), "%lu", longValue);
-            *payloadSizeBytes = strlen(buffer);
+            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
+                componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+            *payloadSizeBytes = g_maxPayloadSizeBytes;
         }
 
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
         if (*payload)
         {
-            if (isStringValue)
-            {
-                // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
-                snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", stringValue ? stringValue : "");
-            }
-            else
-            {
-                snprintf(*payload, *payloadSizeBytes + 1, "%s", buffer);
-            }
+            // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
+            snprintf(*payload, *payloadSizeBytes + 1, (isStringValue ? "\"%s\"" : "%s"), value ? value : "");
         }
         else
         {
