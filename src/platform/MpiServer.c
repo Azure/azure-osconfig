@@ -4,6 +4,9 @@
 #include <PlatformCommon.h>
 #include <MpiServer.h>
 
+// 500 milliseconds
+#define MPI_WORKER_SLEEP 500
+
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
@@ -544,6 +547,8 @@ static void* MpiServerWorker(void* arguments)
             FREE_MEMORY(httpReason);
             FREE_MEMORY(buffer);
             FREE_MEMORY(uri);
+
+            SleepMilliseconds(MPI_WORKER_SLEEP);
         }
     }
 
@@ -564,7 +569,7 @@ void MpiServerInitialize(void)
         }
     }
 
-    if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
+    if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM, 0)))
     {
         memset(&g_socketaddr, 0, sizeof(g_socketaddr));
         g_socketaddr.sun_family = AF_UNIX;

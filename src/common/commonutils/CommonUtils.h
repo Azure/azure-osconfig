@@ -86,6 +86,8 @@ char* ReadUriFromSocket(int socketHandle, void* log);
 int ReadHttpStatusFromSocket(int socketHandle, void* log);
 int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
+int SleepMilliseconds(long milliseconds);
+
 #ifdef __cplusplus
 }
 #endif
