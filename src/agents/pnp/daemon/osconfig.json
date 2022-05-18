@@ -69,6 +69,10 @@
       "ObjectName": "systemConfiguration"
     },
     {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "osConfigVersion"
+    },
+    {
       "ComponentName": "Firewall",
       "ObjectName": "firewallState"
     },
