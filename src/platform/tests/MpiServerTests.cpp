@@ -109,9 +109,16 @@ namespace Tests
         int responseSize = 0;
 
         EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(nullptr, "", &response, &responseSize, g_mpiCalls));
+        FREE_MEMORY(response);
+
         EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall("", nullptr, &response, &responseSize, g_mpiCalls));
+        FREE_MEMORY(response);
+
         EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall("", "", nullptr, &responseSize, g_mpiCalls));
+        FREE_MEMORY(response);
+
         EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall("", "", &response, nullptr, g_mpiCalls));
+        FREE_MEMORY(response);
     }
 
     TEST_F(MpiServerTests, MpiOpenRequest_InvalidRequestBody)
@@ -129,6 +136,7 @@ namespace Tests
             int responseSize = 0;
 
             EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_OPEN_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
         }
     }
 
@@ -140,6 +148,7 @@ namespace Tests
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_OPEN_URI, "{\"ClientName\": \"Error_Client\", \"MaxPayloadSizeBytes\": 0}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_OPEN_URI, "{\"ClientName\": \"Valid_Client\", \"MaxPayloadSizeBytes\": 0}", &response, &responseSize, g_mpiCalls));
         std::string expectedHandle = "\"" + std::string(g_mockHandle) + "\"";
@@ -148,33 +157,98 @@ namespace Tests
         FREE_MEMORY(response);
     }
 
-    TEST_F(MpiServerTests, MpiRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiCloseRequest_InvalidRequestBody)
     {
-        char* response = nullptr;
-        int responseSize = 0;
+        std::vector<std::string> requests = {
+            "{\"ClientSession\": 123}",
+            "{}"
+        };
 
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_CLOSE_URI, "{\"ClientSession\": 123}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_CLOSE_URI, "{}", &response, &responseSize, g_mpiCalls));
+        for (auto request : requests)
+        {
+            char* response = nullptr;
+            int responseSize = 0;
 
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"\", \"ComponentName\": 123, \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"\", \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"ObjectName\": 123, \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
+            EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_CLOSE_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
+        }
+    }
 
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_URI, "{\"ComponentName\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"\", \"ComponentName\": 123, \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
+    TEST_F(MpiServerTests, MpiSetRequest_InvalidRequestBody)
+    {
+        std::vector<std::string> requests = {
+            "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}",
+            "{\"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}",
+            "{\"ClientSession\": \"\", \"ComponentName\": 123, \"ObjectName\": \"\", \"Payload\": {}}",
+            "{\"ClientSession\": \"\", \"ObjectName\": \"\", \"Payload\": {}}",
+            "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"ObjectName\": 123, \"Payload\": {}}",
+            "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"Payload\": {}}",
+            "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"ObjectName\": \"\"}"
+        };
 
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": 123, \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": \"\"}", &response, &responseSize, g_mpiCalls));
+        for (auto request : requests)
+        {
+            char* response = nullptr;
+            int responseSize = 0;
 
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_REPORTED_URI, "{\"ClientSession\": 123}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_REPORTED_URI, "{}", &response, &responseSize, g_mpiCalls));
+            EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
+        }
+    }
+
+    TEST_F(MpiServerTests, MpiGetRequest_InvalidRequestBody)
+    {
+        std::vector<std::string> requests = {
+            "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\"}",
+            "{\"ComponentName\": \"\", \"ObjectName\": \"\"}",
+            "{\"ClientSession\": \"\", \"ComponentName\": 123, \"ObjectName\": \"\"}",
+            "{\"ClientSession\": \"\", \"ObjectName\": \"\"}",
+            "{\"ClientSession\": \"\", \"ComponentName\": \"\", \"ObjectName\": 123}"
+        };
+
+        for (auto request : requests)
+        {
+            char* response = nullptr;
+            int responseSize = 0;
+
+            EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
+        }
+    }
+
+    TEST_F(MpiServerTests, MpiSetDesiredRequest_InvalidRequestBody)
+    {
+        std::vector<std::string> requests = {
+            "{\"ClientSession\": 123, \"Payload\": {}}",
+            "{\"Payload\": {}}",
+            "{\"ClientSession\": \"\"}"
+        };
+
+        for (auto request : requests)
+        {
+            char* response = nullptr;
+            int responseSize = 0;
+
+            EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_SET_DESIRED_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
+        }
+    }
+
+    TEST_F(MpiServerTests, MpiGetReportedRequest_InvalidRequestBody)
+    {
+        std::vector<std::string> requests = {
+            "{\"ClientSession\": 123}",
+            "{}"
+        };
+
+        for (auto request : requests)
+        {
+            char* response = nullptr;
+            int responseSize = 0;
+
+            EXPECT_EQ(HTTP_BAD_REQUEST, HandleMpiCall(MPI_GET_REPORTED_URI, request.c_str(), &response, &responseSize, g_mpiCalls));
+            FREE_MEMORY(response);
+        }
     }
 
     TEST_F(MpiServerTests, MpiCloseRequest)
@@ -183,6 +257,9 @@ namespace Tests
         int responseSize = 0;
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_CLOSE_URI, "{\"ClientSession\": \"Valid_Client\"}", &response, &responseSize, g_mpiCalls));
+        EXPECT_EQ(nullptr, response);
+        EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
     }
 
     TEST_F(MpiServerTests, MpiSetRequest)
@@ -193,10 +270,12 @@ namespace Tests
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"Error_Component\", \"ObjectName\": \"Error_Object\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
     }
 
     TEST_F(MpiServerTests, MpiGetRequest)
@@ -207,11 +286,11 @@ namespace Tests
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"Error_Component\", \"ObjectName\": \"Error_Object\"}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
         EXPECT_STREQ(g_mockPayload, response);
         EXPECT_EQ(strlen(g_mockPayload), responseSize);
-
         FREE_MEMORY(response);
     }
 
@@ -223,10 +302,12 @@ namespace Tests
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": \"Valid_Client\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": \"Valid_Client\", \"Payload\": \"MockPayload\"}", &response, &responseSize, g_mpiCalls));
         EXPECT_EQ(nullptr, response);
         EXPECT_EQ(0, responseSize);
+        FREE_MEMORY(response);
     }
 
     TEST_F(MpiServerTests, MpiGetReportedRequest)
@@ -237,7 +318,6 @@ namespace Tests
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_GET_REPORTED_URI, "{\"ClientSession\": \"Valid_Client\"}", &response, &responseSize, g_mpiCalls));
         EXPECT_STREQ(g_mockPayload, response);
         EXPECT_EQ(strlen(g_mockPayload), responseSize);
-
         FREE_MEMORY(response);
     }
 }
