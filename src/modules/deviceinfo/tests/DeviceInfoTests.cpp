@@ -118,6 +118,7 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
     char* payload = nullptr;
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
+    const char versionPayload = /"OSCONFIG_VERSION/";
 
     const char* mimRequiredObjects[] = {
         m_osNameObject,
@@ -146,7 +147,8 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
         {
-            EXPECT_STREQ(payloadString, OSCONFIG_VERSION);
+            
+            EXPECT_STREQ(payloadString, versionPayload);
         }
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
