@@ -55,6 +55,8 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 		# when /usr/sbin/policy-rc.d fails, use systemctl directly
 		systemctl enable 'osconfig.service' >/dev/null || true
 		systemctl $_dh_action 'osconfig.service' >/dev/null || true
+		systemctl enable 'osconfig-platform.service' >/dev/null || true
+		systemctl $_dh_action 'osconfig-platform.service' >/dev/null || true
 	fi
 	# MSFT change: signal aziot to reload module identities
 	if command -v aziotctl >/dev/null; then
