@@ -60,18 +60,19 @@ ls -lR %{buildroot}
 rm -rf $RPM_BUILD_ROOT
 
 %preun
-%systemd_preun osconfig.service
 %systemd_preun osconfig-platform.service
+%systemd_preun osconfig.service
 
 %post
 if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
     cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
 fi
+%systemd_post osconfig-platform.service
 %systemd_post osconfig.service
-systemctl enable osconfig.service
-systemctl start osconfig.service
 systemctl enable osconfig-platform.service
 systemctl start osconfig-platform.service
+systemctl enable osconfig.service
+systemctl start osconfig.service
 
 %postun
 %systemd_postun osconfig.service
