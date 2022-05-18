@@ -1,0 +1,8 @@
+# OSConfig DevOps Status
+
+| Workflow | Notes |
+| -------- | ----- |
+| [![E2E (GitHub-main)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-github-main.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-github-main.yml) | **E2E Tests**: GitHub-main - **Tests**: All, **Installed Binary**: [Package workflow artifact - main](https://github.com/Azure/azure-osconfig/actions/workflows/package.yml?query=branch%3Amain) | 
+| [![E2E (prod)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-e2etest-prod.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-e2etest-prod.yml) | **E2E Tests**: packages.microsoft.com/prod - **Tests**: minimal, **Installed Binary**: [packages.microsoft.com/prod](https://docs.microsoft.com/azure/osconfig/osconfig-about-insiders) | 
+| [![E2E (insiders-fast)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-insiders-fast.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/deploy-insiders-fast.yml) | **E2E Tests**: packages.microsoft.com/insiders-fast - **Tests**: minimal, **Installed Binary**: [packages.microsoft.com/insiders-fast](https://docs.microsoft.com/azure/osconfig/osconfig-about-insiders) | 
+| [![Package](https://github.com/Azure/azure-osconfig/actions/workflows/package.yml/badge.svg)](https://github.com/Azure/azure-osconfig/actions/workflows/package.yml) | **Packaging** - Creation of packages workflow - **Branch**: main |
