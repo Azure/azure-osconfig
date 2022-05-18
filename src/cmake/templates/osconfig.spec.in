@@ -60,8 +60,8 @@ ls -lR %{buildroot}
 rm -rf $RPM_BUILD_ROOT
 
 %preun
-%systemd_preun osconfig-platform.service
 %systemd_preun osconfig.service
+%systemd_preun osconfig-platform.service
 
 %post
 if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
