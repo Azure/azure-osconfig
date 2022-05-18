@@ -5,7 +5,7 @@
 #include <MpiServer.h>
 
 // 100 milliseconds
-#define MPI_WORKER_SLEEP 100;
+#define MPI_WORKER_SLEEP 100
 
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASONSTRING_LENGTH 32

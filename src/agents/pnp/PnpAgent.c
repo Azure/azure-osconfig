@@ -752,7 +752,7 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         AgentDoWork();
-        //ThreadAPI_Sleep(DOWORK_SLEEP);
+        
         SleepMilliseconds(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)

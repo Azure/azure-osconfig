@@ -25,7 +25,7 @@ class CommonUtilsTest : public ::testing::Test
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
 
-        bool CreateTestFile(const char* path, constchar* data)
+        bool CreateTestFile(const char* path, const char* data)
         {
             bool result = false;
 

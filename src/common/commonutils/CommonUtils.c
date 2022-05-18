@@ -14,6 +14,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h>
 #include <Logging.h>
 #include <CommonUtils.h>
 
@@ -1572,8 +1573,8 @@ int SleepMilliseconds(long milliseconds)
         return EINVAL;
     }
     
-    interval.tv_sec = (int)(milliseconds / 1000; 
-    interval.tv_nsec = (miliseconds % 1000) * 1000000;
+    interval.tv_sec = (int)(milliseconds / 1000); 
+    interval.tv_nsec = (milliseconds % 1000) * 1000000;
 
     return nanosleep(&interval, &remaining);
 }
