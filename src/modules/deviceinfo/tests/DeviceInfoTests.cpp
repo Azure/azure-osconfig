@@ -112,13 +112,15 @@ TEST_F(DeviceInfoTest, MmiSet)
     DeviceInfoMmiClose(handle);
 }
 
+#define STRING_QUOTE "\""
+#define OSCONFIG_VERSION_PAYLOAD STRING_QUOTE OSCONFIG_VERSION STRING_QUOTE
+
 TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
 {
     MMI_HANDLE handle = NULL;
     char* payload = nullptr;
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
-    const char versionPayload = /"OSCONFIG_VERSION/";
 
     const char* mimRequiredObjects[] = {
         m_osNameObject,
@@ -148,14 +150,12 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
         {
             
-            EXPECT_STREQ(payloadString, versionPayload);
+            EXPECT_STREQ(payloadString, OSCONFIG_VERSION_PAYLOAD);
         }
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
     }
     
-    EXPECT_STREQ(m_expectedMmiInfo, payloadString);
-
     DeviceInfoMmiClose(handle);
 }
 
