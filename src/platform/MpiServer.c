@@ -4,7 +4,7 @@
 #include <PlatformCommon.h>
 #include <MpiServer.h>
 
-// 100 milliseconds
+// 500 milliseconds
 #define MPI_WORKER_SLEEP 500
 
 #define MAX_CONTENTLENGTH_LENGTH 16
