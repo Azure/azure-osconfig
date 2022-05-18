@@ -5,7 +5,7 @@
 #include <MpiServer.h>
 
 // 100 milliseconds
-#define MPI_WORKER_SLEEP 100
+#define MPI_WORKER_SLEEP 500
 
 #define MAX_CONTENTLENGTH_LENGTH 16
 #define MAX_REASONSTRING_LENGTH 32
@@ -569,7 +569,7 @@ void MpiServerInitialize(void)
         }
     }
 
-    if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)))
+    if (0 <= (g_socketfd = socket(AF_UNIX, SOCK_STREAM, 0)))
     {
         memset(&g_socketaddr, 0, sizeof(g_socketaddr));
         g_socketaddr.sun_family = AF_UNIX;
