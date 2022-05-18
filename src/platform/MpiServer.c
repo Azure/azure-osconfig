@@ -12,13 +12,6 @@
 #define MAX_STATUS_CODE_LENGTH 3
 #define MAX_QUEUED_CONNECTIONS 5
 
-#define MPI_OPEN_URI "MpiOpen"
-#define MPI_CLOSE_URI "MpiClose"
-#define MPI_SET_URI "MpiSet"
-#define MPI_GET_URI "MpiGet"
-#define MPI_SET_DESIRED_URI "MpiSetDesired"
-#define MPI_GET_REPORTED_URI "MpiGetReported"
-
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
@@ -35,31 +28,6 @@ static socklen_t g_socketlen = 0;
 
 static pthread_t g_mpiServerWorker = 0;
 static bool g_serverActive = false;
-
-typedef enum HTTP_STATUS
-{
-    HTTP_OK = 200,
-    HTTP_BAD_REQUEST = 400,
-    HTTP_NOT_FOUND = 404,
-    HTTP_INTERNAL_SERVER_ERROR = 500
-} HTTP_STATUS;
-
-typedef MPI_HANDLE(*MpiOpenCall)(const char*, const unsigned int);
-typedef void(*MpiCloseCall)(MPI_HANDLE);
-typedef int(*MpiSetCall)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING, const int);
-typedef int(*MpiGetCall)(MPI_HANDLE, const char*, const char*, MPI_JSON_STRING*, int*);
-typedef int(*MpiSetDesiredCall)(MPI_HANDLE, const MPI_JSON_STRING, const int);
-typedef int(*MpiGetReportedCall)(MPI_HANDLE, MPI_JSON_STRING*, int*);
-
-typedef struct MPI_CALLS
-{
-    MpiOpenCall mpiOpen;
-    MpiCloseCall mpiClose;
-    MpiSetCall mpiSet;
-    MpiGetCall mpiGet;
-    MpiSetDesiredCall mpiSetDesired;
-    MpiGetReportedCall mpiGetReported;
-} MPI_CALLS;
 
 static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {

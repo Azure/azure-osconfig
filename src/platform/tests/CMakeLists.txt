@@ -67,3 +67,7 @@ gtest_discover_tests(modulesmanagertests)
 add_executable(mpitests ${modulesmanagertests_files} MpiTests.cpp)
 target_link_libraries(mpitests modulesmanagermocks)
 gtest_discover_tests(mpitests)
+
+add_executable(mpiservertests ${modulesmanagertests_files} MpiServerTests.cpp)
+target_link_libraries(mpiservertests modulesmanagermocks)
+gtest_discover_tests(mpiservertests)
