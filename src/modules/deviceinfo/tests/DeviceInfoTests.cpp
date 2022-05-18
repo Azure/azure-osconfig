@@ -38,6 +38,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_productVersionObject = "productVersion";
         const char* m_systemCapabilitiesObject = "systemCapabilities";
         const char* m_systemConfigurationObject = "systemConfiguration";
+        const char* m_osConfigVersionObject = "osConfigVersion";
 
         const char* m_clientName = "Test";
 
@@ -127,7 +128,8 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         m_freeMemoryObject,
         m_kernelNameObject,
         m_kernelReleaseObject,
-        m_kernelVersionObject
+        m_kernelVersionObject,
+        m_osConfigVersionObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -141,10 +143,16 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject)
+        {
+            EXPECT_STREQ(payloadString, OSCONFIG_VERSION);
+        }
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
     }
     
+    EXPECT_STREQ(m_expectedMmiInfo, payloadString);
+
     DeviceInfoMmiClose(handle);
 }
 

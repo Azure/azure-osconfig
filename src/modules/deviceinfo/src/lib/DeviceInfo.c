@@ -9,23 +9,24 @@
 
 #include "DeviceInfo.h"
 
-static char* g_deviceInfoModuleName = "DeviceInfo module";
-static char* g_deviceInfoComponentName = "DeviceInfo";
-static char* g_osNameObject = "osName";
-static char* g_osVersionObject = "osVersion";
-static char* g_cpuTypeObject = "cpuType";
-static char* g_cpuVendorObject = "cpuVendorId";
-static char* g_cpuModelObject = "cpuModel";
-static char* g_totalMemoryObject = "totalMemory";
-static char* g_freeMemoryObject = "freeMemory";
-static char* g_kernelNameObject = "kernelName";
-static char* g_kernelReleaseObject = "kernelRelease";
-static char* g_kernelVersionObject = "kernelVersion";
-static char* g_productVendorObject = "productVendor";
-static char* g_productNameObject = "productName";
-static char* g_productVersionObject = "productVersion";
-static char* g_systemCapabilitiesObject = "systemCapabilities";
-static char* g_systemConfigurationObject = "systemConfiguration";
+static const char* g_deviceInfoModuleName = "DeviceInfo module";
+static const char* g_deviceInfoComponentName = "DeviceInfo";
+static const char* g_osNameObject = "osName";
+static const char* g_osVersionObject = "osVersion";
+static const char* g_cpuTypeObject = "cpuType";
+static const char* g_cpuVendorObject = "cpuVendorId";
+static const char* g_cpuModelObject = "cpuModel";
+static const char* g_totalMemoryObject = "totalMemory";
+static const char* g_freeMemoryObject = "freeMemory";
+static const char* g_kernelNameObject = "kernelName";
+static const char* g_kernelReleaseObject = "kernelRelease";
+static const char* g_kernelVersionObject = "kernelVersion";
+static const char* g_productVendorObject = "productVendor";
+static const char* g_productNameObject = "productName";
+static const char* g_productVersionObject = "productVersion";
+static const char* g_systemCapabilitiesObject = "systemCapabilities";
+static const char* g_systemConfigurationObject = "systemConfiguration";
+static const char* g_osConfigVersionObject = "osConfigVersion";
 
 static const char* g_deviceInfoLogFile = "/var/log/osconfig_deviceinfo.log";
 static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak";
@@ -33,7 +34,7 @@ static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak
 static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"Description\": \"Provides functionality to observe device information\","
     "\"Manufacturer\": \"Microsoft\","
-    "\"VersionMajor\": 2,"
+    "\"VersionMajor\": 3,"
     "\"VersionMinor\": 0,"
     "\"VersionInfo\": \"Copper\","
     "\"Components\": [\"DeviceInfo\"],"
@@ -173,7 +174,9 @@ int DeviceInfoMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* 
 int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char* value = NULL;
+    char* stringValue = NULL;
+    long longValue = 0;
+    bool isStringValue = true;
     char buffer[10] = {0};
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -202,65 +205,69 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     {
         if (0 == strcmp(objectName, g_osNameObject))
         {
-            value = g_osName;
+            stringValue = g_osName;
         }
         else if (0 == strcmp(objectName, g_osVersionObject))
         {
-            value = g_osVersion;
+            stringValue = g_osVersion;
         }
         else if (0 == strcmp(objectName, g_cpuTypeObject))
         {
-            value = g_cpuType;
+            stringValue = g_cpuType;
         }
         else if (0 == strcmp(objectName, g_cpuVendorObject))
         {
-            value = g_cpuVendor;
+            stringValue = g_cpuVendor;
         }
         else if (0 == strcmp(objectName, g_cpuModelObject))
         {
-            value = g_cpuModel;
+            stringValue = g_cpuModel;
         }
         else if (0 == strcmp(objectName, g_totalMemoryObject))
         {
-            snprintf(buffer, sizeof(buffer), "%lu", g_totalMemory);
-            value = buffer;
+            isStringValue = false;
+            longValue = g_totalMemory;
         }
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
-            snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
-            value = buffer;
+            isStringValue = false;
+            longValue = g_freeMemory;
         }
         else if (0 == strcmp(objectName, g_kernelNameObject))
         {
-            value = g_kernelName;
+            stringValue = g_kernelName;
         }
         else if (0 == strcmp(objectName, g_kernelReleaseObject))
         {
-            value = g_kernelRelease;
+            stringValue = g_kernelRelease;
         }
         else if (0 == strcmp(objectName, g_kernelVersionObject))
         {
-            value = g_kernelVersion;
+            stringValue = g_kernelVersion;
         }
         else if (0 == strcmp(objectName, g_productVendorObject))
         {
-            value = g_productVendor;
+            stringValue = g_productVendor;
         }
         else if (0 == strcmp(objectName, g_productNameObject))
         {
-            value = g_productName;
+            stringValue = g_productName;
         }
         else if (0 == strcmp(objectName, g_productVersionObject))
         {
-            value = g_productVersion;
+            stringValue = g_productVersion;
         }
         else if (0 == strcmp(objectName, g_systemCapabilitiesObject))
         {
-            value = g_systemCapabilities;
+            stringValue = g_systemCapabilities;
         }
         else if (0 == strcmp(objectName, g_systemConfigurationObject))
         {
-            value = g_systemConfiguration;
+            stringValue = g_systemConfiguration;
+        }
+        else if (0 == strcmp(objectName, g_osConfigVersionObject))
+        {
+            stringValue = OSCONFIG_VERSION;
         }
         else
         {
@@ -271,22 +278,37 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 
     if (MMI_OK == status)
     {
-        // The string value (can be empty string) is wrapped in "" and is not null terminated
-        *payloadSizeBytes = (value ? strlen(value) : 0) + 2;
-        
-        if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
+        if (isStringValue)
         {
-            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
-                componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+            // The string stringValue (can be empty string) is wrapped in "" and is not null terminated
+            *payloadSizeBytes = (stringValue ? strlen(stringValue) : 0) + 2;
 
-            *payloadSizeBytes = g_maxPayloadSizeBytes;
+            if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
+            {
+                OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported stringValue will be truncated",
+                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                *payloadSizeBytes = g_maxPayloadSizeBytes;
+            }
+        }
+        else
+        {
+            snprintf(buffer, sizeof(buffer), "%lu", longValue);
+            *payloadSizeBytes = strlen(buffer);
         }
 
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
         if (*payload)
         {
-            // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
-            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value ? value : "");
+            if (isStringValue)
+            {
+                // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
+                snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", stringValue ? stringValue : "");
+            }
+            else
+            {
+                snprintf(*payload, *payloadSizeBytes + 1, "%s", buffer);
+            }
         }
         else
         {
