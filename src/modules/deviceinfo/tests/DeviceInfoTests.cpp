@@ -149,7 +149,6 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
         {
-            
             EXPECT_STREQ(payloadString, OSCONFIG_VERSION_PAYLOAD);
         }
         FREE_MEMORY(payloadString);
