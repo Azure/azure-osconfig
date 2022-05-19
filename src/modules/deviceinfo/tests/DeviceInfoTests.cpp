@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
+#include <version.h>
 #include <Mmi.h>
 #include <DeviceInfo.h>
 #include <CommonUtils.h>
@@ -14,7 +15,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_expectedMmiInfo = "{\"Name\": \"DeviceInfo\","
             "\"Description\": \"Provides functionality to observe device information\","
             "\"Manufacturer\": \"Microsoft\","
-            "\"VersionMajor\": 2,"
+            "\"VersionMajor\": 3,"
             "\"VersionMinor\": 0,"
             "\"VersionInfo\": \"Copper\","
             "\"Components\": [\"DeviceInfo\"],"
@@ -38,6 +39,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_productVersionObject = "productVersion";
         const char* m_systemCapabilitiesObject = "systemCapabilities";
         const char* m_systemConfigurationObject = "systemConfiguration";
+        const char* m_osConfigVersionObject = "osConfigVersion";
 
         const char* m_clientName = "Test";
 
@@ -110,6 +112,9 @@ TEST_F(DeviceInfoTest, MmiSet)
     DeviceInfoMmiClose(handle);
 }
 
+#define STRING_QUOTE "\""
+#define OSCONFIG_VERSION_PAYLOAD STRING_QUOTE OSCONFIG_VERSION STRING_QUOTE
+
 TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
 {
     MMI_HANDLE handle = NULL;
@@ -127,7 +132,8 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         m_freeMemoryObject,
         m_kernelNameObject,
         m_kernelReleaseObject,
-        m_kernelVersionObject
+        m_kernelVersionObject,
+        m_osConfigVersionObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -141,6 +147,10 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
+        {
+            EXPECT_STREQ(payloadString, OSCONFIG_VERSION_PAYLOAD);
+        }
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
     }

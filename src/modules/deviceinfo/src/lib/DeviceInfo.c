@@ -3,29 +3,31 @@
 
 #include <errno.h>
 #include <stdatomic.h>
+#include <version.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 
 #include "DeviceInfo.h"
 
-static char* g_deviceInfoModuleName = "DeviceInfo module";
-static char* g_deviceInfoComponentName = "DeviceInfo";
-static char* g_osNameObject = "osName";
-static char* g_osVersionObject = "osVersion";
-static char* g_cpuTypeObject = "cpuType";
-static char* g_cpuVendorObject = "cpuVendorId";
-static char* g_cpuModelObject = "cpuModel";
-static char* g_totalMemoryObject = "totalMemory";
-static char* g_freeMemoryObject = "freeMemory";
-static char* g_kernelNameObject = "kernelName";
-static char* g_kernelReleaseObject = "kernelRelease";
-static char* g_kernelVersionObject = "kernelVersion";
-static char* g_productVendorObject = "productVendor";
-static char* g_productNameObject = "productName";
-static char* g_productVersionObject = "productVersion";
-static char* g_systemCapabilitiesObject = "systemCapabilities";
-static char* g_systemConfigurationObject = "systemConfiguration";
+static const char* g_deviceInfoModuleName = "DeviceInfo module";
+static const char* g_deviceInfoComponentName = "DeviceInfo";
+static const char* g_osNameObject = "osName";
+static const char* g_osVersionObject = "osVersion";
+static const char* g_cpuTypeObject = "cpuType";
+static const char* g_cpuVendorObject = "cpuVendorId";
+static const char* g_cpuModelObject = "cpuModel";
+static const char* g_totalMemoryObject = "totalMemory";
+static const char* g_freeMemoryObject = "freeMemory";
+static const char* g_kernelNameObject = "kernelName";
+static const char* g_kernelReleaseObject = "kernelRelease";
+static const char* g_kernelVersionObject = "kernelVersion";
+static const char* g_productVendorObject = "productVendor";
+static const char* g_productNameObject = "productName";
+static const char* g_productVersionObject = "productVersion";
+static const char* g_systemCapabilitiesObject = "systemCapabilities";
+static const char* g_systemConfigurationObject = "systemConfiguration";
+static const char* g_osConfigVersionObject = "osConfigVersion";
 
 static const char* g_deviceInfoLogFile = "/var/log/osconfig_deviceinfo.log";
 static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak";
@@ -33,7 +35,7 @@ static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak
 static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"Description\": \"Provides functionality to observe device information\","
     "\"Manufacturer\": \"Microsoft\","
-    "\"VersionMajor\": 2,"
+    "\"VersionMajor\": 3,"
     "\"VersionMinor\": 0,"
     "\"VersionInfo\": \"Copper\","
     "\"Components\": [\"DeviceInfo\"],"
@@ -174,6 +176,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 {
     int status = MMI_OK;
     char* value = NULL;
+    bool isStringValue = true;
     char buffer[10] = {0};
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -222,11 +225,13 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else if (0 == strcmp(objectName, g_totalMemoryObject))
         {
+            isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_totalMemory);
             value = buffer;
         }
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
+            isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
             value = buffer;
         }
@@ -262,6 +267,10 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             value = g_systemConfiguration;
         }
+        else if (0 == strcmp(objectName, g_osConfigVersionObject))
+        {
+            value = OSCONFIG_VERSION;
+        }
         else
         {
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
@@ -272,11 +281,11 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     if (MMI_OK == status)
     {
         // The string value (can be empty string) is wrapped in "" and is not null terminated
-        *payloadSizeBytes = (value ? strlen(value) : 0) + 2;
-        
+        *payloadSizeBytes = (value ? strlen(value) : 0) + (isStringValue ? 2 : 0);
+
         if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
+            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
@@ -286,7 +295,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         if (*payload)
         {
             // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
-            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value ? value : "");
+            snprintf(*payload, *payloadSizeBytes + 1, (isStringValue ? "\"%s\"" : "%s"), value ? value : "");
         }
         else
         {
