@@ -17,14 +17,11 @@
 #include <Command.h>
 #include <Mmi.h>
 
-const std::string g_commandRunner = "CommandRunner";
+#define MAX_CACHE_SIZE 10
 
 class CommandRunner
 {
 public:
-    static const unsigned int MAX_CACHE_SIZE = 10;
-    static const std::string PERSISTED_COMMANDSTATUS_FILE;
-
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     ~CommandRunner();
 

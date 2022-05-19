@@ -189,7 +189,7 @@ namespace Tests
         std::vector<std::pair<std::string, Command::Status>> expectedResults;
 
         // Fill the cache with the max number of commands
-        for (unsigned int i = 0; i < CommandRunner::MAX_CACHE_SIZE; i++)
+        for (unsigned int i = 0; i < MAX_CACHE_SIZE; i++)
         {
             std::string id = Id();
             Command::Arguments arguments(id, "echo '" + id + "'", Command::Action::RunCommand, 0, false);
