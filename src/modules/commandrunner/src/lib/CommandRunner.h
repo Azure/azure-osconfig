@@ -16,12 +16,13 @@
 
 #include <Command.h>
 #include <Mmi.h>
-
-#define MAX_CACHE_SIZE 10
-
 class CommandRunner
 {
 public:
+    static const unsigned int maxCacheSize = 10;
+    static const char* persistedCacheFile;
+    static const char* defaultCacheTemplate;
+
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     ~CommandRunner();
 

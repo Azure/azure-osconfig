@@ -12,10 +12,10 @@
 #include <CommandRunner.h>
 #include <Mmi.h>
 
-#define PERSISTED_COMMANDSTATUS_FILE "/etc/osconfig/osconfig_commandrunner.cache"
-#define DEFAULT_CACHE_TEMPLATE "{}"
-
 const std::string g_commandRunner = "CommandRunner";
+
+const char* CommandRunner::persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
+const char* CommandRunner::defaultCacheTemplate = "{}";
 
 constexpr const char g_moduleInfo[] = R""""({
     "Name": "CommandRunner",
@@ -238,36 +238,18 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
                 Command::Status commandStatus = GetReportedStatus();
                 Command::Status::Serialize(writer, commandStatus);
 
-                try
+                *payload = new (std::nothrow) char[buffer.GetSize()];
+
+                if (nullptr != *payload)
                 {
-                    *payload = new (std::nothrow) char[buffer.GetSize()];
-                    if (nullptr == *payload)
-                    {
-                        OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
-                        status = ENOMEM;
-                    }
-                    else
-                    {
-                        std::fill(*payload, *payload + buffer.GetSize(), 0);
-                        std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
-                        *payloadSizeBytes = buffer.GetSize();
-                    }
+                    std::fill(*payload, *payload + buffer.GetSize(), 0);
+                    std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
+                    *payloadSizeBytes = buffer.GetSize();
                 }
-                catch (const std::exception& e)
+                else
                 {
-                    OsConfigLogError(CommandRunnerLog::Get(), "Could not allocate payload: %s", e.what());
-                    status = EINTR;
-
-                    if (nullptr != *payload)
-                    {
-                        delete[] *payload;
-                        *payload = nullptr;
-                    }
-
-                    if (nullptr != payloadSizeBytes)
-                    {
-                        *payloadSizeBytes = 0;
-                    }
+                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
+                    status = ENOMEM;
                 }
             }
             else
@@ -421,7 +403,7 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
             SetReportedStatusId(command->GetId());
 
             // Remove any completed commands from the cache if the cache size is greater than the maximum size
-            while (m_cacheBuffer.size() > MAX_CACHE_SIZE)
+            while (m_cacheBuffer.size() > maxCacheSize)
             {
                 std::shared_ptr<Command> oldestCommand = m_cacheBuffer.back();
                 if ((nullptr != oldestCommand) && (oldestCommand->IsComplete()))
@@ -516,7 +498,7 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
     int status = 0;
 
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
-    std::ifstream file(PERSISTED_COMMANDSTATUS_FILE);
+    std::ifstream file(persistedCacheFile);
 
     if (file.good())
     {
@@ -578,18 +560,18 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
     statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
 
-    std::ifstream file(PERSISTED_COMMANDSTATUS_FILE);
+    std::ifstream file(persistedCacheFile);
     if (file.good())
     {
         rapidjson::IStreamWrapper isw(file);
         if (document.ParseStream(isw).HasParseError() || !document.IsObject())
         {
-            document.Parse(DEFAULT_CACHE_TEMPLATE);
+            document.Parse(defaultCacheTemplate);
         }
     }
     else
     {
-        document.Parse(DEFAULT_CACHE_TEMPLATE);
+        document.Parse(defaultCacheTemplate);
     }
 
     rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
@@ -611,7 +593,7 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
         if (!updated)
         {
-            if (document[clientName.c_str()].Size() >= MAX_CACHE_SIZE)
+            if (document[clientName.c_str()].Size() >= maxCacheSize)
             {
                 client.Erase(client.Begin());
             }
@@ -634,10 +616,10 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
     if (buffer.GetSize() > 0)
     {
-        std::FILE* file = std::fopen(PERSISTED_COMMANDSTATUS_FILE, "w+");
+        std::FILE* file = std::fopen(persistedCacheFile, "w+");
         if (nullptr == file)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", PERSISTED_COMMANDSTATUS_FILE);
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", persistedCacheFile);
             status = EACCES;
         }
         else
@@ -647,13 +629,13 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
             if ((0 > rc) || (EOF == rc))
             {
                 status = errno ? errno : EINVAL;
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", PERSISTED_COMMANDSTATUS_FILE, status, errno ? strerror(errno) : "-");
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", persistedCacheFile, status, errno ? strerror(errno) : "-");
             }
 
             fflush(file);
             std::fclose(file);
 
-            RestrictFileAccessToCurrentAccountOnly(PERSISTED_COMMANDSTATUS_FILE);
+            RestrictFileAccessToCurrentAccountOnly(persistedCacheFile);
         }
     }
 
