@@ -12,10 +12,11 @@
 #include <CommandRunner.h>
 #include <Mmi.h>
 
-const std::string CommandRunner::componentName = "CommandRunner";
+const std::string CommandRunner::m_componentName = "CommandRunner";
 
-const char* CommandRunner::persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
-const char* CommandRunner::defaultCacheTemplate = "{}";
+const unsigned int CommandRunner::m_maxCacheSize = 10;
+const char* CommandRunner::m_persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
+const char* CommandRunner::m_defaultCacheTemplate = "{}";
 
 constexpr const char g_moduleInfo[] = R""""({
     "Name": "CommandRunner",
@@ -136,7 +137,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
     }
     else
     {
-        if (0 == CommandRunner::componentName.compare(componentName))
+        if (0 == CommandRunner::m_componentName.compare(componentName))
         {
             if (0 == g_commandArguments.compare(objectName))
             {
@@ -228,7 +229,7 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
         *payload = nullptr;
         *payloadSizeBytes = 0;
 
-        if (0 == CommandRunner::componentName.compare(componentName))
+        if (0 == CommandRunner::m_componentName.compare(componentName))
         {
             if (0 == g_commandStatus.compare(objectName))
             {
@@ -403,7 +404,7 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
             SetReportedStatusId(command->GetId());
 
             // Remove any completed commands from the cache if the cache size is greater than the maximum size
-            while (m_cacheBuffer.size() > maxCacheSize)
+            while (m_cacheBuffer.size() > m_maxCacheSize)
             {
                 std::shared_ptr<Command> oldestCommand = m_cacheBuffer.back();
                 if ((nullptr != oldestCommand) && (oldestCommand->IsComplete()))
@@ -498,7 +499,7 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
     int status = 0;
 
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
-    std::ifstream file(persistedCacheFile);
+    std::ifstream file(m_persistedCacheFile);
 
     if (file.good())
     {
@@ -560,18 +561,18 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
     statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
 
-    std::ifstream file(persistedCacheFile);
+    std::ifstream file(m_persistedCacheFile);
     if (file.good())
     {
         rapidjson::IStreamWrapper isw(file);
         if (document.ParseStream(isw).HasParseError() || !document.IsObject())
         {
-            document.Parse(defaultCacheTemplate);
+            document.Parse(m_defaultCacheTemplate);
         }
     }
     else
     {
-        document.Parse(defaultCacheTemplate);
+        document.Parse(m_defaultCacheTemplate);
     }
 
     rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
@@ -593,7 +594,7 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
         if (!updated)
         {
-            if (document[clientName.c_str()].Size() >= maxCacheSize)
+            if (document[clientName.c_str()].Size() >= m_maxCacheSize)
             {
                 client.Erase(client.Begin());
             }
@@ -616,10 +617,10 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
     if (buffer.GetSize() > 0)
     {
-        std::FILE* file = std::fopen(persistedCacheFile, "w+");
+        std::FILE* file = std::fopen(m_persistedCacheFile, "w+");
         if (nullptr == file)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", persistedCacheFile);
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", m_persistedCacheFile);
             status = EACCES;
         }
         else
@@ -629,13 +630,13 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
             if ((0 > rc) || (EOF == rc))
             {
                 status = errno ? errno : EINVAL;
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", persistedCacheFile, status, errno ? strerror(errno) : "-");
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", m_persistedCacheFile, status, errno ? strerror(errno) : "-");
             }
 
             fflush(file);
             std::fclose(file);
 
-            RestrictFileAccessToCurrentAccountOnly(persistedCacheFile);
+            RestrictFileAccessToCurrentAccountOnly(m_persistedCacheFile);
         }
     }
 

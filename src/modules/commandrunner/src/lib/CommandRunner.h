@@ -16,14 +16,15 @@
 
 #include <Command.h>
 #include <Mmi.h>
+
 class CommandRunner
 {
 public:
-    static const std::string componentName;
+    static const std::string m_componentName;
 
-    static const unsigned int maxCacheSize = 10;
-    static const char* persistedCacheFile;
-    static const char* defaultCacheTemplate;
+    static const unsigned int m_maxCacheSize;
+    static const char* m_persistedCacheFile;
+    static const char* m_defaultCacheTemplate;
 
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     ~CommandRunner();
