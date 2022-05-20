@@ -539,12 +539,14 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
         return IOTHUB_CLIENT_ERROR;
     }
 
-    if (MPI_OK != (mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength)))
+    mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
+
+    if ((MPI_OK != mpiResult) && (false == IsPlatformActive()))
     {
         CallMpiFree(valuePayload);
 
-        // Try to restart the platform and open a new MPI session and retry MpiGet
-        if (StartMpiClientSession())
+        // Restart the platform, re-open the MPI session and retry MpiGet
+        if (RefreshMpiClientSession())
         {
             mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
         }

@@ -337,13 +337,33 @@ static void ForkDaemon()
     }
 }
 
+bool IsPlatformActive(void)
+{
+   const char* isPlatformActive = "systemctl is-active osconfig-platform";
+   bool status = true;
+
+   if (ESRCH == ExecuteCommand(NULL, isPlatformActive, false, false, 0, 0, NULL, NULL, GetLog())) 
+   {
+        status = false;
+   }
+   
+   return status;
+}
+
 static bool StartPlatform(void)
 {
-   const char* enablePlatform = "sudo systemctl enable osconfig-platform";
-   const char* startPlatform = "sudo systemctl start osconfig-platform";
+   const char* enablePlatform = "systemctl enable osconfig-platform";
+   const char* startPlatform = "systemctl start osconfig-platform";
+   bool status = true;
 
-   return ((0 == ExecuteCommand(NULL, enablePlatform, false, false, 0, 0, NULL, NULL, GetLog())) &&
-       (0 == ExecuteCommand(NULL, startPlatform, false, false, 0, 0, NULL, NULL, GetLog())));
+   if (false == IsPlatformActive()) 
+   {
+        OsConfigLogInfo(GetLog(), "Start the platform");
+        status = ((0 == ExecuteCommand(NULL, enablePlatform, false, false, 0, 0, NULL, NULL, GetLog())) &&
+            (0 == ExecuteCommand(NULL, startPlatform, false, false, 0, 0, NULL, NULL, GetLog())));
+   }
+   
+   return status;
 }
 
 static bool StopPlatform(void)
@@ -353,33 +373,31 @@ static bool StopPlatform(void)
    return (0 == ExecuteCommand(NULL, stopPlatform, false, false, 0, 0, NULL, NULL, GetLog()));
 }
 
-bool StartMpiClientSession(void)
+bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
-    if (NULL != g_mpiHandle)
+    if (IsPlatformActive())
     {
-        CallMpiClose(g_mpiHandle);
-        g_mpiHandle = NULL;
+        // Platform is already running
+        return status;
     }
     
-    if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+    if (true == (status = StartPlatform()))
     {
-        OsConfigLogInfo(GetLog(), "Start the platform");
-        if (true == (status = StartPlatform()))
+        sleep(1);
+        
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
         {
-            if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
-            {
-                LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-                g_exitState = PlatformInitializationFailure;
-                status = false;
-            }
-        }
-        else
-        {
-            LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+            LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
             g_exitState = PlatformInitializationFailure;
+            status = false;
         }
+    }
+    else
+    {
+        LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+        g_exitState = PlatformInitializationFailure;
     }
 
     return status;
@@ -387,7 +405,7 @@ bool StartMpiClientSession(void)
 
 static bool InitializeAgent(void)
 {
-    bool status = StartMpiClientSession();
+    bool status = RefreshMpiClientSession();
 
     g_lastTime = (unsigned int)time(NULL);
 
@@ -439,12 +457,14 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localManagement)
     {
-        if (MPI_OK != (mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes)))
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+
+        if ((MPI_OK != mpiResult) && (false == IsPlatformActive()))
         {
             CallMpiFree(payload);
 
-            // Try to restart the platform and open a new MPI session and retry MpiGetReported
-            if (StartMpiClientSession())
+            // Restart the platform, re-open the MPI session and retry MpiGetReported
+            if (RefreshMpiClientSession())
             {
                 mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
             }
