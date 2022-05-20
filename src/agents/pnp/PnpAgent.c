@@ -353,18 +353,21 @@ static bool StopPlatform(void)
    return (0 == ExecuteCommand(NULL, stopPlatform, false, false, 0, 0, NULL, NULL, GetLog()));
 }
 
-static bool InitializeAgent(void)
+bool StartMpiClientSession(void)
 {
     bool status = true;
 
-    g_lastTime = (unsigned int)time(NULL);
-
+    if (NULL != g_mpiHandle)
+    {
+        CallMpiClose(g_mpiHandle);
+        g_mpiHandle = NULL;
+    }
+    
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
         OsConfigLogInfo(GetLog(), "Start the platform");
         if (StartPlatform())
         {
-            sleep(1);
             if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
             {
                 LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
@@ -379,6 +382,15 @@ static bool InitializeAgent(void)
             status = false;
         }
     }
+
+    return status;
+}
+
+static bool InitializeAgent(void)
+{
+    bool status = StartMpiClientSession();
+
+    g_lastTime = (unsigned int)time(NULL);
 
     if (status && g_iotHubConnectionString)
     {
@@ -428,7 +440,18 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localManagement)
     {
-        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        if (MPI_OK != (mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes)))
+        {
+            CallMpiFree(payload);
+
+            // Try to restart the platform and open a new MPI session and retry MpiGetReported
+            if (StartMpiClientSession())
+            {
+                mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+            }
+        }
+
+
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
@@ -440,6 +463,7 @@ static void SaveReportedConfigurationToFile()
                 }
             }
         }
+        
         CallMpiFree(payload);
     }
 }
