@@ -564,7 +564,7 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
     if (file.good())
     {
         rapidjson::IStreamWrapper isw(file);
-        if (document.ParseStream(isw).HasParseError() || !document.IsObject())
+        if (document.ParseStream(isw).HasParseError() || (!document.IsObject()))
         {
             document.Parse(m_defaultCacheTemplate);
         }
