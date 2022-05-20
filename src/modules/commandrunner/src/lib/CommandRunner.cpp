@@ -13,7 +13,6 @@
 #include <Mmi.h>
 
 const std::string CommandRunner::m_componentName = "CommandRunner";
-
 const unsigned int CommandRunner::m_maxCacheSize = 10;
 const char* CommandRunner::m_persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
 const char* CommandRunner::m_defaultCacheTemplate = "{}";
