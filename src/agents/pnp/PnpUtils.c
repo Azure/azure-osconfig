@@ -541,7 +541,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
     if (MPI_OK != (mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength)))
     {
-        CallMpiFree(payload);
+        CallMpiFree(valuePayload);
 
         // Try to restart the platform and open a new MPI session and retry MpiGet
         if (StartMpiClientSession())

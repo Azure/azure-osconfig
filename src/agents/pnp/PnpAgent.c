@@ -366,7 +366,7 @@ bool StartMpiClientSession(void)
     if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
     {
         OsConfigLogInfo(GetLog(), "Start the platform");
-        if (StartPlatform())
+        if (true == (status = StartPlatform()))
         {
             if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
             {
@@ -379,7 +379,6 @@ bool StartMpiClientSession(void)
         {
             LogErrorWithTelemetry(GetLog(), "Platform could not be started");
             g_exitState = PlatformInitializationFailure;
-            status = false;
         }
     }
 
