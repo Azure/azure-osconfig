@@ -12,7 +12,7 @@
 #include <CommandRunner.h>
 #include <Mmi.h>
 
-const std::string g_commandRunner = "CommandRunner";
+const std::string CommandRunner::componentName = "CommandRunner";
 
 const char* CommandRunner::persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
 const char* CommandRunner::defaultCacheTemplate = "{}";
@@ -136,7 +136,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
     }
     else
     {
-        if (0 == g_commandRunner.compare(componentName))
+        if (0 == CommandRunner::componentName.compare(componentName))
         {
             if (0 == g_commandArguments.compare(objectName))
             {
@@ -228,7 +228,7 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
         *payload = nullptr;
         *payloadSizeBytes = 0;
 
-        if (0 == g_commandRunner.compare(componentName))
+        if (0 == CommandRunner::componentName.compare(componentName))
         {
             if (0 == g_commandStatus.compare(objectName))
             {

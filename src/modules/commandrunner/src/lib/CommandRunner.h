@@ -19,6 +19,8 @@
 class CommandRunner
 {
 public:
+    static const std::string componentName;
+
     static const unsigned int maxCacheSize = 10;
     static const char* persistedCacheFile;
     static const char* defaultCacheTemplate;
