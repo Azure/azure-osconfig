@@ -542,6 +542,8 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
     mpiResult =  CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
     if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
     {
+        CallMpiFree(valuePayload);
+
         mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
     }
         

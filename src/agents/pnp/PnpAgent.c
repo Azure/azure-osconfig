@@ -424,6 +424,8 @@ static void SaveReportedConfigurationToFile()
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
         {
+            CallMpiFree(payload);
+
             mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         }
         
