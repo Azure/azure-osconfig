@@ -549,6 +549,7 @@ TEST_F(CommonUtilsTest, ValidClientName)
         "Azure OSConfig 5;11.11.11.20210927",
         "Azure OSConfig 6;0.0.0.20210927",
         "Azure OSConfig 5;0.0.0.20210927abc123"
+        "Azure OSConfig 10;0.0.0.20210927abc123"
     };
 
     for (const auto& validClientName : validClientNames)
