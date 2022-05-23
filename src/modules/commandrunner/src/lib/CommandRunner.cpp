@@ -538,11 +538,6 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
             OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client: %s", clientName.c_str());
         }
     }
-    else
-    {
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not exist");
-        status = -1;
-    }
 
     return status;
 }
@@ -578,6 +573,11 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
     if (document.HasMember(clientName.c_str()))
     {
+        if (!document[clientName.c_str()].IsArray())
+        {
+            document[clientName.c_str()].SetArray();
+        }
+
         rapidjson::Value& client = document[clientName.c_str()];
         bool updated = false;
 
