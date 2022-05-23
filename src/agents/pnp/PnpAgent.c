@@ -419,9 +419,13 @@ static void SaveReportedConfigurationToFile()
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
     int mpiResult = MPI_OK;
-    if (g_localManagement && RefreshMpiClientSession())
+    if (g_localManagement)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
+        {
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        }
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
@@ -463,11 +467,6 @@ static void LoadDesiredConfigurationFromFile()
     char* payload = NULL; 
 
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-
-    if (false == RefreshMpiClientSession())
-    {
-        return;
-    }
 
     payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
