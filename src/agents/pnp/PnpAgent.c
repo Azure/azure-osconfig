@@ -464,8 +464,14 @@ static void LoadDesiredConfigurationFromFile()
 
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
 
+    if (false == RefreshMpiClientSession())
+    {
+        // Platform is unreacheable
+        return;
+    }
+
     payload = LoadStringFromFile(DC_FILE, false, GetLog());
-    if (payload && (0 != (payloadSizeBytes = strlen(payload)) && RefreshMpiClientSession()))
+    if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
         // Do not call MpiSetDesired unless this desired configuration is different from previous
         if (g_desiredHash != (payloadHash = HashString(payload)))

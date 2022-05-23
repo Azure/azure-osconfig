@@ -541,7 +541,11 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
     if (false == RefreshMpiClientSession())
     {
-        LogErrorWithTelemetry(GetLog(), "%s: cannot reach the platform to get reported data for the property %s", componentName, propertyName);
+        if (IsFullLoggingEnabled())
+        {
+            LogErrorWithTelemetry(GetLog(), "%s: cannot reach the platform to get reported data for the property %s", componentName, propertyName);
+        }
+
         return IOTHUB_CLIENT_ERROR;
     }
 
