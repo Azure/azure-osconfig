@@ -8,12 +8,12 @@
 bool IsDaemonActive(const char* name, void* log)
 {
     const char* isActiveTemplate = "systemctl is-active %s";
-    char command[MAX_DAEMON_COMMAND_LENGTH] = {0};
+    char isActiveCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     bool status = true;
 
-    snprintf(command, sizeof(command), isActiveTemplate, name);
+    snprintf(isActiveCommand, sizeof(isActiveCommand), isActiveTemplate, name);
 
-    if (ESRCH == ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
+    if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
     {
         status = false;
     }
