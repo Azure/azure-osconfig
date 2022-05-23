@@ -337,53 +337,17 @@ static void ForkDaemon()
     }
 }
 
-bool IsPlatformActive(void)
-{
-   const char* isPlatformActive = "systemctl is-active osconfig-platform";
-   bool status = true;
-
-   if (ESRCH == ExecuteCommand(NULL, isPlatformActive, false, false, 0, 0, NULL, NULL, GetLog())) 
-   {
-        status = false;
-   }
-   
-   return status;
-}
-
-static bool StartPlatform(void)
-{
-   const char* enablePlatform = "systemctl enable osconfig-platform";
-   const char* startPlatform = "systemctl start osconfig-platform";
-   bool status = true;
-
-   if (false == IsPlatformActive()) 
-   {
-        OsConfigLogInfo(GetLog(), "Start the platform");
-        status = ((0 == ExecuteCommand(NULL, enablePlatform, false, false, 0, 0, NULL, NULL, GetLog())) &&
-            (0 == ExecuteCommand(NULL, startPlatform, false, false, 0, 0, NULL, NULL, GetLog())));
-   }
-   
-   return status;
-}
-
-static bool StopPlatform(void)
-{
-   const char* stopPlatform = "sudo systemctl stop osconfig-platform";
-
-   return (0 == ExecuteCommand(NULL, stopPlatform, false, false, 0, 0, NULL, NULL, GetLog()));
-}
-
 bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
-    if (IsPlatformActive())
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
         // Platform is already running
         return status;
     }
     
-    if (true == (status = StartPlatform()))
+    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
     {
         sleep(1);
         
@@ -458,19 +422,13 @@ static void SaveReportedConfigurationToFile()
     if (g_localManagement)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
-
-        if ((MPI_OK != mpiResult) && (false == IsPlatformActive()))
+        if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
         {
             CallMpiFree(payload);
 
-            // Restart the platform, re-open the MPI session and retry MpiGetReported
-            if (RefreshMpiClientSession())
-            {
-                mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
-            }
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         }
-
-
+        
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
@@ -820,6 +778,9 @@ done:
     FREE_MEMORY(g_iotHubConnectionString);
 
     CloseAgent();
+    
+    StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
+
     CloseTraceLogging();
     CloseLog(&g_agentLog);
 
@@ -839,9 +800,6 @@ done:
     {
         free((void *)g_proxyOptions.password);
     }
-
-    // Stop the platform when agent terminates
-    StopPlatform();
 
     return 0;
 }

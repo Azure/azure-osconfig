@@ -88,6 +88,10 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
 int SleepMilliseconds(long milliseconds);
 
+bool IsDaemonActive(const char* name, void* log);
+bool EnableAndStartDaemon(const char* name, void* log);
+void StopAndDisableDaemon(const char* name, void* log);
+
 #ifdef __cplusplus
 }
 #endif
