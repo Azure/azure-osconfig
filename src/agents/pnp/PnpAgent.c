@@ -341,7 +341,7 @@ bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
-    if (IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
         // Platform is already running
         return status;
@@ -466,7 +466,6 @@ static void LoadDesiredConfigurationFromFile()
 
     if (false == RefreshMpiClientSession())
     {
-        // Platform is unreacheable
         return;
     }
 
