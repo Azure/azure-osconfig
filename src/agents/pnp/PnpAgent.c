@@ -422,8 +422,9 @@ static void SaveReportedConfigurationToFile()
     if (g_localManagement)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
-        if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
+        if ((MPI_OK != mpiResult) && (false == IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
         {
+            RefreshMpiClientSession();
             mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
         }
         
