@@ -600,8 +600,6 @@ int CommandRunner::PersistCommandStatus(const std::string& clientName, const Com
 
             client.PushBack(statusDocument, allocator);
         }
-
-        document[clientName.c_str()].CopyFrom(client, allocator);
     }
     else
     {
