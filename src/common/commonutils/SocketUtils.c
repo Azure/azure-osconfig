@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "internal.h"
+#include "Internal.h"
 
 #define MAX_MPI_URI_LENGTH 32
 

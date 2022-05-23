@@ -1,16 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <regex>
-#include <Logging.h>
-#include <CommonUtils.h>
-#include <rapidjson/document.h>
-#include <rapidjson/schema.h>
-#include <rapidjson/stringbuffer.h>
+#include "Internal.h"
 
 #define OSCONFIG_NAME_PREFIX "Azure OSConfig "
 #define OSCONFIG_MODEL_VERSION_DELIMITER ";"

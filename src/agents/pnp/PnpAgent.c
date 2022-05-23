@@ -771,9 +771,10 @@ done:
     FREE_MEMORY(connectionString);
     FREE_MEMORY(g_iotHubConnectionString);
 
+    CloseAgent();
+    
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
 
-    CloseAgent();
     CloseTraceLogging();
     CloseLog(&g_agentLog);
 

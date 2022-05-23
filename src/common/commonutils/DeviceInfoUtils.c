@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "internal.h"
+#include "Internal.h"
 
 #define OS_NAME_COMMAND "cat /etc/os-release | grep ID="
 #define OS_PRETTY_NAME_COMMAND "cat /etc/os-release | grep PRETTY_NAME="

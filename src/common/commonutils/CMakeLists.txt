@@ -7,6 +7,7 @@ find_package(RapidJSON REQUIRED)
 
 add_library(commonutils STATIC 
     CommandUtils.c
+    DaemonUtils.c
     DeviceInfoUtils.c
     FileUtils.c
     OtherUtils.c

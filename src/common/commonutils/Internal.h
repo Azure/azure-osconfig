@@ -4,7 +4,10 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -33,8 +36,6 @@
 #include <cstring>
 #include <string>
 #include <regex>
-#include <Logging.h>
-#include <CommonUtils.h>
 #include <rapidjson/document.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/stringbuffer.h>
