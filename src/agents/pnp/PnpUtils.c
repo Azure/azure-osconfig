@@ -540,9 +540,8 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
     }
 
     mpiResult =  CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
-    if ((MPI_OK != mpiResult) && (false == IsDaemonActive(OSCONFIG_PLATFORM, GetLog())))
+    if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
     {
-        RefreshMpiClientSession();
         mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
     }
         
