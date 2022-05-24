@@ -654,6 +654,10 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
         }
 
         mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength);
+        if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
+        {
+            mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength);
+        }
 
         if (MPI_OK == mpiResult)
         {
