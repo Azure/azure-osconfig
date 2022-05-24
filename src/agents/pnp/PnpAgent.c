@@ -467,6 +467,7 @@ static void LoadDesiredConfigurationFromFile()
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
     char* payload = NULL; 
+    int mpiResult = MPI_OK;
 
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
 
@@ -476,7 +477,13 @@ static void LoadDesiredConfigurationFromFile()
         // Do not call MpiSetDesired unless this desired configuration is different from previous
         if (g_desiredHash != (payloadHash = HashString(payload)))
         {
-            if (MPI_OK == CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes))
+            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+            if ((MPI_OK != mpiResult) && RefreshMpiClientSession())
+            {
+                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+            }
+            
+            if (MPI_OK == mpiResult)
             {
                 g_desiredHash = payloadHash;
             }
