@@ -13,6 +13,7 @@
 // 24 hours
 #define MAX_REPORTING_INTERVAL 86400
 
+#define COMMAND_LOGGING "CommandLogging"
 #define FULL_LOGGING "FullLogging"
 #define REPORTED_NAME "Reported"
 #define REPORTED_COMPONENT_NAME "ComponentName"
@@ -45,6 +46,7 @@ typedef struct REPORTED_PROPERTY
     size_t lastPayloadHash;
 } REPORTED_PROPERTY;
 
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
 bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString);
 int GetModelVersionFromJsonConfig(const char* jsonString);

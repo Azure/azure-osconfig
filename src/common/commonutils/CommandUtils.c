@@ -14,6 +14,18 @@ static const char g_commandTerminator[] = " 2>&1";
 
 static const char g_hashCommandTemplate[] = "%s | sha256sum | head -c 64";
 
+static bool g_commandLoggingEnabled = false;
+
+void SetCommandLogging(bool commandLogging)
+{
+    g_commandLoggingEnabled = commandLogging;
+}
+
+bool IsCommandLoggingEnabled(void)
+{
+    return g_CommandLoggingEnabled;
+}
+
 static void KillProcess(pid_t processId)
 {
     fflush(NULL);
@@ -59,7 +71,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
     if ((timeoutSeconds > 0) || (NULL != callback))
     {
-        if (IsFullLoggingEnabled())
+        if (IsCommandLoggingEnabled())
         {
             OsConfigLogInfo(log, "SystemCommand: executing command '%s' with timeout of %d seconds and%scancelation on %s thread", 
                 command, timeout, (NULL == callback) ? " no " : " ", mainProcessThread ? "main process" : "worker");
@@ -84,7 +96,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             else if (workerProcess < 0)
             {
                 // Intermediate process
-                if (IsFullLoggingEnabled())
+                if (IsCommandLoggingEnabled())
                 {
                     OsConfigLogError(log, "Failed forking process to execute command");
                 }
@@ -126,7 +138,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             else if (timerProcess < 0)
             {
                 // Intermediate process
-                if (IsFullLoggingEnabled())
+                if (IsCommandLoggingEnabled())
                 {
                     OsConfigLogError(log, "Failed forking timer process");
                 }
@@ -146,7 +158,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             status = NormalizeStatus(status);
             if (childProcess == workerProcess)
             {
-                if (IsFullLoggingEnabled())
+                if (IsCommandLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "Command execution complete with status %d", status);
                 }
@@ -155,7 +167,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
             else
             {
                 // Timer process is done, kill the timed out worker process
-                if (IsFullLoggingEnabled())
+                if (IsCommandLoggingEnabled())
                 {
                     OsConfigLogError(log, "Command timed out or it was canceled, command process killed (%d)", status);
                 }
@@ -174,7 +186,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
         else
         {
             status = -1;
-            if (IsFullLoggingEnabled())
+            if (IsCommandLoggingEnabled())
             {
                 OsConfigLogError(log, "Failed forking intermediate process");
             }
@@ -182,7 +194,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     }
     else
     {
-        if (IsFullLoggingEnabled())
+        if (IsCommandLoggingEnabled())
         {
             OsConfigLogInfo(log, "SystemCommand: executing command '%s' without timeout or cancelation on %s thread", 
                 command, mainProcessThread ? "main process" : "worker");
@@ -201,7 +213,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
         else
         {
             // If our fork fails, try system(), if that also fails then the call fails
-            if (IsFullLoggingEnabled())
+            if (IsCommandLoggingEnabled())
             {
                 OsConfigLogError(log, "Failed forking process to execute command, attempting system");
             }
@@ -210,7 +222,7 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     }
 
     status = NormalizeStatus(status);
-    if (IsFullLoggingEnabled())
+    if (IsCommandLoggingEnabled())
     {
         OsConfigLogInfo(log, "SystemCommand: command '%s' completed with %d", command, status);
     }
@@ -232,7 +244,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     if ((NULL == command) || (0 == system(NULL)))
     {
-        if (IsFullLoggingEnabled())
+        if (IsCommandLoggingEnabled())
         {
             OsConfigLogError(log, "Cannot run command '%s'", command);
         }
@@ -253,7 +265,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
     if (commandLineLength > maximumCommandLine)
     {
-        if (IsFullLoggingEnabled())
+        if (IsCommandLoggingEnabled())
         {
             OsConfigLogError(log, "Cannot run command '%s', command too long (%u), ARG_MAX: %u", command, (unsigned)commandLineLength, (unsigned)maximumCommandLine);
         }
@@ -263,7 +275,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     commandLine = (char*)malloc(commandLineLength);
     if (NULL == commandLine)
     {
-        if (IsFullLoggingEnabled())
+        if (IsCommandLoggingEnabled())
         {
             OsConfigLogError(log, "Cannot run command '%s', cannot allocate %u bytes for command, out of memory", command, (unsigned)commandLineLength);
         }
@@ -337,7 +349,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
     remove(commandTextResultFile);
 
-    if (IsFullLoggingEnabled())
+    if (IsCommandLoggingEnabled())
     {
         OsConfigLogInfo(log, "Context: '%p'", context);
         OsConfigLogInfo(log, "Command: '%s'", command);
