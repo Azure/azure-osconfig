@@ -203,9 +203,9 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsFullLoggingEnabled())
+    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
