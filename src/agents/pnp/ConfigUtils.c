@@ -4,7 +4,7 @@
 #include "inc/AgentCommon.h"
 #include "inc/ConfigUtils.h"
 
-bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
+static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
 {
     bool result = false;
     JSON_Value* rootValue = NULL;
@@ -16,13 +16,23 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
         {
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
-                result = (0 == (int)json_object_get_number(rootObject, FULL_LOGGING)) ? false : true;
+                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
             }
             json_value_free(rootValue);
         }
     }
 
     return result;
+}
+
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, COMMAND_LOGGING);
+}
+
+bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, FULL_LOGGING);
 }
 
 static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonString, int defaultValue, int minValue, int maxValue)

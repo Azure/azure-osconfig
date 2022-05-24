@@ -573,6 +573,7 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
+        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
@@ -594,9 +595,9 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsFullLoggingEnabled())
+    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));

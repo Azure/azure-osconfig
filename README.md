@@ -141,9 +141,25 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 }
 ```
 
+### Enabling logging of system commands executed by OSConfig for debugging purposes
+
+Command logging means that OSConfig will log all input and output from internally executed system commands.
+
+Generally it is not recommended to run OSConfig with command logging enabled.
+
+To enable command logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "CommandLogging" to a non zero value:
+
+```json
+{
+    "CommandLogging": 1
+}
+```
+
+To disable command logging, set "CommandLogging" to 0.
+
 ### Enabling full logging for debugging purposes
 
-Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS and system commands.
+Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS and local configuration.
 
 Generally it is not recommended to run OSConfig with full logging enabled.
 
