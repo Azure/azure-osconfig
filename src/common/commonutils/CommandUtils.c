@@ -23,7 +23,7 @@ void SetCommandLogging(bool commandLogging)
 
 bool IsCommandLoggingEnabled(void)
 {
-    return g_CommandLoggingEnabled;
+    return g_commandLoggingEnabled;
 }
 
 static void KillProcess(pid_t processId)
