@@ -29,6 +29,10 @@ static socklen_t g_socketlen = 0;
 static pthread_t g_mpiServerWorker = 0;
 static bool g_serverActive = false;
 
+char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
+static const char g_mpiCallObjectTemplate[] = " during %s to %s.%s\n";
+static const char g_mpiCallModelTemplate[] = " during %s\n";
+
 static MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     MPI_HANDLE handle = NULL;
@@ -53,7 +57,11 @@ static void CallMpiClose(MPI_HANDLE handle)
 
 static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING payload, const int payloadSize)
 {
-    int status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
+    int status = MPI_OK;
+
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_SET_URI, componentName, propertyName);
+    
+    status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
@@ -67,12 +75,18 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
         }
     }
 
+    memset(g_mpiCall, 0, sizeof(g_mpiCall));
+
     return status;
 }
 
 static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* objectName, MPI_JSON_STRING* payload, int* payloadSize)
 {
-    int status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
+    int status = MPI_OK;
+
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_GET_URI, componentName, propertyName);
+
+    status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
@@ -86,12 +100,18 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
         }
     }
 
+    memset(g_mpiCall, 0, sizeof(g_mpiCall));
+
     return status;
 }
 
 static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSize)
 {
-    int status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
+    int status = MPI_OK;
+    
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_SET_DESIRED_URI);
+
+    status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
@@ -105,12 +125,18 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
         }
     }
 
+    memset(g_mpiCall, 0, sizeof(g_mpiCall));
+
     return status;
 }
 
 static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize)
 {
-    int status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
+    int status = MPI_OK;
+
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_GET_REPORTED_URI);
+
+    status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
     {
@@ -123,6 +149,8 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
             OsConfigLogError(GetPlatformLog(), "MpiGetReported request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
         }
     }
+
+    memset(g_mpiCall, 0, sizeof(g_mpiCall));
 
     return status;
 }

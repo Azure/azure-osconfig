@@ -6,6 +6,8 @@
 
 #include <Mpi.h>
 
+#define MPI_CALL_MESSAGE_LENGTH 256
+
 #define MPI_OPEN_URI "MpiOpen"
 #define MPI_CLOSE_URI "MpiClose"
 #define MPI_SET_URI "MpiSet"

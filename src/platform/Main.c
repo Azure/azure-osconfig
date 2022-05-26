@@ -27,6 +27,8 @@ static unsigned int g_lastTime = 0;
 
 extern OSCONFIG_LOG_HANDLE g_platformLog;
 
+extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
+
 // All signals on which we want the agent to cleanup before terminating process.
 // SIGKILL is omitted to allow a clean and immediate process kill if needed.
 static int g_stopSignals[] = {
@@ -48,11 +50,11 @@ static int g_refreshSignal = 0;
 
 #define EOL_TERMINATOR "\n"
 #define ERROR_MESSAGE_CRASH "[ERROR] OSConfig Platform crash due to "
-#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)" EOL_TERMINATOR
-#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)"
+#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)"
+#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
+#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
+#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
 
 static void SignalInterrupt(int signal)
 {
@@ -92,7 +94,18 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
+            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, errorMessageSize)))
+            {
+                sizeOfMpiMessage = strlen(g_mpiCall);
+                if (sizeOfMpiMessage > 0)
+                {
+                    writeResult = write(logDescriptor, (const void*)(&g_mpiCall[0]), sizeOfMpiMessage);
+                }
+                else
+                {
+                    writeResult = write(logDescriptor, (const void*)EOL_TERMINATOR, sizeof(char));
+                }
+            }
             close(logDescriptor);
         }
         _exit(signal);
