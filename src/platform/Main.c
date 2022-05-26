@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <PlatformCommon.h>
+#include <MpiServer.h>
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
@@ -60,6 +61,8 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
+    size_t errorMessageSize = 0;
+    size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
 
     UNUSED(writeResult);
