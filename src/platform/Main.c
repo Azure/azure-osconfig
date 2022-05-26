@@ -61,7 +61,6 @@ static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    size_t errorMessageSize = 0;
     size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
 
@@ -97,7 +96,7 @@ static void SignalInterrupt(int signal)
     {
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, errorMessageSize)))
+            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage))))
             {
                 sizeOfMpiMessage = strlen(g_mpiCall);
                 if (sizeOfMpiMessage > 0)
