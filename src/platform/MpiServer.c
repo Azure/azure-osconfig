@@ -59,7 +59,7 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
 {
     int status = MPI_OK;
 
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_SET_URI, componentName, propertyName);
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_SET_URI, componentName, objectName);
     
     status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
@@ -84,7 +84,7 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
 {
     int status = MPI_OK;
 
-    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_GET_URI, componentName, propertyName);
+    snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_GET_URI, componentName, objectName);
 
     status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
