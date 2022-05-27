@@ -13,6 +13,7 @@ add_subdirectory(pmc)
 add_subdirectory(settings)
 add_subdirectory(tpm)
 add_subdirectory(ztsi)
+add_subdirectory(test)
 
 if (BUILD_SAMPLES)
     add_subdirectory(samples)

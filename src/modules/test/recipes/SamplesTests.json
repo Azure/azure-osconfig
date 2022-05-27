@@ -1,0 +1,24 @@
+[
+    // TODO: Complete the SamplesTest to include more tests
+    {
+        "ComponentName": "SampleComponent",
+        "ObjectName": "reportedStringObject",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "SampleComponent",
+        "ObjectName": "desiredIntegerObject",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "SampleComponent",
+        "ObjectName": "reportedBooleanObject",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    }
+]
