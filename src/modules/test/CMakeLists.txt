@@ -20,6 +20,10 @@ target_include_directories(testfactorylib PUBLIC
 add_executable(modulestest main.cpp)
 target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
 
+if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
+    target_link_options(modulestest stdc++fs)
+endif()
+
 if (BUILD_TESTS)
     add_subdirectory(unit-tests)
 endif()
