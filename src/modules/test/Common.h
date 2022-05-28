@@ -32,20 +32,14 @@
 }\
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
-#if defined(__cpp_lib_filesystem)
-#   define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 0
-#elif defined(__cpp_lib_experimental_filesystem)
-#   define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 1
-#endif
-
-#if INCLUDE_STD_FILESYSTEM_EXPERIMENTAL
+#if __has_include(<filesystem>)
+#   include <filesystem>
+#else
 #   include <experimental/filesystem>
 // Alias namespace
-namespace std {
-    namespace filesystem = experimental::filesystem;
-}
-#else
-#   include <filesystem>
+    namespace std {
+        namespace filesystem = experimental::filesystem;
+    }
 #endif
 
 #endif // MODULESTESTCOMMON_H
