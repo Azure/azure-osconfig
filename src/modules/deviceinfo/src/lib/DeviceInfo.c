@@ -68,9 +68,23 @@ static OSCONFIG_LOG_HANDLE DeviceInfoGetLog(void)
     return g_log;
 }
 
+static void AddLshwIfNotPresent(void)
+{
+    const char* checkLshw = "lshw";
+    const char* addLshw = "sudo apt install -y lshw";
+    
+    if (ExecuteCommand(NULL, checkLshw, true, true, 0, 0, NULL, NULL, DeviceInfoGetLog()))
+    {
+        OsConfigLogInfo(DeviceInfoGetLog(), "Lshw not present, add it");
+        ExecuteCommand(NULL, addLshw, true, true, 0, 0, NULL, NULL, DeviceInfoGetLog());
+    }
+}
+
 void DeviceInfoInitialize(void)
 {
     g_log = OpenLog(g_deviceInfoLogFile, g_deviceInfoRolledLogFile);
+
+    AddLshwIfNotPresent();
 
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());
