@@ -1,19 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <rapidjson/writer.h>
+#ifndef TPM_H
+#define TPM_H
+
+#include <cstring>
 #include <string>
-#include <CommonUtils.h>
 #include <Logging.h>
-#include <Mmi.h>
 
 #define TPM_LOGFILE "/var/log/osconfig_tpm.log"
 #define TPM_ROLLEDLOGFILE "/var/log/osconfig_tpm.bak"
 
-#define TPM "Tpm"
-#define TPM_STATUS "tpmStatus"
-#define TPM_VERSION "tpmVersion"
-#define TPM_MANUFACTURER "tpmManufacturer"
+#define TPM_RESPONSE_MAX_SIZE 4096
+#define INT_MAX 0x7FFFFFF
 
 class TpmLog
 {
@@ -40,20 +39,48 @@ private:
 class Tpm
 {
 public:
-    enum Status { Unknown, TpmDetected, TpmNotDetected };
+    static const std::string m_tpm;
+    static const std::string m_tpmVersion;
+    static const std::string m_tpmManufacturer;
+    static const std::string m_tpmStatus;
+
+    enum Status
+    {
+        Unknown = 0,
+        TpmDetected,
+        TpmNotDetected
+    };
+
+    struct Properties
+    {
+        std::string version;
+        std::string manufacturer;
+    };
 
     Tpm(const unsigned int maxPayloadSizeBytes);
-    virtual ~Tpm();
+    virtual ~Tpm() = default;
+
     virtual std::string RunCommand(const char* command);
+    static unsigned char HexVal(char c);
+    static std::string HexToString(const std::string str);
+    static void Trim(std::string& str);
+    static int UnsignedInt8ToUnsignedInt64(uint8_t* buffer, uint32_t size, uint32_t offset, uint32_t length, uint64_t* output);
 
-    int Get(const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    void GetStatus(std::string& status);
-    void GetVersionFromCapabilitiesFile(std::string& version);
-    void GetManufacturerFromCapabilitiesFile(std::string& manufacturer);
-    void HexToText(std::string& s);
-    void Trim(std::string& s);
-    unsigned char Decode(char c);
+    int GetPropertiesFromCapabilitiesFile(Properties& properties);
+    int GetPropertiesFromDeviceFile(Properties& properties);
+    void LoadProperties();
 
+    static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+
+    Status GetStatus() const;
+    std::string GetVersion() const;
+    std::string GetManufacturer() const;
+
+private:
     const unsigned int m_maxPayloadSizeBytes;
-    bool m_hasCapabilitiesFile;
+    Status m_status;
+    Properties m_properties;
 };
+
+#endif // TPM_H
