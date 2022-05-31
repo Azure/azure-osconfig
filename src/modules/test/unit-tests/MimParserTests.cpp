@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include <MimParser.h>
-
 namespace Tests
 {
     TEST(MimParserTests, LoadInvalidMim)

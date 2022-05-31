@@ -78,12 +78,24 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
     return testRecipes;
 }
 
+static void PrintUsage()
+{
+    std::cout << "Usage: modulestest [options] [ testplate.json | <module.so> <moduleMim.json> <testRecipes.json>]" << std::endl
+              << "modulestest is a module tester for OSConfig used to help module developers create management modules." << std::endl << std::endl
+              << "Options: " << std::endl
+              << "  -h, --help: Print help message" << std::endl;
+}
+
 int main(int argc, char **argv)
 {
-    SetFullLogging(true);
     testing::InitGoogleTest(&argc, argv);
     TestRecipes testRecipes;
     
+    if (argc == 1)
+    {
+        PrintUsage();
+    }
+
     if (argc == 2)
     {
         // Test definitions present - perform more extensive tests using Mim and test recipes
@@ -120,7 +132,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::cout << "Usage: chef <module.so> <moduleMim.json> <testRecipes.json>" << std::endl;
+            PrintUsage();
             return 1;
         }
     }

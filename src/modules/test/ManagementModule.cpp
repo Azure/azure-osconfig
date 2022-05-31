@@ -468,19 +468,13 @@ int MmiSession::Open()
         else
         {
             status = EINVAL;
-            if (IsFullLoggingEnabled())
-            {
-                ADD_FAILURE() << "MMI session already open";
-            }
+            ADD_FAILURE() << "MMI session already open";
         }
     }
     else
     {
         status = EINVAL;
-        if (IsFullLoggingEnabled())
-        {
-            ADD_FAILURE() << "MMI session not attached to a valid module";
-        }
+        ADD_FAILURE() << "MMI session not attached to a valid module";
     }
 
     return status;
