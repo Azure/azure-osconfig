@@ -2,11 +2,11 @@
 
 void RecipeInvoker::TestBody()
 {
-    ASSERT_STRNE(m_recipe.m_metadata.m_modulePath.c_str(), "");
+    ASSERT_STRNE(m_recipe.m_metadata.m_modulePath.c_str(), "") << "No module path defined!";
     auto module = std::make_shared<ManagementModule>(m_recipe.m_metadata.m_modulePath);
     MmiSession session(module, g_defaultClient);
-    ASSERT_EQ(0, module->Load());
-    ASSERT_EQ(0, session.Open());
+    ASSERT_EQ(0, module->Load()) << "Failed to load module!";
+    ASSERT_EQ(0, session.Open()) << "Failed to open session!";
 
     MMI_JSON_STRING payload = nullptr;
     int payloadSize = 0;
@@ -101,6 +101,6 @@ void RecipeInvoker::TestBody()
 
 void BasicModuleTester::TestBody()
 {
-    EXPECT_EQ(0, m_module->Load());
+    EXPECT_EQ(0, m_module->Load()) << "Failed to load module!";
     m_module->Unload();
 }
