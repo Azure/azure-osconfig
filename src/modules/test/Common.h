@@ -31,24 +31,17 @@
 
 constexpr const size_t g_lineLength = 256;
 
-inline void TestLogInfo(const char* format, const char* args...)
-{
-    char buf[g_lineLength] = {0};
-    std::snprintf(buf, g_lineLength, format, args);
-    std::cout << buf << std::endl;
-}
+#define TestLogInfo(format, ...) {\
+    char buf[g_lineLength] = {0};\
+    std::snprintf(buf, g_lineLength, format, ## __VA_ARGS__);\
+    std::cout << __FILE__ << ":" << __LINE__ << " INFO: " << buf << std::endl;\
+}\
 
-inline void TestLogError(const char* log)
-{
-    ADD_FAILURE() << log;
-}
-
-inline void TestLogError(const char* format, const char* args...)
-{
-    char buf[g_lineLength] = {0};
-    std::snprintf(buf, g_lineLength, format, args);
-    ADD_FAILURE() << buf;
-}
+#define TestLogError(format, ...) {\
+    char buf[g_lineLength] = {0};\
+    std::snprintf(buf, g_lineLength, format, ## __VA_ARGS__);\
+    ADD_FAILURE() << buf;\
+}\
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
 #if __has_include(<filesystem>)
