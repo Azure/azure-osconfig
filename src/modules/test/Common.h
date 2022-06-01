@@ -27,12 +27,19 @@
 #include <Mmi.h>
 #include <ManagementModule.h>
 
-#define TEST_LOG_INFO(format, ...) OSCONFIG_LOG_INFO(NULL, format, ## __VA_ARGS__)
-#define TEST_LOG_ERROR(format, ...) {\
-    size_t s = std::snprintf(NULL, 0, format, ## __VA_ARGS__);\
-    std::unique_ptr<char[]> buf( new char[ s + 1 ] );\
-    std::snprintf(buf.get(), s + 1, format, ## __VA_ARGS__);\
-    ADD_FAILURE() << buf.get();\
+#define TestLogInfo(format, ...) OSCONFIG_LOG_INFO(NULL, format, ## __VA_ARGS__)
+
+inline void TestLogError(const char* log)
+{
+    ADD_FAILURE() << log;
+}
+
+inline void TestLogError(const char* format, const char* args...)
+{
+    size_t s = std::snprintf(NULL, 0, format, args);
+    std::unique_ptr<char[]> buf( new char[ s + 1 ] );
+    std::snprintf(buf.get(), s + 1, format, args);
+    ADD_FAILURE() << buf.get();
 }
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability

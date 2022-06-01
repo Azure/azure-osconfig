@@ -60,7 +60,7 @@ int ManagementModule::Load()
             mmi_t funcPtr = (mmi_t)dlsym(m_handle, symbol.c_str());
             if (nullptr == funcPtr)
             {
-                TEST_LOG_ERROR("Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
+                TestLogError("Function '%s()' is not exported via the MMI for module: '%s'", symbol.c_str(), m_modulePath.c_str());
                 status = EINVAL;
             }
         }
@@ -82,7 +82,7 @@ int ManagementModule::Load()
                 rapidjson::Document document;
                 if (document.Parse(payload, payloadSizeBytes).HasParseError())
                 {
-                    TEST_LOG_ERROR("Failed to parse info JSON for module '%s'", m_modulePath.c_str());
+                    TestLogError("Failed to parse info JSON for module '%s'", m_modulePath.c_str());
                     status = EINVAL;
                 }
                 else if (0 != Info::Deserialize(document, m_info))
@@ -92,7 +92,7 @@ int ManagementModule::Load()
             }
             else
             {
-                TEST_LOG_ERROR("Failed to get info for module '%s'", m_modulePath.c_str());
+                TestLogError("Failed to get info for module '%s'", m_modulePath.c_str());
                 status = EINVAL;
             }
         }
@@ -113,11 +113,11 @@ int ManagementModule::Load()
         }
         ss << "]";
 
-        TEST_LOG_INFO("Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
+        TestLogInfo("Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
     }
     else
     {
-        TEST_LOG_ERROR("Failed to load module '%s'", m_modulePath.c_str());
+        TestLogError("Failed to load module '%s'", m_modulePath.c_str());
         if (nullptr != m_handle)
         {
             dlclose(m_handle);
@@ -195,7 +195,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
 
     if (!object.IsObject())
     {
-        TEST_LOG_ERROR("Failed to deserialize info JSON, expected object");
+        TestLogError("Failed to deserialize info JSON, expected object");
         return EINVAL;
     }
 
@@ -210,13 +210,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoName);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoName);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoName);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoName);
         status = EINVAL;
     }
 
@@ -229,13 +229,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoDescription);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoDescription);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoDescription);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoDescription);
         status = EINVAL;
     }
 
@@ -248,13 +248,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoManufacturer);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoManufacturer);
         status = EINVAL;
     }
 
@@ -267,13 +267,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
+            TestLogError("Module info field '%s' is not an integer", g_mmiGetInfoVersionMajor);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoVersionMajor);
         status = EINVAL;
     }
 
@@ -286,13 +286,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
+            TestLogError("Module info field '%s' is not an integer", g_mmiGetInfoVersionMinor);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoVersionMinor);
         status = EINVAL;
     }
 
@@ -305,13 +305,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoVersionInfo);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoVersionInfo);
         status = EINVAL;
     }
 
@@ -330,13 +330,13 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
                 }
                 else
                 {
-                    TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoComponents);
+                    TestLogError("Module info field '%s' is not a string", g_mmiGetInfoComponents);
                 }
             }
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an array", g_mmiGetInfoComponents);
+            TestLogError("Module info field '%s' is not an array", g_mmiGetInfoComponents);
             status = EINVAL;
         }
     }
@@ -353,20 +353,20 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
             }
             else
             {
-                TEST_LOG_ERROR("Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
+                TestLogError("Module info field '%s' is not a valid lifetime (%d)", g_mmiGetInfoLifetime, lifetime);
                 info.lifetime = Lifetime::Undefined;
                 status = EINVAL;
             }
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
+            TestLogError("Module info field '%s' is not an integer", g_mmiGetInfoLifetime);
             status = EINVAL;
         }
     }
     else
     {
-        TEST_LOG_ERROR("Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
+        TestLogError("Module info is missing required field: '%s'", g_mmiGetInfoLifetime);
         status = EINVAL;
     }
 
@@ -381,7 +381,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
+            TestLogError("Module info field '%s' is not an integer", g_mmiGetInfoVersionPatch);
         }
     }
 
@@ -394,7 +394,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
+            TestLogError("Module info field '%s' is not an integer", g_mmiGetInfoVersionTweak);
         }
     }
 
@@ -408,7 +408,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoLicenseUri);
         }
     }
 
@@ -421,7 +421,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
+            TestLogError("Module info field '%s' is not a string", g_mmiGetInfoProjectUri);
         }
     }
 
@@ -434,7 +434,7 @@ int ManagementModule::Info::Deserialize(const rapidjson::Value& object, Manageme
         }
         else
         {
-            TEST_LOG_ERROR("Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
+            TestLogError("Module info field '%s' is not an unsigned integer", g_mmiGetInfoUserAccount);
         }
     }
 
@@ -462,19 +462,19 @@ int MmiSession::Open()
         {
             if (nullptr == (m_mmiHandle = m_module->CallMmiOpen(m_clientName.c_str(), m_maxPayloadSizeBytes)))
             {
-                TEST_LOG_ERROR("Failed to open MMI session for client '%s'", m_clientName.c_str());
+                TestLogError("Failed to open MMI session for client '%s'", m_clientName.c_str());
             }
         }
         else
         {
             status = EINVAL;
-            TEST_LOG_ERROR("MMI session already open");
+            TestLogError("MMI session already open");
         }
     }
     else
     {
         status = EINVAL;
-        TEST_LOG_ERROR("MMI session not attached to a valid module");
+        TestLogError("MMI session not attached to a valid module");
     }
 
     return status;
