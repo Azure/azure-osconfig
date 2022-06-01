@@ -23,11 +23,17 @@
 #include <vector>
 
 #include <CommonUtils.h>
-#include <Logging.h>
 #include <Mmi.h>
 #include <ManagementModule.h>
 
-#define TestLogInfo(format, ...) OSCONFIG_LOG_INFO(NULL, format, ## __VA_ARGS__)
+constexpr const size_t g_lineLength = 256;
+
+inline void TestLogInfo(const char* format, const char* args...)
+{
+    char buf[g_lineLength] = {0};
+    std::snprintf(buf, g_lineLength, format, args);
+    std::cout << buf << std::endl;
+}
 
 inline void TestLogError(const char* log)
 {
@@ -36,10 +42,9 @@ inline void TestLogError(const char* log)
 
 inline void TestLogError(const char* format, const char* args...)
 {
-    size_t s = std::snprintf(NULL, 0, format, args);
-    std::unique_ptr<char[]> buf( new char[ s + 1 ] );
-    std::snprintf(buf.get(), s + 1, format, args);
-    ADD_FAILURE() << buf.get();
+    char buf[g_lineLength] = {0};
+    std::snprintf(buf, g_lineLength, format, args);
+    ADD_FAILURE() << buf;
 }
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability

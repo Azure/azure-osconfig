@@ -9,7 +9,6 @@ add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.c
 target_link_libraries(testfactorylib
     ${CMAKE_DL_LIBS}
     commonutils
-    logging
     pthread
     parsonlib)
 
