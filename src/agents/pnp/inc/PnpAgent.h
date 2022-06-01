@@ -10,8 +10,7 @@ extern "C"
 #endif
 
 void ScheduleRefreshConnection(void);
-bool RefreshMpiClientSession(void);
-bool IsPlatformActive(void);
+bool RefreshMpiClientSession(bool* platformAlreadyRunning);
 
 #ifdef __cplusplus
 }
