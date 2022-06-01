@@ -4,18 +4,13 @@
 #ifndef RECIPEINVOKER_H
 #define RECIPEINVOKER_H
 
-#include "TestRecipeParser.h"
+#include "Common.h"
 
 static const std::string g_defaultClient = "RecipeInvoker";
 
 static const std::string g_modulePath = "ModulePath";
 static const std::string g_mimPath = "MimPath";
 static const std::string g_testRecipesPath = "TestRecipesPath";
-
-// class ManagementModule
-// {
-//     ManagementModule(const std::string path);
-// };
 
 class RecipeFixture : public ::testing::Test {};
 

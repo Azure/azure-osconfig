@@ -26,6 +26,9 @@
 #include <Mmi.h>
 #include <ManagementModule.h>
 
+#include "MimParser.h"
+#include "TestRecipeParser.h"
+
 constexpr const size_t g_lineLength = 256;
 
 inline void TestLogInfo(const char* format, const char* args...)
