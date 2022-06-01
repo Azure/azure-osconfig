@@ -4,10 +4,12 @@
 project(testfactorylib)
 
 set(CMAKE_CXX_STANDARD 17)
-add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.cpp RecipeInvoker.cpp Common.cpp)
+add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.cpp RecipeInvoker.cpp)
 
 target_link_libraries(testfactorylib
     ${CMAKE_DL_LIBS}
+    commonutils
+    logging
     pthread
     parsonlib)
 

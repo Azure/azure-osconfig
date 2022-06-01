@@ -22,18 +22,18 @@
 #include <unordered_set>
 #include <vector>
 
+#include <CommonUtils.h>
+#include <Logging.h>
 #include <Mmi.h>
 #include <ManagementModule.h>
 
-#define UNUSED(a) (void)(a)
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#endif
-
-#define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#define OsConfigLogInfo(log, FORMAT, ...) {\
-    printf("[          ] [%s:%d]%s" FORMAT "\n", __SHORT_FILE__, __LINE__, " ", ## __VA_ARGS__);\
-}\
+#define TEST_LOG_INFO(format, ...) OSCONFIG_LOG_INFO(NULL, format, ## __VA_ARGS__)
+#define TEST_LOG_ERROR(format, ...) {\
+    size_t s = std::snprintf(NULL, 0, format, ## __VA_ARGS__);\
+    std::unique_ptr<char[]> buf( new char[ s + 1 ] );\
+    std::snprintf(buf.get(), s + 1, format, ## __VA_ARGS__);\
+    ADD_FAILURE() << buf.get();\
+}
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
 #if __has_include(<filesystem>)
@@ -45,7 +45,5 @@
         namespace filesystem = experimental::filesystem;
     }
 #endif
-
-bool IsValidMimObjectPayload(const char *payload, const int payloadSizeBytes, void *log);
 
 #endif // MODULESTESTCOMMON_H
