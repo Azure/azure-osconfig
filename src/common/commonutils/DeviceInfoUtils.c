@@ -16,9 +16,10 @@
 #define OS_FREE_MEMORY_COMMAND "grep MemFree /proc/meminfo"
 #define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
 #define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
+#define OS_PRODUCT_VERSION_COMMAND "cat /sys/devices/virtual/dmi/id/product_version"
 #define OS_PRODUCT_NAME_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"product:\""
 #define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"vendor:\""
-#define OS_PRODUCT_VERSION_COMMAND "lshw -c system | grep -m 1 \"version:\""
+#define OS_PRODUCT_VERSION_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"version:\""
 #define OS_SYSTEM_CONFIGURATION_COMMAND "lshw -c system | grep -m 1 \"configuration:\""
 #define OS_SYSTEM_CAPABILITIES_COMMAND "lshw -c system | grep -m 1 \"capabilities:\""
 
@@ -345,6 +346,11 @@ char* GetProductVendor(void* log)
 char* GetProductVersion(void* log)
 {
     char* textResult = GetHardwareProperty(OS_PRODUCT_VERSION_COMMAND, false, log);
+
+    if ((NULL == textResult) || (0 == strlen(textResult)))
+    {
+        textResult = GetHardwareProperty(OS_PRODUCT_VERSION_ALTERNATE_COMMAND, false, log);
+    }
 
     if (IsFullLoggingEnabled())
     {
