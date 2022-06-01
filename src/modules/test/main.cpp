@@ -81,7 +81,7 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
 static void PrintUsage()
 {
     std::cout << "Usage: modulestest [options] [ testplate.json | <module.so> <moduleMim.json> <testRecipes.json>]" << std::endl
-              << "modulestest is a module tester for OSConfig used to help module developers create management modules." << std::endl << std::endl
+              << "modulestest is a module tester for OSConfig." << std::endl << std::endl
               << "Options: " << std::endl
               << "  -h, --help: Print help message" << std::endl;
 }
