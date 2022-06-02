@@ -1,4 +1,4 @@
-#include "TestRecipeParser.h"
+#include "Common.h"
 
 static const std::string g_componentName = "ComponentName";
 static const std::string g_objectName = "ObjectName";

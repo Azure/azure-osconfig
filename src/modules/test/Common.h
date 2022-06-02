@@ -4,12 +4,13 @@
 #ifndef MODULESTESTCOMMON_H
 #define MODULESTESTCOMMON_H
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <dlfcn.h>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -24,10 +25,24 @@
 
 #include <CommonUtils.h>
 #include <Mmi.h>
-#include <ManagementModule.h>
 
-#include "MimParser.h"
+// Use <filesystem> or <experimental/filesystem> based on gcc lib availability
+#if __has_include(<filesystem>)
+    #include <filesystem>
+#else
+    #include <experimental/filesystem>
+    
+    // Alias namespace
+    namespace std 
+    {
+        namespace filesystem = experimental::filesystem;
+    }
+#endif
+
+#include "ManagementModule.h"
 #include "TestRecipeParser.h"
+#include "RecipeInvoker.h"
+#include "MimParser.h"
 
 constexpr const size_t g_lineLength = 256;
 
@@ -49,16 +64,5 @@ inline void TestLogError(const char* format, const char* args...)
     std::snprintf(buf, g_lineLength, format, args);
     std::cerr << buf;
 }
-
-// Use <filesystem> or <experimental/filesystem> based on gcc lib availability
-#if __has_include(<filesystem>)
-#   include <filesystem>
-#else
-#   include <experimental/filesystem>
-// Alias namespace
-    namespace std {
-        namespace filesystem = experimental::filesystem;
-    }
-#endif
 
 #endif // MODULESTESTCOMMON_H
