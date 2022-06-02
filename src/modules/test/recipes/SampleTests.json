@@ -8,7 +8,7 @@
     },
     {
         "ComponentName": "SampleComponent",
-        "ObjectName": "desiredIntegerObject",
+        "ObjectName": "reportedIntegerObject",
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0

@@ -31,6 +31,11 @@
 
 constexpr const size_t g_lineLength = 256;
 
+inline void TestLogInfo(const char* log)
+{
+    std::cout << log << std::endl;
+}
+
 inline void TestLogInfo(const char* format, const char* args...)
 {
     char buf[g_lineLength] = {0};
@@ -40,14 +45,14 @@ inline void TestLogInfo(const char* format, const char* args...)
 
 inline void TestLogError(const char* log)
 {
-    std::cerr << log;
+    std::cerr << log << std::endl;
 }
 
 inline void TestLogError(const char* format, const char* args...)
 {
     char buf[g_lineLength] = {0};
     std::snprintf(buf, g_lineLength, format, args);
-    std::cerr << buf;
+    std::cerr << buf << std::endl;
 }
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability

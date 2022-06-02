@@ -1,0 +1,23 @@
+[
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "hosts",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": true,
+        "ExpectedResult": 22,   // name is a reported object, this should fail
+        "WaitSeconds": 0
+    }
+]

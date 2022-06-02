@@ -1,0 +1,9 @@
+[
+    {
+        "ComponentName": "Tpm",
+        "ObjectName": "tpmStatus",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    }
+]

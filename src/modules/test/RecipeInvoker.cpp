@@ -25,8 +25,8 @@ void RecipeInvoker::TestBody()
             ASSERT_NE(nullptr, root_value);
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
-            EXPECT_NE(0, m_recipe.m_mimObjects->size());
-            EXPECT_NE(0, m_recipe.m_mimObjects->at(m_recipe.m_componentName)->size());
+            EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";
+            EXPECT_NE(0, m_recipe.m_mimObjects->at(m_recipe.m_componentName)->size()) << "No MimObjects for " << m_recipe.m_componentName << "!";
             auto map = m_recipe.m_mimObjects->at(m_recipe.m_componentName)->at(m_recipe.m_objectName);
 
             // Validate fields + supported values
@@ -56,6 +56,19 @@ void RecipeInvoker::TestBody()
                     JSON_Value *value = json_object_get_value(jsonObject, field.second.name.c_str());
                     EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean field '" << field.second.name << "'" << std::endl
                                                                        << "JSON: " << payload;
+                }
+                else if (field.second.type.compare("array") == 0)
+                {
+                    JSON_Value *value = json_object_get_value(jsonObject, field.second.name.c_str());
+                    EXPECT_EQ(JSONArray, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain array field '" << field.second.name << "'" << std::endl
+                                                                     << "JSON: " << payload;
+                }
+                else if (field.second.type.compare("map") == 0)
+                {
+                    // Maps are formatted as arrays of objects
+                    JSON_Value *value = json_object_get_value(jsonObject, field.second.name.c_str());
+                    EXPECT_EQ(JSONArray, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain map field '" << field.second.name << "'" << std::endl
+                                                                     << "JSON: " << payload;
                 }
                 else
                 {

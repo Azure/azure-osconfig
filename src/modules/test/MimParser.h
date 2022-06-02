@@ -10,6 +10,8 @@ struct MimField
 {
     std::string name;
     std::string type;
+    std::string subType1;    // For arrays: interger or string subtypes (subType1)
+    std::string subType2;    // For maps: key (subType1), value (subType2)
     std::shared_ptr<std::vector<std::string>> allowedValues;
 };
 
@@ -26,6 +28,9 @@ typedef std::shared_ptr<MimObjects> pMimObjects;
 
 class MimParser
 {
+private:
+    static void ParseMimField(JSON_Object* jsonField, MimObject& mimObject);
+
 public:
     static pMimObjects ParseMim(std::string path);
 };

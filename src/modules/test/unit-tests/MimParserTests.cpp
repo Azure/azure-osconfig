@@ -12,9 +12,9 @@ namespace Tests
 
     TEST(MimParserTests, LoadMim)
     {
-        pMimObjects mimObjects = MimParser::ParseMim("./mim/commandrunner.json");
+        pMimObjects mimObjects = MimParser::ParseMim("./mim/sample.json");
 
-        // Should have one component and 2 MimObjects
+        // Should have one component and 10 MimObjects
         ASSERT_EQ(mimObjects->size(), 1);
 
         size_t mimCount = 0;
@@ -22,17 +22,27 @@ namespace Tests
         {
             mimCount += c.second->size();
         }
-        ASSERT_EQ(mimCount, 2);
-        
-        ASSERT_EQ((*mimObjects)["CommandRunner"]->size(), 2);
+        ASSERT_EQ(mimCount, 10);
+        ASSERT_EQ((*mimObjects)["SampleComponent"]->size(), 10);
 
-        ASSERT_EQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->size(), 4);
+        ASSERT_EQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->size(), 8);
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("stringSetting").name.c_str(), "stringSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("integerSetting").name.c_str(), "integerSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("booleanSetting").name.c_str(), "booleanSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("integerArraySetting").name.c_str(), "integerArraySetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("stringMapSetting").name.c_str(), "stringMapSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_fields->at("integerMapSetting").name.c_str(), "integerMapSetting");
 
-        ASSERT_STREQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->at("commandId").name.c_str(), "commandId");
-        ASSERT_STREQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->at("resultCode").name.c_str(), "resultCode");
-        ASSERT_STREQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->at("textResult").name.c_str(), "textResult");
-        ASSERT_STREQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->at("currentState").name.c_str(), "currentState");
-        
-        ASSERT_EQ((*mimObjects)["CommandRunner"]->at("commandStatus").m_fields->at("currentState").allowedValues->size(), 6);
+        ASSERT_EQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->size(), 8);
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("stringSetting").name.c_str(), "stringSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("integerSetting").name.c_str(), "integerSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("booleanSetting").name.c_str(), "booleanSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("integerArraySetting").name.c_str(), "integerArraySetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("stringMapSetting").name.c_str(), "stringMapSetting");
+        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_fields->at("integerMapSetting").name.c_str(), "integerMapSetting");
     }
 }
