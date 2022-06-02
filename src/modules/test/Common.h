@@ -4,12 +4,13 @@
 #ifndef MODULESTESTCOMMON_H
 #define MODULESTESTCOMMON_H
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <dlfcn.h>
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <iostream>
 #include <map>
 #include <memory>
