@@ -1,0 +1,45 @@
+[
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "osName",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "osVersion",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "cpuType",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "cpuVendorId",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "blah",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "DeviceInfo",
+        "ObjectName": "blah",
+        "Desired": true,
+        "Payload": "{}",
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    }
+]
