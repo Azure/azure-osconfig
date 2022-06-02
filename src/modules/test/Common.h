@@ -24,9 +24,10 @@
 
 #include <CommonUtils.h>
 #include <Mmi.h>
-#include <ManagementModule.h>
 
+#include "ManagementModule.h"
 #include "MimParser.h"
+#include "RecipeInvoker.h"
 #include "TestRecipeParser.h"
 
 constexpr const size_t g_lineLength = 256;
@@ -52,11 +53,13 @@ inline void TestLogError(const char* format, const char* args...)
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
 #if __has_include(<filesystem>)
-#   include <filesystem>
+    #include <filesystem>
 #else
-#   include <experimental/filesystem>
-// Alias namespace
-    namespace std {
+    #include <experimental/filesystem>
+    
+    // Alias namespace
+    namespace std 
+    {
         namespace filesystem = experimental::filesystem;
     }
 #endif

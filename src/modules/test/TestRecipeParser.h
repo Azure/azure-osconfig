@@ -4,8 +4,6 @@
 #ifndef TESTRECIPEPARSER_H
 #define TESTRECIPEPARSER_H
 
-#include "Common.h"
-
 struct MimObject;
 typedef std::map<std::string, std::shared_ptr<std::map<std::string, MimObject>>> MimObjects;
 typedef std::shared_ptr<MimObjects> pMimObjects;

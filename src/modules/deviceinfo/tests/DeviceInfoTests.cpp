@@ -171,9 +171,12 @@ TEST_F(DeviceInfoTest, MmiGetTruncatedPayload)
         m_cpuTypeObject,
         m_cpuVendorIdObject,
         m_cpuModelObject,
+        m_totalMemoryObject,
+        m_freeMemoryObject,
         m_kernelNameObject,
         m_kernelReleaseObject,
-        m_kernelVersionObject
+        m_kernelVersionObject,
+        m_osConfigVersionObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
