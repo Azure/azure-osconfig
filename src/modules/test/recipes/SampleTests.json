@@ -1,5 +1,4 @@
 [
-    // TODO: Complete the SamplesTest to include more tests
     {
         "ComponentName": "SampleComponent",
         "ObjectName": "reportedStringObject",
