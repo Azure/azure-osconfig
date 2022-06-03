@@ -18,7 +18,7 @@ struct MimObject
     std::string m_name;
     std::string m_type;
     bool m_desired;
-    std::shared_ptr<std::map<std::string, MimSetting>> m_fields;
+    std::shared_ptr<std::map<std::string, MimSetting>> m_settings;
 };
 
 typedef std::map<std::string, std::shared_ptr<std::map<std::string, MimObject>>> MimObjects;

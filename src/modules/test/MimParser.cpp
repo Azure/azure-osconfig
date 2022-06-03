@@ -40,13 +40,11 @@ pMimObjects MimParser::ParseMim(std::string path)
                     !!json_object_get_boolean(root_object, "desired"),
                     std::make_shared<std::map<std::string, MimSetting>>()};
 
-                // Get fields -- if present
                 if (json_object_has_value_of_type(root_object, "schema", JSONObject))
                 {
                     JSON_Object *schema_object = json_object_get_object(root_object, "schema");
 
-                    // Can be an embedded object
-                    JSON_Array *jsonFields = nullptr;
+                    JSON_Array *jsonSettings = nullptr;
                     if (nullptr == json_object_get_string(schema_object, "type"))
                     {
                         throw std::runtime_error("MimObject schema missing 'type'");
@@ -54,16 +52,17 @@ pMimObjects MimParser::ParseMim(std::string path)
                     else if ((0 == strcmp(json_object_get_string(schema_object, "type"), "array")) &&
                         (0 == strcmp(json_object_dotget_string(schema_object, "elementSchema.type"), "object")))
                     {
-                        jsonFields = json_object_dotget_array(schema_object, "elementSchema.fields");
+                        mim.m_type = json_object_get_string(schema_object, "type"),
+                        jsonSettings = json_object_dotget_array(schema_object, "elementSchema.fields");
                     }
                     else
                     {
-                        jsonFields = json_object_get_array(schema_object, "fields");
+                        jsonSettings = json_object_get_array(schema_object, "fields");
                     }
 
-                    for (size_t z = 0; z < json_array_get_count(jsonFields); z++)
+                    for (size_t z = 0; z < json_array_get_count(jsonSettings); z++)
                     {
-                        MimParser::ParseMimSetting(json_array_get_object(jsonFields, z), mim);
+                        MimParser::ParseMimSetting(json_array_get_object(jsonSettings, z), mim);
                     }
                 }
 
@@ -90,7 +89,6 @@ pMimObjects MimParser::ParseMim(std::string path)
 void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
 {
     MimSetting mimField;
-    std::cout << "Parsing field: " << json_object_get_string(jsonField, "name") << std::endl;
     if (json_object_has_value_of_type(jsonField, "schema", JSONString) ||
         json_object_has_value_of_type(jsonField, "schema", JSONNumber) ||
         json_object_has_value_of_type(jsonField, "schema", JSONBoolean))
@@ -157,5 +155,5 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
         }
     }
 
-    (*mimObject.m_fields)[mimField.name] = mimField;
+    (*mimObject.m_settings)[mimField.name] = mimField;
 }

@@ -19,5 +19,12 @@
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "SampleComponent",
+        "ObjectName": "reportedArrayObject",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
     }
 ]
