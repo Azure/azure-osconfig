@@ -61,14 +61,14 @@ void RecipeInvoker::TestBody()
                 {
                     JSON_Value *value = json_object_get_value(jsonObject, field.second.name.c_str());
                     EXPECT_EQ(JSONArray, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain array field '" << field.second.name << "'" << std::endl
-                                                                     << "JSON: " << payload;
+                        << "JSON: " << payload;
                 }
                 else if (field.second.type.compare("map") == 0)
                 {
                     // Maps are formatted as arrays of objects
                     JSON_Value *value = json_object_get_value(jsonObject, field.second.name.c_str());
                     EXPECT_EQ(JSONArray, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain map field '" << field.second.name << "'" << std::endl
-                                                                     << "JSON: " << payload;
+                        << "JSON: " << payload;
                 }
                 else
                 {

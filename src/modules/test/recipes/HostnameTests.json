@@ -17,7 +17,8 @@
         "ComponentName": "HostName",
         "ObjectName": "name",
         "Desired": true,
-        "ExpectedResult": 22,   // name is a reported object, this should fail
+        "Payload": "{}",
+        "ExpectedResult": 22,
         "WaitSeconds": 0
     }
 ]
