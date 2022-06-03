@@ -4,8 +4,6 @@
 #ifndef RECIPEINVOKER_H
 #define RECIPEINVOKER_H
 
-#include "Common.h"
-
 static const std::string g_defaultClient = "RecipeInvoker";
 
 static const std::string g_modulePath = "ModulePath";

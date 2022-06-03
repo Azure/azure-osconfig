@@ -4,8 +4,6 @@
 #ifndef MIMPARSER_H
 #define MIMPARSER_H
 
-#include "Common.h"
-
 struct MimSetting
 {
     std::string name;
