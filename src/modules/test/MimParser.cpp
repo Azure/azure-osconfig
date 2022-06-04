@@ -45,11 +45,8 @@ pMimObjects MimParser::ParseMim(std::string path)
                     JSON_Object *schema_object = json_object_get_object(root_object, "schema");
 
                     JSON_Array *jsonSettings = nullptr;
-                    if (nullptr == json_object_get_string(schema_object, "type"))
-                    {
-                        throw std::runtime_error("MimObject schema missing 'type'");
-                    }
-                    else if ((0 == strcmp(json_object_get_string(schema_object, "type"), "array")) &&
+                    if (nullptr != json_object_get_string(schema_object, "type") &&
+                        (0 == strcmp(json_object_get_string(schema_object, "type"), "array")) &&
                         (0 == strcmp(json_object_dotget_string(schema_object, "elementSchema.type"), "object")))
                     {
                         mim.m_type = json_object_get_string(schema_object, "type"),
