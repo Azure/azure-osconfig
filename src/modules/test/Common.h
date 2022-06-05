@@ -25,6 +25,7 @@
 
 #include <CommonUtils.h>
 #include <Mmi.h>
+#include <Logging.h>
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
 #if __has_include(<filesystem>)

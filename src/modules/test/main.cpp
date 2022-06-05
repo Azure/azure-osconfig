@@ -10,7 +10,7 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "-" + recipe.m_objectName);
         testing::RegisterTest(
-            "TestRecipes", testName.c_str(), nullptr, testName.c_str(), __FILE__, __LINE__,
+            "TestRecipes", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
             [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
@@ -96,6 +96,8 @@ int main(int argc, char **argv)
         PrintUsage();
     }
 
+    // TODO: add fulllogging on/off?
+    SetFullLogging(true);
     if (argc == 2)
     {
         // Test definitions present - perform more extensive tests using Mim and test recipes
@@ -112,7 +114,7 @@ int main(int argc, char **argv)
             // See gtest.h for details on this test registration
             // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
             testing::RegisterTest(
-                "TestRecipes", "Basic-Module-Test", nullptr, "Basic-Module-Test", __FILE__, __LINE__,
+                "TestRecipes", "Basic-Module-Test", nullptr, nullptr, __FILE__, __LINE__,
                     [module]()->RecipeFixture*
                     { 
                         return new BasicModuleTester(module); }

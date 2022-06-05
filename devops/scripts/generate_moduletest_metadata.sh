@@ -11,11 +11,11 @@ fi
 # Absolute path to this script
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
-
-mimBaseDir=$SCRIPTPATH/../../src/modules/mim
-modulesBaseDir=$SCRIPTPATH/../../build/modules
-recipeBaseDir=$SCRIPTPATH/../../src/modules/test/recipes
-testMetaDataDestPath=$SCRIPTPATH/../../build/modules/test/testplate.json
+BaseDir=`realpath $SCRIPTPATH/../..`
+mimBaseDir=$BaseDir/src/modules/mim
+modulesBaseDir=$BaseDir/build/modules
+recipeBaseDir=$BaseDir/src/modules/test/recipes
+testMetaDataDestPath=$BaseDir/build/modules/test/testplate.json
 
 modules=$(find $modulesBaseDir -name '*.so')
 testJSON="[]"
@@ -27,6 +27,7 @@ while IFS= read -r line ;
 
   if [ ! -z "$recipepath" ] && [ ! -z "$mimpath" ]; then
     # Create entry if both mim+recipe are found
+    echo "Found '$modulename' module adding to test metadata"
     json="[{ \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
     testJSON=$(echo $testJSON | jq --argjson testMetadata "$json" '. |= . + $testMetadata')
   fi
