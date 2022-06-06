@@ -21,6 +21,7 @@ RUN apt -y update && apt-get -y install \
     gcovr \
     gdb \
     ca-certificates \
+    jq \
     \
     # .NET dependencies
     libc6 \
