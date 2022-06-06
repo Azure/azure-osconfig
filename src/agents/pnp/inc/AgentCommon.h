@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 
 #include "iothub.h"
 #include "parson.h"
@@ -44,6 +46,8 @@
 #include <Logging.h>
 #include <Mpi.h>
 #include <version.h>
+
+#define OSCONFIG_PLATFORM "osconfig-platform"
 
 // Max number of bytes allowed to go through to Twins (4KB)
 #define OSCONFIG_MAX_PAYLOAD 4096

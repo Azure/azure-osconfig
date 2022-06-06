@@ -17,13 +17,14 @@
 #include <Command.h>
 #include <Mmi.h>
 
-const std::string g_commandRunner = "CommandRunner";
-
 class CommandRunner
 {
 public:
-    static const unsigned int MAX_CACHE_SIZE = 10;
-    static const std::string PERSISTED_COMMANDSTATUS_FILE;
+    static const std::string m_componentName;
+
+    static const unsigned int m_maxCacheSize;
+    static const char* m_persistedCacheFile;
+    static const char* m_defaultCacheTemplate;
 
     CommandRunner(std::string name, unsigned int maxSizeInBytes = 0, bool usePersistedCache = true);
     ~CommandRunner();
@@ -37,42 +38,6 @@ public:
 
     // Helper method to wait for the worker thread during unit tests
     void WaitForCommands();
-
-    class Factory
-    {
-    public:
-        static std::shared_ptr<CommandRunner> Create(std::string clientName, int maxPayloadSizeBytes = 0);
-        static void Destroy(CommandRunner* commandRunner);
-        static void Clear();
-
-        // Helper method for validating sessions during unit tests
-        static int GetClientCount(const std::string& clientName);
-
-    private:
-        class Session
-        {
-        public:
-            Session(std::string clientName, int maxPayloadSizeBytes);
-            ~Session();
-
-            std::shared_ptr<CommandRunner> Get();
-            int Release();
-            int GetClientCount();
-
-        private:
-            std::mutex m_mutex;
-            int m_clients;
-            std::shared_ptr<CommandRunner> m_instance;
-        };
-
-        static std::map<std::string, std::shared_ptr<Session>> m_sessions;
-        static std::mutex m_mutex;
-
-        Factory() = delete;
-        ~Factory() = delete;
-    };
-
-    friend class Factory;
 
 private:
     template<class T>

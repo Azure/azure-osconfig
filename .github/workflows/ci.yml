@@ -19,7 +19,6 @@ jobs:
     name: Unit test
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
         variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
@@ -130,6 +129,13 @@ jobs:
           output: both
           badge: true
           thresholds: '60 80'
+
+      - name: Create coverage report
+        uses: ./.github/actions/check-run
+        with:
+          name: Coverage report
+          title: Code coverage
+          markdown: ./code-coverage-results.md
 
       - uses: actions/upload-artifact@v2
         if: always()

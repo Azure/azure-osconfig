@@ -3,7 +3,7 @@
 
 #include "inc/AgentCommon.h"
 #include "inc/PnpUtils.h"
-#include "inc/MpiProxy.h"
+#include "inc/MpiClient.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
 #include "inc/ConfigUtils.h"
@@ -38,8 +38,7 @@ static int g_protocol = PROTOCOL_AUTO;
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
 
-static TICK_COUNTER_HANDLE g_tickCounter = NULL;
-static tickcounter_ms_t g_lastTick = 0;
+static unsigned int g_lastTime = 0;
 
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE g_moduleHandle;
 
@@ -64,7 +63,7 @@ enum AgentExitState
     NoError = 0,
     NoConnectionString = 1,
     IotHubInitializationFailure = 2,
-    MpiInitializationFailure = 3
+    PlatformInitializationFailure = 3
 };
 typedef enum AgentExitState AgentExitState;
 static AgentExitState g_exitState = NoError;
@@ -96,8 +95,6 @@ static unsigned int g_maxPayloadSizeBytes = OSCONFIG_MAX_PAYLOAD;
 
 static OSCONFIG_LOG_HANDLE g_agentLog = NULL;
 
-extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
-
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_reportingInterval = DEFAULT_REPORTING_INTERVAL;
 
@@ -107,9 +104,11 @@ static char g_modelId[DEVICE_MODEL_ID_SIZE] = {0};
 static const char g_productNameTemplate[] = "Azure OSConfig %d;%s";
 static char g_productName[DEVICE_PRODUCT_NAME_SIZE] = {0};
 
-// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s;%s %s %s;%s %s;"
+// Alternate OSConfig own format for product info: "Azure OSConfig %d;%s;%s %s %s %s %s %lu %lu;%s %s %s;%s %s;"
 static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
-    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&\"cpu_architecture\"=\"%s\"&"
+    "(\"os_name\"=\"%s\"&os_version\"=\"%s\"&"
+    "\"cpu_type\"=\"%s\"&\"cpu_vendor\"=\"%s\"&\"cpu_model\"=\"%s\"&"
+    "\"total_memory\"=\"%lu\"&\"free_memory\"=\"%lu\"&"
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
@@ -117,7 +116,6 @@ static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
 static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
-static int g_localPriority = 0;
 static int g_localManagement = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
@@ -135,21 +133,21 @@ void CloseTraceLogging(void)
     TraceLoggingUnregister(g_providerHandle);
 }
 
-#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
-#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)"
-#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)"
-#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
-#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
-#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
 #define EOL_TERMINATOR "\n"
+#define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
+#define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGFPE ERROR_MESSAGE_CRASH "fatal arithmetic error (SIGFPE)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)" EOL_TERMINATOR
+#define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)" EOL_TERMINATOR
 
 static void SignalInterrupt(int signal)
 {
     int logDescriptor = -1;
     char* errorMessage = NULL;
-    size_t errorMessageSize = 0;
-    size_t sizeOfMpiMessage = 0;
     ssize_t writeResult = -1;
+
+    UNUSED(writeResult);
 
     if (SIGSEGV == signal)
     {
@@ -179,25 +177,11 @@ static void SignalInterrupt(int signal)
 
     if (NULL != errorMessage)
     {
-        errorMessageSize = strlen(errorMessage);
-
         if (0 < (logDescriptor = open(LOG_FILE, O_APPEND | O_WRONLY | O_NONBLOCK)))
         {
-            if (0 < (writeResult = write(logDescriptor, (const void*)errorMessage, errorMessageSize)))
-            {
-                sizeOfMpiMessage = strlen(g_mpiCall);
-                if (sizeOfMpiMessage > 0)
-                {
-                    writeResult = write(logDescriptor, (const void*)(&g_mpiCall[0]), sizeOfMpiMessage);
-                }
-                else
-                {
-                    writeResult = write(logDescriptor, (const void*)EOL_TERMINATOR, sizeof(char));
-                }
-            }
+            writeResult = write(logDescriptor, (const void*)errorMessage, strlen(errorMessage));
             close(logDescriptor);
         }
-
         _exit(signal);
     }
 }
@@ -353,30 +337,52 @@ static void ForkDaemon()
     }
 }
 
-static bool InitializeAgent(void)
+bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
-    if (NULL == (g_tickCounter = tickcounter_create()))
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
     {
-        LogErrorWithTelemetry(GetLog(), "tickcounter_create failed");
-        status = false;
+        // Platform is already running
+
+        if (platformAlreadyRunning)
+        {
+            *platformAlreadyRunning = true;
+        }
+
+        return status;
     }
 
-    if (status)
+    if (platformAlreadyRunning)
     {
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
-
-        CallMpiInitialize();
-
-        // Open the MPI session for this PnP Module instance:
+        *platformAlreadyRunning = false;
+    }
+    
+    if (true == (status = EnableAndStartDaemon(OSCONFIG_PLATFORM, GetLog())))
+    {
+        sleep(1);
+        
         if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
         {
             LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
-            g_exitState = MpiInitializationFailure;
+            g_exitState = PlatformInitializationFailure;
             status = false;
         }
     }
+    else
+    {
+        LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+        g_exitState = PlatformInitializationFailure;
+    }
+
+    return status;
+}
+
+static bool InitializeAgent(void)
+{
+    bool status = RefreshMpiClientSession(NULL);
+
+    g_lastTime = (unsigned int)time(NULL);
 
     if (status && g_iotHubConnectionString)
     {
@@ -415,8 +421,6 @@ void CloseAgent(void)
 
     FREE_MEMORY(g_reportedProperties);
 
-    CallMpiShutdown();
-
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
 
@@ -425,10 +429,18 @@ static void SaveReportedConfigurationToFile()
     char* payload = NULL;
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
+    bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     if (g_localManagement)
     {
-        mpiResult = CallMpiGetReported(g_productName, 0/*no limit for payload size*/, (MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+        {
+            CallMpiFree(payload);
+
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        }
+        
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
             if (g_reportedHash != (payloadHash = HashString(payload)))
@@ -440,6 +452,7 @@ static void SaveReportedConfigurationToFile()
                 }
             }
         }
+        
         CallMpiFree(payload);
     }
 }
@@ -465,18 +478,29 @@ static void LoadDesiredConfigurationFromFile()
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
-    char* payload = LoadStringFromFile(DC_FILE, false, GetLog());
+    char* payload = NULL; 
+    bool platformAlreadyRunning = true;
+    int mpiResult = MPI_OK;
+
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+
+    payload = LoadStringFromFile(DC_FILE, false, GetLog());
     if (payload && (0 != (payloadSizeBytes = strlen(payload))))
     {
-        // Do not call MpiSetDesired unless we need to overwrite (when LocalPriority is non-zero) or this desired is different from previous
-        if (g_localPriority || (g_desiredHash != (payloadHash = HashString(payload))))
+        // Do not call MpiSetDesired unless this desired configuration is different from previous
+        if (g_desiredHash != (payloadHash = HashString(payload)))
         {
-            if (MPI_OK == CallMpiSetDesired(g_productName, (MPI_JSON_STRING)payload, payloadSizeBytes))
+            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+            if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+            {
+                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+            }
+            
+            if (MPI_OK == mpiResult)
             {
                 g_desiredHash = payloadHash;
             }
         }
-        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
     FREE_MEMORY(payload);
 }
@@ -484,11 +508,11 @@ static void LoadDesiredConfigurationFromFile()
 static void AgentDoWork(void)
 {
     char* connectionString = NULL;
-    tickcounter_ms_t nowTick = 0;
-    tickcounter_ms_t intervalTick = g_reportingInterval * 1000;
-    tickcounter_get_current_ms(g_tickCounter, &nowTick);
 
-    if (intervalTick <= (nowTick - g_lastTick))
+    unsigned int currentTime = time(NULL);
+    unsigned int timeInterval = g_reportingInterval;
+
+    if (timeInterval <= (currentTime - g_lastTime))
     {
         if ((NULL == g_iotHubConnectionString) && (FromAis == g_connectionStringSource))
         {
@@ -529,10 +553,7 @@ static void AgentDoWork(void)
             ReportProperties();
         }
 
-        // Allow the inproc (for now) platform to unload unused modules
-        CallMpiDoWork();
-
-        tickcounter_get_current_ms(g_tickCounter, &g_lastTick);
+        g_lastTime = (unsigned int)time(NULL);
     }
     else
     {
@@ -555,6 +576,10 @@ int main(int argc, char *argv[])
     char* osName = NULL;
     char* osVersion = NULL;
     char* cpuType = NULL;
+    char* cpuVendor = NULL;
+    char* cpuModel = NULL;
+    long totalMemory = 0;
+    long freeMemory = 0;
     char* kernelName = NULL;
     char* kernelRelease = NULL;
     char* kernelVersion = NULL;
@@ -568,6 +593,7 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
+        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
         SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
         FREE_MEMORY(jsonConfiguration);
     }
@@ -589,9 +615,9 @@ int main(int argc, char *argv[])
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
     OsConfigLogInfo(GetLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
-    if (IsFullLoggingEnabled())
+    if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetLog(), "WARNING: full logging is enabled. To disable full logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
@@ -603,11 +629,14 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration);
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        g_localPriority = GetLocalPriorityFromJsonConfig(jsonConfiguration);
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
         g_protocol = GetProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
+
+    RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
 
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
@@ -617,15 +646,19 @@ int main(int argc, char *argv[])
 
     osName = GetOsName(GetLog());
     osVersion = GetOsVersion(GetLog());
-    cpuType = GetCpu(GetLog());
+    cpuType = GetCpuType(GetLog());
+    cpuVendor = GetCpuVendor(GetLog());
+    cpuModel = GetCpuModel(GetLog());
+    totalMemory = GetTotalMemory(GetLog());
+    freeMemory = GetFreeMemory(GetLog());
     kernelName = GetOsKernelName(GetLog());
     kernelRelease = GetOsKernelRelease(GetLog());
     kernelVersion = GetOsKernelVersion(GetLog());
     productVendor = GetProductVendor(GetLog());
     productName = GetProductName(GetLog());
 
-    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, 
-        osName, osVersion, cpuType, kernelName, kernelRelease, kernelVersion, productVendor, productName);
+    snprintf(g_productInfo, sizeof(g_productInfo), g_productInfoTemplate, g_modelVersion, OSCONFIG_VERSION, osName, osVersion, 
+        cpuType, cpuVendor, cpuModel, totalMemory, freeMemory, kernelName, kernelRelease, kernelVersion, productVendor, productName);
         
     if (NULL != (encodedProductInfo = UrlEncode(g_productInfo)))
     {
@@ -647,6 +680,8 @@ int main(int argc, char *argv[])
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
     FREE_MEMORY(cpuType);
+    FREE_MEMORY(cpuVendor);
+    FREE_MEMORY(cpuModel);
     FREE_MEMORY(productName);
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
@@ -739,7 +774,8 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         AgentDoWork();
-        ThreadAPI_Sleep(DOWORK_SLEEP);
+        
+        SleepMilliseconds(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
         {
@@ -763,6 +799,9 @@ done:
     FREE_MEMORY(g_iotHubConnectionString);
 
     CloseAgent();
+    
+    StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
+
     CloseTraceLogging();
     CloseLog(&g_agentLog);
 

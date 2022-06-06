@@ -12,6 +12,11 @@
 #include <CommandRunner.h>
 #include <Mmi.h>
 
+const std::string CommandRunner::m_componentName = "CommandRunner";
+const unsigned int CommandRunner::m_maxCacheSize = 10;
+const char* CommandRunner::m_persistedCacheFile = "/etc/osconfig/osconfig_commandrunner.cache";
+const char* CommandRunner::m_defaultCacheTemplate = "{}";
+
 constexpr const char g_moduleInfo[] = R""""({
     "Name": "CommandRunner",
     "Description": "Provides functionality to remotely run commands on the device",
@@ -23,12 +28,7 @@ constexpr const char g_moduleInfo[] = R""""({
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-const std::string CommandRunner::PERSISTED_COMMANDSTATUS_FILE = "/etc/osconfig/osconfig_commandrunner.cache";
-
 std::mutex CommandRunner::m_diskCacheMutex;
-
-std::map<std::string, std::shared_ptr<CommandRunner::Factory::Session>> CommandRunner::Factory::m_sessions;
-std::mutex CommandRunner::Factory::m_mutex;
 
 CommandRunner::CommandRunner(std::string clientName, unsigned int maxPayloadSizeBytes, bool usePersistedCache) :
     m_clientName(clientName),
@@ -136,7 +136,7 @@ int CommandRunner::Set(const char* componentName, const char* objectName, const 
     }
     else
     {
-        if (0 == g_commandRunner.compare(componentName))
+        if (0 == CommandRunner::m_componentName.compare(componentName))
         {
             if (0 == g_commandArguments.compare(objectName))
             {
@@ -228,7 +228,7 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
         *payload = nullptr;
         *payloadSizeBytes = 0;
 
-        if (0 == g_commandRunner.compare(componentName))
+        if (0 == CommandRunner::m_componentName.compare(componentName))
         {
             if (0 == g_commandStatus.compare(objectName))
             {
@@ -237,7 +237,20 @@ int CommandRunner::Get(const char* componentName, const char* objectName, MMI_JS
 
                 Command::Status commandStatus = GetReportedStatus();
                 Command::Status::Serialize(writer, commandStatus);
-                status = CopyJsonPayload(payload, payloadSizeBytes, buffer);
+
+                *payload = new (std::nothrow) char[buffer.GetSize()];
+
+                if (nullptr != *payload)
+                {
+                    std::fill(*payload, *payload + buffer.GetSize(), 0);
+                    std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
+                    *payloadSizeBytes = buffer.GetSize();
+                }
+                else
+                {
+                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
+                    status = ENOMEM;
+                }
             }
             else
             {
@@ -390,7 +403,7 @@ int CommandRunner::CacheCommand(std::shared_ptr<Command> command)
             SetReportedStatusId(command->GetId());
 
             // Remove any completed commands from the cache if the cache size is greater than the maximum size
-            while (m_cacheBuffer.size() > CommandRunner::MAX_CACHE_SIZE)
+            while (m_cacheBuffer.size() > m_maxCacheSize)
             {
                 std::shared_ptr<Command> oldestCommand = m_cacheBuffer.back();
                 if ((nullptr != oldestCommand) && (oldestCommand->IsComplete()))
@@ -460,6 +473,7 @@ void CommandRunner::WorkerThread(CommandRunner& instance)
             OsConfigLogInfo(CommandRunnerLog::Get(), "Command '%s' completed with code: %d", command->GetId().c_str(), exitCode);
         }
 
+        instance.PersistCommandStatus(command->GetStatus());
         instance.m_commandQueue.Pop();
     }
 
@@ -484,7 +498,7 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
     int status = 0;
 
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
-    std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
+    std::ifstream file(m_persistedCacheFile);
 
     if (file.good())
     {
@@ -504,26 +518,25 @@ int CommandRunner::LoadPersistedCommandStatus(const std::string& clientName)
         else if (document.HasMember(clientName.c_str()))
         {
             const rapidjson::Value& client = document[clientName.c_str()];
-            Command::Status commandStatus = Command::Status::Deserialize(client);
 
-            std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
-            command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
-
-            if (0 != CacheCommand(command))
+            for (auto& it : client.GetArray())
             {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
-                status = -1;
+                Command::Status commandStatus = Command::Status::Deserialize(it);
+
+                std::shared_ptr<Command> command = std::make_shared<Command>(commandStatus.m_id, "", 0, "");
+                command->SetStatus(commandStatus.m_exitCode, commandStatus.m_textResult, commandStatus.m_state);
+
+                if (0 != CacheCommand(command))
+                {
+                    OsConfigLogError(CommandRunnerLog::Get(), "Failed to cache command: %s", commandStatus.m_id.c_str());
+                    status = -1;
+                }
             }
         }
         else if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not contain a status for client: %s", clientName.c_str());
         }
-    }
-    else
-    {
-        OsConfigLogInfo(CommandRunnerLog::Get(), "Cache file does not exist");
-        status = -1;
     }
 
     return status;
@@ -537,71 +550,74 @@ int CommandRunner::PersistCommandStatus(const Command::Status& status)
 int CommandRunner::PersistCommandStatus(const std::string& clientName, const Command::Status commandStatus)
 {
     int status = 0;
+    rapidjson::Document document;
+    rapidjson::Document statusDocument;
+    statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
     std::lock_guard<std::mutex> lock(m_diskCacheMutex);
 
-    std::ifstream file(CommandRunner::PERSISTED_COMMANDSTATUS_FILE);
+    std::ifstream file(m_persistedCacheFile);
     if (file.good())
     {
         rapidjson::IStreamWrapper isw(file);
-        rapidjson::Document document;
-
-        if (document.ParseStream(isw).HasParseError())
+        if (document.ParseStream(isw).HasParseError() || (!document.IsObject()))
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to parse cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
-            status = EINVAL;
-        }
-        else if (!document.IsObject())
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Cache file JSON is not an object: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
-            status = EINVAL;
-        }
-        else
-        {
-            rapidjson::Document statusDocument;
-            statusDocument.Parse(Command::Status::Serialize(commandStatus, false).c_str());
-
-            rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
-
-            if (document.HasMember(clientName.c_str()))
-            {
-                document[clientName.c_str()].CopyFrom(statusDocument, allocator);
-            }
-            else
-            {
-                rapidjson::Value object(rapidjson::kObjectType);
-                object.CopyFrom(statusDocument, allocator);
-                document.AddMember(rapidjson::Value(clientName.c_str(), allocator), object, allocator);
-            }
-
-            rapidjson::StringBuffer buffer;
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-            document.Accept(writer);
-
-            if (0 != (status = WriteFile(CommandRunner::PERSISTED_COMMANDSTATUS_FILE, buffer)))
-            {
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed to write cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
-            }
+            document.Parse(m_defaultCacheTemplate);
         }
     }
     else
     {
-        OsConfigLogError(CommandRunnerLog::Get(), "Failed to open cache file: %s", CommandRunner::PERSISTED_COMMANDSTATUS_FILE.c_str());
-        status = errno;
+        document.Parse(m_defaultCacheTemplate);
     }
 
-    return status;
-}
+    rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
 
-int CommandRunner::WriteFile(const std::string& fileName, const rapidjson::StringBuffer& buffer)
-{
-    int status = 0;
+    if (document.HasMember(clientName.c_str()))
+    {
+        bool updated = false;
+        rapidjson::Value& client = document[clientName.c_str()];
+
+        if (!client.IsArray())
+        {
+            client.SetArray();
+        }
+
+        for (auto& it : client.GetArray())
+        {
+            if (it.HasMember(g_commandId.c_str()) && it[g_commandId.c_str()].IsString() && (it[g_commandId.c_str()].GetString() == commandStatus.m_id))
+            {
+                it.CopyFrom(statusDocument, allocator);
+                updated = true;
+                break;
+            }
+        }
+
+        if (!updated)
+        {
+            if (client.Size() >= m_maxCacheSize)
+            {
+                client.Erase(client.Begin());
+            }
+
+            client.PushBack(statusDocument, allocator);
+        }
+    }
+    else
+    {
+        rapidjson::Value object(rapidjson::kArrayType);
+        object.PushBack(statusDocument, allocator);
+        document.AddMember(rapidjson::Value(clientName.c_str(), allocator), object, allocator);
+    }
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
 
     if (buffer.GetSize() > 0)
     {
-        std::FILE* file = std::fopen(fileName.c_str(), "w");
+        std::FILE* file = std::fopen(m_persistedCacheFile, "w+");
         if (nullptr == file)
         {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", fileName.c_str());
+            OsConfigLogError(CommandRunnerLog::Get(), "Failed to open file: %s", m_persistedCacheFile);
             status = EACCES;
         }
         else
@@ -611,146 +627,17 @@ int CommandRunner::WriteFile(const std::string& fileName, const rapidjson::Strin
             if ((0 > rc) || (EOF == rc))
             {
                 status = errno ? errno : EINVAL;
-                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", fileName.c_str(), status, errno ? strerror(errno) : "-");
+                OsConfigLogError(CommandRunnerLog::Get(), "Failed write to file %s, error: %d %s", m_persistedCacheFile, status, errno ? strerror(errno) : "-");
             }
 
             fflush(file);
             std::fclose(file);
-        }
-    }
 
-    return 0;
-}
-
-int CommandRunner::CopyJsonPayload(MMI_JSON_STRING* payload, int* payloadSizeBytes, const rapidjson::StringBuffer& buffer)
-{
-    int status = MMI_OK;
-
-    try
-    {
-        *payload = new (std::nothrow) char[buffer.GetSize()];
-        if (nullptr == *payload)
-        {
-            OsConfigLogError(CommandRunnerLog::Get(), "Failed to allocate memory for payload");
-            status = ENOMEM;
-        }
-        else
-        {
-            std::fill(*payload, *payload + buffer.GetSize(), 0);
-            std::memcpy(*payload, buffer.GetString(), buffer.GetSize());
-            *payloadSizeBytes = buffer.GetSize();
-        }
-    }
-    catch (const std::exception& e)
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "Could not allocate payload: %s", e.what());
-        status = EINTR;
-
-        if (nullptr != *payload)
-        {
-            delete[] *payload;
-            *payload = nullptr;
-        }
-
-        if (nullptr != payloadSizeBytes)
-        {
-            *payloadSizeBytes = 0;
+            RestrictFileAccessToCurrentAccountOnly(m_persistedCacheFile);
         }
     }
 
     return status;
-}
-
-std::shared_ptr<CommandRunner> CommandRunner::Factory::Create(std::string clientName, int maxPayloadSizeBytes)
-{
-    std::shared_ptr<Factory::Session> session;
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    if (m_sessions.find(clientName) == m_sessions.end())
-    {
-        session = std::make_shared<Factory::Session>(clientName, maxPayloadSizeBytes);
-        m_sessions[clientName] = session;
-    }
-    else
-    {
-        session = m_sessions[clientName];
-    }
-
-    return session->Get();
-}
-
-void CommandRunner::Factory::Destroy(CommandRunner* commandRunner)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    std::string clientName = commandRunner->GetClientName();
-
-    if (m_sessions.find(clientName) != m_sessions.end())
-    {
-        if (0 == m_sessions[clientName]->Release())
-        {
-            m_sessions[clientName].reset();
-            m_sessions.erase(clientName);
-        }
-    }
-    else if (IsFullLoggingEnabled())
-    {
-        OsConfigLogError(CommandRunnerLog::Get(), "CommandRunner not found for session: %s", clientName.c_str());
-    }
-}
-
-void CommandRunner::Factory::Clear()
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto it = m_sessions.begin(); it != m_sessions.end(); ++it)
-    {
-        it->second.reset();
-    }
-
-    m_sessions.clear();
-}
-
-int CommandRunner::Factory::GetClientCount(const std::string& clientName)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    int count = 0;
-
-    if (m_sessions.find(clientName) != m_sessions.end())
-    {
-        count = m_sessions[clientName]->GetClientCount();
-    }
-
-    return count;
-}
-
-CommandRunner::Factory::Session::Session(std::string clientName, int maxPayloadSizeBytes) :
-    m_clients(0)
-{
-    m_instance = std::make_shared<CommandRunner>(clientName, maxPayloadSizeBytes);
-}
-
-CommandRunner::Factory::Session::~Session()
-{
-    m_instance.reset();
-}
-
-std::shared_ptr<CommandRunner> CommandRunner::Factory::Session::Get()
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_clients++;
-    return m_instance;
-}
-
-int CommandRunner::Factory::Session::Release()
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return --m_clients;
-}
-
-// Return the number of clients using this session
-int CommandRunner::Factory::Session::GetClientCount()
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_clients;
 }
 
 template<class T>

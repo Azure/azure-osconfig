@@ -1,6 +1,8 @@
 {
-  "ModelVersion": 7,
-  "FullLogging": 0,
+  "CommandLogging": 0,  
+  "FullLogging": 0,  
+  "LocalManagement": 0,
+  "ModelVersion": 10,
   "Protocol": 2,
   "Reported": [
     {
@@ -21,6 +23,22 @@
     },
     {
       "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuVendorId"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "cpuModel"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "totalMemory"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "freeMemory"
+    },
+    {
+      "ComponentName": "DeviceInfo",
       "ObjectName": "kernelName"
     },
     {
@@ -33,11 +51,27 @@
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "manufacturer"
+      "ObjectName": "productVendor"
     },
     {
       "ComponentName": "DeviceInfo",
-      "ObjectName": "model"
+      "ObjectName": "productName"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "productVersion"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "systemCapabilities"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "systemConfiguration"
+    },
+    {
+      "ComponentName": "DeviceInfo",
+      "ObjectName": "osConfigVersion"
     },
     {
       "ComponentName": "Firewall",
@@ -84,7 +118,5 @@
       "ObjectName": "serviceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 30,
-  "LocalPriority": 0,
-  "LocalManagement": 0
+  "ReportingIntervalSeconds": 30
 }

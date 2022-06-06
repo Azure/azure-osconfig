@@ -3,22 +3,31 @@
 
 #include <errno.h>
 #include <stdatomic.h>
+#include <version.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 
 #include "DeviceInfo.h"
 
-static char* g_deviceInfoModuleName = "DeviceInfo module";
-static char* g_deviceInfoComponentName = "DeviceInfo";
-static char* g_osNameObject = "osName";
-static char* g_osVersionObject = "osVersion";
-static char* g_cpuTypeObject = "cpuType";
-static char* g_kernelNameObject = "kernelName";
-static char* g_kernelReleaseObject = "kernelRelease";
-static char* g_kernelVersionObject = "kernelVersion";
-static char* g_manufacturerObject = "manufacturer";
-static char* g_modelObject = "model";
+static const char* g_deviceInfoModuleName = "DeviceInfo module";
+static const char* g_deviceInfoComponentName = "DeviceInfo";
+static const char* g_osNameObject = "osName";
+static const char* g_osVersionObject = "osVersion";
+static const char* g_cpuTypeObject = "cpuType";
+static const char* g_cpuVendorObject = "cpuVendorId";
+static const char* g_cpuModelObject = "cpuModel";
+static const char* g_totalMemoryObject = "totalMemory";
+static const char* g_freeMemoryObject = "freeMemory";
+static const char* g_kernelNameObject = "kernelName";
+static const char* g_kernelReleaseObject = "kernelRelease";
+static const char* g_kernelVersionObject = "kernelVersion";
+static const char* g_productVendorObject = "productVendor";
+static const char* g_productNameObject = "productName";
+static const char* g_productVersionObject = "productVersion";
+static const char* g_systemCapabilitiesObject = "systemCapabilities";
+static const char* g_systemConfigurationObject = "systemConfiguration";
+static const char* g_osConfigVersionObject = "osConfigVersion";
 
 static const char* g_deviceInfoLogFile = "/var/log/osconfig_deviceinfo.log";
 static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak";
@@ -26,7 +35,7 @@ static const char* g_deviceInfoRolledLogFile = "/var/log/osconfig_deviceinfo.bak
 static const char* g_deviceInfoModuleInfo = "{\"Name\": \"DeviceInfo\","
     "\"Description\": \"Provides functionality to observe device information\","
     "\"Manufacturer\": \"Microsoft\","
-    "\"VersionMajor\": 1,"
+    "\"VersionMajor\": 3,"
     "\"VersionMinor\": 0,"
     "\"VersionInfo\": \"Copper\","
     "\"Components\": [\"DeviceInfo\"],"
@@ -38,11 +47,18 @@ static OSCONFIG_LOG_HANDLE g_log = NULL;
 static char* g_osName = NULL;
 static char* g_osVersion = NULL;
 static char* g_cpuType = NULL;
+static char* g_cpuVendor = NULL;
+static char* g_cpuModel = NULL;
+static long g_totalMemory = 0;
+static long g_freeMemory = 0;
 static char* g_kernelName = NULL;
 static char* g_kernelRelease = NULL;
 static char* g_kernelVersion = NULL;
-static char* g_model = NULL;
-static char* g_manufacturer = NULL;
+static char* g_productName = NULL;
+static char* g_productVendor = NULL;
+static char* g_productVersion = NULL;
+static char* g_systemCapabilities = NULL;
+static char* g_systemConfiguration = NULL;
 
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
@@ -58,13 +74,20 @@ void DeviceInfoInitialize(void)
 
     g_osName = GetOsName(DeviceInfoGetLog());
     g_osVersion = GetOsVersion(DeviceInfoGetLog());
-    g_cpuType = GetCpu(DeviceInfoGetLog());
+    g_cpuType = GetCpuType(DeviceInfoGetLog());
+    g_cpuVendor = GetCpuVendor(DeviceInfoGetLog()); 
+    g_cpuModel = GetCpuModel(DeviceInfoGetLog());
+    g_totalMemory = GetTotalMemory(DeviceInfoGetLog());
+    g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
     g_kernelName = GetOsKernelName(DeviceInfoGetLog());
     g_kernelRelease = GetOsKernelRelease(DeviceInfoGetLog());
     g_kernelVersion = GetOsKernelVersion(DeviceInfoGetLog());
-    g_manufacturer = GetProductVendor(DeviceInfoGetLog());
-    g_model = GetProductName(DeviceInfoGetLog());
-
+    g_productVendor = GetProductVendor(DeviceInfoGetLog());
+    g_productName = GetProductName(DeviceInfoGetLog());
+    g_productVersion = GetProductVersion(DeviceInfoGetLog());
+    g_systemCapabilities = GetSystemCapabilities(DeviceInfoGetLog());
+    g_systemConfiguration = GetSystemConfiguration(DeviceInfoGetLog());
+        
     OsConfigLogInfo(DeviceInfoGetLog(), "%s initialized", g_deviceInfoModuleName);
 }
 
@@ -73,11 +96,16 @@ void DeviceInfoShutdown(void)
     FREE_MEMORY(g_osName);
     FREE_MEMORY(g_osVersion);
     FREE_MEMORY(g_cpuType);
+    FREE_MEMORY(g_cpuVendor);
+    FREE_MEMORY(g_cpuModel);
     FREE_MEMORY(g_kernelName);
     FREE_MEMORY(g_kernelRelease);
     FREE_MEMORY(g_kernelVersion);
-    FREE_MEMORY(g_manufacturer);
-    FREE_MEMORY(g_model);
+    FREE_MEMORY(g_productVendor);
+    FREE_MEMORY(g_productName);
+    FREE_MEMORY(g_productVersion);
+    FREE_MEMORY(g_systemCapabilities);
+    FREE_MEMORY(g_systemConfiguration);
     
     OsConfigLogInfo(DeviceInfoGetLog(), "%s shutting down", g_deviceInfoModuleName);
     
@@ -148,6 +176,8 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 {
     int status = MMI_OK;
     char* value = NULL;
+    bool isStringValue = true;
+    char buffer[10] = {0};
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -185,6 +215,26 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             value = g_cpuType;
         }
+        else if (0 == strcmp(objectName, g_cpuVendorObject))
+        {
+            value = g_cpuVendor;
+        }
+        else if (0 == strcmp(objectName, g_cpuModelObject))
+        {
+            value = g_cpuModel;
+        }
+        else if (0 == strcmp(objectName, g_totalMemoryObject))
+        {
+            isStringValue = false;
+            snprintf(buffer, sizeof(buffer), "%lu", g_totalMemory);
+            value = buffer;
+        }
+        else if (0 == strcmp(objectName, g_freeMemoryObject))
+        {
+            isStringValue = false;
+            snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
+            value = buffer;
+        }
         else if (0 == strcmp(objectName, g_kernelNameObject))
         {
             value = g_kernelName;
@@ -197,13 +247,29 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         {
             value = g_kernelVersion;
         }
-        else if (0 == strcmp(objectName, g_manufacturerObject))
+        else if (0 == strcmp(objectName, g_productVendorObject))
         {
-            value = g_manufacturer;
+            value = g_productVendor;
         }
-        else if (0 == strcmp(objectName, g_modelObject))
+        else if (0 == strcmp(objectName, g_productNameObject))
         {
-            value = g_model;
+            value = g_productName;
+        }
+        else if (0 == strcmp(objectName, g_productVersionObject))
+        {
+            value = g_productVersion;
+        }
+        else if (0 == strcmp(objectName, g_systemCapabilitiesObject))
+        {
+            value = g_systemCapabilities;
+        }
+        else if (0 == strcmp(objectName, g_systemConfigurationObject))
+        {
+            value = g_systemConfiguration;
+        }
+        else if (0 == strcmp(objectName, g_osConfigVersionObject))
+        {
+            value = OSCONFIG_VERSION;
         }
         else
         {
@@ -215,11 +281,11 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
     if (MMI_OK == status)
     {
         // The string value (can be empty string) is wrapped in "" and is not null terminated
-        *payloadSizeBytes = (value ? strlen(value) : 0) + 2;
-        
+        *payloadSizeBytes = (value ? strlen(value) : 0) + (isStringValue ? 2 : 0);
+
         if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", 
+            OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
@@ -229,7 +295,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         if (*payload)
         {
             // snprintf counts in the null terminator for the target string (terminator that is excluded from payload)
-            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", value ? value : "");
+            snprintf(*payload, *payloadSizeBytes + 1, (isStringValue ? "\"%s\"" : "%s"), value ? value : "");
         }
         else
         {

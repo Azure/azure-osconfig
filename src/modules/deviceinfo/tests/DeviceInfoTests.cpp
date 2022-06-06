@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
+#include <version.h>
 #include <Mmi.h>
 #include <DeviceInfo.h>
 #include <CommonUtils.h>
@@ -14,7 +15,7 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_expectedMmiInfo = "{\"Name\": \"DeviceInfo\","
             "\"Description\": \"Provides functionality to observe device information\","
             "\"Manufacturer\": \"Microsoft\","
-            "\"VersionMajor\": 1,"
+            "\"VersionMajor\": 3,"
             "\"VersionMinor\": 0,"
             "\"VersionInfo\": \"Copper\","
             "\"Components\": [\"DeviceInfo\"],"
@@ -26,11 +27,19 @@ class DeviceInfoTest : public ::testing::Test
         const char* m_osNameObject = "osName";
         const char* m_osVersionObject = "osVersion";
         const char* m_cpuTypeObject = "cpuType";
+        const char* m_cpuVendorIdObject = "cpuVendorId";
+        const char* m_cpuModelObject = "cpuModel";
+        const char* m_totalMemoryObject = "totalMemory";
+        const char* m_freeMemoryObject = "freeMemory";
         const char* m_kernelNameObject = "kernelName";
         const char* m_kernelReleaseObject = "kernelRelease";
         const char* m_kernelVersionObject = "kernelVersion";
-        const char* m_manufacturerObject  = "manufacturer";
-        const char* m_modelObject = "model";
+        const char* m_productVendorObject  = "productVendor";
+        const char* m_productNameObject = "productName";
+        const char* m_productVersionObject = "productVersion";
+        const char* m_systemCapabilitiesObject = "systemCapabilities";
+        const char* m_systemConfigurationObject = "systemConfiguration";
+        const char* m_osConfigVersionObject = "osConfigVersion";
 
         const char* m_clientName = "Test";
 
@@ -103,6 +112,9 @@ TEST_F(DeviceInfoTest, MmiSet)
     DeviceInfoMmiClose(handle);
 }
 
+#define STRING_QUOTE "\""
+#define OSCONFIG_VERSION_PAYLOAD STRING_QUOTE OSCONFIG_VERSION STRING_QUOTE
+
 TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
 {
     MMI_HANDLE handle = NULL;
@@ -114,11 +126,14 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         m_osNameObject,
         m_osVersionObject,
         m_cpuTypeObject,
+        m_cpuVendorIdObject,
+        m_cpuModelObject,
+        m_totalMemoryObject,
+        m_freeMemoryObject,
         m_kernelNameObject,
         m_kernelReleaseObject,
         m_kernelVersionObject,
-        m_modelObject,
-        m_manufacturerObject 
+        m_osConfigVersionObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -132,6 +147,10 @@ TEST_F(DeviceInfoTest, MmiGetRequiredObjects)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        if (0 == strcmp(mimRequiredObjects[i], m_osConfigVersionObject))
+        {
+            EXPECT_STREQ(payloadString, OSCONFIG_VERSION_PAYLOAD);
+        }
         FREE_MEMORY(payloadString);
         DeviceInfoMmiFree(payload);
     }
@@ -150,11 +169,14 @@ TEST_F(DeviceInfoTest, MmiGetTruncatedPayload)
         m_osNameObject,
         m_osVersionObject,
         m_cpuTypeObject,
+        m_cpuVendorIdObject,
+        m_cpuModelObject,
+        m_totalMemoryObject,
+        m_freeMemoryObject,
         m_kernelNameObject,
         m_kernelReleaseObject,
         m_kernelVersionObject,
-        m_modelObject,
-        m_manufacturerObject 
+        m_osConfigVersionObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -184,8 +206,11 @@ TEST_F(DeviceInfoTest, MmiGetOptionalObjects)
     int payloadSizeBytes = 0;
 
     const char* mimOptionalObjects[] = {
-        m_modelObject,
-        m_manufacturerObject 
+        m_productNameObject,
+        m_productVendorObject,
+        m_productVersionObject,
+        m_systemCapabilitiesObject,
+        m_systemConfigurationObject
     };
 
     int mimOptionalObjectsNumber = ARRAY_SIZE(mimOptionalObjects);

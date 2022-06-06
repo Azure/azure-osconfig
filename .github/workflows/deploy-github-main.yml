@@ -1,0 +1,70 @@
+name: E2E (GitHub-main)
+on:
+  workflow_run:
+    workflows: ["Package"]
+    types:
+      - completed
+
+jobs:
+  fetch-targets:
+    name: Fetch Test Targets
+    uses: ./.github/workflows/e2etest-fetch-targets.yml
+    with:
+      environment: e2e-github-main
+    secrets: inherit
+
+  provision-hub:
+    name: Provision IoT Hub
+    uses: ./.github/workflows/e2etest-provision-hub.yml
+    needs:
+      - fetch-targets
+    with:
+      environment: e2e-github-main
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+    secrets: inherit
+
+  provision-hosts:
+    name: Provision Host VM
+    uses: ./.github/workflows/e2etest-provision-hosts.yml
+    needs:
+      - fetch-targets
+    with:
+      environment: e2e-github-main
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+    secrets: inherit
+
+  run-tests:
+    name: Run Tests
+    uses: ./.github/workflows/e2etest-run-tests.yml
+    needs:
+      - fetch-targets
+      - provision-hosts
+    with:
+      environment: e2e-github-main
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+    secrets: inherit
+
+  deprovision-resources:
+    name: Deprovision Cloud Resources
+    if: always()
+    runs-on: ubuntu-latest
+    environment: e2e-github-main
+    needs:
+      - fetch-targets
+      - provision-hub
+      - provision-hosts
+      - run-tests
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Delete resource group
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az group delete --name ${{ needs.fetch-targets.outputs.resourceGroupName }} --yes --no-wait

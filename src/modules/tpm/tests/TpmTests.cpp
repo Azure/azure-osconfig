@@ -2,16 +2,15 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <Tpm2Utils.h>
+
+#include <CommonUtils.h>
 #include <Mmi.h>
+#include <Tpm.h>
 
 class TestTpm : public Tpm
 {
 public:
-    TestTpm(const unsigned int maxPayloadSizeBytes) : Tpm(maxPayloadSizeBytes)
-    {
-        m_hasCapabilitiesFile = true;
-    }
+    TestTpm(const unsigned int maxPayloadSizeBytes) : Tpm(maxPayloadSizeBytes) {}
 
     ~TestTpm();
     std::string RunCommand(const char* command) override;
@@ -36,11 +35,9 @@ std::string TestTpm::RunCommand(const char* command)
 
 namespace OSConfig::Platform::Tests
 {
-    const unsigned int maxPayloadSizeBytes = 4000;
-
-    const char* tpmVersionNumber = "\"1.2\"";
-    const char* tpmManufacturerNameSTMicroelectronics = "\"STMicroelectronics\"";
-    const char* tpmManufacturerNameLong = "\"Manufacturer name is long and contains numb3rs and $pec!@l characters\"";
+    const char* tpmVersion = "1.2";
+    const char* tpmManufacturer = "STMicroelectronics";
+    const char* tpmManufacturerNameLong = "Manufacturer name is long and contains numb3rs and $pec!@l characters";
     const char* empty = "";
     const char* clientName = "ClientName";
 
@@ -57,10 +54,54 @@ namespace OSConfig::Platform::Tests
     "616374657273\n"
     "TCG version: 1.2\n";
 
-    const std::string tpmDetected = std::to_string(TestTpm::Status::TpmDetected);
-    const std::string tpmNotDetected = std::to_string(TestTpm::Status::TpmNotDetected);
+    class TpmTests : public ::testing::Test
+    {
+    protected:
+        std::shared_ptr<TestTpm> tpm;
 
-    TEST(TpmTests, UnsignedInt8ToUnsignedInt64)
+        void SetUp() override
+        {
+            tpm = std::make_shared<TestTpm>(0);
+        }
+
+        void TearDown() override
+        {
+            tpm.reset();
+        }
+    };
+
+    TEST_F(TpmTests, HexToString)
+    {
+        EXPECT_EQ(0x0, Tpm::HexVal('0'));
+        EXPECT_EQ(0x1, Tpm::HexVal('1'));
+        EXPECT_EQ(0x2, Tpm::HexVal('2'));
+        EXPECT_EQ(0x3, Tpm::HexVal('3'));
+        EXPECT_EQ(0x4, Tpm::HexVal('4'));
+        EXPECT_EQ(0x5, Tpm::HexVal('5'));
+        EXPECT_EQ(0x6, Tpm::HexVal('6'));
+        EXPECT_EQ(0x7, Tpm::HexVal('7'));
+        EXPECT_EQ(0x8, Tpm::HexVal('8'));
+        EXPECT_EQ(0x9, Tpm::HexVal('9'));
+        EXPECT_EQ(0xA, Tpm::HexVal('A'));
+        EXPECT_EQ(0xB, Tpm::HexVal('B'));
+        EXPECT_EQ(0xC, Tpm::HexVal('C'));
+        EXPECT_EQ(0xD, Tpm::HexVal('D'));
+        EXPECT_EQ(0xE, Tpm::HexVal('E'));
+        EXPECT_EQ(0xF, Tpm::HexVal('F'));
+        EXPECT_EQ(0xA, Tpm::HexVal('a'));
+        EXPECT_EQ(0xB, Tpm::HexVal('b'));
+        EXPECT_EQ(0xC, Tpm::HexVal('c'));
+        EXPECT_EQ(0xD, Tpm::HexVal('d'));
+        EXPECT_EQ(0xE, Tpm::HexVal('e'));
+        EXPECT_EQ(0xF, Tpm::HexVal('f'));
+
+        std::string str = "7465737464617461";  // Hexadecimal string representation of "testdata"
+        std::string expected = "testdata";
+        std::string actual = Tpm::HexToString(str);
+        EXPECT_STREQ(expected.c_str(), actual.c_str());
+    }
+
+    TEST_F(TpmTests, UnsignedInt8ToUnsignedInt64)
     {
         uint8_t test[8] = {0x74, 0x65, 0x73, 0x74, 0x64, 0x61, 0x74, 0x61}; // Hexadecimal representation of {'t','e','s','t','d','a','t','a'}
         uint8_t* inputBuf = &test[0];
@@ -68,161 +109,123 @@ namespace OSConfig::Platform::Tests
         uint32_t dataLength = 4;
         uint64_t data = 0;
 
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(nullptr, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, nullptr), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, TPM_RESPONSE_MAX_SIZE, dataLength, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, INT_MAX + 1, dataOffset, dataLength, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, 0, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, TPM_RESPONSE_MAX_SIZE - 1, dataLength, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, 9, &data), EINVAL);
-        EXPECT_EQ(Tpm2Utils::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, &data), MMI_OK);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(nullptr, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, nullptr), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, TPM_RESPONSE_MAX_SIZE, dataLength, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, INT_MAX + 1, dataOffset, dataLength, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, 0, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, TPM_RESPONSE_MAX_SIZE - 1, dataLength, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, 9, &data), EINVAL);
+        EXPECT_EQ(Tpm::UnsignedInt8ToUnsignedInt64(inputBuf, TPM_RESPONSE_MAX_SIZE, dataOffset, dataLength, &data), MMI_OK);
         EXPECT_EQ(data, 0x74657374);
     }
 
-    TEST(TpmTests, BufferToString)
+    TEST_F(TpmTests, LoadProperties)
     {
-        unsigned char buf[9] = {'t', 'e', 's', 't', 'd', 'a', 't', 'a', '\0'};
-        std::string str;
+        std::string expectedVersion = "\"" + std::string(tpmVersion) + "\"";
+        std::string expectedManufacturer = "\"" + std::string(tpmManufacturer) + "\"";
 
-        EXPECT_EQ(Tpm2Utils::BufferToString(nullptr, str), EINVAL);
-        EXPECT_EQ(str, empty);
+        tpm->m_commandOutput.push_back(tpmDeviceDirectory);
+        tpm->m_commandOutput.push_back(tpmDetails);
 
-        EXPECT_EQ(Tpm2Utils::BufferToString(&buf[0], str), MMI_OK);
-        EXPECT_EQ(str, "testdata");
+        tpm->LoadProperties();
+
+        EXPECT_EQ(Tpm::Status::TpmDetected, tpm->GetStatus());
+        EXPECT_EQ(expectedVersion, tpm->GetVersion().c_str());
+        EXPECT_EQ(expectedManufacturer, tpm->GetManufacturer().c_str());
     }
 
-    TEST(TpmTests, GetStatus)
+    TEST_F(TpmTests, GetPropertiesFromCapabilitiesFile)
     {
-        TestTpm tpm(maxPayloadSizeBytes);
-        tpm.m_commandOutput.push_back(tpmDeviceDirectory);
+        Tpm::Properties properties;
 
-        std::string data;
-        tpm.GetStatus(data);
-        EXPECT_STREQ(data.c_str(), tpmDetected.c_str());
+        tpm->m_commandOutput.push_back(tpmDetails);
 
-        data.clear();
-        tpm.GetStatus(data);
-        EXPECT_STREQ(data.c_str(), tpmNotDetected.c_str());
+        EXPECT_EQ(0, tpm->GetPropertiesFromCapabilitiesFile(properties));
+        EXPECT_STREQ(tpmVersion, properties.version.c_str());
+        EXPECT_STREQ(tpmManufacturer, properties.manufacturer.c_str());
+
+        tpm->m_commandOutput.push_back(tpmDetailsLeadingAndTrailingWhitespace);
+
+        EXPECT_EQ(0, tpm->GetPropertiesFromCapabilitiesFile(properties));
+        EXPECT_STREQ(tpmVersion, properties.version.c_str());
+        EXPECT_STREQ(tpmManufacturer, properties.manufacturer.c_str());
+
+        tpm->m_commandOutput.push_back(tpmDetailsManufacturerNameLong);
+
+        EXPECT_EQ(0, tpm->GetPropertiesFromCapabilitiesFile(properties));
+        EXPECT_STREQ(tpmVersion, properties.version.c_str());
+        EXPECT_STREQ(tpmManufacturerNameLong, properties.manufacturer.c_str());
     }
 
-    TEST(TpmTests, GetVersionFromCapabilitiesFile)
-    {
-        TestTpm tpm(maxPayloadSizeBytes);
-        tpm.m_commandOutput.push_back(tpmDetails);
-
-        std::string data;
-        tpm.GetVersionFromCapabilitiesFile(data);
-        EXPECT_STREQ(data.c_str(), tpmVersionNumber);
-
-        data.clear();
-        tpm.m_commandOutput.push_back(tpmDetailsLeadingAndTrailingWhitespace);
-        tpm.GetVersionFromCapabilitiesFile(data);
-        EXPECT_STREQ(data.c_str(), tpmVersionNumber);
-    }
-
-    TEST(TpmTests, GetManufacturerFromCapabilitiesFile)
-    {
-        TestTpm tpm(maxPayloadSizeBytes);
-        tpm.m_commandOutput.push_back(tpmDetails);
-
-        std::string data;
-        tpm.GetManufacturerFromCapabilitiesFile(data);
-        EXPECT_STREQ(data.c_str(), tpmManufacturerNameSTMicroelectronics);
-
-        data.clear();
-        tpm.m_commandOutput.push_back(tpmDetailsLeadingAndTrailingWhitespace);
-        tpm.GetManufacturerFromCapabilitiesFile(data);
-        EXPECT_STREQ(data.c_str(), tpmManufacturerNameSTMicroelectronics);
-
-        data.clear();
-        tpm.m_commandOutput.push_back(tpmDetailsManufacturerNameLong);
-        tpm.GetManufacturerFromCapabilitiesFile(data);
-        EXPECT_STREQ(data.c_str(), tpmManufacturerNameLong);
-    }
-
-    TEST(TpmTests, GetObjectNameUnknown)
-    {
-        const char* objectNameUnknown = "ObjectNameUnknown";
-        MMI_JSON_STRING payload = nullptr;
-        int payloadSizeBytes = 0;
-
-        TestTpm tpm(maxPayloadSizeBytes);
-        EXPECT_EQ(tpm.Get(objectNameUnknown, &payload, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payload, nullptr);
-        EXPECT_EQ(payloadSizeBytes, 0);
-    }
-
-    TEST(TpmTests, MmiGetInfo)
+    TEST_F(TpmTests, GetInvalidObject)
     {
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        EXPECT_EQ(MmiGetInfo(nullptr, &payload, &payloadSizeBytes), EINVAL);
+        tpm->m_commandOutput.push_back(tpmDeviceDirectory);
+        tpm->m_commandOutput.push_back(tpmDetails);
+
+        EXPECT_EQ(tpm->Get(Tpm::m_tpm.c_str(), Tpm::m_tpmStatus.c_str(), nullptr, &payloadSizeBytes), EINVAL);
+        EXPECT_EQ(tpm->Get(Tpm::m_tpm.c_str(), Tpm::m_tpmStatus.c_str(), &payload, nullptr), EINVAL);
+        EXPECT_EQ(tpm->Get(Tpm::m_tpm.c_str(), "unknown", &payload, &payloadSizeBytes), EINVAL);
         EXPECT_EQ(payload, nullptr);
         EXPECT_EQ(payloadSizeBytes, 0);
 
-        EXPECT_EQ(MmiGetInfo(clientName, nullptr, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payloadSizeBytes, 0);
-
-        EXPECT_EQ(MmiGetInfo(clientName, &payload, nullptr), EINVAL);
-        EXPECT_EQ(payload, nullptr);
-
-        EXPECT_EQ(MmiGetInfo(clientName, &payload, &payloadSizeBytes), MMI_OK);
-
-        EXPECT_NE(payload, nullptr);
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
-    TEST(TpmTests, MmiOpen)
+    TEST_F(TpmTests, GetStatus)
     {
-        MMI_HANDLE handle = MmiOpen(nullptr, maxPayloadSizeBytes);
-        EXPECT_EQ(handle, nullptr);
-
-        handle = MmiOpen(clientName, maxPayloadSizeBytes);
-        EXPECT_NE(handle, nullptr);
-
-        Tpm* tpm = reinterpret_cast<Tpm*>(handle);
-
-        EXPECT_NE(tpm, nullptr);
-        delete tpm;
-    }
-
-    TEST(TpmTests, MmiGet)
-    {
-        TestTpm tpm = TestTpm(maxPayloadSizeBytes);
-
-        MMI_HANDLE clientSession = reinterpret_cast<void*>(&tpm);
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
+        std::string expectedStatus = std::to_string(static_cast<int>(Tpm::Status::TpmDetected));
 
-        EXPECT_EQ(MmiGet(nullptr, TPM, TPM_STATUS, &payload, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payload, nullptr);
-        EXPECT_EQ(payloadSizeBytes, 0);
+        tpm->m_commandOutput.push_back(tpmDeviceDirectory);
+        tpm->m_commandOutput.push_back(tpmDetails);
 
-        const char* componentNameUnknown = "ComponentNameUnknown";
-        EXPECT_EQ(MmiGet(clientSession, componentNameUnknown, TPM_STATUS, &payload, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payload, nullptr);
-        EXPECT_EQ(payloadSizeBytes, 0);
+        EXPECT_EQ(MMI_OK, tpm->Get(Tpm::m_tpm.c_str(), Tpm::m_tpmStatus.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(payloadSizeBytes, expectedStatus.length());
+        ASSERT_NE(payload, nullptr);
+        std::string payloadString(payload, payloadSizeBytes);
+        EXPECT_STREQ(expectedStatus.c_str(), payloadString.c_str());
 
-        const char* objectNameUnknown = "ObjectNameUnknown";
-        EXPECT_EQ(MmiGet(clientSession, TPM, objectNameUnknown, &payload, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payload, nullptr);
-        EXPECT_EQ(payloadSizeBytes, 0);
+        FREE_MEMORY(payload);
+    }
 
-        EXPECT_EQ(MmiGet(clientSession, TPM, TPM_STATUS, nullptr, &payloadSizeBytes), EINVAL);
-        EXPECT_EQ(payloadSizeBytes, 0);
+    TEST_F(TpmTests, GetVersion)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+        std::string expectedVersion = "\"" + std::string(tpmVersion) + "\"";
 
-        EXPECT_EQ(MmiGet(clientSession, TPM, TPM_STATUS, &payload, nullptr), EINVAL);
-        EXPECT_EQ(payload, nullptr);
+        tpm->m_commandOutput.push_back(tpmDeviceDirectory);
+        tpm->m_commandOutput.push_back(tpmDetails);
 
-        tpm.m_commandOutput.push_back(tpmDeviceDirectory);
+        EXPECT_EQ(MMI_OK, tpm->Get(Tpm::m_tpm.c_str(), Tpm::m_tpmVersion.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(payloadSizeBytes, expectedVersion.length());
+        ASSERT_NE(payload, nullptr);
+        std::string payloadString(payload, payloadSizeBytes);
+        EXPECT_STREQ(expectedVersion.c_str(), payloadString.c_str());
 
-        EXPECT_EQ(MmiGet(clientSession, TPM, TPM_STATUS, &payload, &payloadSizeBytes), MMI_OK);
+        FREE_MEMORY(payload);
+    }
 
-        std::string result(payload, payloadSizeBytes);
-        EXPECT_STREQ(result.c_str(), tpmDetected.c_str());
+    TEST_F(TpmTests, GetManufacturer)
+    {
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+        std::string expectedManufacturer = "\"" + std::string(tpmManufacturer) + "\"";
 
-        EXPECT_NE(payload, nullptr);
-        delete payload;
+        tpm->m_commandOutput.push_back(tpmDeviceDirectory);
+        tpm->m_commandOutput.push_back(tpmDetails);
+
+        EXPECT_EQ(MMI_OK, tpm->Get(Tpm::m_tpm.c_str(), Tpm::m_tpmManufacturer.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(payloadSizeBytes, expectedManufacturer.length());
+        ASSERT_NE(payload, nullptr);
+        std::string payloadString(payload, payloadSizeBytes);
+        EXPECT_STREQ(expectedManufacturer.c_str(), payloadString.c_str());
+
+        FREE_MEMORY(payload);
     }
 }

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #include "inc/PnpUtils.h"
-#include "inc/MpiProxy.h"
+#include "inc/MpiClient.h"
 #include "inc/PnpAgent.h"
 
 #define PNP_STATUS_SUCCESS 200
@@ -528,6 +528,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
     int decoratedLength = 0;
     size_t hashPayload = 0;
     bool reportProperty = true;
+    bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
     LogAssert(GetLog(), NULL != componentName);
@@ -539,8 +540,14 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
         return IOTHUB_CLIENT_ERROR;
     }
 
-    mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
+    mpiResult =  CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
+    if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+    {
+        CallMpiFree(valuePayload);
 
+        mpiResult = CallMpiGet(componentName, propertyName, &valuePayload, &valueLength);
+    }
+        
     if ((MPI_OK == mpiResult) && (valueLength > 0) && (NULL != valuePayload))
     {
         decoratedLength = strlen(componentName) + strlen(propertyName) + valueLength + EXTRA_PROP_PAYLOAD_ESTIMATE;
@@ -627,6 +634,7 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
     int propertyUpdateResult = PNP_STATUS_SUCCESS;
     char* serializedValue = NULL;
     int valueLength = 0;
+    bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
     LogAssert(GetLog(), NULL != componentName);
@@ -648,6 +656,10 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
         }
 
         mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength);
+        if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+        {
+            mpiResult = CallMpiSet(componentName, propertyName, serializedValue, valueLength);
+        }
 
         if (MPI_OK == mpiResult)
         {

@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
-      version = "~>2.0"
+      version = "3.0.0"
     }
   }
 }
@@ -18,26 +18,11 @@ provider "azurerm" {
   client_secret     = var.client_secret
 }
 
-# Generate random text for a unique resource group name
-resource "random_id" "randomId" {
-    byte_length = 8
-}
-
-# Create a resource group if it doesn't exist
-resource "azurerm_resource_group" "osconfig_group" {
-    name     = "${var.resource_group_name_prefix}-${random_id.randomId.hex}"
-    location = "eastus"
-
-    tags = {
-        environment = var.environment_tag
-    }
-}
-
 # Create an Azure IoT Hub
 resource "azurerm_iothub" "osconfig_iothub" {
-    name                = "osconfig-iothub-${random_id.randomId.hex}"
-    resource_group_name = azurerm_resource_group.osconfig_group.name
-    location            = azurerm_resource_group.osconfig_group.location
+    name                = "${var.resource_group_name}-iothub"
+    resource_group_name = "${var.resource_group_name}"
+    location            = "eastus"
 
     sku {
         name     = "S1"
@@ -48,29 +33,13 @@ resource "azurerm_iothub" "osconfig_iothub" {
 # Create an IoT Hub Access Policy
 data "azurerm_iothub_shared_access_policy" "osconfig_iothubowner" {
     name                = "iothubowner"
-    resource_group_name = azurerm_resource_group.osconfig_group.name
+    resource_group_name = "${var.resource_group_name}"
     iothub_name         = azurerm_iothub.osconfig_iothub.name
-}
-
-resource "azurerm_iothub_dps" "osconfig_dps" {
-    name                = "osconfig-dps-${random_id.randomId.hex}"
-    resource_group_name = azurerm_resource_group.osconfig_group.name
-    location            = azurerm_resource_group.osconfig_group.location
-
-    sku {
-        name     = "S1"
-        capacity = 1
-    }
-
-    linked_hub {
-        connection_string = data.azurerm_iothub_shared_access_policy.osconfig_iothubowner.primary_connection_string
-        location = azurerm_iothub.osconfig_iothub.location
-    }
 }
 
 # Add secret into keyvault
 resource "azurerm_key_vault_secret" "iothub_owner_secret" {
-  name         = "${azurerm_resource_group.osconfig_group.name}-iothubowner"
+  name         = "${var.resource_group_name}-iothubowner"
   value        = data.azurerm_iothub_shared_access_policy.osconfig_iothubowner.primary_connection_string
   key_vault_id = var.key_vault_id
   # expire in 30 days

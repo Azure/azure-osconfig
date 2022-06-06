@@ -34,6 +34,9 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log);
 
 bool SavePayloadToFile(const char* fileName, const char* payload, const int payloadSizeBytes, void* log);
 
+void SetCommandLogging(bool commandLogging);
+bool IsCommandLoggingEnabled(void);
+
 typedef int(*CommandCallback)(void* context);
 
 // If called from the main process thread the timeoutSeconds and callback arguments are ignored
@@ -60,9 +63,16 @@ char* GetOsVersion(void* log);
 char* GetOsKernelName(void* log);
 char* GetOsKernelRelease(void* log);
 char* GetOsKernelVersion(void* log);
-char* GetCpu(void* log);
+char* GetCpuType(void* log);
+char* GetCpuVendor(void* log);
+char* GetCpuModel(void* log);
+long GetTotalMemory(void* log);
+long GetFreeMemory(void* log);
 char* GetProductName(void* log);
 char* GetProductVendor(void* log);
+char* GetProductVersion(void* log);
+char* GetSystemCapabilities(void* log);
+char* GetSystemConfiguration(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
@@ -74,6 +84,16 @@ char* UrlDecode(char* target);
 
 bool LockFile(FILE* file, void* log);
 bool UnlockFile(FILE* file, void* log);
+
+char* ReadUriFromSocket(int socketHandle, void* log);
+int ReadHttpStatusFromSocket(int socketHandle, void* log);
+int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
+
+int SleepMilliseconds(long milliseconds);
+
+bool IsDaemonActive(const char* name, void* log);
+bool EnableAndStartDaemon(const char* name, void* log);
+void StopAndDisableDaemon(const char* name, void* log);
 
 #ifdef __cplusplus
 }

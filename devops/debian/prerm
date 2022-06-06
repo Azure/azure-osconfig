@@ -37,8 +37,10 @@ esac
 if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
     # MSFT change: dh_installsystemd uses deb-systemd-invoke which fails
     # when /usr/sbin/policy-rc.d fails, use systemctl directly
-	systemctl stop 'osconfig.service' >/dev/null || true
+    systemctl stop 'osconfig.service' >/dev/null || true
     systemctl disable 'osconfig.service' >/dev/null || true
+    systemctl stop 'osconfig-platform.service' >/dev/null || true
+    systemctl disable 'osconfig-platform.service' >/dev/null || true
 fi
 # End automatically added section
 

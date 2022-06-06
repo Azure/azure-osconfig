@@ -1,6 +1,44 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-add_subdirectory(modulesmanager)
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4.7)
+    message(FATAL_ERROR "gcc-4.4.7 or newer is needed")
+endif()
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
+
+SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
+
+project(osconfig-platform)
+
+set(osconfig_platform_files
+    ./Log.c
+    ./Main.c
+    ./ManagementModule.cpp
+    ./ModulesManager.cpp
+    ./MpiServer.c)
+
+set(target_name osconfig-platform)
+
+add_executable(${target_name} ${osconfig_platform_files})
+
+target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
+
+target_include_directories(${target_name} PUBLIC
+    ${MODULES_INC_DIR}
+    ${PLATFORM_INC_DIR})
+
+target_link_libraries(${target_name}
+    ${CMAKE_DL_LIBS}
+    pthread
+    logging
+    commonutils
+    parsonlib)
+
+include(GNUInstallDirs)
+install(TARGETS ${target_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)

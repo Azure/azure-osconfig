@@ -38,7 +38,10 @@ esac
 if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
 	# MSFT change: binplace osconfig.toml for the azure-identity-service only if not present
 	# Binplacing a pre-existing install breaks the current identity
+	# If azure-identity-service is not present, place the identity in the directory anyway so
+	# once the agent is installed, OSConfig makes use of it.
 	if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+		mkdir -p /etc/aziot/identityd/config.d
 		cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
 	fi
 	if [ -d /run/systemd/system ]; then
@@ -50,6 +53,8 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
 		fi
 		# MSFT change: dh_installsystemd uses deb-systemd-invoke which fails
 		# when /usr/sbin/policy-rc.d fails, use systemctl directly
+		systemctl enable 'osconfig-platform.service' >/dev/null || true
+		systemctl $_dh_action 'osconfig-platform.service' >/dev/null || true
 		systemctl enable 'osconfig.service' >/dev/null || true
 		systemctl $_dh_action 'osconfig.service' >/dev/null || true
 	fi
