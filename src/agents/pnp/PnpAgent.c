@@ -490,6 +490,8 @@ static void LoadDesiredConfigurationFromFile()
         // Do not call MpiSetDesired unless this desired configuration is different from previous
         if (g_desiredHash != (payloadHash = HashString(payload)))
         {
+            OsConfigLogInfo(GetLog(), "Processing DC payload from %s", DC_FILE);
+            
             mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
             if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
             {
