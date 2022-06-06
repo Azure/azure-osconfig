@@ -1,6 +1,9 @@
 #include "Common.h"
 
+std::string g_commandLogging = "CommandLogging";
+std::string g_configFile = "/etc/osconfig/osconfig.json";
 std::string g_defaultPath = "testplate.json";
+std::string g_fullLogging = "FullLogging";
 
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
@@ -86,6 +89,37 @@ static void PrintUsage()
               << "  -h, --help: Print help message" << std::endl;
 }
 
+static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
+{
+    bool result = false;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
+            }
+            json_value_free(rootValue);
+        }
+    }
+
+    return result;
+}
+
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, g_commandLogging.c_str());
+}
+
+bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, g_fullLogging.c_str());
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
@@ -96,8 +130,14 @@ int main(int argc, char **argv)
         PrintUsage();
     }
 
-    // TODO: add fulllogging on/off?
-    SetFullLogging(true);
+    char* jsonConfiguration = LoadStringFromFile(g_configFile.c_str(), false, NULL);
+    if (NULL != jsonConfiguration)
+    {
+        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        FREE_MEMORY(jsonConfiguration);
+    }
+
     if (argc == 2)
     {
         // Test definitions present - perform more extensive tests using Mim and test recipes

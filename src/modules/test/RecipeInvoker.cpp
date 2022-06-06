@@ -36,8 +36,7 @@ void RecipeInvoker::TestBody()
             if ((map.m_type.compare("array") == 0) ||
                 (map.m_type.compare("map") == 0))
             {
-                EXPECT_EQ(JSONArray, json_value_get_type(root_value)) << "Expecting '" << m_recipe.m_objectName << "' to contain an array" << std::endl
-                    << "JSON: " << payloadStr;
+                EXPECT_EQ(JSONArray, json_value_get_type(root_value)) << "Expecting '" << m_recipe.m_objectName << "' to contain an array" << std::endl << "JSON: " << payloadStr;
             }
             else
             {
@@ -45,32 +44,27 @@ void RecipeInvoker::TestBody()
                 {
                     if (setting.second.type.compare("string") == 0)
                     {
-                        EXPECT_NE(nullptr, json_object_get_string(jsonObject, setting.second.name.c_str())) << "Expecting '" << m_recipe.m_objectName << "' to contain string setting '" << setting.second.name << "'" << std::endl
-                                                                                                        << "JSON: " << payloadStr;
+                        EXPECT_NE(nullptr, json_object_get_string(jsonObject, setting.second.name.c_str())) << "Expecting '" << m_recipe.m_objectName << "' to contain string setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
 
                         std::string value = json_object_get_string(jsonObject, setting.second.name.c_str());
                         if (setting.second.allowedValues->size() && std::find(setting.second.allowedValues->begin(), setting.second.allowedValues->end(), value) == setting.second.allowedValues->end())
                         {
-                            FAIL() << "Field '" << setting.second.name << "' contains unsupported value '" << value << "'" << std::endl
-                                << "JSON: " << payloadStr;
+                            FAIL() << "Field '" << setting.second.name << "' contains unsupported value '" << value << "'" << std::endl << "JSON: " << payloadStr;
                         }
                     }
                     else if (setting.second.type.compare("integer") == 0)
                     {
                         JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
-                        EXPECT_EQ(JSONNumber, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain integer setting '" << setting.second.name << "'" << std::endl
-                                                                        << "JSON: " << payloadStr;
+                        EXPECT_EQ(JSONNumber, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain integer setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
                     }
                     else if (setting.second.type.compare("boolean") == 0)
                     {
                         JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
-                        EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean setting '" << setting.second.name << "'" << std::endl
-                                                                        << "JSON: " << payloadStr;
+                        EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
                     }
                     else
                     {
-                        FAIL() << "Unsupported type: " << setting.second.type << std::endl
-                            << "JSON: " << payloadStr;
+                        FAIL() << "Unsupported type: " << setting.second.type << std::endl << "JSON: " << payloadStr;
                     }
                 }
             }
@@ -89,8 +83,7 @@ void RecipeInvoker::TestBody()
                 JSON_Value *returned_payload = json_parse_string(payload);
 
                 std::string recipe_payload_str(payload, payloadSize);
-                EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl
-                                                   << "JSON: " << m_recipe.m_payload;
+                EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl << "JSON: " << m_recipe.m_payload;
                 EXPECT_TRUE(json_value_equals(recipe_payload, returned_payload)) << "Non matching recipe payload" << std::endl
                                                                                  << "Recipe   payload: " << m_recipe.m_payload << std::endl
                                                                                  << "Returned payload: " << recipe_payload_str << std::endl;

@@ -3,8 +3,8 @@
 
 add_subdirectory(test)
 
-# Function add_module/add_module_custom_target is used to add a module to the build
-# and add the appropriate dependencies in order for module test metadata to be generated. 
+# Function add_module/add_module_custom_target is used to add a module to the build and add
+# the appropriate dependencies in order for module testrecipe configuration to be generated. 
 function(add_module_custom_target moduleDir targetName)
     add_subdirectory(${moduleDir})
     add_dependencies(moduletestmetadata ${targetName})

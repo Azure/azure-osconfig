@@ -2,7 +2,6 @@
 # Generates test metadata for all modules published with MIMs and Test Recipes
 # MIM Path        : src/modules/mim
 # Test Recipe Path: src/modules/test/recipes
-# Requires: jq
 if ! [ -x "$(command -v jq)" ]; then
   echo 'Error: jq is not installed.' >&2
   exit 1
