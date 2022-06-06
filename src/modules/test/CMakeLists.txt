@@ -21,11 +21,22 @@ target_include_directories(testfactorylib PUBLIC
 add_executable(modulestest main.cpp)
 target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
 
-add_custom_target(moduletestmetadata
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh
-    COMMENT "Generating module test metadata"
-)
-add_dependencies(modulestest moduletestmetadata)
+find_program(JQ_EXEC jq)
+if(JQ_EXEC)
+    add_custom_target(moduletestmetadata
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh
+        COMMENT "Generating module test metadata"
+    )
+    add_dependencies(modulestest moduletestmetadata)
+else()
+    set(jq_error "'jq' application required for generating module test metadata")
+    message(WARNING ${jq_error})
+    add_custom_target(moduletestmetadata
+        COMMAND true
+        COMMENT ${jq_error}
+    )
+endif()
+
 gtest_discover_tests(modulestest
     EXTRA_ARGS ${CMAKE_CURRENT_BINARY_DIR}/testplate.json
 )
