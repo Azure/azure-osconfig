@@ -3,10 +3,16 @@
 static const std::string g_array = "array";
 static const std::string g_contents = "contents";
 static const std::string g_desired = "desired";
+static const std::string g_elementSchema = "elementSchema";
 static const std::string g_elementSchema_Fields = "elementSchema.fields";
 static const std::string g_elementSchema_Type = "elementSchema.type";
+static const std::string g_enum = "enum";
+static const std::string g_enumValue = "enumValue";
 static const std::string g_enumValues = "enumValues";
 static const std::string g_fields = "fields";
+static const std::string g_map = "map";
+static const std::string g_mapKey_Schema = "mapKey.schema";
+static const std::string g_mapValue_Schema = "mapValue.schema";
 static const std::string g_mimModel = "MimModel";
 static const std::string g_mimObject = "mimObject";
 static const std::string g_name = "name";
@@ -111,7 +117,7 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
     {
         JSON_Object *jsonSchema = json_object_get_object(jsonField, g_schema.c_str());
 
-        if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), "enum"))
+        if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), g_enum.c_str()))
         {
             mimField = {
                 json_object_get_string(jsonField, g_name.c_str()),
@@ -125,15 +131,15 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
                 for (size_t a = 0; a < json_array_get_count(supportedValues); a++)
                 {
                     JSON_Object *jsonEnumValues = json_array_get_object(supportedValues, a);
-                    mimField.allowedValues->push_back(std::to_string(json_object_get_number(jsonEnumValues, "enumValue")));
+                    mimField.allowedValues->push_back(std::to_string(json_object_get_number(jsonEnumValues, g_enumValue.c_str())));
                 }
             }
         }
         else if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), g_array.c_str()))
         {
-            if (json_object_has_value_of_type(jsonSchema, "elementSchema", JSONObject))
+            if (json_object_has_value_of_type(jsonSchema, g_elementSchema.c_str(), JSONObject))
             {
-                MimParser::ParseMimSetting(json_object_get_object(jsonField, "elementSchema"), mimObject);
+                MimParser::ParseMimSetting(json_object_get_object(jsonField, g_elementSchema.c_str()), mimObject);
             }
             else
             {
@@ -143,10 +149,10 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
                     std::make_shared<std::vector<std::string>>()};
             }
         }
-        else if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), "map"))
+        else if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), g_map.c_str()))
         {
-            const char* keySchema = json_object_dotget_string(jsonSchema, "mapKey.schema");
-            const char* valueSchema = json_object_dotget_string(jsonSchema, "mapValue.schema");
+            const char* keySchema = json_object_dotget_string(jsonSchema, g_mapKey_Schema.c_str());
+            const char* valueSchema = json_object_dotget_string(jsonSchema, g_mapValue_Schema.c_str());
 
             if (nullptr == keySchema || nullptr == valueSchema)
             {

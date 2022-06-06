@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generates test metadata for all modules published with MIMs and Test Recipes
+# Generates test recipe configuration for all modules published with MIMs and Test Recipes
 # MIM Path        : src/modules/mim
 # Test Recipe Path: src/modules/test/recipes
 if ! [ -x "$(command -v jq)" ]; then
@@ -33,4 +33,4 @@ while IFS= read -r line ;
 done <<< $modules
 
 echo $testJSON | jq '.' > $testMetaDataDestPath
-echo "Test metadata written to $testMetaDataDestPath"
+echo "Test recipe configuration written to $testMetaDataDestPath"
