@@ -448,6 +448,10 @@ int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes)
     {
         OsConfigLogInfo(GetLog(), "CallMpiSetDesired(%p, %.*s, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
+    else
+    {
+        OsConfigLogInfo(GetLog(), "CallMpiSetDesired(%p, %d bytes) returned %d", g_mpiHandle, payloadSizeBytes, status);
+    }
 
     return status;
 }
