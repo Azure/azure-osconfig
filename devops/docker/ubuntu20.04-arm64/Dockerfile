@@ -17,11 +17,14 @@ RUN apt -y update && apt-get -y install \
     liblttng-ust-dev \
     rapidjson-dev \
     ninja-build\
-    wget 
+    wget
 
 WORKDIR /git
-RUN git clone https://github.com/Kitware/CMake --recursive -b v3.19.7
+
+# CMake
+RUN git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
-WORKDIR /git
+
+# rapidjson
 RUN git clone https://github.com/Tencent/rapidjson --recursive
 RUN cd rapidjson && cmake . -G Ninja && cmake --build . --target install && rm -rf /git/rapidjson
