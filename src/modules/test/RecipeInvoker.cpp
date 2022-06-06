@@ -84,9 +84,7 @@ void RecipeInvoker::TestBody()
 
                 std::string recipe_payload_str(payload, payloadSize);
                 EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl << "JSON: " << m_recipe.m_payload;
-                EXPECT_TRUE(json_value_equals(recipe_payload, returned_payload)) << "Non matching recipe payload" << std::endl
-                                                                                 << "Recipe   payload: " << m_recipe.m_payload << std::endl
-                                                                                 << "Returned payload: " << recipe_payload_str << std::endl;
+                EXPECT_TRUE(json_value_equals(recipe_payload, returned_payload)) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << recipe_payload_str << std::endl;
 
                 json_value_free(recipe_payload);
                 json_value_free(returned_payload);
