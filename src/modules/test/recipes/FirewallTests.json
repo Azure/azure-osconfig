@@ -1,0 +1,16 @@
+[
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "firewallState",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "firewallFingerprint",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    }
+]
