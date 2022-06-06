@@ -1,5 +1,6 @@
 #include "Common.h"
 
+static const std::string g_array = "array";
 static const std::string g_contents = "contents";
 static const std::string g_desired = "desired";
 static const std::string g_elementSchema_Fields = "elementSchema.fields";
@@ -57,7 +58,7 @@ pMimObjects MimParser::ParseMim(std::string path)
 
                     JSON_Array *jsonSettings = nullptr;
                     if (nullptr != json_object_get_string(schema_object, g_type.c_str()) &&
-                        (0 == strcmp(json_object_get_string(schema_object, g_type.c_str()), "array")) &&
+                        (0 == strcmp(json_object_get_string(schema_object, g_type.c_str()), g_array.c_str())) &&
                         (0 == strcmp(json_object_dotget_string(schema_object, g_elementSchema_Type.c_str()), g_object.c_str())))
                     {
                         mim.m_type = json_object_get_string(schema_object, g_type.c_str()),
@@ -128,7 +129,7 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
                 }
             }
         }
-        else if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), "array"))
+        else if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), g_array.c_str()))
         {
             if (json_object_has_value_of_type(jsonSchema, "elementSchema", JSONObject))
             {

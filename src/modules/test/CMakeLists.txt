@@ -23,15 +23,15 @@ target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
 
 find_program(JQ_EXEC jq)
 if(JQ_EXEC)
-    add_custom_target(moduletestmetadata
+    add_custom_target(modulerecipeconfiguration
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh
-        COMMENT "Generating module test metadata"
+        COMMENT "Generating module recipe configuration"
     )
-    add_dependencies(modulestest moduletestmetadata)
+    add_dependencies(modulestest modulerecipeconfiguration)
 else()
-    set(jq_error "'jq' application required for generating module test metadata")
+    set(jq_error "'jq' application required for generating module recipe configuration")
     message(WARNING ${jq_error})
-    add_custom_target(moduletestmetadata
+    add_custom_target(modulerecipeconfiguration
         COMMAND true
         COMMENT ${jq_error}
     )

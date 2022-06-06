@@ -7,7 +7,7 @@ add_subdirectory(test)
 # the appropriate dependencies in order for module testrecipe configuration to be generated. 
 function(add_module_custom_target moduleDir targetName)
     add_subdirectory(${moduleDir})
-    add_dependencies(moduletestmetadata ${targetName})
+    add_dependencies(modulerecipeconfiguration ${targetName})
 endfunction()
 function(add_module moduleDir)
     add_module_custom_target(${moduleDir} ${moduleDir})
