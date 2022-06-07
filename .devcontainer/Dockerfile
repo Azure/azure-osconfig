@@ -5,23 +5,23 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt-get -y install software-properties-common
 RUN apt -y update && apt-get -y install \
     apt-transport-https \
-    git \
-    cmake \
     build-essential \
+    ca-certificates \
+    cmake \
     curl \
-    libcurl4-openssl-dev \
-    libssl-dev \
-    uuid-dev \
-    libgtest-dev \
-    libgmock-dev \
-    liblttng-ust-dev \
-    rapidjson-dev \
-    ninja-build\
-    wget \
     gcovr \
     gdb \
-    ca-certificates \
+    git \
     jq \
+    libcurl4-openssl-dev \
+    libgmock-dev \
+    libgtest-dev \
+    liblttng-ust-dev \
+    libssl-dev \
+    ninja-build\
+    rapidjson-dev \
+    uuid-dev \
+    wget
     \
     # .NET dependencies
     libc6 \

@@ -1,6 +1,9 @@
 #include "Common.h"
 
+std::string g_commandLogging = "CommandLogging";
+std::string g_configFile = "/etc/osconfig/osconfig.json";
 std::string g_defaultPath = "testplate.json";
+std::string g_fullLogging = "FullLogging";
 
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
@@ -10,7 +13,7 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "-" + recipe.m_objectName);
         testing::RegisterTest(
-            "TestRecipes", testName.c_str(), nullptr, testName.c_str(), __FILE__, __LINE__,
+            "TestRecipes", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
             [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
@@ -86,6 +89,37 @@ static void PrintUsage()
               << "  -h, --help: Print help message" << std::endl;
 }
 
+static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
+{
+    bool result = false;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                result = (0 == (int)json_object_get_number(rootObject, loggingSetting)) ? false : true;
+            }
+            json_value_free(rootValue);
+        }
+    }
+
+    return result;
+}
+
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, g_commandLogging.c_str());
+}
+
+bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
+{
+    return IsLoggingEnabledInJsonConfig(jsonString, g_fullLogging.c_str());
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
@@ -94,6 +128,14 @@ int main(int argc, char **argv)
     if (argc == 1)
     {
         PrintUsage();
+    }
+
+    char* jsonConfiguration = LoadStringFromFile(g_configFile.c_str(), false, NULL);
+    if (NULL != jsonConfiguration)
+    {
+        SetCommandLogging(IsCommandLoggingEnabledInJsonConfig(jsonConfiguration));
+        SetFullLogging(IsFullLoggingEnabledInJsonConfig(jsonConfiguration));
+        FREE_MEMORY(jsonConfiguration);
     }
 
     if (argc == 2)
@@ -112,7 +154,7 @@ int main(int argc, char **argv)
             // See gtest.h for details on this test registration
             // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
             testing::RegisterTest(
-                "TestRecipes", "Basic-Module-Test", nullptr, "Basic-Module-Test", __FILE__, __LINE__,
+                "TestRecipes", "Basic-Module-Test", nullptr, nullptr, __FILE__, __LINE__,
                     [module]()->RecipeFixture*
                     { 
                         return new BasicModuleTester(module); }

@@ -1,0 +1,24 @@
+[
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "hosts",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": true,
+        "Payload": "{}",
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    }
+]

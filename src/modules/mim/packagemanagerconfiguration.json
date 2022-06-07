@@ -11,6 +11,7 @@
           "type": "mimObject",
           "desired": false,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "packages",

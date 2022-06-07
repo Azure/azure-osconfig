@@ -1,0 +1,9 @@
+[
+    {
+        "ComponentName": "PackageManagerConfiguration",
+        "ObjectName": "state",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    }
+]
