@@ -58,15 +58,6 @@ jobs:
           working-directory: ${{ env.container-workspace }}/build
           cmd: cmake --build . --config ${{ env.build-type }}
 
-      - name: Versions
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: |
-            cmake --version
-            ctest --version
-
       - name: Set test output
         id: test
         run: echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
@@ -79,20 +70,20 @@ jobs:
           cmd: ctest
 
       - uses: ./.github/actions/gtest-xml
-        if: always()
+        if: success() || failure()
         with:
           path: ./build/gtest-output
           output: ./${{ steps.test.outputs.xml }}
 
       - uses: actions/upload-artifact@v2
-        if: always()
+        if: success() || failure()
         with:
           name: unit-test
           path: ./${{ steps.test.outputs.xml }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
-        if: always()
+        if: success() || failure()
         with:
           name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
           path: ./${{ steps.test.outputs.xml }}
