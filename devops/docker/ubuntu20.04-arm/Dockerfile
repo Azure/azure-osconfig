@@ -18,7 +18,8 @@ RUN apt -y update && apt-get -y install \
     liblttng-ust-dev \
     rapidjson-dev \
     ninja-build\
-    wget 
+    wget \
+    jq
 
 ENV OPENSSL_ROOT_DIR=/usr/lib/arm-linux-gnueabihf/
 

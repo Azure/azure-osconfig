@@ -99,6 +99,7 @@ set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
 if (BUILD_TESTS)
     enable_testing()
+    set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
 
 add_subdirectory(common)

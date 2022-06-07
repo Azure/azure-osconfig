@@ -39,6 +39,7 @@ endif()
 
 gtest_discover_tests(modulestest
     EXTRA_ARGS ${CMAKE_CURRENT_BINARY_DIR}/testplate.json
+    XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR}
 )
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)

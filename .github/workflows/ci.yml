@@ -59,21 +59,35 @@ jobs:
           cmd: cmake --build . --config ${{ env.build-type }}
 
       - name: Set test output
-        id: test-results
-        run: echo '::set-output name=log::${{ matrix.os }}-${{ matrix.variant.arch }}-test.log'
+        id: test
+        run: echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.container-workspace }}/build
-          cmd: ctest -T test --verbose > ${{ steps.test-results.outputs.log }}
+          cmd: ctest
+
+      - uses: ./.github/actions/gtest-xml
+        if: success() || failure()
+        with:
+          path: ./build/gtest-output
+          output: ./${{ steps.test.outputs.xml }}
 
       - uses: actions/upload-artifact@v2
-        if: (success() || failure())
+        if: success() || failure()
         with:
           name: unit-test
-          path: ./build/${{ steps.test-results.outputs.log }}
+          path: ./${{ steps.test.outputs.xml }}
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
+          path: ./${{ steps.test.outputs.xml }}
+          reporter: java-junit
 
   coverage:
     name: Code coverage

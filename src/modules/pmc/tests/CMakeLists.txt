@@ -9,4 +9,4 @@ find_package(GTest REQUIRED)
 add_executable(pmctests PmcTests.cpp)
 target_link_libraries(pmctests gtest gtest_main pthread pmclib commonutils logging)
 
-gtest_discover_tests(pmctests)
+gtest_discover_tests(pmctests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
