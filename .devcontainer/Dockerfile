@@ -21,7 +21,7 @@ RUN apt -y update && apt-get -y install \
     ninja-build\
     rapidjson-dev \
     uuid-dev \
-    wget
+    wget \
     \
     # .NET dependencies
     libc6 \
