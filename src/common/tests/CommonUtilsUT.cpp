@@ -15,7 +15,6 @@
 using namespace std;
 
 #define STRFTIME_DATE_FORMAT "%Y%m%d"
-#define SSCANF_DATE_FORMAT "%4d%2d%2d"
 #define DATE_FORMAT_LENGTH 9
 
 class CommonUtilsTest : public ::testing::Test
@@ -567,6 +566,8 @@ TEST_F(CommonUtilsTest, ValidClientName)
 
 TEST_F(CommonUtilsTest, InvalidClientName)
 {
+    const char* sscanfDateFormat = "%4d%2d%2d";
+
     std::list<std::string> invalidClientNames = {
         "AzureOSConfig 5;0.0.0.20210927",
         "Azure OSConfig5;0.0.0.20210927",
@@ -598,7 +599,7 @@ TEST_F(CommonUtilsTest, InvalidClientName)
     strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
 
     int yearNow, monthNow, dayNow;
-    sscanf(dateNow, SSCANF_DATE_FORMAT, &yearNow, &monthNow, &dayNow);
+    sscanf(dateNow, sscanfDateFormat, &yearNow, &monthNow, &dayNow);
 
     std::string clientNameWithYearAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow + 1) + std::to_string(monthNow) + std::to_string(dayNow);
     std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow + 1) + std::to_string(dayNow);
@@ -1110,7 +1111,7 @@ TEST_F(CommonUtilsTest, ReadtHttpHeaderInfoFromSocket)
     }
 }
 
-TEST_F(CommonUtilsTest, Sleep)
+TEST_F(CommonUtilsTest, MillisecondsSleep)
 {
     long validValue = 100;
     long negativeValue = -100;
