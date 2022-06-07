@@ -32,7 +32,11 @@ RUN apt -y update && apt-get -y install \
     libstdc++6 \
     zlib1g
 
-# .NET Install
+# CMake
+RUN git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
+RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
+
+# .NET Install~
 RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 5.0
 ENV PATH="${PATH}:/root/.dotnet"
 
