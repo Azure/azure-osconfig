@@ -220,13 +220,13 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     return status;
 }
 
+#define MAX_COMMAND_RESULT_FILE_NAME 100
+
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log)
 {
     const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
     const char g_commandSeparator[] = " > ";
     const char g_commandTerminator[] = " 2>&1";
-    
-    const int maxCommandResultFileName = 100;
     
     int status = -1;
     FILE* resultsFile = NULL;
@@ -236,7 +236,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     char* commandLine = NULL;
     size_t commandLineLength = 0;
     size_t maximumCommandLine = 0;
-    char commandTextResultFile[maxCommandResultFileName] = {0};
+    char commandTextResultFile[MAX_COMMAND_RESULT_FILE_NAME] = {0};
     bool redirectedOutputCommand = false;
 
     if ((NULL == command) || (0 == system(NULL)))

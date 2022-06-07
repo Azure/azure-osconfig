@@ -188,35 +188,32 @@ static char* GetAnotherOsProperty(const char* command, void* log)
 char* GetOsKernelName(void* log)
 {
     static char* osKernelNameCommand = "uname -s";
-    
     char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
     
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetOsKernelRelease(void* log)
 {
     static char* osKernelReleaseCommand = "uname -r";
-
     char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
     
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetOsKernelVersion(void* log)
 {
     static char* osKernelVersionCommand = "uname -v";
-
     char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
     
     if (IsFullLoggingEnabled())
@@ -229,71 +226,68 @@ char* GetOsKernelVersion(void* log)
 
 char* GetCpuType(void* log)
 {
-    const char* osCpuTypeCommand = "lscpu | grep Architecture:"
-
+    const char* osCpuTypeCommand = "lscpu | grep Architecture:";
     char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
-
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU type: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetCpuVendor(void* log)
 {
     const char* osCpuVendorCommand = "lscpu | grep \"Vendor ID:\"";
-
     char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
-
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU vendor id: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetCpuModel(void* log)
 {
-    const char* osCpuModelCommand "= lscpu | grep \"Model name:\"";
-    
+    const char* osCpuModelCommand = "lscpu | grep \"Model name:\"";
     char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
-
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU model: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 long GetTotalMemory(void* log)
 {
     const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
-    long totalMemory = 0;
     char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log);
-
+    long totalMemory = 0;
+    
     if (NULL != textResult)
     {
         totalMemory = atol(textResult);
     }
-
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
     }
-
+    
     return totalMemory;
 }
 
 long GetFreeMemory(void* log)
 {
     const char* osFreeMemoryCommand = "grep MemFree /proc/meminfo";
-    long freeMemory = 0;
     char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log);
-
+    long freeMemory = 0;
+    
     if (NULL != textResult)
     {
         freeMemory = atol(textResult);
