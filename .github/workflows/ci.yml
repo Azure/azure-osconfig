@@ -19,7 +19,6 @@ jobs:
     name: Unit test
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
         variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
@@ -77,21 +76,26 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.container-workspace }}/build
-          cmd: ctest --output-junit ${{ steps.test.outputs.xml }}
+          cmd: ctest
+
+      - uses: ./.github/actions/gtest-xml
+        if: always()
+        with:
+          path: ./build/gtest-output
+          output: ./${{ steps.test.outputs.xml }}
 
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: unit-test
-          path: |
-            ${{ steps.test.outputs.xml }}
+          path: ./${{ steps.test.outputs.xml }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
         if: always()
         with:
           name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
-          path: ${{ steps.test.outputs.xml }}
+          path: ./${{ steps.test.outputs.xml }}
           reporter: java-junit
 
   coverage:
