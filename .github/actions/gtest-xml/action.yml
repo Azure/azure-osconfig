@@ -56,8 +56,13 @@ runs:
 
         for suite, cases in suites.items():
             new_suite = ET.SubElement(new_root, 'testsuite', name=suite)
+            suite_time = 0.0
+
             for case in cases:
                 new_suite.extend(case)
+                suite_time += float(case[0].attrib['time'])
+
+            new_suite.attrib['time'] = '%s' % suite_time
 
         new_tree = ET.ElementTree(new_root)
 
