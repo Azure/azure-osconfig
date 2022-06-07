@@ -66,10 +66,8 @@ gtest_discover_tests(modulesmanagertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(mpitests ${modulesmanagertests_files} MpiTests.cpp)
 target_link_libraries(mpitests modulesmanagermocks)
-gtest_discover_tests(mpitests)
 gtest_discover_tests(mpitests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(mpiservertests ${modulesmanagertests_files} MpiServerTests.cpp)
 target_link_libraries(mpiservertests modulesmanagermocks)
-gtest_discover_tests(mpiservertests)
 gtest_discover_tests(mpiservertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
