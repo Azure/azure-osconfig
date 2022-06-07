@@ -7,6 +7,7 @@
         "image_version": "latest",
         "device_id": "ubuntu2004",
         "vm_size": "Standard_DS1_v2",
+        "location": "East US",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
@@ -25,6 +26,7 @@
         "image_version": "latest",
         "device_id": "ubuntu1804",
         "vm_size": "Standard_DS1_v2",
+        "location": "East US",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
         "vm_script":
@@ -43,6 +45,7 @@
         "image_version": "latest",
         "device_id": "ubuntu2004arm64",
         "vm_size": "Standard_D2plds_v5",
+        "location": "West US 2",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-arm64-2.291.1.tar.gz",
         "vm_script":
