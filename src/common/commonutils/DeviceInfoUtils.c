@@ -3,26 +3,6 @@
 
 #include "Internal.h"
 
-#define OS_NAME_COMMAND "cat /etc/os-release | grep ID="
-#define OS_PRETTY_NAME_COMMAND "cat /etc/os-release | grep PRETTY_NAME="
-#define OS_VERSION_COMMAND "cat /etc/os-release | grep VERSION="
-#define OS_KERNEL_NAME_COMMAND "uname -s"
-#define OS_KERNEL_RELEASE_COMMAND "uname -r"
-#define OS_KERNEL_VERSION_COMMAND "uname -v"
-#define OS_CPU_COMMAND "lscpu | grep Architecture:"
-#define OS_CPU_VENDOR_COMMAND "lscpu | grep \"Vendor ID:\""
-#define OS_CPU_MODEL_COMMAND "lscpu | grep \"Model name:\""
-#define OS_TOTAL_MEMORY_COMMAND "grep MemTotal /proc/meminfo"
-#define OS_FREE_MEMORY_COMMAND "grep MemFree /proc/meminfo"
-#define OS_PRODUCT_NAME_COMMAND "cat /sys/devices/virtual/dmi/id/product_name"
-#define OS_PRODUCT_VENDOR_COMMAND "cat /sys/devices/virtual/dmi/id/sys_vendor"
-#define OS_PRODUCT_VERSION_COMMAND "cat /sys/devices/virtual/dmi/id/product_version"
-#define OS_PRODUCT_NAME_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"product:\""
-#define OS_PRODUCT_VENDOR_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"vendor:\""
-#define OS_PRODUCT_VERSION_ALTERNATE_COMMAND "lshw -c system | grep -m 1 \"version:\""
-#define OS_SYSTEM_CONFIGURATION_COMMAND "lshw -c system | grep -m 1 \"configuration:\""
-#define OS_SYSTEM_CAPABILITIES_COMMAND "lshw -c system | grep -m 1 \"capabilities:\""
-
 void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
@@ -95,9 +75,11 @@ void TruncateAtFirst(char* target, char marker)
 
 char* GetOsName(void* log)
 {
+    const char* osNameCommand = "cat /etc/os-release | grep ID=";
+    const char* osPrettyNameCommand = "cat /etc/os-release | grep PRETTY_NAME=";
     char* textResult = NULL;
 
-    if (0 == ExecuteCommand(NULL, OS_PRETTY_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, osPrettyNameCommand, true, true, 0, 0, &textResult, NULL, log))
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -107,7 +89,7 @@ char* GetOsName(void* log)
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
         TruncateAtFirst(textResult, ' ');
     }
-    else if (0 == ExecuteCommand(NULL, OS_NAME_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    else if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
     {
         // PRETTY_NAME did not work, try ID
         RemovePrefixBlanks(textResult);
@@ -131,9 +113,10 @@ char* GetOsName(void* log)
 
 char* GetOsVersion(void* log)
 {
+    const char* osVersionCommand = "cat /etc/os-release | grep VERSION=";
     char* textResult = NULL;
 
-    if (0 == ExecuteCommand(NULL, OS_VERSION_COMMAND, true, true, 0, 0, &textResult, NULL, log))
+    if (0 == ExecuteCommand(NULL, osVersionCommand, true, true, 0, 0, &textResult, NULL, log))
     {
         RemovePrefixBlanks(textResult);
         RemoveTrailingBlanks(textResult);
@@ -204,31 +187,34 @@ static char* GetAnotherOsProperty(const char* command, void* log)
 
 char* GetOsKernelName(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_KERNEL_NAME_COMMAND, log);
+    static char* osKernelNameCommand = "uname -s";
+    char* textResult = GetAnotherOsProperty(osKernelNameCommand, log);
     
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel name: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetOsKernelRelease(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_KERNEL_RELEASE_COMMAND, log);
+    static char* osKernelReleaseCommand = "uname -r";
+    char* textResult = GetAnotherOsProperty(osKernelReleaseCommand, log);
     
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Kernel release: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetOsKernelVersion(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_KERNEL_VERSION_COMMAND, log);
+    static char* osKernelVersionCommand = "uname -v";
+    char* textResult = GetAnotherOsProperty(osKernelVersionCommand, log);
     
     if (IsFullLoggingEnabled())
     {
@@ -240,63 +226,68 @@ char* GetOsKernelVersion(void* log)
 
 char* GetCpuType(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_COMMAND, false, log);
+    const char* osCpuTypeCommand = "lscpu | grep Architecture:";
+    char* textResult = GetHardwareProperty(osCpuTypeCommand, false, log);
     
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU type: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetCpuVendor(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_VENDOR_COMMAND, false, log);
-
+    const char* osCpuVendorCommand = "lscpu | grep \"Vendor ID:\"";
+    char* textResult = GetHardwareProperty(osCpuVendorCommand, false, log);
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU vendor id: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 char* GetCpuModel(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_CPU_MODEL_COMMAND, false, log);
-
+    const char* osCpuModelCommand = "lscpu | grep \"Model name:\"";
+    char* textResult = GetHardwareProperty(osCpuModelCommand, false, log);
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CPU model: '%s'", textResult);
     }
-
+    
     return textResult;
 }
 
 long GetTotalMemory(void* log)
 {
+    const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
+    char* textResult = GetHardwareProperty(osTotalMemoryCommand, true, log);
     long totalMemory = 0;
-    char* textResult = GetHardwareProperty(OS_TOTAL_MEMORY_COMMAND, true, log);
     
     if (NULL != textResult)
     {
         totalMemory = atol(textResult);
     }
-
+    
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "Total memory: %lu kB", totalMemory);
     }
-
+    
     return totalMemory;
 }
 
 long GetFreeMemory(void* log)
 {
+    const char* osFreeMemoryCommand = "grep MemFree /proc/meminfo";
+    char* textResult = GetHardwareProperty(osFreeMemoryCommand, true, log);
     long freeMemory = 0;
-    char* textResult = GetHardwareProperty(OS_FREE_MEMORY_COMMAND, true, log);
-
+    
     if (NULL != textResult)
     {
         freeMemory = atol(textResult);
@@ -312,10 +303,13 @@ long GetFreeMemory(void* log)
 
 char* GetProductName(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_PRODUCT_NAME_COMMAND, log);
+    const char* osProductNameCommand = "cat /sys/devices/virtual/dmi/id/product_name";
+    const char* osProductNameAlternateCommand = "lshw -c system | grep -m 1 \"product:\"";
+    char* textResult = GetAnotherOsProperty(osProductNameCommand, log);
+    
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        textResult = GetHardwareProperty(OS_PRODUCT_NAME_ALTERNATE_COMMAND, false, log);
+        textResult = GetHardwareProperty(osProductNameAlternateCommand, false, log);
     }
     
     if (IsFullLoggingEnabled())
@@ -328,11 +322,13 @@ char* GetProductName(void* log)
 
 char* GetProductVendor(void* log)
 {
-    char* textResult = GetAnotherOsProperty(OS_PRODUCT_VENDOR_COMMAND, log);
+    const char* osProductVendorCommand = "cat /sys/devices/virtual/dmi/id/sys_vendor";
+    const char* osProductVendorAlternateCommand = "lshw -c system | grep -m 1 \"vendor:\"";
+    char* textResult = GetAnotherOsProperty(osProductVendorCommand, log);
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        textResult = GetHardwareProperty(OS_PRODUCT_VENDOR_ALTERNATE_COMMAND, false, log);
+        textResult = GetHardwareProperty(osProductVendorAlternateCommand, false, log);
     }
     
     if (IsFullLoggingEnabled())
@@ -345,11 +341,13 @@ char* GetProductVendor(void* log)
 
 char* GetProductVersion(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_PRODUCT_VERSION_COMMAND, false, log);
+    const char* osProductVersionCommand = "cat /sys/devices/virtual/dmi/id/product_version";
+    const char* osProductVersionAlternateCommand = "lshw -c system | grep -m 1 \"version:\"";
+    char* textResult = GetHardwareProperty(osProductVersionCommand, false, log);
 
     if ((NULL == textResult) || (0 == strlen(textResult)))
     {
-        textResult = GetHardwareProperty(OS_PRODUCT_VERSION_ALTERNATE_COMMAND, false, log);
+        textResult = GetHardwareProperty(osProductVersionAlternateCommand, false, log);
     }
 
     if (IsFullLoggingEnabled())
@@ -362,7 +360,8 @@ char* GetProductVersion(void* log)
 
 char* GetSystemCapabilities(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_SYSTEM_CAPABILITIES_COMMAND, false, log);
+    const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
+    char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -374,7 +373,8 @@ char* GetSystemCapabilities(void* log)
 
 char* GetSystemConfiguration(void* log)
 {
-    char* textResult = GetHardwareProperty(OS_SYSTEM_CONFIGURATION_COMMAND, false, log);
+    const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
+    char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
 
     if (IsFullLoggingEnabled())
     {
