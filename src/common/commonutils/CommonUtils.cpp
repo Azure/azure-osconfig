@@ -3,19 +3,6 @@
 
 #include "Internal.h"
 
-#define OSCONFIG_NAME_PREFIX "Azure OSConfig "
-#define OSCONFIG_MODEL_VERSION_DELIMITER ";"
-#define OSCONFIG_SEMANTIC_VERSION_DELIMITER "."
-
-// "Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>"
-#define OSCONFIG_PRODUCT_INFO_TEMPLATE "^((Azure OSConfig )([0-9]+);(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$"
-
-// OSConfig model version 5 published on September 27, 2021
-#define OSCONFIG_REFERENCE_MODEL_VERSION 5
-#define OSCONFIG_REFERENCE_MODEL_RELEASE_DAY 27
-#define OSCONFIG_REFERENCE_MODEL_RELEASE_MONTH 9
-#define OSCONFIG_REFERENCE_MODEL_RELEASE_YEAR 2021
-
 size_t HashString(const char* source)
 {
     std::hash<std::string> hashString;
@@ -24,24 +11,27 @@ size_t HashString(const char* source)
 
 bool IsValidClientName(const char* name)
 {
+    // "Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>"
+    const std::string productInfoTemplate = "^((Azure OSConfig )([0-9]+);(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$";
+    const std::string clientNamePrefix = "Azure OSConfig ";
+    const std::string modelVersionDelimiter = ";";
+    const std::string semanticVersionDelimeter = ".";
+
+    // OSConfig model version 5 published on September 27, 2021
+    const int referenceModelVersion = 5;
+    const int referenceReleaseDay = 27;
+    const int referenceReleaseMonth = 9;
+    const int referenceReleaseYear = 2021;
+
+    // String length of date string yyyymmmdd
+    const int dateLength = 9;
+    
     bool isValid = true;
 
     const std::string clientName = name;
 
-    const std::string clientNamePrefix = OSCONFIG_NAME_PREFIX;
-    const std::string modelVersionDelimiter = OSCONFIG_MODEL_VERSION_DELIMITER;
-    const std::string semanticVersionDelimeter = OSCONFIG_SEMANTIC_VERSION_DELIMITER;
-
-    const int referenceModelVersion = OSCONFIG_REFERENCE_MODEL_VERSION;
-    const int referenceReleaseDay = OSCONFIG_REFERENCE_MODEL_RELEASE_DAY;
-    const int referenceReleaseMonth = OSCONFIG_REFERENCE_MODEL_RELEASE_MONTH;
-    const int referenceReleaseYear = OSCONFIG_REFERENCE_MODEL_RELEASE_YEAR;
-
-    // String length of date string yyyymmmdd
-    const int dateLength = 9;
-
     // Regex for validating the client name against the OSConfig product info
-    std::regex pattern(OSCONFIG_PRODUCT_INFO_TEMPLATE);
+    std::regex pattern(productInfoTemplate);
 
     if (!clientName.empty() && std::regex_match(clientName, pattern))
     {

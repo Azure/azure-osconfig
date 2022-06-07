@@ -3,17 +3,6 @@
 
 #include "Internal.h"
 
-#define MAX_COMMAND_RESULT_FILE_NAME 100
-#define COMMAND_CALLBACK_INTERVAL 5 //seconds
-#define COMMAND_SIGNAL_INTERVAL 25000 //microseconds
-#define DEFAULT_COMMAND_TIMEOUT 60 //seconds
-
-static const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
-static const char g_commandSeparator[] = " > ";
-static const char g_commandTerminator[] = " 2>&1";
-
-static const char g_hashCommandTemplate[] = "%s | sha256sum | head -c 64";
-
 static bool g_commandLoggingEnabled = false;
 
 void SetCommandLogging(bool commandLogging)
@@ -54,6 +43,10 @@ static int NormalizeStatus(int status)
 
 static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, void* log)
 {
+    const int callbackIntervalSeconds = 5; //seconds
+    const int signalIntervalMicroSeconds = 25000; //microseconds
+    const int defaultCommandTimeout = 60; //seconds
+
     pid_t intermediateProcess = -1;
     pid_t workerProcess = -1;
     pid_t timerProcess = -1;
@@ -61,10 +54,8 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
     int status = -1;
     int intermediateStatus = -1;
     int totalWaitSeconds = 0;
-    int timeout = (timeoutSeconds > 0) ? timeoutSeconds : DEFAULT_COMMAND_TIMEOUT;
-    const int callbackIntervalSeconds = COMMAND_CALLBACK_INTERVAL;
-    const int signalIntervalMicroSeconds = COMMAND_SIGNAL_INTERVAL;
-
+    int timeout = (timeoutSeconds > 0) ? timeoutSeconds : defaultCommandTimeout;
+    
     bool mainProcessThread = (bool)(getpid() == gettid());
 
     fflush(NULL);
@@ -231,6 +222,12 @@ static int SystemCommand(void* context, const char* command, int timeoutSeconds,
 
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log)
 {
+    const char g_commandTextResultFileTemplate[] = "/tmp/~OSConfig.TextResult%u";
+    const char g_commandSeparator[] = " > ";
+    const char g_commandTerminator[] = " 2>&1";
+    
+    const int maxCommandResultFileName = 100;
+    
     int status = -1;
     FILE* resultsFile = NULL;
     int fileSize = 0;
@@ -239,7 +236,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     char* commandLine = NULL;
     size_t commandLineLength = 0;
     size_t maximumCommandLine = 0;
-    char commandTextResultFile[MAX_COMMAND_RESULT_FILE_NAME] = {0};
+    char commandTextResultFile[maxCommandResultFileName] = {0};
     bool redirectedOutputCommand = false;
 
     if ((NULL == command) || (0 == system(NULL)))
