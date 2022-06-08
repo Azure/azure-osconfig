@@ -271,11 +271,6 @@ static void SignalProcessDesired(int incomingSignal)
     OsConfigLogInfo(GetLog(), "Processing desired twin updates");
     ProcessDesiredTwinUpdates();
 
-    if (g_localManagement)
-    {
-        LoadDesiredConfigurationFromFile();
-    }
-    
     // Reset the signal handler for the next use otherwise the default handler will be invoked instead
     signal(SIGUSR1, SignalProcessDesired);
 
