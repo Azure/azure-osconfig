@@ -270,6 +270,11 @@ static void SignalProcessDesired(int incomingSignal)
 {
     OsConfigLogInfo(GetLog(), "Processing desired twin updates");
     ProcessDesiredTwinUpdates();
+
+    if (g_localManagement)
+    {
+        LoadDesiredConfigurationFromFile();
+    }
     
     // Reset the signal handler for the next use otherwise the default handler will be invoked instead
     signal(SIGUSR1, SignalProcessDesired);
@@ -767,6 +772,18 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
+    if (RefreshMpiClientSession(NULL))
+    {
+        LogErrorWithTelemetry(GetLog(), "Failed to start the platform");
+        goto done;
+    }
+
+    if (g_localManagement)
+    {
+        LoadDesiredConfigurationFromFile();
+        SaveReportedConfigurationToFile();
+    }
+    
     if (!InitializeAgent())
     {
         LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
