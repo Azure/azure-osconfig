@@ -767,7 +767,7 @@ int main(int argc, char *argv[])
     signal(SIGHUP, SignalReloadConfiguration);
     signal(SIGUSR1, SignalProcessDesired);
 
-    if (RefreshMpiClientSession(NULL))
+    if (!RefreshMpiClientSession(NULL))
     {
         LogErrorWithTelemetry(GetLog(), "Failed to start the platform");
         goto done;
