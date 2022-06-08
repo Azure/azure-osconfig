@@ -22,7 +22,7 @@
         "Payload": "{\"commandId\": \"test1\", \"arguments\": \"echo Hello World\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
         "PayloadSizeBytes": 123,
         "ExpectedResult": 0,
-        "WaitSeconds": 0
+        "WaitSeconds": 5
     },
     {
         "ComponentName": "CommandRunner",
