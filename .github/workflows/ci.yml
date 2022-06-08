@@ -69,6 +69,14 @@ jobs:
           working-directory: ${{ env.container-workspace }}/build
           cmd: ctest
 
+      - name: Run modulestest
+        if: success() || failure()
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build/modules/test
+          cmd: modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json
+
       - uses: ./.github/actions/gtest-xml
         if: success() || failure()
         with:

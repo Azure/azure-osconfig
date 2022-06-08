@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(GoogleTest)
 project(modulestest)
 
 set(CMAKE_CXX_STANDARD 17)
