@@ -15,26 +15,27 @@ runs:
       run: |
         import os
         import sys
-        import glob
 
+        # Create an error annotation
         def error(title, file, line, msg):
             print(f"::error file={file},line={line},title={title}::{msg}")
 
-        input_glob = "./.github/actions/check-logs/temp/*.log"
-        # input_glob = os.environ.get('logs')
-        log_files = glob.glob(input_glob)
+        logs = os.environ.get('logs').split('\n')
 
-        crashes = ['SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGABRT', 'SIGBUS', 'Interrupt signal']
+        crashes = ['SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGABRT', 'SIGBUS']
         crash_found = False
 
-        for log_file in log_files:
+        for log_file in logs:
             with open(log_file, 'r') as f:
+                prev_line = None
                 for line_num, line in enumerate(f, 1):
                     for crash in crashes:
                         if crash in line:
-                            error(crash, os.path.basename(log_file), line_num, line)
+                            msg = (prev_line + line) if prev_line else line
+                            error(crash, log_file, line_num, msg)
                             crash_found = True
                             break
+                    prev_line = line
 
         if crash_found:
             sys.exit(1)
