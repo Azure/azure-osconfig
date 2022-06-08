@@ -63,13 +63,14 @@ jobs:
           packagePattern=`echo $target | jq .packagePattern | tr -d \"`
           device_id=`echo $target | jq .device_id | tr -d \"`
           vm_size=`echo $target | jq .vm_size | tr -d \"`
+          location=`echo $target | jq .location | tr -d \"`
           github_runner_tar_gz=`echo $target | jq .github_runner_tar_gz | tr -d \"`
           vm_script=`echo $target | jq -r '.vm_script | join(" && ")'`
 
           echo ::set-output name=device_id::$device_id
 
           terraform init
-          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_size=$vm_size -var vm_script="$vm_script" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
+          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_size="$vm_size" -var location="$location" -var vm_script="$vm_script" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
 
           runner=$rg-$distroName
           echo Created self-hosted runner "$runner"
