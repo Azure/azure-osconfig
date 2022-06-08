@@ -1,0 +1,41 @@
+name: Check logs
+description: Parses logs for crashes and failures
+
+inputs:
+  logs:
+    description: The path to load GTest XML from.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Parse logs
+      env:
+        logs: ${{ inputs.logs }}
+      run: |
+        import os
+        import sys
+        import glob
+
+        def error(title, file, line, msg):
+            print(f"::error file={file},line={line},title={title}::{msg}")
+
+        input_glob = "./.github/actions/check-logs/temp/*.log"
+        # input_glob = os.environ.get('logs')
+        log_files = glob.glob(input_glob)
+
+        crashes = ['SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGABRT', 'SIGBUS', 'Interrupt signal']
+        crash_found = False
+
+        for log_file in log_files:
+            with open(log_file, 'r') as f:
+                for line_num, line in enumerate(f, 1):
+                    for crash in crashes:
+                        if crash in line:
+                            error(crash, os.path.basename(log_file), line_num, line)
+                            crash_found = True
+                            break
+
+        if crash_found:
+            sys.exit(1)
+      shell: python
