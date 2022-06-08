@@ -18,7 +18,7 @@ runs:
 
         # Create an error annotation
         def error(title, file, line, msg):
-            print(f"::error file={file},line={line},title={title}::{msg}")
+            print(f'::error file={file},line={line},title={title}::{msg}')
 
         logs = os.environ.get('logs').split('\n')
 
