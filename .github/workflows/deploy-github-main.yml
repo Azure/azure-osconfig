@@ -44,6 +44,7 @@ jobs:
       environment: e2e-github-main
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
+      performanceThreshold: 50
     secrets: inherit
 
   deprovision-resources:

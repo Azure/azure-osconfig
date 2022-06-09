@@ -14,6 +14,10 @@ on:
         description: The name of the target environment
         type: string
         required: true
+      performanceThreshold:
+        description: The performance threshold
+        type: string
+        default: ""
 
 jobs:
   run-tests:
@@ -90,6 +94,13 @@ jobs:
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
+          sudo systemctl start osconfig-platform
+
+      - name: Start performance sampling
+        if: ${{ inputs.performanceThreshold }} != ""
+        run: |
+          pidstat -p `pidof osconfig` 1 > perf-osconfig.log &
+          pidstat -p `pidof osconfig-platform` 1 > perf-osconfig-platform.log &
 
       - name: Run E2E tests
         env:
@@ -100,6 +111,32 @@ jobs:
         working-directory: ./src/tests/e2etest
         run: | 
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+
+      - name: Stop performance sampling
+        if: ${{ inputs.performanceThreshold }} != ""
+        run: |
+          kill -SIGINT `pidof pidstat`
+
+      - name: Check performance results - Agent
+        if: ${{ inputs.performanceThreshold }} != ""
+        run: |
+          tail perf-osconfig.log -n1
+          result=`tail perf-osconfig.log -n1 | cut -c62-68`
+          test $(bc <<< "result=$result;if(result < ${{ inputs.performanceThreshold }}) print 0 else print 1;") == 0
+
+      - name: Check performance results - Platform
+        if: ${{ inputs.performanceThreshold }} != "" && (success() || failure())
+        run: |
+          tail perf-osconfig-platform.log -n1
+          result=`tail perf-osconfig-platform.log -n1 | cut -c62-68`
+          test $(bc <<< "result=$result;if(result < ${{ inputs.performanceThreshold }}) print 0 else print 1;") == 0
+
+      - name: Upload performance Logs
+        if: ${{ inputs.performanceThreshold }} != "" && (success() || failure())
+        uses: actions/upload-artifact@v3
+        with:
+          name: perf-logs-${{ matrix.distroName }}
+          path: perf-*.log
 
       - name: Stage logs
         if: always()

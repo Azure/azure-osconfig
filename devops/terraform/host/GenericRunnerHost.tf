@@ -156,7 +156,7 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
     inline = [
       "export DEBIAN_FRONTEND=noninteractive",
       "sudo systemctl stop apt-daily.timer && sudo systemctl disable apt-daily.timer && sudo systemctl mask apt-daily.service && sudo systemctl daemon-reload",
-      "sudo apt update && sudo apt install -y ca-certificates curl apt-transport-https lsb-release gnupg",
+      "sudo apt update && sudo apt install -y ca-certificates curl apt-transport-https lsb-release gnupg bc sysstat",
       "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
       "sudo cp ./microsoft.gpg /etc/apt/trusted.gpg.d/",
       "mkdir actions-runner && cd actions-runner && curl -o runner.tar.gz -L ${var.github_runner_tar_gz_package} && tar xzf ./runner.tar.gz",
