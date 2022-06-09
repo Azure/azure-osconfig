@@ -15,9 +15,11 @@ runs:
       run: |
         crash_found=false
 
+        echo $logs
+
         for file in $logs
         do
-            echo "Checking $file"
+            echo $file
             crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
 
             if [ "$crashes" != "" ]
