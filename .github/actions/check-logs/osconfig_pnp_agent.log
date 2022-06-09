@@ -1,0 +1,830 @@
+[2022-06-08 22:19:51] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:51] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:19:51] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmStatus" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:51] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmStatus, 2, 1 bytes): 0
+[2022-06-08 22:19:51] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 111
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }' (241 bytes)
+[2022-06-08 22:19:51] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:51] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:19:51] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:51] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmVersion, "", 2 bytes): 0
+[2022-06-08 22:19:51] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 116
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }' (246 bytes)
+[2022-06-08 22:19:52] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:52] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:19:52] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:52] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmManufacturer, "", 2 bytes): 0
+[2022-06-08 22:19:52] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 109
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }' (239 bytes)
+[2022-06-08 22:19:52] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:52] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:19:52] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:52] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, enabled, 2, 1 bytes): 0
+[2022-06-08 22:19:52] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 112
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }' (242 bytes)
+[2022-06-08 22:19:53] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:53] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 44 ('44')
+[2022-06-08 22:19:53] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }', response: '"https://www.example.com/path/to/something/"', response size: 44 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:53] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, serviceUrl, "https://www.example.com/path/to/something/", 44 bytes): 0
+[2022-06-08 22:19:53] [PnpUtils.c:581] Ztsi.serviceUrl: reported {"Ztsi":{"__t":"c","serviceUrl":"https://www.example.com/path/to/something/"}} (78 bytes), result: 0
+[2022-06-08 22:19:53] [PnpUtils.c:518] Report for serviceUrl complete with status 204
+[2022-06-08 22:19:53] [PnpUtils.c:386] ModuleTwinCallback: received {"Ztsi":{"__t":"c","desiredEnabled":false},"$version":75} (57 bytes)
+[2022-06-08 22:19:53] [PnpUtils.c:335] Queued desired payload of 57 bytes at slot 5
+[2022-06-08 22:19:53] [PnpAgent.c:271] Processing desired twin updates
+[2022-06-08 22:19:53] [PnpUtils.c:223] ProcessJsonFromTwin: DEVICE_TWIN_UPDATE_PARTIAL
+[2022-06-08 22:19:53] [PnpUtils.c:142] PropertyUpdateFromIotHubCallback: invoking Ztsi for property desiredEnabled, version 75
+[2022-06-08 22:19:53] [PnpUtils.c:655] Ztsi.desiredEnabled: received false (5 bytes)
+[2022-06-08 22:19:53] [MpiClient.c:96] CallMpi(MpiSet): sent to '/run/osconfig/mpid.sock' 'POST /MpiSet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 134
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredEnabled", "Payload": false }' (264 bytes)
+[2022-06-08 22:19:53] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:53] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 0 ('0')
+[2022-06-08 22:19:53] [MpiClient.c:138] CallMpi(name: 'MpiSet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredEnabled", "Payload": false }', response: '', response size: 0 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:53] [MpiClient.c:321] CallMpiSet(0x55ccf9c1d3d0, Ztsi, desiredEnabled, false, 5 bytes) returned 0
+[2022-06-08 22:19:53] [PnpUtils.c:666] Ztsi: property desiredEnabled successfully updated via MPI
+[2022-06-08 22:19:53] [PnpUtils.c:711] Ztsi: acknowledging received new desired payload for property desiredEnabled, version 75, ack. code 200
+[2022-06-08 22:19:53] [PnpUtils.c:726] Ztsi.desiredEnabled: acknowledged {"Ztsi":{"__t":"c","desiredEnabled":{"value":false,"ac":200,"ad":"-","av":75}}} (79 bytes), result: 0
+[2022-06-08 22:19:53] [PnpUtils.c:305] ProcessJsonFromTwin completed with 0
+[2022-06-08 22:19:53] [PnpUtils.c:374] ProcessDesiredTwinUpdates: processing desired twin update at slot 5 completed with result 0
+[2022-06-08 22:19:53] [PnpUtils.c:399] ModuleTwinCallback: done
+[2022-06-08 22:19:54] [PnpUtils.c:694] Property update acknowledgement complete with status 204
+[2022-06-08 22:19:55] [PnpUtils.c:386] ModuleTwinCallback: received {"Ztsi":{"__t":"c","desiredServiceUrl":"https://www.example.com/params?a=1"},"$version":76} (91 bytes)
+[2022-06-08 22:19:55] [PnpUtils.c:335] Queued desired payload of 91 bytes at slot 6
+[2022-06-08 22:19:55] [PnpAgent.c:271] Processing desired twin updates
+[2022-06-08 22:19:55] [PnpUtils.c:223] ProcessJsonFromTwin: DEVICE_TWIN_UPDATE_PARTIAL
+[2022-06-08 22:19:55] [PnpUtils.c:142] PropertyUpdateFromIotHubCallback: invoking Ztsi for property desiredServiceUrl, version 76
+[2022-06-08 22:19:55] [PnpUtils.c:655] Ztsi.desiredServiceUrl: received "https:\/\/www.example.com\/params?a=1" (39 bytes)
+[2022-06-08 22:19:55] [MpiClient.c:96] CallMpi(MpiSet): sent to '/run/osconfig/mpid.sock' 'POST /MpiSet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 171
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredServiceUrl", "Payload": "https:\/\/www.example.com\/params?a=1" }' (301 bytes)
+[2022-06-08 22:19:55] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:19:55] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 0 ('0')
+[2022-06-08 22:19:55] [MpiClient.c:138] CallMpi(name: 'MpiSet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredServiceUrl", "Payload": "https:\/\/www.example.com\/params?a=1" }', response: '', response size: 0 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:19:55] [MpiClient.c:321] CallMpiSet(0x55ccf9c1d3d0, Ztsi, desiredServiceUrl, "https:\/\/www.example.com\/params?a=1", 39 bytes) returned 0
+[2022-06-08 22:19:55] [PnpUtils.c:666] Ztsi: property desiredServiceUrl successfully updated via MPI
+[2022-06-08 22:19:55] [PnpUtils.c:711] Ztsi: acknowledging received new desired payload for property desiredServiceUrl, version 76, ack. code 200
+[2022-06-08 22:19:55] [PnpUtils.c:726] Ztsi.desiredServiceUrl: acknowledged {"Ztsi":{"__t":"c","desiredServiceUrl":{"value":"https:\/\/www.example.com\/params?a=1","ac":200,"ad":"-","av":76}}} (116 bytes), result: 0
+[2022-06-08 22:19:55] [PnpUtils.c:305] ProcessJsonFromTwin completed with 0
+[2022-06-08 22:19:55] [PnpUtils.c:374] ProcessDesiredTwinUpdates: processing desired twin update at slot 6 completed with result 0
+[2022-06-08 22:19:55] [PnpUtils.c:399] ModuleTwinCallback: done
+[2022-06-08 22:19:55] [PnpUtils.c:694] Property update acknowledgement complete with status 204
+[2022-06-08 22:20:23] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 124
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "CommandRunner", "ObjectName": "commandStatus" }' (254 bytes)
+[2022-06-08 22:20:23] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:23] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 94 ('94')
+[2022-06-08 22:20:23] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "CommandRunner", "ObjectName": "commandStatus" }', response: '{"commandId":"mxoO","resultCode":127,"textResult":"sh: 1: blah: not found\n","currentState":3}', response size: 94 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:23] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, CommandRunner, commandStatus, {"commandId":"mxoO","resultCode":127,"textResult":"sh: 1: blah: not found\n","currentState":3}, 94 bytes): 0
+[2022-06-08 22:20:23] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 114
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osName" }' (244 bytes)
+[2022-06-08 22:20:23] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:23] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 8 ('8')
+[2022-06-08 22:20:23] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osName" }', response: '"Ubuntu"', response size: 8 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:23] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osName, "Ubuntu", 8 bytes): 0
+[2022-06-08 22:20:23] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 117
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osVersion" }' (247 bytes)
+[2022-06-08 22:20:24] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:24] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 9 ('9')
+[2022-06-08 22:20:24] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osVersion" }', response: '"18.04.6"', response size: 9 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:24] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osVersion, "18.04.6", 9 bytes): 0
+[2022-06-08 22:20:24] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 115
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuType" }' (245 bytes)
+[2022-06-08 22:20:24] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:24] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 8 ('8')
+[2022-06-08 22:20:24] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuType" }', response: '"x86_64"', response size: 8 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:24] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuType, "x86_64", 8 bytes): 0
+[2022-06-08 22:20:24] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuVendorId" }' (249 bytes)
+[2022-06-08 22:20:25] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:25] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 14 ('14')
+[2022-06-08 22:20:25] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuVendorId" }', response: '"GenuineIntel"', response size: 14 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:25] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuVendorId, "GenuineIntel", 14 bytes): 0
+[2022-06-08 22:20:25] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 116
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuModel" }' (246 bytes)
+[2022-06-08 22:20:25] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:25] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 43 ('43')
+[2022-06-08 22:20:25] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuModel" }', response: '"Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz"', response size: 43 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:25] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuModel, "Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz", 43 bytes): 0
+[2022-06-08 22:20:25] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "totalMemory" }' (249 bytes)
+[2022-06-08 22:20:26] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:26] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 7 ('7')
+[2022-06-08 22:20:26] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "totalMemory" }', response: '3510664', response size: 7 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:26] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, totalMemory, 3510664, 7 bytes): 0
+[2022-06-08 22:20:26] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 118
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "freeMemory" }' (248 bytes)
+[2022-06-08 22:20:26] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:26] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 6 ('6')
+[2022-06-08 22:20:26] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "freeMemory" }', response: '595968', response size: 6 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:26] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, freeMemory, 595968, 6 bytes): 0
+[2022-06-08 22:20:26] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 118
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelName" }' (248 bytes)
+[2022-06-08 22:20:27] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:27] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 7 ('7')
+[2022-06-08 22:20:27] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelName" }', response: '"Linux"', response size: 7 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:27] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelName, "Linux", 7 bytes): 0
+[2022-06-08 22:20:27] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelRelease" }' (251 bytes)
+[2022-06-08 22:20:27] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:27] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 18 ('18')
+[2022-06-08 22:20:27] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelRelease" }', response: '"5.4.0-1080-azure"', response size: 18 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:27] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelRelease, "5.4.0-1080-azure", 18 bytes): 0
+[2022-06-08 22:20:27] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelVersion" }' (251 bytes)
+[2022-06-08 22:20:28] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:28] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 53 ('53')
+[2022-06-08 22:20:28] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelVersion" }', response: '"#83~18.04.2-Ubuntu SMP Thu May 19 18:52:16 UTC 2022"', response size: 53 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:28] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelVersion, "#83~18.04.2-Ubuntu SMP Thu May 19 18:52:16 UTC 2022", 53 bytes): 0
+[2022-06-08 22:20:28] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVendor" }' (251 bytes)
+[2022-06-08 22:20:28] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:28] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 23 ('23')
+[2022-06-08 22:20:28] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVendor" }', response: '"Microsoft Corporation"', response size: 23 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:28] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productVendor, "Microsoft Corporation", 23 bytes): 0
+[2022-06-08 22:20:28] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productName" }' (249 bytes)
+[2022-06-08 22:20:29] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:29] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 17 ('17')
+[2022-06-08 22:20:29] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productName" }', response: '"Virtual Machine"', response size: 17 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:29] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productName, "Virtual Machine", 17 bytes): 0
+[2022-06-08 22:20:29] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 122
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVersion" }' (252 bytes)
+[2022-06-08 22:20:29] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:29] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 5 ('5')
+[2022-06-08 22:20:29] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVersion" }', response: '"7.0"', response size: 5 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:29] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productVersion, "7.0", 5 bytes): 0
+[2022-06-08 22:20:29] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 126
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemCapabilities" }' (256 bytes)
+[2022-06-08 22:20:30] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:30] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 71 ('71')
+[2022-06-08 22:20:30] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemCapabilities" }', response: '"boot=normal chassis=desktop uuid=8594E3C3-B532-0543-BEBE-6C48376FAACD"', response size: 71 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:30] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, systemCapabilities, "boot=normal chassis=desktop uuid=8594E3C3-B532-0543-BEBE-6C48376FAACD", 71 bytes): 0
+[2022-06-08 22:20:30] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 127
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemConfiguration" }' (257 bytes)
+[2022-06-08 22:20:30] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:30] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 31 ('31')
+[2022-06-08 22:20:30] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemConfiguration" }', response: '"smbios-2.3 dmi-2.3 vsyscall32"', response size: 31 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:30] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, systemConfiguration, "smbios-2.3 dmi-2.3 vsyscall32", 31 bytes): 0
+[2022-06-08 22:20:30] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 123
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osConfigVersion" }' (253 bytes)
+[2022-06-08 22:20:31] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:31] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 26 ('26')
+[2022-06-08 22:20:31] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osConfigVersion" }', response: '"1.0.2.202206082464504786"', response size: 26 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:31] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osConfigVersion, "1.0.2.202206082464504786", 26 bytes): 0
+[2022-06-08 22:20:31] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallState" }' (249 bytes)
+[2022-06-08 22:20:31] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:31] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:20:31] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallState" }', response: '1', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:31] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Firewall, firewallState, 1, 1 bytes): 0
+[2022-06-08 22:20:31] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 125
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallFingerprint" }' (255 bytes)
+[2022-06-08 22:20:32] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:32] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 66 ('66')
+[2022-06-08 22:20:32] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallFingerprint" }', response: '"a43dae6e41b8e933cbca930e34f2375b4f95853a4ac00028875279881a14d30b"', response size: 66 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:32] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Firewall, firewallFingerprint, "a43dae6e41b8e933cbca930e34f2375b4f95853a4ac00028875279881a14d30b", 66 bytes): 0
+[2022-06-08 22:20:32] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 110
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "name" }' (240 bytes)
+[2022-06-08 22:20:32] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:32] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 10 ('10')
+[2022-06-08 22:20:32] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "name" }', response: '"TestHost"', response size: 10 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:32] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, HostName, name, "TestHost", 10 bytes): 0
+[2022-06-08 22:20:32] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 111
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "hosts" }' (241 bytes)
+[2022-06-08 22:20:33] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:33] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 160 ('160')
+[2022-06-08 22:20:33] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "hosts" }', response: '"127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"', response size: 160 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:33] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, HostName, hosts, "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters", 160 bytes): 0
+[2022-06-08 22:20:33] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 128
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Networking", "ObjectName": "networkConfiguration" }' (258 bytes)
+[2022-06-08 22:20:33] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:33] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 385 ('385')
+[2022-06-08 22:20:33] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Networking", "ObjectName": "networkConfiguration" }', response: '{"interfaceTypes":"eth0=ether;lo=loopback","macAddresses":"eth0=00:0d:3a:8b:e4:ef;lo=00:00:00:00:00:00","ipAddresses":"eth0=10.0.1.4,fe80::20d:3aff:fe8b:e4ef;lo=127.0.0.1,::1","subnetMasks":"eth0=/24,/64;lo=/8,/128","defaultGateways":"eth0=10.0.1.1","dnsServers":"eth0=168.63.129.16","dhcpEnabled":"eth0=false;lo=false","enabled":"eth0=true;lo=unknown","connected":"eth0=true;lo=true"}', response size: 385 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:33] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Networking, networkConfiguration, {"interfaceTypes":"eth0=ether;lo=loopback","macAddresses":"eth0=00:0d:3a:8b:e4:ef;lo=00:00:00:00:00:00","ipAddresses":"eth0=10.0.1.4,fe80::20d:3aff:fe8b:e4ef;lo=127.0.0.1,::1","subnetMasks":"eth0=/24,/64;lo=/8,/128","defaultGateways":"eth0=10.0.1.1","dnsServers":"eth0=168.63.129.16","dhcpEnabled":"eth0=false;lo=false","enabled":"eth0=true;lo=unknown","connected":"eth0=true;lo=true"}, 385 bytes): 0
+[2022-06-08 22:20:33] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 130
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "PackageManagerConfiguration", "ObjectName": "state" }' (260 bytes)
+[2022-06-08 22:20:34] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:34] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 345 ('345')
+[2022-06-08 22:20:34] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "PackageManagerConfiguration", "ObjectName": "state" }', response: '{"packagesFingerprint":"2da00bf1c6b4196f9c28ce467ffc284d285a42657bc47eef41f7db4947bd41df","packages":[],"executionState":3,"executionSubstate":7,"executionSubstateDetails":"mariadb","sourcesFingerprint":"5e52caeb1a69c5909479dc24cb11eca4546e27cad628d73d66be74ee4504d9ab","sourcesFilenames":["azure-cli.list","microsoft-prod.list","mariadb.list"]}', response size: 345 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:34] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, PackageManagerConfiguration, state, {"packagesFingerprint":"2da00bf1c6b4196f9c28ce467ffc284d285a42657bc47eef41f7db4947bd41df","packages":[],"executionState":3,"executionSubstate":7,"executionSubstateDetails":"mariadb","sourcesFingerprint":"5e52caeb1a69c5909479dc24cb11eca4546e27cad628d73d66be74ee4504d9ab","sourcesFilenames":["azure-cli.list","microsoft-prod.list","mariadb.list"]}, 345 bytes): 0
+[2022-06-08 22:20:34] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 110
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmStatus" }' (240 bytes)
+[2022-06-08 22:20:35] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:35] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:20:35] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmStatus" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:35] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmStatus, 2, 1 bytes): 0
+[2022-06-08 22:20:35] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 111
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }' (241 bytes)
+[2022-06-08 22:20:35] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:35] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:20:35] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:35] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmVersion, "", 2 bytes): 0
+[2022-06-08 22:20:35] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 116
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }' (246 bytes)
+[2022-06-08 22:20:36] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:36] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:20:36] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:36] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmManufacturer, "", 2 bytes): 0
+[2022-06-08 22:20:36] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 109
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }' (239 bytes)
+[2022-06-08 22:20:36] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:36] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:20:36] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:36] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, enabled, 2, 1 bytes): 0
+[2022-06-08 22:20:36] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 112
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }' (242 bytes)
+[2022-06-08 22:20:37] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:37] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 36 ('36')
+[2022-06-08 22:20:37] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }', response: '"https://www.example.com/params?a=1"', response size: 36 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:37] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, serviceUrl, "https://www.example.com/params?a=1", 36 bytes): 0
+[2022-06-08 22:20:37] [PnpUtils.c:581] Ztsi.serviceUrl: reported {"Ztsi":{"__t":"c","serviceUrl":"https://www.example.com/params?a=1"}} (70 bytes), result: 0
+[2022-06-08 22:20:37] [PnpUtils.c:518] Report for serviceUrl complete with status 204
+[2022-06-08 22:20:37] [PnpUtils.c:386] ModuleTwinCallback: received {"Ztsi":{"__t":"c","desiredEnabled":false},"$version":77} (57 bytes)
+[2022-06-08 22:20:37] [PnpUtils.c:335] Queued desired payload of 57 bytes at slot 7
+[2022-06-08 22:20:37] [PnpAgent.c:271] Processing desired twin updates
+[2022-06-08 22:20:37] [PnpUtils.c:223] ProcessJsonFromTwin: DEVICE_TWIN_UPDATE_PARTIAL
+[2022-06-08 22:20:37] [PnpUtils.c:142] PropertyUpdateFromIotHubCallback: invoking Ztsi for property desiredEnabled, version 77
+[2022-06-08 22:20:37] [PnpUtils.c:655] Ztsi.desiredEnabled: received false (5 bytes)
+[2022-06-08 22:20:37] [MpiClient.c:96] CallMpi(MpiSet): sent to '/run/osconfig/mpid.sock' 'POST /MpiSet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 134
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredEnabled", "Payload": false }' (264 bytes)
+[2022-06-08 22:20:37] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:37] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 0 ('0')
+[2022-06-08 22:20:37] [MpiClient.c:138] CallMpi(name: 'MpiSet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredEnabled", "Payload": false }', response: '', response size: 0 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:37] [MpiClient.c:321] CallMpiSet(0x55ccf9c1d3d0, Ztsi, desiredEnabled, false, 5 bytes) returned 0
+[2022-06-08 22:20:37] [PnpUtils.c:666] Ztsi: property desiredEnabled successfully updated via MPI
+[2022-06-08 22:20:37] [PnpUtils.c:711] Ztsi: acknowledging received new desired payload for property desiredEnabled, version 77, ack. code 200
+[2022-06-08 22:20:37] [PnpUtils.c:726] Ztsi.desiredEnabled: acknowledged {"Ztsi":{"__t":"c","desiredEnabled":{"value":false,"ac":200,"ad":"-","av":77}}} (79 bytes), result: 0
+[2022-06-08 22:20:37] [PnpUtils.c:305] ProcessJsonFromTwin completed with 0
+[2022-06-08 22:20:37] [PnpUtils.c:374] ProcessDesiredTwinUpdates: processing desired twin update at slot 7 completed with result 0
+[2022-06-08 22:20:37] [PnpUtils.c:399] ModuleTwinCallback: done
+[2022-06-08 22:20:38] [PnpUtils.c:694] Property update acknowledgement complete with status 204
+[2022-06-08 22:20:38] [PnpUtils.c:386] ModuleTwinCallback: received {"Ztsi":{"__t":"c","desiredServiceUrl":"https://www.example.com/params?a=1&b=2"},"$version":78} (95 bytes)
+[2022-06-08 22:20:38] [PnpUtils.c:335] Queued desired payload of 95 bytes at slot 8
+[2022-06-08 22:20:38] [PnpAgent.c:271] Processing desired twin updates
+[2022-06-08 22:20:38] [PnpUtils.c:223] ProcessJsonFromTwin: DEVICE_TWIN_UPDATE_PARTIAL
+[2022-06-08 22:20:38] [PnpUtils.c:142] PropertyUpdateFromIotHubCallback: invoking Ztsi for property desiredServiceUrl, version 78
+[2022-06-08 22:20:38] [PnpUtils.c:655] Ztsi.desiredServiceUrl: received "https:\/\/www.example.com\/params?a=1&b=2" (43 bytes)
+[2022-06-08 22:20:38] [MpiClient.c:96] CallMpi(MpiSet): sent to '/run/osconfig/mpid.sock' 'POST /MpiSet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 175
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredServiceUrl", "Payload": "https:\/\/www.example.com\/params?a=1&b=2" }' (305 bytes)
+[2022-06-08 22:20:38] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:20:38] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 0 ('0')
+[2022-06-08 22:20:38] [MpiClient.c:138] CallMpi(name: 'MpiSet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "desiredServiceUrl", "Payload": "https:\/\/www.example.com\/params?a=1&b=2" }', response: '', response size: 0 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:20:38] [MpiClient.c:321] CallMpiSet(0x55ccf9c1d3d0, Ztsi, desiredServiceUrl, "https:\/\/www.example.com\/params?a=1&b=2", 43 bytes) returned 0
+[2022-06-08 22:20:38] [PnpUtils.c:666] Ztsi: property desiredServiceUrl successfully updated via MPI
+[2022-06-08 22:20:38] [PnpUtils.c:711] Ztsi: acknowledging received new desired payload for property desiredServiceUrl, version 78, ack. code 200
+[2022-06-08 22:20:38] [PnpUtils.c:726] Ztsi.desiredServiceUrl: acknowledged {"Ztsi":{"__t":"c","desiredServiceUrl":{"value":"https:\/\/www.example.com\/params?a=1&b=2","ac":200,"ad":"-","av":78}}} (120 bytes), result: 0
+[2022-06-08 22:20:38] [PnpUtils.c:305] ProcessJsonFromTwin completed with 0
+[2022-06-08 22:20:38] [PnpUtils.c:374] ProcessDesiredTwinUpdates: processing desired twin update at slot 8 completed with result 0
+[2022-06-08 22:20:38] [PnpUtils.c:399] ModuleTwinCallback: done
+[2022-06-08 22:20:39] [PnpUtils.c:694] Property update acknowledgement complete with status 204
+[2022-06-08 22:21:07] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 124
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "CommandRunner", "ObjectName": "commandStatus" }' (254 bytes)
+[2022-06-08 22:21:07] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:07] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 94 ('94')
+[2022-06-08 22:21:07] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "CommandRunner", "ObjectName": "commandStatus" }', response: '{"commandId":"mxoO","resultCode":127,"textResult":"sh: 1: blah: not found\n","currentState":3}', response size: 94 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:07] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, CommandRunner, commandStatus, {"commandId":"mxoO","resultCode":127,"textResult":"sh: 1: blah: not found\n","currentState":3}, 94 bytes): 0
+[2022-06-08 22:21:07] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 114
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osName" }' (244 bytes)
+[2022-06-08 22:21:07] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:07] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 8 ('8')
+[2022-06-08 22:21:07] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osName" }', response: '"Ubuntu"', response size: 8 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:07] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osName, "Ubuntu", 8 bytes): 0
+[2022-06-08 22:21:07] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 117
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osVersion" }' (247 bytes)
+[2022-06-08 22:21:08] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:08] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 9 ('9')
+[2022-06-08 22:21:08] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osVersion" }', response: '"18.04.6"', response size: 9 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:08] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osVersion, "18.04.6", 9 bytes): 0
+[2022-06-08 22:21:08] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 115
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuType" }' (245 bytes)
+[2022-06-08 22:21:08] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:08] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 8 ('8')
+[2022-06-08 22:21:08] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuType" }', response: '"x86_64"', response size: 8 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:08] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuType, "x86_64", 8 bytes): 0
+[2022-06-08 22:21:08] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuVendorId" }' (249 bytes)
+[2022-06-08 22:21:09] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:09] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 14 ('14')
+[2022-06-08 22:21:09] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuVendorId" }', response: '"GenuineIntel"', response size: 14 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:09] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuVendorId, "GenuineIntel", 14 bytes): 0
+[2022-06-08 22:21:09] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 116
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuModel" }' (246 bytes)
+[2022-06-08 22:21:09] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:09] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 43 ('43')
+[2022-06-08 22:21:09] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "cpuModel" }', response: '"Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz"', response size: 43 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:09] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, cpuModel, "Intel(R) Xeon(R) CPU E5-2673 v4 @ 2.30GHz", 43 bytes): 0
+[2022-06-08 22:21:09] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "totalMemory" }' (249 bytes)
+[2022-06-08 22:21:10] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:10] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 7 ('7')
+[2022-06-08 22:21:10] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "totalMemory" }', response: '3510664', response size: 7 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:10] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, totalMemory, 3510664, 7 bytes): 0
+[2022-06-08 22:21:10] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 118
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "freeMemory" }' (248 bytes)
+[2022-06-08 22:21:10] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:10] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 6 ('6')
+[2022-06-08 22:21:10] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "freeMemory" }', response: '595968', response size: 6 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:10] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, freeMemory, 595968, 6 bytes): 0
+[2022-06-08 22:21:10] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 118
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelName" }' (248 bytes)
+[2022-06-08 22:21:11] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:11] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 7 ('7')
+[2022-06-08 22:21:11] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelName" }', response: '"Linux"', response size: 7 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:11] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelName, "Linux", 7 bytes): 0
+[2022-06-08 22:21:11] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelRelease" }' (251 bytes)
+[2022-06-08 22:21:11] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:11] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 18 ('18')
+[2022-06-08 22:21:11] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelRelease" }', response: '"5.4.0-1080-azure"', response size: 18 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:11] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelRelease, "5.4.0-1080-azure", 18 bytes): 0
+[2022-06-08 22:21:11] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelVersion" }' (251 bytes)
+[2022-06-08 22:21:12] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:12] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 53 ('53')
+[2022-06-08 22:21:12] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "kernelVersion" }', response: '"#83~18.04.2-Ubuntu SMP Thu May 19 18:52:16 UTC 2022"', response size: 53 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:12] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, kernelVersion, "#83~18.04.2-Ubuntu SMP Thu May 19 18:52:16 UTC 2022", 53 bytes): 0
+[2022-06-08 22:21:12] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 121
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVendor" }' (251 bytes)
+[2022-06-08 22:21:12] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:12] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 23 ('23')
+[2022-06-08 22:21:12] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVendor" }', response: '"Microsoft Corporation"', response size: 23 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:12] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productVendor, "Microsoft Corporation", 23 bytes): 0
+[2022-06-08 22:21:12] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productName" }' (249 bytes)
+[2022-06-08 22:21:13] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:13] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 17 ('17')
+[2022-06-08 22:21:13] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productName" }', response: '"Virtual Machine"', response size: 17 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:13] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productName, "Virtual Machine", 17 bytes): 0
+[2022-06-08 22:21:13] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 122
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVersion" }' (252 bytes)
+[2022-06-08 22:21:13] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:13] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 5 ('5')
+[2022-06-08 22:21:13] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "productVersion" }', response: '"7.0"', response size: 5 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:13] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, productVersion, "7.0", 5 bytes): 0
+[2022-06-08 22:21:13] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 126
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemCapabilities" }' (256 bytes)
+[2022-06-08 22:21:14] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:14] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 71 ('71')
+[2022-06-08 22:21:14] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemCapabilities" }', response: '"boot=normal chassis=desktop uuid=8594E3C3-B532-0543-BEBE-6C48376FAACD"', response size: 71 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:14] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, systemCapabilities, "boot=normal chassis=desktop uuid=8594E3C3-B532-0543-BEBE-6C48376FAACD", 71 bytes): 0
+[2022-06-08 22:21:14] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 127
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemConfiguration" }' (257 bytes)
+[2022-06-08 22:21:14] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:14] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 31 ('31')
+[2022-06-08 22:21:14] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "systemConfiguration" }', response: '"smbios-2.3 dmi-2.3 vsyscall32"', response size: 31 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:14] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, systemConfiguration, "smbios-2.3 dmi-2.3 vsyscall32", 31 bytes): 0
+[2022-06-08 22:21:14] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 123
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osConfigVersion" }' (253 bytes)
+[2022-06-08 22:21:15] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:15] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 26 ('26')
+[2022-06-08 22:21:15] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "DeviceInfo", "ObjectName": "osConfigVersion" }', response: '"1.0.2.202206082464504786"', response size: 26 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:15] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, DeviceInfo, osConfigVersion, "1.0.2.202206082464504786", 26 bytes): 0
+[2022-06-08 22:21:15] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 119
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallState" }' (249 bytes)
+[2022-06-08 22:21:15] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:15] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:21:15] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallState" }', response: '1', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:15] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Firewall, firewallState, 1, 1 bytes): 0
+[2022-06-08 22:21:15] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 125
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallFingerprint" }' (255 bytes)
+[2022-06-08 22:21:16] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:16] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 66 ('66')
+[2022-06-08 22:21:16] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Firewall", "ObjectName": "firewallFingerprint" }', response: '"a43dae6e41b8e933cbca930e34f2375b4f95853a4ac00028875279881a14d30b"', response size: 66 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:16] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Firewall, firewallFingerprint, "a43dae6e41b8e933cbca930e34f2375b4f95853a4ac00028875279881a14d30b", 66 bytes): 0
+[2022-06-08 22:21:16] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 110
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "name" }' (240 bytes)
+[2022-06-08 22:21:16] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:16] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 10 ('10')
+[2022-06-08 22:21:16] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "name" }', response: '"TestHost"', response size: 10 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:16] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, HostName, name, "TestHost", 10 bytes): 0
+[2022-06-08 22:21:16] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 111
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "hosts" }' (241 bytes)
+[2022-06-08 22:21:17] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:17] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 160 ('160')
+[2022-06-08 22:21:17] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "HostName", "ObjectName": "hosts" }', response: '"127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters"', response size: 160 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:17] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, HostName, hosts, "127.0.0.1 localhost;127.0.1.1 TestHost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters", 160 bytes): 0
+[2022-06-08 22:21:17] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 128
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Networking", "ObjectName": "networkConfiguration" }' (258 bytes)
+[2022-06-08 22:21:18] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:18] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 385 ('385')
+[2022-06-08 22:21:18] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Networking", "ObjectName": "networkConfiguration" }', response: '{"interfaceTypes":"eth0=ether;lo=loopback","macAddresses":"eth0=00:0d:3a:8b:e4:ef;lo=00:00:00:00:00:00","ipAddresses":"eth0=10.0.1.4,fe80::20d:3aff:fe8b:e4ef;lo=127.0.0.1,::1","subnetMasks":"eth0=/24,/64;lo=/8,/128","defaultGateways":"eth0=10.0.1.1","dnsServers":"eth0=168.63.129.16","dhcpEnabled":"eth0=false;lo=false","enabled":"eth0=true;lo=unknown","connected":"eth0=true;lo=true"}', response size: 385 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:18] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Networking, networkConfiguration, {"interfaceTypes":"eth0=ether;lo=loopback","macAddresses":"eth0=00:0d:3a:8b:e4:ef;lo=00:00:00:00:00:00","ipAddresses":"eth0=10.0.1.4,fe80::20d:3aff:fe8b:e4ef;lo=127.0.0.1,::1","subnetMasks":"eth0=/24,/64;lo=/8,/128","defaultGateways":"eth0=10.0.1.1","dnsServers":"eth0=168.63.129.16","dhcpEnabled":"eth0=false;lo=false","enabled":"eth0=true;lo=unknown","connected":"eth0=true;lo=true"}, 385 bytes): 0
+[2022-06-08 22:21:18] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 130
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "PackageManagerConfiguration", "ObjectName": "state" }' (260 bytes)
+[2022-06-08 22:21:18] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:18] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 345 ('345')
+[2022-06-08 22:21:18] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "PackageManagerConfiguration", "ObjectName": "state" }', response: '{"packagesFingerprint":"2da00bf1c6b4196f9c28ce467ffc284d285a42657bc47eef41f7db4947bd41df","packages":[],"executionState":3,"executionSubstate":7,"executionSubstateDetails":"mariadb","sourcesFingerprint":"5e52caeb1a69c5909479dc24cb11eca4546e27cad628d73d66be74ee4504d9ab","sourcesFilenames":["azure-cli.list","microsoft-prod.list","mariadb.list"]}', response size: 345 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:18] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, PackageManagerConfiguration, state, {"packagesFingerprint":"2da00bf1c6b4196f9c28ce467ffc284d285a42657bc47eef41f7db4947bd41df","packages":[],"executionState":3,"executionSubstate":7,"executionSubstateDetails":"mariadb","sourcesFingerprint":"5e52caeb1a69c5909479dc24cb11eca4546e27cad628d73d66be74ee4504d9ab","sourcesFilenames":["azure-cli.list","microsoft-prod.list","mariadb.list"]}, 345 bytes): 0
+[2022-06-08 22:21:18] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 110
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmStatus" }' (240 bytes)
+[2022-06-08 22:21:19] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:19] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:21:19] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmStatus" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:19] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmStatus, 2, 1 bytes): 0
+[2022-06-08 22:21:19] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 111
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }' (241 bytes)
+[2022-06-08 22:21:19] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:19] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:21:19] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmVersion" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:19] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmVersion, "", 2 bytes): 0
+[2022-06-08 22:21:19] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 116
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }' (246 bytes)
+[2022-06-08 22:21:20] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:20] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 2 ('2')
+[2022-06-08 22:21:20] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Tpm", "ObjectName": "tpmManufacturer" }', response: '""', response size: 2 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:20] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Tpm, tpmManufacturer, "", 2 bytes): 0
+[2022-06-08 22:21:20] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 109
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }' (239 bytes)
+[2022-06-08 22:21:20] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:20] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 1 ('1')
+[2022-06-08 22:21:20] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "enabled" }', response: '2', response size: 1 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:20] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, enabled, 2, 1 bytes): 0
+[2022-06-08 22:21:20] [MpiClient.c:96] CallMpi(MpiGet): sent to '/run/osconfig/mpid.sock' 'POST /MpiGet/ HTTP/1.1
+Host: OSConfig
+User-Agent: OSConfig
+Accept: */*
+Content-Type: application/json
+Content-Length: 112
+
+{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }' (242 bytes)
+[2022-06-08 22:21:21] [SocketUtils.c:150] ReadHttpStatusFromSocket: 200 ('200')
+[2022-06-08 22:21:21] [SocketUtils.c:202] ReadHttpContentLengthFromSocket: 40 ('40')
+[2022-06-08 22:21:21] [MpiClient.c:138] CallMpi(name: 'MpiGet', request: '{ "ClientSession": "D3E0EDAA-3AA4-BB66-4B96-7022165EA3F8", "ComponentName": "Ztsi", "ObjectName": "serviceUrl" }', response: '"https://www.example.com/params?a=1&b=2"', response size: 40 bytes) to socket '/run/osconfig/mpid.sock' returned 0
+[2022-06-08 22:21:21] [MpiClient.c:383] CallMpiGet(0x55ccf9c1d3d0, Ztsi, serviceUrl, "https://www.example.com/params?a=1&b=2", 40 bytes): 0
+[2022-06-08 22:21:21] [PnpUtils.c:581] Ztsi.serviceUrl: reported {"Ztsi":{"__t":"c","serviceUrl":"https://www.example.com/params?a=1&b=2"}} (74 bytes), result: 0
+[2022-06-08 22:21:21] [PnpUtils.c:518] Report for serviceUrl complete with status 204
