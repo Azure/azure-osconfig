@@ -10,11 +10,11 @@ stages:
 - template: stages/source_build.yaml
   parameters:
     prefix: Validate
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
 
 - template: stages/dotnet_validate.yaml
   parameters:
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
     sourcePath: src/tests/e2etest
 
 - template: stages/binary_build.yaml
@@ -22,7 +22,7 @@ stages:
     variantName: ubuntu20.04
     friendlyVariantName: ubuntu2004
     architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
     platform: linux/amd64
     publishArtifact: false
     runUnitTests: true
@@ -33,7 +33,7 @@ stages:
     variantName: ubuntu20.04
     friendlyVariantName: ubuntu2004
     architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:270554
     platform: linux/arm/v7
     publishArtifact: false
     runUnitTests: false
@@ -44,7 +44,7 @@ stages:
     variantName: ubuntu20.04
     friendlyVariantName: ubuntu2004
     architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:270554
     platform: linux/arm64/v8
     publishArtifact: false
     runUnitTests: true
@@ -55,7 +55,7 @@ stages:
     variantName: ubuntu18.04
     friendlyVariantName: ubuntu1804
     architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:270554
     platform: linux/amd64
     publishArtifact: false
     runUnitTests: true
@@ -66,7 +66,7 @@ stages:
     variantName: ubuntu18.04
     friendlyVariantName: ubuntu1804
     architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:270554
     platform: linux/arm/v7
     publishArtifact: false
     runUnitTests: true
@@ -77,7 +77,7 @@ stages:
     variantName: ubuntu18.04
     friendlyVariantName: ubuntu1804
     architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:270554
     platform: linux/arm64/v8
     publishArtifact: false
     runUnitTests: true
@@ -88,7 +88,7 @@ stages:
     variantName: debian9
     friendlyVariantName: debian9
     architecture: amd64
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:270554
     platform: linux/amd64
     publishArtifact: false
     runUnitTests: true
@@ -99,7 +99,7 @@ stages:
     variantName: debian9
     friendlyVariantName: debian9
     architecture: arm
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:270554
     platform: linux/arm/v7
     publishArtifact: false
     runUnitTests: true
@@ -110,7 +110,7 @@ stages:
     variantName: debian9
     friendlyVariantName: debian9
     architecture: arm64
-    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
+    containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:270554
     platform: linux/arm64/v8
     publishArtifact: false
     runUnitTests: true

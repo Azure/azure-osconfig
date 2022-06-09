@@ -16,7 +16,7 @@ parameters:
       - variantName: ubuntu20.04
         friendlyVariantName: ubuntu2004
         architecture: amd64_debug
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
         platform: linux/amd64
         performCoverage: true
         ignoreTestFailures: true
@@ -24,7 +24,7 @@ parameters:
       - variantName: ubuntu20.04
         friendlyVariantName: ubuntu2004
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
         platform: linux/amd64
         performCoverage: false
         ignoreTestFailures: false
@@ -32,7 +32,7 @@ parameters:
       - variantName: ubuntu20.04
         friendlyVariantName: ubuntu2004
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:270554
         platform: linux/arm/v7
         performCoverage: false
         ignoreTestFailures: false
@@ -40,7 +40,7 @@ parameters:
       - variantName: ubuntu20.04
         friendlyVariantName: ubuntu2004
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:270554
         platform: linux/arm64/v8
         performCoverage: false
         ignoreTestFailures: false
@@ -48,7 +48,7 @@ parameters:
       - variantName: ubuntu18.04
         friendlyVariantName: ubuntu1804
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:270554
         platform: linux/amd64
         performCoverage: false
         ignoreTestFailures: false
@@ -56,7 +56,7 @@ parameters:
       - variantName: ubuntu18.04
         friendlyVariantName: ubuntu1804
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:270554
         platform: linux/arm/v7
         performCoverage: false
         ignoreTestFailures: false
@@ -64,7 +64,7 @@ parameters:
       - variantName: ubuntu18.04
         friendlyVariantName: ubuntu1804
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:latest
+        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:270554
         platform: linux/arm64/v8
         performCoverage: false
         ignoreTestFailures: false
@@ -72,7 +72,7 @@ parameters:
       - variantName: debian9
         friendlyVariantName: debian9
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:latest
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:270554
         platform: linux/amd64
         performCoverage: false
         ignoreTestFailures: false
@@ -80,7 +80,7 @@ parameters:
       - variantName: debian9
         friendlyVariantName: debian9
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:latest
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:270554
         platform: linux/arm/v7
         performCoverage: false
         ignoreTestFailures: false
@@ -88,12 +88,12 @@ parameters:
       - variantName: debian9
         friendlyVariantName: debian9
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:latest
+        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:270554
         platform: linux/arm64/v8
         performCoverage: false
         ignoreTestFailures: false
         publishArtifact: true
-      
+
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
   CONTAINER_REGISTRY: osconfig.azurecr.io
@@ -107,7 +107,7 @@ pr: none
 stages:
 - template: stages/source_build.yaml
   parameters:
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:270554
     publishArtifact: true
 
 - ${{ each target in parameters.build_targets }}:
