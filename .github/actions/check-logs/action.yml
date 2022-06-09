@@ -26,7 +26,7 @@ runs:
                 echo "$crashes"
                 crash_found=true
 
-                while IFS= read -r crash; do
+                while read -r crash; do
                     line_num=$(echo $crash | cut -d ':' -f 1)
                     crash_message=$(echo $crash | cut -d ':' -f 2-)
                     line_before=$(sed -n "$((line_num - 1))p" $file)
@@ -35,8 +35,9 @@ runs:
             fi
         done
 
-        if [ "$crash_found" = true ]
+        if [ "$crash_found" == true ]
         then
+            echo "Found crashes in logs"
             exit 1
         fi
 
