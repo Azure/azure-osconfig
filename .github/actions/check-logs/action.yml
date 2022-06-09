@@ -32,7 +32,7 @@ runs:
                     line_num=$(echo $crash | cut -d ':' -f 1)
                     crash_message=$(echo $crash | cut -d ':' -f 2-)
                     line_before=$(sed -n "$((line_num - 1))p" $file)
-                    echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
+                    echo "::error file=$(basename $file),line=$line_num,title=$crash_message::$line_before"
                 done <<< "$crashes"
             fi
         done
