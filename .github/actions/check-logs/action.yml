@@ -20,12 +20,12 @@ runs:
         for file in $logs
         do
             echo $file
-            # crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
+            crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
+            echo $crashes
 
             # if [ "$crashes" != "" ]
             # then
             #     echo "Found crashes in $file"
-            #     echo "$crashes"
             #     crash_found=true
 
             #     while read -r crash; do
