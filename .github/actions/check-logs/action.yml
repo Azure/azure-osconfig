@@ -36,12 +36,4 @@ runs:
                 done <<< "$crashes"
             fi
         done
-
-        if [ "$crash_found" == true ]
-        then
-            echo "Found crashes in logs"
-            exit 1
-        fi
-
-        exit 0
       shell: bash
