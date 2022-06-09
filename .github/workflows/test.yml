@@ -12,5 +12,5 @@ jobs:
       - uses: ./.github/actions/check-logs
         with:
           logs: |
-            ./.github/actions/checklogs/osconfig_pnp_agent.log
-            ./.github/actions/checklogs/osconfig_platform.log
+            ./.github/actions/check-logs/osconfig_pnp_agent.log
+            ./.github/actions/check-logs/osconfig_platform.log
