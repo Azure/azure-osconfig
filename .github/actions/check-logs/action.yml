@@ -25,19 +25,20 @@ runs:
                 echo "Found crashes in $file"
                 echo "$crashes"
                 crash_found=true
+
+                while IFS= read -r crash; do
+                    line_num=$(echo $crash | cut -d ':' -f 1)
+                    crash_message=$(echo $crash | cut -d ':' -f 2-)
+                    line_before=$(sed -n "$((line_num - 1))p" $file)
+                    echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
+                done <<< "$crashes"
             fi
-
-            while IFS= read -r crash; do
-                line_num=$(echo $crash | cut -d ':' -f 1)
-                crash_message=$(echo $crash | cut -d ':' -f 2-)
-                line_before=$(sed -n "$((line_num - 1))p" $file)
-
-                echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
-            done <<< "$crashes"
         done
 
         if [ "$crash_found" = true ]
         then
             exit 1
         fi
+
+        exit 0
       shell: bash
