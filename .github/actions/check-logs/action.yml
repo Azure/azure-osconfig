@@ -9,38 +9,35 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-
-    - name: Parse logs
+    - name: Check for crashes
       env:
         logs: ${{ inputs.logs }}
       run: |
-        import os
-        import sys
+        crash_found=false
 
-        # Create an error annotation
-        def error(title, file, line, msg):
-            print(f'::error file={file},line={line},title={title}::{msg}')
+        for file in $logs
+        do
+            echo "Checking $file"
+            crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
 
-        logs = os.environ.get('logs').split('\n')
+            if [ "$crashes" != "" ]
+            then
+                echo "Found crashes in $file"
+                echo "$crashes"
+                crash_found=true
+            fi
 
-        crashes = ['SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGABRT', 'SIGBUS']
-        crash_found = False
+            while IFS= read -r crash; do
+                line_num=$(echo $crash | cut -d ':' -f 1)
+                crash_message=$(echo $crash | cut -d ':' -f 2-)
+                line_before=$(sed -n "$((line_num - 1))p" $file)
 
-        for log_file in logs:
-            with open(log_file, 'r') as f:
-                prev_line = None
-                for line_num, line in enumerate(f, 1):
-                    for crash in crashes:
-                        if crash in line:
-                            msg = (prev_line + line) if prev_line else line
-                            error(crash, log_file, line_num, msg)
-                            crash_found = True
-                            break
-                    prev_line = line
+                echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
+            done <<< "$crashes"
+        done
 
-        if crash_found:
-            sys.exit(1)
-      shell: python
+        if [ "$crash_found" = true ]
+        then
+            exit 1
+        fi
+      shell: bash
