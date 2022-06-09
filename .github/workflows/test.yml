@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on: [push]
 
@@ -6,14 +6,6 @@ jobs:
   unit-test:
     name: Unit test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
-        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
-        exclude:
-          - os: ubuntu20.04
-            variant: {arch: arm, platform: linux/arm/v7}
-
     steps:
       - uses: actions/checkout@v3
 
