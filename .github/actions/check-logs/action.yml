@@ -20,20 +20,20 @@ runs:
         for file in $logs
         do
             echo $file
-            crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
+            # crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file)
 
-            if [ "$crashes" != "" ]
-            then
-                echo "Found crashes in $file"
-                echo "$crashes"
-                crash_found=true
+            # if [ "$crashes" != "" ]
+            # then
+            #     echo "Found crashes in $file"
+            #     echo "$crashes"
+            #     crash_found=true
 
-                while read -r crash; do
-                    line_num=$(echo $crash | cut -d ':' -f 1)
-                    crash_message=$(echo $crash | cut -d ':' -f 2-)
-                    line_before=$(sed -n "$((line_num - 1))p" $file)
-                    echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
-                done <<< "$crashes"
-            fi
+            #     while read -r crash; do
+            #         line_num=$(echo $crash | cut -d ':' -f 1)
+            #         crash_message=$(echo $crash | cut -d ':' -f 2-)
+            #         line_before=$(sed -n "$((line_num - 1))p" $file)
+            #         echo "::error file=$file,line=$line_num,title=$crash_message::$line_before"
+            #     done <<< "$crashes"
+            # fi
         done
       shell: bash
