@@ -89,14 +89,25 @@ systemctl start osconfig.service
 /etc/systemd/system/osconfig.service
 /etc/systemd/system/osconfig-platform.service
 /usr/lib/osconfig/commandrunner.so
+/usr/lib/osconfig/deviceinfo.so
 /usr/lib/osconfig/firewall.so
 /usr/lib/osconfig/hostname.so
 /usr/lib/osconfig/networking.so
+/usr/lib/osconfig/pmc.so
 /usr/lib/osconfig/settings.so
 /usr/lib/osconfig/tpm.so
 /usr/lib/osconfig/ztsi.so
 
 %changelog
+* Fri Jun 10 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.3.20220610
+- Detached Agent and Platform running in separate daemon processes.
+- Platform daemon controlled through the Agent.
+- MPI REST API over UDS and HTTP.
+- OSConfig can be installed and run with late AIS configuration.
+- Refactored MpiSetDesired and MpiGetReported.
+- Improved local management via local RC/DC files.
+- DTDL and MIM object, setting and setting value names changed from PascalCasing to camelCasing.
+- New Package Manager Configuration (PMC) module.
 * Mon Apr 4 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.2.20220404
 - Bumped version to 1.0.2.x
 - Added HTTP proxy support for connection to Iot Hub.
