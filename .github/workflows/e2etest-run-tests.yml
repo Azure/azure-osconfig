@@ -32,7 +32,7 @@ jobs:
         run: |
           target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
           echo ::set-output name=device_id::$(echo $target | jq .device_id | tr -d \")
-          
+
           test_filter=$(echo $target | jq .test_filter | tr -d \")
           [[ "$test_filter" != "null" ]] && test_filter="--filter \"${test_filter}\"" || test_filter=""
           echo Using test filter: $test_filter
@@ -98,14 +98,22 @@ jobs:
           E2E_OSCONFIG_TWIN_TIMEOUT: ${{ secrets.TWIN_TIMEOUT }}
           E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ matrix.distroName }}
         working-directory: ./src/tests/e2etest
-        run: | 
+        run: |
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
 
       - name: Stage logs
         if: always()
-        run: | 
+        run: |
           sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
           sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+
+      - name: Check logs
+        if: success() || failure()
+        uses: ./.github/actions/check-logs
+        with:
+          logs: |
+            ${{ runner.temp }}/osconfig_pnp_agent.log
+            ${{ runner.temp }}/osconfig_platform.log
 
       - name: Upload OSConfig Logs
         if: always()
