@@ -44,6 +44,8 @@ jobs:
       environment: e2e-github-main
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
+      cpuThreshold: 50
+      memThreshold: 50
     secrets: inherit
 
   deprovision-resources:
