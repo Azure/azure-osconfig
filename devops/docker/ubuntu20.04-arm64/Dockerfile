@@ -18,7 +18,8 @@ RUN apt -y update && apt-get -y install \
     rapidjson-dev \
     ninja-build\
     wget \
-    jq
+    jq \
+    bc
 
 WORKDIR /git
 

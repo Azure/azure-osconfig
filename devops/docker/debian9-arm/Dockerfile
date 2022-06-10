@@ -16,7 +16,8 @@ RUN apt -y update && apt-get -y install \
     ninja-build\
     wget \
     gcovr \
-    jq
+    jq \
+    bc
 
 WORKDIR /git
 
