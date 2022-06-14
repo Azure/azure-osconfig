@@ -1,7 +1,7 @@
 name: E2E (prod)
-on:
-  schedule:
-    - cron: '0 8 * * *' #8am UTC
+on: [push]
+  # schedule:
+  #   - cron: '0 8 * * *' #8am UTC
 
 jobs:
   fetch-targets:
