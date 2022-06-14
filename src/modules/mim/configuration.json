@@ -1,0 +1,108 @@
+{
+  "name": "OsConfigConfigurationModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "OsConfigConfiguration",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "current",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "fields": [
+              {
+                "name": "modelVersion",
+                "schema": "integer"
+              },
+              {
+                "name": "refreshInterval",
+                "schema": "integer"
+              },
+              {
+                "name": "localManagementEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "fullLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "commandLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "protocol",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "default",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "mqtt",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "mqttWebSocket",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "desired",
+          "type": "mimObject",
+          "desired": true,
+          "schema": {
+            "fields": [
+              {
+                "name": "modelVersion",
+                "schema": "integer"
+              },
+              {
+                "name": "refreshInterval",
+                "schema": "integer"
+              },
+              {
+                "name": "localManagementEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "fullLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "commandLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "protocol",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "mqtt",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "mqttWebSocket",
+                      "enumValue": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
