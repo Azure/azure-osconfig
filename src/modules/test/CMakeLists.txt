@@ -14,8 +14,7 @@ target_link_libraries(testfactorylib
     parsonlib)
 
 target_include_directories(testfactorylib PUBLIC
-    ${MODULES_INC_DIR}
-    ${PLATFORM_INC_DIR})
+    ${MODULES_INC_DIR})
 
 add_executable(modulestest main.cpp)
 target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
