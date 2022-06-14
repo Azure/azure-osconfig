@@ -100,17 +100,17 @@ jobs:
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
-          sudo systemctl start osconfig-platform
+          sudo systemctl start osconfig-platform || true
 
       - name: Start performance sampling
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ''
         run: |
           # CPU
           pidstat -p `pidof osconfig` 1 > perf-cpu-osconfig.log &
-          pidstat -p `pidof osconfig-platform` 1 > perf-cpu-osconfig-platform.log &
+          pidstat -p `pidof osconfig-platform` 1 > perf-cpu-osconfig-platform.log || true &
           # Memory
           pidstat -r -p `pidof osconfig` 1 > perf-mem-osconfig.log &
-          pidstat -r -p `pidof osconfig-platform` 1 > perf-mem-osconfig-platform.log &
+          pidstat -r -p `pidof osconfig-platform` 1 > perf-mem-osconfig-platform.log || true &
 
       - name: Run E2E tests
         env:
@@ -123,36 +123,44 @@ jobs:
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
 
       - name: Stop performance sampling
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ''
         run: |
           kill -SIGINT `pidof pidstat`
 
       - name: Check performance results - Agent
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ''
         run: |
           # CPU
           tail perf-cpu-osconfig.log -n1
           result=`tail perf-cpu-osconfig.log -n1 | cut -c62-68`
+          echo CPU result: $result
           test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
           # MEM
           tail perf-mem-osconfig.log -n1
           result=`tail perf-mem-osconfig.log -n1 | cut -c65-71`
+          echo MEM result: $result
           test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
 
       - name: Check performance results - Platform
-        if: ${{ inputs.cpuThreshold }} != "" && (success() || failure())
+        if: inputs.cpuThreshold != '' && (success() || failure())
         run: |
-          # CPU
-          tail perf-cpu-osconfig-platform.log -n1
-          result=`tail perf-cpu-osconfig-platform.log -n1 | cut -c62-68`
-          test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
-          # MEM
-          tail perf-mem-osconfig-platform.log -n1
-          result=`tail perf-mem-osconfig-platform.log -n1 | cut -c65-71`
-          test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
+          if [ -f perf-cpu-osconfig-platform.log ];then
+            # CPU
+            tail perf-cpu-osconfig-platform.log -n1
+            result=`tail perf-cpu-osconfig-platform.log -n1 | cut -c62-68`
+            echo CPU result: $result
+            test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
+            # MEM
+            tail perf-mem-osconfig-platform.log -n1
+            result=`tail perf-mem-osconfig-platform.log -n1 | cut -c65-71`
+            echo MEM result: $result
+            test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
+          else
+              echo "No platform performance results!"
+          fi          
 
       - name: Upload performance Logs
-        if: ${{ inputs.cpuThreshold }} != "" && (success() || failure())
+        if: inputs.cpuThreshold != '' && (success() || failure())
         uses: actions/upload-artifact@v3
         with:
           name: perf-logs-${{ matrix.distroName }}
