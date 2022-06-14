@@ -133,10 +133,12 @@ jobs:
           # CPU
           tail perf-cpu-osconfig.log -n1
           result=`tail perf-cpu-osconfig.log -n1 | cut -c62-68`
+          echo CPU result: $result
           test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
           # MEM
           tail perf-mem-osconfig.log -n1
           result=`tail perf-mem-osconfig.log -n1 | cut -c65-71`
+          echo MEM result: $result
           test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
 
       - name: Check performance results - Platform
@@ -146,10 +148,12 @@ jobs:
             # CPU
             tail perf-cpu-osconfig-platform.log -n1
             result=`tail perf-cpu-osconfig-platform.log -n1 | cut -c62-68`
+            echo CPU result: $result
             test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
             # MEM
             tail perf-mem-osconfig-platform.log -n1
             result=`tail perf-mem-osconfig-platform.log -n1 | cut -c65-71`
+            echo MEM result: $result
             test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
           else
               echo "No platform performance results!"
