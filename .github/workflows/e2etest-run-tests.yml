@@ -103,7 +103,7 @@ jobs:
           sudo systemctl start osconfig-platform || true
 
       - name: Start performance sampling
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ""
         run: |
           # CPU
           pidstat -p `pidof osconfig` 1 > perf-cpu-osconfig.log &
@@ -123,12 +123,12 @@ jobs:
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
 
       - name: Stop performance sampling
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ""
         run: |
           kill -SIGINT `pidof pidstat`
 
       - name: Check performance results - Agent
-        if: ${{ inputs.cpuThreshold }} != ""
+        if: inputs.cpuThreshold != ""
         run: |
           # CPU
           tail perf-cpu-osconfig.log -n1
@@ -142,7 +142,7 @@ jobs:
           test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
 
       - name: Check performance results - Platform
-        if: ${{ inputs.cpuThreshold }} != "" && (success() || failure())
+        if: inputs.cpuThreshold != "" && (success() || failure())
         run: |
           if [ -f perf-cpu-osconfig-platform.log ];then
             # CPU
@@ -160,7 +160,7 @@ jobs:
           fi          
 
       - name: Upload performance Logs
-        if: ${{ inputs.cpuThreshold }} != "" && (success() || failure())
+        if: inputs.cpuThreshold != "" && (success() || failure())
         uses: actions/upload-artifact@v3
         with:
           name: perf-logs-${{ matrix.distroName }}
