@@ -360,8 +360,8 @@ char* GetProductVersion(void* log)
 
 char* GetSystemCapabilities(void* log)
 {
-    const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
-    char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
+    const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
+    char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -373,8 +373,8 @@ char* GetSystemCapabilities(void* log)
 
 char* GetSystemConfiguration(void* log)
 {
-    const char* osSystemCapabilitiesCommand = "lshw -c system | grep -m 1 \"capabilities:\"";
-    char* textResult = GetHardwareProperty(osSystemCapabilitiesCommand, false, log);
+    const char* osSystemConfigurationCommand = "lshw -c system | grep -m 1 \"configuration:\"";
+    char* textResult = GetHardwareProperty(osSystemConfigurationCommand, false, log);
 
     if (IsFullLoggingEnabled())
     {
@@ -383,4 +383,3 @@ char* GetSystemConfiguration(void* log)
 
     return textResult;
 }
-
