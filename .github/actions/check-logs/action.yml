@@ -1,0 +1,45 @@
+name: Check logs
+description: Parses logs for crashes and failures
+
+inputs:
+  logs:
+    description: The path to load GTest XML from.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check for crashes
+      env:
+        logs: ${{ inputs.logs }}
+      run: |
+        crash_found=false
+
+        echo $logs
+
+        for file in $logs
+        do
+            echo "Checking $file"
+            crashes=$(grep -n 'SIGSEGV\|SIGFPE\|SIGILL\|SIGABRT\|SIGBUS' $file || echo "")
+
+            if [ "$crashes" != "" ]
+            then
+                echo "Found crashes in $file"
+                echo "$crashes"
+                crash_found=true
+
+                while read -r crash; do
+                    line_num=$(echo $crash | cut -d ':' -f 1)
+                    crash_message=$(echo $crash | cut -d ':' -f 2-)
+                    line_before=$(sed -n "$((line_num - 1))p" $file)
+                    echo "::error file=$(basename $file),line=$line_num,title=$crash_message::$line_before"
+                done <<< "$crashes"
+            fi
+        done
+
+        if [ "$crash_found" == true ]
+        then
+            echo "Found crashes in logs"
+            exit 1
+        fi
+      shell: bash

@@ -19,7 +19,8 @@ RUN apt -y update && apt-get -y install \
     rapidjson-dev \
     ninja-build\
     wget \
-    jq
+    jq \
+    bc
 
 ENV OPENSSL_ROOT_DIR=/usr/lib/arm-linux-gnueabihf/
 
