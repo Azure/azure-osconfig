@@ -45,7 +45,7 @@
 #include "RecipeInvoker.h"
 #include "MimParser.h"
 
-#define TestLogInfo(format, ...) printf(format, ##__VA_ARGS__); std::cout << std::endl
-#define TestLogError(format, ...) fprintf(stderr, format, ##__VA_ARGS__); std::cerr << std::endl
+#define TestLogInfo(format, ...) {printf(format, ##__VA_ARGS__); std::cout << std::endl;}
+#define TestLogError(format, ...) {fprintf(stderr, format, ##__VA_ARGS__); std::cerr << std::endl;}
 
 #endif // MODULESTESTCOMMON_H
