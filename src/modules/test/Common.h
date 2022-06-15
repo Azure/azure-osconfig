@@ -55,8 +55,16 @@ inline void TestLogInfo(const char* log)
 inline void TestLogInfo(const char* format, const char* args...)
 {
     char buf[g_lineLength] = {0};
-    std::snprintf(buf, g_lineLength, format, args);
-    std::cout << buf << std::endl;
+    int status = std::snprintf(buf, g_lineLength -1, format, args);
+    std::cout << "============ status: " << status << std::endl;
+    if ((0 < status) && (static_cast<size_t>(status) < (g_lineLength-1)))
+    {
+        std::cout << buf << std::endl;
+    }
+    else
+    {
+        std::cerr << "Failed to log -- insufficient buffer, needs: " << status << " bytes." << std::endl;
+    }
 }
 
 inline void TestLogError(const char* log)
