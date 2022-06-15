@@ -45,38 +45,7 @@
 #include "RecipeInvoker.h"
 #include "MimParser.h"
 
-constexpr const size_t g_lineLength = 256;
-
-inline void TestLogInfo(const char* log)
-{
-    std::cout << log << std::endl;
-}
-
-inline void TestLogInfo(const char* format, const char* args...)
-{
-    char buf[g_lineLength] = {0};
-    int status = std::snprintf(buf, g_lineLength -1, format, args);
-    std::cout << "============ status: " << status << std::endl;
-    if ((0 < status) && (static_cast<size_t>(status) < (g_lineLength-1)))
-    {
-        std::cout << buf << std::endl;
-    }
-    else
-    {
-        std::cerr << "Failed to log -- insufficient buffer, needs: " << status << " bytes." << std::endl;
-    }
-}
-
-inline void TestLogError(const char* log)
-{
-    std::cerr << log << std::endl;
-}
-
-inline void TestLogError(const char* format, const char* args...)
-{
-    char buf[g_lineLength] = {0};
-    std::snprintf(buf, g_lineLength, format, args);
-    std::cerr << buf << std::endl;
-}
+#define TestLogInfo(format, ...) printf(format, ##__VA_ARGS__); std::cout << std::endl
+#define TestLogError(format, ...) fprintf(stderr, format, ##__VA_ARGS__); std::cerr << std::endl
 
 #endif // MODULESTESTCOMMON_H
