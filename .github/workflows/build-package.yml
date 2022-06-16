@@ -74,7 +74,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ inputs.build-type }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
@@ -89,6 +89,13 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.container-workspace }}/build
           cmd: cpack -G DEB
+
+      - name: Binary footprint delta validation
+        uses: ./.github/actions/footprint-check
+        with:
+          allowedDelta: 10
+          distroName: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
 
       - uses: actions/upload-artifact@v2
         with:

@@ -1,0 +1,65 @@
+name: Footprint check
+description: Checks built binary footprint size against a delta threshold
+
+inputs:
+  allowedDelta:
+    description: The allowed delta expressed in %, workflow will fail if the delta is greater than this value
+    required: true
+  distroName:
+    description: The distribution name
+    required: true
+  arch:
+    description: The architecture of the binary
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Normalize the distronames + architectures to match the published packages
+    # Published architectures: [amd64, arm64, armv]
+    # Built architectures:     [x86_64, aarch64, armv7l]
+    - name: Normalize distribution + architecture naming
+      id: normalize-distro-arch
+      run: |
+        distroName=${{ inputs.distroName }}
+        arch=${{ inputs.arch }}
+
+        # Normalize distro name
+        case $distroName in
+          ("ubuntu18.04") distroName="ubuntu-18.04";;
+          ("ubuntu20.04") distroName="ubuntu-20.04";;
+          ("debian9")     distroName="debian-9";;
+        esac
+
+        # Normalize architecture
+        case $arch in
+          ("amd64") arch="x86_64";;
+          ("arm64") arch="aarch64";;
+          ("arm")   arch="armv7l";;
+        esac
+
+        echo ::set-output name=distroName::${distroName}
+        echo ::set-output name=arch::${arch}
+      shell: bash
+
+    - name: Footprint delta validation
+      run: |
+        # Get footprint size
+        target=`jq '.[] | select(.distro=="${{ steps.normalize-distro-arch.outputs.distroName }}" and .arch=="${{ steps.normalize-distro-arch.outputs.arch }}" )' ${{ github.workspace }}/devops/binary-footprint-baseline/baseline.json`
+        echo "Using Target JSON: `echo $target | jq .`"
+        remoteSize=`echo $target | jq .sizeBytes | tr -d \"`
+
+        # Get local file
+        file=$(find ./build -name "*.deb" | head -n 1)
+        echo Using $file
+        localSize=$(wc -c $file | awk '{print $1}')
+
+        delta=$(bc -l <<< "remote=$remoteSize;local=$localSize;delta=local/remote;print delta;")
+        echo Local: $localSize, Remote: $remoteSize, Delta: $delta
+
+        # Check if the delta is greater than defined threshold
+        result=`bc -l <<< "delta=$delta;high=1+(0.${{ inputs.allowedDelta }});low=1-(0.${{ inputs.allowedDelta }});if(high > delta && delta > low) print 0 else print 1;"`
+        if [ "$result" == 1 ]; then
+          echo "::error Binary footprint validation failed. Delta: $delta" && exit 1
+        fi
+      shell: bash
