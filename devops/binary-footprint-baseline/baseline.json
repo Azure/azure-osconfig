@@ -1,0 +1,56 @@
+[
+  {
+    "distro": "ubuntu-18.04",
+    "arch": "x86_64",
+    "sizeBytes": 1772612,
+    "file": "osconfig_1.0.3.2022061601_bionic_x86_64.deb"
+  },
+  {
+    "distro": "ubuntu-18.04",
+    "arch": "aarch64",
+    "sizeBytes": 1711064,
+    "file": "osconfig_1.0.3.2022061601_bionic_aarch64.deb"
+  },
+  {
+    "distro": "ubuntu-18.04",
+    "arch": "armv7l",
+    "sizeBytes": 1553622,
+    "file": "osconfig_1.0.3.2022061601_bionic_armv7l.deb"
+  },
+  {
+    "distro": "ubuntu-20.04",
+    "arch": "x86_64",
+    "sizeBytes": 1873928,
+    "file": "osconfig_1.0.3.2022061601_focal_x86_64.deb"
+  },
+  {
+    "distro": "ubuntu-20.04",
+    "arch": "aarch64",
+    "sizeBytes": 1939420,
+    "file": "osconfig_1.0.3.2022061601_focal_aarch64.deb"
+  },
+  {
+    "distro": "ubuntu-20.04",
+    "arch": "armv7l",
+    "sizeBytes": 1753084,
+    "file": "osconfig_1.0.3.2022061601_focal_armv7l.deb"
+  },
+  {
+    "distro": "debian-9",
+    "arch": "x86_64",
+    "sizeBytes": 1872506,
+    "file": "osconfig_1.0.3.2022061601_stretch_x86_64.deb"
+  },
+  {
+    "distro": "debian-9",
+    "arch": "aarch64",
+    "sizeBytes": 1766474,
+    "file": "osconfig_1.0.3.2022061601_stretch_aarch64.deb"
+  },
+  {
+    "distro": "debian-9",
+    "arch": "armv7l",
+    "sizeBytes": 1632330,
+    "file": "osconfig_1.0.3.2022061601_stretch_armv7l.deb"
+  }
+]
