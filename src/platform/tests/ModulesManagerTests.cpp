@@ -73,17 +73,17 @@ namespace Tests
         ASSERT_EQ(MPI_OK, m_mpiSession->Set(m_defaultComponent, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiSet_InvalidComponentName)
+    TEST_F(ModuleManagerTests, MpiSetInvalidComponentName)
     {
         ASSERT_EQ(EINVAL, m_mpiSession->Set(nullptr, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiSet_InvalidObjectName)
+    TEST_F(ModuleManagerTests, MpiSetInvalidObjectName)
     {
         ASSERT_EQ(EINVAL, m_mpiSession->Set(m_defaultComponent, nullptr, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(ModuleManagerTests, MpiSet_InvalidPayload)
+    TEST_F(ModuleManagerTests, MpiSetInvalidPayload)
     {
         ASSERT_EQ(EINVAL, m_mpiSession->Set(m_defaultComponent, m_defaultObject, nullptr, 0));
     }
@@ -101,7 +101,7 @@ namespace Tests
         EXPECT_EQ(strlen(expected), payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGet_InvalidComponentName)
+    TEST_F(ModuleManagerTests, MpiGetInvalidComponentName)
     {
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -111,7 +111,7 @@ namespace Tests
         EXPECT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGet_InvalidObjectName)
+    TEST_F(ModuleManagerTests, MpiGetInvalidObjectName)
     {
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -121,7 +121,7 @@ namespace Tests
         EXPECT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGet_InvalidPayload)
+    TEST_F(ModuleManagerTests, MpiGetInvalidPayload)
     {
         int payloadSizeBytes = 0;
 
@@ -129,7 +129,7 @@ namespace Tests
         EXPECT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGet_InvalidPayloadSize)
+    TEST_F(ModuleManagerTests, MpiGetInvalidPayloadSize)
     {
         MMI_JSON_STRING payload = nullptr;
 
@@ -159,7 +159,7 @@ namespace Tests
         ASSERT_EQ(MPI_OK, mpiSession->SetDesired(payload, strlen(payload)));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDesired_MultipleComponents)
+    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleComponents)
     {
         const char componentName_1[] = "component_1";
         const char componentName_2[] = "component_2";
@@ -192,7 +192,7 @@ namespace Tests
         ASSERT_EQ(MPI_OK, mpiSession->SetDesired(payload, strlen(payload)));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDesired_MultipleObjects)
+    TEST_F(ModuleManagerTests, MpiSetDesiredMultipleObjects)
     {
         const char componentName[] = "component";
         const char objectName_1[] = "object_1";
@@ -219,13 +219,13 @@ namespace Tests
         EXPECT_EQ(MPI_OK, mpiSession->SetDesired(payload, strlen(payload)));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonPayload)
+    TEST_F(ModuleManagerTests, MpiSetDesiredInvalidJsonPayload)
     {
         char invalid[] = "invalid";
         EXPECT_EQ(EINVAL, m_mpiSession->SetDesired(invalid, strlen(invalid)));
     }
 
-    TEST_F(ModuleManagerTests, MpiSetDesired_InvalidJsonSchema)
+    TEST_F(ModuleManagerTests, MpiSetDesiredInvalidJsonSchema)
     {
         char invalid[] = R""""([
             {
@@ -267,7 +267,7 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(expected, actual));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReported_MultipleComponents)
+    TEST_F(ModuleManagerTests, MpiGetReportedMultipleComponents)
     {
         const char componentName_1[] = "component_1";
         const char componentName_2[] = "component_2";
@@ -307,7 +307,7 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(expected, actual));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReported_MultipleObjects)
+    TEST_F(ModuleManagerTests, MpiGetReportedMultipleObjects)
     {
         const char componentName[] = "component";
         const char objectName_1[] = "object_1";
@@ -342,7 +342,7 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(expected, actual));
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReported_InvalidPayload)
+    TEST_F(ModuleManagerTests, MpiGetReportedInvalidPayload)
     {
         int payloadSizeBytes = 0;
 
@@ -350,7 +350,7 @@ namespace Tests
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(ModuleManagerTests, MpiGetReported_InvalidPayloadSizeBytes)
+    TEST_F(ModuleManagerTests, MpiGetReportedInvalidPayloadSizeBytes)
     {
         MPI_JSON_STRING payload = nullptr;
 
@@ -376,7 +376,7 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(emptyPayload, actual));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_SingleReported)
+    TEST_F(ModuleManagerTests, LoadModulesSingleReported)
     {
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -393,7 +393,7 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(g_singleObjectPayload, actual));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_MultipleReported)
+    TEST_F(ModuleManagerTests, LoadModulesMultipleReported)
     {
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -410,17 +410,17 @@ namespace Tests
         EXPECT_TRUE(JSON_EQ(g_multipleObjectsPayload, actual));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_InvalidDirectory)
+    TEST_F(ModuleManagerTests, LoadModulesInvalidDirectory)
     {
         ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules("/invalid/path", g_configJsonNoneReported));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_InvalidConfigPath)
+    TEST_F(ModuleManagerTests, LoadModulesInvalidConfigPath)
     {
         ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules(g_moduleDir, "/invalid/path/config.json"));
     }
 
-    TEST_F(ModuleManagerTests, LoadModules_InvalidConfig)
+    TEST_F(ModuleManagerTests, LoadModulesInvalidConfig)
     {
         ASSERT_EQ(EINVAL, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonInvalid));
     }

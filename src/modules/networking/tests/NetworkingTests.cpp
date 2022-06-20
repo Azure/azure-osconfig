@@ -165,7 +165,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_Success_Mangled_Names)
+    TEST(NetworkingTests, GetSuccessMangledNames)
     {
         const char* payloadExpected =
             "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
@@ -206,7 +206,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_InterfaceTypes)
+    TEST(NetworkingTests, GetInterfaceTypes)
     {
         const char* payloadInterfaceTypesDataMissing =
             "{\"interfaceTypes\":\"\","
@@ -299,7 +299,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_DnsServers)
+    TEST(NetworkingTests, GetDnsServers)
     {
         const char* payloadExpected =
             "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
@@ -530,7 +530,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_Success_Multiple_Calls)
+    TEST(NetworkingTests, GetSuccessMultipleCalls)
     {
         const char* payloadExpected =
             "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
@@ -594,7 +594,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_Success_EmptyData_InterfaceNames)
+    TEST(NetworkingTests, GetSuccessEmptyDataInterfaceNames)
     {
         const char* payloadExpected =
             "{\"interfaceTypes\":\"\","
@@ -623,7 +623,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
-    TEST(NetworkingTests, Get_Success_EmptyData_Eth0)
+    TEST(NetworkingTests, GetSuccessEmptyDataEth0)
     {
         const char* payloadExpected =
             "{\"interfaceTypes\":\"docker0=bridge\","

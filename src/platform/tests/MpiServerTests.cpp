@@ -103,7 +103,7 @@ namespace Tests
         MockCallMpiGetReported
     };
 
-    TEST_F(MpiServerTests, HandleMpiRequest_InvalidRequest)
+    TEST_F(MpiServerTests, HandleMpiRequestInvalidRequest)
     {
         char* response = nullptr;
         int responseSize = 0;
@@ -129,7 +129,7 @@ namespace Tests
         FREE_MEMORY(response);
     }
 
-    TEST_F(MpiServerTests, MpiOpenRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiOpenRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"MaxPayloadSizeBytes\": 0}",
@@ -167,7 +167,7 @@ namespace Tests
         FREE_MEMORY(response);
     }
 
-    TEST_F(MpiServerTests, MpiCloseRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiCloseRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"ClientSession\": 123}",
@@ -186,7 +186,7 @@ namespace Tests
         }
     }
 
-    TEST_F(MpiServerTests, MpiSetRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiSetRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}",
@@ -210,7 +210,7 @@ namespace Tests
         }
     }
 
-    TEST_F(MpiServerTests, MpiGetRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiGetRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"ClientSession\": 123, \"ComponentName\": \"\", \"ObjectName\": \"\"}",
@@ -232,7 +232,7 @@ namespace Tests
         }
     }
 
-    TEST_F(MpiServerTests, MpiSetDesiredRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiSetDesiredRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"ClientSession\": 123, \"Payload\": {}}",
@@ -252,7 +252,7 @@ namespace Tests
         }
     }
 
-    TEST_F(MpiServerTests, MpiGetReportedRequest_InvalidRequestBody)
+    TEST_F(MpiServerTests, MpiGetReportedRequestInvalidRequestBody)
     {
         std::vector<std::string> requests = {
             "{\"ClientSession\": 123}",
