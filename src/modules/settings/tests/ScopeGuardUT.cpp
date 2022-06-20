@@ -43,7 +43,7 @@ TEST(ScopeGuard, MultipleScopes)
     EXPECT_EQ(test, 1);
 }
 
-TEST(Scope, DismissMultipleScopes)
+TEST(ScopeGuard, DismissMultipleScopes)
 {
     int test = 0;
     {

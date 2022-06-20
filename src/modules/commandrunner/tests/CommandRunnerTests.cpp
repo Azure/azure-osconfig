@@ -20,6 +20,9 @@ namespace Tests
         static const char m_desiredObject[];
         static const char m_reportedObject[];
 
+        static const std::string m_id;
+        std::shared_ptr<Command> m_command;
+
         void SetUp() override;
         void TearDown() override;
 
@@ -30,14 +33,19 @@ namespace Tests
     const char CommandRunnerTests::m_desiredObject[] = "commandArguments";
     const char CommandRunnerTests::m_reportedObject[] = "commandStatus";
 
+    const std::string CommandRunnerTests::m_id = "CommandTest_Id";
+
     void CommandRunnerTests::SetUp()
     {
-        this->m_commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
+        m_commandRunner = std::make_shared<CommandRunner>("CommandRunner_Test_Client", 0, false);
+        m_command = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        EXPECT_STREQ(m_id.c_str(), this->m_command->GetId().c_str());
     }
 
     void CommandRunnerTests::TearDown()
     {
-        this->m_commandRunner.reset();
+        m_commandRunner.reset();
+        m_command.reset();
     }
 
     std::string CommandRunnerTests::Id()
@@ -46,7 +54,7 @@ namespace Tests
         return std::to_string(id++);
     }
 
-    TEST_F(CommandRunnerTests, Set_InvalidComponent)
+    TEST_F(CommandRunnerTests, SetInvalidComponent)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
@@ -57,7 +65,7 @@ namespace Tests
         EXPECT_EQ(EINVAL, m_commandRunner->Set(m_reportedObject, m_desiredObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
     }
 
-    TEST_F(CommandRunnerTests, Set_InvalidObject)
+    TEST_F(CommandRunnerTests, SetInvalidObject)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
@@ -68,13 +76,13 @@ namespace Tests
         EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_reportedObject, (MMI_JSON_STRING)(desiredPayload.c_str()), desiredPayload.size()));
     }
 
-    TEST_F(CommandRunnerTests, Set_InvalidPayload)
+    TEST_F(CommandRunnerTests, SetInvalidPayload)
     {
         std::string invalidPayload = "InvalidPayload";
         EXPECT_EQ(EINVAL, m_commandRunner->Set(m_component, m_desiredObject, (MMI_JSON_STRING)(invalidPayload.c_str()), invalidPayload.size()));
     }
 
-    TEST_F(CommandRunnerTests, Get_InvalidComponent)
+    TEST_F(CommandRunnerTests, GetInvalidComponent)
     {
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -84,7 +92,7 @@ namespace Tests
         EXPECT_EQ(EINVAL, m_commandRunner->Get(m_reportedObject, m_reportedObject, &payload, &payloadSizeBytes));
     }
 
-    TEST_F(CommandRunnerTests, Get_InvalidObject)
+    TEST_F(CommandRunnerTests, GetInvalidObject)
     {
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -94,7 +102,7 @@ namespace Tests
         EXPECT_EQ(EINVAL, m_commandRunner->Get(m_component, m_desiredObject, &payload, &payloadSizeBytes));
     }
 
-    TEST_F(CommandRunnerTests, Get_InvalidPayload)
+    TEST_F(CommandRunnerTests, GetInvalidPayload)
     {
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
@@ -121,7 +129,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST_F(CommandRunnerTests, RunCommand_Timeout)
+    TEST_F(CommandRunnerTests, RunCommandTimeout)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 1, false);
@@ -139,7 +147,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST_F(CommandRunnerTests, RunCommand_SingleLineTextResult)
+    TEST_F(CommandRunnerTests, RunCommandSingleLineTextResult)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'single\nline'", Command::Action::RunCommand, 0, true);
@@ -157,7 +165,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST_F(CommandRunnerTests, RunCommand_LimitedPayloadSize)
+    TEST_F(CommandRunnerTests, RunCommandLimitedPayloadSize)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "echo 'hello world'", Command::Action::RunCommand, 0, false);
@@ -184,7 +192,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST_F(CommandRunnerTests, RunCommand_MaximumCacheSize)
+    TEST_F(CommandRunnerTests, RunCommandMaximumCacheSize)
     {
         std::vector<std::pair<std::string, Command::Status>> expectedResults;
 
@@ -339,4 +347,146 @@ namespace Tests
         EXPECT_EQ(MMI_OK, m_commandRunner->Get(m_component, m_reportedObject, &reportedPayload, &payloadSizeBytes));
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status), std::string(reportedPayload, payloadSizeBytes)));
     }
+
+    TEST_F(CommandRunnerTests, ExecuteCommand)
+    {
+        EXPECT_EQ(0, m_command->Execute(0));
+
+        Command::Status status = m_command->GetStatus();
+        EXPECT_STREQ(m_id.c_str(), status.m_id.c_str());
+        EXPECT_EQ(0, status.m_exitCode);
+        EXPECT_STREQ("test\n", status.m_textResult.c_str());
+        EXPECT_EQ(Command::State::Succeeded, status.m_state);
+    }
+
+    TEST_F(CommandRunnerTests, CancelCommand)
+    {
+        EXPECT_EQ(0, m_command->Cancel());
+        EXPECT_TRUE(m_command->IsCanceled());
+        EXPECT_EQ(ECANCELED, m_command->Cancel());
+        EXPECT_EQ(ECANCELED, m_command->Execute(0));
+    }
+
+    TEST_F(CommandRunnerTests, CommandStatus)
+    {
+        Command::Status defaultStatus = m_command->GetStatus();
+        EXPECT_STREQ(m_id.c_str(), defaultStatus.m_id.c_str());
+        EXPECT_EQ(0, defaultStatus.m_exitCode);
+        EXPECT_STREQ("", defaultStatus.m_textResult.c_str());
+        EXPECT_EQ(Command::State::Unknown, defaultStatus.m_state);
+
+        m_command->SetStatus(EXIT_SUCCESS);
+        EXPECT_EQ(EXIT_SUCCESS, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Succeeded, m_command->GetStatus().m_state);
+
+        m_command->SetStatus(ECANCELED);
+        EXPECT_EQ(ECANCELED, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Canceled, m_command->GetStatus().m_state);
+
+        m_command->SetStatus(ETIME);
+        EXPECT_EQ(ETIME, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::TimedOut, m_command->GetStatus().m_state);
+
+        m_command->SetStatus(-1);
+        EXPECT_EQ(-1, m_command->GetStatus().m_exitCode);
+        EXPECT_EQ(Command::State::Failed, m_command->GetStatus().m_state);
+
+        m_command->SetStatus(EXIT_SUCCESS, "test");
+        EXPECT_STREQ("test", m_command->GetStatus().m_textResult.c_str());
+        EXPECT_EQ(Command::State::Succeeded, m_command->GetStatus().m_state);
+    }
+
+    TEST_F(CommandRunnerTests, CommandEquality)
+    {
+        std::shared_ptr<Command> command1 = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        std::shared_ptr<Command> command2 = std::make_shared<Command>(m_id, "echo 'test'", 0, false);
+        std::shared_ptr<Command> command3 = std::make_shared<Command>(m_id, "echo 'test2'", 0, false);
+        std::shared_ptr<Command> command4 = std::make_shared<Command>(m_id, "echo 'test'", 1, false);
+        std::shared_ptr<Command> command5 = std::make_shared<Command>(m_id, "echo 'test'", 0, true);
+
+        EXPECT_TRUE(*command1 == *command2);
+        EXPECT_FALSE(*command1 == *command3);
+        EXPECT_FALSE(*command1 == *command4);
+        EXPECT_FALSE(*command1 == *command5);
+    }
+
+    TEST(CommandArgumentsTests, DeserializeCommandStatus)
+    {
+        const std::string json = R"""({
+            "commandId": "id",
+            "arguments": "echo 'hello world'",
+            "action": 3,
+            "timeout": 123,
+            "singleLineTextResult": true
+        })""";
+
+        rapidjson::Document document;
+        document.Parse(json.c_str());
+        EXPECT_FALSE(document.HasParseError());
+
+        Command::Arguments arguments = Command::Arguments::Deserialize(document);
+
+        EXPECT_EQ("id", arguments.m_id);
+        EXPECT_EQ("echo 'hello world'", arguments.m_arguments);
+        EXPECT_EQ(Command::Action::RunCommand, arguments.m_action);
+        EXPECT_EQ(123, arguments.m_timeout);
+        EXPECT_TRUE(arguments.m_singleLineTextResult);
+    }
+
+    TEST(CommandRunnerTests, Serialize)
+    {
+        Command::Status status("id", 123, "text result...", Command::State::Succeeded);
+
+        const std::string expected = R"""({
+            "commandId": "id",
+            "resultCode": 123,
+            "textResult": "text result...",
+            "currentState": 2
+        })""";
+
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        Command::Status::Serialize(writer, status);
+
+        EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
+    }
+
+    TEST(CommandRunnerTests, SerializeSkipTextResult)
+    {
+        Command::Status status("id", 123, "text result...", Command::State::Succeeded);
+
+        const std::string expected = R"""({
+            "commandId": "id",
+            "resultCode": 123,
+            "currentState": 2
+        })""";
+
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        Command::Status::Serialize(writer, status, false);
+
+        EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
+    }
+
+    TEST(CommandRunnerTests, Deserialize)
+    {
+        const std::string json = R"""({
+            "commandId": "id",
+            "resultCode": 123,
+            "textResult": "text result...",
+            "currentState": 2
+        })""";
+
+        rapidjson::Document document;
+        document.Parse(json.c_str());
+
+        Command::Status status = Command::Status::Deserialize(document);
+
+        EXPECT_EQ("id", status.m_id);
+        EXPECT_EQ(123, status.m_exitCode);
+        EXPECT_EQ("text result...", status.m_textResult);
+        EXPECT_EQ(Command::State::Succeeded, status.m_state);
+    }
+
+
 } // namespace Tests

@@ -64,32 +64,32 @@ namespace Tests
         MpiClose(handle2);
     }
 
-    TEST_F(MpiTests, MpiOpen_InvalidClientName)
+    TEST_F(MpiTests, MpiOpenInvalidClientName)
     {
         ASSERT_EQ(nullptr, MpiOpen(nullptr, 0));
     }
 
-    TEST_F(MpiTests, MpiSet_InvalidClientSession)
+    TEST_F(MpiTests, MpiSetInvalidClientSession)
     {
         ASSERT_EQ(EINVAL, MpiSet(nullptr, m_defaultComponent, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(MpiTests, MpiSet_InvalidComponentName)
+    TEST_F(MpiTests, MpiSetInvalidComponentName)
     {
         ASSERT_EQ(EINVAL, MpiSet(m_handle, nullptr, m_defaultObject, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(MpiTests, MpiSet_InvalidObjectName)
+    TEST_F(MpiTests, MpiSetInvalidObjectName)
     {
         ASSERT_EQ(EINVAL, MpiSet(m_handle, m_defaultComponent, nullptr, m_defaultPayload, m_defaultPayloadSize));
     }
 
-    TEST_F(MpiTests, MpiSet_InvalidPayload)
+    TEST_F(MpiTests, MpiSetInvalidPayload)
     {
         ASSERT_EQ(EINVAL, MpiSet(m_handle, m_defaultComponent, m_defaultObject, nullptr, 1));
     }
 
-    TEST_F(MpiTests, MpiGet_InvalidClientSession)
+    TEST_F(MpiTests, MpiGetInvalidClientSession)
     {
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -98,7 +98,7 @@ namespace Tests
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(MpiTests, MpiGet_InvalidComponentName)
+    TEST_F(MpiTests, MpiGetInvalidComponentName)
     {
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -108,7 +108,7 @@ namespace Tests
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(MpiTests, MpiGet_InvalidObjectName)
+    TEST_F(MpiTests, MpiGetInvalidObjectName)
     {
         int payloadSizeBytes = 0;
         MMI_JSON_STRING payload = nullptr;
@@ -117,7 +117,7 @@ namespace Tests
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(MpiTests, MpiGet_InvalidPayload)
+    TEST_F(MpiTests, MpiGetInvalidPayload)
     {
         int payloadSizeBytes = 0;
 
@@ -125,7 +125,7 @@ namespace Tests
         ASSERT_EQ(0, payloadSizeBytes);
     }
 
-    TEST_F(MpiTests, MpiGet_InvalidPayloadSizeBytes)
+    TEST_F(MpiTests, MpiGetInvalidPayloadSizeBytes)
     {
         MMI_JSON_STRING payload = nullptr;
 
@@ -133,7 +133,7 @@ namespace Tests
         ASSERT_EQ(nullptr, payload);
     }
 
-    TEST_F(MpiTests, MpiSetDesired_InvalidHandle)
+    TEST_F(MpiTests, MpiSetDesiredInvalidHandle)
     {
         char payload[] = R"""({
             "component": {
@@ -145,7 +145,7 @@ namespace Tests
         ASSERT_EQ(EINVAL, MpiSetDesired(nullptr, payload, payloadSizeBytes));
     }
 
-    TEST_F(MpiTests, MpiGetReported_InvalidHandle)
+    TEST_F(MpiTests, MpiGetReportedInvalidHandle)
     {
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
