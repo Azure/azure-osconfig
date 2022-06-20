@@ -286,7 +286,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(Command::Status::Serialize(status1), std::string(reportedPayload, payloadSizeBytes)));
     }
 
-    TEST_F(CommandRunnerTests, CancelCommand)
+    TEST_F(CommandRunnerTests, CancelCommandInProgress)
     {
         std::string id = Id();
         Command::Arguments arguments(id, "sleep 10s", Command::Action::RunCommand, 0, false);
@@ -410,7 +410,7 @@ namespace Tests
         EXPECT_FALSE(*command1 == *command5);
     }
 
-    TEST(CommandArgumentsTests, DeserializeCommandStatus)
+    TEST_F(CommandRunnerTests, DeserializeCommandStatus)
     {
         const std::string json = R"""({
             "commandId": "id",
@@ -433,7 +433,7 @@ namespace Tests
         EXPECT_TRUE(arguments.m_singleLineTextResult);
     }
 
-    TEST(CommandRunnerTests, Serialize)
+    TEST_F(CommandRunnerTests, Serialize)
     {
         Command::Status status("id", 123, "text result...", Command::State::Succeeded);
 
@@ -451,7 +451,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
     }
 
-    TEST(CommandRunnerTests, SerializeSkipTextResult)
+    TEST_F(CommandRunnerTests, SerializeSkipTextResult)
     {
         Command::Status status("id", 123, "text result...", Command::State::Succeeded);
 
@@ -468,7 +468,7 @@ namespace Tests
         EXPECT_TRUE(IsJsonEq(expected, buffer.GetString()));
     }
 
-    TEST(CommandRunnerTests, Deserialize)
+    TEST_F(CommandRunnerTests, Deserialize)
     {
         const std::string json = R"""({
             "commandId": "id",
