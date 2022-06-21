@@ -1,16 +1,24 @@
 # Local testing - must create a SP and plumb client_id/client_secret below using scripts/create-sp-terraform.sh
 variable "client_id" {}
 variable "client_secret" {}
+variable "cloud_init" {}
+variable "key_vault_id" {}
+variable "resource_group_name" {}
+variable "runner_token" {}
 variable "subscription_id" {}
 variable "tenant_id" {}
-variable "key_vault_id" {}
+
+# For making use of Azure Compute Gallery
+variable "image_name" {
+    default = ""
+}
+variable "gallery_name" {
+    default = ""
+}
+
 variable resource_group_name_prefix {
     default = "osconfig"
 }
-variable "runner_token" {}
-
-# Provided by iothub.tf outputs
-variable resource_group_name {}
 
 variable "vm_name" {
     default = "test-device"
@@ -34,10 +42,6 @@ variable "image_version" {
 
 variable "environment_tag" {
     default = "osconfig-e2etest"
-}
-
-variable "vm_script" {
-    default = ""
 }
 
 variable "vm_size" {
