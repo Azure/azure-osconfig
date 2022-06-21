@@ -34,14 +34,14 @@ data "azurerm_shared_image" "customimage" {
   resource_group_name = "osconfige2e-test-infra"
 }
 
-data template_file "cloudconfig" {
+data "template_file" "cloudconfig" {
   # Script relative to project root
   template = file("../../../${var.cloud_init}")
 
   vars = {
-    resource_group_name = var.resource_group_name
-    runner_token = var.runner_token
-    vm_name = var.vm_name
+    resource_group_name          = var.resource_group_name
+    runner_token                 = var.runner_token
+    vm_name                      = var.vm_name
     github_runner_tar_gz_package = var.github_runner_tar_gz_package
   }
 }
@@ -154,7 +154,7 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
     storage_account_type = "Standard_LRS"
   }
 
-  # Only works for Public Azure Marketplace images
+  # source_image_reference only works for public Azure Marketplace images
   # Must use source_image_id for private images
   # see https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/shared_image
   dynamic "source_image_reference" {
@@ -166,7 +166,7 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
       version   = var.image_version
     }
   }
-  source_image_id        = length(data.azurerm_shared_image.customimage) > 0 ? data.azurerm_shared_image.customimage[0].id : null
+  source_image_id = length(data.azurerm_shared_image.customimage) > 0 ? data.azurerm_shared_image.customimage[0].id : null
 
   computer_name                   = "myvm-${var.vm_name}"
   admin_username                  = "azureuser"
@@ -193,5 +193,5 @@ resource "azurerm_linux_virtual_machine" "osconfigvm" {
 }
 
 output "resource_group_name" {
-    value = var.resource_group_name
+  value = var.resource_group_name
 }
