@@ -71,11 +71,6 @@ jobs:
           sudo aziotctl config mp -c "${{ steps.hub-identity.outputs.device_conn_str }}" --force
           sudo aziotctl config apply
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: 5.0.x
-
       - name: Download OSConfig from package workflow (main)
         if: startsWith( steps.get-test-data.outputs.package_path, '*')
         uses: dawidd6/action-download-artifact@v2
@@ -118,6 +113,7 @@ jobs:
           E2E_OSCONFIG_DEVICE_ID: ${{ steps.get-test-data.outputs.device_id }}
           E2E_OSCONFIG_TWIN_TIMEOUT: ${{ secrets.TWIN_TIMEOUT }}
           E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ matrix.distroName }}
+          DOTNET_CLI_HOME: /tmp
         working-directory: ./src/tests/e2etest
         run: |
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"

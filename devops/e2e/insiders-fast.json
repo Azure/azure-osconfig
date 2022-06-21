@@ -10,15 +10,7 @@
         "location": "East US",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
-        "vm_script":
-        [
-            "curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list",
-            "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
-            "curl https://packages.microsoft.com/config/ubuntu/18.04/insiders-fast.list > ./microsoft-insiders-fast.list",
-            "sudo cp ./microsoft-insiders-fast.list /etc/apt/sources.list.d/",
-            "AZ_REPO=$(lsb_release -cs) && echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
-            "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
-        ]
+        "cloud_init": "devops/e2e/ubuntu-focal-cloud-init.tpl"
     },
     {
         "distroName": "ubuntu-18.04",
@@ -31,15 +23,7 @@
         "location": "East US",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
-        "vm_script":
-        [
-            "curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list",
-            "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
-            "curl https://packages.microsoft.com/config/ubuntu/18.04/insiders-fast.list > ./microsoft-insiders-fast.list",
-            "sudo cp ./microsoft-insiders-fast.list /etc/apt/sources.list.d/",
-            "AZ_REPO=$(lsb_release -cs) && echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
-            "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
-        ]
+        "cloud_init": "devops/e2e/ubuntu-bionic-cloud-init.tpl"
     },
     {
         "distroName": "ubuntu-20.04-arm64",
@@ -53,13 +37,18 @@
         "location": "West US 2",
         "test_filter": "TpmTest",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-arm64-2.291.1.tar.gz",
-        "vm_script":
-        [
-            "curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list",
-            "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
-            "curl https://packages.microsoft.com/config/ubuntu/18.04/insiders-fast.list > ./microsoft-insiders-fast.list",
-            "sudo cp ./microsoft-insiders-fast.list /etc/apt/sources.list.d/",
-            "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
-        ]
+        "cloud_init": "devops/e2e/ubuntu-focal-arm64-cloud-init.tpl"
+    },
+    {
+        "distroName": "debian-9",
+        "gallery_name": "osconfigvms",
+        "image_name": "debian_9",
+        "device_id": "debian9",
+        "package_path": "*stretch_x86_64",
+        "vm_size": "Standard_DS1_v2",
+        "location": "East US",
+        "test_filter": "TpmTest",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
+        "cloud_init": "devops/e2e/debian-stretch-cloud-init.tpl"
     }
 ]
