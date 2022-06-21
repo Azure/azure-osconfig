@@ -10,6 +10,7 @@ typedef std::shared_ptr<MimObjects> pMimObjects;
 
 struct TestRecipeMetadata
 {
+    std::string m_moduleName;
     std::string m_modulePath;
     std::string m_mimPath;
     std::string m_testRecipesPath;

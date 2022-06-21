@@ -27,7 +27,7 @@ while IFS= read -r line ;
   if [ ! -z "$recipepath" ] && [ ! -z "$mimpath" ]; then
     # Create entry if both mim+recipe are found
     echo "Found '$modulename' module adding to recipe configuration"
-    json="[{ \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
+    json="[{ \"ModuleName\": \"$modulename\", \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
     testJSON=$(echo $testJSON | jq --argjson testMetadata "$json" '. |= . + $testMetadata')
   fi
 done <<< $modules
