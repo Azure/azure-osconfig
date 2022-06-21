@@ -43,7 +43,7 @@
         "gallery_name": "osconfigvms",
         "image_name": "debian_9",
         "device_id": "debian9",
-        "package_path": "*stretch_x86_64",
+        "package_path": "*stretch_x86_64.deb",
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
