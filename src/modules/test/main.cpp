@@ -13,7 +13,7 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
-            "TestRecipes", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
+            "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
             [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
