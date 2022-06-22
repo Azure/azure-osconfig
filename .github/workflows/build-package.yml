@@ -55,7 +55,7 @@ jobs:
 
       - name: Set version
         id: version
-        run: echo "::set-output name=tweak::$(echo $(date +'%Y%m%d')${{ github.run_id }})"
+        run: echo "::set-output name=tweak::$(echo $(date +'%Y%m%d%H%M'))"
 
       - name: Run container
         id: container
