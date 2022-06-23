@@ -1,9 +1,9 @@
 {
-  "name": "OsConfigModel",
+  "name": "OsConfigConfigurationModel",
   "type": "MimModel",
   "contents": [
     {
-      "name": "OsConfig",
+      "name": "OsConfigConfiguration",
       "type": "mimComponent",
       "contents": [
         {
