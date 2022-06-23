@@ -13,10 +13,6 @@
           "schema": {
             "fields": [
               {
-                "name": "modelVersion",
-                "schema": "integer"
-              },
-              {
                 "name": "refreshInterval",
                 "schema": "integer"
               },
@@ -55,12 +51,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "modelVersion",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "integer"
         },
         {
           "name": "modelVersion",
