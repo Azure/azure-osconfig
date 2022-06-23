@@ -83,52 +83,22 @@
           "schema": "boolean"
         },
         {
-          "name": "protocol",
-          "type": "mimObject",
-          "desired": true,
+          "name": "iotHubProtocol",
           "schema": {
             "type": "enum",
-            "valueSchema": "integer",
-            "enumValues": [
-              { 
-                "name": "mqtt",
-                "enumValue": 0
-              },
-              {
-                "name": "refreshInterval",
-                "schema": "integer"
-              },
-              {
-                "name": "localManagementEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "fullLoggingEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "commandLoggingEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "iotHubProtocol",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "integer",
-                  "enumValues": [
-                    { 
-                      "name": "mqtt",
-                      "enumValue": 0
-                    },
-                    {
-                      "name": "mqttWebSocket",
-                      "enumValue": 1
-                    }
-                  ]
+              "valueSchema": "integer",
+              "enumValues": [
+                { 
+                  "name": "mqtt",
+                  "enumValue": 0
+                },
+                {
+                  "name": "mqttWebSocket",
+                  "enumValue": 1
                 }
-              }
-            ]
-          }  
+              ]
+            }
+          ]
         }
       ]
     }
