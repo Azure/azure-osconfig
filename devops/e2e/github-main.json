@@ -34,7 +34,7 @@
             "curl https://packages.microsoft.com/config/ubuntu/18.04/multiarch/prod.list > ./microsoft-prod.list",
             "sudo cp ./microsoft-prod.list /etc/apt/sources.list.d/",
             "AZ_REPO=$(lsb_release -cs) && echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
-            "sudo apt update -y && sudo apt install -y jq aziot-identity-service azure-cli"
+            "sudo apt update -y && sudo apt install -y sysstat jq aziot-identity-service azure-cli"
         ]
     },
     {

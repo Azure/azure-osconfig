@@ -14,6 +14,16 @@ on:
         description: The name of the target environment
         type: string
         required: true
+      cpuThreshold:
+        description: The cpu threshold
+        type: string
+        default: ""
+        required: false
+      memThreshold:
+        description: The memory threshold
+        type: string
+        default: ""
+        required: false
 
 jobs:
   run-tests:
@@ -32,7 +42,7 @@ jobs:
         run: |
           target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
           echo ::set-output name=device_id::$(echo $target | jq .device_id | tr -d \")
-          
+
           test_filter=$(echo $target | jq .test_filter | tr -d \")
           [[ "$test_filter" != "null" ]] && test_filter="--filter \"${test_filter}\"" || test_filter=""
           echo Using test filter: $test_filter
@@ -90,6 +100,17 @@ jobs:
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
+          sudo systemctl start osconfig-platform || true
+
+      - name: Start performance sampling
+        if: inputs.cpuThreshold != ''
+        run: |
+          # CPU
+          pidstat -p `pidof osconfig` 1 > perf-cpu-osconfig.log &
+          pidstat -p `pidof osconfig-platform` 1 > perf-cpu-osconfig-platform.log || true &
+          # Memory
+          pidstat -r -p `pidof osconfig` 1 > perf-mem-osconfig.log &
+          pidstat -r -p `pidof osconfig-platform` 1 > perf-mem-osconfig-platform.log || true &
 
       - name: Run E2E tests
         env:
@@ -98,14 +119,66 @@ jobs:
           E2E_OSCONFIG_TWIN_TIMEOUT: ${{ secrets.TWIN_TIMEOUT }}
           E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ matrix.distroName }}
         working-directory: ./src/tests/e2etest
-        run: | 
+        run: |
           dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+
+      - name: Stop performance sampling
+        if: inputs.cpuThreshold != ''
+        run: |
+          kill -SIGINT `pidof pidstat`
+
+      - name: Check performance results - Agent
+        if: inputs.cpuThreshold != ''
+        run: |
+          # CPU
+          tail perf-cpu-osconfig.log -n1
+          result=`tail perf-cpu-osconfig.log -n1 | cut -c62-68`
+          echo CPU result: $result
+          test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
+          # MEM
+          tail perf-mem-osconfig.log -n1
+          result=`tail perf-mem-osconfig.log -n1 | cut -c65-71`
+          echo MEM result: $result
+          test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
+
+      - name: Check performance results - Platform
+        if: inputs.cpuThreshold != '' && (success() || failure())
+        run: |
+          if [ -f perf-cpu-osconfig-platform.log ];then
+            # CPU
+            tail perf-cpu-osconfig-platform.log -n1
+            result=`tail perf-cpu-osconfig-platform.log -n1 | cut -c62-68`
+            echo CPU result: $result
+            test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
+            # MEM
+            tail perf-mem-osconfig-platform.log -n1
+            result=`tail perf-mem-osconfig-platform.log -n1 | cut -c65-71`
+            echo MEM result: $result
+            test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
+          else
+              echo "No platform performance results!"
+          fi          
+
+      - name: Upload performance Logs
+        if: inputs.cpuThreshold != '' && (success() || failure())
+        uses: actions/upload-artifact@v3
+        with:
+          name: perf-logs-${{ matrix.distroName }}
+          path: perf-*.log
 
       - name: Stage logs
         if: always()
-        run: | 
+        run: |
           sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
           sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+
+      - name: Check logs
+        if: success() || failure()
+        uses: ./.github/actions/check-logs
+        with:
+          logs: |
+            ${{ runner.temp }}/osconfig_pnp_agent.log
+            ${{ runner.temp }}/osconfig_platform.log
 
       - name: Upload OSConfig Logs
         if: always()

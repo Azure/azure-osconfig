@@ -7,47 +7,26 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "arguments",
+          "name": "logCollectorArguments",
           "type": "mimObject",
           "desired": false,
           "schema": {
             "fields": [
               {
-                "name": "azureStorageUri",
+                "name": "requestId",
                 "schema": "string"
               },
               {
-                "name": "sasToken",
+                "name": "destination",
                 "schema": "string"
               },
               {
-                "name": "logSelection",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "integer",
-                  "enumValues": [
-                    { 
-                      "name": "none",
-                      "enumValue": 0
-                    },
-                    {
-                      "name": "allOsConfigLogs",
-                      "enumValue": 1
-                    },
-                    {
-                      "name": "agentAndPlatformLogs",
-                      "enumValue": 2
-                    },
-                    {
-                      "name": "agentLogs",
-                      "enumValue": 3
-                    },
-                    {
-                      "name": "otherLogs",
-                      "enumValue": 4
-                    }
-                  ]
-                }
+                "name": "token",
+                "schema": "string"
+              },
+              {
+                "name": "osConfigDiagnosticData",
+                "schema": "boolean"
               },
               {
                 "name": "otherLogs",
@@ -60,28 +39,39 @@
           }
         },
         {
-          "name": "status",
+          "name": "logCollectorStatus",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": {
-            "type": "enum",
-            "valueSchema": "integer",
-            "enumValues": [
-              { 
-                "name": "unknown",
-                "enumValue": 0
+            "fields": [
+              {
+                "name": "requestId",
+                "schema": "string"
               },
               {
-                "name": "uploading",
-                "enumValue": 1
-              },
-              {
-                "name": "failed",
-                "enumValue": 2
-              },
-              {
-                "name": "succeeded",
-                "enumValue": 3
+                "name": "status",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "unknown",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "uploading",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "failed",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "succeeded",
+                      "enumValue": 3
+                    }
+                  ]
+                }
               }
             ]
           }

@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-include(GoogleTest)
 project(modulestest)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -15,8 +14,7 @@ target_link_libraries(testfactorylib
     parsonlib)
 
 target_include_directories(testfactorylib PUBLIC
-    ${MODULES_INC_DIR}
-    ${PLATFORM_INC_DIR})
+    ${MODULES_INC_DIR})
 
 add_executable(modulestest main.cpp)
 target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
@@ -36,11 +34,6 @@ else()
         COMMENT ${jq_error}
     )
 endif()
-
-gtest_discover_tests(modulestest
-    EXTRA_ARGS ${CMAKE_CURRENT_BINARY_DIR}/testplate.json
-    XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR}
-)
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
     target_link_libraries(modulestest stdc++fs)
