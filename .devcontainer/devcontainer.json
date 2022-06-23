@@ -8,7 +8,7 @@
 	"workspaceFolder": "/azure-osconfig",
 	"mounts": ["source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"],
 	"overrideCommand": true,
-	"postCreateCommand": "git submodule update --init --recursive && git config --global --add safe.directory /azure-osconfig",
+	"postCreateCommand": "git config --global --add safe.directory /azure-osconfig && git submodule update --init --recursive",
 	"extensions": [
 		"eamodio.gitlens",
 		"GitHub.copilot",

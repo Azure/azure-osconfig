@@ -58,20 +58,20 @@ namespace Tests
         EXPECT_EQ(ManagementModule::Lifetime::Short, info.lifetime);
     }
 
-    TEST_F(ManagementModuleTests, LoadModule_InvalidPath)
+    TEST_F(ManagementModuleTests, LoadModuleInvalidPath)
     {
         const std::string invalidPath = g_moduleDir;
         ManagementModule invalidModule(invalidPath + "/blah.so");
         EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
-    TEST_F(ManagementModuleTests, LoadModule_InvalidMmi)
+    TEST_F(ManagementModuleTests, LoadModuleInvalidMmi)
     {
         ManagementModule invalidModule(g_invalidModulePath);
         EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
-    TEST_F(ManagementModuleTests, LoadModule_InvalidModuleInfo)
+    TEST_F(ManagementModuleTests, LoadModuleInvalidModuleInfo)
     {
         ManagementModule invalidModule(g_invalidGetInfoModulePath);
         EXPECT_EQ(EINVAL, invalidModule.Load());

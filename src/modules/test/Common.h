@@ -17,6 +17,7 @@
 #include <parson.h>
 #include <rapidjson/document.h>
 #include <rapidjson/schema.h>
+#include <sstream>
 #include <string.h>
 #include <string>
 #include <thread>

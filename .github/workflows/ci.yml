@@ -42,6 +42,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.container-workspace }}
+          tag: "270554"
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -79,7 +80,8 @@ jobs:
             mkdir -p /etc/osconfig/
             ./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json
 
-      - uses: ./.github/actions/gtest-xml
+      - name: Generate test report
+        uses: ./.github/actions/gtest-xml
         if: success() || failure()
         with:
           path: ./build/gtest-output
@@ -91,7 +93,7 @@ jobs:
           name: unit-test
           path: ./${{ steps.test.outputs.xml }}
 
-      - name: Test Report
+      - name: Publish test report
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
@@ -103,7 +105,7 @@ jobs:
     name: Code coverage
     runs-on: ubuntu-latest
     container:
-      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:latest
+      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:270554
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}

@@ -21,24 +21,18 @@ RUN apt -y update && apt-get -y install \
     ninja-build\
     rapidjson-dev \
     uuid-dev \
-    wget \
-    \
-    # .NET dependencies
-    libc6 \
-    libgcc1 \
-    libgssapi-krb5-2 \
-    libicu66 \
-    libssl1.1 \
-    libstdc++6 \
-    zlib1g
+    wget
 
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
 
-# .NET Install~
-RUN curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 5.0
-ENV PATH="${PATH}:/root/.dotnet"
+# .NET Install
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
+    cp ./microsoft.gpg /etc/apt/trusted.gpg.d/ && \
+    curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > ./microsoft-prod.list && \
+    cp ./microsoft-prod.list /etc/apt/sources.list.d/ && \
+    apt update -y && apt install -y dotnet-sdk-6.0
 
 # ZSH
 ENV SHELL /bin/zsh

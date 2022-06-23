@@ -60,17 +60,26 @@ jobs:
           image_offer=`echo $target | jq .image_offer | tr -d \"`
           image_sku=`echo $target | jq .image_sku | tr -d \"`
           image_version=`echo $target | jq .image_version | tr -d \"`
+          image_name=`echo $target | jq .image_name | tr -d \"`
+          gallery_name=`echo $target | jq .gallery_name | tr -d \"`
           packagePattern=`echo $target | jq .packagePattern | tr -d \"`
           device_id=`echo $target | jq .device_id | tr -d \"`
           vm_size=`echo $target | jq .vm_size | tr -d \"`
           location=`echo $target | jq .location | tr -d \"`
           github_runner_tar_gz=`echo $target | jq .github_runner_tar_gz | tr -d \"`
-          vm_script=`echo $target | jq -r '.vm_script | join(" && ")'`
+          cloud_init=`echo $target | jq .cloud_init | tr -d \"`
 
           echo ::set-output name=device_id::$device_id
 
           terraform init
-          terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_size="$vm_size" -var location="$location" -var vm_script="$vm_script" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
+
+          if [[ "$gallery_name" != "null" ]]; then
+            echo Using compute gallery "$gallery_name"
+            terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_name="$image_name" -var gallery_name="$gallery_name" -var vm_size=$vm_size -var location="$location" -var cloud_init="$cloud_init" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
+          else
+            echo Using Azure Marketplace Image
+            terraform apply -var subscription_id="${{ secrets.SUBSCRIPTION_ID }}" -var tenant_id="${{ secrets.TENANT_ID }}" -var client_id="${{ secrets.CLIENT_ID }}" -var key_vault_id="${{ secrets.KEY_VAULT_ID }}" -var client_secret="${{ secrets.CLIENT_SECRET }}" -var resource_group_name="$rg" -var vm_name="$distroName" -var runner_token=${{ steps.runner_token.outputs.RUNNER_TOKEN }} -var image_offer=$image_offer -var image_publisher=$image_publisher -var image_sku=$image_sku -var image_version=$image_version -var vm_size=$vm_size -var location="$location" -var cloud_init="$cloud_init" -var github_runner_tar_gz_package="$github_runner_tar_gz" -auto-approve
+          fi
 
           runner=$rg-$distroName
           echo Created self-hosted runner "$runner"
@@ -82,9 +91,7 @@ jobs:
           
           # VM + IotHub provisioning happening in parallel - loop until the IoT Hub is available
           echo -n 'Creating Iot Hub Identity - ${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}'
-          function create_identity () { az iot hub device-identity create --device-id "${{ steps.provision-vm.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none; }
-          create_identity
-          while [ $? -ne 0 ]; do echo -n '.'; sleep 5s && create_identity; done
+          az iot hub device-identity create --device-id "${{ steps.provision-vm.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none;
 
           device_conn_str="`az iot hub device-identity connection-string show --hub-name ${{ inputs.resourceGroupName }}-iothub --device-id ${{ steps.provision-vm.outputs.device_id }} --output tsv`"
           echo '' && echo Adding to Key Vault
