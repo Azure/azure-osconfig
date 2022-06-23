@@ -48,6 +48,8 @@ namespace E2eTesting
                 {
                     RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
                 }
+
+                ValidateLocalReported(reported, _componentName);
             });
         }
     }

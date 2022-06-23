@@ -137,6 +137,7 @@ namespace E2eTesting
                 Assert.AreEqual(executionState, reported.ExecutionState);
                 Assert.AreEqual(executionSubState, reported.ExecutionSubstate);
                 Assert.AreEqual(executionSubStateDetails, reported.ExecutionSubstateDetails);
+                ValidateLocalReported(reported, _componentName, _reportedObjectName);
             });
         }
 
@@ -170,6 +171,7 @@ namespace E2eTesting
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.ExecutionSubstate);
                 Assert.AreEqual(invalidPackageName, reported.ExecutionSubstateDetails);
+                ValidateLocalReported(reported, _componentName, _reportedObjectName);
             });
         }
 
@@ -203,6 +205,7 @@ namespace E2eTesting
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.ExecutionSubstate);
                 Assert.AreEqual(_packageSourceName, reported.ExecutionSubstateDetails);
+                ValidateLocalReported(reported, _componentName, _reportedObjectName);
             });
         }
 
@@ -236,6 +239,7 @@ namespace E2eTesting
                 Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
                 Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.ExecutionSubstate);
                 Assert.AreEqual(_gpgKeyId, reported.ExecutionSubstateDetails);
+                ValidateLocalReported(reported, _componentName, _reportedObjectName);
             });
         }
     }

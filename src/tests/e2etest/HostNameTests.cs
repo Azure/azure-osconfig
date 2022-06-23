@@ -40,6 +40,7 @@ namespace E2eTesting
             {
                 RegexAssert.IsMatch(_namePattern, reported.Name);
                 RegexAssert.IsMatch(_hostsPattern, reported.Hosts);
+                ValidateLocalReported(reported, _componentName);
             });
         }
 
@@ -71,6 +72,7 @@ namespace E2eTesting
                 Assert.AreEqual(ACK_SUCCESS, desiredHostsTask.Result.Ac);
                 Assert.AreEqual(desired.DesiredName, reported.Name);
                 Assert.AreEqual(desired.DesiredHosts, reported.Hosts);
+                ValidateLocalReported(reported, _componentName);
             });
         }
     }

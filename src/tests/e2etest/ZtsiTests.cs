@@ -98,6 +98,7 @@ namespace E2eTesting
                 var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => ((ztsi.ServiceUrl == expectedServiceUrl) && (ztsi.Enabled == expectedEnabled)));
                 reportedTask.Wait();
                 var reportedConfiguration = reportedTask.Result;
+                ValidateLocalReported(reportedConfiguration, _componentName);
 
                 return (reportedConfiguration.ServiceUrl, reportedConfiguration.Enabled);
             }
@@ -114,6 +115,7 @@ namespace E2eTesting
             {
                 var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.ServiceUrl == expectedServiceUrl));
                 reportedTask.Wait();
+                ValidateLocalReported(reportedTask.Result, _componentName);
                 return reportedTask.Result.ServiceUrl;
             }
             catch (Exception e)
@@ -129,6 +131,7 @@ namespace E2eTesting
             {
                 var reportedTask = GetReported<Ztsi>(_componentName, (Ztsi ztsi) => (ztsi.Enabled == expectedEnabled));
                 reportedTask.Wait();
+                ValidateLocalReported(reportedTask.Result, _componentName);
                 return reportedTask.Result.Enabled;
             }
             catch (Exception e)

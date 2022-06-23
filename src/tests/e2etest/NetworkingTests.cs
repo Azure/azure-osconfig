@@ -110,6 +110,7 @@ namespace E2eTesting
                 NetworkPropertyPatternMatch(_statePattern, reported.Enabled);
                 // connected
                 NetworkPropertyPatternMatch(_statePattern, reported.Connected);
+                ValidateLocalReported(reported, _componentName, _reportedPropertyName);
             });
         }
     }

@@ -3,6 +3,7 @@
 
 using NUnit.Framework;
 using System;
+using System.Xml.Serialization;
 
 namespace E2eTesting
 {
@@ -35,24 +36,19 @@ namespace E2eTesting
 
         public class CommandArguments
         {
-            public string CommandId { get; set; }
-            public string Arguments { get; set; }
-            public Action Action { get; set; }
-            public int Timeout { get; set; }
-            public bool SingleLineTextResult { get; set; }
+            public string commandId { get; set; }
+            public string arguments { get; set; }
+            public Action action { get; set; }
+            public int timeout { get; set; }
+            public bool singleLineTextResult { get; set; }
         }
 
         public class CommandStatus
         {
-            public string CommandId { get; set; }
-            public long ResultCode { get; set; }
-            public string TextResult { get; set; }
-            public CommandState CurrentState { get; set; }
-        }
-
-        public static string GenerateId()
-        {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
+            public string commandId { get; set; }
+            public long resultCode { get; set; }
+            public string textResult { get; set; }
+            public CommandState currentState { get; set; }
         }
 
         public static CommandArguments CreateCommand(string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLineTextResult = false)
@@ -64,11 +60,11 @@ namespace E2eTesting
         {
             return new CommandArguments
             {
-                CommandId = newCommandId,
-                Arguments = newArguments,
-                Action = newAction,
-                Timeout = newTimeout,
-                SingleLineTextResult = newSingleLinetextResult
+                commandId = newCommandId,
+                arguments = newArguments,
+                action = newAction,
+                timeout = newTimeout,
+                singleLineTextResult = newSingleLinetextResult
             };
         }
 
@@ -76,10 +72,10 @@ namespace E2eTesting
         {
             return new CommandArguments
             {
-                CommandId = newCommandId,
-                Arguments = "sleep 1000s",
-                Action = Action.RunCommand,
-                Timeout = newTimeout
+                commandId = newCommandId,
+                arguments = "sleep 1000s",
+                action = Action.RunCommand,
+                timeout = newTimeout
             };
         }
 
@@ -87,10 +83,10 @@ namespace E2eTesting
         {
             return new CommandArguments
             {
-                CommandId = newCommandId,
-                Arguments = "",
-                Action = Action.CancelCommand,
-                Timeout = 0
+                commandId = newCommandId,
+                arguments = "",
+                action = Action.CancelCommand,
+                timeout = 0
             };
         }
 
@@ -98,10 +94,10 @@ namespace E2eTesting
         {
             return new CommandStatus
             {
-                CommandId = newCommandId,
-                TextResult = newTextResult,
-                CurrentState = newCommandState,
-                ResultCode = newResultCode
+                commandId = newCommandId,
+                textResult = newTextResult,
+                currentState = newCommandState,
+                resultCode = newResultCode
             };
         }
 
@@ -109,7 +105,7 @@ namespace E2eTesting
         {
             int ackCode = -1;
 
-            Console.WriteLine($"{command.Action} \"{command.CommandId}\" ({command.Arguments})");
+            Console.WriteLine($"{command.action} \"{command.commandId}\" ({command.arguments})");
 
             try
             {
@@ -137,9 +133,9 @@ namespace E2eTesting
         {
             var refreshCommand = new CommandArguments
             {
-                CommandId = newCommandId,
-                Arguments = "",
-                Action = Action.RefreshCommandStatus
+                commandId = newCommandId,
+                arguments = "",
+                action = Action.RefreshCommandStatus
             };
 
             SendCommand(refreshCommand, expectedAckCode);
@@ -147,9 +143,10 @@ namespace E2eTesting
 
         public CommandStatus WaitForStatus(string commandId, CommandState state)
         {
-            Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.CommandId == commandId) && (status.CurrentState == state));
+            Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.commandId == commandId) && (status.currentState == state));
             var reportedTask = GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
             reportedTask.Wait();
+            ValidateLocalReported(reportedTask.Result, _componentName, _reportedObjectName);
             return reportedTask.Result;
         }
 
@@ -165,8 +162,8 @@ namespace E2eTesting
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
             SendCommand(command);
 
-            CommandStatus status = WaitForStatus(command.CommandId, state);
-            JsonAssert.AreEqual(CreateCommandStatus(command.CommandId, textResult, state, resultCode), status);
+            CommandStatus status = WaitForStatus(command.commandId, state);
+            JsonAssert.AreEqual(CreateCommandStatus(command.commandId, textResult, state, resultCode), status);
         }
 
         [Test]
@@ -178,7 +175,7 @@ namespace E2eTesting
             SendCommand(command);
             CommandStatus runningStatus = WaitForStatus(commandId, CommandState.Running);
 
-            CancelCommand(command.CommandId);
+            CancelCommand(command.commandId);
             CommandStatus canceledStatus = WaitForStatus(commandId, CommandState.Canceled);
 
             Assert.Multiple(() =>
@@ -211,28 +208,28 @@ namespace E2eTesting
             var command3 = CreateCommand("sleep 10s && echo 'command 3'", timeout: 1);
             var command4 = CreateCommand("blah");
 
-            var expectedCommandStatus1 = CreateCommandStatus(command1.CommandId, "", CommandState.Canceled, 125);
-            var expectedCommandStatus2 = CreateCommandStatus(command2.CommandId, "command 2\n", CommandState.Succeeded, 0);
-            var expectedCommandStatus3 = CreateCommandStatus(command3.CommandId, "", CommandState.TimedOut, 62);
-            var expectedCommandStatus4 = CreateCommandStatus(command4.CommandId, "sh: 1: blah: not found\n", CommandState.Failed, 127);
+            var expectedCommandStatus1 = CreateCommandStatus(command1.commandId, "", CommandState.Canceled, 125);
+            var expectedCommandStatus2 = CreateCommandStatus(command2.commandId, "command 2\n", CommandState.Succeeded, 0);
+            var expectedCommandStatus3 = CreateCommandStatus(command3.commandId, "", CommandState.TimedOut, 62);
+            var expectedCommandStatus4 = CreateCommandStatus(command4.commandId, "sh: 1: blah: not found\n", CommandState.Failed, 127);
 
             SendCommand(command1);
             SendCommand(command2);
             SendCommand(command3);
             SendCommand(command4);
-            SendCommand(CreateCancelCommand(command1.CommandId));
+            SendCommand(CreateCancelCommand(command1.commandId));
 
             // Wait for the last command to complete before checking all command statuses
-            CommandStatus actualCommandStatus4 = WaitForStatus(command4.CommandId, CommandState.Failed);
+            CommandStatus actualCommandStatus4 = WaitForStatus(command4.commandId, CommandState.Failed);
 
-            RefreshCommandStatus(command1.CommandId);
-            CommandStatus actualCommandStatus1 = WaitForStatus(command1.CommandId, CommandState.Canceled);
+            RefreshCommandStatus(command1.commandId);
+            CommandStatus actualCommandStatus1 = WaitForStatus(command1.commandId, CommandState.Canceled);
 
-            RefreshCommandStatus(command2.CommandId);
-            CommandStatus actualCommandStatus2 = WaitForStatus(command2.CommandId, CommandState.Succeeded);
+            RefreshCommandStatus(command2.commandId);
+            CommandStatus actualCommandStatus2 = WaitForStatus(command2.commandId, CommandState.Succeeded);
 
-            RefreshCommandStatus(command3.CommandId);
-            CommandStatus actualCommandStatus3 = WaitForStatus(command3.CommandId, CommandState.TimedOut);
+            RefreshCommandStatus(command3.commandId);
+            CommandStatus actualCommandStatus3 = WaitForStatus(command3.commandId, CommandState.TimedOut);
 
             Assert.Multiple(() =>
             {

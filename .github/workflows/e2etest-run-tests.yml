@@ -93,6 +93,7 @@ jobs:
         run: |
           sudo systemctl stop osconfig
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
           sudo systemctl start osconfig-platform || true
@@ -116,7 +117,7 @@ jobs:
           DOTNET_CLI_HOME: /tmp
         working-directory: ./src/tests/e2etest
         run: |
-          dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+          sudo dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
 
       - name: Stop performance sampling
         if: inputs.cpuThreshold != ''

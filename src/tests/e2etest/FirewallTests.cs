@@ -36,6 +36,7 @@ namespace E2eTesting
             {
                 RegexAssert.IsMatch(_statePattern, reported.FirewallState);
                 RegexAssert.IsMatch(_fingerprintPattern, reported.FirewallFingerprint);
+                ValidateLocalReported(reported, _componentName);
             });
         }
     }

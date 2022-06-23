@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace E2eTesting
         private readonly string _iotHubConnectionString = Environment.GetEnvironmentVariable("E2E_OSCONFIG_IOTHUB_CONNSTR")?.Trim('"');
         private readonly string _moduleId = "osconfig";
         private readonly string _deviceId = Environment.GetEnvironmentVariable("E2E_OSCONFIG_DEVICE_ID");
+        private readonly string _reportedPath = "/etc/osconfig/osconfig_reported.json";
 
         private const int POLL_INTERVAL_MS = 1000;
         private const int DEFAULT_MAX_WAIT_SECONDS = 90;
@@ -33,6 +35,11 @@ namespace E2eTesting
         {
             public T Value { get; set; }
             public int Ac { get; set; }
+        }
+
+        public static string GenerateId()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
         }
 
         [OneTimeSetUp]
@@ -77,7 +84,7 @@ namespace E2eTesting
                 {
                     Func<CommandRunnerTests.CommandStatus, bool> condition = (CommandRunnerTests.CommandStatus status) =>
                     {
-                        return (status.CommandId == command.CommandId) && (status.CurrentState == CommandRunnerTests.CommandState.Succeeded);
+                        return (status.commandId == command.commandId) && (status.currentState == CommandRunnerTests.CommandState.Succeeded);
                     };
 
                     var reportedResult = GetReported<CommandRunnerTests.CommandStatus>("CommandRunner", "commandStatus", condition, 2 * _maxWaitTimeSeconds);
@@ -86,7 +93,7 @@ namespace E2eTesting
 
                     if (!condition(reportedStatus))
                     {
-                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.CommandId, reportedStatus.CommandId, reportedStatus.CurrentState, reportedStatus.TextResult);
+                        Console.WriteLine("[ExecuteCommandViaCommandRunner] Command status not reported as succeeded for {0}: '{1}' {2} {3}", command.commandId, reportedStatus.commandId, reportedStatus.currentState, reportedStatus.textResult);
                         success = false;
                     }
                 }
@@ -148,6 +155,35 @@ namespace E2eTesting
             {
                 Assert.Warn("[Deserialize] Exception: {0}", e.Message);
                 return default(T);
+            }
+        }
+
+        /// <summary>
+        /// Validates the local reported object and fails if not in sync with the given reported object.
+        /// </summary>
+        /// <param name="reported">The reported twin to check the local twin against</param>
+        /// <param name="componentName">The name of the component</param>
+        /// <param name="objectName">The object name (Optional)</param>
+        protected void ValidateLocalReported(Object reported, String componentName, String objectName = "")
+        {
+            if (File.Exists(_reportedPath))
+            {
+                JObject local = JObject.Parse(File.ReadAllText(_reportedPath));
+                Assert.IsTrue(local.ContainsKey(componentName));
+                JObject remote = JObject.FromObject(reported);
+                if (String.IsNullOrEmpty(objectName))
+                {
+                    Assert.AreEqual(local[componentName], remote);
+                }
+                else
+                {
+                    Assert.IsTrue(local[componentName].ToObject<JObject>().ContainsKey(objectName));
+                    Assert.AreEqual(local[componentName][objectName], remote);
+                }
+            }
+            else
+            {
+                Assert.Fail("[LastReported] File does not exist: {0}, is Local Management enabled?", _reportedPath);
             }
         }
 
