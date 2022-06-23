@@ -1,13 +1,13 @@
 {
-  "name": "DeviceHealthTelemetryConfigurationModel",
+  "name": "AdhsConfigurationModel",
   "type": "mimModel",
   "contents": [
     {
-      "name": "DeviceHealthTelemetry",
+      "name": "adhsConfiguration",
       "type": "mimComponent",
       "contents": [
         {
-          "name": "desiredTelemetryConfiguration",
+          "name": "desiredOptIn",
           "type": "mimObject",
           "desired": true,
           "schema": {
@@ -30,7 +30,7 @@
           }
         },
         {
-          "name": "telemetryConfiguration",
+          "name": "optIn",
           "type": "mimObject",
           "desired": false,
           "schema": {

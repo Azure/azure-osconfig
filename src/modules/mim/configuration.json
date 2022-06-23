@@ -33,13 +33,13 @@
                 "schema": "boolean"
               },
               {
-                "name": "protocol",
+                "name": "iotHubProtocol",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
                     { 
-                      "name": "default",
+                      "name": "auto",
                       "enumValue": 0
                     },
                     {
@@ -83,7 +83,7 @@
                 "schema": "boolean"
               },
               {
-                "name": "protocol",
+                "name": "iotHubProtocol",
                 "schema": {
                   "type": "enum",
                   "valueSchema": "integer",
