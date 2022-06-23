@@ -1,0 +1,103 @@
+{
+  "name": "DeliveryOptimizationModel",
+  "type": "mimModel",
+  "contents": [
+    {
+      "name": "DeliveryOptimization",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "desiredDeliveryOptimizationPolicies",
+          "type": "mimObject",
+          "desired": true,
+          "schema": {
+            "fields": [
+              {
+                "name": "percentageDownloadThrottle",
+                "schema": "integer"
+              },
+              {
+                "name": "cacheHostSource",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "azureDeviceUpdate",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "deviceDiscoverySerivce",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "dhcpServerCustomOptionId235",
+                      "enumValue": 3
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "cacheHost",
+                "schema": "string"
+              },
+              {
+                "name": "cacheHostFallback",
+                "schema": "integer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "percentageDownloadThrottle",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "integer"
+        },
+        {
+          "name": "cacheHostSource",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "enum",
+            "valueSchema": "integer",
+            "enumValues": [
+              {
+                "name": "none",
+                 "enumValue": 0
+              },
+              {
+                "name": "azureDeviceUpdate",
+                 "enumValue": 1
+              },
+              {
+                 "name": "deviceDiscoverySerivce",
+                 "enumValue": 2
+              },
+              {
+                 "name": "dhcpServerCustomOptionId235",
+                 "enumValue": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "cacheHost",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "cacheHostFallback",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "integer"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "name": "OsConfigConfigurationModel",
+  "type": "MimModel",
+  "contents": [
+    {
+      "name": "OsConfigConfiguration",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "desiredConfiguration",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "fields": [
+              {
+                "name": "refreshInterval",
+                "schema": "integer"
+              },
+              {
+                "name": "localManagementEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "fullLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "commandLoggingEnabled",
+                "schema": "boolean"
+              },
+              {
+                "name": "iotHubProtocol",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    { 
+                      "name": "auto",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "mqtt",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "mqttWebSocket",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "modelVersion",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "integer"
+        },
+        {
+          "name": "refreshInterval",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "integer"
+        },
+        {
+          "name": "localManagementEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
+          "name": "fullLoggingEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
+          "name": "commandLoggingEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
+          "name": "iotHubProtocol",
+          "schema": {
+            "type": "enum",
+            "valueSchema": "integer",
+            "enumValues": [
+              { 
+                "name": "mqtt",
+                "enumValue": 0
+              },
+              {
+                "name": "mqttWebSocket",
+                "enumValue": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
