@@ -44,7 +44,7 @@
         "gallery_name": "osconfigvms",
         "image_name": "debian_9",
         "device_id": "debian9",
-        "package_path": "*stretch_x86_64",
+        "package_path": "*stretch_x86_64.deb",
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "test_filter": "TpmTest",
