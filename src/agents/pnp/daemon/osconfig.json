@@ -3,7 +3,7 @@
   "FullLogging": 0,
   "LocalManagement": 0,
   "ModelVersion": 10,
-  "Protocol": 2,
+  "IotHubProtocol": 2,
   "Reported": [
     {
       "ComponentName": "CommandRunner",

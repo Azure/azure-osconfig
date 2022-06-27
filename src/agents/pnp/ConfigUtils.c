@@ -115,7 +115,7 @@ int GetLocalManagementFromJsonConfig(const char* jsonString)
     return GetIntegerFromJsonConfig(LOCAL_MANAGEMENT, jsonString, 0, 0, 1);
 }
 
-int GetProtocolFromJsonConfig(const char* jsonString)
+int GetIotHubProtocolFromJsonConfig(const char* jsonString)
 {
     return GetIntegerFromJsonConfig(PROTOCOL, jsonString, PROTOCOL_AUTO, PROTOCOL_AUTO, PROTOCOL_MQTT_WS);
 }

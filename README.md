@@ -192,7 +192,7 @@ The networking protocol that OSConfig uses to connect to the IoT Hub is configur
 
 ```json
 {
-    "Protocol": 2
+    "IotHubProtocol": 2
 }
 ```
 
@@ -206,7 +206,7 @@ Value | Description
 
 ## HTTP proxy configuration
 
-When the configured protocol is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
+When the configured IotHubProtocol value is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
 
 1. `http_proxy`
 1. `https_proxy`
