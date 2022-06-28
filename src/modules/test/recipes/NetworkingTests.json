@@ -5,5 +5,26 @@
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Networking",
+        "ObjectName": "",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "networkConfiguration",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
     }
 ]

@@ -202,84 +202,49 @@ int MmiGet(
     MMI_JSON_STRING* payload,
     int* payloadSizeBytes)
 {
-    try
+    int status = MMI_OK;
+    NetworkingObject* networking = nullptr;
+
+    if (nullptr == clientSession)
     {
-        int status = EINVAL;
-
-        if (nullptr == clientSession)
+        OsConfigLogError(NetworkingLog::Get(), "MmiGet called with null clientSession");
+        status = EINVAL;
+    }
+    else
+    {
+        try
         {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) clientSession %p null",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), clientSession);
-            }
-        }
-        else if ((nullptr == componentName) || (0 != std::strcmp(componentName, NETWORKING)))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) componentName %s is invalid, %s is expected",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), componentName, NETWORKING);
-            }
-        }
-        else if ((nullptr == objectName) || (0 != std::strcmp(objectName, NETWORK_CONFIGURATION)))
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) objectName %s is invalid, %s is expected",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), objectName, NETWORK_CONFIGURATION);
-            }
-        }
-        else if (nullptr == payload)
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) payload %.*s is null",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0), *payload);
-            }
-        }
-        else if (nullptr == payloadSizeBytes)
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) payloadSizeBytes %d is null",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0));
-            }
-        }
-        else
-        {
-            NetworkingObject* networking = reinterpret_cast<NetworkingObject*>(clientSession);
-
+            networking = reinterpret_cast<NetworkingObject*>(clientSession);
             if (nullptr != networking)
             {
-                status = networking->Get(clientSession, componentName, objectName, payload, payloadSizeBytes);
+                status = networking->Get(componentName, objectName, payload, payloadSizeBytes);
             }
         }
-
-        ScopeGuard sg{[&]()
+        catch(const std::exception& e)
         {
-            if ((MMI_OK == status) && (nullptr != payload) && (nullptr != payloadSizeBytes))
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogInfo(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
-                        clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-                }
-            }
-            else if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
-                    clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), status);
-            }
-        }};
+            OsConfigLogError(NetworkingLog::Get(), "MmiGet exception occurred");
+            return ENODATA;
+        }
+    }
 
-        return status;
-    }
-    catch(const std::exception& e)
+    ScopeGuard sg{[&]()
     {
-        OsConfigLogError(NetworkingLog::Get(), "MmiGet exception occurred");
-        return ENODATA;
-    }
+        if ((MMI_OK == status) && (nullptr != payload) && (nullptr != payloadSizeBytes))
+        {
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
+                    clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
+            }
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(NetworkingLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d",
+                clientSession, componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), status);
+        }
+    }};
+
+    return status;
 }
 
 void MmiFree(MMI_JSON_STRING payload)
