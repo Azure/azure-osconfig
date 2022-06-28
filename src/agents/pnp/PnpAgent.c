@@ -33,7 +33,7 @@ TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
 #define DEVICE_PRODUCT_NAME_SIZE 128
 #define DEVICE_PRODUCT_INFO_SIZE 1024
 
-static int g_protocol = PROTOCOL_AUTO;
+static int g_iotHubProtocol = PROTOCOL_AUTO;
 
 static REPORTED_PROPERTY* g_reportedProperties = NULL;
 static int g_numReportedProperties = 0;
@@ -197,7 +197,7 @@ static void SignalReloadConfiguration(int incomingSignal)
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE CallIotHubInitialize(void)
 {
     IOTHUB_DEVICE_CLIENT_LL_HANDLE moduleHandle = IotHubInitialize(g_modelId, g_productInfo, g_iotHubConnectionString, false, g_x509Certificate, g_x509PrivateKeyHandle,
-        &g_proxyOptions, (PROTOCOL_MQTT_WS == g_protocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
+        &g_proxyOptions, (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? MQTT_WebSocket_Protocol : MQTT_Protocol);
 
     if (NULL == moduleHandle)
     {
@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
-        g_protocol = GetProtocolFromJsonConfig(jsonConfiguration);
+        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration);
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -688,9 +688,9 @@ int main(int argc, char *argv[])
     FREE_MEMORY(productVendor);
     FREE_MEMORY(encodedProductInfo);
     
-    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_protocol) ? "MQTT over Web Socket" : "MQTT");
+    OsConfigLogInfo(GetLog(), "Protocol: %s", (PROTOCOL_MQTT_WS == g_iotHubProtocol) ? "MQTT over Web Socket" : "MQTT");
 
-    if (PROTOCOL_MQTT_WS == g_protocol)
+    if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
     {
         // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
         if (NULL != (proxyData = GetHttpProxyData()))
