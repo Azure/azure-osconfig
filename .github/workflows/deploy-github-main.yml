@@ -4,6 +4,8 @@ on:
     workflows: ["Package"]
     types:
       - completed
+    conclusions:
+      - success
   push:
     branches:
       - main
