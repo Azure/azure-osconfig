@@ -4,6 +4,11 @@ on:
     workflows: ["Package"]
     types:
       - completed
+  push:
+    branches:
+      - main
+    paths:
+      - devops/e2e/**
 
 jobs:
   fetch-targets:
