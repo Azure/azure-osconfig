@@ -57,20 +57,20 @@ namespace E2eTesting
 
         public class DesiredState
         {
-            public List<string> Packages { get; set; }
-            public Dictionary<string, string> Sources { get; set; }
-            public Dictionary<string, string> GpgKeys { get; set; }
+            public List<string> packages { get; set; }
+            public Dictionary<string, string> sources { get; set; }
+            public Dictionary<string, string> gpgKeys { get; set; }
         }
 
         public class State
         {
-            public List<string> Packages { get; set; }
-            public string PackagesFingerprint { get; set; }
-            public string SourcesFingerprint { get; set; }
-            public List<string> SourcesFilenames { get; set; }
-            public ExecutionState ExecutionState { get; set; }
-            public ExecutionSubState ExecutionSubstate { get; set; }
-            public string ExecutionSubstateDetails { get; set; }
+            public List<string> packages { get; set; }
+            public string packagesFingerprint { get; set; }
+            public string sourcesFingerprint { get; set; }
+            public List<string> sourcesFilenames { get; set; }
+            public ExecutionState executionState { get; set; }
+            public ExecutionSubState executionSubstate { get; set; }
+            public string executionSubstateDetails { get; set; }
         }
 
         [OneTimeSetUp]
@@ -91,155 +91,126 @@ namespace E2eTesting
         }
 
         [Test]
-        [TestCase("cowsay", true, ACK_SUCCESS, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
+        [TestCase("cowsay", true, true, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
             TestName = "PmcTest_InstallAndUninstallValidPackagesAndAddSource")]
-        [TestCase("cowsay", false, ACK_SUCCESS, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
+        [TestCase("cowsay", false, true, _validVersionPattern, ExecutionState.Succeeded, ExecutionSubState.None, "",
             TestName = "PmcTest_InstallAndUninstallValidPackagesAndDeleteSource")]
-        [TestCase("nonexisting", false, ACK_ERROR, "\\(failed\\)", ExecutionState.Failed, ExecutionSubState.InstallingPackages, "nonexisting",
+        [TestCase("nonexisting", false, false, "\\(failed\\)", ExecutionState.Failed, ExecutionSubState.InstallingPackages, "nonexisting",
             TestName = "PmcTest_InstallInvalidPackageAndDeleteSource")]
-        public async Task PmcTest_ConfigurePackagesAndSources(string packageNameToInstall, bool packageSourceRequired, int desiredResponseAck, string versionPattern,
-                            ExecutionState executionState, ExecutionSubState executionSubState, string executionSubStateDetails)
+        public void PmcTest_ConfigurePackagesAndSources(string packageNameToInstall, bool packageSourceRequired, bool desiredResponse, string versionPattern,
+                                                        ExecutionState executionState, ExecutionSubState executionSubState, string executionSubStateDetails)
         {
-            
+
             var desired = new DesiredState
             {
-                Packages = new List<string>() { $"{_packageNameToUninstall}-", packageNameToInstall },
-                Sources = new Dictionary<string, string>() {
+                packages = new List<string>() { $"{_packageNameToUninstall}-", packageNameToInstall },
+                sources = new Dictionary<string, string>() {
                     { _packageSourceName, packageSourceRequired ? _packageSourceConfig : null },
                 },
-                GpgKeys = new Dictionary<string, string>() {
+                gpgKeys = new Dictionary<string, string>() {
                     { _gpgKeyId, packageSourceRequired ? _gpgKeyUrl : null }
                 }
             };
 
-            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
-            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
-            {
-                return (response.Ac == desiredResponseAck)
-                    && (response.Value.Packages.Contains(packageNameToInstall))
-                    && (response.Value.Sources.ContainsKey(_packageSourceName) == packageSourceRequired);
-            });
+            Assert.AreEqual(desiredResponse, SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
 
-            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
+            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (state.SourcesFilenames.Contains($"{_packageSourceName}.list") == packageSourceRequired)
-                    && (state.Packages.FirstOrDefault(x => x.StartsWith($"{packageNameToInstall}=")) != null);
+                return (state.sourcesFilenames.Contains($"{_packageSourceName}.list") == packageSourceRequired)
+                    && (state.packages.FirstOrDefault(x => x.StartsWith($"{packageNameToInstall}=")) != null);
             });
 
             var uninstalledPackagePattern = new Regex($"{_packageNameToUninstall}=\\(none\\)");
             var installedPackagePattern = new Regex($"{packageNameToInstall}={versionPattern}");
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(desiredResponseAck, desiredTask.Ac);
-                Assert.IsNotNull(reported.Packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
-                Assert.IsNotNull(reported.Packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
-                Assert.AreEqual(packageSourceRequired, reported.SourcesFilenames.Contains($"{_packageSourceName}.list"));
-                Assert.AreEqual(executionState, reported.ExecutionState);
-                Assert.AreEqual(executionSubState, reported.ExecutionSubstate);
-                Assert.AreEqual(executionSubStateDetails, reported.ExecutionSubstateDetails);
-                ValidateLocalReported(reported, _componentName, _reportedObjectName);
+                Assert.IsNotNull(reported.packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
+                Assert.IsNotNull(reported.packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
+                Assert.AreEqual(packageSourceRequired, reported.sourcesFilenames.Contains($"{_packageSourceName}.list"));
+                Assert.AreEqual(executionState, reported.executionState);
+                Assert.AreEqual(executionSubState, reported.executionSubstate);
+                Assert.AreEqual(executionSubStateDetails, reported.executionSubstateDetails);
             });
         }
 
         [Test]
-        public async Task PmcTest_InvalidPackageName()
+        public void PmcTest_InvalidPackageName()
         {
             var invalidPackageName = "cowsay ; echo foo";
             var desired = new DesiredState
             {
-                Packages = new List<string>() { $"{_packageNameToUninstall}-", invalidPackageName },
-                Sources = new Dictionary<string, string>() {{ _packageSourceName, null }},
-                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, null }}
+                packages = new List<string>() { $"{_packageNameToUninstall}-", invalidPackageName },
+                sources = new Dictionary<string, string>() { { _packageSourceName, null } },
+                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
             };
 
-            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
-            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
+            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (response.Ac == ACK_ERROR) && (response.Value.Packages.Contains(invalidPackageName));
-            });
-
-            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
-            {
-                return (state.ExecutionState.Equals(ExecutionState.Failed)) 
-                    && (state.ExecutionSubstate.Equals(ExecutionSubState.DeserializingPackages));
+                return (state.executionState.Equals(ExecutionState.Failed))
+                    && (state.executionSubstate.Equals(ExecutionSubState.DeserializingPackages));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
-                Assert.AreEqual(0, reported.Packages.Count);
-                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
-                Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.ExecutionSubstate);
-                Assert.AreEqual(invalidPackageName, reported.ExecutionSubstateDetails);
-                ValidateLocalReported(reported, _componentName, _reportedObjectName);
+                Assert.AreEqual(0, reported.packages.Count);
+                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
+                Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.executionSubstate);
+                Assert.AreEqual(invalidPackageName, reported.executionSubstateDetails);
             });
         }
 
         [Test]
-        public async Task PmcTest_InvalidPackageSource()
+        public void PmcTest_InvalidPackageSource()
         {
             const string wrongSourceConfig = "debz https://www.example.com";
 
             var desired = new DesiredState
             {
-                Packages = new List<string>(),
-                Sources = new Dictionary<string, string>() {{ _packageSourceName, wrongSourceConfig }},
-                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, null }}
+                packages = new List<string>(),
+                sources = new Dictionary<string, string>() { { _packageSourceName, wrongSourceConfig } },
+                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
             };
 
-            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
-            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
+            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (response.Ac == ACK_ERROR) && (response.Value.Sources.ContainsKey(_packageSourceName));
-            });
-
-            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
-            {
-                return (state.ExecutionState.Equals(ExecutionState.Failed))
-                    && (state.ExecutionSubstate.Equals(ExecutionSubState.ModifyingSources));
+                return (state.executionState.Equals(ExecutionState.Failed))
+                    && (state.executionSubstate.Equals(ExecutionSubState.ModifyingSources));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
-                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
-                Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.ExecutionSubstate);
-                Assert.AreEqual(_packageSourceName, reported.ExecutionSubstateDetails);
-                ValidateLocalReported(reported, _componentName, _reportedObjectName);
+                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
+                Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.executionSubstate);
+                Assert.AreEqual(_packageSourceName, reported.executionSubstateDetails);
             });
         }
 
         [Test]
         [TestCase("httpzz://wrong.com", TestName = "PmcTest_InvalidGpgUrl")]
         [TestCase("https://www.example.com", TestName = "PmcTest_InvalidGpgKey")]
-        public async Task PmcTest_InvalidGpgConfiguration(string url)
+        public void PmcTest_InvalidGpgConfiguration(string url)
         {
             var desired = new DesiredState
             {
-                Packages = new List<string>(),
-                Sources = new Dictionary<string, string>() {{ _packageSourceName, null }},
-                GpgKeys = new Dictionary<string, string>() {{ _gpgKeyId, url } }
+                packages = new List<string>(),
+                sources = new Dictionary<string, string>() { { _packageSourceName, null } },
+                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, url } }
             };
 
-            await SetDesired<DesiredState>(_componentName, _desiredObjectName, desired);
-            var desiredTask = await GetReported<GenericResponse<DesiredState>>(_componentName, _desiredObjectName, (GenericResponse<DesiredState> response) =>
+            Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
+            var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (response.Ac == ACK_ERROR) && (response.Value.GpgKeys.ContainsKey(_gpgKeyId));
-            });
-
-            var reported = await GetReported<State>(_componentName, _reportedObjectName, (State state) =>
-            {
-                return (state.ExecutionState.Equals(ExecutionState.Failed))
-                    && (state.ExecutionSubstate.Equals(ExecutionSubState.DownloadingGpgKeys));
+                return (state.executionState.Equals(ExecutionState.Failed))
+                    && (state.executionSubstate.Equals(ExecutionSubState.DownloadingGpgKeys));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ACK_ERROR, desiredTask.Ac);
-                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
-                Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.ExecutionSubstate);
-                Assert.AreEqual(_gpgKeyId, reported.ExecutionSubstateDetails);
-                ValidateLocalReported(reported, _componentName, _reportedObjectName);
+                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
+                Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.executionSubstate);
+                Assert.AreEqual(_gpgKeyId, reported.executionSubstateDetails);
             });
         }
     }

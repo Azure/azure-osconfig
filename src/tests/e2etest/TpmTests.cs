@@ -25,31 +25,30 @@ namespace E2eTesting
 
         public class Tpm
         {
-            public string TpmVersion { get; set; }
-            public string TpmManufacturer { get; set; }
-            public TpmStatusCode TpmStatus { get; set; }
+            public TpmStatusCode tpmStatus { get; set; }
+            public string tpmVersion { get; set; }
+            public string tpmManufacturer { get; set; }
         }
 
         [Test]
-        public async Task TpmTest_Get()
+        public void TpmTest_Get()
         {
-            Tpm reported = await GetReported<Tpm>(_componentName, (Tpm tpm) => true);
+            Tpm reported = GetReported<Tpm>(_componentName);
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_tpmStatusPattern, reported.TpmStatus);
+                RegexAssert.IsMatch(_tpmStatusPattern, reported.tpmStatus);
 
-                if (!string.IsNullOrEmpty(reported.TpmVersion))
+                if (!string.IsNullOrEmpty(reported.tpmVersion))
                 {
-                    RegexAssert.IsMatch(_tpmVersionPattern, reported.TpmVersion);
+                    RegexAssert.IsMatch(_tpmVersionPattern, reported.tpmVersion);
                 }
 
-                if (!string.IsNullOrEmpty(reported.TpmManufacturer))
+                if (!string.IsNullOrEmpty(reported.tpmManufacturer))
                 {
-                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
+                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.tpmManufacturer);
                 }
 
-                ValidateLocalReported(reported, _componentName);
             });
         }
     }

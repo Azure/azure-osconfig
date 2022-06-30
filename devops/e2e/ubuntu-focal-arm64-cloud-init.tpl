@@ -19,6 +19,12 @@ packages:
   - libssl1.1
   - libstdc++6
   - zlib1g
+write_files:
+  - path: /etc/sudoers.d/dotnet
+    permissions: "0644"
+    content: |
+      Defaults secure_path="/opt/.dotnet"
+    owner: root:root
 runcmd:
   - curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
   - cp ./microsoft.gpg /etc/apt/trusted.gpg.d/
@@ -28,7 +34,7 @@ runcmd:
   # Install .NET Core SDK
   - wget https://download.visualstudio.microsoft.com/download/pr/06c4ee8e-bf2c-4e46-ab1c-e14dd72311c1/f7bc6c9677eaccadd1d0e76c55d361ea/dotnet-sdk-6.0.301-linux-arm64.tar.gz -O dotnet-sdk-6.0.tar.gz
   - DOTNET_FILE=dotnet-sdk-6.0.tar.gz
-  - export DOTNET_ROOT=$(pwd)/.dotnet
+  - export DOTNET_ROOT=/opt/.dotnet
   - mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"
   - export PATH=$PATH:$DOTNET_ROOT
   # Install Azure CLI
