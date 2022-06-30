@@ -27,14 +27,7 @@ on:
         description: If the packages should be signed. This will create a second artifact for the signed packages (<artifact_name>-signed).
         type: boolean
         required: false
-        default: false
-    secrets:
-      acr-client-id:
-        description: The username to login to the Azure Container Registry
-        required: true
-      acr-client-secret:
-        description: The password to login to the Azure Container Registry
-        required: true
+        default: true
 
 jobs:
   package:
@@ -61,8 +54,8 @@ jobs:
         id: container
         uses: ./.github/actions/container-run
         with:
-          username: ${{ secrets.acr-client-id }}
-          password: ${{ secrets.acr-client-secret }}
+          username: ${{ secrets.ACR_CLIENT_ID }}
+          password: ${{ secrets.ACR_CLIENT_SECRET }}
           os: ${{ matrix.os }}
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
@@ -104,48 +97,38 @@ jobs:
 
   signing:
     name: Signing
-    runs-on: windows-latest
+    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-windows-pool]
     if: inputs.signed
     needs: [package]
-    environment:
-      name: esrp
+    environment: esrp
     steps:
+      - uses: actions/checkout@v3
+
       - uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artifact }}
           path: ${{ github.workspace }}/osconfig_bin
 
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Install ESRPClient
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            $context = New-AzStorageContext -ConnectionString "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}"
-            Get-AzStorageBlobContent -Blob esrpclient.zip -Container esrpclient -Destination esrpclient.zip -Context $context
-            Expand-Archive esrpclient.zip
+        run: |
+          az storage blob download -f esrpclient.zip -c esrpclient -n esrpclient.zip --connection-string "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}"
+          Expand-Archive esrpclient.zip
 
       - name: Stage artifacts for signing
         working-directory: ${{ github.workspace }}/osconfig_bin
         run: Get-ChildItem -Recurse -File -Filter *.deb | Move-Item -Destination ${{ github.workspace }}/esrpclient/Input
 
       - name: Download certificates
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az keyvault secret download --file certAAD.pfx --encoding base64 --name ${{ secrets.AAD_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
-            az keyvault secret download --file certESRP.pfx --encoding base64 --name ${{ secrets.ESRP_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+          az keyvault secret download --file certAAD.pfx --encoding base64 --name ${{ secrets.AAD_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
+          az keyvault secret download --file certESRP.pfx --encoding base64 --name ${{ secrets.ESRP_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
 
       - name: Import certificates
-        uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            Set-Location -Path cert:\CurrentUser\My
-            Import-PfxCertificate -FilePath ${{ github.workspace }}\certAAD.pfx
-            Import-PfxCertificate -FilePath ${{ github.workspace }}\certESRP.pfx
+        run: |
+          Set-Location -Path cert:\CurrentUser\My
+          Import-PfxCertificate -FilePath ${{ github.workspace }}\certAAD.pfx
+          Import-PfxCertificate -FilePath ${{ github.workspace }}\certESRP.pfx
 
       - name: Sign packages
         working-directory: ${{ github.workspace }}/esrpclient
@@ -156,6 +139,7 @@ jobs:
           .\EsrpClient.exe Sign -a "Config\Auth.json" -c "Config\Config.json" -i "Job.json" -o "Output\output.json" -p "Config\Policy.json" -l Verbose
 
       - name: Validate ESRP signing
+        working-directory: ${{ github.workspace }}/esrpclient
         run: |
           $result = (((cat .\Output\output.json | ConvertFrom-Json).submissionResponses | where { $_.statusCode -eq "pass" }).statusCode).Count -eq (ls .\Input\).Count
           if ($result -eq $false)

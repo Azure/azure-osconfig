@@ -10,6 +10,4 @@ on:
 jobs:
   package:
     uses: ./.github/workflows/build-package.yml
-    secrets:
-      acr-client-id: ${{ secrets.ACR_CLIENT_ID }}
-      acr-client-secret: ${{ secrets.ACR_CLIENT_SECRET }}
+    secrets: inherit

@@ -26,7 +26,7 @@ jobs:
   docker:
     name: Build and push
     needs: list-containers
-    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-pool]
+    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
     strategy:
         matrix:
             container: ${{ fromJson(needs.list-containers.outputs.matrix) }}
