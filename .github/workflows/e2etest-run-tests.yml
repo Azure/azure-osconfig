@@ -93,6 +93,7 @@ jobs:
         run: |
           sudo systemctl stop osconfig
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
           sudo systemctl daemon-reload
           sudo systemctl start osconfig
           sudo systemctl start osconfig-platform || true
@@ -109,14 +110,10 @@ jobs:
 
       - name: Run E2E tests
         env:
-          E2E_OSCONFIG_IOTHUB_CONNSTR: ${{ steps.hub-identity.outputs.iothubowner_connection_string }}
-          E2E_OSCONFIG_DEVICE_ID: ${{ steps.get-test-data.outputs.device_id }}
-          E2E_OSCONFIG_TWIN_TIMEOUT: ${{ secrets.TWIN_TIMEOUT }}
-          E2E_OSCONFIG_DISTRIBUTION_NAME: ${{ matrix.distroName }}
           DOTNET_CLI_HOME: /tmp
         working-directory: ./src/tests/e2etest
         run: |
-          dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx"
+          sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx;verbosity=detailed" --logger "console;verbosity=detailed"
 
       - name: Stop performance sampling
         if: inputs.cpuThreshold != ''

@@ -28,9 +28,9 @@ namespace E2eTesting
         }
 
         [Test]
-        public async Task FirewallTest_Regex()
+        public void FirewallTest_Regex()
         {
-            Firewall reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.FirewallState != FirewallStateCode.Unknown) && (firewall.FirewallFingerprint != null));
+            Firewall reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.FirewallState != FirewallStateCode.Unknown) && (firewall.FirewallFingerprint != null));
 
             Assert.Multiple(() =>
             {
