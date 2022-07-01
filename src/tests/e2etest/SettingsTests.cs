@@ -26,12 +26,14 @@ namespace E2eTesting
         }
 
         [Test]
+        [Ignore("Turned off until we have a fix for Settings module tests")]
         public void SettingsTest_DeviceHealthTelemtryConfiguration()
         {
             Assert.IsTrue(SetDesired<int>(_componentName, "deviceHealthTelemetryConfiguration", 2));
         }
 
         [Test]
+        [Ignore("Turned off until we have a fix for Settings module tests")]
         public void SettingsTest_DeliveryOptimizationPolicies()
         {
             var desiredDeliveryOptimizationPolicies = new DeliveryOptimizationPolicies
