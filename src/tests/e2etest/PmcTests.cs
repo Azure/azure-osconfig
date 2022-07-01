@@ -57,20 +57,20 @@ namespace E2eTesting
 
         public class DesiredState
         {
-            public List<string> packages { get; set; }
-            public Dictionary<string, string> sources { get; set; }
-            public Dictionary<string, string> gpgKeys { get; set; }
+            public List<string> Packages { get; set; }
+            public Dictionary<string, string> Sources { get; set; }
+            public Dictionary<string, string> GpgKeys { get; set; }
         }
 
         public class State
         {
-            public List<string> packages { get; set; }
-            public string packagesFingerprint { get; set; }
-            public string sourcesFingerprint { get; set; }
-            public List<string> sourcesFilenames { get; set; }
-            public ExecutionState executionState { get; set; }
-            public ExecutionSubState executionSubstate { get; set; }
-            public string executionSubstateDetails { get; set; }
+            public List<string> Packages { get; set; }
+            public string PackagesFingerprint { get; set; }
+            public string SourcesFingerprint { get; set; }
+            public List<string> SourcesFilenames { get; set; }
+            public ExecutionState ExecutionState { get; set; }
+            public ExecutionSubState ExecutionSubstate { get; set; }
+            public string ExecutionSubstateDetails { get; set; }
         }
 
         [OneTimeSetUp]
@@ -103,11 +103,11 @@ namespace E2eTesting
 
             var desired = new DesiredState
             {
-                packages = new List<string>() { $"{_packageNameToUninstall}-", packageNameToInstall },
-                sources = new Dictionary<string, string>() {
+                Packages = new List<string>() { $"{_packageNameToUninstall}-", packageNameToInstall },
+                Sources = new Dictionary<string, string>() {
                     { _packageSourceName, packageSourceRequired ? _packageSourceConfig : null },
                 },
-                gpgKeys = new Dictionary<string, string>() {
+                GpgKeys = new Dictionary<string, string>() {
                     { _gpgKeyId, packageSourceRequired ? _gpgKeyUrl : null }
                 }
             };
@@ -116,20 +116,20 @@ namespace E2eTesting
 
             var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (state.sourcesFilenames.Contains($"{_packageSourceName}.list") == packageSourceRequired)
-                    && (state.packages.FirstOrDefault(x => x.StartsWith($"{packageNameToInstall}=")) != null);
+                return (state.SourcesFilenames.Contains($"{_packageSourceName}.list") == packageSourceRequired)
+                    && (state.Packages.FirstOrDefault(x => x.StartsWith($"{packageNameToInstall}=")) != null);
             });
 
             var uninstalledPackagePattern = new Regex($"{_packageNameToUninstall}=\\(none\\)");
             var installedPackagePattern = new Regex($"{packageNameToInstall}={versionPattern}");
             Assert.Multiple(() =>
             {
-                Assert.IsNotNull(reported.packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
-                Assert.IsNotNull(reported.packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
-                Assert.AreEqual(packageSourceRequired, reported.sourcesFilenames.Contains($"{_packageSourceName}.list"));
-                Assert.AreEqual(executionState, reported.executionState);
-                Assert.AreEqual(executionSubState, reported.executionSubstate);
-                Assert.AreEqual(executionSubStateDetails, reported.executionSubstateDetails);
+                Assert.IsNotNull(reported.Packages.FirstOrDefault(x => uninstalledPackagePattern.IsMatch(x)));
+                Assert.IsNotNull(reported.Packages.FirstOrDefault(x => installedPackagePattern.IsMatch(x)));
+                Assert.AreEqual(packageSourceRequired, reported.SourcesFilenames.Contains($"{_packageSourceName}.list"));
+                Assert.AreEqual(executionState, reported.ExecutionState);
+                Assert.AreEqual(executionSubState, reported.ExecutionSubstate);
+                Assert.AreEqual(executionSubStateDetails, reported.ExecutionSubstateDetails);
             });
         }
 
@@ -139,24 +139,24 @@ namespace E2eTesting
             var invalidPackageName = "cowsay ; echo foo";
             var desired = new DesiredState
             {
-                packages = new List<string>() { $"{_packageNameToUninstall}-", invalidPackageName },
-                sources = new Dictionary<string, string>() { { _packageSourceName, null } },
-                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
+                Packages = new List<string>() { $"{_packageNameToUninstall}-", invalidPackageName },
+                Sources = new Dictionary<string, string>() { { _packageSourceName, null } },
+                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
             };
 
             Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
             var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (state.executionState.Equals(ExecutionState.Failed))
-                    && (state.executionSubstate.Equals(ExecutionSubState.DeserializingPackages));
+                return (state.ExecutionState.Equals(ExecutionState.Failed))
+                    && (state.ExecutionSubstate.Equals(ExecutionSubState.DeserializingPackages));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(0, reported.packages.Count);
-                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
-                Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.executionSubstate);
-                Assert.AreEqual(invalidPackageName, reported.executionSubstateDetails);
+                Assert.AreEqual(0, reported.Packages.Count);
+                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
+                Assert.AreEqual(ExecutionSubState.DeserializingPackages, reported.ExecutionSubstate);
+                Assert.AreEqual(invalidPackageName, reported.ExecutionSubstateDetails);
             });
         }
 
@@ -167,23 +167,23 @@ namespace E2eTesting
 
             var desired = new DesiredState
             {
-                packages = new List<string>(),
-                sources = new Dictionary<string, string>() { { _packageSourceName, wrongSourceConfig } },
-                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
+                Packages = new List<string>(),
+                Sources = new Dictionary<string, string>() { { _packageSourceName, wrongSourceConfig } },
+                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, null } }
             };
 
             Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
             var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (state.executionState.Equals(ExecutionState.Failed))
-                    && (state.executionSubstate.Equals(ExecutionSubState.ModifyingSources));
+                return (state.ExecutionState.Equals(ExecutionState.Failed))
+                    && (state.ExecutionSubstate.Equals(ExecutionSubState.ModifyingSources));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
-                Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.executionSubstate);
-                Assert.AreEqual(_packageSourceName, reported.executionSubstateDetails);
+                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
+                Assert.AreEqual(ExecutionSubState.ModifyingSources, reported.ExecutionSubstate);
+                Assert.AreEqual(_packageSourceName, reported.ExecutionSubstateDetails);
             });
         }
 
@@ -194,23 +194,23 @@ namespace E2eTesting
         {
             var desired = new DesiredState
             {
-                packages = new List<string>(),
-                sources = new Dictionary<string, string>() { { _packageSourceName, null } },
-                gpgKeys = new Dictionary<string, string>() { { _gpgKeyId, url } }
+                Packages = new List<string>(),
+                Sources = new Dictionary<string, string>() { { _packageSourceName, null } },
+                GpgKeys = new Dictionary<string, string>() { { _gpgKeyId, url } }
             };
 
             Assert.IsFalse(SetDesired<DesiredState>(_componentName, _desiredObjectName, desired));
             var reported = GetReported<State>(_componentName, _reportedObjectName, (State state) =>
             {
-                return (state.executionState.Equals(ExecutionState.Failed))
-                    && (state.executionSubstate.Equals(ExecutionSubState.DownloadingGpgKeys));
+                return (state.ExecutionState.Equals(ExecutionState.Failed))
+                    && (state.ExecutionSubstate.Equals(ExecutionSubState.DownloadingGpgKeys));
             });
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(ExecutionState.Failed, reported.executionState);
-                Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.executionSubstate);
-                Assert.AreEqual(_gpgKeyId, reported.executionSubstateDetails);
+                Assert.AreEqual(ExecutionState.Failed, reported.ExecutionState);
+                Assert.AreEqual(ExecutionSubState.DownloadingGpgKeys, reported.ExecutionSubstate);
+                Assert.AreEqual(_gpgKeyId, reported.ExecutionSubstateDetails);
             });
         }
     }

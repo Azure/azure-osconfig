@@ -25,9 +25,9 @@ namespace E2eTesting
 
         public class Tpm
         {
-            public TpmStatusCode tpmStatus { get; set; }
-            public string tpmVersion { get; set; }
-            public string tpmManufacturer { get; set; }
+            public TpmStatusCode TpmStatus { get; set; }
+            public string TpmVersion { get; set; }
+            public string TpmManufacturer { get; set; }
         }
 
         [Test]
@@ -37,16 +37,16 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_tpmStatusPattern, reported.tpmStatus);
+                RegexAssert.IsMatch(_tpmStatusPattern, reported.TpmStatus);
 
-                if (!string.IsNullOrEmpty(reported.tpmVersion))
+                if (!string.IsNullOrEmpty(reported.TpmVersion))
                 {
-                    RegexAssert.IsMatch(_tpmVersionPattern, reported.tpmVersion);
+                    RegexAssert.IsMatch(_tpmVersionPattern, reported.TpmVersion);
                 }
 
-                if (!string.IsNullOrEmpty(reported.tpmManufacturer))
+                if (!string.IsNullOrEmpty(reported.TpmManufacturer))
                 {
-                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.tpmManufacturer);
+                    RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
                 }
 
             });
