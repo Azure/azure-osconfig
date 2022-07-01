@@ -21,6 +21,7 @@ packages:
   - zlib1g
 write_files:
   - path: /etc/sudoers.d/dotnet
+    # user/owner=rw, group/others=r
     permissions: "0644"
     content: |
       Defaults secure_path="/opt/.dotnet"
