@@ -1,4 +1,5 @@
 #cloud-config
+#Based on ubuntu-focal-arm64-cloud-init.tpl with added msftinsidersfast apt source for insiders-fast
 apt_sources:
   - msftprod:
     source: deb [arch=arm64] https://packages.microsoft.com/ubuntu/20.04/prod/ $RELEASE main
@@ -22,6 +23,8 @@ apt_sources:
       NdCFTW7wY0Fb1fWJ+/KTsC4=
       =J6gs
       -----END PGP PUBLIC KEY BLOCK-----
+  - msftinsidersfast:
+    source: deb [arch=arm64] https://packages.microsoft.com/ubuntu/20.04/prod/ insiders-fast main
 package_upgrade: true
 packages:
   - apt-transport-https
@@ -43,13 +46,10 @@ packages:
   - libstdc++6
   - zlib1g
 runcmd:
-  # Install aziot-identity-service - no arm packages available
-  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_ubuntu20.04_arm64.deb -O aziot-identity-service.deb
-  - apt install -y ./aziot-identity-service.deb
   # Install .NET Core SDK
   - wget https://download.visualstudio.microsoft.com/download/pr/06c4ee8e-bf2c-4e46-ab1c-e14dd72311c1/f7bc6c9677eaccadd1d0e76c55d361ea/dotnet-sdk-6.0.301-linux-arm64.tar.gz -O dotnet-sdk-6.0.tar.gz
   - DOTNET_FILE=dotnet-sdk-6.0.tar.gz
-  - export DOTNET_ROOT=/opt/.dotnet
+  - DOTNET_ROOT=/opt/.dotnet
   - mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"
   - ln -s /opt/.dotnet/dotnet /usr/bin/dotnet
   # Install GitHub Actions Runner
@@ -58,3 +58,6 @@ runcmd:
   - ./config.sh --url https://github.com/Azure/azure-osconfig --unattended --ephemeral --name "${resource_group_name}-${vm_name}" --token "${runner_token}" --labels "${resource_group_name}-${vm_name}"
   - ./svc.sh install
   - ./svc.sh start
+  # Install aziot-identity-service - no arm packages available
+  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_ubuntu20.04_arm64.deb -O aziot-identity-service.deb
+  - apt install -y ./aziot-identity-service.deb
