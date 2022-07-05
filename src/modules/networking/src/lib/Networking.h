@@ -74,7 +74,6 @@ public:
     virtual std::string RunCommand(const char* command) = 0;
 
     int Get(
-        MMI_HANDLE clientSession,
         const char* componentName,
         const char* objectName,
         MMI_JSON_STRING* payload,

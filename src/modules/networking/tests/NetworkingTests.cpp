@@ -154,7 +154,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -195,7 +195,7 @@ namespace OSConfig::Platform::Tests
 
         testModule.returnValues = g_returnValues;
         testModule.returnValues[2] = testIpDataMangledNames;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -262,7 +262,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = returnValuesDataMissing;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -275,7 +275,7 @@ namespace OSConfig::Platform::Tests
         std::vector<std::string> returnValuesNetworkManagerEnabled = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
         testModule.runCommandCount = 0;
         testModule.returnValues = returnValuesNetworkManagerEnabled;
-        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -288,7 +288,7 @@ namespace OSConfig::Platform::Tests
         std::vector<std::string> returnValuesSystemdNetworkdEnabled = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, g_testCommandOutputInterfaceTypesNetworkctl, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
         testModule.runCommandCount = 0;
         testModule.returnValues = returnValuesSystemdNetworkdEnabled;
-        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -493,7 +493,7 @@ namespace OSConfig::Platform::Tests
         testModule.returnValues[0] = testCommandOutputInterfaceNames;
         testModule.returnValues[4] = testCommandOutputDnsServers;
 
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -506,7 +506,7 @@ namespace OSConfig::Platform::Tests
         testModule.runCommandCount = 0;
         testModule.returnValues[4] = testCommandOutputGlobalDnsServers;
 
-        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -519,7 +519,7 @@ namespace OSConfig::Platform::Tests
         testModule.runCommandCount = 0;
         testModule.returnValues[4] = testCommandOutputOnlyGlobalDnsServers;
 
-        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -570,7 +570,7 @@ namespace OSConfig::Platform::Tests
         testModule.returnValues = g_returnValues;
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -583,7 +583,7 @@ namespace OSConfig::Platform::Tests
         testModule.runCommandCount = 0;
         testModule.returnValues[2] = testIpDataDocker0AddedAddress;
 
-        result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -612,7 +612,7 @@ namespace OSConfig::Platform::Tests
         testModule.returnValues = {testCommandOutputNamesEmpty};
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -687,7 +687,7 @@ namespace OSConfig::Platform::Tests
 
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -705,7 +705,7 @@ namespace OSConfig::Platform::Tests
         unsigned int maxPayloadSizeBytes = 260;
         NetworkingObjectTest testModule(maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
-        int result = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -729,7 +729,7 @@ namespace OSConfig::Platform::Tests
         maxPayloadSizeBytes = 100;
         NetworkingObjectTest testModule2(maxPayloadSizeBytes);
         testModule2.returnValues = g_returnValues;
-        result = testModule2.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule2.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
@@ -753,7 +753,7 @@ namespace OSConfig::Platform::Tests
         maxPayloadSizeBytes = 0;
         NetworkingObjectTest testModule3(maxPayloadSizeBytes);
         testModule3.returnValues = g_returnValues;
-        result = testModule3.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+        result = testModule3.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
         EXPECT_EQ(result, MMI_OK);
 
