@@ -1,7 +1,8 @@
 #cloud-config
+#Based on debian-stretch-cloud-init.tpl with added apt_sources for insiders-fast
 apt_sources:
-  - msftprod:
-    source: deb [arch=arm64] https://packages.microsoft.com/ubuntu/20.04/prod/ $RELEASE main
+  - msftinsiders:
+    source: deb [arch=amd64] https://packages.microsoft.com/debian/9/multiarch/prod insiders-fast main
     key: |
       -----BEGIN PGP PUBLIC KEY BLOCK-----
       Version: GnuPG v1.4.7 (GNU/Linux)
@@ -23,38 +24,13 @@ apt_sources:
       =J6gs
       -----END PGP PUBLIC KEY BLOCK-----
 package_upgrade: true
-packages:
-  - apt-transport-https
-  - azure-cli
-  - bc
-  - ca-certificates
-  - curl
-  - gnupg
-  - jo
-  - jq
-  - lsb-release
-  - sysstat
-# .NET Dependencies
-  - libc6
-  - libgcc1
-  - libgssapi-krb5-2
-  - libicu66
-  - libssl1.1
-  - libstdc++6
-  - zlib1g
 runcmd:
-  # Install aziot-identity-service - no arm packages available
-  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_ubuntu20.04_arm64.deb -O aziot-identity-service.deb
+  # Install aziot-identity-service
+  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_debian9_amd64.deb -O aziot-identity-service.deb
   - apt install -y ./aziot-identity-service.deb
-  # Install .NET Core SDK
-  - wget https://download.visualstudio.microsoft.com/download/pr/06c4ee8e-bf2c-4e46-ab1c-e14dd72311c1/f7bc6c9677eaccadd1d0e76c55d361ea/dotnet-sdk-6.0.301-linux-arm64.tar.gz -O dotnet-sdk-6.0.tar.gz
-  - DOTNET_FILE=dotnet-sdk-6.0.tar.gz
-  - export DOTNET_ROOT=/opt/.dotnet
-  - mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"
-  - ln -s /opt/.dotnet/dotnet /usr/bin/dotnet
   # Install GitHub Actions Runner
   - mkdir actions-runner && cd actions-runner && curl -o runner.tar.gz -L ${github_runner_tar_gz_package} && tar xzf ./runner.tar.gz
-  - export RUNNER_ALLOW_RUNASROOT=\"1\"
+  - export RUNNER_ALLOW_RUNASROOT="1"
   - ./config.sh --url https://github.com/Azure/azure-osconfig --unattended --ephemeral --name "${resource_group_name}-${vm_name}" --token "${runner_token}" --labels "${resource_group_name}-${vm_name}"
   - ./svc.sh install
   - ./svc.sh start
