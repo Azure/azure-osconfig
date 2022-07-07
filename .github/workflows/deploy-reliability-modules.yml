@@ -67,11 +67,19 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.container-workspace }}/build/modules/test
           cmd: |
+            function checkResult(){
+            if [ \$result -ne 0 ]; then
+              echo '::error title=E2E Test Failure::The E2E tests failed at run number \$runNumber'
+              exit \$result
+            fi
+            }
+            result=0
             mkdir -p /etc/osconfig/
             echo Using date ${{ steps.set-variables.outputs.end-time }}
             while [ $(date +%s) -lt ${{ steps.set-variables.outputs.end-time }} ]; do
               echo Performing test run \$((++runNumber))
-              ./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json
+              result=\`./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json\`
+              checkResult
             done
 
       - name: Generate test report
