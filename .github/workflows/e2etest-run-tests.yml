@@ -24,6 +24,10 @@ on:
         type: string
         default: ""
         required: false
+      repeatForXHours:
+        description: Repeat the test suite for X hours, every test run gets a new test-report
+        type: number
+        required: false
 
 jobs:
   run-tests:
@@ -34,6 +38,7 @@ jobs:
       matrix:
         distroName: ${{ fromJson(inputs.distroName) }}
     runs-on: ${{ inputs.resourceGroupName }}-${{ matrix.distroName }}
+    timeout-minutes: 1440
     steps:
       - uses: actions/checkout@v1
 
@@ -113,7 +118,15 @@ jobs:
           DOTNET_CLI_HOME: /tmp
         working-directory: ./src/tests/e2etest
         run: |
-          sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx;verbosity=detailed" --logger "console;verbosity=detailed"
+          if [ ${{ inputs.repeatForXHours }} -gt 0 ];then
+            end=`date -d "+${{inputs.repeatForXHours}} hours" +%s`
+            while [ $(date +%s) -lt $end ]; do
+              echo Performing test run $((++runNumber))
+              sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}-$runNumber.trx;verbosity=detailed" --logger "console;verbosity=detailed"
+            done
+          else
+            sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx;verbosity=detailed" --logger "console;verbosity=detailed"
+          fi
 
       - name: Stop performance sampling
         if: inputs.cpuThreshold != ''
@@ -150,7 +163,7 @@ jobs:
             test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
           else
               echo "No platform performance results!"
-          fi          
+          fi
 
       - name: Upload performance Logs
         if: inputs.cpuThreshold != '' && (success() || failure())
