@@ -1,0 +1,104 @@
+name: Modules Reliability Tests
+on:
+  schedule:
+  - cron: '0 10 * * *' #10am UTC / 6pm PST
+
+env:
+  build-type: Release
+  container-workspace: /azure-osconfig
+  repeat-for-x-hours: 23
+
+jobs:
+  unit-test:
+    name: Unit test
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+    strategy:
+      matrix:
+        os: [ubuntu18.04, ubuntu20.04, debian9]
+        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
+        exclude:
+          - os: ubuntu20.04
+            variant: {arch: arm, platform: linux/arm/v7}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Run container
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          username: ${{ secrets.ACR_CLIENT_ID }}
+          password: ${{ secrets.ACR_CLIENT_SECRET }}
+          os: ${{ matrix.os }}
+          arch: ${{ matrix.variant.arch }}
+          platform: ${{ matrix.variant.platform }}
+          mount: ${{ github.workspace }}:${{ env.container-workspace }}
+          tag: "270554"
+
+      - name: Generate build
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_build-type=${{ env.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build
+          cmd: cmake --build . --config ${{ env.build-type }}
+
+      - name: Set variables
+        id: set-variables
+        run: |
+          echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
+          echo '::set-output name=end-time::`date -d "+${{ env.repeat-for-x-hours }} hours" +%s`'
+
+      - name: Run modulestest
+        if: success() || failure()
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.container-workspace }}/build/modules/test
+          cmd: |
+            function checkResult(){
+            if [ \$result -ne 0 ]; then
+              echo '::error title=E2E Test Failure::The E2E tests failed at run number \$runNumber'
+              exit \$result
+            fi
+            }
+            result=0
+            mkdir -p /etc/osconfig/
+            echo Using date ${{ steps.set-variables.outputs.end-time }}
+            while [ $(date +%s) -lt ${{ steps.set-variables.outputs.end-time }} ]; do
+              echo Performing test run \$((++runNumber))
+              result=\`./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json\`
+              checkResult
+            done
+
+      - name: Generate test report
+        uses: ./.github/actions/gtest-xml
+        if: success() || failure()
+        with:
+          path: ./build/gtest-output
+          output: ./${{ steps.set-variables.outputs.xml }}
+
+      - uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: unit-test
+          path: ./${{ steps.set-variables.outputs.xml }}
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
+          path: ./${{ steps.set-variables.outputs.xml }}
+          reporter: java-junit
