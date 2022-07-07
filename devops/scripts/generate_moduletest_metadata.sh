@@ -6,15 +6,19 @@ if ! [ -x "$(command -v jq)" ]; then
   echo 'Error: jq is not installed.' >&2
   exit 1
 fi
+if [ $# -ne 2 ]; then
+  echo 'Usage: ./generate_moduletest_metadata.sh testplace.json /azure-osconfig/build/modules' >&2
+  exit 1
+fi
 
 # Absolute path to this script
 SCRIPT=$(readlink -f $0)
 SCRIPTPATH=`dirname $SCRIPT`
 BaseDir=`realpath $SCRIPTPATH/../..`
 mimBaseDir=$BaseDir/src/modules/mim
-modulesBaseDir=$BaseDir/build/modules
 recipeBaseDir=$BaseDir/src/modules/test/recipes
-testMetaDataDestPath=$BaseDir/build/modules/test/testplate.json
+testMetaDataDestPath=$1
+modulesBaseDir=$2
 
 modules=$(find $modulesBaseDir -name '*.so')
 testJSON="[]"

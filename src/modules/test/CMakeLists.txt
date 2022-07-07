@@ -22,7 +22,7 @@ target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
 find_program(JQ_EXEC jq)
 if(JQ_EXEC)
     add_custom_target(modulerecipeconfiguration
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh ${CMAKE_CURRENT_BINARY_DIR}/testplate.json ${CMAKE_CURRENT_BINARY_DIR}/..
         COMMENT "Generating module recipe configuration"
     )
     add_dependencies(modulestest modulerecipeconfiguration)
