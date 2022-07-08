@@ -234,7 +234,6 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     int next = 0;
     int i = 0;
     char* commandLine = NULL;
-    size_t commandLength = 0;
     size_t commandLineLength = 0;
     size_t maximumCommandLine = 0;
     char commandTextResultFile[MAX_COMMAND_RESULT_FILE_NAME] = {0};
@@ -249,16 +248,14 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         return -1;
     }
 
-    commandLength = strlen(command);
-    wrappedCommand = (('(' == command[0]) || (')' == command[commandLength]));
-
-    commandLineLength = commandLength + 1;
+    commandLineLength = strlen(command);
+    wrappedCommand = (('(' == command[0]) || (')' == command[commandLineLength]));
 
     // Append a random number to the results file to prevent parallel commands overwriting each other results
     snprintf(commandTextResultFile, sizeof(commandTextResultFile), g_commandTextResultFileTemplate, rand());
 
-    commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) + (wrappedCommand ? 0 : 2);
- 
+    commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
+
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
     if (commandLineLength > maximumCommandLine)
     {
