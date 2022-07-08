@@ -169,7 +169,6 @@ TEST_F(CommonUtilsTest, ExecuteRedirectedMultipleCommandsWithTextResult)
     }
 }
 
-
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTimeout)
 {
     char* textResult = nullptr;
