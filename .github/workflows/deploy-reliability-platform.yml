@@ -46,6 +46,7 @@ jobs:
       cpuThreshold: 50
       memThreshold: 50
       repeatForXHours: 23
+      testNameSuffix: (reliability-platform)
     secrets: inherit
 
   deprovision-resources:

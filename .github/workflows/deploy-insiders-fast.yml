@@ -43,6 +43,7 @@ jobs:
       environment: e2e-insiders-fast
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
+      testNameSuffix: (insiders-fast)
     secrets: inherit
 
   deprovision-resources:

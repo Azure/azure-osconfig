@@ -28,6 +28,10 @@ on:
         description: Repeat the test suite for X hours, every test run gets a new test-report
         type: number
         required: false
+      testNameSuffix:
+        description: The name to use for the suffix of the test report
+        type: string
+        required: false
 
 jobs:
   run-tests:
@@ -212,6 +216,6 @@ jobs:
       - uses: dorny/test-reporter@v1.5.0
         if: always()
         with:
-          name: E2E Test Report ${{ matrix.distroName }}
+          name: E2E Test Report ${{ matrix.distroName }} ${{ inputs.testNameSuffix }}
           path: ./src/tests/e2etest/TestResults/test-results-${{ matrix.distroName }}.trx
           reporter: dotnet-trx

@@ -99,6 +99,6 @@ jobs:
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
+          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }}) (reliability-platform)
           path: ./${{ steps.set-variables.outputs.xml }}
           reporter: java-junit

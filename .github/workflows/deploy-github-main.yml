@@ -54,6 +54,7 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
       memThreshold: 50
+      testNameSuffix: (github-main)
     secrets: inherit
 
   deprovision-resources:
