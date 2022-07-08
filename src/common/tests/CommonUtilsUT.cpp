@@ -130,15 +130,30 @@ TEST_F(CommonUtilsTest, ExecutePrewrappedMultipleCommandsWithTextResult)
 {
     char* textResult = nullptr;
 
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "(echo alpha); (echo beta)", false, true, 0, 0, &textResult, nullptr, nullptr));
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "((echo alpha); (echo beta))", false, true, 0, 0, &textResult, nullptr, nullptr));
     // Echo appends an end of line character:
-    EXPECT_STREQ("beta\n", textResult);
+    EXPECT_STREQ("alpha\nbeta\n", textResult);
 
     if (nullptr != textResult)
     {
         free(textResult);
     }
 }
+
+TEST_F(CommonUtilsTest, ExecuteFullwrappedMultipleCommandsWithTextResult)
+{
+    char* textResult = nullptr;
+
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "((echo alpha); echo beta)", false, true, 0, 0, &textResult, nullptr, nullptr));
+    // Echo appends an end of line character:
+    EXPECT_STREQ("alpha\nbeta\n", textResult);
+
+    if (nullptr != textResult)
+    {
+        free(textResult);
+    }
+}
+
 
 TEST_F(CommonUtilsTest, ExecuteRedirectedMultipleCommandsWithTextResult)
 {
