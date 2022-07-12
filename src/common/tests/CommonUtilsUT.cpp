@@ -114,14 +114,6 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
 
     ExecuteCommandOptions options[] = {
         { "echo test123", false, true, 0, 0, "test123\n" },
-        { "echo alpha; echo beta", false, true, 0, 0, "alpha\nbeta\n" },
-        { "((echo alpha); (echo beta))", false, true, 0, 0, "alpha\nbeta\n" },
-        { "((echo alpha); echo beta)", false, true, 0, 0, "alpha\nbeta\n" },
-        { "echo alpha & echo beta", false, true, 0, 0, "beta\nalpha\n" },
-        { "((echo alpha)&(echo beta))", false, true, 0, 0, "beta\nalpha\n" },
-        { "((echo alpha) & echo beta)", false, true, 0, 0, "beta\nalpha\n" },
-        { "echo alpha > null; echo beta", false, true, 0, 0, "beta\n" },
-        { "echo alpha > null & echo beta", false, true, 0, 0, "beta\n" },
         { "echo test123", false, true, 0, 10, "test123\n" },
         { "echo test123", true, true, 0, 0, "test123 "},
         { "echo test123", false, true, 5, 0, "test"},
@@ -135,6 +127,50 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
     {
         EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
         EXPECT_STREQ(textResult, options[i].expectedTextResult);
+        FREE_MEMORY(textResult);
+    }
+}
+
+struct ExecuteTwoCommandsOptions
+{
+    const char* command;
+    bool replaceEol;
+    bool forJson;
+    unsigned int maxTextResultBytes;
+    unsigned int timeoutSeconds;
+    const char* expectedTextResultOne;
+    const char* expectedTextResultTwo;
+};
+
+TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
+{
+    char* textResult = nullptr;
+
+    ExecuteTwoCommandsOptions options[] = {
+        { "echo alpha; echo beta", false, true, 0, 0, "alpha\n", "beta\n" },
+        { "((echo alpha); (echo beta))", false, true, 0, 0, "alpha\n", "beta\n" },
+        { "((echo alpha); echo beta)", false, true, 0, 0, "alpha\n", "beta\n" },
+        { "echo alpha & echo beta", false, true, 0, 0, "beta\n", "alpha\n" },
+        { "((echo alpha)&(echo beta))", false, true, 0, 0, "beta\n", "alpha\n" },
+        { "((echo alpha) & echo beta)", false, true, 0, 0, "beta\n", "alpha\n" },
+        { "echo alpha > null; echo beta", false, true, 0, 0, "beta\n", nullptr },
+        { "echo alpha > null & echo beta", false, true, 0, 0, "beta\n", nullptr },
+    };
+
+    int optionsSize = ARRAY_SIZE(options);
+
+    for (int i = 0; i < optionsSize; i++)
+    {
+        EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
+        EXPECT_NE(nullptr, textResult);
+        EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultOne));
+        
+        if (options[i].expectedTextResultTwo)
+        {
+            EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
+        }
+
+        EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne)) + (options[i].expectedTextResultTwo ? strlen(options[i].expectedTextResultTwo) : 0);
         FREE_MEMORY(textResult);
     }
 }
