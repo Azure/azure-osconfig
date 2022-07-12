@@ -170,7 +170,7 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
             EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
         }
 
-        EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne)) + (options[i].expectedTextResultTwo ? strlen(options[i].expectedTextResultTwo) : 0);
+        EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne) + (options[i].expectedTextResultTwo ? strlen(options[i].expectedTextResultTwo) : 0));
         FREE_MEMORY(textResult);
     }
 }
