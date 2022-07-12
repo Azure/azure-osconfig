@@ -105,7 +105,7 @@ struct ExecuteCommandOptions
     bool forJson;
     unsigned int maxTextResultBytes;
     unsigned int timeoutSeconds;
-    char* expectedTextResult
+    const char* expectedTextResult;
 };
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
@@ -117,10 +117,11 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
         { "echo alpha; echo beta", false, true, 0, 0, "alpha\nbeta\n" },
         { "((echo alpha); (echo beta))", false, true, 0, 0, "alpha\nbeta\n" },
         { "((echo alpha); echo beta)", false, true, 0, 0, "alpha\nbeta\n" },
-        { "echo alpha & echo beta", false, true, 0, 0, "alpha\nbeta\n" },
-        { "((echo alpha)&(echo beta))", false, true, 0, 0, "alpha\nbeta\n" },
-        { "((echo alpha) & echo beta)", false, true, 0, 0, "alpha\nbeta\n" },
+        { "echo alpha & echo beta", false, true, 0, 0, "beta\nalpha\n" },
+        { "((echo alpha)&(echo beta))", false, true, 0, 0, "beta\nalpha\n" },
+        { "((echo alpha) & echo beta)", false, true, 0, 0, "beta\nalpha\n" },
         { "echo alpha > null; echo beta", false, true, 0, 0, "beta\n" },
+        { "echo alpha > null & echo beta", false, true, 0, 0, "beta\n" },
         { "echo test123", false, true, 0, 10, "test123\n" },
         { "echo test123", true, true, 0, 0, "test123 "},
         { "echo test123", false, true, 5, 0, "test"},
@@ -132,8 +133,8 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
 
     for (int i = 0; i < optionsSize; i++)
     {
-        EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTexResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
-        EXPECT_STREQ(textResult, validOptions[i].expectedTextResult);
+        EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
+        EXPECT_STREQ(textResult, options[i].expectedTextResult);
         FREE_MEMORY(textResult);
     }
 }
