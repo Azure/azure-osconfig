@@ -671,8 +671,8 @@ TEST (FirewallTests, Get)
     string resultString= "";
     for (unsigned int i = 0; i < 3; i++)
     {
-        status = testModule.Get(nullptr, nullptr, testFirewallState.c_str(), &payload, &payloadSizeBytes);
-        if (status != ENODATA)
+        status = testModule.Get(nullptr, testFirewallState.c_str(), &payload, &payloadSizeBytes);
+        if (status == 0)
         {
             resultString = string(payload, payloadSizeBytes);
             ASSERT_TRUE(resultString == expectedStrings[i]);
@@ -680,10 +680,10 @@ TEST (FirewallTests, Get)
     }
 
     // When object name is neither state nor fingerprint, return ENIVAL
-    status = testModule.Get(nullptr, nullptr, testWrongObjectName.c_str(), &payload, &payloadSizeBytes);
+    status = testModule.Get(nullptr, testWrongObjectName.c_str(), &payload, &payloadSizeBytes);
     ASSERT_TRUE(status == EINVAL);
 
-    status = testModule.Get(nullptr, nullptr, nullptr, &payload, &payloadSizeBytes);
+    status = testModule.Get(nullptr, nullptr, &payload, &payloadSizeBytes);
     ASSERT_TRUE(status == EINVAL);
 }
 
