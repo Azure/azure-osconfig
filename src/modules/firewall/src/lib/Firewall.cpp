@@ -24,6 +24,45 @@ FirewallObject::FirewallObject(unsigned int maxPayloadSizeBytes)
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
 }
 
+int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+{
+    int status = MMI_OK;
+
+    if (nullptr == clientName)
+    {
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) client name");
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload");
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload size");
+        status = EINVAL;
+    }
+    else
+    {
+        size_t len = strlen(g_firewallInfo);
+        *payload = new (std::nothrow) char[len];
+
+        if (nullptr == *payload)
+        {
+            OsConfigLogError(FirewallLog::Get(), "Failed to allocate memory for payload");
+            status = ENOMEM;
+        }
+        else
+        {
+            std::memcpy(*payload, g_firewallInfo, len);
+            *payloadSizeBytes = len;
+        }
+    }
+
+    return status;
+}
+
 int FirewallObjectBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     UNUSED(componentName);
@@ -40,22 +79,22 @@ int FirewallObjectBase::Get(const char* componentName, const char* objectName, M
     int status = MMI_OK;
     if (nullptr == componentName)
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid component name");
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) component name");
         status = EINVAL;
     }
     else if (nullptr == objectName)
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid object name");
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) object name");
         status = EINVAL;
     }
     else if (nullptr == payload)
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid payload");
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload");
         status = EINVAL;
     }
     else if (nullptr == payloadSizeBytes)
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid payload size bytes");
+        OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload size");
         status = EINVAL;
     }
     else if (0 != strcmp(componentName, g_firewallComponent))
@@ -94,6 +133,7 @@ int FirewallObjectBase::Get(const char* componentName, const char* objectName, M
         {
             *payloadSizeBytes = payloadString.length();
             *payload = new (std::nothrow) char[*payloadSizeBytes];
+
             if (*payload != nullptr)
             {
                 std::fill(*payload, *payload + *payloadSizeBytes, 0);

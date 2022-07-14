@@ -49,7 +49,7 @@ FirewallObjectTest::~FirewallObjectTest()
     ClearTableObjects();
 }
 
-int  FirewallObjectTest::DetectUtility(string utility)
+int FirewallObjectTest::DetectUtility(string utility)
 {
     const int commandSuccessExitCode = 0;
     const int commandNotFoundExitCode = 127;
@@ -112,7 +112,18 @@ void FirewallObjectTest::GetAllTables(vector<string> tableNames, vector<pair<str
     }
 }
 
-TEST (FirewallTests, DetectUtility)
+TEST(FirewallTests, GetInfo)
+{
+    const char* clientName = "OSConfig";
+    MMI_JSON_STRING payload = nullptr;
+    int payloadSizeBytes = 0;
+
+    FirewallObject::GetInfo(clientName, &payload, &payloadSizeBytes);
+    EXPECT_STREQ(payload, g_firewallInfo);
+    EXPECT_EQ(payloadSizeBytes, strlen(g_firewallInfo));
+}
+
+TEST(FirewallTests, DetectUtility)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -128,7 +139,7 @@ TEST (FirewallTests, DetectUtility)
     }
 }
 
-TEST (FirewallTests, GetTable)
+TEST(FirewallTests, GetTable)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -149,7 +160,7 @@ TEST (FirewallTests, GetTable)
     }
 }
 
-TEST (FirewallTests, GetAllTables)
+TEST(FirewallTests, GetAllTables)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -166,7 +177,7 @@ TEST (FirewallTests, GetAllTables)
     }
 }
 
-TEST (FirewallTests, ParseRule)
+TEST(FirewallTests, ParseRule)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -224,7 +235,7 @@ TEST (FirewallTests, ParseRule)
     free(rule);
 }
 
-TEST (FirewallTests, ParseChain)
+TEST(FirewallTests, ParseChain)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -342,7 +353,7 @@ TEST (FirewallTests, ParseChain)
     }
 }
 
-TEST (FirewallTests, ParseTable)
+TEST(FirewallTests, ParseTable)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -429,7 +440,7 @@ TEST (FirewallTests, ParseTable)
     }
 }
 
-TEST (FirewallTests, AppendTable)
+TEST(FirewallTests, AppendTable)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -442,7 +453,7 @@ TEST (FirewallTests, AppendTable)
     ASSERT_TRUE(testModule.GetTableCount() == 2);
 }
 
-TEST (FirewallTests, GetFirewallState)
+TEST(FirewallTests, GetFirewallState)
 {
     int firewallStatuCode = firewallStateCodeUnknown;
     unsigned int maxPayloadSizeBytes = 0;
@@ -543,7 +554,7 @@ TEST (FirewallTests, GetFirewallState)
     ASSERT_TRUE(firewallStatuCode == firewallStateCodeDisabled); 
 }
 
-TEST (FirewallTests, RulesToString)
+TEST(FirewallTests, RulesToString)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -569,7 +580,7 @@ TEST (FirewallTests, RulesToString)
     ASSERT_TRUE(resultString == expectedString);
 }
 
-TEST (FirewallTests, ChainsToString)
+TEST(FirewallTests, ChainsToString)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -598,7 +609,7 @@ TEST (FirewallTests, ChainsToString)
     ASSERT_TRUE(resultString == expectedString);
 }
 
-TEST (FirewallTests, TablesToString)
+TEST(FirewallTests, TablesToString)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -633,7 +644,7 @@ TEST (FirewallTests, TablesToString)
     ASSERT_TRUE(resultString == expectedString);
 }
 
-TEST (FirewallTests, GetFingerprint)
+TEST(FirewallTests, GetFingerprint)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);
@@ -656,7 +667,7 @@ TEST (FirewallTests, GetFingerprint)
     }
 }
 
-TEST (FirewallTests, Get)
+TEST(FirewallTests, Get)
 {
     unsigned int maxPayloadSizeBytes = 0;
     FirewallObjectTest testModule(maxPayloadSizeBytes);

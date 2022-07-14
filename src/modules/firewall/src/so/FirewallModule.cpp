@@ -12,17 +12,6 @@
 #include <vector>
 #include <string>
 
-constexpr const char g_firewallInfo[] = R""""({
-    "Name": "Firewall",
-    "Description": "Provides functionality to remotely manage firewall rules on device",
-    "Manufacturer": "Microsoft",
-    "VersionMajor": 2,
-    "VersionMinor": 0,
-    "VersionInfo": "Nickel",
-    "Components": ["Firewall"],
-    "Lifetime": 1,
-    "UserAccount": 0})"""";
-
 void __attribute__((constructor)) InitModule()
 {
     FirewallLog::OpenLog();
@@ -65,56 +54,16 @@ int MmiGetInfo(
                 OsConfigLogError(FirewallLog::Get(), "MmiGetInfo(%s, -, %d) returned %d", clientName, *payloadSizeBytes, status);
             }
         }
-    } };
+    }};
 
-    if (nullptr == clientName)
+    try
     {
-        OsConfigLogError(FirewallLog::Get(), "MmiGetInfo called with null clientName");
-        status = EINVAL;
+        status = FirewallObject::GetInfo(clientName, payload, payloadSizeBytes);
     }
-    else if (nullptr == payload)
+    catch(const std::exception& e)
     {
-        OsConfigLogError(FirewallLog::Get(), "MmiGetInfo called with null payload");
-        status = EINVAL;
-    }
-    else if (nullptr == payloadSizeBytes)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGetInfo called with null payloadSizeBytes");
-        status = EINVAL;
-    }
-    else
-    {
-        try
-        {
-            size_t len = strlen(g_firewallInfo);
-            *payload = new (std::nothrow) char[len];
-            if (nullptr == *payload)
-            {
-                OsConfigLogError(FirewallLog::Get(), "MmiGetInfo failed to allocate memory");
-                status = ENOMEM;
-            }
-            else
-            {
-                std::memcpy(*payload, g_firewallInfo, len);
-                *payloadSizeBytes = len;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            OsConfigLogError(FirewallLog::Get(), "MmiGetInfo exception thrown: %s", e.what());
-            status = EINTR;
-
-            if (nullptr != *payload)
-            {
-                delete[] * payload;
-                *payload = nullptr;
-            }
-
-            if (nullptr != payloadSizeBytes)
-            {
-                *payloadSizeBytes = 0;
-            }
-        }
+        OsConfigLogError(FirewallLog::Get(), "MmiGetInfo exception occured: %s", e.what());
+        status = EINTR;
     }
 
     return status;
@@ -178,7 +127,7 @@ int MmiSet(
     const int payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* firewall = reinterpret_cast<FirewallObject*>(clientSession);
+    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -190,44 +139,24 @@ int MmiSet(
         {
             OsConfigLogError(FirewallLog::Get(), "MmiSet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
         }
-    } };
+    }};
 
-    if (nullptr == clientSession)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiSet called with null clientSession");
-        status = EINVAL;
-    }
-    else if (nullptr == componentName)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiSet called with null componentName");
-        status = EINVAL;
-    }
-    else if (nullptr == objectName)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiSet called with null objectName");
-        status = EINVAL;
-    }
-    else if (nullptr == payload)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiSet called with null payload");
-        status = EINVAL;
-    }
-    else if (0 > payloadSizeBytes)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiSet called with negative payloadSizeBytes");
-        status = EINVAL;
-    }
-    else
+    if (session)
     {
         try
         {
-            firewall->Set(componentName, objectName, payload, payloadSizeBytes);
+            status = session->Set(componentName, objectName, payload, payloadSizeBytes);
         }
         catch (const std::exception& e)
         {
             OsConfigLogError(FirewallLog::Get(), "MmiSet exception occurred: %s", e.what());
             status = EINTR;
         }
+    }
+    else
+    {
+        OsConfigLogError(FirewallLog::Get(), "MmiSet called with null clientSession");
+        status = EINVAL;
     }
 
     return status;
@@ -241,7 +170,7 @@ int MmiGet(
     int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* session = nullptr;
+    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -256,45 +185,25 @@ int MmiGet(
                 OsConfigLogError(FirewallLog::Get(), "MmiGet(%p, %s, %s, %.*s, %d) returned %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
             }
         }
-    } };
+    }};
 
-    if (nullptr == clientSession)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null clientSession");
-        status = EINVAL;
-    }
-    else if (nullptr == componentName)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null componentName");
-        status = EINVAL;
-    }
-    else if (nullptr == objectName)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null objectName");
-        status = EINVAL;
-    }
-    else if (nullptr == payload)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null payload");
-        status = EINVAL;
-    }
-    else if (nullptr == payloadSizeBytes)
-    {
-        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null payloadSizeBytes");
-        status = EINVAL;
-    }
-    else
+    if (session)
     {
         try
         {
             session = reinterpret_cast<FirewallObject*>(clientSession);
-            session->Get(componentName, objectName, payload, payloadSizeBytes);
+            status = session->Get(componentName, objectName, payload, payloadSizeBytes);
         }
         catch (const std::exception& e)
         {
             OsConfigLogError(FirewallLog::Get(), "MmiGet exception occurred: %s", e.what());
             status = EINTR;
         }
+    }
+    else
+    {
+        OsConfigLogError(FirewallLog::Get(), "MmiGet called with null clientSession");
+        status = EINVAL;
     }
 
     return status;
