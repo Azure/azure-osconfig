@@ -672,7 +672,7 @@ TEST (FirewallTests, Get)
     for (unsigned int i = 0; i < 3; i++)
     {
         status = testModule.Get(nullptr, testFirewallState.c_str(), &payload, &payloadSizeBytes);
-        if (status == 0)
+        if (0 == status)
         {
             resultString = string(payload, payloadSizeBytes);
             ASSERT_TRUE(resultString == expectedStrings[i]);
