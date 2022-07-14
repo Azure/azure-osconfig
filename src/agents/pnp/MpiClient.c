@@ -161,10 +161,10 @@ static char* ParseString(char* jsonString)
         }
         else
         {
-            returnValue = strdup(parsedValue);
+            returnValue = DuplicateString(parsedValue);
             if (NULL == returnValue)
             {
-                OsConfigLogError(GetLog(), "ParseString: strdup on '%s' failed", parsedValue);
+                OsConfigLogError(GetLog(), "ParseString: DuplicateString on '%s' failed", parsedValue);
             }
         }
         json_value_free(jsonValue);
