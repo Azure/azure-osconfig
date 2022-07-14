@@ -54,7 +54,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         ${UMOCK_C_INC_FOLDER}
         ${MACRO_UTILS_INC_FOLDER}
         ${IOTHUB_CLIENT_INC_FOLDER}
-        ${UHTTP_C_INC_FOLDER},
+        ${UHTTP_C_INC_FOLDER}
         ${PLATFORM_INC_DIR})
 
     target_link_libraries(${target_name}
@@ -80,7 +80,8 @@ else()
 
     target_include_directories(${target_name} PUBLIC
         ${SHARED_UTIL_INC_FOLDER}
-        ${MACRO_UTILS_INC_FOLDERP})
+        ${MACRO_UTILS_INC_FOLDERP}
+        ${PLATFORM_INC_DIR})
 
     target_link_libraries(${target_name}
         parson

@@ -82,7 +82,6 @@ systemctl start osconfig.service
 %defattr(-, root, root, -)
 %{_bindir}/osconfig
 /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
-/etc/osconfig/osconfig_commandrunner.cache
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
 /etc/osconfig/osconfig.toml
