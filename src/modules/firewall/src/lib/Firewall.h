@@ -10,10 +10,21 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/schema.h>
 #include <regex>
-using namespace std;
 
 #define FIREWALL_LOGFILE "/var/log/osconfig_firewall.log"
 #define FIREWALL_ROLLEDLOGFILE "/var/log/osconfig_firewall.bak"
+
+constexpr const char g_firewallInfo[] = R""""({
+    "Name": "Firewall",
+    "Description": "Provides functionality to remotely manage firewall rules on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 2,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Firewall"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 class FirewallLog
 {
 public:
@@ -37,42 +48,42 @@ private:
 class Rule
 {
 public:
-    Rule(int ruleNum, string target, string protocol, string source, string destination, string sourcePort, string destinationPort, string inInterface, string outInterface, string rawOptions);
+    Rule(int ruleNum, std::string target, std::string protocol, std::string source, std::string destination, std::string sourcePort, std::string destinationPort, std::string inInterface, std::string outInterface, std::string rawOptions);
     Rule();
     void SetRuleNum(int ruleNum);
-    void SetTarget(string target);
-    void SetProtocol(string protocol);
-    void SetSource(string source);
-    void SetDestination(string destination);
-    void SetSourcePort(string sourcePort);
-    void SetDestinationPort(string destinationPort);
-    void SetInInterface(string inInterface);
-    void SetOutInterface(string outInterface);
-    void SetRawOptions(string rawOptions);
+    void SetTarget(std::string target);
+    void SetProtocol(std::string protocol);
+    void SetSource(std::string source);
+    void SetDestination(std::string destination);
+    void SetSourcePort(std::string sourcePort);
+    void SetDestinationPort(std::string destinationPort);
+    void SetInInterface(std::string inInterface);
+    void SetOutInterface(std::string outInterface);
+    void SetRawOptions(std::string rawOptions);
 
     int GetRuleNum();
-    string GetTarget();
-    string GetProtocol();
-    string GetSource();
-    string GetDestination();
-    string GetSourcePort();
-    string GetDestinationPort();
-    string GetInInterface();
-    string GetOutInterface();
-    string GetRawOptions();
+    std::string GetTarget();
+    std::string GetProtocol();
+    std::string GetSource();
+    std::string GetDestination();
+    std::string GetSourcePort();
+    std::string GetDestinationPort();
+    std::string GetInInterface();
+    std::string GetOutInterface();
+    std::string GetRawOptions();
 
 private:
     int m_ruleNum;
-    string m_policy;
-    string m_target;
-    string m_protocol;
-    string m_source;
-    string m_destination;
-    string m_sourcePort;
-    string m_destinationPort;
-    string m_inInterface;
-    string m_outInterface;
-    string m_rawOptions;
+    std::string m_policy;
+    std::string m_target;
+    std::string m_protocol;
+    std::string m_source;
+    std::string m_destination;
+    std::string m_sourcePort;
+    std::string m_destinationPort;
+    std::string m_inInterface;
+    std::string m_outInterface;
+    std::string m_rawOptions;
 };
 
 enum FirewallStateCode
@@ -108,68 +119,70 @@ class Chain
 {
 public:
     Chain();
-    Chain(string chainName);
+    Chain(std::string chainName);
     ~Chain();
-    void SetChainName(string chainName);
-    void SetChainPolicy(string chainPolicy);
-    string GetChainName();
-    string GetChainPolicy();
+    void SetChainName(std::string chainName);
+    void SetChainPolicy(std::string chainPolicy);
+    std::string GetChainName();
+    std::string GetChainPolicy();
     int GetRuleCount();
-    vector<Rule*> GetRules();
+    std::vector<Rule*> GetRules();
     void Append(Rule* rule);
 
 private:
-    string m_chainName;
-    string m_chainPolicy;
-    vector<Rule*> m_rules;
+    std::string m_chainName;
+    std::string m_chainPolicy;
+    std::vector<Rule*> m_rules;
 };
 
 class Table
 {
 public:
     Table();
-    Table(string tableName);
+    Table(std::string tableName);
     ~Table();
-    void SetTableName(string tableName);
-    string GetTableName();
+    void SetTableName(std::string tableName);
+    std::string GetTableName();
     int GetChainCount();
     void Append(Chain* chain);
-    vector<Chain*> GetChains();
+    std::vector<Chain*> GetChains();
 
 private:
-    string m_tableName;
-    vector<Chain*> m_chains;
+    std::string m_tableName;
+    std::vector<Chain*> m_chains;
 };
 
 class FirewallObjectBase
 {
 public:
     virtual ~FirewallObjectBase() {};
-    int Get(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING*  payload, int* payloadSizeBytes);
-    int Set(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
-    virtual int DetectUtility(string utility) = 0;
-    virtual void GetTable(string tableName, string& tableString) = 0;
-    virtual void GetAllTables(vector<string> tableNames, vector<pair<string, string>>& allTableStrings) = 0;
-    Rule* ParseRule(string ruleString);
-    Chain* ParseChain(string chainString);
-    Table* ParseTable(string tableName, string tableString);
-    void ParseAllTables(vector<pair<string, string>>& allTableStrings);
+    static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+
+    virtual int DetectUtility(std::string utility) = 0;
+    virtual void GetTable(std::string tableName, std::string& tableString) = 0;
+    virtual void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings) = 0;
+    Rule* ParseRule(std::string ruleString);
+    Chain* ParseChain(std::string chainString);
+    Table* ParseTable(std::string tableName, std::string tableString);
+    void ParseAllTables(std::vector<std::pair<std::string, std::string>>& allTableStrings);
     void AppendTable(Table* table);
-    vector<Table*> GetTableObjects();
+    std::vector<Table*> GetTableObjects();
     int GetTableCount();
     int GetFirewallState();
-    string RulesToString(vector<Rule*> rules);
-    string ChainsToString(vector<Chain*> chains);
-    string TablesToString(vector<Table*> tables);
-    string FirewallRulesToString();
-    string GetFingerprint();
-    string CreateStatePayload(int state);
-    string CreateFingerprintPayload(string fingerprint);
+    std::string RulesToString(std::vector<Rule*> rules);
+    std::string ChainsToString(std::vector<Chain*> chains);
+    std::string TablesToString(std::vector<Table*> tables);
+    std::string FirewallRulesToString();
+    std::string GetFingerprint();
+    std::string CreateStatePayload(int state);
+    std::string CreateFingerprintPayload(std::string fingerprint);
     void ClearTableObjects();
     unsigned int m_maxPayloadSizeBytes;
 
 private:
-    vector<Table*> m_tables;
+    std::vector<Table*> m_tables;
 };
 
 class FirewallObject : public FirewallObjectBase
@@ -177,7 +190,7 @@ class FirewallObject : public FirewallObjectBase
 public:
     FirewallObject(unsigned int maxPayloadSizeBytes);
     ~FirewallObject();
-    int DetectUtility(string utility);
-    void GetTable(string tableName, string& tableString);
-    void GetAllTables(vector<string> tableNames, vector<pair<string, string>>& allTableStrings);
+    int DetectUtility(std::string utility);
+    void GetTable(std::string tableName, std::string& tableString);
+    void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings);
 };
