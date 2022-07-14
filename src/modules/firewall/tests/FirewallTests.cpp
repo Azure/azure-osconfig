@@ -130,12 +130,12 @@ TEST(FirewallTests, DetectUtility)
     string utility = "iptables", otherUtility = "nftables";
     for (int i = 0; i < 6; i++)
     {
-        ASSERT_TRUE(testModule.DetectUtility(utility) == (i % 3));
+        EXPECT_EQ(testModule.DetectUtility(utility), (i % 3));
     }
 
     for (int i = 0; i < 6; i++)
     {
-        ASSERT_TRUE(testModule.DetectUtility(otherUtility) == 0);
+        EXPECT_EQ(testModule.DetectUtility(otherUtility), 0);
     }
 }
 
@@ -156,7 +156,7 @@ TEST(FirewallTests, GetTable)
     for (unsigned int i = 0; i < testModule.testTableStrings.size(); i++)
     {
         testModule.GetTable("", testOutputString);
-        ASSERT_TRUE(testOutputString == testModule.testTableStrings[i]);
+        EXPECT_EQ(testOutputString, testModule.testTableStrings[i]);
     }
 }
 
@@ -169,11 +169,11 @@ TEST(FirewallTests, GetAllTables)
     vector<pair<string, string>> tableStrings;
     testModule.GetAllTables(testTableNames, tableStrings);
 
-    ASSERT_TRUE(tableStrings.size() == 3);
+    EXPECT_EQ(tableStrings.size(), 3);
     for (unsigned int i = 0; i < 3; i++)
     {
-        ASSERT_TRUE(tableStrings[i].first == testTableNames[i]);
-        ASSERT_TRUE(tableStrings[i].second == testModule.testTableStrings[i]);
+        EXPECT_EQ(tableStrings[i].first, testTableNames[i]);
+        EXPECT_EQ(tableStrings[i].second, testModule.testTableStrings[i]);
     }
 }
 
@@ -198,7 +198,7 @@ TEST(FirewallTests, ParseRule)
     for (unsigned int i = 0; i < testRuleStrings.size(); i++)
     {
         Rule* rule = testModule.ParseRule(testRuleStrings[i]);
-        ASSERT_TRUE(rule == nullptr);
+        EXPECT_EQ(rule, nullptr);
     }
 
     vector<string> testStrings =
@@ -217,21 +217,21 @@ TEST(FirewallTests, ParseRule)
     for (unsigned int i = 0; i < testStrings.size(); i++)
     {
         Rule* rule = testModule.ParseRule(testStrings[i]);
-        ASSERT_TRUE(rule != nullptr);
+        EXPECT_NE(rule, nullptr);
         free(rule);
     }
 
     string newTestString = R"""(  123       0     0 REJECT     tcp  --  eth0   *       1.1.1.1              2.2.2.2              tcp dpt:3306 state NEW,ESTABLISHED reject-with icmp-port-unreachable)""";
     Rule* rule = testModule.ParseRule(newTestString);
-    ASSERT_TRUE(rule != nullptr);
-    ASSERT_TRUE(rule->GetRuleNum() == 123);
-    ASSERT_TRUE(rule->GetTarget() == "REJECT");
-    ASSERT_TRUE(rule->GetProtocol() == "tcp");
-    ASSERT_TRUE(rule->GetInInterface() == "eth0");
-    ASSERT_TRUE(rule->GetOutInterface() == "*");
-    ASSERT_TRUE(rule->GetSource() == "1.1.1.1");
-    ASSERT_TRUE(rule->GetDestination() == "2.2.2.2");
-    ASSERT_TRUE(rule->GetRawOptions() == "tcp dpt:3306 state NEW,ESTABLISHED reject-with icmp-port-unreachable");
+    EXPECT_NE(rule, nullptr);
+    EXPECT_EQ(rule->GetRuleNum(), 123);
+    EXPECT_EQ(rule->GetTarget(), "REJECT");
+    EXPECT_EQ(rule->GetProtocol(), "tcp");
+    EXPECT_EQ(rule->GetInInterface(), "eth0");
+    EXPECT_EQ(rule->GetOutInterface(), "*");
+    EXPECT_EQ(rule->GetSource(), "1.1.1.1");
+    EXPECT_EQ(rule->GetDestination(), "2.2.2.2");
+    EXPECT_EQ(rule->GetRawOptions(), "tcp dpt:3306 state NEW,ESTABLISHED reject-with icmp-port-unreachable");
     free(rule);
 }
 
@@ -242,21 +242,21 @@ TEST(FirewallTests, ParseChain)
     vector<string> testInvalidStrings =
     {
         R"""(Chain INPUT ( policy ACCEPT 484 packets, 144K bytes)
-        num   pkts bytes target     prot opt in     out     source               destination         
+        num   pkts bytes target     prot opt in     out     source               destination
         1        0     0 ACCEPT     tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 state NEW,ESTABLISHED
         2        0     0 ACCEPT     icmp --  *      *       1.1.1.1/24           0.0.0.0/0            icmptype 8)""",
         R"""(16        0     0 MASQUERADE  all  --  *      eth0    0.0.0.0/0            0.0.0.0/0 )""",
         R"""(   OUTPUT (policy ACCEPT 38 packets, 3134 bytes)
-        num   pkts bytes target     prot opt in     out     source               destination         
+        num   pkts bytes target     prot opt in     out     source               destination
         1     4289  362K ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0           )""",
         R"""( Chain invalidUserChain (0 ref
-        num   pkts bytes target     prot opt in     out     source               destination         
-        1        0     0 ACCEPT       all  --  *      *       3.3.3.3              5.5.5.5 
+        num   pkts bytes target     prot opt in     out     source               destination
+        1        0     0 ACCEPT       all  --  *      *       3.3.3.3              5.5.5.5
 
         )""",
         R"""( abc)""",
-        R"""( 
-        
+        R"""(
+
           )""",
         R"""(  )""",
         R"""()"""
@@ -265,7 +265,7 @@ TEST(FirewallTests, ParseChain)
     for (unsigned int i = 0; i < testInvalidStrings.size(); i++)
     {
         Chain* chain = testModule.ParseChain(testInvalidStrings[i]);
-        ASSERT_TRUE(chain == nullptr);
+        EXPECT_EQ(chain, nullptr);
     }
 
     vector<string> testValidChainStrings =
@@ -313,10 +313,10 @@ TEST(FirewallTests, ParseChain)
     for (unsigned int i = 0; i < testValidChainStrings.size(); i++)
     {
         Chain* chain = testModule.ParseChain(testValidChainStrings[i]);
-        ASSERT_TRUE(chain != nullptr);
-        ASSERT_TRUE(chain->GetChainName() == expectedNameValues[i]);
-        ASSERT_TRUE(chain->GetChainPolicy() == expectedPolicyValues[i]);
-        ASSERT_TRUE(chain->GetRuleCount() == expectedRuleCounts[i]);
+        EXPECT_NE(chain, nullptr);
+        EXPECT_EQ(chain->GetChainName(), expectedNameValues[i]);
+        EXPECT_EQ(chain->GetChainPolicy(), expectedPolicyValues[i]);
+        EXPECT_EQ(chain->GetRuleCount(), expectedRuleCounts[i]);
         if (chain != nullptr)
         {
             free(chain);
@@ -327,11 +327,11 @@ TEST(FirewallTests, ParseChain)
     vector<string> partialValidChains =
     {
         R"""( Chain OUTPUT (policy ACCEPT 38 packets, 3134 bytes)
-        num   pkts bytes target     prot opt in     out     source               destination         
-        xxx     4289  362K ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0           
+        num   pkts bytes target     prot opt in     out     source               destination
+        xxx     4289  362K ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0
         2     2434  308K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            ctstate ESTABLISHED   )""",
         R"""(Chain INPUT (policy ACCEPT 1166 packets, 142K bytes)
-        num   pkts bytes target     prot opt in     out     source               destination         
+        num   pkts bytes target     prot opt in     out     source               destination
         1        0     0 LOG        all  --     *       0.0.0.0/0            0.0.0.0/0            LOG flags 0 level 4 prefix "IPtables dropped packets:"
         2      505 39708ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 22,80,443)"""
     };
@@ -342,10 +342,10 @@ TEST(FirewallTests, ParseChain)
     for (unsigned int i = 0; i < partialValidChains.size(); i++)
     {
         Chain* chain = testModule.ParseChain(partialValidChains[i]);
-        ASSERT_TRUE(chain != nullptr);
-        ASSERT_TRUE(chain->GetChainName() == expectedNameValues[i]);
-        ASSERT_TRUE(chain->GetChainPolicy() == expectedPolicyValues[i]);
-        ASSERT_TRUE(chain->GetRuleCount() == expectedRuleCounts[i]);
+        EXPECT_NE(chain, nullptr);
+        EXPECT_EQ(chain->GetChainName(), expectedNameValues[i]);
+        EXPECT_EQ(chain->GetChainPolicy(), expectedPolicyValues[i]);
+        EXPECT_EQ(chain->GetRuleCount(), expectedRuleCounts[i]);
         if (chain != nullptr)
         {
             free(chain);
@@ -413,9 +413,9 @@ TEST(FirewallTests, ParseTable)
     for (unsigned int i = 0; i < testTableStrings.size(); i++)
     {
         Table* table = testModule.ParseTable(tableNames[i], testTableStrings[i]);
-        ASSERT_TRUE(table != nullptr);
-        ASSERT_TRUE(table->GetTableName() == tableNames[i]);
-        ASSERT_TRUE(table->GetChainCount() == expectedChainCounts[i]);
+        EXPECT_NE(table, nullptr);
+        EXPECT_EQ(table->GetTableName(), tableNames[i]);
+        EXPECT_EQ(table->GetChainCount(), expectedChainCounts[i]);
         free(table);
     }
 
@@ -433,9 +433,9 @@ TEST(FirewallTests, ParseTable)
     for (unsigned int i = 0; i < testInvalidTableStrings.size(); i++)
     {
         Table* table = testModule.ParseTable(tableNames[i], testInvalidTableStrings[i]);
-        ASSERT_TRUE(table != nullptr);
-        ASSERT_TRUE(table->GetTableName() == tableNames[i]);
-        ASSERT_TRUE(table->GetChainCount() == 0);
+        EXPECT_NE(table, nullptr);
+        EXPECT_EQ(table->GetTableName(), tableNames[i]);
+        EXPECT_EQ(table->GetChainCount(), 0);
         free(table);
     }
 }
@@ -446,11 +446,11 @@ TEST(FirewallTests, AppendTable)
     FirewallObjectTest testModule(maxPayloadSizeBytes);
     Table* table0 = new Table("testTable0");
     testModule.AppendTable(table0);
-    ASSERT_TRUE(testModule.GetTableCount() == 1);
+    EXPECT_EQ(testModule.GetTableCount(), 1);
 
     Table* table1 = new Table("testTable1");
     testModule.AppendTable(table1);
-    ASSERT_TRUE(testModule.GetTableCount() == 2);
+    EXPECT_EQ(testModule.GetTableCount(), 2);
 }
 
 TEST(FirewallTests, GetFirewallState)
@@ -464,7 +464,7 @@ TEST(FirewallTests, GetFirewallState)
     for (int i = 0; i < 3; i++)
     {
         firewallStatuCode = testModule.GetFirewallState();
-        ASSERT_TRUE(firewallStatuCode == expectedStatusCode[i]);
+        EXPECT_EQ(firewallStatuCode, expectedStatusCode[i]);
     }
     string tableString =
     R"""(Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
@@ -475,24 +475,24 @@ TEST(FirewallTests, GetFirewallState)
      )""";
 
     Table* table = testModule.ParseTable("testTable", tableString);
-    ASSERT_TRUE(table != nullptr);
-    ASSERT_TRUE(table->GetChainCount() == 2);
+    EXPECT_NE(table, nullptr);
+    EXPECT_EQ(table->GetChainCount(), 2);
     vector<Chain*> chainVector = table->GetChains();
     vector<string> expectedChainPolicies = {"ACCEPT", "DROP"};
     vector<int> expectedRuleCounts = {0, 0};
     for (unsigned int i = 0; i < chainVector.size(); i++)
     {
-        ASSERT_TRUE(chainVector[i] != nullptr);
-        ASSERT_TRUE(chainVector[i]->GetChainPolicy() == expectedChainPolicies[i]);
-        ASSERT_TRUE(chainVector[i]->GetRuleCount() == expectedRuleCounts[i]);
+        EXPECT_NE(chainVector[i], nullptr);
+        EXPECT_EQ(chainVector[i]->GetChainPolicy(), expectedChainPolicies[i]);
+        EXPECT_EQ(chainVector[i]->GetRuleCount(), expectedRuleCounts[i]);
     }
     testModule.AppendTable(table);
-    ASSERT_TRUE(testModule.GetTableCount() == 1);
+    EXPECT_EQ(testModule.GetTableCount(), 1);
 
     // When utilityCount is 1, detect utility returns installed
     testModule.utilityCount = 1;
     firewallStatuCode = testModule.GetFirewallState();
-    ASSERT_TRUE(firewallStatuCode == firewallStateCodeEnabled);
+    EXPECT_EQ(firewallStatuCode, firewallStateCodeEnabled);
 
     tableString =
     R"""(Chain INPUT (policy ACCEPT 353 packets, 23920 bytes)
@@ -505,53 +505,53 @@ TEST(FirewallTests, GetFirewallState)
     )""";
     FirewallObjectTest testModule2(maxPayloadSizeBytes);
     table = testModule2.ParseTable("filter", tableString);
-    ASSERT_TRUE(table != nullptr);
+    EXPECT_NE(table, nullptr);
     testModule2.AppendTable(table);
-    ASSERT_TRUE(testModule2.GetTableCount() == 1);
-    ASSERT_TRUE(table->GetChainCount() == 2);
+    EXPECT_EQ(testModule2.GetTableCount(), 1);
+    EXPECT_EQ(table->GetChainCount(), 2);
     chainVector = table->GetChains();
     expectedChainPolicies = {"ACCEPT", "ACCEPT"};
     expectedRuleCounts = {0, 1};
     for (unsigned int i = 0; i < chainVector.size(); i++)
     {
-        ASSERT_TRUE(chainVector[i] != nullptr);
-        ASSERT_TRUE(chainVector[i]->GetChainPolicy() == expectedChainPolicies[i]);
-        ASSERT_TRUE(chainVector[i]->GetRuleCount() == expectedRuleCounts[i]);
+        EXPECT_NE(chainVector[i], nullptr);
+        EXPECT_EQ(chainVector[i]->GetChainPolicy(), expectedChainPolicies[i]);
+        EXPECT_EQ(chainVector[i]->GetRuleCount(), expectedRuleCounts[i]);
     }
 
     testModule2.utilityCount = 1;
     firewallStatuCode = testModule2.GetFirewallState();
-    ASSERT_TRUE(firewallStatuCode == firewallStateCodeEnabled);
+    EXPECT_EQ(firewallStatuCode, firewallStateCodeEnabled);
 
     tableString =
     R"""(Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination         
+    num   pkts bytes target     prot opt in     out     source               destination
 
     Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination         
+    num   pkts bytes target     prot opt in     out     source               destination
 
     Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination             
+    num   pkts bytes target     prot opt in     out     source               destination
     )""";
     FirewallObjectTest testModule3(maxPayloadSizeBytes);
     table = testModule3.ParseTable("filter", tableString);
-    ASSERT_TRUE(table != nullptr);
+    EXPECT_NE(table, nullptr);
     testModule3.AppendTable(table);
-    ASSERT_TRUE(testModule3.GetTableCount() == 1);
-    ASSERT_TRUE(table->GetChainCount() == 3);
+    EXPECT_EQ(testModule3.GetTableCount(), 1);
+    EXPECT_EQ(table->GetChainCount(), 3);
     chainVector = table->GetChains();
     expectedChainPolicies = {"ACCEPT", "ACCEPT", "ACCEPT"};
     expectedRuleCounts = {0, 0, 0};
 
     for (unsigned int i = 0; i < chainVector.size(); i++)
     {
-        ASSERT_TRUE(chainVector[i] != nullptr);
-        ASSERT_TRUE(chainVector[i]->GetChainPolicy() == expectedChainPolicies[i]);
-        ASSERT_TRUE(chainVector[i]->GetRuleCount() == expectedRuleCounts[i]);
+        EXPECT_NE(chainVector[i], nullptr);
+        EXPECT_EQ(chainVector[i]->GetChainPolicy(), expectedChainPolicies[i]);
+        EXPECT_EQ(chainVector[i]->GetRuleCount(), expectedRuleCounts[i]);
     }
     testModule3.utilityCount = 1;
     firewallStatuCode = testModule2.GetFirewallState();
-    ASSERT_TRUE(firewallStatuCode == firewallStateCodeDisabled); 
+    EXPECT_EQ(firewallStatuCode, firewallStateCodeDisabled);
 }
 
 TEST(FirewallTests, RulesToString)
@@ -577,7 +577,7 @@ TEST(FirewallTests, RulesToString)
         }
     }
     string resultString = testModule.RulesToString(testRules);
-    ASSERT_TRUE(resultString == expectedString);
+    EXPECT_EQ(resultString, expectedString);
 }
 
 TEST(FirewallTests, ChainsToString)
@@ -606,7 +606,7 @@ TEST(FirewallTests, ChainsToString)
         }
     }
     string resultString = testModule.ChainsToString(testChains);
-    ASSERT_TRUE(resultString == expectedString);
+    EXPECT_EQ(resultString, expectedString);
 }
 
 TEST(FirewallTests, TablesToString)
@@ -641,7 +641,7 @@ TEST(FirewallTests, TablesToString)
         }
     }
     string resultString = testModule.TablesToString(testTables);
-    ASSERT_TRUE(resultString == expectedString);
+    EXPECT_EQ(resultString, expectedString);
 }
 
 TEST(FirewallTests, GetFingerprint)
@@ -663,7 +663,7 @@ TEST(FirewallTests, GetFingerprint)
     unsigned int numberOfTests = 10;
     for (unsigned int i = 0; i < numberOfTests; i++)
     {
-        ASSERT_TRUE(testModule.GetFingerprint() == fingerprint);
+        EXPECT_EQ(testModule.GetFingerprint(), fingerprint);
     }
 }
 
@@ -686,16 +686,16 @@ TEST(FirewallTests, Get)
         if (0 == status)
         {
             resultString = string(payload, payloadSizeBytes);
-            ASSERT_TRUE(resultString == expectedStrings[i]);
+            EXPECT_EQ(resultString, expectedStrings[i]);
         }
     }
 
     // When object name is neither state nor fingerprint, return ENIVAL
     status = testModule.Get(nullptr, testWrongObjectName.c_str(), &payload, &payloadSizeBytes);
-    ASSERT_TRUE(status == EINVAL);
+    EXPECT_EQ(status, EINVAL);
 
     status = testModule.Get(nullptr, nullptr, &payload, &payloadSizeBytes);
-    ASSERT_TRUE(status == EINVAL);
+    EXPECT_EQ(status, EINVAL);
 }
 
 TEST(FirewallTests, CreateStatePayload)
@@ -706,8 +706,8 @@ TEST(FirewallTests, CreateStatePayload)
     vector<string> expectedPayload = {"0", "1", "2", "", ""};
     for (int i = 0; i < int(expectedPayload.size()); i++)
     {
-        ASSERT_TRUE(testModule.CreateStatePayload(i) == expectedPayload[i]);
-        ASSERT_TRUE(testModule2.CreateStatePayload(i) == expectedPayload[i]);
+        EXPECT_EQ(testModule.CreateStatePayload(i), expectedPayload[i]);
+        EXPECT_EQ(testModule2.CreateStatePayload(i), expectedPayload[i]);
     }
 }
 
@@ -720,7 +720,7 @@ TEST(FirewallTests, CreateFingerprintPayload)
     vector<string> expectedPayload = {"", "", "", "\"4bb0e1595f66f344c1cc084e163c4352235b2accf3a1385b9eb4b3e4ca5b1d24\"", "\"5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03\""};
     for (int i = 0; i < int(expectedPayload.size()); i++)
     {
-        ASSERT_TRUE(testModule.CreateFingerprintPayload(testFingerprints[i]) == expectedPayload[i]);
-        ASSERT_TRUE(testModule2.CreateFingerprintPayload(testFingerprints[i]) == expectedPayload[i]);
+        EXPECT_EQ(testModule.CreateFingerprintPayload(testFingerprints[i]), expectedPayload[i]);
+        EXPECT_EQ(testModule2.CreateFingerprintPayload(testFingerprints[i]), expectedPayload[i]);
     }
 }
