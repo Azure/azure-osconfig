@@ -9,7 +9,6 @@ static char* ReadUntilStringFound(int socketHandle, const char* what, void* log)
 {
     char* found = NULL;
     char* buffer = NULL;
-    char* result = NULL;
     int size = 1;
 
     if ((NULL == what) || (socketHandle < 0))

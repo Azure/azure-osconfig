@@ -44,7 +44,6 @@ static int NormalizeStatus(int status)
 static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, void* log)
 {
     const int callbackIntervalSeconds = 5; //seconds
-    const int signalIntervalMicroSeconds = 25000; //microseconds
     const int defaultCommandTimeout = 60; //seconds
 
     pid_t intermediateProcess = -1;
