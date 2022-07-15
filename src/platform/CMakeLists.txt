@@ -26,7 +26,7 @@ set(target_name osconfig-platform)
 
 add_executable(${target_name} ${osconfig_platform_files})
 
-target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
+target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-variable -Wunused-const-variable)
 
 target_include_directories(${target_name} PUBLIC
     ${MODULES_INC_DIR}
