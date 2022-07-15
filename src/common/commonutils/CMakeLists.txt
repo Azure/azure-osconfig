@@ -16,7 +16,7 @@ add_library(commonutils STATIC
     UrlUtils.c
     CommonUtils.cpp)
 
-target_compile_options(commonutils PRIVATE -Wno-psabi)
+target_compile_options(commonutils PRIVATE -Wno-psabi -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-variable -Wunused-const-variable)
 
 target_include_directories(commonutils
     PUBLIC
