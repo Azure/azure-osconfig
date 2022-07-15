@@ -70,7 +70,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         logging
         commonutils)
 else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result)
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-variable -Wunused-const-variable)
 
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)

@@ -295,7 +295,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             if (fileSize > 0)
             {
                 // Truncate to desired maximum, if any
-                if ((maxTextResultBytes > 0) && ((fileSize + 1) > maxTextResultBytes))
+                if ((maxTextResultBytes > 0) && (((size_t)fileSize + 1) > maxTextResultBytes))
                 {
                     fileSize = (maxTextResultBytes > 1) ? (maxTextResultBytes - 1) : 0;
                 }
