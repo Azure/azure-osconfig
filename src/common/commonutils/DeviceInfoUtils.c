@@ -64,7 +64,6 @@ void TruncateAtFirst(char* target, char marker)
         return;
     }
 
-    int targetLength =(int)strlen(target);
     char* found = strchr(target, marker);
 
     if (found)

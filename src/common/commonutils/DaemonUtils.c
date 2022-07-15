@@ -49,7 +49,6 @@ void StopAndDisableDaemon(const char* name, void* log)
     const char* disableTemplate = "sudo systemctl disable %s";
     char stopCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     char disableCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
-    bool status = true;
 
     snprintf(stopCommand, sizeof(stopCommand), stopTemplate, name);
     snprintf(disableCommand, sizeof(disableCommand), disableTemplate, name);
