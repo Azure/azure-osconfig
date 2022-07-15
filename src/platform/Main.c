@@ -10,10 +10,6 @@
 // 30 seconds
 #define DOWORK_INTERVAL 30
 
-// The local Desired Configuration (DC) and Reported Configuration (RC) files
-#define DC_FILE "/etc/osconfig/osconfig_desired.json"
-#define RC_FILE "/etc/osconfig/osconfig_reported.json"
-
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
