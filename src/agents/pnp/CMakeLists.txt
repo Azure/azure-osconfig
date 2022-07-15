@@ -44,7 +44,7 @@ else ()
 endif ()
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wunused-variable -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-but-set-parameter -Wunused-value)
 
     target_include_directories(${target_name} PUBLIC
         ${azure_iot_sdks_SOURCE_DIR}/deps/parson
@@ -70,7 +70,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         logging
         commonutils)
 else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-variable -Wunused-const-variable)
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused -Wno-unused-result -Wunused-variable -Wunused-const-variable -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-but-set-parameter -Wunused-value)
 
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)

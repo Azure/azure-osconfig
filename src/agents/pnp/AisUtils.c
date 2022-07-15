@@ -32,7 +32,6 @@
 // }
 #define AIS_SIGN_KEYHANDLE "keyHandle"
 #define AIS_SIGN_ALGORITHM "algorithm"
-#define AIS_SIGN_PARAMETERS "parameters"
 #define AIS_SIGN_PARAMETERS_MESSAGE "parameters.message"
 
 // AIS identity response format:
