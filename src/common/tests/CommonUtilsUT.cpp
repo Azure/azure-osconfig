@@ -163,11 +163,11 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
     {
         EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
         EXPECT_NE(nullptr, textResult);
-        EXPECT_NE(NULL, strstr(textResult, options[i].expectedTextResultOne));
+        EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultOne));
         
         if (nullptr != options[i].expectedTextResultTwo)
         {
-            EXPECT_NE(NULL, strstr(textResult, options[i].expectedTextResultTwo));
+            EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
             EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne) + strlen(options[i].expectedTextResultTwo));
         }
         else
