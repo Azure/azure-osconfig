@@ -283,7 +283,7 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         // The string value (can be empty string) is wrapped in "" and is not null terminated
         *payloadSizeBytes = (value ? strlen(value) : 0) + (isStringValue ? 2 : 0);
 
-        if ((g_maxPayloadSizeBytes > 0) && (*payloadSizeBytes > g_maxPayloadSizeBytes))
+        if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
             OsConfigLogError(DeviceInfoGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
@@ -316,6 +316,13 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
 int DeviceInfoMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     OsConfigLogInfo(DeviceInfoGetLog(), "No desired objects, MmiSet not implemented");
+    
+    UNUSED(clientSession);
+    UNUSED(componentName);
+    UNUSED(objectName);
+    UNUSED(payload);
+    UNUSED(payloadSizeBytes);
+    
     return EPERM;
 }
 

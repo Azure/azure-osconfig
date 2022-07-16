@@ -64,7 +64,7 @@ char* ReadUriFromSocket(int socketHandle, void* log)
     char* buffer = NULL;
     char bufferUri[MAX_MPI_URI_LENGTH] = {0};
     int uriLength = 0;
-    int i = 0;
+    size_t i = 0;
 
     if (socketHandle < 0)
     {
@@ -164,7 +164,7 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log)
     char* buffer = NULL;
     char* contentLength = NULL;
     char isolatedContentLength[64] = {0};
-    int i = 0;
+    size_t i = 0;
 
     if (socketHandle < 0)
     {

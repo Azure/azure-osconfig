@@ -45,7 +45,7 @@ char* UrlDecode(char* target)
 {
     int i = 0, j = 0;
     char buffer[3] = {0};
-    int value = 0;
+    unsigned int value = 0;
     int targetLength = 0;
     char* decodedTarget = NULL;
 

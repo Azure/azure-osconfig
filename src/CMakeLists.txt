@@ -19,11 +19,7 @@ option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
-option(COMPILE_WITH_STRICTNESS "Builds with additional strict compiler options." ON)
-if (COMPILE_WITH_STRICTNESS)
-    message(STATUS "Compiling with additional strictness")
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wreorder;-Wall;-Wextra;-Werror;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
-endif()
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros>")
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_compile_options("-Wno-psabi;-fPIC")
