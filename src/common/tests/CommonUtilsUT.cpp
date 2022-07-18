@@ -148,13 +148,13 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
 
     ExecuteTwoCommandsOptions options[] = {
         { "echo alpha; echo beta", false, true, 0, 0, "alpha\n", "beta\n" },
-        { "((echo alpha); (echo beta))", false, true, 0, 0, "alpha\n", "beta\n" },
-        { "((echo alpha); echo beta)", false, true, 0, 0, "alpha\n", "beta\n" },
-        { "echo alpha & echo beta", false, true, 0, 0, "beta\n", "alpha\n" },
-        { "((echo alpha)&(echo beta))", false, true, 0, 0, "beta\n", "alpha\n" },
-        { "((echo alpha) & echo beta)", false, true, 0, 0, "beta\n", "alpha\n" },
-        { "echo alpha > null; echo beta", false, true, 0, 0, "beta\n", nullptr },
-        { "echo alpha > null & echo beta", false, true, 0, 0, "beta\n", nullptr },
+        { "((echo alpha1); (echo beta1))", false, true, 0, 0, "alpha1\n", "beta1\n" },
+        { "((echo alpha12); echo beta12)", false, true, 0, 0, "alpha12\n", "beta12\n" },
+        { "echo alpha123 & echo beta123", false, true, 0, 0, "beta123\n", "alpha123\n" },
+        { "((echo alpha1234)&(echo beta1234))", false, true, 0, 0, "beta1234\n", "alpha1234\n" },
+        { "((echo alpha12345) & echo beta12345)", false, true, 0, 0, "beta12345\n", "alpha12345\n" },
+        { "echo alpha123456 > null; echo beta123456", false, true, 0, 0, "beta123456\n", nullptr },
+        { "echo alpha1234567 > null & echo beta1234567", false, true, 0, 0, "beta1234567\n", nullptr },
     };
 
     int optionsSize = ARRAY_SIZE(options);
@@ -165,12 +165,16 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
         EXPECT_NE(nullptr, textResult);
         EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultOne));
         
-        if (options[i].expectedTextResultTwo)
+        if (nullptr != options[i].expectedTextResultTwo)
         {
             EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
+            EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne) + strlen(options[i].expectedTextResultTwo));
+        }
+        else
+        {
+            EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne));
         }
 
-        EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne) + (options[i].expectedTextResultTwo ? strlen(options[i].expectedTextResultTwo) : 0));
         FREE_MEMORY(textResult);
     }
 }
