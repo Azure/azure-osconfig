@@ -13,9 +13,6 @@ const std::string g_cacheHostSource = "cacheHostSource";
 const std::string g_cacheHost = "cacheHost";
 const std::string g_cacheHostFallback = "cacheHostFallback";
 
-static const char g_healthTelemetryConfigFile[] = "/etc/azure-device-health-services/config.toml";
-static const char g_doConfigFile[] = "/etc/deliveryoptimization-agent/admin-config.json";
-
 #define SETTINGS_LOGFILE "/var/log/osconfig_settings.log"
 #define SETTINGS_ROLLEDLOGFILE "/var/log/osconfig_settings.bak"
 

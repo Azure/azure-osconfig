@@ -7,6 +7,17 @@
 #include <bits/stdc++.h>
 #include "Firewall.h"
 
+const char* FirewallObjectBase::m_firewallInfo = R""""({
+    "Name": "Firewall",
+    "Description": "Provides functionality to remotely manage firewall rules on device",
+    "Manufacturer": "Microsoft",
+    "VersionMajor": 2,
+    "VersionMinor": 0,
+    "VersionInfo": "Nickel",
+    "Components": ["Firewall"],
+    "Lifetime": 1,
+    "UserAccount": 0})"""";
+
 const char g_firewallComponent[] = "Firewall";
 const char g_firewallState[] = "firewallState";
 const char g_firewallFingerprint[] = "firewallFingerprint";
@@ -45,7 +56,7 @@ int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
     }
     else
     {
-        size_t len = strlen(g_firewallInfo);
+        size_t len = strlen(m_firewallInfo);
         *payload = new (std::nothrow) char[len];
 
         if (nullptr == *payload)
@@ -55,7 +66,7 @@ int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
         }
         else
         {
-            std::memcpy(*payload, g_firewallInfo, len);
+            std::memcpy(*payload, m_firewallInfo, len);
             *payloadSizeBytes = len;
         }
     }

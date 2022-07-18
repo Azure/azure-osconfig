@@ -24,6 +24,12 @@
 #define ERROR_SET_RETURNED "%s(%s) returned %d"
 #define ERROR_INVALID_JSON "%s parse failed: '%s' (offset %u)"
 
+const char* HostNameBase::m_componentName = "HostName";
+const char* HostNameBase::m_propertyDesiredName = "desiredName";
+const char* HostNameBase::m_propertyDesiredHosts = "desiredHosts";
+const char* HostNameBase::m_propertyName = "name";
+const char* HostNameBase::m_propertyHosts = "hosts";
+
 constexpr const char* g_commandGetName = "cat /etc/hostname";
 constexpr const char* g_commandGetHosts = "cat /etc/hosts";
 constexpr const char* g_commandSetName = "hostnamectl set-hostname --static '$value'";
@@ -81,13 +87,13 @@ int HostNameBase::Set(
 
     if (!IsValidComponentName(componentName))
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_COMPONENT, "Set", componentName, g_componentName);
+        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_COMPONENT, "Set", componentName, m_componentName);
         return EINVAL;
     }
 
     if (!IsValidObjectName(objectName, true))
     {
-        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Set", objectName ? objectName : "-", g_propertyDesiredName, g_propertyDesiredHosts);
+        OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Set", objectName ? objectName : "-", m_propertyDesiredName, m_propertyDesiredHosts);
         return EINVAL;
     }
 
@@ -107,11 +113,11 @@ int HostNameBase::Set(
     else
     {
         std::string data(payload, payloadSizeBytes);
-        if (std::strcmp(objectName, g_propertyDesiredName) == 0)
+        if (std::strcmp(objectName, m_propertyDesiredName) == 0)
         {
             status = SetName(data);
         }
-        else if (std::strcmp(objectName, g_propertyDesiredHosts) == 0)
+        else if (std::strcmp(objectName, m_propertyDesiredHosts) == 0)
         {
             status = SetHosts(data);
         }
@@ -136,7 +142,7 @@ int HostNameBase::Get(
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_COMPONENT, "Get", componentName, g_componentName);
+            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_COMPONENT, "Get", componentName, m_componentName);
         }
         return EINVAL;
     }
@@ -145,7 +151,7 @@ int HostNameBase::Get(
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Get", objectName ? objectName : "-", g_propertyName, g_propertyHosts);
+            OsConfigLogError(HostNameLog::Get(), ERROR_INVALID_OBJECT, "Get", objectName ? objectName : "-", m_propertyName, m_propertyHosts);
         }
         return EINVAL;
     }
@@ -160,11 +166,11 @@ int HostNameBase::Get(
     }
 
     std::string data;
-    if (std::strcmp(objectName, g_propertyName) == 0)
+    if (std::strcmp(objectName, m_propertyName) == 0)
     {
         data = GetName();
     }
-    else if (std::strcmp(objectName, g_propertyHosts) == 0)
+    else if (std::strcmp(objectName, m_propertyHosts) == 0)
     {
         data = GetHosts();
     }
@@ -336,12 +342,12 @@ bool HostNameBase::IsValidClientSession(MMI_HANDLE clientSession)
 
 bool HostNameBase::IsValidComponentName(const char* componentName)
 {
-    return (componentName && (std::strcmp(componentName, g_componentName) == 0));
+    return (componentName && (std::strcmp(componentName, m_componentName) == 0));
 }
 
 bool HostNameBase::IsValidObjectName(const char* objectName, const bool desired)
 {
-    return (objectName && (desired ? (std::strcmp(objectName, g_propertyDesiredName) == 0 || std::strcmp(objectName, g_propertyDesiredHosts) == 0) : (std::strcmp(objectName, g_propertyName) == 0 || std::strcmp(objectName, g_propertyHosts) == 0)));
+    return (objectName && (desired ? (std::strcmp(objectName, m_propertyDesiredName) == 0 || std::strcmp(objectName, m_propertyDesiredHosts) == 0) : (std::strcmp(objectName, m_propertyName) == 0 || std::strcmp(objectName, m_propertyHosts) == 0)));
 }
 
 bool HostNameBase::IsValidJsonString(const char* data, const int size)
