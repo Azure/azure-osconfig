@@ -119,8 +119,8 @@ TEST(FirewallTests, GetInfo)
     int payloadSizeBytes = 0;
 
     FirewallObject::GetInfo(clientName, &payload, &payloadSizeBytes);
-    EXPECT_STREQ(payload, g_firewallInfo);
-    EXPECT_EQ(payloadSizeBytes, strlen(g_firewallInfo));
+    EXPECT_STREQ(payload, FirewallObject::m_firewallInfo);
+    EXPECT_EQ(payloadSizeBytes, strlen(FirewallObject::m_firewallInfo));
 }
 
 TEST(FirewallTests, DetectUtility)

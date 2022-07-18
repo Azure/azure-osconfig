@@ -14,17 +14,6 @@
 #define FIREWALL_LOGFILE "/var/log/osconfig_firewall.log"
 #define FIREWALL_ROLLEDLOGFILE "/var/log/osconfig_firewall.bak"
 
-constexpr const char g_firewallInfo[] = R""""({
-    "Name": "Firewall",
-    "Description": "Provides functionality to remotely manage firewall rules on device",
-    "Manufacturer": "Microsoft",
-    "VersionMajor": 2,
-    "VersionMinor": 0,
-    "VersionInfo": "Nickel",
-    "Components": ["Firewall"],
-    "Lifetime": 1,
-    "UserAccount": 0})"""";
-
 class FirewallLog
 {
 public:
@@ -155,6 +144,8 @@ private:
 class FirewallObjectBase
 {
 public:
+    static const char* m_firewallInfo;
+
     virtual ~FirewallObjectBase() {};
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);

@@ -31,7 +31,6 @@ constexpr const char g_moduleInfo[] = R""""({
     "Components": ["HostName"],
     "Lifetime": 2,
     "UserAccount": 0})"""";
-constexpr const char g_emptyPayload[] = "\"\"";
 
 void __attribute__((constructor)) InitModule()
 {

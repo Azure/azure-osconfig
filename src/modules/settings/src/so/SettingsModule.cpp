@@ -36,6 +36,9 @@ constexpr const char g_moduleInfo[] = R""""({
     "Lifetime": 0,
     "UserAccount": 0})"""";
 
+static const char g_healthTelemetryConfigFile[] = "/etc/azure-device-health-services/config.toml";
+static const char g_doConfigFile[] = "/etc/deliveryoptimization-agent/admin-config.json";
+
 int MmiGetInfo(
     const char* clientName,
     MMI_JSON_STRING* payload,
