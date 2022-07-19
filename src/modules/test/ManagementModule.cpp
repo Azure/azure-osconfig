@@ -164,7 +164,7 @@ int ManagementModule::CallMmiSet(MMI_HANDLE handle, const char* componentName, c
 {
     int status = MMI_OK;
 
-    if (nullptr != m_mmiSet && IsValidMimObjectPayload(payload, payloadSizeBytes, NULL))
+    if (nullptr != m_mmiSet)
     {
         status = m_mmiSet(handle, componentName, objectName, payload, payloadSizeBytes);
     }
