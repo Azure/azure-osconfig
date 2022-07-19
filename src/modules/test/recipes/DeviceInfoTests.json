@@ -130,7 +130,7 @@
     "ObjectName": "osName",
     "Desired": true,
     "ExpectedResult": 1,
-    "Payload": "{}",
+    "Payload": "\"Test\"",
     "WaitSeconds": 0
   }
 ]
