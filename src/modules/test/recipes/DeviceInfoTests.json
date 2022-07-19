@@ -1,45 +1,128 @@
 [
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "osName",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "osVersion",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "cpuType",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "cpuVendorId",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "blah",
-        "Desired": false,
-        "ExpectedResult": 22,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "DeviceInfo",
-        "ObjectName": "blah",
-        "Desired": true,
-        "Payload": "{}",
-        "ExpectedResult": 22,
-        "WaitSeconds": 0
-    }
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "osName",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "osVersion",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "cpuType",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "cpuVendorId",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "cpuModel",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "totalMemory",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "freeMemory",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "kernelName",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "kernelRelease",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "kernelVersion",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "productVendor",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "productName",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "productVersion",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "systemCapabilities",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "systemConfiguration",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "osConfigVersion",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "OsInfo",
+    "ObjectName": "osName",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "notImplemented",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  }
 ]
