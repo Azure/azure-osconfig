@@ -129,7 +129,7 @@
     "ComponentName": "DeviceInfo",
     "ObjectName": "osName",
     "Desired": true,
-    "ExpectedResult": 22,
+    "ExpectedResult": 1,
     "Payload": "{}",
     "WaitSeconds": 0
   }
