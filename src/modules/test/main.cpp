@@ -21,7 +21,7 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
             "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
-            [recipe]() -> RecipeFixture *
+            [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
             });
