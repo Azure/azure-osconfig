@@ -124,5 +124,13 @@
     "Desired": false,
     "ExpectedResult": 22,
     "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "DeviceInfo",
+    "ObjectName": "osName",
+    "Desired": true,
+    "ExpectedResult": 22,
+    "Payload": "{}",
+    "WaitSeconds": 0
   }
 ]
