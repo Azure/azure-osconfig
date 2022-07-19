@@ -5,6 +5,13 @@ std::string g_configFile = "/etc/osconfig/osconfig.json";
 std::string g_defaultPath = "testplate.json";
 std::string g_fullLogging = "FullLogging";
 
+static std::string str_tolower(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), 
+                   [](unsigned char c){ return std::tolower(c); }
+                  );
+    return s;
+}
+
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
     for (TestRecipe recipe : *testRecipes)
@@ -14,7 +21,7 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
             "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
-            [recipe]()->RecipeFixture *
+            [recipe]() -> RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
             });
@@ -25,8 +32,24 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
 {
     TestRecipes testRecipes = std::make_shared<std::vector<TestRecipe>>();
     JSON_Value *root_value;
-    std::cout << "Using test recipes: " << g_defaultPath << std::endl;
-    root_value = json_parse_file_with_comments(g_defaultPath.c_str());
+    
+    char buf[PATH_MAX];
+    char *res = realpath("/proc/self/exe", buf);
+    if (res == nullptr)
+    {
+        TestLogError("Could not find the executable path");
+        return testRecipes;
+    }
+    std::string fullPath(buf);
+    fullPath = fullPath.substr(0, fullPath.find_last_of("/") + 1) + g_defaultPath;
+    if (!std::filesystem::exists(fullPath.c_str()))
+    {
+        TestLogError("Could not find test configuration: %s", fullPath.c_str());
+        return testRecipes;
+    }
+
+    std::cout << "Using test recipes: " << fullPath.c_str() << std::endl;
+    root_value = json_parse_file_with_comments(fullPath.c_str());
 
     if (json_value_get_type(root_value) != JSONArray)
     {
@@ -48,7 +71,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
         };
 
         // Add recipe if no specific module specified or if the module name matches
-        if ((moduleName.empty()) || (moduleName == recipeMetadata.m_moduleName))
+        if ((moduleName.empty()) || (str_tolower(moduleName) == str_tolower(recipeMetadata.m_moduleName)))
         {
             std::cout << "Adding test recipes for " << recipeMetadata.m_moduleName << std::endl;
             ss << "Module : " << recipeMetadata.m_modulePath << std::endl;
@@ -138,7 +161,7 @@ int main(int argc, char **argv)
     TestRecipes testRecipes;
 
     std::stringstream ss;
-    
+
     if (argc == 1)
     {
         PrintUsage();
@@ -180,8 +203,6 @@ int main(int argc, char **argv)
         }
         else
         {
-            // TODO: TGest specific modulename -- if found!
-            // std::cout << "Testing Module ---> " << argv[1] << std::endl;
             testRecipes = LoadValuesFromConfiguration(ss, argv[1]);
         }
     }
@@ -211,11 +232,21 @@ int main(int argc, char **argv)
         RegisterRecipesWithGTest(testRecipes);
     }
 
-    int status = RUN_ALL_TESTS();
+    int status = 0;
+    if (ss.str().length() > 0)
+    {
+        status = RUN_ALL_TESTS();
 
-    std::cout << "[==========]"   << std::endl;
-    std::cout << "Test Summary: " << std::endl << ss.str();
-    std::cout << "[==========]"   << std::endl;
+        std::cout << "[==========]" << std::endl;
+        std::cout << "Test Summary: " << std::endl
+                  << ss.str();
+        std::cout << "[==========]" << std::endl;
+    }
+    else
+    {
+        std::cerr << "No tests found!" << std::endl;
+        status = 1;
+    }
 
     return status;
 }
