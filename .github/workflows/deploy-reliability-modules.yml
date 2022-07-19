@@ -6,7 +6,7 @@ on:
 env:
   build-type: Release
   container-workspace: /azure-osconfig
-  repeat-for-x-hours: 23
+  repeat-for-x-hours: 4
 
 jobs:
   unit-test:
@@ -58,7 +58,6 @@ jobs:
         id: set-variables
         run: |
           echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
-          echo '::set-output name=end-time::`date -d "+${{ env.repeat-for-x-hours }} hours" +%s`'
 
       - name: Run modulestest
         if: success() || failure()
@@ -68,17 +67,18 @@ jobs:
           working-directory: ${{ env.container-workspace }}/build/modules/test
           cmd: |
             function checkResult(){
-            if [ \$result -ne 0 ]; then
-              echo '::error title=E2E Test Failure::The E2E tests failed at run number \$runNumber'
-              exit \$result
-            fi
+              if [[ \$result -ne 0 ]]; then
+                echo '::error title=Module Test Failure::The modules tests failed at run number \$runNumber'
+                exit \$result
+              fi
             }
             result=0
+            end=$(date -d "+${{ env.repeat-for-x-hours }} hours" +%s)
             mkdir -p /etc/osconfig/
-            echo Using date ${{ steps.set-variables.outputs.end-time }}
-            while [ $(date +%s) -lt ${{ steps.set-variables.outputs.end-time }} ]; do
+            echo Using date \$end
+            while [[ \$(date +%s) -lt \$end ]]; do
               echo Performing test run \$((++runNumber))
-              result=\`./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json\`
+              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json)
               checkResult
             done
 
