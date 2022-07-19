@@ -44,7 +44,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
     fullPath = fullPath.substr(0, fullPath.find_last_of("/") + 1) + g_defaultPath;
     if (!std::filesystem::exists(fullPath.c_str()))
     {
-        TestLogError("Could not find test configuration: %s", fullPath.c_str());
+        TestLogError("Could not find test configuration: %s\n May be missing 'jq' application, install application and perform CMake rebuild (configure+build).", fullPath.c_str());
         return testRecipes;
     }
 
