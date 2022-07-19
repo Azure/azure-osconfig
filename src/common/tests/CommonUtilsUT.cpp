@@ -150,11 +150,11 @@ TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
         { "echo alpha; echo beta", true, true, 0, 0, "alpha ", "beta " },
         { "((echo alpha1); (echo beta1))", true, true, 0, 0, "alpha1 ", "beta1 " },
         { "((echo alpha12); echo beta12)", true, true, 0, 0, "alpha12 ", "beta12 " },
-        { "echo alpha123 & echo beta123", true, true, 0, 0, "beta123 ", "alpha123 " },
-        { "((echo alpha1234)&(echo beta1234))", true, true, 0, 0, "beta1234 ", "alpha1234 " },
-        { "((echo alpha12345) & echo beta12345)", true, true, 0, 0, "beta12345 ", "alpha12345 " },
+        { "echo alpha123 && echo beta123", true, true, 0, 0, "beta123 ", "alpha123 " },
+        { "((echo alpha1234)&&(echo beta1234))", true, true, 0, 0, "beta1234 ", "alpha1234 " },
+        { "((echo alpha12345) && echo beta12345)", true, true, 0, 0, "beta12345 ", "alpha12345 " },
         { "echo alpha123456 > null; echo beta123456", true, true, 0, 0, "beta123456 ", nullptr },
-        { "echo alpha1234567 > null & echo beta1234567", true, true, 0, 0, "beta1234567 ", nullptr },
+        { "echo alpha1234567 > null && echo beta1234567", true, true, 0, 0, "beta1234567 ", nullptr }
     };
 
     int optionsSize = ARRAY_SIZE(options);
