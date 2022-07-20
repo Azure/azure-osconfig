@@ -33,7 +33,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
     TestRecipes testRecipes = std::make_shared<std::vector<TestRecipe>>();
     JSON_Value *root_value;
     
-    char buf[PATH_MAX];
+    char buf[PATH_MAX] = {0};
     char *res = realpath("/proc/self/exe", buf);
     if (res == nullptr)
     {
@@ -44,7 +44,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
     fullPath = fullPath.substr(0, fullPath.find_last_of("/") + 1) + g_defaultPath;
     if (!std::filesystem::exists(fullPath.c_str()))
     {
-        TestLogError("Could not find test configuration: %s\n May be missing 'jq' application, install application and perform CMake rebuild (configure+build).", fullPath.c_str());
+        TestLogError("Could not find test configuration: %s\n 'jq' may be missing, install application and rebuild.", fullPath.c_str());
         return testRecipes;
     }
 
@@ -244,7 +244,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        std::cerr << "No tests found!" << std::endl;
+        std::cerr << "No tests found." << std::endl;
         status = 1;
     }
 
