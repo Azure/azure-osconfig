@@ -65,6 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+    mkdir -p /etc/aziot/identityd/config.d
     cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
 fi
 %systemd_post osconfig-platform.service
