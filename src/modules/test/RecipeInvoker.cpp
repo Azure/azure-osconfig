@@ -13,6 +13,8 @@ void RecipeInvoker::TestBody()
 
     if (m_recipe.m_desired)
     {
+        // If no payloadSizeBytes defined, use the size of the payload
+        m_recipe.m_payloadSizeBytes = (0 == m_recipe.m_payloadSizeBytes) ? std::strlen(m_recipe.m_payload.c_str()) : m_recipe.m_payloadSizeBytes;
         EXPECT_EQ(m_recipe.m_expectedResult, session.Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
     }
     else
