@@ -10,7 +10,32 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\": \"helloworld\", \"arguments\": \"echo Hello World!\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 100, }",
+        "Payload": "{\"commandId\": \"1\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 0,
+        "WaitSeconds": 30
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"1\", \"action\": 4 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandStatus",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"1\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
         "PayloadSizeBytes": 0,
         "ExpectedResult": 22,
         "WaitSeconds": 0
@@ -19,16 +44,61 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\": \"test1\", \"arguments\": \"echo Hello World\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-        "PayloadSizeBytes": 123,
+        "Payload": "{\"commandId\": 2, \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"2\", \"arguments\": \"sleep 200\", \"timeout\": 10, \"singleLineTextResult\": true, \"action\": 3 }",
+        "PayloadSizeBytes": 0,
         "ExpectedResult": 0,
-        "WaitSeconds": 5
+        "WaitSeconds": 60
     },
     {
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"test1\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
-        "ExpectedResult": 0
+        "ExpectedPayload": "{\"commandId\": \"2\", \"resultCode\": 62, \"textResult\": \"\", \"currentState\": 4 }",
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"3\", \"arguments\": \"sleep 500\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 0,
+        "WaitSeconds": 60
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"3\", \"action\": 5 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 0,
+        "WaitSeconds": 30
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandStatus",
+        "Desired": false,
+        "ExpectedPayload": "{\"commandId\": \"3\", \"resultCode\": 125, \"textResult\": \"\", \"currentState\": 5 }",
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"4\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 100 }",
+        "PayloadSizeBytes": 0,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
     }
 ]
