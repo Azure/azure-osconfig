@@ -26,13 +26,6 @@ if(JQ_EXEC)
         COMMENT "Generating module recipe configuration"
     )
     add_dependencies(modulestest modulerecipeconfiguration)
-else()
-    set(jq_error "'jq' application required for generating module recipe configuration")
-    message(WARNING ${jq_error})
-    add_custom_target(modulerecipeconfiguration
-        COMMAND true
-        COMMENT ${jq_error}
-    )
 endif()
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
