@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace E2eTesting
 {
-    [TestFixture, Category("Pmc")]
+    [TestFixture, Category("Pmc"), Ignore("Stability Issues")]
     public class PmcTests : E2ETest
     {
         private const string _componentName = "PackageManagerConfiguration";
