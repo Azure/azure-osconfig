@@ -32,6 +32,11 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
     target_link_libraries(modulestest stdc++fs)
 endif()
 
+add_custom_command(TARGET modulestest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:modulestest> ${CMAKE_BINARY_DIR}/modulestest
+    DEPENDS $<TARGET_FILE:modulestest>
+)
+
 if (BUILD_TESTS)
     add_subdirectory(unit-tests)
 endif()
