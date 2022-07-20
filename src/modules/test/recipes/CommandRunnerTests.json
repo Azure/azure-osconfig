@@ -1,26 +1,9 @@
 [
     {
         "ComponentName": "CommandRunner",
-        "ObjectName": "commandStatus",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\": \"1\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 0,
-        "WaitSeconds": 30
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"1\", \"action\": 4 }",
-        "PayloadSizeBytes": 0,
+        "Payload": "{\"commandId\": \"RmCache\", \"arguments\": \"sudo rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
         "ExpectedResult": 0,
         "WaitSeconds": 0
     },
@@ -29,76 +12,87 @@
         "ObjectName": "commandStatus",
         "Desired": false,
         "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"1\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 22,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": 2, \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 22,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"2\", \"arguments\": \"sleep 200\", \"timeout\": 10, \"singleLineTextResult\": true, \"action\": 3 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 0,
-        "WaitSeconds": 60
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandStatus",
-        "Desired": false,
-        "ExpectedPayload": "{\"commandId\": \"2\", \"resultCode\": 62, \"textResult\": \"\", \"currentState\": 4 }",
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"3\", \"arguments\": \"sleep 500\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 0,
-        "WaitSeconds": 60
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"3\", \"action\": 5 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 0,
-        "WaitSeconds": 30
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandStatus",
-        "Desired": false,
-        "ExpectedPayload": "{\"commandId\": \"3\", \"resultCode\": 125, \"textResult\": \"\", \"currentState\": 5 }",
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandArguments",
-        "Desired": true,
-        "Payload": "{\"commandId\": \"4\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 100 }",
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 22,
         "WaitSeconds": 0
     }
+    //TBD: uncomment and complete once the modulestest binary will be fixed to run a single module session per module test recipe
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"1\", \"arguments\": \"sleep 1\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"1\", \"action\": 4 }",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"1\", \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    //    "ExpectedResult": 22,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": 2, \"arguments\": \"date\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    //    "ExpectedResult": 22,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"2\", \"arguments\": \"sleep 10\", \"timeout\": 2, \"singleLineTextResult\": true, \"action\": 3}",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandStatus",
+    //    "Desired": false,
+    //    "ExpectedPayload": "{\"commandId\": \"200\", \"resultCode\": 62, \"textResult\": \"\", \"currentState\": 4}",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"3\", \"arguments\": \"sleep 5\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"300\", \"action\": 5 }",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandStatus",
+    //    "Desired": false,
+    //    "ExpectedPayload": "{\"commandId\": \"300\", \"resultCode\": 125, \"textResult\": \"\", \"currentState\": 5}",
+    //    "ExpectedResult": 0,
+    //    "WaitSeconds": 0
+    //},
+    //{
+    //    "ComponentName": "CommandRunner",
+    //    "ObjectName": "commandArguments",
+    //    "Desired": true,
+    //    "Payload": "{\"commandId\": \"400\", \"arguments\": \"ls\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 100}",
+    //    "ExpectedResult": 22,
+    //    "WaitSeconds": 0
+    //}
 ]
