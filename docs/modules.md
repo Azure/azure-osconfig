@@ -979,7 +979,7 @@ The static library implements one upper C++ class: ModuleObject. This class cont
 - ModuleObject::Free with same signature as MmiFree
 - Public constructor and destructor.
 
-The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as the unit-tests for the module links to this same static library as the module SO.
+The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as both the unit-tests and module SO link to this same static library.
 
 ## 12.2. Module Shared Object (SO)
 
