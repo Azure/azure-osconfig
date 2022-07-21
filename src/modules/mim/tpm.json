@@ -37,7 +37,7 @@
         },
         { 
           "name": "tpmManufacturer", 
-          "type": "MimObject", 
+          "type": "mimObject", 
           "desired": false,
           "schema": "string"
         }
