@@ -1,13 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// FIXME: clean up these "#includes"
 #include <CommonUtils.h>
 #include <Mmi.h>
 #include <sstream>
 #include <bits/stdc++.h>
 #include "Firewall.h"
 
-const char* FirewallObjectBase::m_firewallInfo = R""""({
+const std::string FirewallBase::m_firewallComponent = "Firewall";
+const std::string FirewallBase::m_firewallFingerprint = "firewallFingerprint";
+const std::string FirewallBase::m_firewallState = "firewallState";
+const std::string FirewallBase::m_firewallTables = "tables";
+
+const std::string FirewallBase::m_moduleInfo = R""""({
     "Name": "Firewall",
     "Description": "Provides functionality to remotely manage firewall rules on device",
     "Manufacturer": "Microsoft",
@@ -18,10 +24,7 @@ const char* FirewallObjectBase::m_firewallInfo = R""""({
     "Lifetime": 1,
     "UserAccount": 0})"""";
 
-const char g_firewallComponent[] = "Firewall";
-const char g_firewallState[] = "firewallState";
-const char g_firewallFingerprint[] = "firewallFingerprint";
-
+// FIXME: clean up all these constants
 const std::string g_iptablesUtility = "iptables";
 const std::string g_queryTableCommand = g_iptablesUtility + " -L -n -v --line-number -t ";
 const std::string g_fingerprintPattern = R"""(\"([a-z0-9]{64})\")""";
@@ -30,12 +33,227 @@ const std::vector<std::string> g_tableNames = {"filter", "nat", "raw", "mangle",
 
 OSCONFIG_LOG_HANDLE FirewallLog::m_logFirewall = nullptr;
 
-FirewallObject::FirewallObject(unsigned int maxPayloadSizeBytes)
+Rule Rule::Parse(const std::string ruleString)
 {
-    m_maxPayloadSizeBytes = maxPayloadSizeBytes;
+    Rule rule;
+
+    std::regex rulePattern(R"""(\s*(\d+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+([\w-]+)\s+([\w+\*]+)\s+([\w+\*]+)\s+([0-9\.\!\/]+)\s+([0-9\.\!\/]+)\s+(.*))""" );
+    std::smatch pieces;
+
+    if (std::regex_match(ruleString, pieces, rulePattern))
+    {
+        // FIXME: fix 'magic' numbers here
+        if (11 <= pieces.size())
+        {
+            int number = std::stoi(pieces.str(1));
+            std::string target = pieces.str(4);
+            std::string in = pieces.str(5);
+            std::string out = pieces.str(7);
+            std::string protocol = pieces.str(8);
+            std::string source = pieces.str(9);
+            std::string destination = pieces.str(10);
+            std::string options = pieces.str(11);
+            rule = Rule(number, target, in, out, protocol, source, destination, options, false);
+        }
+        else
+        {
+            std::cout << "Error: invalid rule string (regex error )" << pieces.size() << std::endl;
+            for (auto& piece : pieces)
+            {
+                std::cout << piece << std::endl;
+            }
+            rule.m_parseError = true;
+        }
+    }
+    else
+    {
+        std::cout << "Error: invalid rule string" << std::endl;
+        rule.m_parseError = true;
+    }
+
+    return rule;
 }
 
-int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+Chain Chain::Parse(const std::string chainString)
+{
+    Chain chain;
+    std::istringstream iss(chainString);
+    std::string line;
+
+    // The first line of the chain contains the chain name and policy
+    std::getline(iss, line, '\n');
+
+    std::regex chainPattern(R"""(Chain\s+([^\s]+)\s+((\(policy)\s+([^\s]+)\s+([^\s]+)\s+(packets,)\s+([^\s]+)\s+(bytes\)))?)""");
+    // TODO: figure this out
+    // std::regex userChainPattern(R"""(\s*Chain\s+([^\s]+)\s+.*references.*)""");
+    std::smatch pieces;
+
+    if (std::regex_match(line, pieces, chainPattern))
+    {
+        if (2 != pieces.size())
+        {
+            std::string name = pieces.str(1);
+            std::string policy = pieces.str(4);
+            std::vector<Rule> rules;
+
+            // The second line contains the column names:
+            // num   pkts bytes target     prot opt in     out     source               destination
+            std::getline(iss, line, '\n');
+
+            // TODO: validate/parse the column names (use column names to help parse each rule)
+
+            // The remaining lines contain the rules
+            while (std::getline(iss, line, '\n'))
+            {
+                Rule rule = Rule::Parse(line);
+                // TODO: validate the rule and set parse error if it is invalid
+                rules.push_back(rule);
+            }
+
+            chain = Chain(name, policy, rules);
+        }
+        else
+        {
+            // TODO: better error messages
+            OsConfigLogError(FirewallLog::Get(), "Invalid firewall chain");
+        }
+    }
+    else
+    {
+        // TODO: better error messages
+        OsConfigLogError(FirewallLog::Get(), "Invalid firewall chain");
+    }
+
+    return chain;
+}
+
+Table Table::Parse(const std::string name, const std::string tableString)
+{
+    // Iterate over the chains in the table
+    std::vector<Chain> chains;
+
+    // Use the blank line between each chain to split up the table
+    std::istringstream iss(tableString);
+    std::string line;
+    std::string chainString;
+
+    while (std::getline(iss, line, '\n'))
+    {
+        if (line.empty())
+        {
+            Chain chain = Chain::Parse(chainString);
+            chains.push_back(chain);
+            chainString.clear();
+        }
+        else
+        {
+            chainString += line + '\n';
+        }
+    }
+
+    return Table(name, chains);
+}
+
+std::string Hash(const std::string str)
+{
+    char* hash = nullptr;
+    std::string command = "echo \"" + str + "\"";
+    // REVIEW: why not openssl ???
+    return (hash = HashCommand(command.c_str(), FirewallLog::Get())) ? hash : "";
+}
+
+// REVIEW: C++ 17 - return a tuple of (int status, std::string result) and unpack it in the caller
+int Execute(const std::string command, std::string& result)
+{
+    char* textResult = nullptr;
+    int status = ExecuteCommand(nullptr, command.c_str(), false, true, 0, 0, &textResult, nullptr, FirewallLog::Get());
+    if (textResult)
+    {
+        result = textResult;
+    }
+    return status;
+}
+
+Table Iptables::GetTable(const std::string tableName)
+{
+    Table table;
+    std::string tableString;
+    const std::string command = "iptables -L -n -v --line-number -t " + tableName;
+
+    if (0 == Execute(command.c_str(), tableString))
+    {
+        std::string hash = ::Hash(tableString);
+
+        if ((m_tableHashes.find(tableName) != m_tableHashes.end()) && (m_tableHashes[tableName] == hash))
+        {
+            table = m_tables[tableName];
+        }
+        else
+        {
+            table = Table::Parse(tableName, tableString);
+            m_tables[tableName] = table;
+            m_tableHashes[tableName] = hash;
+        }
+    }
+    else
+    {
+        OsConfigLogError(FirewallLog::Get(), "Error retrieving table from iptables: %s", tableName.c_str())
+    }
+
+    return table;
+}
+
+std::vector<Table> Iptables::List()
+{
+    std::vector<Table> tables;
+
+    for (auto& tableName : m_tableNames)
+    {
+        Table table = GetTable(tableName);
+        tables.push_back(table);
+    }
+
+    return tables;
+}
+
+// Creates the given rule using the iptables command line tool
+int Iptables::Create(const Rule& rule)
+{
+    UNUSED(rule);
+    return 0;
+}
+
+// Deletes the given rule using the iptables command line tool
+// TODO: overload this method for different Delete versions
+int Iptables::Delete(const Rule& rule)
+{
+    UNUSED(rule);
+    return 0;
+}
+
+std::string Iptables::Hash() const
+{
+    std::string hash;
+    std::string rules;
+    const std::string command = "iptables -S";
+
+    if (0 == Execute(command.c_str(), rules))
+    {
+        hash = ::Hash(rules);
+    }
+    else
+    {
+        OsConfigLogError(FirewallLog::Get(), "Error retrieving rules sepcification from iptables");
+    }
+
+    return hash;
+}
+
+
+FirewallBase::FirewallBase(unsigned int maxPayloadSizeBytes) :
+    m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
+
+int FirewallBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -56,7 +274,7 @@ int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
     }
     else
     {
-        size_t len = strlen(m_firewallInfo);
+        size_t len = strlen(m_moduleInfo.c_str());
         *payload = new (std::nothrow) char[len];
 
         if (nullptr == *payload)
@@ -66,7 +284,7 @@ int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
         }
         else
         {
-            std::memcpy(*payload, m_firewallInfo, len);
+            std::memcpy(*payload, m_moduleInfo.c_str(), len);
             *payloadSizeBytes = len;
         }
     }
@@ -74,7 +292,14 @@ int FirewallObjectBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
     return status;
 }
 
-int FirewallObjectBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+// template<class T>
+// Firewall<T>::Firewall(unsigned int maxPayloadSizeBytes) :
+Firewall::Firewall(unsigned int maxPayloadSizeBytes) :
+    FirewallBase(maxPayloadSizeBytes) {}
+
+// template<class T>
+// int Firewall<T>::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int Firewall::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     UNUSED(componentName);
     UNUSED(objectName);
@@ -85,7 +310,92 @@ int FirewallObjectBase::Set(const char* componentName, const char* objectName, c
     return ENOSYS;
 }
 
-int FirewallObjectBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+// template<class T>
+// FirewallState Firewall<T>::GetState()
+FirewallState Firewall::GetState()
+{
+    FirewallState state = FirewallState::Unknown;
+
+    // If the utility is not installed/available, the the state is Disabled
+    // If the utility is installed check if there are rules/chain policies in the tables
+    // If there are rules/chain policies, the state is Enabled
+
+    return state;
+}
+
+// template<class T>
+// std::string Firewall<T>::GetFingerprint()
+std::string Firewall::GetFingerprint()
+{
+    return this->m_utility.Hash();
+}
+
+// template<class T>
+// std::vector<Table> Firewall<T>::GetTables()
+std::vector<Table> Firewall::GetTables()
+{
+    return this->m_utility.List();
+}
+
+void Rule::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
+{
+    writer.StartObject();
+    writer.Key("number");
+    writer.Int(m_number);
+    writer.Key("target");
+    writer.String(m_target.c_str());
+    writer.Key("protocol");
+    writer.String(m_protocol.c_str());
+    writer.Key("source");
+    writer.String(m_source.c_str());
+    writer.Key("destination");
+    writer.String(m_destination.c_str());
+    writer.Key("in");
+    writer.String(m_inInterface.c_str());
+    writer.Key("out");
+    writer.String(m_outInterface.c_str());
+    writer.Key("options");
+    writer.String(m_rawOptions.c_str());
+    writer.EndObject();
+}
+
+void Chain::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
+{
+    writer.StartObject();
+    writer.Key("name");
+    writer.String(m_name.c_str());
+    writer.Key("policy");
+    writer.String(m_policy.c_str());
+    writer.Key("rules");
+    writer.StartArray();
+    for (auto& rule : m_rules)
+    {
+        rule.Serialize(writer);
+    }
+    writer.EndArray();
+    writer.EndObject();
+}
+
+void Table::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
+{
+    writer.StartObject();
+    writer.String("name");
+    writer.String(m_name.c_str());
+    writer.String("chains");
+    writer.StartArray();
+
+    for (auto& chain : m_chains)
+    {
+        chain.Serialize(writer);
+    }
+
+    writer.EndArray();
+    writer.EndObject();
+}
+
+// template<class T>
+// int Firewall<T>::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int Firewall::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
     if (nullptr == componentName)
@@ -108,31 +418,39 @@ int FirewallObjectBase::Get(const char* componentName, const char* objectName, M
         OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload size");
         status = EINVAL;
     }
-    else if (0 != strcmp(componentName, g_firewallComponent))
+    else if (0 != m_firewallComponent.compare(componentName))
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
     }
     else
     {
-        std::string payloadString = "";
-        std::vector<std::pair<std::string, std::string>> allTableStrings;
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
         *payloadSizeBytes = 0;
         *payload = nullptr;
 
-        ClearTableObjects();
-        GetAllTables(g_tableNames, allTableStrings);
-        ParseAllTables(allTableStrings);
-
-        if (0 == strcmp(objectName, g_firewallState))
+        if (0 == m_firewallState.compare(objectName))
         {
-            int state = GetFirewallState();
-            payloadString = CreateStatePayload(state);
+            int state = static_cast<int>(GetState());
+            writer.Int(state);
         }
-        else if (0 == strcmp(objectName, g_firewallFingerprint))
+        else if (0 == m_firewallFingerprint.compare(objectName))
         {
             std::string fingerprint = GetFingerprint();
-            payloadString = CreateFingerprintPayload(fingerprint);
+            writer.String(fingerprint.c_str());
+        }
+        else if (0 == m_firewallTables.compare(objectName))
+        {
+            std::vector<Table> tables = GetTables();
+            writer.StartArray();
+
+            for (auto& table : tables)
+            {
+                table.Serialize(writer);
+            }
+
+            writer.EndArray();
         }
         else
         {
@@ -140,601 +458,19 @@ int FirewallObjectBase::Get(const char* componentName, const char* objectName, M
             status = EINVAL;
         }
 
+        // TODO: use max payload size
         if (MMI_OK == status)
         {
-            *payloadSizeBytes = payloadString.length();
+            *payloadSizeBytes = buffer.GetSize();
             *payload = new (std::nothrow) char[*payloadSizeBytes];
 
             if (*payload != nullptr)
             {
                 std::fill(*payload, *payload + *payloadSizeBytes, 0);
-                std::memcpy(*payload, payloadString.c_str(), *payloadSizeBytes);
+                std::memcpy(*payload, buffer.GetString(), *payloadSizeBytes);
             }
         }
     }
 
     return status;
-}
-
-std::string FirewallObjectBase::CreateStatePayload(int state)
-{
-    std::string payloadString = "";
-    if ((state >= 0) && (state <= 2))
-    {
-        payloadString = std::to_string(state);
-    }
-
-    return payloadString;
-}
-
-std::string FirewallObjectBase::CreateFingerprintPayload(std::string fingerprint)
-{
-    std::string payloadString = "";
-    std::string fingerprintString = char('"') + fingerprint + char('"');
-    std::regex fingerprintPattern(g_fingerprintPattern);
-    std::smatch pieces;
-    if (std::regex_match(fingerprintString, pieces, fingerprintPattern) == true)
-    {
-        payloadString = fingerprintString;
-    }
-
-    return payloadString;
-}
-
-int FirewallObject::DetectUtility(std::string utility)
-{
-    const int commandSuccessExitCode = 0;
-    const int commandNotFoundExitCode = 127;
-
-    int status = utilityStatusCodeUnknown;
-    if (utility == g_iptablesUtility)
-    {
-        std::string commandString = "iptables -L";
-        char* char_output = nullptr;
-        int tempStatus = ExecuteCommand(nullptr, commandString.c_str(), false, true, 0, 0, &char_output, nullptr, FirewallLog::Get());
-        if (tempStatus == commandSuccessExitCode)
-        {
-            status = utilityStatusCodeInstalled;
-        }
-        else if (tempStatus == commandNotFoundExitCode)
-        {
-            status = utilityStatusCodeNotInstalled;
-        }
-
-        if (char_output != nullptr)
-        {
-            free(char_output);
-        }
-    }
-
-    return status;
-}
-
-void FirewallObject::GetTable(std::string tableName, std::string& tableString)
-{
-    std::string commandString = g_queryTableCommand + tableName;
-    tableString = "";
-    char* output = nullptr;
-    ExecuteCommand(nullptr, commandString.c_str(), false, true, 0, 0, &output, nullptr, FirewallLog::Get());
-    tableString = (output != nullptr) ? std::string(output) : "";
-    if (output != nullptr)
-    {
-        free(output);
-    }
-}
-
-void FirewallObject::GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings)
-{
-    for (unsigned int i = 0; i < tableNames.size(); i++)
-    {
-        std::string tableString = "";
-        GetTable(tableNames[i], tableString);
-        if (!tableString.empty())
-        {
-            allTableStrings.push_back(std::make_pair(tableNames[i], tableString));
-        }
-    }
-}
-
-Rule* FirewallObjectBase::ParseRule(std::string ruleString)
-{
-    Rule* rule = nullptr;
-    // Rules without target value are not parsed since we take no action on packets that match these rules
-    std::regex rulePattern(R"""(\s*(\d+)\s+(\w+)\s+(\w+)\s+(\w+)\s+(\w+)\s+([\w-]+)\s+([\w+\*]+)\s+([\w+\*]+)\s+([0-9\.\!\/]+)\s+([0-9\.\!\/]+)\s+(.*))""" );
-    std::smatch pieces;
-
-    if (std::regex_match(ruleString, pieces, rulePattern))
-    {
-        if (pieces.size() != (ruleTokenRawOptionsIndex + 1))
-        {
-            return rule;
-        }
-
-        rule = new Rule();
-        if (rule != nullptr)
-        {
-            rule->SetRuleNum(std::stoi(pieces.str(ruleTokenNumIndex)));
-            rule->SetTarget(pieces.str(ruleTokenTargetIndex));
-            rule->SetProtocol(pieces.str(ruleTokenProtocolIndex));
-            rule->SetInInterface(pieces.str(ruleTokenInIndex));
-            rule->SetOutInterface(pieces.str(ruleTokenOutIndex));
-            rule->SetSource(pieces.str(ruleTokenSourceIndex));
-            rule->SetDestination(pieces.str(ruleTokenDestinationIndex));
-            rule->SetRawOptions(pieces.str(ruleTokenRawOptionsIndex));
-        }
-    }
-
-    return rule;
-}
-
-Rule::Rule(int ruleNum, std::string target, std::string protocol, std::string source, std::string destination, std::string sourcePort, std::string destinationPort, std::string inInterface, std::string outInterface, std::string rawOptions)
-{
-    m_ruleNum = ruleNum;
-    m_target = target;
-    m_protocol = protocol;
-    m_source = source;
-    m_destination = destination;
-    m_sourcePort = sourcePort;
-    m_destinationPort = destinationPort;
-    m_inInterface = inInterface;
-    m_outInterface = outInterface;
-    m_rawOptions = rawOptions;
-}
-
-Rule::Rule()
-{
-    Rule(0, "", "", "", "", "", "", "", "", "");
-}
-
-int Rule::GetRuleNum()
-{
-    return m_ruleNum;
-}
-
-std::string Rule::GetTarget()
-{
-    return m_target;
-}
-
-std::string Rule::GetProtocol()
-{
-    return m_protocol;
-}
-
-std::string Rule::GetSource()
-{
-    return m_source;
-}
-
-std::string Rule::GetDestination()
-{
-    return m_destination;
-}
-
-std::string Rule::GetSourcePort()
-{
-    return m_sourcePort;
-}
-
-std::string Rule::GetDestinationPort()
-{
-    return m_destinationPort;
-}
-
-std::string Rule::GetInInterface()
-{
-    return m_inInterface;
-}
-
-std::string Rule::GetOutInterface()
-{
-    return m_outInterface;
-}
-
-std::string Rule::GetRawOptions()
-{
-    return m_rawOptions;
-}
-
-void Rule::SetRuleNum(int ruleNum)
-{
-    m_ruleNum = ruleNum;
-}
-
-void Rule::SetTarget(std::string target)
-{
-    m_target = target;
-}
-
-void Rule::SetProtocol(std::string protocol)
-{
-    m_protocol = protocol;
-}
-
-void Rule::SetSource(std::string source)
-{
-    m_source = source;
-}
-
-void Rule::SetDestination(std::string destination)
-{
-    m_destination = destination;
-}
-
-void Rule::SetSourcePort(std::string sourcePort)
-{
-    m_sourcePort = sourcePort;
-}
-
-void Rule::SetDestinationPort(std::string destinationPort)
-{
-    m_destinationPort = destinationPort;
-}
-
-void Rule::SetInInterface(std::string inInterface)
-{
-    m_inInterface = inInterface;
-}
-
-void Rule::SetOutInterface(std::string outInterface)
-{
-    m_outInterface = outInterface;
-}
-
-void Rule::SetRawOptions(std::string rawOptions)
-{
-    m_rawOptions = rawOptions;
-}
-
-Chain::Chain(std::string chainName)
-{
-    m_chainName = chainName;
-    m_chainPolicy = "";
-    m_rules = {};
-}
-
-Chain::Chain()
-{
-    Chain("");
-}
-
-void Chain::SetChainName(std::string chainName)
-{
-    m_chainName = chainName;
-}
-
-void Chain::SetChainPolicy(std::string chainPolicy)
-{
-    m_chainPolicy = chainPolicy;
-}
-
-std::string Chain::GetChainName()
-{
-    return m_chainName;
-}
-
-std::string Chain::GetChainPolicy()
-{
-    return m_chainPolicy;
-}
-
-int Chain::GetRuleCount()
-{
-    return (int) m_rules.size();
-}
-
-void Chain::Append(Rule* rule)
-{
-    m_rules.push_back(rule);
-}
-
-Table::Table(std::string tableName)
-{
-    m_tableName = tableName;
-    m_chains = {};
-}
-
-Table::Table()
-{
-    Table("");
-}
-
-void Table::SetTableName(std::string tableName)
-{
-    m_tableName = tableName;
-}
-
-std::string Table::GetTableName()
-{
-    return m_tableName;
-}
-
-int Table::GetChainCount()
-{
-    return (int) m_chains.size();
-}
-
-void Table::Append(Chain* chain)
-{
-    m_chains.push_back(chain);
-}
-
-Chain* FirewallObjectBase::ParseChain(std::string chainString)
-{
-    Chain* chain = nullptr;
-    const unsigned int chainNameIndex = 1;
-    const unsigned int chainPolicyIndex = 2;
-    std::regex userChainPattern(R"""(\s*Chain\s+([^\s]+)\s+.*references.*)""");
-    std::regex chainPattern(R"""(\s*Chain\s+([^\s]+)\s+\(policy\s+([^\s]+)\s+.*)""");
-    std::smatch pieces;
-    std::istringstream iss(chainString);
-    std::string row;
-    bool foundPolicy = false;
-    if (getline(iss, row, '\n'))
-    {
-        if (std::regex_match(row, pieces, chainPattern))
-        {
-            foundPolicy = true;
-            chain = new Chain();
-        }
-        else if (std::regex_match(row, pieces, userChainPattern))
-        {
-            chain = new Chain();
-        }
-    }
-
-    if (chain == nullptr)
-    {
-        return chain;
-    }
-
-    chain->SetChainName(pieces.str(chainNameIndex));
-    if (foundPolicy)
-    {
-        chain->SetChainPolicy(pieces.str(chainPolicyIndex));
-    }
-
-    while (getline(iss, row, '\n'))
-    {
-        Rule* rule = ParseRule(row);
-        if (rule != nullptr)
-        {
-            chain->Append(rule);
-        }
-    }
-
-    return chain;
-}
-
-Table* FirewallObjectBase::ParseTable(std::string tableName, std::string tableString)
-{
-    Table* table = tableName.empty() ? (new Table()) : (new Table(tableName));
-    if (table == nullptr)
-    {
-        return table;
-    }
-
-    std::regex simpleChainPattern(R"""(\s*Chain\s+([^\s]+)\s+.*)""");
-    std::smatch pieces;
-    std::istringstream iss(tableString);
-    std::string row;
-    std::string chainString = "";
-    // A table std::string contains several chain std::strings
-    // A chain row (found by simpleChainPattern) is the beginning of a new chain
-    // When a chain row is found, convert current chain std::string to a chain object
-    while (getline(iss, row, '\n'))
-    {
-        if (std::regex_match(row, pieces, simpleChainPattern) && (!chainString.empty()))
-        {
-            Chain* chain = ParseChain(chainString);
-            chainString = "";
-            if (chain != nullptr)
-            {
-                table->Append(chain);
-            }
-        }
-
-        chainString += row + char('\n');
-    }
-
-    // Get the last chain in the table
-    if (!chainString.empty())
-    {
-        Chain* chain = ParseChain(chainString);
-        if (chain != nullptr)
-        {
-            table->Append(chain);
-        }
-    }
-
-    return table;
-}
-
-template <typename T>
-void ClearVector(std::vector<T*> myVector)
-{
-    for (T* t : myVector)
-    {
-        if (t != nullptr)
-        {
-            delete t;
-        }
-    }
-    myVector.clear();
-}
-
-Chain::~Chain()
-{
-    ClearVector(m_rules);
-}
-
-Table::~Table()
-{
-    ClearVector(m_chains);
-}
-
-std::vector<Chain*> Table::GetChains()
-{
-    return m_chains;
-}
-
-void FirewallObjectBase::AppendTable(Table* table)
-{
-    m_tables.push_back(table);
-}
-
-std::vector<Table*> FirewallObjectBase::GetTableObjects()
-{
-    return m_tables;
-}
-
-int FirewallObjectBase::GetTableCount()
-{
-    return (int)m_tables.size();
-}
-
-int FirewallObjectBase::GetFirewallState()
-{
-    int state = firewallStateCodeDisabled;
-    int utilityStatus = utilityStatusCodeUnknown;
-    bool isPolicyChanged = false;
-    bool hasRules = false;
-    utilityStatus = DetectUtility(g_iptablesUtility);
-    if (utilityStatus == utilityStatusCodeNotInstalled)
-    {
-        return state;
-    }
-
-    if (utilityStatus == utilityStatusCodeUnknown)
-    {
-        state = firewallStateCodeUnknown;
-        return state;
-    }
-
-    std::vector<Table*> tableVector = GetTableObjects();
-    for (Table* table : tableVector)
-    {
-        std::vector<Chain*> chainVector = table->GetChains();
-        for (Chain* chain : chainVector)
-        {
-            std::string policy = "";
-            std::string acceptPolicy = "ACCEPT";
-            policy = chain->GetChainPolicy();
-            if ((!policy.empty()) && (policy != acceptPolicy))
-            {
-                isPolicyChanged = true;
-            }
-            int ruleCount = chain->GetRuleCount();
-            if (ruleCount > 0)
-            {
-                hasRules = true;
-            }
-
-            if ((isPolicyChanged == true) || (hasRules == true))
-            {
-                state = firewallStateCodeEnabled;
-                return state;
-            }
-        }
-    }
-
-    return state;
-}
-
-std::vector<Rule*> Chain::GetRules()
-{
-    return m_rules;
-}
-
-std::string FirewallObjectBase::RulesToString(std::vector<Rule*> rules)
-{
-    std::string result = "";
-    std::string whitespace = " ";
-    for (Rule* rule : rules)
-    {
-        if (rule != nullptr)
-        {
-            result += std::to_string(rule->GetRuleNum()) + whitespace;
-            result += rule->GetTarget() + whitespace;
-            result += rule->GetProtocol()+ whitespace;
-            result += rule->GetSource() + whitespace;
-            result += rule->GetDestination() + whitespace;
-            result += rule->GetInInterface() + whitespace;
-            result += rule->GetOutInterface() + whitespace;
-            result += rule->GetRawOptions() + whitespace;
-        }
-    }
-
-    return result;
-}
-
-std::string FirewallObjectBase::ChainsToString(std::vector<Chain*> chains)
-{
-    std::string result = "";
-    std::string whitespace = " ";
-    for (Chain* chain : chains)
-    {
-        if (chain != nullptr)
-        {
-            result += chain->GetChainName() + whitespace;
-            result += chain->GetChainPolicy() + whitespace;
-            result += RulesToString(chain->GetRules());
-            result += whitespace;
-        }
-    }
-
-    return result;
-}
-
-std::string FirewallObjectBase::TablesToString(std::vector<Table*> tables)
-{
-    std::string result = "";
-    std::string whitespace = " ";
-    for (Table* table : tables)
-    {
-        if (table != nullptr)
-        {
-            result += table->GetTableName() + whitespace;
-            result += ChainsToString(table->GetChains());
-            result += whitespace;
-        }
-    }
-
-    return result;
-}
-
-std::string FirewallObjectBase::FirewallRulesToString()
-{
-    return TablesToString(GetTableObjects());
-}
-
-std::string FirewallObjectBase::GetFingerprint()
-{
-    std::string firewallRulesString = FirewallRulesToString();
-    std::string hashCommand = "echo \"" + firewallRulesString + "\"";
-    std::string hashString = HashCommand(hashCommand.c_str(), FirewallLog::Get());
-    return hashString;
-}
-
-void FirewallObjectBase::ParseAllTables(std::vector<std::pair<std::string, std::string>>& allTableStrings)
-{
-    for (std::pair<std::string, std::string>& pair : allTableStrings)
-    {
-        Table* table = ParseTable(pair.first,pair.second);
-        if (table != nullptr)
-        {
-            AppendTable(table);
-        }
-    }
-}
-
-void FirewallObjectBase::ClearTableObjects()
-{
-    ClearVector(m_tables);
-    m_tables = {};
-}
-
-FirewallObject::~FirewallObject()
-{
-    ClearTableObjects();
 }

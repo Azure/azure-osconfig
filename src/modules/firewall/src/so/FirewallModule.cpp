@@ -58,7 +58,9 @@ int MmiGetInfo(
 
     try
     {
-        status = FirewallObject::GetInfo(clientName, payload, payloadSizeBytes);
+        // TODO: how to make this FirewallGetInfo() without the template parameter?
+        // status = Firewall<Iptables>::GetInfo(clientName, payload, payloadSizeBytes);
+        status = Firewall::GetInfo(clientName, payload, payloadSizeBytes);
     }
     catch(const std::exception& e)
     {
@@ -90,7 +92,8 @@ MMI_HANDLE MmiOpen(
 
     if (nullptr != clientName)
     {
-        FirewallObject* session = new (std::nothrow) FirewallObject(maxPayloadSizeBytes);
+        // Firewall<Iptables>* session = new (std::nothrow) Firewall<Iptables>(maxPayloadSizeBytes);
+        Firewall* session = new (std::nothrow) Firewall(maxPayloadSizeBytes);
         if (nullptr == session)
         {
             OsConfigLogError(FirewallLog::Get(), "MmiOpen failed to allocate memory");
@@ -114,7 +117,8 @@ void MmiClose(MMI_HANDLE clientSession)
 {
     if (nullptr != clientSession)
     {
-        FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+        // Firewall<Iptables>* session = reinterpret_cast<Firewall<Iptables>*>(clientSession);
+        Firewall* session = reinterpret_cast<Firewall*>(clientSession);
         delete session;
     }
 }
@@ -127,7 +131,8 @@ int MmiSet(
     const int payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+    // Firewall<Iptables>* session = reinterpret_cast<Firewall<Iptables>*>(clientSession);
+    Firewall* session = reinterpret_cast<Firewall*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -170,7 +175,8 @@ int MmiGet(
     int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+    // Firewall<Iptables>* session = reinterpret_cast<Firewall<Iptables>*>(clientSession);
+    Firewall* session = reinterpret_cast<Firewall*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -191,7 +197,8 @@ int MmiGet(
     {
         try
         {
-            session = reinterpret_cast<FirewallObject*>(clientSession);
+            // session = reinterpret_cast<Firewall<Iptables>*>(clientSession);
+            session = reinterpret_cast<Firewall*>(clientSession);
             status = session->Get(componentName, objectName, payload, payloadSizeBytes);
         }
         catch (const std::exception& e)
