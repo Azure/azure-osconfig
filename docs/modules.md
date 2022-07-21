@@ -971,37 +971,79 @@ The code for a module can be split into a static library and a shared object (SO
 
 The static library implements one upper C++ class: ModuleObject. This class contains common code to all ModuleObject instances placed in a base class. Each ModuleObject instance represents one client session and implements:
 
+- ModuleObject::Open with same signature as MmiOpen
+- ModuleObject::Close with same signature as MmiClose
+- ModuleObject::GetInfo with same signature as MmiGetInfo
 - ModuleObject::Get with same signature as MmiGet
 - ModuleObject::Set with same signature as MmiSet
+- ModuleObject::Free with same signature as MmiFree
 - Public constructor and destructor.
 
-Each ModuleObject instance knows about its client session only.
+The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as the unit-tests for the module links to this same static library as the module SO.
 
 ## 12.2. Module Shared Object (SO)
 
 The SO component of the module implements the MMI functions, with C signatures and C|C++ implementations.
 
-Following functions are global for all sessions:
+Each MMI function implementation is an empty shell that directly call into its respective ModuleObject method counterpart to execute.  
 
-- MmiGetInfo: returns static info about the module.
-- MmiOpen: allocates a new ModuleObject, returns a pointer to it as MMI_HANDLE and forgets it.
-- MmiClose: casts the MMI_HANDLE to ModuleObject and deletes that.
+- MmiOpen: allocates a new ModuleObject, calls ModuleObject::Open, returns the ModuleObject instance pointer as an MMI_HANDLE and forgets it.
+- MmiClose: casts the MMI_HANDLE to ModuleObject, calls ModuleObject::Open and deletes that ModuleObject instance.
+- MmiGet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Get.
+- MmiSet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Set.
 - MmiFree: frees specified memory.
 
-Following functions are session specific. They cast the session handle to obtain the ModuleObject and then on that object invoke the corresponding method:
+# 13. Testing
 
-- MmiGet: calls ((ModuleObject)clientSession)->Get
-- MmiSet: calls ((ModuleObject)clientSession)->Set
-- ModuleObject::Get has same arguments and return as MmiGet
-- ModuleObject::Set has same arguments and return as MmiSet
+Each module needs to have its own full set of unit tests as well as a Test Recipe for a functional test.
 
-# 13. Command Line Module Utility
+The unit-tests for each module link to the module's static library and test that. 
 
-To facilitate development disconnected from Azure IoT and rest of OSConfig stack a command line Module Utility may be provided in the future as a console executable to load and validate the module. 
+The functional tests exercise the module over its MMI following that module's MIM amd a Module Test Recipe. 
 
-The command line module utility app will load a module and provide it with an executable layer, allowing the module to be invoked locally over its MMI and MIM in a Linux environment, without the need of rest of OSConfig stack, PnP, IoT Hub, Azure Portal,  etc. 
+The Module Test Recipe is a JSON containing an array of test MIM object payloads to be processed in the order they are listed in the array, from first to last. Each test object includes an optional delay to be performed before the next test object if any.
 
-<img src="assets/moduleutility.png" alt="OSConfig Module Utility" width=50%/>
+Each test object can contain the following fields:
+
+Name | Type| Required? | Description
+-----|-----|-----|-----
+ComponentName | String | Required | Name of the MIM component.
+ObjectName | String | Required | Name of the MIM object.
+Desired | Boolean | Required | True means desired object and false means reported object.
+Payload | String  | Optional | The JSON payload as escaped JSON. Desired indicates what this payload is: desired payload for MmiSet or expected reported payload for MmiGet. If omitted for a reported object, the ModulesTest automatically validates the the setting name and types against the MIM. 
+PayloadSizeBytes |Integer | Optional | The size of the desired or expected reported payload, in bytes. If omitted, ModuleTest automatically calculates the correct size of the payload. 
+ExpectedResult | Integer | Required | The expected result (such as: 0 for MMI_OK).
+WaitSeconds | Integer | Optional | If not omitted and not zero, this is the wait time, in seconds, the test must wait after making processing this test object payload before going to the next object in the recipe.
+
+The Module Test Recipe JSONs are saved under [src/modules/test/recipes/](../src/modules/test/recipes/) as JSON files, one for each module, named as module name with a "Tests" suffix ("ModuleNameTests.json"). For example: CommandRunnerTests.json, DeviceInfoTests.json. 
+
+Example of a recipe with two CommandRunner test objects, one desired CommandArguments and one reported CommandStatus:
+
+```JSON
+{
+  "TestRecipe": [
+    {
+      "ComponentName": "CommandRunner",
+      "ObjectName": "CommandArguments",
+      "Desired": 1,
+      "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
+      "PayloadSizeBytes": 88,
+      "ExpectedResult": 0,
+      "WaitSeconds": 10
+    },
+    {
+      "ComponentName": "CommandRunner",
+      "ObjectName": "CommandStatus",
+      "Desired": 0,
+      "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
+      "ExpectedResult": 0,
+      "WaitSeconds": 0
+    }
+  ]
+}
+```
+
+The Module Test Recipe is feed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
 
 # 14. Publishing DTDL for the module
 
