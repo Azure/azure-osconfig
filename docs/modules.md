@@ -1043,7 +1043,7 @@ Example of a recipe with two CommandRunner test objects, one desired CommandArgu
 }
 ```
 
-The Module Test Recipe is feed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
+The Module Test Recipe is fed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
 
 # 14. Publishing DTDL for the module
 
