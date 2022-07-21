@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// FIXME: clean up these "#includes"
 #include <string>
 #include <vector>
 #include <memory>
@@ -37,151 +38,189 @@ private:
 class Rule
 {
 public:
-    Rule(int ruleNum, std::string target, std::string protocol, std::string source, std::string destination, std::string sourcePort, std::string destinationPort, std::string inInterface, std::string outInterface, std::string rawOptions);
-    Rule();
-    void SetRuleNum(int ruleNum);
-    void SetTarget(std::string target);
-    void SetProtocol(std::string protocol);
-    void SetSource(std::string source);
-    void SetDestination(std::string destination);
-    void SetSourcePort(std::string sourcePort);
-    void SetDestinationPort(std::string destinationPort);
-    void SetInInterface(std::string inInterface);
-    void SetOutInterface(std::string outInterface);
-    void SetRawOptions(std::string rawOptions);
+    // enum Target
+    // {
+    //     ACCEPT = 0, // Default
+    //     REJECT, // TODO: maybe call this RETURN instead?
+    //     DROP
+    //     // TODO: there are others (), should they be included
+    // };
 
-    int GetRuleNum();
-    std::string GetTarget();
-    std::string GetProtocol();
-    std::string GetSource();
-    std::string GetDestination();
-    std::string GetSourcePort();
-    std::string GetDestinationPort();
-    std::string GetInInterface();
-    std::string GetOutInterface();
-    std::string GetRawOptions();
+    // enum Protocol
+    // {
+    //     ALL = 0, // Default
+    //     TCP,
+    //     UDP,
+    //     ICMP,
+    // };
+
+    Rule() = default;
+    ~Rule() = default;
+
+    static Rule Parse(const std::string ruleString);
+    static Rule FromJson(const std::string ruleJson);
+    bool HasParseError() { return m_parseError; }
+    std::string ToString();
+    void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
 private:
-    int m_ruleNum;
-    std::string m_policy;
+    // TODO: what is the difference between Target and Policy?
+    int m_number;
+    // int packets;
+    // int bytes;
+
     std::string m_target;
-    std::string m_protocol;
-    std::string m_source;
-    std::string m_destination;
-    std::string m_sourcePort;
-    std::string m_destinationPort;
+    // Target m_target; // Can this be an enum ???
+
     std::string m_inInterface;
     std::string m_outInterface;
+    // Protocol m_protocol;
+    std::string m_protocol;
+
+    // TODO: can these be specific types/containers instead of just strings to capture the address/port ?
+    std::string m_source;
+    std::string m_destination;
+
+    // TODO: can this be an enum ?
     std::string m_rawOptions;
-};
+    bool m_parseError;
 
-enum FirewallStateCode
-{
-    firewallStateCodeUnknown = 0,
-    firewallStateCodeEnabled,
-    firewallStateCodeDisabled
-};
-
-enum UtilityStatusCode
-{
-    utilityStatusCodeUnknown = 0,
-    utilityStatusCodeInstalled,
-    utilityStatusCodeNotInstalled
-};
-
-enum RuleToken
-{
-    ruleTokenNumIndex = 1,
-    ruleTokenPacketsIndex,
-    ruleTokenBytesIndex,
-    ruleTokenTargetIndex,
-    ruleTokenProtocolIndex,
-    ruleTokenOptIndex,
-    ruleTokenInIndex,
-    ruleTokenOutIndex,
-    ruleTokenSourceIndex,
-    ruleTokenDestinationIndex,
-    ruleTokenRawOptionsIndex
+    Rule(int number, std::string target, std::string inInterface, std::string outInterface, std::string protocol, std::string source, std::string destination, std::string rawOptions, bool parseError) :
+        m_number(number),
+        m_target(target),
+        m_inInterface(inInterface),
+        m_outInterface(outInterface),
+        m_protocol(protocol),
+        m_source(source),
+        m_destination(destination),
+        m_rawOptions(rawOptions),
+        m_parseError(parseError) {}
 };
 
 class Chain
 {
 public:
-    Chain();
-    Chain(std::string chainName);
-    ~Chain();
-    void SetChainName(std::string chainName);
-    void SetChainPolicy(std::string chainPolicy);
-    std::string GetChainName();
-    std::string GetChainPolicy();
-    int GetRuleCount();
-    std::vector<Rule*> GetRules();
-    void Append(Rule* rule);
+    Chain() = default;
+    ~Chain() = default;
+
+    static Chain Parse(const std::string chainString);
+    bool HasParseError() { return m_parseError; }
+    std::string ToString();
+    void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
 private:
-    std::string m_chainName;
-    std::string m_chainPolicy;
-    std::vector<Rule*> m_rules;
+    Chain(std::string name, std::string policy, std::vector<Rule> rules) : m_name(name), m_policy(policy), m_rules(rules) {}
+
+    std::string m_name;
+    std::string m_policy;
+    std::vector<Rule> m_rules;
+    bool m_parseError;
 };
 
 class Table
 {
 public:
-    Table();
-    Table(std::string tableName);
-    ~Table();
-    void SetTableName(std::string tableName);
-    std::string GetTableName();
-    int GetChainCount();
-    void Append(Chain* chain);
-    std::vector<Chain*> GetChains();
+    Table() = default;
+    ~Table() = default;
+
+    static Table Parse(const std::string name, const std::string table);
+    bool HasParseError() { return m_parseError; }
+    std::string ToString();
+    void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
 private:
-    std::string m_tableName;
-    std::vector<Chain*> m_chains;
+    std::string m_name;
+    std::vector<Chain> m_chains;
+    bool m_parseError;
+
+    Table(std::string name, std::vector<Chain> chains) : m_name(name), m_chains(chains) {}
 };
 
-class FirewallObjectBase
+class Utility
 {
 public:
-    static const char* m_firewallInfo;
+    virtual ~Utility() = default;
 
-    virtual ~FirewallObjectBase() {};
+    // TODO: add a method to check if a utility exists
+
+    virtual std::vector<Table> List() = 0;
+    // TODO: add a default implmentation for Create/Delete that calls an
+    // implmentation specific method to apply the change
+    virtual int Create(const Rule& rule) = 0;
+    virtual int Delete(const Rule& rule) = 0;
+    virtual std::string Hash() const = 0;
+
+protected:
+    std::vector<std::string> m_tableNames;
+
+    Utility(std::vector<std::string> tableNames) : m_tableNames(tableNames) {}
+    // virtual int Apply(const Rule& rule);
+};
+
+class Iptables : public Utility
+{
+public:
+    Iptables() : Utility({ "filter" }) {}
+    // TODO: use all tables and make the vector a static member of Iptables
+    // Iptables() : Utility({"filter", "nat", "raw", "mangle", "security"}) {}
+    ~Iptables() = default;
+
+    std::vector<Table> List() override;
+    int Create(const Rule& rule) override;
+    int Delete(const Rule& rule) override;
+    std::string Hash() const override;
+
+private:
+    std::map<std::string, Table> m_tables;
+    std::map<std::string, std::string> m_tableHashes;
+
+    Table GetTable(const std::string tableName);
+};
+
+enum class FirewallState
+{
+    Unknown = 0,
+    Enabled,
+    Disabled
+};
+
+class FirewallBase
+{
+public:
+    static const std::string m_firewallComponent;
+    static const std::string m_firewallFingerprint;
+    static const std::string m_firewallState;
+    static const std::string m_firewallTables;
+    static const std::string m_firewallCreateRule;
+
+    static const std::string m_moduleInfo;
+
+    FirewallBase(unsigned int maxPayloadSize);
+    virtual ~FirewallBase() = default;
+
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+    virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) = 0;
+    virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) = 0;
 
-    virtual int DetectUtility(std::string utility) = 0;
-    virtual void GetTable(std::string tableName, std::string& tableString) = 0;
-    virtual void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings) = 0;
-    Rule* ParseRule(std::string ruleString);
-    Chain* ParseChain(std::string chainString);
-    Table* ParseTable(std::string tableName, std::string tableString);
-    void ParseAllTables(std::vector<std::pair<std::string, std::string>>& allTableStrings);
-    void AppendTable(Table* table);
-    std::vector<Table*> GetTableObjects();
-    int GetTableCount();
-    int GetFirewallState();
-    std::string RulesToString(std::vector<Rule*> rules);
-    std::string ChainsToString(std::vector<Chain*> chains);
-    std::string TablesToString(std::vector<Table*> tables);
-    std::string FirewallRulesToString();
-    std::string GetFingerprint();
-    std::string CreateStatePayload(int state);
-    std::string CreateFingerprintPayload(std::string fingerprint);
-    void ClearTableObjects();
+protected:
     unsigned int m_maxPayloadSizeBytes;
-
-private:
-    std::vector<Table*> m_tables;
 };
 
-class FirewallObject : public FirewallObjectBase
+// template <class T>
+class Firewall : public FirewallBase
 {
 public:
-    FirewallObject(unsigned int maxPayloadSizeBytes);
-    ~FirewallObject();
-    int DetectUtility(std::string utility);
-    void GetTable(std::string tableName, std::string& tableString);
-    void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings);
+    Firewall(unsigned int maxPayloadSize);
+    ~Firewall() = default;
+
+    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes) override;
+    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes) override;
+
+private:
+    // T m_utility;
+    Iptables m_utility;
+
+    FirewallState GetState();
+    std::string GetFingerprint();
+    std::vector<Table> GetTables();
 };
