@@ -1,8 +1,8 @@
 # ModulesTest
-The `modulestest` utility is OSConfig’s module testing framework, it allows module authors to write Test Recipes which in turn, drive testing of the module functionality and conformity (against the published MIM) of the Management Module.
+ModulesTest (binary name: modulestest) is OSConfig's functional module test utility, it allows module authors to write Test Recipes which in turn, drive testing of the module functionality and conformity (against the published MIM) of the Management Module.
 
 # Prerequisites
-Although `modulestest` does not require any runtime dependencies, generating the test recipe configuration (testplate.json) does require the `jq` application to be installed when building OSConfig.
+Although `modulestest` does not require any runtime dependencies, generating the Test Recipe configuration (testplate.json) does require the [jq](https://github.com/stedolan/jq) application to be installed when building OSConfig.
 
 # Usage
 1. `modulestest` or `modulestest testplate.json` (equivalent) tests all modules which have [test recipe](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) and [MIM](https://github.com/Azure/azure-osconfig/tree/main/src/modules/mim) defined.
