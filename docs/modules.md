@@ -985,7 +985,7 @@ The full internal implementation of the MMI calls is into the static library, in
 
 The SO component of the module implements the MMI functions, with C signatures and C|C++ implementations.
 
-Each MMI function implementation is an empty shell that directly call into its respective ModuleObject method counterpart to execute.  
+Each MMI function implementation calls directly into its respective ModuleObject method counterpart without doing any additional validation or other processing.
 
 - MmiOpen: allocates a new ModuleObject, calls ModuleObject::Open, returns the ModuleObject instance pointer as an MMI_HANDLE and forgets it.
 - MmiClose: casts the MMI_HANDLE to ModuleObject, calls ModuleObject::Open and deletes that ModuleObject instance.
