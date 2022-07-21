@@ -9,3 +9,6 @@ Although `modulestest` does not require any runtime dependencies, generating the
 2. `moduletest <module name>` Example: `modulestest tpm` will perform the [test recipe](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) defined for the _tpm_ module.
 3. `moduletest <module.so>` Example: `modulestest /azure-osconfig/build/modules/tpm/src/so/tpm.so` performs a basic test on the module ONLY, this ensures the MMI interface is properly defined. No payloads are sent to modules, we simply load the module, ensure _MMIGetInfo_ contains the correct module definitions.
 4. `moduletest <module.so> <mim.json> <recipe.json>` Example: `modulestest "/azure-osconfig/build/modules/tpm/src/so/tpm.so" "/azure-osconfig/src/modules/mim/tpm.json" "/azure-osconfig/src/modules/test/recipes/TpmTests.json"` Equivalent to #2
+
+# Known limitations
+  - Every test definition in a recipe is executed in its own session. Tests will not function as expected if relying on subsequent definitions sharing the same session.
