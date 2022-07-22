@@ -102,10 +102,10 @@ jobs:
         run: |
           sudo systemctl stop osconfig
           
-          # Change/Add OSConfig defaults
+          # Change OSConfig defaults
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
           sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
-          sudo sed -i '/\"LocalManagement\"/ a \ \ \"ReportingIntervalSeconds\": 1,' /etc/osconfig/osconfig.json
+          sudo sed -i '/\"ReportingIntervalSeconds\"/c\\  \"ReportingIntervalSeconds\": 1,' /etc/osconfig/osconfig.json
           
           sudo systemctl daemon-reload
           sudo systemctl start osconfig

@@ -4,6 +4,7 @@
   "LocalManagement": 0,
   "ModelVersion": 10,
   "IotHubProtocol": 2,
+  "ReportingIntervalSeconds": 30,
   "Reported": [
     {
       "ComponentName": "CommandRunner",
@@ -117,6 +118,5 @@
       "ComponentName": "Ztsi",
       "ObjectName": "serviceUrl"
     }
-  ],
-  "ReportingIntervalSeconds": 30
+  ]
 }
