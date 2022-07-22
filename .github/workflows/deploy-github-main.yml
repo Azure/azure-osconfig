@@ -1,11 +1,11 @@
 name: E2E (GitHub-main)
-on:
-  workflow_run:
-    workflows: ["Package"]
-    types:
-      - completed
-    conclusions:
-      - success
+on: [push]
+  # workflow_run:
+  #   workflows: ["Package"]
+  #   types:
+  #     - completed
+  #   conclusions:
+  #     - success
   # push:
   #   branches:
   #     - main
