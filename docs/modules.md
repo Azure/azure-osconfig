@@ -971,13 +971,12 @@ The code for a module can be split into a static library and a shared object (SO
 
 The static library implements one upper C++ class: ModuleObject. This class contains common code to all ModuleObject instances placed in a base class. Each ModuleObject instance represents one client session and implements:
 
-- ModuleObject::Open with same signature as MmiOpen
-- ModuleObject::Close with same signature as MmiClose
-- ModuleObject::GetInfo with same signature as MmiGetInfo
-- ModuleObject::Get with same signature as MmiGet
-- ModuleObject::Set with same signature as MmiSet
-- ModuleObject::Free with same signature as MmiFree
-- Public constructor and destructor.
+- Public class constructor or ModuleObject::Open with same signature as MmiOpen when the module only has one global ModuleObject.
+- Public class destructor or ModuleObject::Close with same signature as MmiClose when the module only has one global ModuleObject.
+- ModuleObject::GetInfo as a static method with same signature as MmiGetInfo.
+- ModuleObject::Free as a static method with same signature as MmiFree.
+- ModuleObject::Get with same signature as MmiGet.
+- ModuleObject::Set with same signature as MmiSet.
 
 The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as both the unit-tests and module SO link to this same static library.
 
@@ -987,11 +986,12 @@ The SO component of the module implements the MMI functions, with C signatures a
 
 Each MMI function implementation calls directly into its respective ModuleObject method counterpart without doing any additional validation or other processing.
 
-- MmiOpen: allocates a new ModuleObject, calls ModuleObject::Open, returns the ModuleObject instance pointer as an MMI_HANDLE and forgets it.
-- MmiClose: casts the MMI_HANDLE to ModuleObject, calls ModuleObject::Open and deletes that ModuleObject instance.
+- MmiOpen: allocates a new ModuleObject, returns the ModuleObject instance pointer as an MMI_HANDLE and forgets it. Or, for a global ModuleObject, calls ModuleObject::Open.
+- MmiClose: casts the MMI_HANDLE to ModuleObject and deletes that ModuleObject instance. Or, for a global ModuleObject, calls ModuleObject::Close.
+- MmiGetInfo: returns static information about the module.
+- MmiFree: frees specified memory.
 - MmiGet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Get.
 - MmiSet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Set.
-- MmiFree: frees specified memory.
 
 # 13. Testing
 
@@ -1020,27 +1020,24 @@ The Module Test Recipe JSONs are saved under [src/modules/test/recipes/](../src/
 Example of a recipe with two CommandRunner test objects, one desired CommandArguments and one reported CommandStatus:
 
 ```JSON
-{
-  "TestRecipe": [
-    {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "CommandArguments",
-      "Desired": 1,
-      "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
-      "PayloadSizeBytes": 88,
-      "ExpectedResult": 0,
-      "WaitSeconds": 10
-    },
-    {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus",
-      "Desired": 0,
-      "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
-      "ExpectedResult": 0,
-      "WaitSeconds": 0
-    }
-  ]
-}
+[
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandArguments",
+    "Desired": 1,
+    "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
+    "PayloadSizeBytes": 88,
+    "ExpectedResult": 0,
+    "WaitSeconds": 10
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandStatus",
+    "Desired": 0,
+    "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
+    "ExpectedResult": 0
+  }
+]
 ```
 
 The Module Test Recipe is fed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
