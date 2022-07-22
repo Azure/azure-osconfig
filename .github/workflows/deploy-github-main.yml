@@ -17,7 +17,7 @@ jobs:
     name: Fetch Test Targets
     uses: ./.github/workflows/e2etest-fetch-targets.yml
     with:
-      environment: e2e-github-main
+      environment: e2e-staging
     secrets: inherit
 
   provision-hub:
@@ -26,7 +26,7 @@ jobs:
     needs:
       - fetch-targets
     with:
-      environment: e2e-github-main
+      environment: e2e-staging
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
     secrets: inherit
 
@@ -37,7 +37,7 @@ jobs:
       - provision-hub
       - fetch-targets
     with:
-      environment: e2e-github-main
+      environment: e2e-staging
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
     secrets: inherit
@@ -49,7 +49,7 @@ jobs:
       - fetch-targets
       - provision-hosts
     with:
-      environment: e2e-github-main
+      environment: e2e-staging
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
@@ -61,7 +61,7 @@ jobs:
     name: Deprovision Cloud Resources
     if: always()
     runs-on: ubuntu-latest
-    environment: e2e-github-main
+    environment: e2e-staging
     needs:
       - fetch-targets
       - provision-hub
