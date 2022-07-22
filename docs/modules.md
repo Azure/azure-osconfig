@@ -1020,27 +1020,24 @@ The Module Test Recipe JSONs are saved under [src/modules/test/recipes/](../src/
 Example of a recipe with two CommandRunner test objects, one desired CommandArguments and one reported CommandStatus:
 
 ```JSON
-{
-  "TestRecipe": [
-    {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "CommandArguments",
-      "Desired": 1,
-      "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
-      "PayloadSizeBytes": 88,
-      "ExpectedResult": 0,
-      "WaitSeconds": 10
-    },
-    {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "CommandStatus",
-      "Desired": 0,
-      "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
-      "ExpectedResult": 0,
-      "WaitSeconds": 0
-    }
-  ]
-}
+[
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandArguments",
+    "Desired": 1,
+    "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
+    "PayloadSizeBytes": 88,
+    "ExpectedResult": 0,
+    "WaitSeconds": 10
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandStatus",
+    "Desired": 0,
+    "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
+    "ExpectedResult": 0
+  }
+]
 ```
 
 The Module Test Recipe is fed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
