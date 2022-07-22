@@ -1,11 +1,11 @@
 name: Platform Reliability Tests
-on: [push]
-  # workflow_run:
-  #   workflows: ["Package"]
-  #   types:
-  #     - completed
-  #   conclusions:
-  #     - success
+on:
+  workflow_run:
+    workflows: ["Package"]
+    types:
+      - completed
+    conclusions:
+      - success
   # schedule:
   #   - cron: '0 10 * * *' #10am UTC / 6pm PST
 
