@@ -57,25 +57,26 @@ jobs:
       testNameSuffix: (github-main)
     secrets: inherit
 
-  deprovision-resources:
-    name: Deprovision Cloud Resources
-    if: always()
-    runs-on: ubuntu-latest
-    environment: e2e-github-main
-    needs:
-      - fetch-targets
-      - provision-hub
-      - provision-hosts
-      - run-tests
+  # Temporarily disabled to collect IotHub telemetry
+  # deprovision-resources:
+  #   name: Deprovision Cloud Resources
+  #   if: always()
+  #   runs-on: ubuntu-latest
+  #   environment: e2e-github-main
+  #   needs:
+  #     - fetch-targets
+  #     - provision-hub
+  #     - provision-hosts
+  #     - run-tests
 
-    steps:
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #   steps:
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Delete resource group
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az group delete --name ${{ needs.fetch-targets.outputs.resourceGroupName }} --yes --no-wait
+  #     - name: Delete resource group
+  #       uses: azure/CLI@v1
+  #       with:
+  #         inlineScript: |
+  #           az group delete --name ${{ needs.fetch-targets.outputs.resourceGroupName }} --yes --no-wait
