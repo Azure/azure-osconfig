@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1440
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
         variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
