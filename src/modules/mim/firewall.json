@@ -53,11 +53,11 @@
                       "enumValue": 0
                     },
                     {
-                      "name": "drop",
+                      "name": "reject",
                       "enumValue": 1
                     },
                     {
-                      "name": "reject",
+                      "name": "drop",
                       "enumValue": 2
                     }
                   ]
