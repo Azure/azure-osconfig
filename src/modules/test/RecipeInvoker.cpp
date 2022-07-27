@@ -64,10 +64,6 @@ void RecipeInvoker::TestBody()
                         JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
                         EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
                     }
-                    else
-                    {
-                        FAIL() << "Unsupported type: " << setting.second.type << std::endl << "JSON: " << payloadStr;
-                    }
                 }
             }
 
