@@ -74,11 +74,11 @@
                       "enumValue": 0
                     },
                     {
-                      "name": "accept",
+                      "name": "allowTraffic",
                       "enumValue": 1
                     },
                     {
-                      "name": "reject",
+                      "name": "denyTraffic",
                       "enumValue": 2
                     }
                   ]
@@ -132,10 +132,6 @@
               {
                 "name": "destinationPort",
                 "schema": "integer"
-              },
-              {
-                "name": "interface",
-                "schema": "string"
               }
             ]
           }
