@@ -1,41 +1,142 @@
-{ 
-  "name": "FirewallModel", 
-  "type": "MimModel",
-  "contents": [ 
-    { 
-      "name": "Firewall", 
-      "type": "mimComponent", 
+{
+  "name": "FirewallModel",
+  "type": "mimModel",
+  "contents": [
+    {
+      "name": "Firewall",
+      "type": "mimComponent",
       "contents": [
-        { 
-          "name": "firewallState", 
-          "type": "mimObject", 
+        {
+          "name": "firewallState",
+          "type": "mimObject",
           "desired": false,
           "schema": {
-             "type": "enum",
-             "valueSchema": "integer",
-             "enumValues": [
-               { 
-                 "name": "unknown",
-                 "enumValue": 0
-               },
-               {
-                 "name": "enabled",
-                 "enumValue": 1
-               },
-               {
-                 "name": "disabled",
-                 "enumValue": 2
-               }
-             ]
-           }
+            "type": "enum",
+            "valueSchema": "integer",
+            "enumValues": [
+              {
+                "name": "unknown",
+                "enumValue": 0
+              },
+              {
+                "name": "enabled",
+                "enumValue": 1
+              },
+              {
+                "name": "disabled",
+                "enumValue": 2
+              }
+            ]
+          }
         },
-        { 
-          "name": "firewallFingerprint", 
-          "type": "mimObject", 
+        {
+          "name": "firewallFingerprint",
+          "type": "mimObject",
           "desired": false,
           "schema": "string"
+        },
+        {
+          "name": "desiredFirewallRule",
+          "type": "mimObject",
+          "desired": true,
+          "schema": {
+            "type": "object",
+            "fields": [
+              {
+                "name": "action",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "addRule",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "deleteRule",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ruleAction",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "allowTraffic",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "denyTraffic",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "inbound",
+                "schema": "boolean"
+              },
+              {
+                "name": "protocol",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "any",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "tcp",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "udp",
+                      "enumValue": 3
+                    },
+                    {
+                      "name": "icmp",
+                      "enumValue": 4
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "sourceAddress",
+                "schema": "string"
+              },
+              {
+                "name": "sourcePort",
+                "schema": "integer"
+              },
+              {
+                "name": "destinationAddress",
+                "schema": "string"
+              },
+              {
+                "name": "destinationPort",
+                "schema": "integer"
+              }
+            ]
+          }
         }
       ]
     }
   ]
-} 
+}
