@@ -46,5 +46,5 @@ add_module(Tpm)
 add_module(Ztsi)
 
 if (BUILD_SAMPLES)
-    add_module_custom_target(samples cppsample)
+    add_module_custom_target(Samples cppsample Sample Sample)
 endif()
