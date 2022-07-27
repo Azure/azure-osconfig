@@ -14,7 +14,6 @@
     <PackageReference Include="NUnit" Version="3.13.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
     <PackageReference Include="coverlet.collector" Version="3.0.2" />
-    <!-- Transitive dependencies (for CVE fixes) -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" /> <!-- https://github.com/advisories/GHSA-5crp-9r3c-p9vr -->
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.1.2" /> <!-- https://github.com/advisories/GHSA-7mfr-774f-w5r9 -->
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" /> <!-- https://github.com/advisories/GHSA-cmhx-cq75-c4mj -->
