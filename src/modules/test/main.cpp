@@ -12,18 +12,43 @@ static std::string str_tolower(std::string s) {
     return s;
 }
 
+std::map<std::string, std::pair<std::shared_ptr<ManagementModule>, std::shared_ptr<MmiSession>>> g_moduleSessionMap;
+
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
     for (TestRecipe recipe : *testRecipes)
     {
+        ASSERT_STRNE(recipe.m_metadata.m_modulePath.c_str(), "") << "No module path defined!";
+        
+        std::shared_ptr<ManagementModule> module;
+        std::shared_ptr<MmiSession> session;
+        auto search = g_moduleSessionMap.find(recipe.m_metadata.m_modulePath);
+        if (search != g_moduleSessionMap.end())
+        {
+            // Module already registered, use existing session
+            TestLogInfo("existing session for: %s", recipe.m_metadata.m_modulePath.c_str());
+            module = search->second.first;
+            session = search->second.second;
+        }
+        else
+        {
+            TestLogInfo("Registering module: %s", recipe.m_metadata.m_modulePath.c_str());
+            module = std::make_shared<ManagementModule>(recipe.m_metadata.m_modulePath);
+            session = std::make_shared<MmiSession>(module, g_defaultClient);
+            g_moduleSessionMap[recipe.m_metadata.m_modulePath] = std::make_pair(module, session);
+
+            ASSERT_EQ(0, module->Load()) << "Failed to load module!";
+            ASSERT_EQ(0, session->Open()) << "Failed to open session!";
+        }
+
         // See gtest.h for details on this test registration
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
             "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
-            [recipe]()->RecipeFixture *
+            [recipe, module, session]()->RecipeFixture *
             {
-                return new RecipeInvoker(recipe);
+                return new RecipeInvoker(recipe, module, session);
             });
     }
 }
@@ -246,6 +271,13 @@ int main(int argc, char **argv)
     {
         std::cerr << "No tests found." << std::endl;
         status = 1;
+    }
+
+    // Unload modules, close sessions
+    for (auto &moduleSessionPair : g_moduleSessionMap)
+    {
+        moduleSessionPair.second.second->Close();
+        moduleSessionPair.second.first->Unload();
     }
 
     return status;

@@ -11,7 +11,6 @@
         "ObjectName": "commandArguments",
         "Desired": true,
         "Payload": "{\"commandId\": \"helloworld\", \"arguments\": \"echo Hello World!\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 100, }",
-        "PayloadSizeBytes": 0,
         "ExpectedResult": 22,
         "WaitSeconds": 0
     },
@@ -20,7 +19,6 @@
         "ObjectName": "commandArguments",
         "Desired": true,
         "Payload": "{\"commandId\": \"test1\", \"arguments\": \"echo Hello World\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-        "PayloadSizeBytes": 123,
         "ExpectedResult": 0,
         "WaitSeconds": 5
     },
@@ -28,7 +26,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"test1\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "Payload": "{\"commandId\":\"test1\",\"resultCode\":0,\"textResult\":\"Hello World \",\"currentState\":2}",
         "ExpectedResult": 0
     }
 ]
