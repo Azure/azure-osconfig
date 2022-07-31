@@ -26,19 +26,18 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         if (search != g_moduleSessionMap.end())
         {
             // Module already registered, use existing session
-            TestLogInfo("existing session for: %s", recipe.m_metadata.m_modulePath.c_str());
             module = search->second.first;
             session = search->second.second;
         }
         else
         {
-            TestLogInfo("Registering module: %s", recipe.m_metadata.m_modulePath.c_str());
             module = std::make_shared<ManagementModule>(recipe.m_metadata.m_modulePath);
             session = std::make_shared<MmiSession>(module, g_defaultClient);
             g_moduleSessionMap[recipe.m_metadata.m_modulePath] = std::make_pair(module, session);
 
-            ASSERT_EQ(0, module->Load()) << "Failed to load module!";
-            ASSERT_EQ(0, session->Open()) << "Failed to open session!";
+            // Load and open session only before first test
+            // ASSERT_EQ(0, module->Load()) << "Failed to load module!";
+            // ASSERT_EQ(0, session->Open()) << "Failed to open session!";
         }
 
         // See gtest.h for details on this test registration

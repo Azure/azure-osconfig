@@ -72,6 +72,8 @@ public:
     virtual int Load();
     virtual void Unload();
 
+    virtual bool IsLoaded() const;
+
     Info GetInfo() const;
 
 protected:
@@ -89,6 +91,7 @@ protected:
     Mmi_Free m_mmiFree;
 
     Info m_info;
+    bool m_loaded;
 
     virtual int CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual MMI_HANDLE CallMmiOpen(const char* componentName, unsigned int maxPayloadSizeBytes);

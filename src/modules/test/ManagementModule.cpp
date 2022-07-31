@@ -30,7 +30,8 @@ ManagementModule::ManagementModule() : ManagementModule("") {}
 
 ManagementModule::ManagementModule(const std::string path) :
     m_modulePath(path),
-    m_handle(nullptr)
+    m_handle(nullptr),
+    m_loaded(false)
 {
     m_info.lifetime = Lifetime::Undefined;
     m_info.userAccount= 0;
@@ -114,6 +115,7 @@ int ManagementModule::Load()
         ss << "]";
 
         TestLogInfo("Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
+        m_loaded = true;
     }
     else
     {
@@ -135,6 +137,11 @@ void ManagementModule::Unload()
         dlclose(m_handle);
         m_handle = nullptr;
     }
+}
+
+bool ManagementModule::IsLoaded() const
+{
+    return m_loaded;
 }
 
 ManagementModule::Info ManagementModule::GetInfo() const

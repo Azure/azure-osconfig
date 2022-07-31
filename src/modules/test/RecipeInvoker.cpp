@@ -5,6 +5,13 @@ void RecipeInvoker::TestBody()
     MMI_JSON_STRING payload = nullptr;
     int payloadSize = 0;
 
+    if (!m_module->IsLoaded())
+    {
+        m_module->Load();
+        m_session->Open();
+        // TODO: Add to a loaded stack so we can unwind it later.
+    }
+
     if (m_recipe.m_desired)
     {
         // If no payloadSizeBytes defined, use the size of the payload
