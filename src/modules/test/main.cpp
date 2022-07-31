@@ -12,7 +12,9 @@ static std::string str_tolower(std::string s) {
     return s;
 }
 
-std::map<std::string, std::pair<std::shared_ptr<ManagementModule>, std::shared_ptr<MmiSession>>> g_moduleSessionMap;
+typedef std::pair<std::shared_ptr<ManagementModule>, std::shared_ptr<MmiSession>> ModuleSession;
+std::map<std::string, ModuleSession> g_moduleSessionMap;
+std::stack<ModuleSession> g_moduleSessionStack;
 
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
@@ -33,7 +35,9 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
         {
             module = std::make_shared<ManagementModule>(recipe.m_metadata.m_modulePath);
             session = std::make_shared<MmiSession>(module, g_defaultClient);
-            g_moduleSessionMap[recipe.m_metadata.m_modulePath] = std::make_pair(module, session);
+            auto moduleSessionPair = std::make_pair(module, session);
+            g_moduleSessionMap[recipe.m_metadata.m_modulePath] = moduleSessionPair;
+            g_moduleSessionStack.push(moduleSessionPair);
 
             // Load and open session only before first test
             // ASSERT_EQ(0, module->Load()) << "Failed to load module!";
@@ -272,12 +276,13 @@ int main(int argc, char **argv)
         status = 1;
     }
 
-    // Unload modules, close sessions
-    for (auto &moduleSessionPair : g_moduleSessionMap)
+    while (g_moduleSessionStack.size() > 0)
     {
-        moduleSessionPair.second.second->Close();
-        moduleSessionPair.second.first->Unload();
+        ModuleSession moduleSession = g_moduleSessionStack.top();
+        g_moduleSessionStack.pop();
+        moduleSession.second->Close();
+        moduleSession.first->Unload();
     }
-
+    
     return status;
 }

@@ -18,6 +18,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/schema.h>
 #include <sstream>
+#include <stack>
 #include <string.h>
 #include <string>
 #include <thread>
