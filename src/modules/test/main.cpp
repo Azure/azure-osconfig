@@ -38,10 +38,6 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
             auto moduleSessionPair = std::make_pair(module, session);
             g_moduleSessionMap[recipe.m_metadata.m_modulePath] = moduleSessionPair;
             g_moduleSessionStack.push(moduleSessionPair);
-
-            // Load and open session only before first test
-            // ASSERT_EQ(0, module->Load()) << "Failed to load module!";
-            // ASSERT_EQ(0, session->Open()) << "Failed to open session!";
         }
 
         // See gtest.h for details on this test registration

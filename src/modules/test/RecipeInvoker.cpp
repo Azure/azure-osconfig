@@ -9,7 +9,6 @@ void RecipeInvoker::TestBody()
     {
         m_module->Load();
         m_session->Open();
-        // TODO: Add to a loaded stack so we can unwind it later.
     }
 
     if (m_recipe.m_desired)
