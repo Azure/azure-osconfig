@@ -30,7 +30,6 @@ bool RecipeModuleSessionLoader::Load(const std::vector<std::string> &modulePaths
         mm->Unload();
     }
 
-    // isLoaded = true;
     return true;
 }
 
