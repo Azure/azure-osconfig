@@ -15,7 +15,7 @@ static std::string str_tolower(std::string s) {
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
     for (TestRecipe recipe : *testRecipes)
-    {   
+    {
         // See gtest.h for details on this test registration
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);

@@ -93,26 +93,6 @@ void RecipeInvoker::TestBody()
     }
 }
 
-int RecipeInvoker::RunCommand(const std::string &command, std::string* textResult)
-{
-    char* buffer = nullptr;
-    const bool replaceEol = true;
-    const bool forJson = false;
-    int status = ExecuteCommand(nullptr, command.c_str(), replaceEol, forJson, 0, 0, &buffer, nullptr, nullptr);
-
-    if (0 == status)
-    {
-        if (buffer && textResult)
-        {
-            *textResult = buffer;
-        }
-    }
-
-    FREE_MEMORY(buffer);
-
-    return status;
-}
-
 void BasicModuleTester::TestBody()
 {
     EXPECT_EQ(0, m_module->Load()) << "Failed to load module!";

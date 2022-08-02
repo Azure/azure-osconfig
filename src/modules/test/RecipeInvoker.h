@@ -21,8 +21,6 @@ public:
 
 private:
     TestRecipe m_recipe;
-
-    int RunCommand(const std::string &command, std::string *textResult);
 };
 
 class BasicModuleTester : public RecipeFixture
