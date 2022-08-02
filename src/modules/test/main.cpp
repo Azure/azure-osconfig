@@ -12,42 +12,18 @@ static std::string str_tolower(std::string s) {
     return s;
 }
 
-typedef std::pair<std::shared_ptr<ManagementModule>, std::shared_ptr<MmiSession>> ModuleSession;
-std::map<std::string, ModuleSession> g_moduleSessionMap;
-std::stack<ModuleSession> g_moduleSessionStack;
-
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
     for (TestRecipe recipe : *testRecipes)
-    {
-        ASSERT_STRNE(recipe.m_metadata.m_modulePath.c_str(), "") << "No module path defined!";
-        
-        std::shared_ptr<ManagementModule> module;
-        std::shared_ptr<MmiSession> session;
-        auto search = g_moduleSessionMap.find(recipe.m_metadata.m_modulePath);
-        if (search != g_moduleSessionMap.end())
-        {
-            // Module already registered, use existing session
-            module = search->second.first;
-            session = search->second.second;
-        }
-        else
-        {
-            module = std::make_shared<ManagementModule>(recipe.m_metadata.m_modulePath);
-            session = std::make_shared<MmiSession>(module, g_defaultClient);
-            auto moduleSessionPair = std::make_pair(module, session);
-            g_moduleSessionMap[recipe.m_metadata.m_modulePath] = moduleSessionPair;
-            g_moduleSessionStack.push(moduleSessionPair);
-        }
-
+    {   
         // See gtest.h for details on this test registration
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
         std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
             "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
-            [recipe, module, session]()->RecipeFixture *
+            [recipe]()->RecipeFixture *
             {
-                return new RecipeInvoker(recipe, module, session);
+                return new RecipeInvoker(recipe);
             });
     }
 }
@@ -75,24 +51,33 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
     std::cout << "Using test recipes: " << fullPath.c_str() << std::endl;
     root_value = json_parse_file_with_comments(fullPath.c_str());
 
-    if (json_value_get_type(root_value) != JSONArray)
+    if (json_value_get_type(root_value) != JSONObject)
     {
         json_value_free(root_value);
         return testRecipes;
     }
 
-    JSON_Array *jsonTestRecipesMetadata = json_value_get_array(root_value);
+    JSON_Object *rootObject = json_value_get_object(root_value);
+    JSON_Array  *jsonModules = json_object_get_array(rootObject, "Modules");
+    std::vector<std::string> modulePaths;
+    for (size_t i = 0; i < json_array_get_count(jsonModules); i++)
+    {
+        modulePaths.push_back(json_array_get_string(jsonModules, i));
+    }
+
+    JSON_Array *jsonTestRecipesMetadata = json_object_get_array(rootObject, "Recipes");
     JSON_Object *jsonTestRecipeMetadata = nullptr;
     for (size_t i = 0; i < json_array_get_count(jsonTestRecipesMetadata); i++)
     {
         jsonTestRecipeMetadata = json_array_get_object(jsonTestRecipesMetadata, i);
 
+        std::string mainModulePath = json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str());
         TestRecipeMetadata recipeMetadata = {
             json_object_get_string(jsonTestRecipeMetadata, g_moduleName.c_str()),
-            json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str()),
+            mainModulePath,
             json_object_get_string(jsonTestRecipeMetadata, g_mimPath.c_str()),
             json_object_get_string(jsonTestRecipeMetadata, g_testRecipesPath.c_str()),
-        };
+            std::make_shared<RecipeModuleSessionLoader>(mainModulePath)};
 
         // Add recipe if no specific module specified or if the module name matches
         if ((moduleName.empty()) || (str_tolower(moduleName) == str_tolower(recipeMetadata.m_moduleName)))
@@ -102,6 +87,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
             ss << "Mmi    : " << recipeMetadata.m_mimPath << std::endl;
             ss << "Recipe : " << recipeMetadata.m_testRecipesPath << std::endl;
 
+            recipeMetadata.m_recipeModuleSessionLoader->Load(modulePaths);
             TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
             for (auto &recipe : *recipes)
             {
@@ -126,8 +112,10 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
         modulePath,
         mimPath,
         testRecipesPath,
+        std::make_shared<RecipeModuleSessionLoader>(modulePath)
     };
 
+    recipeMetadata.m_recipeModuleSessionLoader->Load(std::vector<std::string>{modulePath});
     TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
     for (auto &recipe : *recipes)
     {
@@ -272,13 +260,6 @@ int main(int argc, char **argv)
         status = 1;
     }
 
-    while (g_moduleSessionStack.size() > 0)
-    {
-        ModuleSession moduleSession = g_moduleSessionStack.top();
-        g_moduleSessionStack.pop();
-        moduleSession.second->Close();
-        moduleSession.first->Unload();
-    }
     
     return status;
 }

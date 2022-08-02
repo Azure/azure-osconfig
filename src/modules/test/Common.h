@@ -43,6 +43,7 @@
 #endif
 
 #include "ManagementModule.h"
+#include "RecipeModuleSessionLoader.h"
 #include "TestRecipeParser.h"
 #include "RecipeInvoker.h"
 #include "MimParser.h"

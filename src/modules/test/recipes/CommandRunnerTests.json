@@ -28,5 +28,13 @@
         "Desired": false,
         "Payload": "{\"commandId\":\"test1\",\"resultCode\":0,\"textResult\":\"Hello World \",\"currentState\":2}",
         "ExpectedResult": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"removeCache\", \"arguments\": \"rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 1
     }
 ]

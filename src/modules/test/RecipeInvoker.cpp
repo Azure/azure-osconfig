@@ -5,21 +5,17 @@ void RecipeInvoker::TestBody()
     MMI_JSON_STRING payload = nullptr;
     int payloadSize = 0;
 
-    if (!m_module->IsLoaded())
-    {
-        m_module->Load();
-        m_session->Open();
-    }
+    auto session = m_recipe.m_metadata.m_recipeModuleSessionLoader->GetSession(m_recipe.m_componentName);
 
     if (m_recipe.m_desired)
     {
         // If no payloadSizeBytes defined, use the size of the payload
         m_recipe.m_payloadSizeBytes = (0 == m_recipe.m_payloadSizeBytes) ? std::strlen(m_recipe.m_payload.c_str()) : m_recipe.m_payloadSizeBytes;
-        EXPECT_EQ(m_recipe.m_expectedResult, m_session->Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
+        EXPECT_EQ(m_recipe.m_expectedResult, session->Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
     }
     else
     {
-        ASSERT_EQ(m_recipe.m_expectedResult, m_session->Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
+        ASSERT_EQ(m_recipe.m_expectedResult, session->Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
 
         if (0 == m_recipe.m_expectedResult)
         {
@@ -95,6 +91,26 @@ void RecipeInvoker::TestBody()
         std::cout << "Waiting for " << m_recipe.m_waitSeconds << " seconds" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(m_recipe.m_waitSeconds));
     }
+}
+
+int RecipeInvoker::RunCommand(const std::string &command, std::string* textResult)
+{
+    char* buffer = nullptr;
+    const bool replaceEol = true;
+    const bool forJson = false;
+    int status = ExecuteCommand(nullptr, command.c_str(), replaceEol, forJson, 0, 0, &buffer, nullptr, nullptr);
+
+    if (0 == status)
+    {
+        if (buffer && textResult)
+        {
+            *textResult = buffer;
+        }
+    }
+
+    FREE_MEMORY(buffer);
+
+    return status;
 }
 
 void BasicModuleTester::TestBody()

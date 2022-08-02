@@ -30,8 +30,7 @@ ManagementModule::ManagementModule() : ManagementModule("") {}
 
 ManagementModule::ManagementModule(const std::string path) :
     m_modulePath(path),
-    m_handle(nullptr),
-    m_loaded(false)
+    m_handle(nullptr)
 {
     m_info.lifetime = Lifetime::Undefined;
     m_info.userAccount= 0;
@@ -115,7 +114,6 @@ int ManagementModule::Load()
         ss << "]";
 
         TestLogInfo("Loaded '%s' module (v%s) from '%s', supported components: %s", m_info.name.c_str(), m_info.version.ToString().c_str(), m_modulePath.c_str(), ss.str().c_str());
-        m_loaded = true;
     }
     else
     {
@@ -141,7 +139,7 @@ void ManagementModule::Unload()
 
 bool ManagementModule::IsLoaded() const
 {
-    return m_loaded;
+    return (nullptr != m_handle);
 }
 
 ManagementModule::Info ManagementModule::GetInfo() const
@@ -507,6 +505,11 @@ int MmiSession::Set(const char* componentName, const char* objectName, const MMI
 int MmiSession::Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes)
 {
     return (nullptr != m_module) ? m_module->CallMmiGet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
+}
+
+bool MmiSession::IsOpen() const
+{
+    return (nullptr != m_mmiHandle);
 }
 
 ManagementModule::Info MmiSession::GetInfo()

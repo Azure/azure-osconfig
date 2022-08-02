@@ -91,7 +91,6 @@ protected:
     Mmi_Free m_mmiFree;
 
     Info m_info;
-    bool m_loaded;
 
     virtual int CallMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
     virtual MMI_HANDLE CallMmiOpen(const char* componentName, unsigned int maxPayloadSizeBytes);
@@ -114,6 +113,7 @@ public:
     int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
     int Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes);
 
+    bool IsOpen() const;
     ManagementModule::Info GetInfo();
 private:
     const std::string m_clientName;

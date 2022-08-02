@@ -16,13 +16,13 @@ class RecipeFixture : public ::testing::Test {};
 class RecipeInvoker : public RecipeFixture
 {
 public:
-    explicit RecipeInvoker(const TestRecipe &recipe, const std::shared_ptr<ManagementModule> module, const std::shared_ptr<MmiSession> session) : m_recipe(recipe), m_module(module), m_session(session) {}
+    explicit RecipeInvoker(const TestRecipe &recipe) : m_recipe(recipe) {}
     void TestBody() override;
 
 private:
     TestRecipe m_recipe;
-    std::shared_ptr<ManagementModule> m_module;
-    std::shared_ptr<MmiSession> m_session;
+
+    int RunCommand(const std::string &command, std::string *textResult);
 };
 
 class BasicModuleTester : public RecipeFixture
