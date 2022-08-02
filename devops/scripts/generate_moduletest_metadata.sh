@@ -21,7 +21,7 @@ testMetaDataDestPath=$1
 modulesBaseDir=$2
 
 modules=$(find $modulesBaseDir -name '*.so')
-testJSON="[]"
+json="{ \"Modules\" : [], \"Recipes\" : [] }"
 while IFS= read -r line ;
   do 
   modulename=$(basename $line | cut -f1 -d'.');
@@ -31,10 +31,12 @@ while IFS= read -r line ;
   if [ ! -z "$recipepath" ] && [ ! -z "$mimpath" ]; then
     # Create entry if both mim+recipe are found
     echo "Found '$modulename' module adding to recipe configuration"
-    json="[{ \"ModuleName\": \"$modulename\", \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
-    testJSON=$(echo $testJSON | jq --argjson testMetadata "$json" '. |= . + $testMetadata')
+    modulePath="[\"$line\"]"
+    recipes="[{ \"ModuleName\": \"$modulename\", \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
+    json=$(echo $json | jq --argjson modulePath "$modulePath" '.Modules |= . + $modulePath')
+    json=$(echo $json | jq --argjson recipes "$recipes" '.Recipes |= . + $recipes')
   fi
 done <<< $modules
 
-echo $testJSON | jq '.' > $testMetaDataDestPath
+echo $json | jq '.' > $testMetaDataDestPath
 echo "Test recipe configuration written to $testMetaDataDestPath"
