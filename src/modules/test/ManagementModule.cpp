@@ -137,6 +137,11 @@ void ManagementModule::Unload()
     }
 }
 
+bool ManagementModule::IsLoaded() const
+{
+    return (nullptr != m_handle);
+}
+
 ManagementModule::Info ManagementModule::GetInfo() const
 {
     return m_info;
@@ -500,6 +505,11 @@ int MmiSession::Set(const char* componentName, const char* objectName, const MMI
 int MmiSession::Get(const char* componentName, const char* objectName, MMI_JSON_STRING *payload, int *payloadSizeBytes)
 {
     return (nullptr != m_module) ? m_module->CallMmiGet(m_mmiHandle, componentName, objectName, payload, payloadSizeBytes) : EINVAL;
+}
+
+bool MmiSession::IsOpen() const
+{
+    return (nullptr != m_mmiHandle);
 }
 
 ManagementModule::Info MmiSession::GetInfo()

@@ -2,24 +2,20 @@
 
 void RecipeInvoker::TestBody()
 {
-    ASSERT_STRNE(m_recipe.m_metadata.m_modulePath.c_str(), "") << "No module path defined!";
-    auto module = std::make_shared<ManagementModule>(m_recipe.m_metadata.m_modulePath);
-    MmiSession session(module, g_defaultClient);
-    ASSERT_EQ(0, module->Load()) << "Failed to load module!";
-    ASSERT_EQ(0, session.Open()) << "Failed to open session!";
-
     MMI_JSON_STRING payload = nullptr;
     int payloadSize = 0;
+
+    auto session = m_recipe.m_metadata.m_recipeModuleSessionLoader->GetSession(m_recipe.m_componentName);
 
     if (m_recipe.m_desired)
     {
         // If no payloadSizeBytes defined, use the size of the payload
         m_recipe.m_payloadSizeBytes = (0 == m_recipe.m_payloadSizeBytes) ? std::strlen(m_recipe.m_payload.c_str()) : m_recipe.m_payloadSizeBytes;
-        EXPECT_EQ(m_recipe.m_expectedResult, session.Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
+        EXPECT_EQ(m_recipe.m_expectedResult, session->Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
     }
     else
     {
-        ASSERT_EQ(m_recipe.m_expectedResult, session.Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
+        ASSERT_EQ(m_recipe.m_expectedResult, session->Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
 
         if (0 == m_recipe.m_expectedResult)
         {
@@ -95,8 +91,6 @@ void RecipeInvoker::TestBody()
         std::cout << "Waiting for " << m_recipe.m_waitSeconds << " seconds" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(m_recipe.m_waitSeconds));
     }
-
-    session.Close();
 }
 
 void BasicModuleTester::TestBody()
