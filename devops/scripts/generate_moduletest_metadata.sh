@@ -20,11 +20,24 @@ recipeBaseDir=$BaseDir/src/modules/test/recipes
 testMetaDataDestPath=$1
 modulesBaseDir=$2
 
+# Sample modules are prefixed with their language
+prefix=(cpp)
+normalizeModuleName()
+{
+  local m=$1
+  for i in $prefix; do
+    m=$(echo $m | sed -e "s/^$i//")
+  done
+  echo $m
+}
+
 modules=$(find $modulesBaseDir -name '*.so')
 json="{ \"Modules\" : [], \"Recipes\" : [] }"
 while IFS= read -r line ;
   do 
   modulename=$(basename $line | cut -f1 -d'.');
+  # normalize module names (module samples are prefixed with the module language)
+  modulename=$(normalizeModuleName $modulename)
   mimpath=$(find $mimBaseDir -name "*$modulename*.json")
   recipepath=$(find $recipeBaseDir -iname "*$modulename*.json")
 
