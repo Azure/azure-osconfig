@@ -3,19 +3,19 @@
 
 project(cppsample)
 
-add_library(sample SHARED SampleModule.cpp)
-target_link_libraries(sample
+add_library(cppsample SHARED SampleModule.cpp)
+target_link_libraries(cppsample
     PRIVATE
         commonutils
         logging
     PUBLIC
         cppsamplelib
 )
-target_include_directories(sample
+target_include_directories(cppsample
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(sample
+set_target_properties(cppsample
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
