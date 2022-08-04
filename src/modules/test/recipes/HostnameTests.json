@@ -1,24 +1,105 @@
 [
     {
-        "ComponentName": "HostName",
-        "ObjectName": "name",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
+      "ComponentName": "HostName",
+      "ObjectName": "name",
+      "Desired": false,
+      "ExpectedResult": 0,
+      "WaitSeconds": 0
     },
     {
-        "ComponentName": "HostName",
-        "ObjectName": "hosts",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
+      "ComponentName": "HostName",
+      "ObjectName": "hosts",
+      "Desired": false,
+      "ExpectedResult": 0,
+      "WaitSeconds": 0
     },
     {
-        "ComponentName": "HostName",
-        "ObjectName": "name",
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{}",
-        "ExpectedResult": 22,
+        "Payload": "{\"commandId\": \"cleanCachePreTest\", \"arguments\": \"rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 1
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"writeHostNameToLocalFile\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 5
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "desiredName",
+        "Desired": true,
+        "Payload": "testHostName",
+        "ExpectedResult": 0,
         "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\": \"restoreOriginalHostName\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 5
+    },
+    {
+        "ComponentName": "HostName",
+        "ObjectName": "name",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "invalidObjectName",
+      "Desired": false,
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "invalidComponentName",
+      "ObjectName": "name",
+      "Desired": false,
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "",
+      "Desired": false,
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "",
+      "ObjectName": "name",
+      "Desired": false,
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "",
+      "ObjectName": "",
+      "Desired": false,
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
+    },
+    {
+      "ComponentName": "HostName",
+      "ObjectName": "name",
+      "Desired": true,
+      "Payload": "{}",
+      "ExpectedResult": 22,
+      "WaitSeconds": 0
     }
-]
+  ]
