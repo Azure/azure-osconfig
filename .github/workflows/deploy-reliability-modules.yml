@@ -68,9 +68,9 @@ jobs:
           working-directory: ${{ env.container-workspace }}/build/modules/test
           cmd: |
             function checkResult(){
-              if [[ \$result -ne 0 ]]; then
-                echo '::error title=Module Test Failure::The modules tests failed at run number \$runNumber'
-                exit \$result
+              if [[ \$1 -ne 0 ]]; then
+                echo '::error title=Module Test Failure::The modules tests failed at run number \$2'
+                exit \$1
               fi
             }
             result=0
@@ -79,8 +79,8 @@ jobs:
             echo Using date \$end
             while [[ \$(date +%s) -lt \$end ]]; do
               echo Performing test run \$((++runNumber))
-              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json)
-              checkResult
+              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json)
+              checkResult \$result \$runNumber
             done
 
       - name: Generate test report
