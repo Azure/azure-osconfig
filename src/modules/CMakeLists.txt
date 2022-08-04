@@ -46,6 +46,7 @@ add_module(Tpm)
 add_module(Ztsi)
 
 if (BUILD_RUST)
+    # Fetch Corrosion to link the Rust Modules with the CMake Build Line
     include(FetchContent)
     FetchContent_Declare(
         Corrosion
@@ -53,9 +54,7 @@ if (BUILD_RUST)
         GIT_TAG v0.2.1 # Optionally specify a commit hash, version tag or branch here
     )
     FetchContent_MakeAvailable(Corrosion)
-    # add_module_custom_target(samples rustsample)
 endif()
-
 
 if (BUILD_SAMPLES)
     add_module_custom_target(Samples cppsample Sample Sample)
