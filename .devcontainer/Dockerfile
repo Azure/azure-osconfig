@@ -44,6 +44,6 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
     apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     apt-get -y install terraform
 
-# Rustc and Cargo Install
+# Installs and executes the Rustup-init executable (https://forge.rust-lang.org/infra/other-installation-methods.html)
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"

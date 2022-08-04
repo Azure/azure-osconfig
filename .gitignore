@@ -7,8 +7,8 @@ node_modules
 *.vsix
 **/bin/
 **/obj/
-src/modules/samples/rust/target
-src/modules/samples/rust/Cargo.lock
+**/rust/target
+**/Cargo.lock
 
 # Terraform
 .terraform/
