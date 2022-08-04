@@ -79,7 +79,7 @@ jobs:
             echo Using date \$end
             while [[ \$(date +%s) -lt \$end ]]; do
               echo Performing test run \$((++runNumber))
-              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json)
+              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json)
               checkResult
             done
 
