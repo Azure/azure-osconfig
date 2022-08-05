@@ -20,7 +20,8 @@ RUN apt -y update && apt-get -y install \
     ninja-build\
     wget \
     jq \
-    bc
+    bc \
+    cargo
 
 ENV OPENSSL_ROOT_DIR=/usr/lib/arm-linux-gnueabihf/
 

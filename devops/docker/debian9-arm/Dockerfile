@@ -17,7 +17,8 @@ RUN apt -y update && apt-get -y install \
     wget \
     gcovr \
     jq \
-    bc
+    bc \
+    cargo
 
 WORKDIR /git
 
