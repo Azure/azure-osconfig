@@ -46,14 +46,6 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"cleanCachePreTest\", \"arguments\": \"rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
     "Payload": "{\"commandId\": \"checkCowsayNotInstalled\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
@@ -79,7 +71,7 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"removeInvalidGpgKey\", \"arguments\": \"rm /usr/share/keyrings/invalidGpgKey.gpg\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "PackageManagerConfiguration",
@@ -87,7 +79,7 @@
     "Desired": true,
     "Payload": "{\"packages\": [\"cowsay sl=5.02-1\"], \"gpgKeys\": {\"microsoft-key\": \"https://packages.microsoft.com/keys/microsoft.asc\"}, \"sources\": {\"microsoft-repo\": \"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
@@ -95,7 +87,7 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"checkCowsayInstalled\", \"arguments\": \"dpkg -l | grep -o cowsay | sed 's: ::g'\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
@@ -110,7 +102,7 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"uninstallCowsay\", \"arguments\": \"sudo apt-get remove -y cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
@@ -118,28 +110,14 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"checkCowsayUninstalled\", \"arguments\": \"dpkg -l | grep -o cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
     "Payload": "{\"commandId\": \"checkCowsayUninstalled\", \"resultCode\": 1, \"textResult\": \"\", \"currentState\": 3}",
-    "ExpectedResult": 0
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
-    "Payload": "{\"commandId\": \"cleanCachePostTest\", \"arguments\": \"rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandStatus",
-    "Desired": false,
-    "Payload": "{\"commandId\": \"cleanCachePostTest\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
-    "ExpectedResult": 0
+    "WaitSeconds": 1
   }
 ]

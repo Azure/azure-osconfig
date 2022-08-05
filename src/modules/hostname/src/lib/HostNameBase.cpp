@@ -105,7 +105,7 @@ int HostNameBase::Set(
 
     // Validate payload size.
     int status = MMI_OK;
-    if (payloadSizeBytes > static_cast<int>(m_maxPayloadSizeBytes))
+    if ((0 != m_maxPayloadSizeBytes) && (payloadSizeBytes > static_cast<int>(m_maxPayloadSizeBytes)))
     {
         OsConfigLogError(HostNameLog::Get(), ERROR_PAYLOAD_TOO_LARGE, "Set", payloadSizeBytes, static_cast<int>(m_maxPayloadSizeBytes));
         status = E2BIG;

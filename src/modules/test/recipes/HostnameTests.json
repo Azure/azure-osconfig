@@ -52,14 +52,6 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"cleanCachePreTest\", \"arguments\": \"rm /etc/osconfig/osconfig_commandrunner.cache\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
     "Payload": "{\"commandId\": \"setHostNameEnvironmentVariable\", \"arguments\": \"HOSTNAME=$(hostname)\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
@@ -69,7 +61,6 @@
     "ObjectName": "desiredName",
     "Desired": true,
     "Payload": "testHostName",
-    "PayloadSizeBytes": 12,
     "ExpectedResult": 0
   },
   {
@@ -78,7 +69,7 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"confirmHostNameUpdate\", \"arguments\": \"hostname | grep testHostName\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
@@ -93,7 +84,15 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"restoreOriginalHostName\", \"arguments\": \"hostnamectl set-hostname --static $HOSTNAME\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"confirmOriginalHostNameRestored\", \"arguments\": \"hostname | grep $HOSTNAME\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
   },
   {
     "ComponentName": "CommandRunner",
@@ -101,6 +100,6 @@
     "Desired": true,
     "Payload": "{\"commandId\": \"unsetHostNameEnvironmentVariable\", \"arguments\": \"unset $HOSTNAME\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 1
   }
 ]

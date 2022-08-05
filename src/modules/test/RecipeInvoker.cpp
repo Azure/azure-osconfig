@@ -96,6 +96,8 @@ void RecipeInvoker::TestBody()
         std::cout << "Waiting for " << m_recipe.m_waitSeconds << " seconds" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(m_recipe.m_waitSeconds));
     }
+
+    std::remove("/etc/osconfig/osconfig_commandrunner.cache");
 }
 
 void BasicModuleTester::TestBody()
