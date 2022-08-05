@@ -74,6 +74,14 @@
     "WaitSeconds": 1
   },
   {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeInvalidGpgKey\", \"arguments\": \"rm /usr/share/keyrings/invalidGpgKey.gpg\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "desiredState",
     "Desired": true,

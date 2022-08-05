@@ -60,7 +60,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"writeHostNameToTempFile\", \"arguments\": \"hostname > hostNameTemp.txt\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"setHostNameEnvironmentVariable\", \"arguments\": \"HOSTNAME=$(hostname)\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -69,12 +69,7 @@
     "ObjectName": "desiredName",
     "Desired": true,
     "Payload": "testHostName",
-    "ExpectedResult": 0
-  },
-  {
-    "ComponentName": "HostName",
-    "ObjectName": "name",
-    "Desired": false,
+    "PayloadSizeBytes": 12,
     "ExpectedResult": 0
   },
   {
@@ -96,7 +91,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"restoreOriginalHostName\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"restoreOriginalHostName\", \"arguments\": \"hostnamectl set-hostname --static $HOSTNAME\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 5
   },
@@ -104,15 +99,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"confirmHostNameRestored\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 5
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
-    "Payload": "{\"commandId\": \"removeTempFile\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"unsetHostNameEnvironmentVariable\", \"arguments\": \"unset $HOSTNAME\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 5
   }
