@@ -3,56 +3,48 @@
     "ComponentName": "Tpm",
     "ObjectName": "tpmStatus",
     "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ExpectedResult": 0
   },
   {
     "ComponentName": "Tpm",
     "ObjectName": "tpmVersion",
     "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ExpectedResult": 0
   },
   {
     "ComponentName": "Tpm",
     "ObjectName": "tpmManufacturer",
     "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ExpectedResult": 0
   },
   {
     "ComponentName": "Tpm",
     "ObjectName": "invalidObjectName",
     "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
     "ComponentName": "invalidComponentName",
     "ObjectName": "tpmStatus",
     "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
     "ComponentName": "Tpm",
     "ObjectName": "",
     "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
     "ComponentName": "",
     "ObjectName": "tpmStatus",
     "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
     "ComponentName": "",
     "ObjectName": "",
     "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   }
 ]
