@@ -1,12 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved..
 // Licensed under the MIT License.
 
-use libc::EINVAL;
-use libc::ENOMEM;
-use libc::{c_char, c_int, c_uint, c_void};
+use libc::{c_char, c_int, c_uint, c_void, EINVAL, ENOMEM};
 use sample::Sample;
-use std::ffi::CStr;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::ptr;
 
 mod sample;
