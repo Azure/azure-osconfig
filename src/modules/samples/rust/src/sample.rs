@@ -40,7 +40,7 @@ const INFO: &str = r#"""({
 enum IntegerEnumeration {
     None,
     Value1,
-    Value2
+    Value2,
 }
 
 // A sample object with all possible setting types
@@ -66,8 +66,24 @@ pub struct Sample {
 
 impl Sample {
     pub fn new(max_payload_size_bytes: u32) -> Sample {
+        // Initializes a Sample struct
         Sample {
             max_payload_size_bytes: max_payload_size_bytes,
         }
+        // The result is returned if the ending semicolon is omitted
+    }
+
+    #[cfg(test)]
+    fn get_max_payload_size_bytes(&self) -> u32 {
+        self.max_payload_size_bytes
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn build_sample() {
+        let test = super::Sample::new(16);
+        assert_eq!(test.get_max_payload_size_bytes(), 16);
     }
 }
