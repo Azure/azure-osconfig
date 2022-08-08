@@ -5,7 +5,6 @@ use libc::EINVAL;
 use libc::ENOMEM;
 use libc::{c_char, c_int, c_uint, c_void};
 use sample::Sample;
-use sample::INFO;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ptr;
@@ -36,7 +35,7 @@ pub extern "C" fn MmiGetInfo(
         println!("MmiGetInfo called with null payloadSizeBytes");
         EINVAL
     } else {
-        // Take ownership of the client_name ptr
+        // Borrow the client_name ptr
         let client_name_cstr: &CStr = unsafe { CStr::from_ptr(client_name) };
         let client_name_str_slice: &str;
         match client_name_cstr.to_str() {
@@ -46,8 +45,9 @@ pub extern "C" fn MmiGetInfo(
                 return libc::EINVAL;
             }
         }
+        let info_str_slice: &str = Sample::get_info(client_name_str_slice);
         let payload_string: CString;
-        match CString::new(Sample::get_info(client_name_str_slice)) {
+        match CString::new(info_str_slice) {
             Ok(s) => payload_string = s,
             Err(e) => {
                 println!("MmiGetInfo failed to allocate memory");
@@ -57,7 +57,7 @@ pub extern "C" fn MmiGetInfo(
         let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
         unsafe {
             *payload = payload_ptr;
-            *payload_size_bytes = INFO.len() as i32;
+            *payload_size_bytes = info_str_slice.len() as i32;
         }
         MMI_OK
     }

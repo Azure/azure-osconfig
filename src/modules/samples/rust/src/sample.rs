@@ -26,7 +26,7 @@ const STRING_MAP_SETTING_NAME: &str = "stringMapSetting";
 const INTEGER_MAP_SETTING_NAME: &str = "integerMapSetting";
 
 // r# Denotes a Rust Raw String
-pub const INFO: &str = r#"""({
+const INFO: &str = r#"""({
     "Name": "Rust Sample",
     "Description": "A sample module written in Rust",
     "Manufacturer": "Microsoft",
