@@ -41,7 +41,7 @@ pub extern "C" fn MmiOpen(
 
 #[no_mangle]
 pub extern "C" fn MmiClose(client_session: MmiHandle) {
-    // The "_" variable name is to throwaway anything stored into it 
+    // The "_" variable name is to throwaway anything stored into it
     let _: Box<Sample> = unsafe { Box::from_raw(client_session as *mut Sample) };
 }
 
