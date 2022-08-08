@@ -7,6 +7,7 @@ node_modules
 *.vsix
 **/bin/
 **/obj/
+**/target
 
 # Terraform
 .terraform/

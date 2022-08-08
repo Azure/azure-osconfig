@@ -17,6 +17,7 @@ option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
+option(BUILD_RUST "Build Rust Modules" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros;-Wunused-const-variable=2>")
