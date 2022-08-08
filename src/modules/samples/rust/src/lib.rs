@@ -33,10 +33,11 @@ pub extern "C" fn MmiOpen(
 ) -> MmiHandle {
     if client_name.is_null() {
         println!("MmiOpen called with null clientName");
-        return ptr::null_mut() as *mut c_void;
+        ptr::null_mut() as *mut c_void
+    } else {
+        let sample_box: Box<Sample> = Box::<Sample>::new(Sample::new(max_payload_size_bytes));
+        Box::into_raw(sample_box) as *mut c_void
     }
-    let sample_box: Box<Sample> = Box::<Sample>::new(Sample::new(max_payload_size_bytes));
-    return Box::into_raw(sample_box) as *mut c_void;
 }
 
 #[no_mangle]
