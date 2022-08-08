@@ -26,7 +26,7 @@ const STRING_MAP_SETTING_NAME: &str = "stringMapSetting";
 const INTEGER_MAP_SETTING_NAME: &str = "integerMapSetting";
 
 // r# Denotes a Rust Raw String
-const INFO: &str = r#"""({
+pub const INFO: &str = r#"""({
     "Name": "Rust Sample",
     "Description": "A sample module written in Rust",
     "Manufacturer": "Microsoft",
@@ -72,6 +72,12 @@ impl Sample {
         }
     }
 
+    pub fn get_info(client_name: &str) -> &str {
+        // This sample module makes no use of the client_name, but
+        // it may be copied, compared, etc. here
+        INFO
+    }
+
     #[cfg(test)]
     fn get_max_payload_size_bytes(&self) -> u32 {
         self.max_payload_size_bytes
@@ -85,5 +91,12 @@ mod tests {
     fn build_sample() {
         let test = Sample::new(16);
         assert_eq!(test.get_max_payload_size_bytes(), 16);
+    }
+
+    #[test]
+    fn info_size() {
+        let sample_info: &str = Sample::get_info("Test_client_name");
+        assert_eq!(INFO, sample_info);
+        assert_eq!(INFO.len() as i32, sample_info.len() as i32);
     }
 }
