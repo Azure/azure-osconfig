@@ -27,8 +27,8 @@ const G_INTEGER_MAP_SETTING_NAME: &str = "integerMapSetting";
 
 // r# Denotes a Rust Raw String
 const INFO: &str = r#"""({
-    "Name": "C++ Sample",
-    "Description": "A sample module written in C++",
+    "Name": "Rust Sample",
+    "Description": "A sample module written in Rust",
     "Manufacturer": "Microsoft",
     "VersionMajor": 1,
     "VersionMinor": 0,
