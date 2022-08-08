@@ -35,13 +35,14 @@ pub extern "C" fn MmiOpen(
         println!("MmiOpen called with null clientName");
         return ptr::null_mut() as *mut c_void;
     }
-    let test_box: Box<Sample> = Box::<Sample>::new(Sample::new(max_payload_size_bytes));
-    return Box::into_raw(test_box) as *mut c_void;
+    let sample_box: Box<Sample> = Box::<Sample>::new(Sample::new(max_payload_size_bytes));
+    return Box::into_raw(sample_box) as *mut c_void;
 }
 
 #[no_mangle]
 pub extern "C" fn MmiClose(client_session: MmiHandle) {
-    let test_box: Box<Sample> = unsafe { Box::from_raw(client_session as *mut Sample) };
+    // The "_" variable name is to throwaway anything stored into it 
+    let _: Box<Sample> = unsafe { Box::from_raw(client_session as *mut Sample) };
 }
 
 #[no_mangle]
