@@ -3,7 +3,9 @@
 
 use libc::{c_char, c_int, c_uint, c_void, EINVAL, ENOMEM};
 use sample::Sample;
+use std::error::Error as StdError;
 use std::ffi::{CStr, CString, NulError};
+use std::fmt;
 use std::ptr;
 use std::str::Utf8Error;
 
@@ -34,6 +36,24 @@ impl From<i32> for MmiError {
 impl From<NulError> for MmiError {
     fn from(err: NulError) -> MmiError {
         MmiError::FailedAllocate(err)
+    }
+}
+impl fmt::Display for MmiError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &*self {
+            MmiError::FailedRead(_e) => write!(f, "A read failed"),
+            MmiError::Code(e) => write!(f, "There was C Error code {}", e),
+            MmiError::FailedAllocate(_e) => write!(f, "A memory allocation failed"),
+        }
+    }
+}
+impl StdError for MmiError {
+    fn description(&self) -> &str {
+        match &*self {
+            MmiError::FailedRead(_e) => "A read failed",
+            MmiError::Code(_e) => "A C Error code",
+            MmiError::FailedAllocate(_e) => "A memory allocation failed",
+        }
     }
 }
 

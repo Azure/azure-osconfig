@@ -73,7 +73,7 @@ impl Sample {
         }
     }
 
-    pub fn get_info(client_name: &str) -> Result<&str, i32> {
+    pub fn get_info(_client_name: &str) -> Result<&str, i32> {
         // This sample module makes no use of the client_name, but
         // it may be copied, compared, etc. here
         // In the case of an error, an error code Err(i32) could be returned instead
