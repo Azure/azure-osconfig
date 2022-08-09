@@ -18,40 +18,36 @@ pub type MmiHandle = *mut c_void;
 pub type MmiJsonString = *mut c_char;
 
 #[derive(Debug)]
-enum MmiError {
+pub enum MmiError {
     FailedRead(Utf8Error),
-    Code(i32),
     FailedAllocate(NulError),
 }
+
 impl From<Utf8Error> for MmiError {
     fn from(err: Utf8Error) -> MmiError {
         MmiError::FailedRead(err)
     }
 }
-impl From<i32> for MmiError {
-    fn from(err: i32) -> MmiError {
-        MmiError::Code(err)
-    }
-}
+
 impl From<NulError> for MmiError {
     fn from(err: NulError) -> MmiError {
         MmiError::FailedAllocate(err)
     }
 }
+
 impl fmt::Display for MmiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
             MmiError::FailedRead(_e) => write!(f, "A read failed"),
-            MmiError::Code(e) => write!(f, "There was C Error code {}", e),
             MmiError::FailedAllocate(_e) => write!(f, "A memory allocation failed"),
         }
     }
 }
+
 impl StdError for MmiError {
     fn description(&self) -> &str {
         match &*self {
             MmiError::FailedRead(_e) => "A read failed",
-            MmiError::Code(_e) => "A C Error code",
             MmiError::FailedAllocate(_e) => "A memory allocation failed",
         }
     }
@@ -85,7 +81,6 @@ pub extern "C" fn MmiGetInfo(
                 println!("MmiGetInfo failed to read the clientName");
                 EINVAL
             }
-            Err(MmiError::Code(e)) => e,
             Err(MmiError::FailedAllocate(_e)) => {
                 println!("MmiGetInfo failed to allocate memory");
                 ENOMEM
