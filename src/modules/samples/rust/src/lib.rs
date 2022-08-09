@@ -42,7 +42,13 @@ pub extern "C" fn MmiGetInfo(
                 return libc::EINVAL;
             }
         }
-        let info_str_slice: &str = Sample::get_info(client_name_str_slice);
+        let info_str_slice: &str;
+        match Sample::get_info(client_name_str_slice) {
+            Ok(s) => info_str_slice = s,
+            Err(e) => {
+                return e;
+            }
+        }
         let payload_string: CString;
         match CString::new(info_str_slice) {
             Ok(s) => payload_string = s,
@@ -73,8 +79,10 @@ pub extern "C" fn MmiOpen(client_name: *const c_char, max_payload_size_bytes: c_
 
 #[no_mangle]
 pub extern "C" fn MmiClose(client_session: MmiHandle) {
-    // The "_" variable name is to throwaway anything stored into it
-    let _: Box<Sample> = unsafe { Box::from_raw(client_session as *mut Sample) };
+    if !client_session.is_null() {
+        // The "_" variable name is to throwaway anything stored into it
+        let _: Box<Sample> = unsafe { Box::from_raw(client_session as *mut Sample) };
+    }
 }
 
 #[no_mangle]

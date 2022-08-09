@@ -72,10 +72,11 @@ impl Sample {
         }
     }
 
-    pub fn get_info(client_name: &str) -> &str {
+    pub fn get_info(client_name: &str) -> Result<&str, i32> {
         // This sample module makes no use of the client_name, but
         // it may be copied, compared, etc. here
-        INFO
+        // In the case of an error, an error code Err(i32) could be returned instead
+        Ok(INFO)
     }
 
     #[cfg(test)]
@@ -95,7 +96,9 @@ mod tests {
 
     #[test]
     fn info_size() {
-        let sample_info: &str = Sample::get_info("Test_client_name");
+        let sample_info_result: Result<&str, i32> = Sample::get_info("Test_client_name");
+        assert!(sample_info_result.is_ok());
+        let sample_info: &str = sample_info_result.unwrap();
         assert_eq!(INFO, sample_info);
         assert_eq!(INFO.len() as i32, sample_info.len() as i32);
     }
