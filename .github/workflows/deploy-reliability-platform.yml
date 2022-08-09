@@ -45,7 +45,7 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
       memThreshold: 50
-      repeatForXHours: 4
+      repeatForXHours: 1
       testNameSuffix: (reliability-platform)
     secrets: inherit
 
