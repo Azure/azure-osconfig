@@ -21,6 +21,10 @@
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
 		"mhutchie.git-graph",
-		"me-dutour-mathieu.vscode-github-actions"
+		"me-dutour-mathieu.vscode-github-actions",
+		"vadimcn.vscode-lldb",
+		"rust-lang.rust-analyzer",
+		"tamasfe.even-better-toml",
+		"serayuzgur.crates"
     ]
 }
