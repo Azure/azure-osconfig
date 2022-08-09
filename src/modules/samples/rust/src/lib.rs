@@ -3,8 +3,9 @@
 
 use libc::{c_char, c_int, c_uint, c_void, EINVAL, ENOMEM};
 use sample::Sample;
-use std::ffi::{CStr, CString};
+use std::ffi::{CStr, CString, NulError};
 use std::ptr;
+use std::str::Utf8Error;
 
 mod sample;
 
@@ -13,6 +14,28 @@ mod sample;
 pub const MMI_OK: i32 = 0;
 pub type MmiHandle = *mut c_void;
 pub type MmiJsonString = *mut c_char;
+
+#[derive(Debug)]
+enum MmiError {
+    FailedRead(Utf8Error),
+    Code(i32),
+    FailedAllocate(NulError),
+}
+impl From<Utf8Error> for MmiError {
+    fn from(err: Utf8Error) -> MmiError {
+        MmiError::FailedRead(err)
+    }
+}
+impl From<i32> for MmiError {
+    fn from(err: i32) -> MmiError {
+        MmiError::Code(err)
+    }
+}
+impl From<NulError> for MmiError {
+    fn from(err: NulError) -> MmiError {
+        MmiError::FailedAllocate(err)
+    }
+}
 
 // MSFT change: Added the #[no_mangle] annotation, renamed
 // parameters, and defined the methods
@@ -34,36 +57,38 @@ pub extern "C" fn MmiGetInfo(
     } else {
         // Borrow the client_name ptr
         let client_name_cstr: &CStr = unsafe { CStr::from_ptr(client_name) };
-        let client_name_str_slice: &str;
-        match client_name_cstr.to_str() {
-            Ok(s) => client_name_str_slice = s,
-            Err(e) => {
+        let result: Result<i32, MmiError> =
+            mmi_get_info_helper(client_name_cstr, payload, payload_size_bytes);
+        match result {
+            Ok(code) => code,
+            Err(MmiError::FailedRead(_e)) => {
                 println!("MmiGetInfo failed to read the clientName");
-                return libc::EINVAL;
+                EINVAL
             }
-        }
-        let info_str_slice: &str;
-        match Sample::get_info(client_name_str_slice) {
-            Ok(s) => info_str_slice = s,
-            Err(e) => {
-                return e;
-            }
-        }
-        let payload_string: CString;
-        match CString::new(info_str_slice) {
-            Ok(s) => payload_string = s,
-            Err(e) => {
+            Err(MmiError::Code(e)) => e,
+            Err(MmiError::FailedAllocate(_e)) => {
                 println!("MmiGetInfo failed to allocate memory");
-                return libc::ENOMEM;
+                ENOMEM
             }
         }
-        let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
-        unsafe {
-            *payload = payload_ptr;
-            *payload_size_bytes = info_str_slice.len() as i32;
-        }
-        MMI_OK
     }
+}
+
+fn mmi_get_info_helper(
+    client_name_cstr: &CStr,
+    payload: *mut MmiJsonString,
+    payload_size_bytes: *mut c_int,
+) -> Result<i32, MmiError> {
+    // The question operator will either unwrap and continue or return an Err(MmiError)
+    let client_name_str_slice = client_name_cstr.to_str()?;
+    let info_str_slice = Sample::get_info(client_name_str_slice)?;
+    let payload_string = CString::new(info_str_slice)?;
+    let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
+    unsafe {
+        *payload = payload_ptr;
+        *payload_size_bytes = info_str_slice.len() as i32;
+    }
+    Ok(MMI_OK)
 }
 
 #[no_mangle]

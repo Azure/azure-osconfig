@@ -55,7 +55,8 @@ struct Object {
     integer_map_setting: HashMap<String, i32>,
 
     // Store removed elements to report as 'null'
-    // These vectors must have a maximum size relative to the max payload size recieved by MmiOpen()
+    // These vectors must have a maximum size relative to the max payload size
+    // recieved by MmiOpen()
     removed_string_map_setting_keys: Vec<String>,
     removed_integer_map_setting_keys: Vec<i32>,
 }
