@@ -1,30 +1,32 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json
 {
-	"name": "azure-osconfig",
-	"dockerFile": "Dockerfile",
-	"features": {
-		"github-cli": "latest"
-	},
-	"workspaceFolder": "/azure-osconfig",
-	"mounts": ["source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"],
-	"overrideCommand": true,
-	"postCreateCommand": "git config --global --add safe.directory /azure-osconfig && git submodule update --init --recursive",
-	"extensions": [
-		"eamodio.gitlens",
-		"GitHub.copilot",
-		"GitHub.vscode-pull-request-github",
-		"hashicorp.terraform",
-		"ms-azure-devops.azure-pipelines",
-		"ms-azuretools.vscode-azureterraform",
-		"ms-dotnettools.csharp",
-		"twxs.cmake",
+    "name": "azure-osconfig",
+    "dockerFile": "Dockerfile",
+    "features": {
+        "github-cli": "latest"
+    },
+    "workspaceFolder": "/azure-osconfig",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"
+    ],
+    "overrideCommand": true,
+    "postCreateCommand": "git config --global --add safe.directory /azure-osconfig && git submodule update --init --recursive",
+    "extensions": [
+        "eamodio.gitlens",
+        "GitHub.copilot",
+        "GitHub.vscode-pull-request-github",
+        "hashicorp.terraform",
+        "ms-azure-devops.azure-pipelines",
+        "ms-azuretools.vscode-azureterraform",
+        "ms-dotnettools.csharp",
+        "twxs.cmake",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
-		"mhutchie.git-graph",
-		"me-dutour-mathieu.vscode-github-actions",
-		"vadimcn.vscode-lldb",
-		"rust-lang.rust-analyzer",
-		"tamasfe.even-better-toml",
-		"serayuzgur.crates"
+        "mhutchie.git-graph",
+        "me-dutour-mathieu.vscode-github-actions",
+        "vadimcn.vscode-lldb",
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "serayuzgur.crates"
     ]
 }
