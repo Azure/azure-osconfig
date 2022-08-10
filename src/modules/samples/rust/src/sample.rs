@@ -3,6 +3,8 @@
 
 use std::collections::HashMap;
 
+use crate::MmiError;
+
 const COMPONENT_NAME: &str = "SampleComponent";
 
 const DESIRED_STRING_OBJECT_NAME: &str = "desiredStringObject";
@@ -55,7 +57,8 @@ struct Object {
     integer_map_setting: HashMap<String, i32>,
 
     // Store removed elements to report as 'null'
-    // These vectors must have a maximum size relative to the max payload size recieved by MmiOpen()
+    // These vectors must have a maximum size relative to the max payload size
+    // recieved by MmiOpen()
     removed_string_map_setting_keys: Vec<String>,
     removed_integer_map_setting_keys: Vec<i32>,
 }
@@ -72,6 +75,13 @@ impl Sample {
         }
     }
 
+    pub fn get_info(_client_name: &str) -> Result<&str, MmiError> {
+        // This sample module makes no use of the client_name, but
+        // it may be copied, compared, etc. here
+        // In the case of an error, an error code Err(i32) could be returned instead
+        Ok(INFO)
+    }
+
     #[cfg(test)]
     fn get_max_payload_size_bytes(&self) -> u32 {
         self.max_payload_size_bytes
@@ -85,5 +95,14 @@ mod tests {
     fn build_sample() {
         let test = Sample::new(16);
         assert_eq!(test.get_max_payload_size_bytes(), 16);
+    }
+
+    #[test]
+    fn info_size() {
+        let sample_info_result: Result<&str, MmiError> = Sample::get_info("Test_client_name");
+        assert!(sample_info_result.is_ok());
+        let sample_info: &str = sample_info_result.unwrap();
+        assert_eq!(INFO, sample_info);
+        assert_eq!(INFO.len() as i32, sample_info.len() as i32);
     }
 }
