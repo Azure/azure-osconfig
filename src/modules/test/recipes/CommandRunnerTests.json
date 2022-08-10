@@ -28,5 +28,28 @@
     "Desired": false,
     "Payload": "{\"commandId\":\"test1\",\"resultCode\":0,\"textResult\":\"Hello World \",\"currentState\":2}",
     "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"longcommand\", \"arguments\": \"sleep 100000\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"longcommand\", \"arguments\": \"\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 5}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"longcommand\",\"resultCode\":125,\"textResult\":\"\",\"currentState\":5}",
+    "ExpectedResult": 0
   }
 ]

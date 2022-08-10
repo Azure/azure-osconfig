@@ -46,7 +46,22 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"checkCowsayNotInstalled\", \"arguments\": \"dpkg -l | grep cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"uninstallPackageForTest\", \"arguments\": \"if dpkg -l | grep -o cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 10
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"uninstallPackageForTest\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeGpgKeyForTest\", \"arguments\": \"if dir /usr/share/keyrings | grep -o microsoft-key.gpg >> PmcTestsTemp.txt; then rm /usr/share/keyrings/microsoft-key.gpg; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -54,7 +69,22 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\": \"checkCowsayNotInstalled\", \"resultCode\": 1, \"textResult\": \"\", \"currentState\": 3}",
+    "Payload": "{\"commandId\": \"removeGpgKeyForTest\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeAptSourcesFileForTest\", \"arguments\": \"if dir /etc/apt/sources.list.d | grep -o microsoft-repo.list >> PmcTestsTemp.txt; then rm /etc/apt/sources.list.d/microsoft-repo.list; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"removeAptSourcesFileForTest\", \"resultCode\": 0,\"textResult\": \"\", \"currentState\": 2}",
     "ExpectedResult": 0
   },
   {
@@ -74,6 +104,13 @@
     "WaitSeconds": 1
   },
   {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"removeInvalidGpgKey\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "desiredState",
     "Desired": true,
@@ -85,7 +122,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"checkCowsayInstalled\", \"arguments\": \"dpkg -l | grep -o cowsay | sed 's: ::g'\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"validatePackageInstalled\", \"arguments\": \"dpkg -l | grep -o cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -93,22 +130,14 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\": \"checkCowsayInstalled\", \"resultCode\": 0, \"textResult\": \"cowsay \", \"currentState\": 2}",
+    "Payload": "{\"commandId\": \"validatePackageInstalled\", \"resultCode\": 0, \"textResult\": \"cowsay \", \"currentState\": 2}",
     "ExpectedResult": 0
   },
   {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\": \"uninstallCowsay\", \"arguments\": \"sudo apt-get remove -y cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
-    "Payload": "{\"commandId\": \"checkCowsayUninstalled\", \"arguments\": \"dpkg -l | grep -o cowsay\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "Payload": "{\"commandId\": \"validateGpgKeyConfigured\", \"arguments\": \"dir /usr/share/keyrings | grep -o microsoft-key.gpg\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -116,8 +145,82 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\": \"checkCowsayUninstalled\", \"resultCode\": 1, \"textResult\": \"\", \"currentState\": 3}",
+    "Payload": "{\"commandId\": \"validateGpgKeyConfigured\", \"resultCode\": 0, \"textResult\": \"microsoft-key.gpg \", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"validateAptSourcesConfigured\", \"arguments\": \"dir /etc/apt/sources.list.d | grep -o microsoft-repo.list\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"validateAptSourcesConfigured\", \"resultCode\": 0, \"textResult\": \"microsoft-repo.list \", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"uninstallPackageForTestIfNotPreviouslyInstalled\", \"arguments\": \"if ! cat PmcTestsTemp.txt | grep -o cowsay > /dev/null; then apt-get remove -y cowsay > /dev/null; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"uninstallPackageForTestIfNotPreviouslyInstalled\", \"resultCode\" :0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeGpgKeyForTestIfNotPreviouslyConfigured\", \"arguments\": \"if ! cat PmcTestsTemp.txt | grep -o microsoft-key.gpg > /dev/null; then rm /usr/share/keyrings/microsoft-key.gpg; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"removeGpgKeyForTestIfNotPreviouslyConfigured\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeAptSourcesForTestIfNotPreviouslyConfigured\", \"arguments\": \"if ! cat PmcTestsTemp.txt | grep -o microsoft-repo.list > /dev/null; then rm /etc/apt/sources.list.d/microsoft-repo.list; fi\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"removeAptSourcesForTestIfNotPreviouslyConfigured\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\": \"removeTempFile\", \"arguments\": \"rm PmcTestsTemp.txt\", \"timeout\": 0, \"singleLineTextResult\": true, \"action\": 3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\": \"removeTempFile\", \"resultCode\": 0, \"textResult\": \"\", \"currentState\": 2}",
+    "ExpectedResult": 0
   }
 ]
