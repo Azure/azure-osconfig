@@ -154,12 +154,8 @@ pub extern "C" fn MmiSet(
         let component_name_cstr: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name_cstr: &CStr = unsafe { CStr::from_ptr(object_name) };
         let payload_cstr: &CStr = unsafe { CStr::from_ptr(payload) };
-        let result: Result<i32, MmiError> = mmi_set_helper(
-            sample,
-            component_name_cstr,
-            object_name_cstr,
-            payload_cstr,
-        );
+        let result: Result<i32, MmiError> =
+            mmi_set_helper(sample, component_name_cstr, object_name_cstr, payload_cstr);
         match result {
             Ok(code) => code,
             Err(MmiError::FailedRead(_e)) => {
@@ -187,7 +183,11 @@ fn mmi_set_helper(
     let component_name_str_slice: &str = component_name_cstr.to_str()?;
     let object_name_str_slice: &str = object_name_cstr.to_str()?;
     let payload_str_slice: &str = payload_cstr.to_str()?;
-    sample.set(component_name_str_slice, object_name_str_slice, payload_str_slice)
+    sample.set(
+        component_name_str_slice,
+        object_name_str_slice,
+        payload_str_slice,
+    )
 }
 
 #[no_mangle]
