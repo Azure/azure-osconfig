@@ -3,7 +3,6 @@
 
 use libc::{c_char, c_int, c_uint, c_void, EINVAL, ENOMEM};
 use sample::Sample;
-use std::error::Error as StdError;
 use std::ffi::{CStr, CString, NulError};
 use std::fmt;
 use std::ptr;
@@ -21,6 +20,8 @@ pub type MmiJsonString = *mut c_char;
 pub enum MmiError {
     FailedRead(Utf8Error),
     FailedAllocate(NulError),
+    InvalidArgument(String),
+    SerdeError(serde_json::Error),
 }
 
 impl From<Utf8Error> for MmiError {
@@ -35,20 +36,27 @@ impl From<NulError> for MmiError {
     }
 }
 
+impl From<String> for MmiError {
+    fn from(err: String) -> MmiError {
+        MmiError::InvalidArgument(err)
+    }
+}
+
+impl From<serde_json::Error> for MmiError {
+    fn from(err: serde_json::Error) -> MmiError {
+        MmiError::SerdeError(err)
+    }
+}
+
 impl fmt::Display for MmiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
             MmiError::FailedRead(_e) => write!(f, "A read failed"),
             MmiError::FailedAllocate(_e) => write!(f, "A memory allocation failed"),
-        }
-    }
-}
-
-impl StdError for MmiError {
-    fn description(&self) -> &str {
-        match &*self {
-            MmiError::FailedRead(_e) => "A read failed",
-            MmiError::FailedAllocate(_e) => "A memory allocation failed",
+            MmiError::InvalidArgument(_e) => write!(f, "There was an invalid argument"),
+            MmiError::SerdeError(_e) => {
+                write!(f, "There was an error serializing or deserializing")
+            }
         }
     }
 }
@@ -85,6 +93,10 @@ pub extern "C" fn MmiGetInfo(
                 println!("MmiGetInfo failed to allocate memory");
                 ENOMEM
             }
+            Err(e) => {
+                println!("{}", e);
+                EINVAL
+            }
         }
     }
 }
@@ -98,10 +110,11 @@ fn mmi_get_info_helper(
     let client_name_str_slice = client_name_cstr.to_str()?;
     let info_str_slice = Sample::get_info(client_name_str_slice)?;
     let payload_string = CString::new(info_str_slice)?;
+    let payload_size = payload_string.as_bytes().len();
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
     unsafe {
         *payload = payload_ptr;
-        *payload_size_bytes = info_str_slice.len() as i32;
+        *payload_size_bytes = payload_size as i32;
     }
     Ok(MMI_OK)
 }
@@ -144,7 +157,63 @@ pub extern "C" fn MmiGet(
     payload: *mut MmiJsonString,
     payload_size_bytes: *mut c_int,
 ) -> c_int {
-    unimplemented!("MmiGet is not yet implemented");
+    if client_session.is_null() {
+        println!("MmiGet called with null clientSession");
+        EINVAL
+    } else if payload_size_bytes.is_null() {
+        println!("MmiGet called with Invalid payloadSizeBytes");
+        EINVAL
+    } else {
+        let sample: &Sample = unsafe { &*(client_session as *mut Sample) };
+        let component_name_cstr: &CStr = unsafe { CStr::from_ptr(component_name) };
+        let object_name_cstr: &CStr = unsafe { CStr::from_ptr(object_name) };
+        let result: Result<i32, MmiError> = mmi_get_helper(
+            sample,
+            component_name_cstr,
+            object_name_cstr,
+            payload,
+            payload_size_bytes,
+        );
+        match result {
+            Ok(code) => code,
+            Err(MmiError::FailedRead(_e)) => {
+                println!("MmiGet failed to read the component or object name");
+                EINVAL
+            }
+            Err(MmiError::FailedAllocate(_e)) => {
+                println!("MmiGet failed to allocate memory");
+                ENOMEM
+            }
+            Err(MmiError::SerdeError(_e)) => {
+                println!("MmiGet received an invalid argument");
+                EINVAL
+            }
+            Err(e) => {
+                println!("{}", e);
+                EINVAL
+            }
+        }
+    }
+}
+
+fn mmi_get_helper(
+    sample: &Sample,
+    component_name_cstr: &CStr,
+    object_name_cstr: &CStr,
+    payload: *mut MmiJsonString,
+    payload_size_bytes: *mut c_int,
+) -> Result<i32, MmiError> {
+    let component_name_str_slice: &str = component_name_cstr.to_str()?;
+    let object_name_str_slice: &str = object_name_cstr.to_str()?;
+    let payload_str_slice = sample.get(component_name_str_slice, object_name_str_slice)?;
+    let payload_string = CString::new(payload_str_slice)?;
+    let payload_size = payload_string.as_bytes().len();
+    let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
+    unsafe {
+        *payload = payload_ptr;
+        *payload_size_bytes = payload_size as i32;
+    }
+    Ok(MMI_OK)
 }
 
 #[no_mangle]
