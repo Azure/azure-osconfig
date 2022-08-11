@@ -185,7 +185,7 @@ pub extern "C" fn MmiGet(
                 ENOMEM
             }
             Err(MmiError::SerdeError(_e)) => {
-                println!("MmiGet received an invalid argument");
+                println!("MmiGet failed serializing");
                 EINVAL
             }
             Err(e) => {
@@ -218,5 +218,7 @@ fn mmi_get_helper(
 
 #[no_mangle]
 pub extern "C" fn MmiFree(payload: MmiJsonString) {
-    unimplemented!("MmiFree is not yet implemented");
+    if !payload.is_null() {
+        let _ = unsafe { CString::from_raw(payload) };
+    }
 }
