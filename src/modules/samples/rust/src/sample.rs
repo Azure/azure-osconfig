@@ -19,15 +19,6 @@ const REPORTED_OBJECT_NAME: &str = "reportedObject";
 const DESIRED_ARRAY_OBJECT_NAME: &str = "desiredArrayObject";
 const REPORTED_ARRAY_OBJECT_NAME: &str = "reportedArrayObject";
 
-const STRING_SETTING_NAME: &str = "stringSetting";
-const INTEGER_SETTING_NAME: &str = "integerSetting";
-const BOOLEAN_SETTING_NAME: &str = "booleanSetting";
-const INTEGER_ENUMERATION_SETTING_NAME: &str = "integerEnumerationSetting";
-const STRING_ARRAY_SETTING_NAME: &str = "stringsArraySetting";
-const INTEGER_ARRAY_SETTING_NAME: &str = "integerArraySetting";
-const STRING_MAP_SETTING_NAME: &str = "stringMapSetting";
-const INTEGER_MAP_SETTING_NAME: &str = "integerMapSetting";
-
 // r# Denotes a Rust Raw String
 const INFO: &str = r#"""({
     "Name": "Rust Sample",
