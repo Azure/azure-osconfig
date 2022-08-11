@@ -98,35 +98,39 @@ impl Sample {
         Ok(INFO)
     }
 
-    pub fn set(&mut self, component_name: &str, object_name: &str, payload_str_slice: &str) -> Result<i32, MmiError> {
+    pub fn set(
+        &mut self,
+        component_name: &str,
+        object_name: &str,
+        payload_str_slice: &str,
+    ) -> Result<i32, MmiError> {
         if COMPONENT_NAME.eq(component_name) {
             match object_name {
                 DESIRED_STRING_OBJECT_NAME => {
                     self.string_value = serde_json::from_str::<String>(payload_str_slice)?;
                     Ok(0)
                 }
-                DESIRED_BOOLEAN_OBJECT_NAME => { 
+                DESIRED_BOOLEAN_OBJECT_NAME => {
                     self.boolean_value = serde_json::from_str::<bool>(payload_str_slice)?;
                     Ok(0)
                 }
                 DESIRED_INTEGER_OBJECT_NAME => {
                     self.integer_value = serde_json::from_str::<i32>(payload_str_slice)?;
                     Ok(0)
-                },
+                }
                 DESIRED_OBJECT_NAME => {
                     self.object_value = serde_json::from_str::<Object>(payload_str_slice)?;
                     Ok(0)
                 }
                 DESIRED_ARRAY_OBJECT_NAME => {
-                    self.object_array_value = serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
+                    self.object_array_value =
+                        serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
                     Ok(0)
                 }
-                _ => {
-                    Err(MmiError::InvalidArgument(format!(
-                        "Invalid object name: {}",
-                        object_name
-                    )))
-                }
+                _ => Err(MmiError::InvalidArgument(format!(
+                    "Invalid object name: {}",
+                    object_name
+                ))),
             }
         } else {
             Err(MmiError::InvalidArgument(format!(
