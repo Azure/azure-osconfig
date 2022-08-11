@@ -92,9 +92,50 @@ pub extern "C" fn MmiSet(
     component_name: *const c_char,
     object_name: *const c_char,
     payload: MmiJsonString,
-    payload_size_bytes: c_int,
+    _payload_size_bytes: c_int,
 ) -> c_int {
-    unimplemented!("MmiSet is not yet implemented");
+    if client_session.is_null() {
+        println!("MmiSet called with null clientSession");
+        EINVAL
+    } else {
+        let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
+        let component_name_cstr: &CStr = unsafe { CStr::from_ptr(component_name) };
+        let object_name_cstr: &CStr = unsafe { CStr::from_ptr(object_name) };
+        let payload_cstr: &CStr = unsafe { CStr::from_ptr(payload) };
+        let result: Result<i32, MmiError> = mmi_set_helper(
+            sample,
+            component_name_cstr,
+            object_name_cstr,
+            payload_cstr,
+        );
+        match result {
+            Ok(code) => code,
+            Err(MmiError::FailedRead(_e)) => {
+                println!("MmiSet failed to read the component or object name");
+                EINVAL
+            }
+            Err(MmiError::SerdeError(_e)) => {
+                println!("MmiSet failed to deserialize the payload");
+                EINVAL
+            }
+            Err(e) => {
+                println!("{}", e);
+                EINVAL
+            }
+        }
+    }
+}
+
+fn mmi_set_helper(
+    sample: &mut Sample,
+    component_name_cstr: &CStr,
+    object_name_cstr: &CStr,
+    payload_cstr: &CStr,
+) -> Result<i32, MmiError> {
+    let component_name_str_slice: &str = component_name_cstr.to_str()?;
+    let object_name_str_slice: &str = object_name_cstr.to_str()?;
+    let payload_str_slice: &str = payload_cstr.to_str()?;
+    sample.set(component_name_str_slice, object_name_str_slice, payload_str_slice)
 }
 
 #[no_mangle]
