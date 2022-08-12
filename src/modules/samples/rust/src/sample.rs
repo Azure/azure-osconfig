@@ -20,7 +20,7 @@ const DESIRED_ARRAY_OBJECT_NAME: &str = "desiredArrayObject";
 const REPORTED_ARRAY_OBJECT_NAME: &str = "reportedArrayObject";
 
 // r# Denotes a Rust Raw String
-const INFO: &str = r#"""({
+const INFO: &str = r#""""({
     "Name": "Rust Sample",
     "Description": "A sample module written in Rust",
     "Manufacturer": "Microsoft",
@@ -29,9 +29,9 @@ const INFO: &str = r#"""({
     "VersionInfo": "",
     "Components": ["SampleComponent"],
     "Lifetime": 1,
-    "UserAccount": 0})"""#;
+    "UserAccount": 0})""""#;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 enum IntegerEnumeration {
     None,
     Value1,
@@ -45,25 +45,20 @@ impl Default for IntegerEnumeration {
 }
 
 // A sample object with all possible setting types
-#[derive(Default, Serialize, Deserialize, Debug)]
+#[derive(Default, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 struct Object {
     string_setting: String,
-    integer_setting: i32,
     boolean_setting: bool,
-    enumeration_setting: IntegerEnumeration,
+    integer_setting: i32,
+    integer_enumeration_setting: IntegerEnumeration,
     string_array_setting: Vec<String>,
     integer_array_setting: Vec<i32>,
-    string_map_setting: HashMap<String, String>,
-    integer_map_setting: HashMap<String, i32>,
-
-    // Store removed elements to report as 'null'
-    // These vectors must have a maximum size relative to the max payload size
-    // recieved by MmiOpen()
-    removed_string_map_setting_keys: Vec<String>,
-    removed_integer_map_setting_keys: Vec<i32>,
+    string_map_setting: HashMap<String, Option<String>>,
+    integer_map_setting: HashMap<String, Option<i32>>,
 }
 
-#[derive(Default, Serialize, Deserialize, Debug)]
+#[derive(Default, Debug)]
 pub struct Sample {
     max_payload_size_bytes: u32,
     string_value: String,
@@ -166,10 +161,12 @@ impl Sample {
 #[cfg(test)]
 mod tests {
     use super::*;
+    const MAX_PAYLOAD_BYTES: u32 = 16;
+
     #[test]
     fn build_sample() {
-        let test = Sample::new(16);
-        assert_eq!(test.get_max_payload_size_bytes(), 16);
+        let sample = Sample::new(MAX_PAYLOAD_BYTES);
+        assert_eq!(sample.get_max_payload_size_bytes(), 16);
     }
 
     #[test]
@@ -183,10 +180,10 @@ mod tests {
 
     #[test]
     fn invalid_get() {
-        let test = Sample::new(16);
+        let sample = Sample::new(MAX_PAYLOAD_BYTES);
 
         let invalid_component_result: Result<String, MmiError> =
-            test.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
+            sample.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
         assert!(!invalid_component_result.is_ok());
         match invalid_component_result {
             Err(MmiError::InvalidArgument(err)) => assert_eq!(
@@ -196,7 +193,7 @@ mod tests {
             _ => panic!("An Invalid Argument should've been thrown"),
         }
         let invalid_object_result: Result<String, MmiError> =
-            test.get(COMPONENT_NAME, "Invalid object");
+            sample.get(COMPONENT_NAME, "Invalid object");
         assert!(!invalid_object_result.is_ok());
         match invalid_object_result {
             Err(MmiError::InvalidArgument(err)) => {
@@ -204,5 +201,198 @@ mod tests {
             }
             _ => panic!("An Invalid Argument should've been thrown"),
         }
+    }
+
+    #[test]
+    fn invalid_set() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let valid_json_payload = r#""Rust Sample Module""#;
+        let invalid_json_payload = r#"Invalid payload"#;
+
+        let invalid_component_result: Result<i32, MmiError> = sample.set(
+            "Invalid component",
+            DESIRED_STRING_OBJECT_NAME,
+            valid_json_payload,
+        );
+        assert!(!invalid_component_result.is_ok());
+        match invalid_component_result {
+            Err(MmiError::InvalidArgument(err)) => assert_eq!(
+                err,
+                String::from("Invalid component name: Invalid component")
+            ),
+            _ => panic!("An Invalid Argument should've been thrown"),
+        }
+        let invalid_object_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, "Invalid object", valid_json_payload);
+        assert!(!invalid_object_result.is_ok());
+        match invalid_object_result {
+            Err(MmiError::InvalidArgument(err)) => {
+                assert_eq!(err, String::from("Invalid object name: Invalid object"))
+            }
+            _ => panic!("An Invalid Argument should've been thrown"),
+        }
+        let invalid_payload_result: Result<i32, MmiError> = sample.set(
+            COMPONENT_NAME,
+            DESIRED_STRING_OBJECT_NAME,
+            invalid_json_payload,
+        );
+        assert!(!invalid_payload_result.is_ok());
+        match invalid_payload_result {
+            Err(MmiError::SerdeError(_err)) => println!("A serialization error correctly occurred"),
+            _ => panic!("An Serde Error should've been thrown"),
+        }
+    }
+
+    #[test]
+    fn get_set_string_object() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let json_payload = r#""Rust Sample Module""#;
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_STRING_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> =
+            sample.get(COMPONENT_NAME, REPORTED_STRING_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<String>(get_result.as_str(), json_payload));
+    }
+
+    #[test]
+    fn get_set_integer_object() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let json_payload = r#"12345"#;
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_INTEGER_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> =
+            sample.get(COMPONENT_NAME, REPORTED_INTEGER_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<i32>(get_result.as_str(), json_payload));
+    }
+
+    #[test]
+    fn get_set_boolean_object() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let json_payload = r#"true"#;
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_BOOLEAN_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> =
+            sample.get(COMPONENT_NAME, REPORTED_BOOLEAN_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<bool>(get_result.as_str(), json_payload));
+    }
+
+    #[test]
+    fn get_set_object() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        // let test_obj:Object = Default::default();
+        // let json_value = serde_json::to_value::<&Object>(&test_obj).unwrap();
+        // println!("{}", serde_json::to_string(&json_value).unwrap());
+        let json_payload = "{\
+                \"stringSetting\":\"C++ Sample Module\",\
+                \"booleanSetting\":true,\
+                \"integerSetting\":12345,\
+                \"integerEnumerationSetting\":\"None\",\
+                \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
+                \"integerArraySetting\":[1,2,3,4,5],\
+                \"stringMapSetting\":{\
+                    \"key1\":\"C++ Sample Module 1\",\
+                    \"key2\":\"C++ Sample Module 2\"\
+                },\
+                \"integerMapSetting\":{\
+                    \"key1\":1,\
+                    \"key2\":2\
+                }\
+            }";
+        println!("{}", json_payload);
+        // let json_payload = r#"{"booleanSetting":false,"enumerationSetting":"None","integerArraySetting":[],"integerMapSetting":{},"integerSetting":0,"stringArraySetting":[],"stringMapSetting":{},"stringSetting":""}"#;
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<Object>(get_result.as_str(), json_payload));
+    }
+
+    #[test]
+    fn get_set_object_map_null_values() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let json_payload = "{\
+                \"stringSetting\":\"C++ Sample Module\",\
+                \"booleanSetting\":true,\
+                \"integerSetting\":12345,\
+                \"integerEnumerationSetting\":\"None\",\
+                \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
+                \"integerArraySetting\":[1,2,3,4,5],\
+                \"stringMapSetting\":{\
+                    \"key1\":\"C++ Sample Module 1\",\
+                    \"key2\":null\
+                },\
+                \"integerMapSetting\":{\
+                    \"key1\":1,\
+                    \"key2\":null\
+                }\
+            }";
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<Object>(get_result.as_str(), json_payload));
+    }
+
+    #[test]
+    fn get_set_array_object() {
+        let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
+        let json_payload = "[\
+                {\
+                    \"stringSetting\":\"C++ Sample Module\",\
+                    \"booleanSetting\":true,\
+                    \"integerSetting\":12345,\
+                    \"integerEnumerationSetting\":\"None\",\
+                    \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
+                    \"integerArraySetting\":[1,2,3,4,5],\
+                    \"stringMapSetting\":{\
+                        \"key1\":\"C++ Sample Module 1\",\
+                        \"key2\":null\
+                    },\
+                    \"integerMapSetting\":{\
+                        \"key1\":1,\
+                        \"key2\":null\
+                    }\
+                }\
+            ]";
+        let set_result: Result<i32, MmiError> =
+            sample.set(COMPONENT_NAME, DESIRED_ARRAY_OBJECT_NAME, json_payload);
+        assert!(set_result.is_ok());
+        assert_eq!(0, set_result.unwrap());
+        let get_result: Result<String, MmiError> =
+            sample.get(COMPONENT_NAME, REPORTED_ARRAY_OBJECT_NAME);
+        assert!(get_result.is_ok());
+        let get_result: String = get_result.unwrap();
+        assert!(json_strings_eq::<Vec<Object>>(
+            get_result.as_str(),
+            json_payload
+        ));
+    }
+
+    fn json_strings_eq<'a, Deserializable: Deserialize<'a> + PartialEq + Eq>(
+        json_str_one: &'a str,
+        json_str_two: &'a str,
+    ) -> bool {
+        let json_one = serde_json::from_str::<Deserializable>(json_str_one).unwrap();
+        let json_two = serde_json::from_str::<Deserializable>(json_str_two).unwrap();
+        json_one == json_two
     }
 }

@@ -54,9 +54,7 @@ impl fmt::Display for MmiError {
             MmiError::FailedRead(_e) => write!(f, "A read failed"),
             MmiError::FailedAllocate(_e) => write!(f, "A memory allocation failed"),
             MmiError::InvalidArgument(_e) => write!(f, "There was an invalid argument"),
-            MmiError::SerdeError(_e) => {
-                write!(f, "There was an error serializing or deserializing")
-            }
+            MmiError::SerdeError(_e) => write!(f, "There was an error serializing or deserializing")
         }
     }
 }
