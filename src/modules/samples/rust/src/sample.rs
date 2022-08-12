@@ -46,6 +46,7 @@ impl Default for IntegerEnumeration {
 
 // A sample object with all possible setting types
 #[derive(Default, Serialize, Deserialize, Debug, PartialEq, Eq)]
+// Switches the field names to camelCase when serializing and deserializing
 #[serde(rename_all = "camelCase")]
 struct Object {
     string_setting: String,
@@ -54,6 +55,7 @@ struct Object {
     integer_enumeration_setting: IntegerEnumeration,
     string_array_setting: Vec<String>,
     integer_array_setting: Vec<i32>,
+    // Accepting option types as values accounts for null json values
     string_map_setting: HashMap<String, Option<String>>,
     integer_map_setting: HashMap<String, Option<i32>>,
 }
