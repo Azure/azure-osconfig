@@ -99,11 +99,11 @@ pub extern "C" fn MmiSet(
         EINVAL
     } else {
         let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
-        let component_name_cstr: &CStr = unsafe { CStr::from_ptr(component_name) };
-        let object_name_cstr: &CStr = unsafe { CStr::from_ptr(object_name) };
-        let payload_cstr: &CStr = unsafe { CStr::from_ptr(payload) };
+        let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
+        let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
+        let payload: &CStr = unsafe { CStr::from_ptr(payload) };
         let result: Result<i32, MmiError> =
-            mmi_set_helper(sample, component_name_cstr, object_name_cstr, payload_cstr);
+            mmi_set_helper(sample, component_name, object_name, payload);
         match result {
             Ok(code) => code,
             Err(e) => {
@@ -117,18 +117,14 @@ pub extern "C" fn MmiSet(
 
 fn mmi_set_helper(
     sample: &mut Sample,
-    component_name_cstr: &CStr,
-    object_name_cstr: &CStr,
-    payload_cstr: &CStr,
+    component_name: &CStr,
+    object_name: &CStr,
+    payload: &CStr,
 ) -> Result<i32, MmiError> {
-    let component_name_str_slice: &str = component_name_cstr.to_str()?;
-    let object_name_str_slice: &str = object_name_cstr.to_str()?;
-    let payload_str_slice: &str = payload_cstr.to_str()?;
-    sample.set(
-        component_name_str_slice,
-        object_name_str_slice,
-        payload_str_slice,
-    )
+    let component_name: &str = component_name.to_str()?;
+    let object_name: &str = object_name.to_str()?;
+    let payload: &str = payload.to_str()?;
+    sample.set(component_name, object_name, payload)
 }
 
 #[no_mangle]
