@@ -101,11 +101,21 @@ impl Sample {
     pub fn get(&self, component_name: &str, object_name: &str) -> Result<String, MmiError> {
         if COMPONENT_NAME.eq(component_name) {
             let json_value = match object_name {
-                REPORTED_STRING_OBJECT_NAME => serde_json::to_value::<&String>(&self.string_value)?,
-                REPORTED_BOOLEAN_OBJECT_NAME => serde_json::to_value::<&bool>(&self.boolean_value)?,
-                REPORTED_INTEGER_OBJECT_NAME => serde_json::to_value::<&i32>(&self.integer_value)?,
-                REPORTED_OBJECT_NAME => serde_json::to_value::<&Object>(&self.object_value)?,
-                REPORTED_ARRAY_OBJECT_NAME => serde_json::to_value::<&Vec<Object>>(&self.object_array_value)?,
+                REPORTED_STRING_OBJECT_NAME => {
+                    serde_json::to_value::<&String>(&self.string_value)?
+                }
+                REPORTED_BOOLEAN_OBJECT_NAME => {
+                    serde_json::to_value::<&bool>(&self.boolean_value)?
+                }
+                REPORTED_INTEGER_OBJECT_NAME => {
+                    serde_json::to_value::<&i32>(&self.integer_value)?
+                }
+                REPORTED_OBJECT_NAME => {
+                    serde_json::to_value::<&Object>(&self.object_value)?
+                }
+                REPORTED_ARRAY_OBJECT_NAME => {
+                    serde_json::to_value::<&Vec<Object>>(&self.object_array_value)?
+                }
                 _ => {
                     println!("Invalid object name: {}", object_name);
                     return Err(MmiError::InvalidArgument);
