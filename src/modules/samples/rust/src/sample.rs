@@ -184,16 +184,15 @@ mod tests {
 
     #[test]
     fn invalid_get() {
-        let test = Sample::new(16);
-
+        let sample = Sample::new(MAX_PAYLOAD_BYTES);
         let invalid_component_result: Result<String, MmiError> =
-            test.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
+            sample.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
         assert!(!invalid_component_result.is_ok());
         if let Err(e) = invalid_component_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
         let invalid_object_result: Result<String, MmiError> =
-            test.get(COMPONENT_NAME, "Invalid object");
+            sample.get(COMPONENT_NAME, "Invalid object");
         assert!(!invalid_object_result.is_ok());
         if let Err(e) = invalid_object_result {
             assert_eq!(e, MmiError::InvalidArgument);
@@ -205,7 +204,6 @@ mod tests {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
         let valid_json_payload = r#""Rust Sample Module""#;
         let invalid_json_payload = r#"Invalid payload"#;
-
         let invalid_component_result: Result<i32, MmiError> = sample.set(
             "Invalid component",
             DESIRED_STRING_OBJECT_NAME,
