@@ -292,9 +292,6 @@ mod tests {
     #[test]
     fn get_set_object() {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
-        // let test_obj:Object = Default::default();
-        // let json_value = serde_json::to_value::<&Object>(&test_obj).unwrap();
-        // println!("{}", serde_json::to_string(&json_value).unwrap());
         let json_payload = "{\
                 \"stringSetting\":\"C++ Sample Module\",\
                 \"booleanSetting\":true,\
@@ -312,7 +309,6 @@ mod tests {
                 }\
             }";
         println!("{}", json_payload);
-        // let json_payload = r#"{"booleanSetting":false,"enumerationSetting":"None","integerArraySetting":[],"integerMapSetting":{},"integerSetting":0,"stringArraySetting":[],"stringMapSetting":{},"stringSetting":""}"#;
         let set_result: Result<i32, MmiError> =
             sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
