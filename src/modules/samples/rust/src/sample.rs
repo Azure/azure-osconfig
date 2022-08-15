@@ -115,16 +115,14 @@ impl Sample {
                         serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
                     Ok(0)
                 }
-                _ => Err(MmiError::InvalidArgument(format!(
-                    "Invalid object name: {}",
-                    object_name
-                ))),
+                _ => {
+                    println!("Invalid object name: {}", object_name);
+                    Err(MmiError::InvalidArgument)
+                }
             }
         } else {
-            Err(MmiError::InvalidArgument(format!(
-                "Invalid component name: {}",
-                component_name
-            )))
+            println!("Invalid component name: {}", component_name);
+            Err(MmiError::InvalidArgument)
         }
     }
 
@@ -214,12 +212,8 @@ mod tests {
             valid_json_payload,
         );
         assert!(!invalid_component_result.is_ok());
-        match invalid_component_result {
-            Err(MmiError::InvalidArgument(err)) => assert_eq!(
-                err,
-                String::from("Invalid component name: Invalid component")
-            ),
-            _ => panic!("An Invalid Argument should've been thrown"),
+        if let Err(e) = invalid_component_result {
+            assert_eq!(e, MmiError::InvalidArgument);
         }
         let invalid_object_result: Result<i32, MmiError> =
             sample.set(COMPONENT_NAME, "Invalid object", valid_json_payload);
@@ -233,9 +227,8 @@ mod tests {
             invalid_json_payload,
         );
         assert!(!invalid_payload_result.is_ok());
-        match invalid_payload_result {
-            Err(MmiError::SerdeError(_err)) => println!("A serialization error correctly occurred"),
-            _ => panic!("An Serde Error should've been thrown"),
+        if let Err(e) = invalid_payload_result {
+            assert_eq!(e, MmiError::SerdeError);
         }
     }
 

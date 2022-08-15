@@ -106,17 +106,10 @@ pub extern "C" fn MmiSet(
             mmi_set_helper(sample, component_name_cstr, object_name_cstr, payload_cstr);
         match result {
             Ok(code) => code,
-            Err(MmiError::FailedRead(_e)) => {
-                println!("MmiSet failed to read the component or object name");
-                EINVAL
-            }
-            Err(MmiError::SerdeError(_e)) => {
-                println!("MmiSet failed to deserialize the payload");
-                EINVAL
-            }
             Err(e) => {
                 println!("{}", e);
-                EINVAL
+                let error_code: c_int = e.into();
+                error_code
             }
         }
     }
