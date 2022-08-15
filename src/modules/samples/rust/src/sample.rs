@@ -93,31 +93,38 @@ impl Sample {
         payload_str_slice: &str,
     ) -> Result<i32, MmiError> {
         if COMPONENT_NAME.eq(component_name) {
-            match object_name {
-                DESIRED_STRING_OBJECT_NAME => {
-                    self.string_value = serde_json::from_str::<String>(payload_str_slice)?;
-                    Ok(0)
-                }
-                DESIRED_BOOLEAN_OBJECT_NAME => {
-                    self.boolean_value = serde_json::from_str::<bool>(payload_str_slice)?;
-                    Ok(0)
-                }
-                DESIRED_INTEGER_OBJECT_NAME => {
-                    self.integer_value = serde_json::from_str::<i32>(payload_str_slice)?;
-                    Ok(0)
-                }
-                DESIRED_OBJECT_NAME => {
-                    self.object_value = serde_json::from_str::<Object>(payload_str_slice)?;
-                    Ok(0)
-                }
-                DESIRED_ARRAY_OBJECT_NAME => {
-                    self.object_array_value =
-                        serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
-                    Ok(0)
-                }
-                _ => {
-                    println!("Invalid object name: {}", object_name);
-                    Err(MmiError::InvalidArgument)
+            if self.max_payload_size_bytes != 0
+                && payload_str_slice.len() as u32 > self.max_payload_size_bytes
+            {
+                println!("Payload size exceeds max payload size bytes");
+                Err(MmiError::InvalidArgument)
+            } else {
+                match object_name {
+                    DESIRED_STRING_OBJECT_NAME => {
+                        self.string_value = serde_json::from_str::<String>(payload_str_slice)?;
+                        Ok(0)
+                    }
+                    DESIRED_BOOLEAN_OBJECT_NAME => {
+                        self.boolean_value = serde_json::from_str::<bool>(payload_str_slice)?;
+                        Ok(0)
+                    }
+                    DESIRED_INTEGER_OBJECT_NAME => {
+                        self.integer_value = serde_json::from_str::<i32>(payload_str_slice)?;
+                        Ok(0)
+                    }
+                    DESIRED_OBJECT_NAME => {
+                        self.object_value = serde_json::from_str::<Object>(payload_str_slice)?;
+                        Ok(0)
+                    }
+                    DESIRED_ARRAY_OBJECT_NAME => {
+                        self.object_array_value =
+                            serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
+                        Ok(0)
+                    }
+                    _ => {
+                        println!("Invalid object name: {}", object_name);
+                        Err(MmiError::InvalidArgument)
+                    }
                 }
             }
         } else {
@@ -149,7 +156,14 @@ impl Sample {
                     return Err(MmiError::InvalidArgument);
                 }
             };
-            Ok(serde_json::to_string(&json_value)?)
+            let payload: String = serde_json::to_string(&json_value)?;
+            if self.max_payload_size_bytes != 0
+            && payload.len() as u32 > self.max_payload_size_bytes {
+                // In other modules you could prioritize parts of the payload
+                Err(MmiError::InvalidArgument)
+            } else {
+                Ok(payload)
+            }
         } else {
             println!("Invalid component name: {}", component_name);
             Err(MmiError::InvalidArgument)
@@ -165,12 +179,12 @@ impl Sample {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const MAX_PAYLOAD_BYTES: u32 = 16;
+    const MAX_PAYLOAD_BYTES: u32 = 0;
 
     #[test]
     fn build_sample() {
         let sample = Sample::new(MAX_PAYLOAD_BYTES);
-        assert_eq!(sample.get_max_payload_size_bytes(), 16);
+        assert_eq!(sample.get_max_payload_size_bytes(), MAX_PAYLOAD_BYTES);
     }
 
     #[test]
@@ -187,13 +201,13 @@ mod tests {
         let sample = Sample::new(MAX_PAYLOAD_BYTES);
         let invalid_component_result: Result<String, MmiError> =
             sample.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
-        assert!(!invalid_component_result.is_ok());
+        assert!(invalid_component_result.is_err());
         if let Err(e) = invalid_component_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
         let invalid_object_result: Result<String, MmiError> =
             sample.get(COMPONENT_NAME, "Invalid object");
-        assert!(!invalid_object_result.is_ok());
+        assert!(invalid_object_result.is_err());
         if let Err(e) = invalid_object_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
@@ -209,13 +223,13 @@ mod tests {
             DESIRED_STRING_OBJECT_NAME,
             valid_json_payload,
         );
-        assert!(!invalid_component_result.is_ok());
+        assert!(invalid_component_result.is_err());
         if let Err(e) = invalid_component_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
         let invalid_object_result: Result<i32, MmiError> =
             sample.set(COMPONENT_NAME, "Invalid object", valid_json_payload);
-        assert!(!invalid_object_result.is_ok());
+        assert!(invalid_object_result.is_err());
         if let Err(e) = invalid_object_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
@@ -224,7 +238,7 @@ mod tests {
             DESIRED_STRING_OBJECT_NAME,
             invalid_json_payload,
         );
-        assert!(!invalid_payload_result.is_ok());
+        assert!(invalid_payload_result.is_err());
         if let Err(e) = invalid_payload_result {
             assert_eq!(e, MmiError::SerdeError);
         }

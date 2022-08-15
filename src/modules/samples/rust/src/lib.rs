@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use common::MmiError;
+use c_fixed_string::CFixedStr;
 use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use sample::Sample;
 use std::ffi::{CStr, CString};
@@ -62,6 +63,7 @@ fn mmi_get_info_helper(
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
     unsafe {
         *payload = payload_ptr;
+        // .as_bytes() doesn't add a null terminator, so the payload size is correct
         *payload_size_bytes = payload_size as i32;
     }
     Ok(MMI_OK)
@@ -92,7 +94,7 @@ pub extern "C" fn MmiSet(
     component_name: *const c_char,
     object_name: *const c_char,
     payload: MmiJsonString,
-    _payload_size_bytes: c_int,
+    payload_size_bytes: c_int,
 ) -> c_int {
     if client_session.is_null() {
         println!("MmiSet called with null clientSession");
@@ -101,7 +103,7 @@ pub extern "C" fn MmiSet(
         let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
         let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
-        let payload: &CStr = unsafe { CStr::from_ptr(payload) };
+        let payload: &CFixedStr = unsafe { CFixedStr::from_ptr(payload, payload_size_bytes as usize) };
         let result: Result<i32, MmiError> =
             mmi_set_helper(sample, component_name, object_name, payload);
         match result {
@@ -119,7 +121,7 @@ fn mmi_set_helper(
     sample: &mut Sample,
     component_name: &CStr,
     object_name: &CStr,
-    payload: &CStr,
+    payload: &CFixedStr,
 ) -> Result<i32, MmiError> {
     let component_name: &str = component_name.to_str()?;
     let object_name: &str = object_name.to_str()?;
