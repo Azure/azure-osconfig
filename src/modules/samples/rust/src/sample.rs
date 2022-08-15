@@ -105,22 +105,16 @@ impl Sample {
                 REPORTED_BOOLEAN_OBJECT_NAME => serde_json::to_value::<&bool>(&self.boolean_value)?,
                 REPORTED_INTEGER_OBJECT_NAME => serde_json::to_value::<&i32>(&self.integer_value)?,
                 REPORTED_OBJECT_NAME => serde_json::to_value::<&Object>(&self.object_value)?,
-                REPORTED_ARRAY_OBJECT_NAME => {
-                    serde_json::to_value::<&Vec<Object>>(&self.object_array_value)?
-                }
+                REPORTED_ARRAY_OBJECT_NAME => serde_json::to_value::<&Vec<Object>>(&self.object_array_value)?,
                 _ => {
-                    return Err(MmiError::InvalidArgument(format!(
-                        "Invalid object name: {}",
-                        object_name
-                    )))
+                    println!("Invalid object name: {}", object_name);
+                    return Err(MmiError::InvalidArgument);
                 }
             };
             Ok(serde_json::to_string(&json_value)?)
         } else {
-            Err(MmiError::InvalidArgument(format!(
-                "Invalid component name: {}",
-                component_name
-            )))
+            println!("Invalid component name: {}", component_name);
+            Err(MmiError::InvalidArgument)
         }
     }
 
@@ -141,9 +135,9 @@ mod tests {
 
     #[test]
     fn info_size() {
-        let sample_info_result: Result<&str, MmiError> = Sample::get_info("Test_client_name");
-        assert!(sample_info_result.is_ok());
-        let sample_info: &str = sample_info_result.unwrap();
+        let sample_info: Result<&str, MmiError> = Sample::get_info("Test_client_name");
+        assert!(sample_info.is_ok());
+        let sample_info: &str = sample_info.unwrap();
         assert_eq!(INFO, sample_info);
         assert_eq!(INFO.len() as i32, sample_info.len() as i32);
     }
@@ -155,21 +149,14 @@ mod tests {
         let invalid_component_result: Result<String, MmiError> =
             test.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
         assert!(!invalid_component_result.is_ok());
-        match invalid_component_result {
-            Err(MmiError::InvalidArgument(err)) => assert_eq!(
-                err,
-                String::from("Invalid component name: Invalid component")
-            ),
-            _ => panic!("An Invalid Argument should've been thrown"),
+        if let Err(e) = invalid_component_result {
+            assert_eq!(e, MmiError::InvalidArgument);
         }
         let invalid_object_result: Result<String, MmiError> =
             test.get(COMPONENT_NAME, "Invalid object");
         assert!(!invalid_object_result.is_ok());
-        match invalid_object_result {
-            Err(MmiError::InvalidArgument(err)) => {
-                assert_eq!(err, String::from("Invalid object name: Invalid object"))
-            }
-            _ => panic!("An Invalid Argument should've been thrown"),
+        if let Err(e) = invalid_object_result {
+            assert_eq!(e, MmiError::InvalidArgument);
         }
     }
 }
