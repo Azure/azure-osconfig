@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved..
 // Licensed under the MIT License.
 
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::MmiError;
@@ -39,13 +40,21 @@ const INFO: &str = r#"""({
     "Lifetime": 1,
     "UserAccount": 0})"""#;
 
+#[derive(Serialize, Deserialize, Debug)]
 enum IntegerEnumeration {
     None,
     Value1,
     Value2,
 }
 
+impl Default for IntegerEnumeration {
+    fn default() -> Self {
+        IntegerEnumeration::None
+    }
+}
+
 // A sample object with all possible setting types
+#[derive(Default, Serialize, Deserialize, Debug)]
 struct Object {
     string_setting: String,
     integer_setting: i32,
@@ -63,8 +72,14 @@ struct Object {
     removed_integer_map_setting_keys: Vec<i32>,
 }
 
+#[derive(Default, Serialize, Deserialize, Debug)]
 pub struct Sample {
     max_payload_size_bytes: u32,
+    string_value: String,
+    integer_value: i32,
+    boolean_value: bool,
+    object_value: Object,
+    object_array_value: Vec<Object>,
 }
 
 impl Sample {
@@ -72,6 +87,7 @@ impl Sample {
         // The result is returned if the ending semicolon is omitted
         Sample {
             max_payload_size_bytes: max_payload_size_bytes,
+            ..Default::default()
         }
     }
 
@@ -80,6 +96,36 @@ impl Sample {
         // it may be copied, compared, etc. here
         // In the case of an error, an error code Err(i32) could be returned instead
         Ok(INFO)
+    }
+
+    pub fn get(&self, component_name: &str, object_name: &str) -> Result<String, MmiError> {
+        if COMPONENT_NAME.eq(component_name) {
+            let json_value = match object_name {
+                REPORTED_STRING_OBJECT_NAME => {
+                    serde_json::to_value::<&String>(&self.string_value)?
+                }
+                REPORTED_BOOLEAN_OBJECT_NAME => {
+                    serde_json::to_value::<&bool>(&self.boolean_value)?
+                }
+                REPORTED_INTEGER_OBJECT_NAME => {
+                    serde_json::to_value::<&i32>(&self.integer_value)?
+                }
+                REPORTED_OBJECT_NAME => {
+                    serde_json::to_value::<&Object>(&self.object_value)?
+                }
+                REPORTED_ARRAY_OBJECT_NAME => {
+                    serde_json::to_value::<&Vec<Object>>(&self.object_array_value)?
+                }
+                _ => {
+                    println!("Invalid object name: {}", object_name);
+                    return Err(MmiError::InvalidArgument);
+                }
+            };
+            Ok(serde_json::to_string(&json_value)?)
+        } else {
+            println!("Invalid component name: {}", component_name);
+            Err(MmiError::InvalidArgument)
+        }
     }
 
     #[cfg(test)]
@@ -99,10 +145,28 @@ mod tests {
 
     #[test]
     fn info_size() {
-        let sample_info_result: Result<&str, MmiError> = Sample::get_info("Test_client_name");
-        assert!(sample_info_result.is_ok());
-        let sample_info: &str = sample_info_result.unwrap();
+        let sample_info: Result<&str, MmiError> = Sample::get_info("Test_client_name");
+        assert!(sample_info.is_ok());
+        let sample_info: &str = sample_info.unwrap();
         assert_eq!(INFO, sample_info);
         assert_eq!(INFO.len() as i32, sample_info.len() as i32);
+    }
+
+    #[test]
+    fn invalid_get() {
+        let test = Sample::new(16);
+
+        let invalid_component_result: Result<String, MmiError> =
+            test.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
+        assert!(!invalid_component_result.is_ok());
+        if let Err(e) = invalid_component_result {
+            assert_eq!(e, MmiError::InvalidArgument);
+        }
+        let invalid_object_result: Result<String, MmiError> =
+            test.get(COMPONENT_NAME, "Invalid object");
+        assert!(!invalid_object_result.is_ok());
+        if let Err(e) = invalid_object_result {
+            assert_eq!(e, MmiError::InvalidArgument);
+        }
     }
 }
