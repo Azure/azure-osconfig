@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 use common::MmiError;
-use libc::{c_char, c_int, c_uint, c_void, EINVAL, ENOMEM};
+use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use sample::Sample;
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -42,10 +42,8 @@ pub extern "C" fn MmiGetInfo(
             Ok(code) => code,
             Err(e) => {
                 println!("{}", e);
-                match e {
-                    MmiError::FailedAllocate => ENOMEM,
-                    _ => EINVAL,
-                }
+                let error_code: c_int = e.into();
+                error_code
             }
         }
     }
@@ -128,10 +126,8 @@ pub extern "C" fn MmiGet(
             Ok(code) => code,
             Err(e) => {
                 println!("{}", e);
-                match e {
-                    MmiError::FailedAllocate => ENOMEM,
-                    _ => EINVAL,
-                }
+                let error_code: c_int = e.into();
+                error_code
             }
         }
     }
