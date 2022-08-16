@@ -20,7 +20,7 @@ const DESIRED_ARRAY_OBJECT_NAME: &str = "desiredArrayObject";
 const REPORTED_ARRAY_OBJECT_NAME: &str = "reportedArrayObject";
 
 // r# Denotes a Rust Raw String
-const INFO: &str = r#""""({
+const INFO: &str = r#"{
     "Name": "Rust Sample",
     "Description": "A sample module written in Rust",
     "Manufacturer": "Microsoft",
@@ -29,7 +29,7 @@ const INFO: &str = r#""""({
     "VersionInfo": "",
     "Components": ["SampleComponent"],
     "Lifetime": 1,
-    "UserAccount": 0})""""#;
+    "UserAccount": 0}"#;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 enum IntegerEnumeration {
