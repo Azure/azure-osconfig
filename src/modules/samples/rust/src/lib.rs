@@ -102,6 +102,7 @@ pub extern "C" fn MmiSet(
         let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
         let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
+        // Payload is not null terminated so we may not use CString::from_ptr
         let payload: &[u8] =
             unsafe { slice::from_raw_parts(payload as *const u8, payload_size_bytes as usize) };
         let result: Result<i32, MmiError> =
