@@ -74,14 +74,14 @@ namespace tests
     TEST_F(FirewallTests, GetFingerprint)
     {
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::FIREWALL_COMPONENT.c_str(), Firewall::FIREWALL_REPORTED_FINGERPRINT.c_str(), &payload, &payloadSizeBytes));
-        EXPECT_STREQ(payload, expectedFingerprintJson.c_str());
+        EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedFingerprintJson.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedFingerprintJson.size());
     }
 
     TEST_F(FirewallTests, GetState)
     {
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::FIREWALL_COMPONENT.c_str(), Firewall::FIREWALL_REPORTED_STATE.c_str(), &payload, &payloadSizeBytes));
-        EXPECT_STREQ(payload, "1");
+        EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), "1");
         EXPECT_EQ(payloadSizeBytes, strlen("1"));
     }
 } // namespace tests
