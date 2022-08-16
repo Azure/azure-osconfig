@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use serde::{Deserialize, Serialize};
+use serde_repr::{Serialize_repr, Deserialize_repr};
 use std::collections::HashMap;
 
 use crate::MmiError;
@@ -31,11 +32,12 @@ const INFO: &str = r#"{
     "Lifetime": 1,
     "UserAccount": 0}"#;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
+#[repr(u8)]
 enum IntegerEnumeration {
-    None,
-    Value1,
-    Value2,
+    None = 0,
+    Value1 = 1,
+    Value2 = 2,
 }
 
 impl Default for IntegerEnumeration {
@@ -296,7 +298,7 @@ mod tests {
                 \"stringSetting\":\"C++ Sample Module\",\
                 \"booleanSetting\":true,\
                 \"integerSetting\":12345,\
-                \"integerEnumerationSetting\":\"None\",\
+                \"integerEnumerationSetting\":0,\
                 \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                 \"integerArraySetting\":[1,2,3,4,5],\
                 \"stringMapSetting\":{\
@@ -327,7 +329,7 @@ mod tests {
                 \"stringSetting\":\"C++ Sample Module\",\
                 \"booleanSetting\":true,\
                 \"integerSetting\":12345,\
-                \"integerEnumerationSetting\":\"None\",\
+                \"integerEnumerationSetting\":0,\
                 \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                 \"integerArraySetting\":[1,2,3,4,5],\
                 \"stringMapSetting\":{\
@@ -357,7 +359,7 @@ mod tests {
                     \"stringSetting\":\"C++ Sample Module\",\
                     \"booleanSetting\":true,\
                     \"integerSetting\":12345,\
-                    \"integerEnumerationSetting\":\"None\",\
+                    \"integerEnumerationSetting\":0,\
                     \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                     \"integerArraySetting\":[1,2,3,4,5],\
                     \"stringMapSetting\":{\
