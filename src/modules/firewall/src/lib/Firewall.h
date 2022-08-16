@@ -90,7 +90,7 @@ public:
         {
             hash = utility::Hash(rules);
         }
-        else
+        else if (IsFullLoggingEnabled())
         {
             OsConfigLogError(FirewallLog::Get(), "Error retrieving rules specification from iptables");
         }
@@ -148,7 +148,7 @@ protected:
     {
         std::string fingerprint = m_utility.Hash();
         writer.String(fingerprint.c_str());
-        return fingerprint.empty() ? -1 : 0;
+        return 0;
     }
 
 private:
