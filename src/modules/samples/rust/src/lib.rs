@@ -5,7 +5,7 @@ use common::MmiError;
 use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use sample::Sample;
 use std::ffi::{CStr, CString};
-use std::ptr;
+use std::{ptr, slice};
 
 mod common;
 mod sample;
@@ -62,6 +62,7 @@ fn mmi_get_info_helper(
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
     unsafe {
         *payload = payload_ptr;
+        // .as_bytes() doesn't add a null terminator, so the payload size is correct
         *payload_size_bytes = payload_size as i32;
     }
     Ok(MMI_OK)
@@ -94,7 +95,40 @@ pub extern "C" fn MmiSet(
     payload: MmiJsonString,
     payload_size_bytes: c_int,
 ) -> c_int {
-    unimplemented!("MmiSet is not yet implemented");
+    if client_session.is_null() {
+        println!("MmiSet called with null clientSession");
+        EINVAL
+    } else {
+        let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
+        let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
+        let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
+        // Payload is not null terminated so we may not use CString::from_ptr
+        let payload: &[u8] =
+            unsafe { slice::from_raw_parts(payload as *const u8, payload_size_bytes as usize) };
+        let result: Result<i32, MmiError> =
+            mmi_set_helper(sample, component_name, object_name, payload);
+        match result {
+            Ok(code) => code,
+            Err(e) => {
+                println!("{}", e);
+                let error_code: c_int = e.into();
+                error_code
+            }
+        }
+    }
+}
+
+fn mmi_set_helper(
+    sample: &mut Sample,
+    component_name: &CStr,
+    object_name: &CStr,
+    payload: &[u8],
+) -> Result<i32, MmiError> {
+    let component_name: &str = component_name.to_str()?;
+    let object_name: &str = object_name.to_str()?;
+    let payload: CString = CString::new(payload)?;
+    let payload_slice: &str = payload.as_c_str().to_str()?;
+    sample.set(component_name, object_name, payload_slice)
 }
 
 #[no_mangle]
