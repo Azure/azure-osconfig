@@ -127,6 +127,11 @@ int FirewallModule::Get(const char* componentName, const char* objectName, MMI_J
                     std::fill(*payload, *payload + *payloadSizeBytes, 0);
                     std::memcpy(*payload, buffer.GetString(), *payloadSizeBytes);
                 }
+                else
+                {
+                    *payloadSizeBytes = 0;
+                    status = ENOMEM;
+                }
             }
         }
     }
