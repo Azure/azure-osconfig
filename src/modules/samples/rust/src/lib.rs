@@ -2,11 +2,10 @@
 // Licensed under the MIT License.
 
 use common::MmiError;
-use c_fixed_string::CFixedStr;
 use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use sample::Sample;
 use std::ffi::{CStr, CString};
-use std::ptr;
+use std::{ptr, slice};
 
 mod common;
 mod sample;
@@ -103,7 +102,8 @@ pub extern "C" fn MmiSet(
         let sample: &mut Sample = unsafe { &mut *(client_session as *mut Sample) };
         let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
-        let payload: &CFixedStr = unsafe { CFixedStr::from_ptr(payload, payload_size_bytes as usize) };
+        let payload: &[u8] =
+            unsafe { slice::from_raw_parts(payload as *const u8, payload_size_bytes as usize) };
         let result: Result<i32, MmiError> =
             mmi_set_helper(sample, component_name, object_name, payload);
         match result {
@@ -121,12 +121,13 @@ fn mmi_set_helper(
     sample: &mut Sample,
     component_name: &CStr,
     object_name: &CStr,
-    payload: &CFixedStr,
+    payload: &[u8],
 ) -> Result<i32, MmiError> {
     let component_name: &str = component_name.to_str()?;
     let object_name: &str = object_name.to_str()?;
-    let payload: &str = payload.to_str()?;
-    sample.set(component_name, object_name, payload)
+    let payload: CString = CString::new(payload)?;
+    let payload_slice: &str = payload.as_c_str().to_str()?;
+    sample.set(component_name, object_name, payload_slice)
 }
 
 #[no_mangle]
