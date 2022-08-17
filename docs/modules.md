@@ -166,6 +166,7 @@ MIM Settings translate to PnP property values of following types supported by bo
 - Integer
 - Boolean
 - Enumeration of integers
+- Enumeration of strings
 - Array of strings
 - Array of integers
 - Map of strings
@@ -232,8 +233,38 @@ Example of an MIM setting of enumeration of integers type:
         "enumValue": 4
       },
       {
-        "name": "sanceled",
+        "name": "canceled",
         "enumValue": 5
+      }
+    ]
+  }
+}
+```
+
+Example of an MIM setting of enumeration of strings type:
+
+```JSON
+{
+  "name": "firewallRuleAction",
+  "schema": {
+    "type": "enum",
+    "valueSchema": "string",
+    "enumValues": [
+      { 
+        "name": "none",
+        "enumValue": "none"
+      },
+      {
+        "name": "allow",
+        "enumValue": "allow""
+      },
+      {
+        "name": "deny",
+        "enumValue": "deny"
+      },
+      {
+        "name": "reject",
+        "enumValue": "reject"
       }
     ]
   }
@@ -295,9 +326,9 @@ The model is composed by a list of components, several lists (one for each compo
 1. For each object, answer if this is an array object (where all settings repeat a variable number of times as items into an array) or not. 
 1. Describe each setting with answers to the following questions:
     1. What is the setting name? The name of the setting, in CamelCase.
-    1. What is the access: desired or reported for the seting?
+    1. What is the access: desired or reported for the setting?
     1. What does the setting? A short description of the setting (what the setting does, in few words).
-    1. What is the value type for the setting? Answer can be: boolean, integer, enumeration of integers, character string (UTF-8).
+    1. What is the value type for the setting? Answer can be: boolean, integer, enumeration of integers or strings, array of integers or strings, map of integers or strings, character string (UTF-8).
     1. What are the supported values? Describe supported values, including minimum and maximums if any, valid enumeration values, maximum length for string if any, etc.
     1. Does this setting need to link two objects together (desired and reported), and if so, how?
     1. Does this setting depend on any other setting in this or another object? List what. 
@@ -440,6 +471,23 @@ Sample MIM JSON:
                     {
                       "name": "enumValue1",
                       "enumValue":  1
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "stringEnumerationSettingName",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "string",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue":  "none"
+                    },
+                    {
+                      "name": "enumValue1",
+                      "enumValue":  "enumValue1"
                     }
                   ]
                 }
@@ -663,13 +711,13 @@ Other MIM JSON examples:
 The following would be the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles): 
 
 ```
-{"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
+{"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringEnumerationSettingName":"enumStringValue","stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
 ```
 
 MmiSet and MmiGet only use the object portions of this payload. Such as:
 
 ```
-{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
+{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringEnumerationSettingName":"enumStringValue","stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
 ```
 
 or:
