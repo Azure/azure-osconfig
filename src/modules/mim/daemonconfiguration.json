@@ -1,0 +1,135 @@
+{
+    "name": "DaemonConfigurationModel",
+    "type": "mimModel",
+    "contents": [
+      {	
+        "name": "DaemonConfiguration",
+        "type": "mimComponent",
+        "contents": [
+          {
+            "name": "daemons",
+            "type": "mimObject",
+            "desired": false,
+            "schema": {
+              "type": "array",
+              "elementSchema": {
+                "type": "object",
+                "fields": [
+                  {
+                    "name": "name",
+                    "schema": "string"
+                  },
+                  {
+                    "name": "state",
+                    "schema": {
+                      "type": "enum",
+                      "valueSchema": "integer",
+                      "enumValues": [
+                        {
+                          "name": "unknown",
+                          "enumValue": 0
+                        },
+                        {
+                          "name": "running",
+                          "enumValue": 1
+                        },
+                        {
+                          "name": "failed",
+                          "enumValue": 2
+                        },
+                        {
+                          "name": "stopped",
+                          "enumValue": 3
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "status",
+                    "schema": {
+                      "type": "enum",
+                      "valueSchema": "integer",
+                      "enumValues": [
+                        {
+                          "name": "unknown",
+                          "enumValue": 0
+                        },
+                        {
+                          "name": "enabled",
+                          "enumValue": 1
+                        },
+                        {
+                          "name": "disabled",
+                          "enumValue": 2
+                        },
+                        {
+                          "name": "static",
+                          "enumValue": 3
+                        },
+                        {
+                          "name": "indirect",
+                          "enumValue": 4
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "daemonCommands",
+            "type": "mimObject",
+            "desired": true,
+            "schema": {
+              "type": "array",
+              "elementSchema": {
+                "type": "object",
+                "fields": [
+                  {
+                    "name": "name",
+                    "schema": "string"
+                  },
+                  {
+                    "name": "state",
+                    "schema": {
+                      "type": "enum",
+                      "valueSchema": "integer",
+                      "enumValues": [
+                        {
+                          "name": "run",
+                          "enumValue": 0
+                        },
+                        {
+                          "name": "stop",
+                          "enumValue": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "name": "status",
+                    "schema": {
+                      "type": "enum",
+                      "valueSchema": "integer",
+                      "enumValues": [
+                        {
+                          "name": "enable",
+                          "enumValue": 0
+                        },
+                        {
+                          "name": "disable",
+                          "enumValue": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+  
