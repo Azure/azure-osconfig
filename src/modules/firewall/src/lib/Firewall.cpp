@@ -3,7 +3,7 @@
 
 #include "Firewall.h"
 
-const std::string FirewallModule::MODULE_INFO = R"""({
+const std::string FirewallModule::m_moduleInfo = R"""({
     "Name": "Firewall",
     "Description": "Provides functionality to remotely manage firewall rules on device",
     "Manufacturer": "Microsoft",
@@ -14,11 +14,11 @@ const std::string FirewallModule::MODULE_INFO = R"""({
     "Lifetime": 1,
     "UserAccount": 0})""";
 
-const std::string FirewallModule::FIREWALL_COMPONENT = "Firewall";
-const std::string FirewallModule::FIREWALL_REPORTED_FINGERPRINT = "firewallFingerprint";
-const std::string FirewallModule::FIREWALL_REPORTED_STATE = "firewallState";
+const std::string FirewallModule::m_firewallComponent = "Firewall";
+const std::string FirewallModule::m_firewallReportedFingerprint = "firewallFingerprint";
+const std::string FirewallModule::m_firewallReportedState = "firewallState";
 
-OSCONFIG_LOG_HANDLE FirewallLog::LOG_HANDLE = nullptr;
+OSCONFIG_LOG_HANDLE FirewallLog::m_logHandle = nullptr;
 
 int FirewallModule::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
@@ -41,7 +41,7 @@ int FirewallModule::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
     }
     else
     {
-        size_t len = strlen(MODULE_INFO.c_str());
+        size_t len = strlen(m_moduleInfo.c_str());
         *payload = new (std::nothrow) char[len];
 
         if (nullptr == *payload)
@@ -51,7 +51,7 @@ int FirewallModule::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
         }
         else
         {
-            std::memcpy(*payload, MODULE_INFO.c_str(), len);
+            std::memcpy(*payload, m_moduleInfo.c_str(), len);
             *payloadSizeBytes = len;
         }
     }
@@ -83,7 +83,7 @@ int FirewallModule::Get(const char* componentName, const char* objectName, MMI_J
         OsConfigLogError(FirewallLog::Get(), "Invalid (null) payload size");
         status = EINVAL;
     }
-    else if (0 != FIREWALL_COMPONENT.compare(componentName))
+    else if (0 != m_firewallComponent.compare(componentName))
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
         status = EINVAL;
@@ -96,11 +96,11 @@ int FirewallModule::Get(const char* componentName, const char* objectName, MMI_J
         *payloadSizeBytes = 0;
         *payload = nullptr;
 
-        if (0 == FIREWALL_REPORTED_STATE.compare(objectName))
+        if (0 == m_firewallReportedState.compare(objectName))
         {
             status = GetState(writer);
         }
-        else if (0 == FIREWALL_REPORTED_FINGERPRINT.compare(objectName))
+        else if (0 == m_firewallReportedFingerprint.compare(objectName))
         {
             status = GetFingerprint(writer);
         }
@@ -153,7 +153,7 @@ int FirewallModule::Set(const char* componentName, const char* objectName, const
     return status;
 }
 
-namespace utility
+namespace system_utils
 {
     std::string Hash(const std::string str)
     {

@@ -24,22 +24,22 @@ class FirewallLog
 public:
     static OSCONFIG_LOG_HANDLE Get()
     {
-        return LOG_HANDLE;
+        return m_logHandle;
     }
     static void OpenLog()
     {
-        LOG_HANDLE = ::OpenLog(FIREWALL_LOGFILE, FIREWALL_ROLLEDLOGFILE);
+        m_logHandle = ::OpenLog(FIREWALL_LOGFILE, FIREWALL_ROLLEDLOGFILE);
     }
     static void CloseLog()
     {
-        ::CloseLog(&LOG_HANDLE);
+        ::CloseLog(&m_logHandle);
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE LOG_HANDLE;
+    static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
-namespace utility
+namespace system_utils
 {
     std::string Hash(const std::string str);
     int Execute(const std::string command, std::string& result);
@@ -62,22 +62,22 @@ public:
     virtual std::string Hash() const = 0;
 };
 
-class Iptables : public GenericUtility
+class IpTables : public GenericUtility
 {
 public:
     typedef GenericUtility::State State;
 
-    Iptables() = default;
-    ~Iptables() = default;
+    IpTables() = default;
+    ~IpTables() = default;
 
     State Detect() const override
     {
-        // If the utility is not installed/available, the the state is Disabled
-        // If the utility is installed check if there are rules/chain policies in the tables
-        // If there are rules/chain policies, the state is Enabled
+        // If the firewall utility is not installed/available, the the state is disabled
+        // If the firewall utility is installed, firewall utility is checked to see if there are any rules/chains/policies
+        // If there are rules/chain policies, the state is enabled
 
         std::string result;
-        return ((0 == utility::Execute("iptables -S", result)) && !result.empty()) ? State::Enabled : State::Disabled;
+        return ((0 == system_utils::Execute("iptables -S", result)) && !result.empty()) ? State::Enabled : State::Disabled;
     }
 
     std::string Hash() const override
@@ -86,9 +86,9 @@ public:
         std::string rules;
         const std::string command = "iptables -S";
 
-        if (0 == utility::Execute(command.c_str(), rules))
+        if (0 == system_utils::Execute(command.c_str(), rules))
         {
-            hash = utility::Hash(rules);
+            hash = system_utils::Hash(rules);
         }
         else if (IsFullLoggingEnabled())
         {
@@ -102,12 +102,12 @@ public:
 class FirewallModule
 {
 public:
-    static const std::string MODULE_INFO;
-    static const std::string FIREWALL_COMPONENT;
+    static const std::string m_moduleInfo;
+    static const std::string m_firewallComponent;
 
     // Reported properties
-    static const std::string FIREWALL_REPORTED_FINGERPRINT;
-    static const std::string FIREWALL_REPORTED_STATE;
+    static const std::string m_firewallReportedFingerprint;
+    static const std::string m_firewallReportedState;
 
     FirewallModule(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
     virtual ~FirewallModule() = default;
@@ -155,4 +155,4 @@ private:
     UtilityT m_utility;
 };
 
-typedef GenericFirewall<Iptables> Firewall;
+typedef GenericFirewall<IpTables> Firewall;
