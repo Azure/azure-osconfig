@@ -44,9 +44,15 @@ impl Into<c_int> for MmiError {
 impl fmt::Display for MmiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match &*self {
-            MmiError::FailedRead => write!(f, "A CString read from a raw pointer failed"),
-            MmiError::FailedAllocate => write!(f, "A memory allocation failed"),
-            MmiError::InvalidArgument => write!(f, "There was an invalid argument"),
+            MmiError::FailedRead => {
+                write!(f, "A CString read from a raw pointer failed")
+            }
+            MmiError::FailedAllocate => {
+                write!(f, "A memory allocation failed")
+            }
+            MmiError::InvalidArgument => {
+                write!(f, "There was an invalid argument")
+            }
             MmiError::SerdeError => {
                 write!(f, "There was an error serializing or deserializing")
             }
