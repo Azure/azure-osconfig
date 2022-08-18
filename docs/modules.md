@@ -256,7 +256,7 @@ Example of an MIM setting of enumeration of strings type:
       },
       {
         "name": "allow",
-        "enumValue": "allow""
+        "enumValue": "allow"
       },
       {
         "name": "deny",
