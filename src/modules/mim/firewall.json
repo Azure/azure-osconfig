@@ -44,8 +44,8 @@
             "valueSchema": "string",
             "enumValues": [
               {
-                "name": "none",
-                "enumValue": "none"
+                "name": "unknown",
+                "enumValue": "unknown"
               },
               {
                 "name": "success",
@@ -96,10 +96,6 @@
                     "type": "enum",
                     "valueSchema": "integer",
                     "enumValues": [
-                      {
-                        "name": "none",
-                        "enumValue": "none"
-                      },
                       {
                         "name": "accept",
                         "enumValue": "accept"
