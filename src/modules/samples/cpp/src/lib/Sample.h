@@ -42,11 +42,18 @@ class Sample
 {
 public:
 
-    enum IntegerEnumeration
+    enum class IntegerEnumeration
     {
         None = 0,
-        Value1 = 1,
-        Value2 = 2
+        Value1,
+        Value2
+    };
+
+    enum class StringEnumeration
+    {
+        None = 0,
+        Value1,
+        Value2
     };
 
     // A sample object with all possible setting types
@@ -55,7 +62,8 @@ public:
         std::string stringSetting;
         int integerSetting;
         bool booleanSetting;
-        IntegerEnumeration enumerationSetting;
+        IntegerEnumeration integerEnumerationSetting;
+        StringEnumeration stringEnumerationSetting;
         std::vector<std::string> stringArraySetting;
         std::vector<int> integerArraySetting;
         std::map<std::string, std::string> stringMapSetting;
@@ -76,8 +84,10 @@ public:
     virtual unsigned int GetMaxPayloadSizeBytes();
 
 private:
+    static int SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer>& writer, StringEnumeration value);
     static int SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Object& object);
     static int SerializeObjectArray(rapidjson::Writer<rapidjson::StringBuffer>& writer, const std::vector<Object>& objectArray);
+    static int DeserializeStringEnumeration(std::string str, StringEnumeration& value);
     static int DeserializeObject(rapidjson::Document& document, Object& object);
     static int DeserializeObjectArray(rapidjson::Document& document, std::vector<Object>& objects);
     static int SerializeJsonPayload(rapidjson::Document& document, MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes);

@@ -26,10 +26,15 @@ static const std::string g_stringSettingName = "stringSetting";
 static const std::string g_integerSettingName = "integerSetting";
 static const std::string g_booleanSettingName = "booleanSetting";
 static const std::string g_integerEnumerationSettingName = "integerEnumerationSetting";
+static const std::string g_stringEnumerationSettingName = "stringEnumerationSetting";
 static const std::string g_stringArraySettingName = "stringsArraySetting";
 static const std::string g_integerArraySettingName = "integerArraySetting";
 static const std::string g_stringMapSettingName = "stringMapSetting";
 static const std::string g_integerMapSettingName = "integerMapSetting";
+
+static const std::string g_stringEnumerationNone = "none";
+static const std::string g_stringEnumerationValue1 = "value1";
+static const std::string g_stringEnumerationValue2 = "value2";
 
 constexpr const char info[] = R""""({
     "Name": "C++ Sample",
@@ -332,6 +337,31 @@ int Sample::Get(const char* componentName, const char* objectName, MMI_JSON_STRI
     return status;
 }
 
+int Sample::SerializeStringEnumeration(rapidjson::Writer<rapidjson::StringBuffer>& writer, Sample::StringEnumeration value)
+{
+    int status = 0;
+
+    writer.Key(g_stringEnumerationSettingName.c_str());
+
+    switch (value)
+    {
+        case Sample::StringEnumeration::None:
+            writer.String(g_stringEnumerationNone.c_str());
+            break;
+        case Sample::StringEnumeration::Value1:
+            writer.String(g_stringEnumerationValue1.c_str());
+            break;
+        case Sample::StringEnumeration::Value2:
+            writer.String(g_stringEnumerationValue2.c_str());
+            break;
+        default:
+            OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %d", static_cast<int>(value));
+            status = EINVAL;
+    }
+
+    return status;
+}
+
 int Sample::SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, const Sample::Object& object)
 {
     int status = 0;
@@ -350,9 +380,12 @@ int Sample::SerializeObject(rapidjson::Writer<rapidjson::StringBuffer>& writer, 
     writer.Key(g_integerSettingName.c_str());
     writer.Int(object.integerSetting);
 
-    // Object enumeration setting
+    // Object integer enumeration setting
     writer.Key(g_integerEnumerationSettingName.c_str());
-    writer.Int(static_cast<int>(object.enumerationSetting));
+    writer.Int(static_cast<int>(object.integerEnumerationSetting));
+
+    // Object string enumeration setting
+    status = SerializeStringEnumeration(writer, object.stringEnumerationSetting);
 
     // Object string array setting
     writer.Key(g_stringArraySettingName.c_str());
@@ -435,6 +468,31 @@ int Sample::SerializeObjectArray(rapidjson::Writer<rapidjson::StringBuffer>& wri
     return status;
 }
 
+int Sample::DeserializeStringEnumeration(std::string str, Sample::StringEnumeration& value)
+{
+    int status = 0;
+
+    if (0 == g_stringEnumerationNone.compare(str))
+    {
+        value = Sample::StringEnumeration::None;
+    }
+    else if (0 == g_stringEnumerationValue1.compare(str))
+    {
+        value = Sample::StringEnumeration::Value1;
+    }
+    else if (0 == g_stringEnumerationValue2.compare(str))
+    {
+        value = Sample::StringEnumeration::Value2;
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "Invalid string enumeration value: %s", str.c_str());
+        status = EINVAL;
+    }
+
+    return status;
+}
+
 int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
 {
     int status = 0;
@@ -501,7 +559,7 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
     {
         if (document[g_integerEnumerationSettingName.c_str()].IsInt())
         {
-            object.enumerationSetting = static_cast<Sample::IntegerEnumeration>(document[g_integerEnumerationSettingName.c_str()].GetInt());
+            object.integerEnumerationSetting = static_cast<Sample::IntegerEnumeration>(document[g_integerEnumerationSettingName.c_str()].GetInt());
         }
         else
         {
@@ -515,7 +573,27 @@ int Sample::DeserializeObject(rapidjson::Document& document, Object& object)
         status = EINVAL;
     }
 
-    // Deserialize an string array setting
+    // Deserialize a string enumeration setting
+    if (document.HasMember(g_stringEnumerationSettingName.c_str()))
+    {
+        if (document[g_stringEnumerationSettingName.c_str()].IsString())
+        {
+            std::string stringValue = document[g_stringEnumerationSettingName.c_str()].GetString();
+            status = DeserializeStringEnumeration(stringValue, object.stringEnumerationSetting);
+        }
+        else
+        {
+            OsConfigLogError(SampleLog::Get(), "%s is not a string", g_stringEnumerationSettingName.c_str());
+            status = EINVAL;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SampleLog::Get(), "JSON object does not contain a string enumeration setting");
+        status = EINVAL;
+    }
+
+    // Deserialize a string array setting
     if (document.HasMember(g_stringArraySettingName.c_str()))
     {
         if (document[g_stringArraySettingName.c_str()].IsArray())
