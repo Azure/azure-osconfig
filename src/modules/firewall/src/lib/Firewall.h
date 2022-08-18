@@ -92,7 +92,7 @@ public:
         }
         else if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(FirewallLog::Get(), "Error retrieving rules specification from iptables");
+            OsConfigLogError(FirewallLog::Get(), "Error retrieving rules specification from iptables: %s", rules.c_str());
         }
 
         return hash;
