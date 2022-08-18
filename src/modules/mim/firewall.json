@@ -15,8 +15,8 @@
             "valueSchema": "string",
             "enumValues": [
               {
-                "name": "unknown",
-                "enumValue": "unknown"
+                "name": "none",
+                "enumValue": "none"
               },
               {
                 "name": "enabled",
@@ -36,7 +36,7 @@
           "schema": "string"
         },
         {
-          "name": "configuredState",
+          "name": "configurationStatus",
           "type": "mimObject",
           "desired": false,
           "schema": {
@@ -59,7 +59,7 @@
           }
         },
         {
-          "name": "configuredStateDetail",
+          "name": "configurationStatusDetail",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -69,59 +69,54 @@
           "type": "mimObject",
           "desired": false,
           "schema": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "in",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "string",
-                  "enumValues": [
-                    {
-                      "name": "none",
-                      "enumValue": "none"
-                    },
-                    {
-                      "name": "accept",
-                      "enumValue": "accept"
-                    },
-                    {
-                      "name": "drop",
-                      "enumValue": "drop"
-                    },
-                    {
-                      "name": "reject",
-                      "enumValue": "reject"
-                    }
-                  ]
+            "type": "array",
+            "elementSchema": {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "direction",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "string",
+                    "enumValues": [
+                      {
+                        "name": "in",
+                        "enumValue": "in"
+                      },
+                      {
+                        "name": "out",
+                        "enumValue": "out"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "action",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "none",
+                        "enumValue": "none"
+                      },
+                      {
+                        "name": "accept",
+                        "enumValue": "accept"
+                      },
+                      {
+                        "name": "drop",
+                        "enumValue": "drop"
+                      },
+                      {
+                        "name": "reject",
+                        "enumValue": "reject"
+                      }
+                    ]
+                  }
                 }
-              },
-              {
-                "name": "out",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "integer",
-                  "enumValues": [
-                    {
-                      "name": "none",
-                      "enumValue": "none"
-                    },
-                    {
-                      "name": "accept",
-                      "enumValue": "accept"
-                    },
-                    {
-                      "name": "drop",
-                      "enumValue": "drop"
-                    },
-                    {
-                      "name": "reject",
-                      "enumValue": "reject"
-                    }
-                  ]
-                }
-              }
-            ]
+              ]
+            }
           }
         },
         {
@@ -238,59 +233,54 @@
           "type": "mimObject",
           "desired": true,
           "schema": {
-            "type": "object",
-            "fields": [
-              {
-                "name": "in",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "string",
-                  "enumValues": [
-                    {
-                      "name": "none",
-                      "enumValue": "none"
-                    },
-                    {
-                      "name": "accept",
-                      "enumValue": "accept"
-                    },
-                    {
-                      "name": "drop",
-                      "enumValue": "drop"
-                    },
-                    {
-                      "name": "reject",
-                      "enumValue": "reject"
-                    }
-                  ]
+            "type": "array",
+            "elementSchema": {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "direction",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "string",
+                    "enumValues": [
+                      {
+                        "name": "in",
+                        "enumValue": "in"
+                      },
+                      {
+                        "name": "out",
+                        "enumValue": "out"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "action",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "none",
+                        "enumValue": "none"
+                      },
+                      {
+                        "name": "accept",
+                        "enumValue": "accept"
+                      },
+                      {
+                        "name": "drop",
+                        "enumValue": "drop"
+                      },
+                      {
+                        "name": "reject",
+                        "enumValue": "reject"
+                      }
+                    ]
+                  }
                 }
-              },
-              {
-                "name": "out",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "integer",
-                  "enumValues": [
-                    {
-                      "name": "none",
-                      "enumValue": "none"
-                    },
-                    {
-                      "name": "accept",
-                      "enumValue": "accept"
-                    },
-                    {
-                      "name": "drop",
-                      "enumValue": "drop"
-                    },
-                    {
-                      "name": "reject",
-                      "enumValue": "reject"
-                    }
-                  ]
-                }
-              }
-            ]
+              ]
+            }
           }
         }
       ]
