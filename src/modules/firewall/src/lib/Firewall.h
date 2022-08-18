@@ -73,8 +73,8 @@ public:
     State Detect() const override
     {
         // If the firewall utility is not installed/available, the the state is disabled
-        // If the firewall utility is installed, firewall utility is checked to see if there are any rules/chains/policies
-        // If there are rules/chain policies, the state is enabled
+        // If the firewall utility is installed, it is checked to see if there are any rules/chains/policies
+        // If there are rules/chains/policies, the state is enabled
 
         std::string result;
         return ((0 == system_utils::Execute("iptables -S", result)) && !result.empty()) ? State::Enabled : State::Disabled;
