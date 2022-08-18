@@ -41,6 +41,34 @@ private:
 class Sample
 {
 public:
+    static const std::string m_componentName;
+
+    static const std::string m_desiredStringObjectName;
+    static const std::string m_reportedStringObjectName;
+    static const std::string m_desiredIntegerObjectName;
+    static const std::string m_reportedIntegerObjectName;
+    static const std::string m_desiredBooleanObjectName;
+    static const std::string m_reportedBooleanObjectName;
+    static const std::string m_desiredObjectName;
+    static const std::string m_reportedObjectName;
+    static const std::string m_desiredArrayObjectName;
+    static const std::string m_reportedArrayObjectName;
+
+    static const std::string m_stringSettingName;
+    static const std::string m_integerSettingName;
+    static const std::string m_booleanSettingName;
+    static const std::string m_integerEnumerationSettingName;
+    static const std::string m_stringEnumerationSettingName;
+    static const std::string m_stringArraySettingName;
+    static const std::string m_integerArraySettingName;
+    static const std::string m_stringMapSettingName;
+    static const std::string m_integerMapSettingName;
+
+    static const std::string m_stringEnumerationNone;
+    static const std::string m_stringEnumerationValue1;
+    static const std::string m_stringEnumerationValue2;
+
+    static const std::string m_info;
 
     enum class IntegerEnumeration
     {
