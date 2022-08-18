@@ -112,6 +112,9 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
         "integerEnumeration": {
           "type": "integer"
         },
+        "stringEnumeration": {
+          "type": "string"
+        },
         "stringArray": {
           "type": "array",
           "items": {
@@ -151,6 +154,9 @@ bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, vo
               },
               {
                 "$ref": "#/definitions/integerEnumeration"
+              },
+              {
+                "$ref": "#/definitions/stringEnumeration"
               },
               {
                 "$ref": "#/definitions/stringArray"
