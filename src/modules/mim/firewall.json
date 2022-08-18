@@ -44,8 +44,8 @@
             "valueSchema": "string",
             "enumValues": [
               {
-                "name": "unknown",
-                "enumValue": "unknown"
+                "name": "none",
+                "enumValue": "none"
               },
               {
                 "name": "success",
@@ -135,12 +135,12 @@
                     "valueSchema": "string",
                     "enumValues": [
                       {
-                        "name": "exist",
-                        "enumValue": "exist"
+                        "name": "present",
+                        "enumValue": "present"
                       },
                       {
-                        "name": "notExist",
-                        "enumValue": "notExist"
+                        "name": "notPresent",
+                        "enumValue": "notPresent"
                       }
                     ]
                   }
