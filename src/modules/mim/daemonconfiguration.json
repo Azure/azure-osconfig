@@ -38,8 +38,12 @@
                           "enumValue": 2
                         },
                         {
-                          "name": "stopped",
+                          "name": "exited",
                           "enumValue": 3
+                        },
+                        {
+                          "name": "dead",
+                          "enumValue": 4
                         }
                       ]
                     }
@@ -59,16 +63,20 @@
                           "enumValue": 1
                         },
                         {
-                          "name": "disabled",
+                          "name": "enabledRuntime",
                           "enumValue": 2
                         },
                         {
-                          "name": "static",
+                          "name": "disabled",
                           "enumValue": 3
                         },
                         {
-                          "name": "indirect",
+                          "name": "static",
                           "enumValue": 4
+                        },
+                        {
+                          "name": "indirect",
+                          "enumValue": 5
                         }
                       ]
                     }
