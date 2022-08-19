@@ -39,7 +39,7 @@ private:
     static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
-class GenericUtility
+class GenericFirewall
 {
 public:
     enum class State
@@ -49,67 +49,25 @@ public:
         Disabled
     };
 
-    virtual ~GenericUtility() = default;
+    virtual ~GenericFirewall() = default;
 
     virtual State Detect() const = 0;
-    virtual std::string Hash() const = 0;
+    virtual std::string Fingerprint() const = 0;
 };
 
-class IpTables : public GenericUtility
+class IpTables : public GenericFirewall
 {
 public:
-    typedef GenericUtility::State State;
+    typedef GenericFirewall::State State;
 
     IpTables() = default;
     ~IpTables() = default;
 
-    State Detect() const override
-    {
-        const char* command = "iptables -S";
-
-        State state = State::Unknown;
-        char* textResult = nullptr;
-
-        if ((0 == ExecuteCommand(nullptr, command, false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
-        {
-            if (textResult && (strlen(textResult) > 0))
-            {
-                state = State::Enabled;
-            }
-            else
-            {
-                state = State::Disabled;
-            }
-        }
-        else
-        {
-            state = State::Disabled;
-        }
-
-        FREE_MEMORY(textResult);
-
-        return state;
-    }
-
-    std::string Hash() const override
-    {
-        const char* command = "iptables -S";
-
-        std::string hash;
-        char* textResult = nullptr;
-
-        if (nullptr != (textResult = HashCommand(command, FirewallLog::Get())))
-        {
-            hash = textResult;
-        }
-
-        FREE_MEMORY(textResult);
-
-        return hash;
-    }
+    State Detect() const override;
+    std::string Fingerprint() const override;
 };
 
-class FirewallModule
+class FirewallModuleBase
 {
 public:
     static const std::string m_moduleInfo;
@@ -119,8 +77,8 @@ public:
     static const std::string m_firewallReportedFingerprint;
     static const std::string m_firewallReportedState;
 
-    FirewallModule(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
-    virtual ~FirewallModule() = default;
+    FirewallModuleBase(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
+    virtual ~FirewallModuleBase() = default;
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
 
@@ -136,19 +94,19 @@ private:
     size_t m_lastPayloadHash;
 };
 
-template <class UtilityT>
-class GenericFirewall : public FirewallModule
+template <class FirewallT>
+class FirewallModule : public FirewallModuleBase
 {
 public:
-    GenericFirewall(unsigned int maxPayloadSize) : FirewallModule(maxPayloadSize) {}
-    ~GenericFirewall() = default;
+    FirewallModule(unsigned int maxPayloadSize) : FirewallModuleBase(maxPayloadSize) {}
+    ~FirewallModule() = default;
 
 protected:
-    typedef typename UtilityT::State State;
+    typedef typename FirewallT::State State;
 
     virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
     {
-        State state = m_utility.Detect();
+        State state = m_firewall.Detect();
         int value = static_cast<int>(state);
         writer.Int(value);
         return 0;
@@ -156,13 +114,13 @@ protected:
 
     virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
     {
-        std::string fingerprint = m_utility.Hash();
+        std::string fingerprint = m_firewall.Fingerprint();
         writer.String(fingerprint.c_str());
         return 0;
     }
 
 private:
-    UtilityT m_utility;
+    FirewallT m_firewall;
 };
 
-typedef GenericFirewall<IpTables> Firewall;
+typedef FirewallModule<IpTables> Firewall;

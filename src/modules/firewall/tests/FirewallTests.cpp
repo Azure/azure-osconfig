@@ -11,16 +11,16 @@ namespace tests
     static const std::string expectedFingerprint = "abc123";
     static const std::string expectedFingerprintJson = "\"" + expectedFingerprint + "\"";
 
-    class MockUtility : public GenericUtility
+    class MockUtility : public GenericFirewall
     {
     public:
-        typedef GenericUtility::State State;
+        typedef GenericFirewall::State State;
 
         MockUtility() = default;
         ~MockUtility() = default;
 
         State Detect() const override;
-        std::string Hash() const override;
+        std::string Fingerprint() const override;
     };
 
     MockUtility::State MockUtility::Detect() const
@@ -28,7 +28,7 @@ namespace tests
         return State::Enabled;
     }
 
-    std::string MockUtility::Hash() const
+    std::string MockUtility::Fingerprint() const
     {
         return expectedFingerprint;
     }
@@ -38,12 +38,12 @@ namespace tests
     protected:
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
-        std::shared_ptr<GenericFirewall<MockUtility>> firewall;
+        std::shared_ptr<FirewallModule<MockUtility>> firewall;
 
         void SetUp() override {
             payload = nullptr;
             payloadSizeBytes = 0;
-            firewall = std::make_shared<GenericFirewall<MockUtility>>(0);
+            firewall = std::make_shared<FirewallModule<MockUtility>>(0);
         }
 
         void TearDown() override {

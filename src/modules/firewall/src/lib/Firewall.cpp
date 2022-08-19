@@ -3,7 +3,7 @@
 
 #include "Firewall.h"
 
-const std::string FirewallModule::m_moduleInfo = R"""({
+const std::string FirewallModuleBase::m_moduleInfo = R"""({
     "Name": "Firewall",
     "Description": "Provides functionality to remotely manage firewall rules on device",
     "Manufacturer": "Microsoft",
@@ -14,13 +14,13 @@ const std::string FirewallModule::m_moduleInfo = R"""({
     "Lifetime": 1,
     "UserAccount": 0})""";
 
-const std::string FirewallModule::m_firewallComponent = "Firewall";
-const std::string FirewallModule::m_firewallReportedFingerprint = "firewallFingerprint";
-const std::string FirewallModule::m_firewallReportedState = "firewallState";
+const std::string FirewallModuleBase::m_firewallComponent = "Firewall";
+const std::string FirewallModuleBase::m_firewallReportedFingerprint = "firewallFingerprint";
+const std::string FirewallModuleBase::m_firewallReportedState = "firewallState";
 
 OSCONFIG_LOG_HANDLE FirewallLog::m_logHandle = nullptr;
 
-int FirewallModule::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int FirewallModuleBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -59,7 +59,7 @@ int FirewallModule::GetInfo(const char* clientName, MMI_JSON_STRING* payload, in
     return status;
 }
 
-int FirewallModule::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
+int FirewallModuleBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
 
@@ -114,7 +114,7 @@ int FirewallModule::Get(const char* componentName, const char* objectName, MMI_J
         {
             if ((m_maxPayloadSizeBytes > 0) && (buffer.GetSize() > m_maxPayloadSizeBytes))
             {
-                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum payload size");
+                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum payload size: %d > %d", static_cast<int>(buffer.GetSize()), m_maxPayloadSizeBytes);
                 status = E2BIG;
             }
             else
@@ -139,7 +139,7 @@ int FirewallModule::Get(const char* componentName, const char* objectName, MMI_J
     return status;
 }
 
-int FirewallModule::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
+int FirewallModuleBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = -1;
 
@@ -151,4 +151,49 @@ int FirewallModule::Set(const char* componentName, const char* objectName, const
     OsConfigLogError(FirewallLog::Get(), "Firewall does not support desired properties");
 
     return status;
+}
+
+IpTables::State IpTables::Detect() const
+{
+    const char* command = "iptables -S";
+
+    State state = State::Unknown;
+    char* textResult = nullptr;
+
+    if ((0 == ExecuteCommand(nullptr, command, false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+    {
+        if (textResult && (strlen(textResult) > 0))
+        {
+            state = State::Enabled;
+        }
+        else
+        {
+            state = State::Disabled;
+        }
+    }
+    else
+    {
+        state = State::Disabled;
+    }
+
+    FREE_MEMORY(textResult);
+
+    return state;
+}
+
+std::string IpTables::Fingerprint() const
+{
+    const char* command = "iptables -S";
+
+    std::string hash;
+    char* textResult = nullptr;
+
+    if (nullptr != (textResult = HashCommand(command, FirewallLog::Get())))
+    {
+        hash = textResult;
+    }
+
+    FREE_MEMORY(textResult);
+
+    return hash;
 }
