@@ -102,10 +102,6 @@ public:
         {
             hash = textResult;
         }
-        else
-        {
-            OsConfigLogError(FirewallLog::Get(), "Failed to hash output from command: %s", command);
-        }
 
         FREE_MEMORY(textResult);
 
