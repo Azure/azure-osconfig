@@ -15,8 +15,8 @@
             "valueSchema": "string",
             "enumValues": [
               {
-                "name": "none",
-                "enumValue": "none"
+                "name": "unknown",
+                "enumValue": "unknown"
               },
               {
                 "name": "enabled",
