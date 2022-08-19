@@ -152,36 +152,3 @@ int FirewallModule::Set(const char* componentName, const char* objectName, const
 
     return status;
 }
-
-namespace system_utils
-{
-    std::string Hash(const std::string str)
-    {
-        char* hash = nullptr;
-        std::string command = "echo \"" + str + "\"";
-        return (hash = HashCommand(command.c_str(), FirewallLog::Get())) ? hash : "";
-    }
-
-    int Execute(const std::string command, std::string& result)
-    {
-        const char trimChars[] = " \n\r\t";
-
-        char* textResult = nullptr;
-        int status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get());
-
-        if (textResult)
-        {
-            result = textResult;
-            result.erase(0, result.find_first_not_of(trimChars));
-            result.erase(result.find_last_not_of(trimChars) + 1);
-            free(textResult);
-        }
-
-        return status;
-    }
-
-    int Execute(const std::string command)
-    {
-        return ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, nullptr, nullptr, FirewallLog::Get());
-    }
-}

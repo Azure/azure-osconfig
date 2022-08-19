@@ -39,13 +39,6 @@ private:
     static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
-namespace system_utils
-{
-    std::string Hash(const std::string str);
-    int Execute(const std::string command, std::string& result);
-    int Execute(const std::string command);
-};
-
 class GenericUtility
 {
 public:
@@ -72,28 +65,49 @@ public:
 
     State Detect() const override
     {
-        // If the firewall utility is not installed/available, the the state is disabled
-        // If the firewall utility is installed, it is checked to see if there are any rules/chains/policies
-        // If there are rules/chains/policies, the state is enabled
+        const char* command = "iptables -S";
 
-        std::string result;
-        return ((0 == system_utils::Execute("iptables -S", result)) && !result.empty()) ? State::Enabled : State::Disabled;
+        State state = State::Unknown;
+        char* textResult = nullptr;
+
+        if ((0 == ExecuteCommand(nullptr, command, false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+        {
+            if (textResult && (strlen(textResult) > 0))
+            {
+                state = State::Enabled;
+            }
+            else
+            {
+                state = State::Disabled;
+            }
+        }
+        else
+        {
+            state = State::Disabled;
+        }
+
+        FREE_MEMORY(textResult);
+
+        return state;
     }
 
     std::string Hash() const override
     {
-        std::string hash;
-        std::string rules;
-        const std::string command = "iptables -S";
+        const char* command = "iptables -S";
 
-        if (0 == system_utils::Execute(command.c_str(), rules))
+        std::string hash;
+        char* textResult = nullptr;
+
+        if (nullptr != (textResult = HashCommand(command, FirewallLog::Get())))
         {
-            hash = system_utils::Hash(rules);
+            hash = textResult;
         }
-        else if (IsFullLoggingEnabled())
+        else
         {
-            OsConfigLogError(FirewallLog::Get(), "Error retrieving rules specification from iptables: %s", rules.c_str());
+            OsConfigLogError(FirewallLog::Get(), "Failed to hash output from command: %s", command);
         }
+
+        FREE_MEMORY(textResult);
 
         return hash;
     }
