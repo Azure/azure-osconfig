@@ -38,8 +38,12 @@
                         "enumValue": 2
                       },
                       {
-                        "name": "stopped",
+                        "name": "exited",
                         "enumValue": 3
+                      },
+                      {
+                        "name": "dead",
+                        "enumValue": 4
                       }
                     ]
                   }
