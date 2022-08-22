@@ -33,8 +33,11 @@ const INFO: &str = r#"{
     "UserAccount": 0}"#;
 
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
+// #[repr(u8)] changes the enum to an integer enum akin to one in C
 #[repr(u8)]
 enum IntegerEnumeration {
+    // This explicitly sets What the enum options serialize and
+    // deserialize into, but they default to 0-indexed
     None = 0,
     Value1 = 1,
     Value2 = 2,
@@ -43,6 +46,21 @@ enum IntegerEnumeration {
 impl Default for IntegerEnumeration {
     fn default() -> Self {
         IntegerEnumeration::None
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+// Switches the enum options to camelCase when serializing and deserializing
+#[serde(rename_all = "camelCase")]
+enum StringEnumeration {
+    None,
+    Value1,
+    Value2,
+}
+
+impl Default for StringEnumeration {
+    fn default() -> Self {
+        StringEnumeration::None
     }
 }
 
@@ -55,6 +73,7 @@ struct Object {
     boolean_setting: bool,
     integer_setting: i32,
     integer_enumeration_setting: IntegerEnumeration,
+    string_enumeration_setting: StringEnumeration,
     string_array_setting: Vec<String>,
     integer_array_setting: Vec<i32>,
     // Accepting option types as values accounts for null json values
@@ -299,6 +318,7 @@ mod tests {
                 \"booleanSetting\":true,\
                 \"integerSetting\":12345,\
                 \"integerEnumerationSetting\":0,\
+                \"stringEnumerationSetting\":\"value1\",\
                 \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                 \"integerArraySetting\":[1,2,3,4,5],\
                 \"stringMapSetting\":{\
@@ -330,6 +350,7 @@ mod tests {
                 \"booleanSetting\":true,\
                 \"integerSetting\":12345,\
                 \"integerEnumerationSetting\":0,\
+                \"stringEnumerationSetting\":\"value1\",\
                 \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                 \"integerArraySetting\":[1,2,3,4,5],\
                 \"stringMapSetting\":{\
@@ -360,6 +381,7 @@ mod tests {
                     \"booleanSetting\":true,\
                     \"integerSetting\":12345,\
                     \"integerEnumerationSetting\":0,\
+                    \"stringEnumerationSetting\":\"value1\",\
                     \"stringArraySetting\":[\"C++ Sample Module 1\",\"C++ Sample Module 2\"],\
                     \"integerArraySetting\":[1,2,3,4,5],\
                     \"stringMapSetting\":{\
