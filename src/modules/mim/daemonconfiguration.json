@@ -1,0 +1,104 @@
+{
+  "name": "SystemdDaemonConfigurationModel",
+  "type": "mimModel",
+  "contents": [
+    {	
+      "name": "SystemdDaemonConfiguration",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "daemonConfiguration",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "name",
+                  "schema": "string"
+                },
+                {
+                  "name": "state",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "other",
+                        "enumValue": 0
+                      },
+                      {
+                        "name": "running",
+                        "enumValue": 1
+                      },
+                      {
+                        "name": "failed",
+                        "enumValue": 2
+                      },
+                      {
+                        "name": "exited",
+                        "enumValue": 3
+                      },
+                      {
+                        "name": "dead",
+                        "enumValue": 4
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "autoStartStatus",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "integer",
+                    "enumValues": [
+                      {
+                        "name": "other",
+                        "enumValue": 0
+                      },
+                      {
+                        "name": "enabled",
+                        "enumValue": 1
+                      },
+                      {
+                        "name": "disabled",
+                        "enumValue": 2
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "desiredDaemonConfiguration",
+          "type": "mimObject",
+          "desired": true,
+          "schema": {
+            "type": "array",
+            "elementSchema": {
+              "type": "object",
+              "fields": [
+                {
+                  "name": "name",
+                  "schema": "string"
+                },
+                {
+                  "name": "started",
+                  "schema": "boolean"
+                },
+                {
+                  "name": "enabled",
+                  "schema": "boolean"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
