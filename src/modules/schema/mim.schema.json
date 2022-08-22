@@ -57,7 +57,10 @@
               ]
             },
             {
-              "$ref": "#/$defs/enumSchema"
+              "$ref": "#/$defs/integerEnumSchema"
+            },
+            {
+              "$ref": "#/$defs/stringEnumSchema"
             },
             {
               "$ref": "#/$defs/objectSchema"
@@ -88,8 +91,8 @@
         }
       }
     },
-    "enumSchema": {
-      "$id": "#/$defs/enumSchema",
+    "integerEnumSchema": {
+      "$id": "#/$defs/integerEnumSchema",
       "type": "object",
       "description": "A schema describing an enumeration of integers",
       "required": [
@@ -120,6 +123,44 @@
               },
               "enumValue": {
                 "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "stringEnumSchema": {
+      "$id": "#/$defs/stringEnumSchema",
+      "type": "object",
+      "description": "A schema describing an enumeration of strings",
+      "required": [
+        "type",
+        "valueSchema",
+        "enumValues"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "enum"
+          ]
+        },
+        "valueSchema": {
+          "type": "string",
+          "enum": [
+            "string"
+          ]
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "enumValue": {
+                "type": "string"
               }
             }
           }
@@ -168,7 +209,10 @@
                     ]
                   },
                   {
-                    "$ref": "#/$defs/enumSchema"
+                    "$ref": "#/$defs/integerEnumSchema"
+                  },
+                  {
+                    "$ref": "#/$defs/stringEnumSchema"
                   },
                   {
                     "$ref": "#/$defs/arraySchema"

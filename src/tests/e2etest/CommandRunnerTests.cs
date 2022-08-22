@@ -144,7 +144,7 @@ namespace E2eTesting
         public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state, DataSourceType dataSourceType)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
-            SendCommand(command);
+            SendCommand(command, dataSourceType);
 
             CommandStatus status = WaitForStatus(command.CommandId, state);
             JsonAssert.AreEqual(CreateCommandStatus(command.CommandId, textResult, state, resultCode), status);

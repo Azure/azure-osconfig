@@ -15,6 +15,9 @@
     "integerEnumeration": {
       "type": "integer"
     },
+    "stringEnumeration": {
+      "type": "string"
+    },
     "stringArray": {
       "type": "array",
       "items": {
@@ -54,6 +57,9 @@
           },
           {
             "$ref": "#/definitions/integerEnumeration"
+          },
+          {
+            "$ref": "#/definitions/stringEnumeration"
           },
           {
             "$ref": "#/definitions/stringArray"

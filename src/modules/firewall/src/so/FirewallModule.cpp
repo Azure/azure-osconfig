@@ -1,22 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <cstring>
-#include <errno.h>
-#include <memory>
-#include <Logging.h>
-#include <CommonUtils.h>
 #include <Firewall.h>
-#include <Mmi.h>
 #include <ScopeGuard.h>
-#include <vector>
-#include <string>
+#include <Mmi.h>
 
 void __attribute__((constructor)) InitModule()
 {
     FirewallLog::OpenLog();
     OsConfigLogInfo(FirewallLog::Get(), "Firewall module loaded");
 }
+
 void __attribute__((destructor)) DestroyModule()
 {
     OsConfigLogInfo(FirewallLog::Get(), "Firewall module unloaded");
@@ -58,7 +52,7 @@ int MmiGetInfo(
 
     try
     {
-        status = FirewallObject::GetInfo(clientName, payload, payloadSizeBytes);
+        status = Firewall::GetInfo(clientName, payload, payloadSizeBytes);
     }
     catch(const std::exception& e)
     {
@@ -90,7 +84,8 @@ MMI_HANDLE MmiOpen(
 
     if (nullptr != clientName)
     {
-        FirewallObject* session = new (std::nothrow) FirewallObject(maxPayloadSizeBytes);
+        Firewall* session = new (std::nothrow) Firewall(maxPayloadSizeBytes);
+
         if (nullptr == session)
         {
             OsConfigLogError(FirewallLog::Get(), "MmiOpen failed to allocate memory");
@@ -114,7 +109,7 @@ void MmiClose(MMI_HANDLE clientSession)
 {
     if (nullptr != clientSession)
     {
-        FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+        Firewall* session = reinterpret_cast<Firewall*>(clientSession);
         delete session;
     }
 }
@@ -127,7 +122,7 @@ int MmiSet(
     const int payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+    Firewall* session = reinterpret_cast<Firewall*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -170,7 +165,7 @@ int MmiGet(
     int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    FirewallObject* session = reinterpret_cast<FirewallObject*>(clientSession);
+    Firewall* session = reinterpret_cast<Firewall*>(clientSession);
 
     ScopeGuard sg{[&]()
     {
@@ -191,7 +186,7 @@ int MmiGet(
     {
         try
         {
-            session = reinterpret_cast<FirewallObject*>(clientSession);
+            session = reinterpret_cast<Firewall*>(clientSession);
             status = session->Get(componentName, objectName, payload, payloadSizeBytes);
         }
         catch (const std::exception& e)
