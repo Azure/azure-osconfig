@@ -36,7 +36,7 @@ const INFO: &str = r#"{
 // #[repr(u8)] changes the enum to an integer enum akin to one in C
 #[repr(u8)]
 enum IntegerEnumeration {
-    // This explicitly sets What the enum options serialize and
+    // This explicitly sets what the enum options serialize and
     // deserialize into, but they default to 0-indexed
     None = 0,
     Value1 = 1,
