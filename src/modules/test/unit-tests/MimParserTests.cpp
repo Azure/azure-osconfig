@@ -22,28 +22,30 @@ namespace Tests
         {
             mimCount += c.second->size();
         }
-        ASSERT_EQ(mimCount, 10);
-        ASSERT_EQ((*mimObjects)["SampleComponent"]->size(), 10);
+        EXPECT_EQ(mimCount, 10);
+        EXPECT_EQ((*mimObjects)["SampleComponent"]->size(), 10);
 
-        ASSERT_EQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->size(), 8);
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("stringSetting").name.c_str(), "stringSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("integerSetting").name.c_str(), "integerSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("booleanSetting").name.c_str(), "booleanSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("integerArraySetting").name.c_str(), "integerArraySetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("stringMapSetting").name.c_str(), "stringMapSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("ReportedObject").m_settings->at("integerMapSetting").name.c_str(), "integerMapSetting");
+        EXPECT_EQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->size(), 9);
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("stringSetting").name.c_str(), "stringSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("integerSetting").name.c_str(), "integerSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("booleanSetting").name.c_str(), "booleanSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("stringEnumerationSetting").name.c_str(), "stringEnumerationSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("integerArraySetting").name.c_str(), "integerArraySetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("stringMapSetting").name.c_str(), "stringMapSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("reportedObject").m_settings->at("integerMapSetting").name.c_str(), "integerMapSetting");
 
-        ASSERT_EQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->size(), 8);
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_type.c_str(), "array");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringSetting").name.c_str(), "stringSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerSetting").name.c_str(), "integerSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("booleanSetting").name.c_str(), "booleanSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerArraySetting").name.c_str(), "integerArraySetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringMapSetting").name.c_str(), "stringMapSetting");
-        ASSERT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerMapSetting").name.c_str(), "integerMapSetting");
+        EXPECT_EQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->size(), 9);
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_type.c_str(), "array");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringSetting").name.c_str(), "stringSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerSetting").name.c_str(), "integerSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("booleanSetting").name.c_str(), "booleanSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerEnumerationSetting").name.c_str(), "integerEnumerationSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringEnumerationSetting").name.c_str(), "stringEnumerationSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringsArraySetting").name.c_str(), "stringsArraySetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerArraySetting").name.c_str(), "integerArraySetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("stringMapSetting").name.c_str(), "stringMapSetting");
+        EXPECT_STREQ((*mimObjects)["SampleComponent"]->at("desiredArrayObject").m_settings->at("integerMapSetting").name.c_str(), "integerMapSetting");
     }
 }

@@ -2,7 +2,7 @@ name: Build Containers
 
 on:
   push:
-    branches: [main]
+    branches: [main, future/**]
     paths: [devops/docker/**/Dockerfile]
 
 jobs:
