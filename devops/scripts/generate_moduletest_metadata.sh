@@ -20,21 +20,36 @@ recipeBaseDir=$BaseDir/src/modules/test/recipes
 testMetaDataDestPath=$1
 modulesBaseDir=$2
 
+# Sample modules are prefixed with their language
+prefix=(cpp)
+normalizeModuleName()
+{
+  local m=$1
+  for i in $prefix; do
+    m=$(echo $m | sed -e "s/^$i//")
+  done
+  echo $m
+}
+
 modules=$(find $modulesBaseDir -name '*.so')
-testJSON="[]"
+json="{ \"Modules\" : [], \"Recipes\" : [] }"
 while IFS= read -r line ;
   do 
   modulename=$(basename $line | cut -f1 -d'.');
+  # normalize module names (module samples are prefixed with the module language)
+  modulename=$(normalizeModuleName $modulename)
   mimpath=$(find $mimBaseDir -name "*$modulename*.json")
   recipepath=$(find $recipeBaseDir -iname "*$modulename*.json")
 
   if [ ! -z "$recipepath" ] && [ ! -z "$mimpath" ]; then
     # Create entry if both mim+recipe are found
     echo "Found '$modulename' module adding to recipe configuration"
-    json="[{ \"ModuleName\": \"$modulename\", \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
-    testJSON=$(echo $testJSON | jq --argjson testMetadata "$json" '. |= . + $testMetadata')
+    modulePath="[\"$line\"]"
+    recipes="[{ \"ModuleName\": \"$modulename\", \"ModulePath\": \"$line\", \"MimPath\": \"$mimpath\", \"TestRecipesPath\": \"$recipepath\" }]"
+    json=$(echo $json | jq --argjson modulePath "$modulePath" '.Modules |= . + $modulePath')
+    json=$(echo $json | jq --argjson recipes "$recipes" '.Recipes |= . + $recipes')
   fi
 done <<< $modules
 
-echo $testJSON | jq '.' > $testMetaDataDestPath
+echo $json | jq '.' > $testMetaDataDestPath
 echo "Test recipe configuration written to $testMetaDataDestPath"

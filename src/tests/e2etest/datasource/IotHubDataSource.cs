@@ -127,7 +127,7 @@ namespace E2eTesting
 
             if (!updatedTwin.Properties.Desired.Contains(componentName))
             {
-                Assert.Warn("[SetDesired] {0} not found in desired properties", componentName);
+                Assert.Warn("[SetDesired-IotHubDataSource] {0} not found in desired properties", componentName);
             }
 
             while (!PropertyExists(reported, componentName) && !IsUpdated(reported, componentName, previousUpdate))
@@ -140,14 +140,14 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3})", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated());
+                    Assert.Warn("[SetDesired-IotHubDataSource] Time limit reached while waiting for desired update for {0} (start: {1} | end: {2} | last updated: {3}) | reported: {4} | desired: {5}", componentName, start, DateTime.Now, reported[componentName].GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
                     break;
                 }
             }
 
             if (!reported.Contains(componentName))
             {
-                Assert.Warn("[SetDesired] {0} not found in reported properties", componentName);
+                Assert.Warn("[SetDesired-IotHubDataSource] {0} not found in reported properties", componentName);
             }
         }
 
@@ -166,7 +166,7 @@ namespace E2eTesting
 
             if (!updatedTwin.Properties.Desired.Contains(componentName) && !updatedTwin.Properties.Desired[componentName].Contains(objectName))
             {
-                Assert.Warn("[SetDesired] {0}.{1} not found in desired properties", componentName, objectName);
+                Assert.Warn("[SetDesired-IotHubDataSource] {0}.{1} not found in desired properties. reported: {2}", componentName, objectName, reported);
             }
 
             while (!PropertyExists(reported, componentName, objectName) || !IsUpdated(reported, componentName, objectName, previousUpdate))
@@ -178,14 +178,15 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[SetDesired] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4})", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated());
+                    updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+                    Assert.Warn("[SetDesired-IotHubDataSource] Time limit reached while waiting for desired update for {0}.{1} (start: {2} | end: {3} | last updated: {4}) | reported: {5} | desired: {6}", componentName, objectName, start, DateTime.Now, reported[componentName][objectName].GetLastUpdated(), reported[componentName], updatedTwin.Properties.Desired[componentName]);
                     break;
                 }
             }
 
             if (!reported.Contains(componentName) || !reported[componentName].Contains(objectName))
             {
-                Assert.Warn("[SetDesired] {0}.{1} not found in reported properties", componentName, objectName);
+                Assert.Warn("[SetDesired-IotHubDataSource] {0}.{1} not found in reported properties", componentName, objectName);
             }
 
             return Deserialize<GenericResponse<T>>(reported[componentName][objectName]);
@@ -212,7 +213,8 @@ namespace E2eTesting
                 }
                 else
                 {
-                    Assert.Warn("[GetReported] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3})", componentName, objectName, start, DateTime.Now);
+                    var updatedTwin = await _registryManager.GetTwinAsync(_deviceId, _moduleId);
+                    Assert.Warn("[GetReported-IotHubDataSource] Time limit reached while waiting for reported update for {0}.{1} (start: {2} | end: {3}). reported: {4}. desired {5}", componentName, objectName, start, DateTime.Now, JsonConvert.SerializeObject(reported),JsonConvert.SerializeObject(updatedTwin.Properties.Desired[componentName]));
                     break;
                 }
             }

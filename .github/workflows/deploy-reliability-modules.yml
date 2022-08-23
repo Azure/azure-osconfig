@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1440
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
         variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
@@ -37,7 +38,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.container-workspace }}
-          tag: "270554"
+          tag: "289651"
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -67,9 +68,9 @@ jobs:
           working-directory: ${{ env.container-workspace }}/build/modules/test
           cmd: |
             function checkResult(){
-              if [[ \$result -ne 0 ]]; then
-                echo '::error title=Module Test Failure::The modules tests failed at run number \$runNumber'
-                exit \$result
+              if [[ \$1 -ne 0 ]]; then
+                echo '::error title=Module Test Failure::The modules tests failed at run number \$2'
+                exit \$1
               fi
             }
             result=0
@@ -78,8 +79,8 @@ jobs:
             echo Using date \$end
             while [[ \$(date +%s) -lt \$end ]]; do
               echo Performing test run \$((++runNumber))
-              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes-\$runNumber.xml testplate.json)
-              checkResult
+              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json)
+              checkResult \$result \$runNumber
             done
 
       - name: Generate test report

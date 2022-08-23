@@ -51,24 +51,33 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
     std::cout << "Using test recipes: " << fullPath.c_str() << std::endl;
     root_value = json_parse_file_with_comments(fullPath.c_str());
 
-    if (json_value_get_type(root_value) != JSONArray)
+    if (json_value_get_type(root_value) != JSONObject)
     {
         json_value_free(root_value);
         return testRecipes;
     }
 
-    JSON_Array *jsonTestRecipesMetadata = json_value_get_array(root_value);
+    JSON_Object *rootObject = json_value_get_object(root_value);
+    JSON_Array  *jsonModules = json_object_get_array(rootObject, "Modules");
+    std::vector<std::string> modulePaths;
+    for (size_t i = 0; i < json_array_get_count(jsonModules); i++)
+    {
+        modulePaths.push_back(json_array_get_string(jsonModules, i));
+    }
+
+    JSON_Array *jsonTestRecipesMetadata = json_object_get_array(rootObject, "Recipes");
     JSON_Object *jsonTestRecipeMetadata = nullptr;
     for (size_t i = 0; i < json_array_get_count(jsonTestRecipesMetadata); i++)
     {
         jsonTestRecipeMetadata = json_array_get_object(jsonTestRecipesMetadata, i);
 
+        std::string mainModulePath = json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str());
         TestRecipeMetadata recipeMetadata = {
             json_object_get_string(jsonTestRecipeMetadata, g_moduleName.c_str()),
-            json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str()),
+            mainModulePath,
             json_object_get_string(jsonTestRecipeMetadata, g_mimPath.c_str()),
             json_object_get_string(jsonTestRecipeMetadata, g_testRecipesPath.c_str()),
-        };
+            std::make_shared<RecipeModuleSessionLoader>(mainModulePath)};
 
         // Add recipe if no specific module specified or if the module name matches
         if ((moduleName.empty()) || (str_tolower(moduleName) == str_tolower(recipeMetadata.m_moduleName)))
@@ -78,6 +87,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
             ss << "Mmi    : " << recipeMetadata.m_mimPath << std::endl;
             ss << "Recipe : " << recipeMetadata.m_testRecipesPath << std::endl;
 
+            recipeMetadata.m_recipeModuleSessionLoader->Load(modulePaths);
             TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
             for (auto &recipe : *recipes)
             {
@@ -102,8 +112,10 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
         modulePath,
         mimPath,
         testRecipesPath,
+        std::make_shared<RecipeModuleSessionLoader>(modulePath)
     };
 
+    recipeMetadata.m_recipeModuleSessionLoader->Load(std::vector<std::string>{modulePath});
     TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
     for (auto &recipe : *recipes)
     {
@@ -248,5 +260,6 @@ int main(int argc, char **argv)
         status = 1;
     }
 
+    
     return status;
 }

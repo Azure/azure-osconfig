@@ -166,6 +166,7 @@ MIM Settings translate to PnP property values of following types supported by bo
 - Integer
 - Boolean
 - Enumeration of integers
+- Enumeration of strings
 - Array of strings
 - Array of integers
 - Map of strings
@@ -232,8 +233,38 @@ Example of an MIM setting of enumeration of integers type:
         "enumValue": 4
       },
       {
-        "name": "sanceled",
+        "name": "canceled",
         "enumValue": 5
+      }
+    ]
+  }
+}
+```
+
+Example of an MIM setting of enumeration of strings type:
+
+```JSON
+{
+  "name": "firewallRuleAction",
+  "schema": {
+    "type": "enum",
+    "valueSchema": "string",
+    "enumValues": [
+      { 
+        "name": "none",
+        "enumValue": "none"
+      },
+      {
+        "name": "allow",
+        "enumValue": "allow"
+      },
+      {
+        "name": "deny",
+        "enumValue": "deny"
+      },
+      {
+        "name": "reject",
+        "enumValue": "reject"
       }
     ]
   }
@@ -295,9 +326,9 @@ The model is composed by a list of components, several lists (one for each compo
 1. For each object, answer if this is an array object (where all settings repeat a variable number of times as items into an array) or not. 
 1. Describe each setting with answers to the following questions:
     1. What is the setting name? The name of the setting, in CamelCase.
-    1. What is the access: desired or reported for the seting?
+    1. What is the access: desired or reported for the setting?
     1. What does the setting? A short description of the setting (what the setting does, in few words).
-    1. What is the value type for the setting? Answer can be: boolean, integer, enumeration of integers, character string (UTF-8).
+    1. What is the value type for the setting? Answer can be: boolean, integer, enumeration of integers or strings, array of integers or strings, map of integers or strings, character string (UTF-8).
     1. What are the supported values? Describe supported values, including minimum and maximums if any, valid enumeration values, maximum length for string if any, etc.
     1. Does this setting need to link two objects together (desired and reported), and if so, how?
     1. Does this setting depend on any other setting in this or another object? List what. 
@@ -440,6 +471,23 @@ Sample MIM JSON:
                     {
                       "name": "enumValue1",
                       "enumValue":  1
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "stringEnumerationSettingName",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "string",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue":  "none"
+                    },
+                    {
+                      "name": "enumValue1",
+                      "enumValue":  "enumValue1"
                     }
                   ]
                 }
@@ -663,13 +711,13 @@ Other MIM JSON examples:
 The following would be the payload serialized at runtime for the entire desired or reported MIM (wrapping the object values that the MMI handles): 
 
 ```
-{"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
+{"ComponentName":{"objectName":[{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringEnumerationSettingName":"enumStringValue","stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]},{"objectNameZ":{...}}},{"ComponentNameY":{...}}
 ```
 
 MmiSet and MmiGet only use the object portions of this payload. Such as:
 
 ```
-{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
+{"stringSettingName":"some value","integerValueName":N,"booleanValueName":true|false,"integerEnumerationSettingName":N,"stringEnumerationSettingName":"enumStringValue","stringArraySettingName":["stringArrayItemA","stringArrayItemB","stringArrayItemC"],"integerArraySettingName":[A,B,C],"stringMapSettingName":{"mapKeyX":"X","mapKeyY":"Y","mapKeyZ":"Z"},"integerMapSettingName":{"mapKeyX":X,"mapKeyY":Y,"mapKeyZ":Z}},{...}]}
 ```
 
 or:
@@ -971,37 +1019,76 @@ The code for a module can be split into a static library and a shared object (SO
 
 The static library implements one upper C++ class: ModuleObject. This class contains common code to all ModuleObject instances placed in a base class. Each ModuleObject instance represents one client session and implements:
 
-- ModuleObject::Get with same signature as MmiGet
-- ModuleObject::Set with same signature as MmiSet
-- Public constructor and destructor.
+- Public class constructor or ModuleObject::Open with same signature as MmiOpen when the module only has one global ModuleObject.
+- Public class destructor or ModuleObject::Close with same signature as MmiClose when the module only has one global ModuleObject.
+- ModuleObject::GetInfo as a static method with same signature as MmiGetInfo.
+- ModuleObject::Free as a static method with same signature as MmiFree.
+- ModuleObject::Get with same signature as MmiGet.
+- ModuleObject::Set with same signature as MmiSet.
 
-Each ModuleObject instance knows about its client session only.
+The full internal implementation of the MMI calls is into the static library, including input argument validation, logging, etc. The reason for this is to maximize test coverage as both the unit-tests and module SO link to this same static library.
 
 ## 12.2. Module Shared Object (SO)
 
 The SO component of the module implements the MMI functions, with C signatures and C|C++ implementations.
 
-Following functions are global for all sessions:
+Each MMI function implementation calls directly into its respective ModuleObject method counterpart without doing any additional validation or other processing.
 
-- MmiGetInfo: returns static info about the module.
-- MmiOpen: allocates a new ModuleObject, returns a pointer to it as MMI_HANDLE and forgets it.
-- MmiClose: casts the MMI_HANDLE to ModuleObject and deletes that.
+- MmiOpen: allocates a new ModuleObject, returns the ModuleObject instance pointer as an MMI_HANDLE and forgets it. Or, for a global ModuleObject, calls ModuleObject::Open.
+- MmiClose: casts the MMI_HANDLE to ModuleObject and deletes that ModuleObject instance. Or, for a global ModuleObject, calls ModuleObject::Close.
+- MmiGetInfo: returns static information about the module.
 - MmiFree: frees specified memory.
+- MmiGet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Get.
+- MmiSet: casts the session handle to obtain the ModuleObject and then on that object invokes ModuleObject::Set.
 
-Following functions are session specific. They cast the session handle to obtain the ModuleObject and then on that object invoke the corresponding method:
+# 13. Testing
 
-- MmiGet: calls ((ModuleObject)clientSession)->Get
-- MmiSet: calls ((ModuleObject)clientSession)->Set
-- ModuleObject::Get has same arguments and return as MmiGet
-- ModuleObject::Set has same arguments and return as MmiSet
+Each module needs to have its own full set of unit tests as well as a Test Recipe for a functional test.
 
-# 13. Command Line Module Utility
+The unit-tests for each module link to the module's static library and test that. 
 
-To facilitate development disconnected from Azure IoT and rest of OSConfig stack a command line Module Utility may be provided in the future as a console executable to load and validate the module. 
+The functional tests exercise the module over its MMI following that module's MIM amd a Module Test Recipe. 
 
-The command line module utility app will load a module and provide it with an executable layer, allowing the module to be invoked locally over its MMI and MIM in a Linux environment, without the need of rest of OSConfig stack, PnP, IoT Hub, Azure Portal,  etc. 
+The Module Test Recipe is a JSON containing an array of test MIM object payloads to be processed in the order they are listed in the array, from first to last. Each test object includes an optional delay to be performed before the next test object if any.
 
-<img src="assets/moduleutility.png" alt="OSConfig Module Utility" width=50%/>
+Each test object can contain the following fields:
+
+Name | Type| Required? | Description
+-----|-----|-----|-----
+ComponentName | String | Required | Name of the MIM component.
+ObjectName | String | Required | Name of the MIM object.
+Desired | Boolean | Required | True means desired object and false means reported object.
+Payload | String  | Optional | The JSON payload as escaped JSON. Desired indicates what this payload is: desired payload for MmiSet or expected reported payload for MmiGet. If omitted for a reported object, the ModulesTest automatically validates the the setting name and types against the MIM. 
+PayloadSizeBytes |Integer | Optional | The size of the desired or expected reported payload, in bytes. If omitted, ModuleTest automatically calculates the correct size of the payload. 
+ExpectedResult | Integer | Required | The expected result (such as: 0 for MMI_OK).
+WaitSeconds | Integer | Optional | If not omitted and not zero, this is the wait time, in seconds, the test must wait after making processing this test object payload before going to the next object in the recipe.
+
+The Module Test Recipe JSONs are saved under [src/modules/test/recipes/](../src/modules/test/recipes/) as JSON files, one for each module, named as module name with a "Tests" suffix ("ModuleNameTests.json"). For example: CommandRunnerTests.json, DeviceInfoTests.json. 
+
+Example of a recipe with two CommandRunner test objects, one desired CommandArguments and one reported CommandStatus:
+
+```JSON
+[
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandArguments",
+    "Desired": 1,
+    "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
+    "PayloadSizeBytes": 88,
+    "ExpectedResult": 0,
+    "WaitSeconds": 10
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "CommandStatus",
+    "Desired": 0,
+    "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
+    "ExpectedResult": 0
+  }
+]
+```
+
+The Module Test Recipe is fed into the OSConfig's ModulesTest utility to be executed. For more information about ModulesTest and how to run it see [src/modules/test/README.md](../src/modules/test/README.md).
 
 # 14. Publishing DTDL for the module
 

@@ -12,5 +12,54 @@
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "invalidComponentName",
+        "ObjectName": "firewallState",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "invalidComponentName",
+        "ObjectName": "firewallFingerprint",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "invalidObjectName",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "firewallState",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "firewallFingerprint",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "invalidObjectName",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "",
+        "ObjectName": "",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
     }
 ]

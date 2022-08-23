@@ -14,6 +14,7 @@ struct TestRecipeMetadata
     std::string m_modulePath;
     std::string m_mimPath;
     std::string m_testRecipesPath;
+    std::shared_ptr<RecipeModuleSessionLoader> m_recipeModuleSessionLoader;
 };
 struct TestRecipe
 {

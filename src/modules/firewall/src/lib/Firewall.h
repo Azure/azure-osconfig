@@ -1,15 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <string>
-#include <vector>
+#pragma once
+
+#include <cstdarg>
 #include <memory>
-#include <Mmi.h>
-#include <Logging.h>
+#include <ostream>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
-#include <rapidjson/schema.h>
-#include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include <CommonUtils.h>
+#include <Logging.h>
+#include <Mmi.h>
 
 #define FIREWALL_LOGFILE "/var/log/osconfig_firewall.log"
 #define FIREWALL_ROLLEDLOGFILE "/var/log/osconfig_firewall.bak"
@@ -19,169 +24,103 @@ class FirewallLog
 public:
     static OSCONFIG_LOG_HANDLE Get()
     {
-        return m_logFirewall;
+        return m_logHandle;
     }
     static void OpenLog()
     {
-        m_logFirewall = ::OpenLog(FIREWALL_LOGFILE, FIREWALL_ROLLEDLOGFILE);
+        m_logHandle = ::OpenLog(FIREWALL_LOGFILE, FIREWALL_ROLLEDLOGFILE);
     }
     static void CloseLog()
     {
-        ::CloseLog(&m_logFirewall);
+        ::CloseLog(&m_logHandle);
     }
 
 private:
-    static OSCONFIG_LOG_HANDLE m_logFirewall;
+    static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
-class Rule
+class GenericFirewall
 {
 public:
-    Rule(int ruleNum, std::string target, std::string protocol, std::string source, std::string destination, std::string sourcePort, std::string destinationPort, std::string inInterface, std::string outInterface, std::string rawOptions);
-    Rule();
-    void SetRuleNum(int ruleNum);
-    void SetTarget(std::string target);
-    void SetProtocol(std::string protocol);
-    void SetSource(std::string source);
-    void SetDestination(std::string destination);
-    void SetSourcePort(std::string sourcePort);
-    void SetDestinationPort(std::string destinationPort);
-    void SetInInterface(std::string inInterface);
-    void SetOutInterface(std::string outInterface);
-    void SetRawOptions(std::string rawOptions);
+    enum class State
+    {
+        Unknown = 0,
+        Enabled,
+        Disabled
+    };
 
-    int GetRuleNum();
-    std::string GetTarget();
-    std::string GetProtocol();
-    std::string GetSource();
-    std::string GetDestination();
-    std::string GetSourcePort();
-    std::string GetDestinationPort();
-    std::string GetInInterface();
-    std::string GetOutInterface();
-    std::string GetRawOptions();
+    virtual ~GenericFirewall() = default;
 
-private:
-    int m_ruleNum;
-    std::string m_policy;
-    std::string m_target;
-    std::string m_protocol;
-    std::string m_source;
-    std::string m_destination;
-    std::string m_sourcePort;
-    std::string m_destinationPort;
-    std::string m_inInterface;
-    std::string m_outInterface;
-    std::string m_rawOptions;
+    virtual State Detect() const = 0;
+    virtual std::string Fingerprint() const = 0;
 };
 
-enum FirewallStateCode
-{
-    firewallStateCodeUnknown = 0,
-    firewallStateCodeEnabled,
-    firewallStateCodeDisabled
-};
-
-enum UtilityStatusCode
-{
-    utilityStatusCodeUnknown = 0,
-    utilityStatusCodeInstalled,
-    utilityStatusCodeNotInstalled
-};
-
-enum RuleToken
-{
-    ruleTokenNumIndex = 1,
-    ruleTokenPacketsIndex,
-    ruleTokenBytesIndex,
-    ruleTokenTargetIndex,
-    ruleTokenProtocolIndex,
-    ruleTokenOptIndex,
-    ruleTokenInIndex,
-    ruleTokenOutIndex,
-    ruleTokenSourceIndex,
-    ruleTokenDestinationIndex,
-    ruleTokenRawOptionsIndex
-};
-
-class Chain
+class IpTables : public GenericFirewall
 {
 public:
-    Chain();
-    Chain(std::string chainName);
-    ~Chain();
-    void SetChainName(std::string chainName);
-    void SetChainPolicy(std::string chainPolicy);
-    std::string GetChainName();
-    std::string GetChainPolicy();
-    int GetRuleCount();
-    std::vector<Rule*> GetRules();
-    void Append(Rule* rule);
+    typedef GenericFirewall::State State;
 
-private:
-    std::string m_chainName;
-    std::string m_chainPolicy;
-    std::vector<Rule*> m_rules;
+    IpTables() = default;
+    ~IpTables() = default;
+
+    State Detect() const override;
+    std::string Fingerprint() const override;
 };
 
-class Table
+class FirewallModuleBase
 {
 public:
-    Table();
-    Table(std::string tableName);
-    ~Table();
-    void SetTableName(std::string tableName);
-    std::string GetTableName();
-    int GetChainCount();
-    void Append(Chain* chain);
-    std::vector<Chain*> GetChains();
+    static const std::string m_moduleInfo;
+    static const std::string m_firewallComponent;
 
-private:
-    std::string m_tableName;
-    std::vector<Chain*> m_chains;
-};
+    // Reported properties
+    static const std::string m_firewallReportedFingerprint;
+    static const std::string m_firewallReportedState;
 
-class FirewallObjectBase
-{
-public:
-    static const char* m_firewallInfo;
+    FirewallModuleBase(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
+    virtual ~FirewallModuleBase() = default;
 
-    virtual ~FirewallObjectBase() {};
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
-    int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
 
-    virtual int DetectUtility(std::string utility) = 0;
-    virtual void GetTable(std::string tableName, std::string& tableString) = 0;
-    virtual void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings) = 0;
-    Rule* ParseRule(std::string ruleString);
-    Chain* ParseChain(std::string chainString);
-    Table* ParseTable(std::string tableName, std::string tableString);
-    void ParseAllTables(std::vector<std::pair<std::string, std::string>>& allTableStrings);
-    void AppendTable(Table* table);
-    std::vector<Table*> GetTableObjects();
-    int GetTableCount();
-    int GetFirewallState();
-    std::string RulesToString(std::vector<Rule*> rules);
-    std::string ChainsToString(std::vector<Chain*> chains);
-    std::string TablesToString(std::vector<Table*> tables);
-    std::string FirewallRulesToString();
-    std::string GetFingerprint();
-    std::string CreateStatePayload(int state);
-    std::string CreateFingerprintPayload(std::string fingerprint);
-    void ClearTableObjects();
-    unsigned int m_maxPayloadSizeBytes;
+    virtual int Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
+    virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
+
+protected:
+    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
+    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
 
 private:
-    std::vector<Table*> m_tables;
+    unsigned int m_maxPayloadSizeBytes;
+    size_t m_lastPayloadHash;
 };
 
-class FirewallObject : public FirewallObjectBase
+template <class FirewallT>
+class FirewallModule : public FirewallModuleBase
 {
 public:
-    FirewallObject(unsigned int maxPayloadSizeBytes);
-    ~FirewallObject();
-    int DetectUtility(std::string utility);
-    void GetTable(std::string tableName, std::string& tableString);
-    void GetAllTables(std::vector<std::string> tableNames, std::vector<std::pair<std::string, std::string>>& allTableStrings);
+    FirewallModule(unsigned int maxPayloadSize) : FirewallModuleBase(maxPayloadSize) {}
+    ~FirewallModule() = default;
+
+protected:
+    typedef typename FirewallT::State State;
+
+    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    {
+        State state = m_firewall.Detect();
+        int value = static_cast<int>(state);
+        writer.Int(value);
+        return 0;
+    }
+
+    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    {
+        std::string fingerprint = m_firewall.Fingerprint();
+        writer.String(fingerprint.c_str());
+        return 0;
+    }
+
+private:
+    FirewallT m_firewall;
 };
+
+typedef FirewallModule<IpTables> Firewall;
