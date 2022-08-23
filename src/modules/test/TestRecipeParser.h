@@ -35,6 +35,7 @@ class TestRecipeParser
 {
 public:
     static TestRecipes ParseTestRecipe(std::string path);
+    static std::string GetTestName(TestRecipe &recipe);
 };
 
 #endif // TESTRECIPEPARSER_H

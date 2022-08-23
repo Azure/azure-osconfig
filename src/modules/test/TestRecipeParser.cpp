@@ -7,6 +7,7 @@ static const std::string g_payload = "Payload";
 static const std::string g_payloadSizeBytes = "PayloadSizeBytes";
 static const std::string g_expectedResult = "ExpectedResult";
 static const std::string g_waitSeconds = "WaitSeconds";
+static const std::string g_nullValue = "<null>";
 
 TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
 {
@@ -43,4 +44,12 @@ TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
 
     json_value_free(root_value);
     return testRecipes;
+}
+
+std::string TestRecipeParser::GetTestName(TestRecipe &recipe)
+{
+    std::string componentName = recipe.m_componentName.empty() ? g_nullValue : recipe.m_componentName;
+    std::string objectName = recipe.m_objectName.empty() ? g_nullValue : recipe.m_objectName;
+    
+    return recipe.m_metadata.m_moduleName + "." + componentName + "." + objectName;
 }
