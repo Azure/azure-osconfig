@@ -38,7 +38,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.container-workspace }}
-          tag: "270554"
+          tag: "289651"
 
       - name: Generate build
         uses: ./.github/actions/container-exec
