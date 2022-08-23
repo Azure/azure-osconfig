@@ -44,7 +44,6 @@ jobs:
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
-      memThreshold: 50
       repeatForXHours: 2
       testNameSuffix: (reliability-platform)
     secrets: inherit

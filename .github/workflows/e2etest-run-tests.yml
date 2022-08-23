@@ -14,15 +14,20 @@ on:
         description: The name of the target environment
         type: string
         required: true
+      allowedMemoryDelta:
+        description: The allowed memory delta expressed in %, workflow will fail if the the memory usage grows beyond this value
+        type: number
+        default: 25
+        required: false
       cpuThreshold:
         description: The cpu threshold
         type: string
         default: ""
         required: false
-      memThreshold:
-        description: The memory threshold
-        type: string
-        default: ""
+      delaySampling:
+        description: The number of seconds to delay the performance sampling
+        type: number
+        default: 10
         required: false
       repeatForXHours:
         description: Repeat the test suite for X hours, every test run gets a new test-report
@@ -98,7 +103,13 @@ jobs:
         run: |
           sudo apt install -y osconfig
 
-      - name: Configure OSConfig
+      - name: Capture memory metrics (Start)
+        id: memory-start
+        run: |
+          mem_start=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          echo ::set-output name=mem_start::$mem_start
+
+      - name: Configure and Start OSConfig
         run: |
           sudo systemctl stop osconfig
           sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
@@ -107,15 +118,27 @@ jobs:
           sudo systemctl start osconfig
           sudo systemctl start osconfig-platform || true
 
-      - name: Start performance sampling
+      - name: Performance check (Start)
         if: inputs.cpuThreshold != ''
         run: |
-          # CPU
-          pidstat -p `pidof osconfig` 1 > perf-cpu-osconfig.log &
-          pidstat -p `pidof osconfig-platform` 1 > perf-cpu-osconfig-platform.log || true &
-          # Memory
-          pidstat -r -p `pidof osconfig` 1 > perf-mem-osconfig.log &
-          pidstat -r -p `pidof osconfig-platform` 1 > perf-mem-osconfig-platform.log || true &
+          echo -n Starting performance check in ${{ inputs.delaySampling }} seconds...
+          sleep ${{ inputs.delaySampling }} && echo done!
+          
+          pidosconfig=`pidof osconfig`
+          pidosconfigplatform=`pidof osconfig-platform`
+          resultagent=`pidstat -p $pidosconfig | tail -n1 | cut -c62-68`
+          resultplatform=`pidstat -p $pidosconfigplatform | tail -n1 | cut -c62-68`
+          
+          echo CPU result Agent: $resultagent, Platform: $resultplatform
+
+          result=`bc -l <<< "result=$resultagent;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
+          if [ "$result" == 1 ]; then
+            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
+          fi
+          result=`bc -l <<< "result=$resultplatform;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
+          if [ "$result" == 1 ]; then
+            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
+          fi
 
       - name: Run E2E tests
         env:
@@ -140,49 +163,40 @@ jobs:
             checkResult $?
           fi
 
-      - name: Stop performance sampling
+      - name: Performance check (Stop)
         if: inputs.cpuThreshold != ''
         run: |
-          kill -SIGINT `pidof pidstat`
+          pidosconfig=`pidof osconfig`
+          pidosconfigplatform=`pidof osconfig-platform`
+          resultagent=`pidstat -p $pidosconfig | tail -n1 | cut -c62-68`
+          resultplatform=`pidstat -p $pidosconfigplatform | tail -n1 | cut -c62-68`
+          
+          echo CPU result Agent: $resultagent, Platform: $resultplatform
 
-      - name: Check performance results - Agent
-        if: inputs.cpuThreshold != ''
-        run: |
-          # CPU
-          tail perf-cpu-osconfig.log -n1
-          result=`tail perf-cpu-osconfig.log -n1 | cut -c62-68`
-          echo CPU result: $result
-          test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
-          # MEM
-          tail perf-mem-osconfig.log -n1
-          result=`tail perf-mem-osconfig.log -n1 | cut -c65-71`
-          echo MEM result: $result
-          test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
-
-      - name: Check performance results - Platform
-        if: inputs.cpuThreshold != '' && (success() || failure())
-        run: |
-          if [ -f perf-cpu-osconfig-platform.log ];then
-            # CPU
-            tail perf-cpu-osconfig-platform.log -n1
-            result=`tail perf-cpu-osconfig-platform.log -n1 | cut -c62-68`
-            echo CPU result: $result
-            test $(bc <<< "result=$result;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;") == 0
-            # MEM
-            tail perf-mem-osconfig-platform.log -n1
-            result=`tail perf-mem-osconfig-platform.log -n1 | cut -c65-71`
-            echo MEM result: $result
-            test $(bc <<< "result=$result;if(result < ${{ inputs.memThreshold }}) print 0 else print 1;") == 0
-          else
-              echo "No platform performance results!"
+          result=`bc -l <<< "result=$resultagent;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
+          if [ "$result" == 1 ]; then
+            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
+          fi
+          result=`bc -l <<< "result=$resultplatform;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
+          if [ "$result" == 1 ]; then
+            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
           fi
 
-      - name: Upload performance Logs
-        if: inputs.cpuThreshold != '' && (success() || failure())
-        uses: actions/upload-artifact@v3
-        with:
-          name: perf-logs-${{ matrix.distroName }}
-          path: perf-*.log
+      - name: Stop OSConfig
+        run: |
+          sudo systemctl stop osconfig
+
+      - name: Capture memory metrics (Stop)
+        run: |
+          mem_stop=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          delta=$(bc -l <<< "mem_start=${{ steps.memory-start.outputs.mem_start }};mem_stop=$mem_stop;delta=mem_start/mem_stop;print delta;")
+          echo Memory Start: ${{ steps.memory-start.outputs.mem_start }} bytes, Stop: $mem_stop bytes, Delta: $delta
+          
+          # Check if the delta is greater than defined threshold
+          result=`bc -l <<< "delta=$delta;high=1+(0.${{ inputs.allowedMemoryDelta }});low=1-(0.${{ inputs.allowedMemoryDelta }});if(high > delta && delta > low) print 0 else print 1;"`
+          if [ "$result" == 1 ]; then
+            echo "::error Memory usage has exceeded allowable delta (${{ inputs.allowedMemoryDelta }}%), current delta: $delta" && exit 1
+          fi
 
       - name: Stage logs
         if: always()
