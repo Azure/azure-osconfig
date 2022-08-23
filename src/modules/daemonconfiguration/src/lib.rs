@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 use common::MmiError;
-use daemonconfiguration::DaemonConfiguration;
+use daemonconfiguration::{DaemonConfiguration, Systemctl};
 use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
@@ -180,7 +180,7 @@ fn mmi_get_helper(
 ) -> Result<i32, MmiError> {
     let component_name: &str = component_name.to_str()?;
     let object_name: &str = object_name.to_str()?;
-    let payload_string: String = daemon_config.get(component_name, object_name)?;
+    let payload_string: String = daemon_config.get::<Systemctl>(component_name, object_name)?;
     let payload_string: CString = CString::new(payload_string)?;
     let payload_size = payload_string.as_bytes().len();
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);

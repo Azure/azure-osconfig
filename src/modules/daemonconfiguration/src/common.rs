@@ -13,6 +13,7 @@ pub enum MmiError {
     InvalidArgument,
     SerdeError,
     SystemctlError,
+    SystemdError,
 }
 
 impl From<Utf8Error> for MmiError {
@@ -65,6 +66,9 @@ impl fmt::Display for MmiError {
             }
             MmiError::SystemctlError => {
                 write!(f, "There was an error fetching daemon information using systemctl")
+            }
+            MmiError::SystemdError => {
+                write!(f, "The caller was not started via Systemd and does not have Systemd Daemons")
             }
         }
     }
