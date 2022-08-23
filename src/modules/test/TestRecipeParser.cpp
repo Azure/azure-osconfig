@@ -44,3 +44,11 @@ TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
     json_value_free(root_value);
     return testRecipes;
 }
+
+std::string TestRecipeParser::GetTestName(TestRecipe &recipe)
+{
+    std::string componentName = recipe.m_componentName.empty() ? "<null>" : recipe.m_componentName;
+    std::string objectName = recipe.m_objectName.empty() ? "<null>" : recipe.m_objectName;
+    
+    return recipe.m_metadata.m_moduleName + "." + componentName + "." + objectName;
+}
