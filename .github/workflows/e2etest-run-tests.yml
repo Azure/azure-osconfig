@@ -106,7 +106,7 @@ jobs:
       - name: Capture memory metrics (Start)
         id: memory-start
         run: |
-          mem_start=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          mem_start=`free --kilo | sed -n 2p | cut -c 20-32 | tr -d ' '`
           echo ::set-output name=mem_start::$mem_start
 
       - name: Configure and Start OSConfig
@@ -188,9 +188,12 @@ jobs:
 
       - name: Capture memory metrics (Stop)
         run: |
-          mem_stop=`free -b | sed -n 2p | cut -c 20-32 | tr -d ' '`
+          mem_stop=`free --kilo | sed -n 2p | cut -c 20-32 | tr -d ' '`
           delta=$(bc -l <<< "mem_start=${{ steps.memory-start.outputs.mem_start }};mem_stop=$mem_stop;delta=mem_start/mem_stop;print delta;")
-          echo Memory Start: ${{ steps.memory-start.outputs.mem_start }} bytes, Stop: $mem_stop bytes, Delta: $delta
+          echo Global Memory Start: ${{ steps.memory-start.outputs.mem_start }} kilobytes
+          echo Global Memory Stop:  $mem_stop kilobytes
+          echo Global Memory Delta: $delta
+          echo Max Allowable Delta: ${{ inputs.allowedMemoryDelta }}%
           
           # Check if the delta is greater than defined threshold
           result=`bc -l <<< "delta=$delta;high=1+(0.${{ inputs.allowedMemoryDelta }});low=1-(0.${{ inputs.allowedMemoryDelta }});if(high > delta && delta > low) print 0 else print 1;"`
