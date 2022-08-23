@@ -9,6 +9,13 @@ static const std::string g_expectedResult = "ExpectedResult";
 static const std::string g_waitSeconds = "WaitSeconds";
 static const std::string g_nullValue = "<null>";
 
+static const std::vector<std::string> g_requiredProperties = {
+    g_componentName,
+    g_objectName,
+    g_desired,
+    g_expectedResult
+};
+
 TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
 {
     JSON_Value *root_value;
@@ -27,6 +34,23 @@ TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
     for (size_t i = 0; i < json_array_get_count(jsonTestRecipes); i++)
     {
         jsonTestRecipe = json_array_get_object(jsonTestRecipes, i);
+
+        // Validate recipe contains all required fields
+        bool recipeValid = true;
+        for (auto &requiredProperty : g_requiredProperties)
+        {
+            if (!json_object_has_value(jsonTestRecipe, requiredProperty.c_str()))
+            {
+                std::cerr << "Test recipe '" << path.c_str() << "' [" << i << "] missing required field: " << requiredProperty << std::endl;
+                recipeValid = false;
+            }
+        }
+        if (!recipeValid)
+        {
+            json_value_free(root_value);
+            return testRecipes;
+        }
+
         TestRecipe recipe = {
             json_object_get_string(jsonTestRecipe, g_componentName.c_str()),
             json_object_get_string(jsonTestRecipe, g_objectName.c_str()),
