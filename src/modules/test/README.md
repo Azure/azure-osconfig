@@ -7,7 +7,7 @@ ModulesTest (binary name: modulestest) is OSConfig's functional module test util
 Although `modulestest` does not require any runtime dependencies, generating the Test Recipe configuration (testplate.json) does require the [jq](https://github.com/stedolan/jq) application to be installed when building OSConfig.
 
 # Test Naming Composition
-Authored test recipes use the following test naming composition when registering with the Google Test framework. This is useful diagnostics as the name is used in test reports. `ModulesTest` is the test suite name and is further composed with the `ModuleName` (defined by the directory/file name), `ComponentName` and `ObjectName` (`<null>` is used if either are empty strings).s
+Authored test recipes use the following test naming composition when registering with the Google Test framework. This is useful diagnostics as the name is used in test reports. `ModulesTest` is the test suite name and is further composed with the `ModuleName` (defined by the directory/file name), `ComponentName` and `ObjectName` (`<null>` is used if either are empty strings).
 
 ## Example - Test Naming Convention
 For example, the following test recipe (sample Tpm recipe) will create the following test names:
