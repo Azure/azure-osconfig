@@ -17,7 +17,7 @@ on:
       allowedMemoryDelta:
         description: The allowed memory delta expressed in %, workflow will fail if the the memory usage grows beyond this value
         type: number
-        default: 25
+        default: 50
         required: false
       cpuThreshold:
         description: The cpu threshold
@@ -190,8 +190,8 @@ jobs:
         run: |
           mem_stop=`free --kilo | sed -n 2p | cut -c 20-32 | tr -d ' '`
           delta=$(bc -l <<< "mem_start=${{ steps.memory-start.outputs.mem_start }};mem_stop=$mem_stop;delta=mem_start/mem_stop;print delta;")
-          echo Global Memory Start: ${{ steps.memory-start.outputs.mem_start }} kilobytes
-          echo Global Memory Stop:  $mem_stop kilobytes
+          echo Global Memory Start: ${{ steps.memory-start.outputs.mem_start }} KB
+          echo Global Memory Stop:  $mem_stop KB
           echo Global Memory Delta: $delta
           echo Max Allowable Delta: ${{ inputs.allowedMemoryDelta }}%
           
