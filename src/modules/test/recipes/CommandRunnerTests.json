@@ -11,7 +11,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandOne\",\"arguments\":\"echo Test\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -20,7 +19,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandOne\",\"action\":4}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -37,7 +35,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandOne\",\"arguments\":\"echo Repeat\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 22,
     "WaitSeconds": 3
   },    
@@ -46,7 +43,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandTwo\",\"arguments\":\"sleep 100000\",\"timeout\":2,\"singleLineTextResult\":true,\"action\":3}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -55,7 +51,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandTwo\",\"action\":4}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -65,7 +60,6 @@
     "Desired": false,
     "ExpectedResult": 0,
     "Payload": "{\"commandId\":\"TestCommandTwo\",\"resultCode\": 62,\"textResult\": \"\",\"currentState\":4}",
-    "PayloadSizeBytes": 0,
     "WaitSeconds": 3
   },
   {
@@ -73,7 +67,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandThree\",\"arguments\":\"sleep 100000\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -82,16 +75,14 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandThree\",\"action\":5}",
-    "PayloadSizeBytes": 0,
-    "ExpectedResult": 125,
-    "WaitSeconds": 3
+    "ExpectedResult": 0,
+    "WaitSeconds": 10
   },
   {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandThree\",\"action\":4}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -101,7 +92,6 @@
     "Desired": false,
     "ExpectedResult": 0,
     "Payload": "{\"commandId\":\"TestCommandThree\",\"resultCode\":125,\"textResult\":\"\",\"currentState\":5}",
-    "PayloadSizeBytes": 0,
     "WaitSeconds": 3
   },
   {
@@ -109,7 +99,6 @@
     "ObjectName": "commandArguments",
     "Desired": true,
     "Payload": "{\"commandId\":\"TestCommandOne\",\"action\":4}",
-    "PayloadSizeBytes": 0,
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
