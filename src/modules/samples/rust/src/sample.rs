@@ -111,35 +111,35 @@ impl Sample {
         &mut self,
         component_name: &str,
         object_name: &str,
-        payload_str_slice: &str,
+        payload: &str,
     ) -> Result<i32, MmiError> {
         if COMPONENT_NAME.eq(component_name) {
             if self.max_payload_size_bytes != 0
-                && payload_str_slice.len() as u32 > self.max_payload_size_bytes
+                && payload.len() as u32 > self.max_payload_size_bytes
             {
                 println!("Payload size exceeds max payload size bytes");
                 Err(MmiError::InvalidArgument)
             } else {
                 match object_name {
                     DESIRED_STRING_OBJECT_NAME => {
-                        self.string_value = serde_json::from_str::<String>(payload_str_slice)?;
+                        self.string_value = serde_json::from_str::<String>(payload)?;
                         Ok(0)
                     }
                     DESIRED_BOOLEAN_OBJECT_NAME => {
-                        self.boolean_value = serde_json::from_str::<bool>(payload_str_slice)?;
+                        self.boolean_value = serde_json::from_str::<bool>(payload)?;
                         Ok(0)
                     }
                     DESIRED_INTEGER_OBJECT_NAME => {
-                        self.integer_value = serde_json::from_str::<i32>(payload_str_slice)?;
+                        self.integer_value = serde_json::from_str::<i32>(payload)?;
                         Ok(0)
                     }
                     DESIRED_OBJECT_NAME => {
-                        self.object_value = serde_json::from_str::<Object>(payload_str_slice)?;
+                        self.object_value = serde_json::from_str::<Object>(payload)?;
                         Ok(0)
                     }
                     DESIRED_ARRAY_OBJECT_NAME => {
                         self.object_array_value =
-                            serde_json::from_str::<Vec<Object>>(payload_str_slice)?;
+                            serde_json::from_str::<Vec<Object>>(payload)?;
                         Ok(0)
                     }
                     _ => {
@@ -330,7 +330,6 @@ mod tests {
                     \"key2\":2\
                 }\
             }";
-        println!("{}", json_payload);
         let set_result: Result<i32, MmiError> =
             sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
