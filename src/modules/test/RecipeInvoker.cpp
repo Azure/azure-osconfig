@@ -88,6 +88,9 @@ void RecipeInvoker::TestBody()
                 json_value_free(recipe_payload);
                 json_value_free(returned_payload);
             }
+
+            // Remove the CommandRunner's persistent cache to allow tests run same command ids repeated times
+            std::remove("/etc/osconfig/osconfig_commandrunner.cache");
         }
     }
 
