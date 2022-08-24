@@ -42,7 +42,7 @@ jobs:
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.container-workspace }}
-          tag: "270554"
+          tag: "289651"
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -105,7 +105,7 @@ jobs:
     name: Code coverage
     runs-on: ubuntu-latest
     container:
-      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:270554
+      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:289651
       credentials:
         username: ${{ secrets.ACR_CLIENT_ID }}
         password: ${{ secrets.ACR_CLIENT_SECRET }}

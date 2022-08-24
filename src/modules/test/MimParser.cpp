@@ -20,6 +20,8 @@ static const std::string g_object = "object";
 static const std::string g_schema = "schema";
 static const std::string g_type = "type";
 static const std::string g_valueSchema = "valueSchema";
+static const std::string g_integer = "integer";
+static const std::string g_string = "string";
 
 pMimObjects MimParser::ParseMim(std::string path)
 {
@@ -119,10 +121,12 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
 
         if (0 == strcmp(json_object_get_string(jsonSchema, g_type.c_str()), g_enum.c_str()))
         {
+            const char* valueSchema = json_object_get_string(jsonSchema, g_valueSchema.c_str());
+
             mimField = {
                 json_object_get_string(jsonField, g_name.c_str()),
-                json_object_get_string(jsonSchema, g_valueSchema.c_str()),
-                std::make_shared<std::vector<std::string>>()};
+                valueSchema,
+                std::make_shared<std::vector<std::string>>() };
 
             // Add supported values
             if (json_object_has_value_of_type(jsonSchema, g_enumValues.c_str(), JSONArray))
@@ -130,8 +134,15 @@ void MimParser::ParseMimSetting(JSON_Object* jsonField, MimObject& mimObject)
                 JSON_Array *supportedValues = json_object_get_array(jsonSchema, g_enumValues.c_str());
                 for (size_t a = 0; a < json_array_get_count(supportedValues); a++)
                 {
-                    JSON_Object *jsonEnumValues = json_array_get_object(supportedValues, a);
-                    mimField.allowedValues->push_back(std::to_string(json_object_get_number(jsonEnumValues, g_enumValue.c_str())));
+                    JSON_Object* jsonEnumValues = json_array_get_object(supportedValues, a);
+                    if (0 == strcmp(valueSchema, g_string.c_str()))
+                    {
+                        mimField.allowedValues->push_back(json_object_get_string(jsonEnumValues, g_enumValue.c_str()));
+                    }
+                    else if (0 == strcmp(valueSchema, g_integer.c_str()))
+                    {
+                        mimField.allowedValues->push_back(std::to_string(json_object_get_number(jsonEnumValues, g_enumValue.c_str())));
+                    }
                 }
             }
         }

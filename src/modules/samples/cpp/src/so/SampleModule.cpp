@@ -80,24 +80,16 @@ MMI_HANDLE MmiOpen(
 
     if (nullptr != clientName)
     {
-        try
+        // Create an instance of the Sample class to be returned as an MMI_HANDLE for each client session
+        Sample* session = new (std::nothrow) Sample(maxPayloadSizeBytes);
+        if (nullptr == session)
         {
-            // Create an instance of the Sample class to be returned as an MMI_HANDLE for each client session
-            Sample* session = new (std::nothrow) Sample(maxPayloadSizeBytes);
-            if (nullptr == session)
-            {
-                OsConfigLogError(SampleLog::Get(), "MmiOpen failed to allocate memory");
-                status = ENOMEM;
-            }
-            else
-            {
-                handle = reinterpret_cast<MMI_HANDLE>(session);
-            }
+            OsConfigLogError(SampleLog::Get(), "MmiOpen failed to allocate memory");
+            status = ENOMEM;
         }
-        catch (std::exception& e)
+        else
         {
-            OsConfigLogError(SampleLog::Get(), "MmiOpen exception thrown: %s", e.what());
-            status = EINTR;
+            handle = reinterpret_cast<MMI_HANDLE>(session);
         }
     }
     else
