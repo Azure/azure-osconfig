@@ -15,13 +15,17 @@
 #define MAX_PAYLOAD_SIZE 256
 
 static const char g_componentName[] = "Ztsi";
-static const char g_desiredServiceUrl[] = "desiredServiceUrl";
 static const char g_desiredEnabled[] = "desiredEnabled";
-static const char g_reportedServiceUrl[] = "serviceUrl";
+static const char g_desiredMaxScheduledAttestationsPerDay[] ="desiredMaxScheduledAttestationsPerDay";
+static const char g_desiredMaxAttestationsPerDay[] = "desiredMaxAttestationsPerDay"
 static const char g_reportedEnabled[] = "enabled";
+static const char g_desiredMaxScheduledAttestationsPerDay[] ="desiredMaxScheduledAttestationsPerDay";
+static const char g_desiredMaxAttestationsPerDay[] = "desiredMaxAttestationsPerDay"
 
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
 static const std::string g_defaultServiceUrl = "";
+static const int g_defaultMaxScheduledAttestationsPerDay = 48;
+static const int g_defaultMaxManualAttestationsPerDay = 100;
 
 #define STRFTIME_DATE_FORMAT "%Y%m%d"
 #define SSCANF_DATE_FORMAT "%4d%2d%2d"
@@ -32,12 +36,13 @@ namespace OSConfig::Platform::Tests
     class ZtsiTests : public testing::Test
     {
     public:
-        static std::string BuildFileContents(bool enabled, const std::string& serviceUrl)
+        static std::string BuildFileContents(bool enabled, const int maxScheduledAttestationsPerDay, const int maxAttestationsPerDay)
         {
             std::stringstream expected;
             expected << "{\n";
             expected << "    \"enabled\": " << (enabled ? "true" : "false") << ",\n";
-            expected << "    \"serviceUrl\": \"" << serviceUrl << "\"\n";
+            expected << "    \"maxScheduledAttestationsPerDay\": \"" << maxScheduledAttestationsPerDay << "\"\n";
+            expected << "    \"maxAttestationsPerDay\": \"" << maxAttestationsPerDay << "\"\n";
             expected << "}";
             return expected.str();
         }
@@ -76,17 +81,31 @@ namespace OSConfig::Platform::Tests
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
 
-    TEST_F(ZtsiTests, GetSetServiceUrl)
+    TEST_F(ZtsiTests, GetSetMaxScheduledAttestationsPerDay)
     {
-        char serviceUrl[] = "\"https://localhost:8080/\"";
+        char maxScheduledAttestationsPerDay = "100";
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredServiceUrl, serviceUrl, sizeof(serviceUrl)));
-        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedServiceUrl, &payload, &payloadSizeBytes));
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredmaxScheduledAttestationsPerDay, maxScheduledAttestationsPerDay, sizeof(maxScheduledAttestationsPerDay)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedmaxScheduledAttestationsPerDay, &payload, &payloadSizeBytes));
 
         std::string payloadStr(payload, payloadSizeBytes);
-        ASSERT_STREQ(serviceUrl, payloadStr.c_str());
+        ASSERT_STREQ(maxScheduledAttestationsPerDay, payloadStr.c_str());
+        ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
+    }
+
+    TEST_F(ZtsiTests, GetSetMaxAttestationsPerDay)
+    {
+        char maxAttestationsPerDay = "100";
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
+
+        ASSERT_EQ(MMI_OK, ztsi->Set(g_componentName, g_desiredmaxAttestationsPerDay, maxAttestationsPerDay, sizeof(maxAttestationsPerDay)));
+        ASSERT_EQ(MMI_OK, ztsi->Get(g_componentName, g_reportedmaxAttestationsPerDay, &payload, &payloadSizeBytes));
+
+        std::string payloadStr(payload, payloadSizeBytes);
+        ASSERT_STREQ(maxAttestationsPerDay, payloadStr.c_str());
         ASSERT_EQ(payloadStr.length(), payloadSizeBytes);
     }
 
@@ -111,8 +130,8 @@ namespace OSConfig::Platform::Tests
         // Set with invalid arguments
         ASSERT_EQ(EINVAL, ztsi->Set("invalid component", g_desiredServiceUrl, payload, sizeof(payload)));
         ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, "invalid component", payload, sizeof(payload)));
-        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, sizeof(payload)));
-        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredServiceUrl, payload, -1));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_desiredEnabled, payload, sizeof(payload)));
+        ASSERT_EQ(EINVAL, ztsi->Set(g_componentName, g_reportedEnabled, payload, -1));
     }
 
     TEST_F(ZtsiTests, InvalidGet)
@@ -121,7 +140,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes = 0;
 
         // Get with invalid arguments
-        ASSERT_EQ(EINVAL, ztsi->Get("invalid component", g_desiredServiceUrl, &payload, &payloadSizeBytes));
+        ASSERT_EQ(EINVAL, ztsi->Get("invalid component", g_desiredEnabled, &payload, &payloadSizeBytes));
         ASSERT_EQ(EINVAL, ztsi->Get(g_componentName, "invalid object", &payload, &payloadSizeBytes));
     }
 
@@ -129,22 +148,23 @@ namespace OSConfig::Platform::Tests
     {
         // Defaults are returned when no configuration file exists
         ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
-        ASSERT_EQ(g_defaultServiceUrl, ZtsiTests::ztsi->GetServiceUrl());
+        ASSERT_EQ(g_defaultMaxScheduledAttestationsPerDay, ZtsiTests::ztsi->GetMaxScheduledAttestationsPerDay());
+        ASSERT_EQ(g_defaultMaxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxAttestationsPerDay());
 
         ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
     }
 
-    TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigurationFile)
-    {
-        // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
-        // No file is created for invalid configurations
-        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-        ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
+    // TEST_F(ZtsiTests, SetEnabledTrueWithoutConfigurationFile)
+    // {
+    //     // Enabled can only be set to true when no configuration file exists since serviceUrl is empty string by default
+    //     // No file is created for invalid configurations
+    //     ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
+    //     ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
 
-        // Default values are returned
-        ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
-        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
-    }
+    //     // Default values are returned
+    //     ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
+    //     ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
+    // }
 
     TEST_F(ZtsiTests, SetEnabledFalseWithoutConfigurationFile)
     {
@@ -152,30 +172,13 @@ namespace OSConfig::Platform::Tests
         ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
-        ASSERT_STREQ(g_defaultServiceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
-
-        std::string expected = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
-        std::string actual = ZtsiTests::ReadFileContents();
-        ASSERT_STREQ(expected.c_str(), actual.c_str());
-    }
-
-    TEST_F(ZtsiTests, SetServiceUrlWithoutConfigurationFile)
-    {
-        std::string serviceUrl = "https://www.example.com/";
-
-        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl));
-        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-
-        ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
-        ASSERT_STREQ(serviceUrl.c_str(), ZtsiTests::ztsi->GetServiceUrl().c_str());
-
-        std::string expected = ZtsiTests::BuildFileContents(false, serviceUrl);
-        std::string actual = ZtsiTests::ReadFileContents();
-        ASSERT_STREQ(expected.c_str(), actual.c_str());
     }
 
     TEST_F(ZtsiTests, MultipleSet)
     {
+        int maxScheduledAttestationsPerDay1 = 24;
+        int maxScheduledAttestationsPerDay2 = 48;
+
         std::string serviceUrl1 = "https://www.example.com/";
         std::string serviceUrl2 = "https://www.test.com/";
 
@@ -184,27 +187,27 @@ namespace OSConfig::Platform::Tests
 
         for (int i = 0; i < 10; i++)
         {
-            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl1));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxScheduledAttestationsPerDay(maxScheduledAttestationsPerDay1));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(false, serviceUrl1);
+            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(true, serviceUrl1);
+            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay1);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
-            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(serviceUrl2));
+            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxScheduledAttestationsPerDay(maxScheduledAttestationsPerDay2));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(true, serviceUrl2);
+            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay2);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(false, serviceUrl2);
+            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay2);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
         }
@@ -229,58 +232,6 @@ namespace OSConfig::Platform::Tests
         }
     }
 
-    TEST_F(ZtsiTests, ValidServiceUrl)
-    {
-        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
-
-        std::list<std::string> validServiceUrls = {
-            "",
-            "http://example.com",
-            "https://example.com",
-            "http://example.com/",
-            "https://example.com/",
-            "http://www.example.com",
-            "https://www.example.com",
-            "https://www.example.com/path/to/something/",
-            "https://www.example.com/params?a=1",
-            "https://www.example.com/params?a=1&b=2",
-        };
-
-        for (const auto& validServiceUrl : validServiceUrls)
-        {
-            ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetServiceUrl(validServiceUrl));
-            std::string expected = ZtsiTests::BuildFileContents(false, validServiceUrl);
-            std::string actual = ZtsiTests::ReadFileContents();
-            ASSERT_STREQ(expected.c_str(), actual.c_str());
-        }
-    }
-
-    TEST_F(ZtsiTests, InvalidServiceUrl)
-    {
-        ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
-
-        std::string expected = ZtsiTests::BuildFileContents(false, g_defaultServiceUrl);
-        std::list<std::string> invalidServiceUrls = {
-            "http://",
-            "https://",
-            "http:\\\\example.com",
-            "htp://example.com",
-            "//example.com",
-            "www.example.com",
-            "example.com",
-            "example.com/params?a=1",
-            "/example",
-            "localhost",
-            "localhost:5000",
-        };
-
-        for (const auto& invalidServiceUrl : invalidServiceUrls)
-        {
-            ASSERT_EQ(EINVAL, ZtsiTests::ztsi->SetServiceUrl(invalidServiceUrl));
-            std::string actual = ZtsiTests::ReadFileContents();
-            ASSERT_STREQ(expected.c_str(), actual.c_str());
-        }
-    }
 
     TEST_F(ZtsiTests, InvalidConfiguration)
     {

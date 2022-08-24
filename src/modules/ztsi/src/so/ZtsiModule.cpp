@@ -12,7 +12,7 @@
 #include <Mmi.h>
 #include <Ztsi.h>
 
-static const std::string g_ztsiConfigFile = "/etc/ztsi/config.json";
+static const std::string g_ztsiConfigFile = "/etc/sim-agent/config.json"; //changing the file 
 
 void __attribute__((constructor)) InitModule()
 {

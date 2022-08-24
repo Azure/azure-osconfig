@@ -272,7 +272,7 @@ int Ztsi::Set(const char* componentName, const char* objectName, const MMI_JSON_
                 }
                 else
                 {
-                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type string", Ztsi::m_desiredMaxScheduledAttestationsPerDay.c_str());
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxScheduledAttestationsPerDay.c_str());
                     status = EINVAL;
                 }
             }
@@ -284,7 +284,7 @@ int Ztsi::Set(const char* componentName, const char* objectName, const MMI_JSON_
                 }
                 else
                 {
-                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type string", Ztsi::m_desiredMaxAttestationsPerDay.c_str());
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxAttestationsPerDay.c_str());
                     status = EINVAL;
                 }
             }
