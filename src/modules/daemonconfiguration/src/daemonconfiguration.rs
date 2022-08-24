@@ -72,6 +72,8 @@ impl SystemctlInfo for Systemctl {
 
     fn get_daemons() -> Result<Vec<Daemon>, MmiError> {
         let systemctl_output = Self::list_unit_files()?;
+        // Lazy_static prevents the regex from being compiled multiple times
+        // https://docs.rs/regex/latest/regex/#example-avoid-compiling-the-same-regex-in-a-loop 
         lazy_static! {
             static ref RE: Regex =
                 Regex::new(r"(?P<service>[\w_@\-\\\.]*)\.service\s+(?P<status>[\w-]+)").unwrap();
