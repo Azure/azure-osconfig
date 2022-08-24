@@ -94,6 +94,17 @@ endif()
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
+if (BUILD_RUST)
+    # Fetch Corrosion to link the Rust Modules with the CMake Build Line
+    include(FetchContent)
+    FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v0.2.1 # Optionally specify a commit hash, version tag or branch here
+    )
+    FetchContent_MakeAvailable(Corrosion)
+endif()
+
 if (BUILD_TESTS)
     enable_testing()
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
