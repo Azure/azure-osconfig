@@ -23,23 +23,23 @@
                     "name": "state",
                     "schema": {
                       "type": "enum",
-                      "valueSchema": "integer",
+                      "valueSchema": "string",
                       "enumValues": [
                         {
                           "name": "unknown",
-                          "enumValue": 0
+                          "enumValue": "unknown"
                         },
                         {
                           "name": "running",
-                          "enumValue": 1
+                          "enumValue": "running"
                         },
                         {
                           "name": "failed",
-                          "enumValue": 2
+                          "enumValue": "failed"
                         },
                         {
                           "name": "stopped",
-                          "enumValue": 3
+                          "enumValue": "stopped"
                         }
                       ]
                     }
@@ -48,27 +48,27 @@
                     "name": "status",
                     "schema": {
                       "type": "enum",
-                      "valueSchema": "integer",
+                      "valueSchema": "string",
                       "enumValues": [
                         {
                           "name": "unknown",
-                          "enumValue": 0
+                          "enumValue": "unknown"
                         },
                         {
                           "name": "enabled",
-                          "enumValue": 1
+                          "enumValue": "enabled"
                         },
                         {
                           "name": "disabled",
-                          "enumValue": 2
+                          "enumValue": "disabled"
                         },
                         {
                           "name": "static",
-                          "enumValue": 3
+                          "enumValue": "static"
                         },
                         {
                           "name": "indirect",
-                          "enumValue": 4
+                          "enumValue": "indirect"
                         }
                       ]
                     }
