@@ -40,6 +40,8 @@ private:
     static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
+// TODO: create an abstract class for Parse/Serialize methods
+
 class Rule
 {
 public:
@@ -100,6 +102,10 @@ public:
 
     virtual std::string Specification() const = 0;
 
+    virtual std::string ActionToString() const = 0;
+    virtual std::string DirectionToString() const = 0;
+    virtual std::string ProtocolToString() const = 0;
+
 protected:
     State m_desiredState;
     Action m_action;
@@ -110,25 +116,18 @@ protected:
     std::string m_sourcePort;
     std::string m_destinationPort;
 
+    virtual int ActionFromString(const std::string& str) = 0;
+    virtual int DirectionFromString(const std::string& str) = 0;
+    virtual int StateFromString(const std::string& str) = 0;
+    virtual int ProtocolFromString(const std::string& str) = 0;
+
 private:
+    // TODO: allow this parse error to contain errors from several different things
+    // This data will be surfaced to the Firewall reported state detail
     std::string m_parseError;
 };
 
-class IpTablesRule : public Rule
-{
-public:
-    IpTablesRule() = default;
-    virtual ~IpTablesRule() = default;
-    virtual std::string Specification() const override;
-
-    static std::string ActionToString(Action action);
-    static std::string DirectionToString(Direction direction);
-    static std::string ProtocolToString(Protocol protocol);
-
-    static int ActionFromString(const std::string& str, Action& action);
-    static int DirectionFromString(const std::string& str, Direction& direction);
-};
-
+// TODO: policy should be an inner class on GenericFirewall
 class Policy
 {
 public:
@@ -138,16 +137,6 @@ public:
     Policy() = default;
     Policy(Action action, Direction direction) : m_action(action), m_direction(direction) {};
     virtual ~Policy() = default;
-
-    virtual Action GetAction() const
-    {
-        return m_action;
-    }
-
-    virtual Direction GetDirection() const
-    {
-        return m_direction;
-    }
 
     virtual bool HasParseError() const
     {
@@ -159,13 +148,42 @@ public:
         return m_parseError;
     }
 
-    virtual Policy& Parse(const rapidjson::Value& policy) = 0;
-    virtual void ToJson(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+    virtual Policy& Parse(const rapidjson::Value& policy);
+    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+
+    // TODO: can this be hidden from the public interface without "friend"
+    virtual std::string ActionToString() const;
+    virtual std::string DirectionToString() const;
+
+    virtual int ActionFromString(const std::string& str);
+    virtual int DirectionFromString(const std::string& str);
 
 private:
     std::string m_parseError;
     Action m_action;
     Direction m_direction;
+};
+
+class IpTablesRule : public Rule
+{
+public:
+    IpTablesRule() = default;
+    virtual ~IpTablesRule() = default;
+    virtual std::string Specification() const override;
+
+// protected:
+//     friend IpTables;
+
+    // TODO: maybe friend methods for these (this could help with sharing code between rules and policies)
+    // TODO: can this be hidden from the public interface without "friend"
+    virtual std::string ActionToString() const override;
+    virtual std::string DirectionToString() const override;
+    virtual std::string ProtocolToString() const override;
+
+    virtual int ActionFromString(const std::string& str) override;
+    virtual int DirectionFromString(const std::string& str) override;
+    virtual int StateFromString(const std::string& str) override;
+    virtual int ProtocolFromString(const std::string& str) override;
 };
 
 template<class RuleT>
@@ -348,8 +366,6 @@ protected:
             status = -1;
         }
 
-
-
         return status;
     }
 
@@ -357,7 +373,7 @@ protected:
     {
         int status = 0;
 
-        std::vector<Rule> rules = ParseRules(document);
+        std::vector<Rule> rules = ParseRules<Rule>(document);
 
         return status;
     }
