@@ -32,6 +32,7 @@ function(add_module_custom_target moduleDir targetName mimName recipeName)
         # Check for Recipe
         if(NOT(JQ_EXEC))
             message(WARNING "Unable to find jq tool. Cannot generate test recipe metadata for '${moduleDir}'.")
+            add_subdirectory(${_moduleDir})
         elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/recipes/${recipeName}Tests.json)
             add_subdirectory(${_moduleDir})
             add_dependencies(modulerecipeconfiguration ${_targetName})
