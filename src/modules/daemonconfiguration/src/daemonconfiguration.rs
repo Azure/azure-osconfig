@@ -4,7 +4,6 @@
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::process::Command;
 
 use crate::MmiError;
@@ -24,22 +23,22 @@ const INFO: &str = r#"{
     "Lifetime": 1,
     "UserAccount": 0}"#;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
-#[repr(u8)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub enum State {
-    Other = 0,
-    Running = 1,
-    Failed = 2,
-    Exited = 3,
-    Dead = 4,
+    Other,
+    Running,
+    Failed,
+    Exited,
+    Dead,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
-#[repr(u8)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub enum AutoStartStatus {
-    Other = 0,
-    Enabled = 1,
-    Disabled = 2,
+    Other,
+    Enabled,
+    Disabled,
 }
 
 // A daemon_config object with all possible setting types
@@ -328,43 +327,43 @@ mod tests {
             let expected = "[\
                 {\
                     \"name\":\"alsa-restore\",\
-                    \"state\":4,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"dead\",\
+                    \"autoStartStatus\":\"other\"\
                 },\
                 {\
                     \"name\":\"alsa-utils\",\
-                    \"state\":1,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"running\",\
+                    \"autoStartStatus\":\"other\"\
                 },\
                 {\
                     \"name\":\"apport\",\
-                    \"state\":2,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"failed\",\
+                    \"autoStartStatus\":\"other\"\
                 },\
                 {\
                     \"name\":\"netplan-ovs-cleanup\",\
-                    \"state\":3,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"exited\",\
+                    \"autoStartStatus\":\"other\"\
                 },\
                 {\
                     \"name\":\"osconfig\",\
-                    \"state\":4,\
-                    \"autoStartStatus\":1\
+                    \"state\":\"dead\",\
+                    \"autoStartStatus\":\"enabled\"\
                 },\
                 {\
                     \"name\":\"rtkit-daemon\",\
-                    \"state\":3,\
-                    \"autoStartStatus\":2\
+                    \"state\":\"exited\",\
+                    \"autoStartStatus\":\"disabled\"\
                 },\
                 {\
                     \"name\":\"saned\",\
-                    \"state\":1,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"running\",\
+                    \"autoStartStatus\":\"other\"\
                 },\
                 {\
                     \"name\":\"spice-vdagent\",\
-                    \"state\":4,\
-                    \"autoStartStatus\":0\
+                    \"state\":\"dead\",\
+                    \"autoStartStatus\":\"other\"\
                 }\
             ]";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
