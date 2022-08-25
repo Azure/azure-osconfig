@@ -23,27 +23,27 @@
                   "name": "state",
                   "schema": {
                     "type": "enum",
-                    "valueSchema": "integer",
+                    "valueSchema": "string",
                     "enumValues": [
                       {
                         "name": "other",
-                        "enumValue": 0
+                        "enumValue": "other"
                       },
                       {
                         "name": "running",
-                        "enumValue": 1
+                        "enumValue": "running"
                       },
                       {
                         "name": "failed",
-                        "enumValue": 2
+                        "enumValue": "failed"
                       },
                       {
                         "name": "exited",
-                        "enumValue": 3
+                        "enumValue": "exited"
                       },
                       {
                         "name": "dead",
-                        "enumValue": 4
+                        "enumValue": "dead"
                       }
                     ]
                   }
@@ -52,19 +52,19 @@
                   "name": "autoStartStatus",
                   "schema": {
                     "type": "enum",
-                    "valueSchema": "integer",
+                    "valueSchema": "string",
                     "enumValues": [
                       {
                         "name": "other",
-                        "enumValue": 0
+                        "enumValue": "other"
                       },
                       {
                         "name": "enabled",
-                        "enumValue": 1
+                        "enumValue": "enabled"
                       },
                       {
                         "name": "disabled",
-                        "enumValue": 2
+                        "enumValue": "disabled"
                       }
                     ]
                   }
