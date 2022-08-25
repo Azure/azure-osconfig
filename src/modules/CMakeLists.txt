@@ -5,6 +5,7 @@ add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wfo
 
 add_subdirectory(test)
 
+find_program(JQ_EXEC jq)
 find_program(JSONSCHEMA_EXEC jsonschema)
 
 # Function add_module/add_module_custom_target is used to add a module to the build and add
@@ -29,7 +30,9 @@ function(add_module_custom_target moduleDir targetName mimName recipeName)
             message(WARNING "jsonschema tool not installed. Cannot validate MIM.")
         endif()
         # Check for Recipe
-        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/recipes/${recipeName}Tests.json)
+        if(NOT(JQ_EXEC))
+            message(WARNING "Unable to find jq tool. Cannot generate test recipe metadata for '${moduleDir}'.")
+        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/recipes/${recipeName}Tests.json)
             add_subdirectory(${_moduleDir})
             add_dependencies(modulerecipeconfiguration ${_targetName})
         else()
