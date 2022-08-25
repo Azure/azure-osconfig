@@ -94,7 +94,7 @@
                   "name": "action",
                   "schema": {
                     "type": "enum",
-                    "valueSchema": "integer",
+                    "valueSchema": "string",
                     "enumValues": [
                       {
                         "name": "accept",
@@ -254,7 +254,7 @@
                   "name": "action",
                   "schema": {
                     "type": "enum",
-                    "valueSchema": "integer",
+                    "valueSchema": "string",
                     "enumValues": [
                       {
                         "name": "accept",

@@ -6,7 +6,7 @@ add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wfo
 add_subdirectory(test)
 
 # Function add_module/add_module_custom_target is used to add a module to the build and add
-# the appropriate dependencies in order for module testrecipe configuration to be generated. 
+# the appropriate dependencies in order for module testrecipe configuration to be generated.
 function(add_module_custom_target moduleDir targetName mimName recipeName)
     message(STATUS "Adding module '${moduleDir}' to the build.")
     string(TOLOWER ${moduleDir} _moduleDir)

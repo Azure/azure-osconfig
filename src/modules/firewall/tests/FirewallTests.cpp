@@ -11,26 +11,47 @@ namespace tests
     static const std::string expectedFingerprint = "abc123";
     static const std::string expectedFingerprintJson = "\"" + expectedFingerprint + "\"";
 
-    class MockUtility : public GenericFirewall
+    class MockFirewall : public GenericFirewall
     {
     public:
         typedef GenericFirewall::State State;
 
-        MockUtility() = default;
-        ~MockUtility() = default;
+        MockFirewall() = default;
+        ~MockFirewall() = default;
 
         State Detect() const override;
         std::string Fingerprint() const override;
+        std::vector<Policy> GetDefaultPolicies() const override;
+
+        int SetRules(const std::vector<Rule>& rules) override;
+        int SetDefaultPolicy(const Policy& policy) override;
     };
 
-    MockUtility::State MockUtility::Detect() const
+    MockFirewall::State MockFirewall::Detect() const
     {
         return State::Enabled;
     }
 
-    std::string MockUtility::Fingerprint() const
+    std::string MockFirewall::Fingerprint() const
     {
         return expectedFingerprint;
+    }
+
+    std::vector<Policy> MockFirewall::GetDefaultPolicies() const
+    {
+        return {};
+    }
+
+    int MockFirewall::SetRules(const std::vector<Rule>& rules)
+    {
+        UNUSED(rules);
+        return 0;
+    }
+
+    int MockFirewall::SetDefaultPolicy(const Policy& policy)
+    {
+        UNUSED(policy);
+        return 0;
     }
 
     class FirewallTests : public ::testing::Test
@@ -38,12 +59,12 @@ namespace tests
     protected:
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
-        std::shared_ptr<FirewallModule<MockUtility>> firewall;
+        std::shared_ptr<FirewallModule<MockFirewall>> firewall;
 
         void SetUp() override {
             payload = nullptr;
             payloadSizeBytes = 0;
-            firewall = std::make_shared<FirewallModule<MockUtility>>(0);
+            firewall = std::make_shared<FirewallModule<MockFirewall>>(0);
         }
 
         void TearDown() override {
