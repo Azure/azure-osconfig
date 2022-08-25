@@ -40,9 +40,7 @@ private:
     static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
-// TODO: create an abstract class for Parse/Serialize methods
-
-class Rule
+class GenericRule
 {
 public:
     enum class State
@@ -72,18 +70,10 @@ public:
         Icmp,
     };
 
-    Rule() = default;
-    virtual ~Rule() = default;
+    GenericRule() = default;
+    virtual ~GenericRule() = default;
 
-    // TODO: methods for serializing enums to JSON (Action, Direction)
-    // template<typename T>
-    // static void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer, const T& value);
-
-    // TODO: methods for parsing firewall strings to enums (Action, Direction, Protocol)
-    // template<typename T>
-    // static int Parse(const std::string& str, T& value);
-
-    virtual Rule& Parse(const rapidjson::Value& rule);
+    virtual GenericRule& Parse(const rapidjson::Value& rule);
 
     virtual std::string GetParseError() const
     {
@@ -102,12 +92,16 @@ public:
 
     virtual std::string Specification() const = 0;
 
+    // REVIEW: make these a single template function
+    virtual int ActionFromString(const std::string& str);
+    virtual int DirectionFromString(const std::string& str);
+    virtual int StateFromString(const std::string& str);
+    virtual int ProtocolFromString(const std::string& str);
+
     virtual std::string ActionToString() const = 0;
     virtual std::string DirectionToString() const = 0;
     virtual std::string ProtocolToString() const = 0;
-
 protected:
-    State m_desiredState;
     Action m_action;
     Direction m_direction;
     Protocol m_protocol;
@@ -116,77 +110,41 @@ protected:
     std::string m_sourcePort;
     std::string m_destinationPort;
 
-    virtual int ActionFromString(const std::string& str) = 0;
-    virtual int DirectionFromString(const std::string& str) = 0;
-    virtual int StateFromString(const std::string& str) = 0;
-    virtual int ProtocolFromString(const std::string& str) = 0;
+    std::string m_parseError;
 
 private:
-    // TODO: allow this parse error to contain errors from several different things
-    // This data will be surfaced to the Firewall reported state detail
-    std::string m_parseError;
+    State m_desiredState;
 };
 
-// TODO: policy should be an inner class on GenericFirewall
-class Policy
-{
-public:
-    typedef Rule::Action Action;
-    typedef Rule::Direction Direction;
-
-    Policy() = default;
-    Policy(Action action, Direction direction) : m_action(action), m_direction(direction) {};
-    virtual ~Policy() = default;
-
-    virtual bool HasParseError() const
-    {
-        return !m_parseError.empty();
-    }
-
-    virtual std::string GetParseError() const
-    {
-        return m_parseError;
-    }
-
-    virtual Policy& Parse(const rapidjson::Value& policy);
-    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
-
-    // TODO: can this be hidden from the public interface without "friend"
-    virtual std::string ActionToString() const;
-    virtual std::string DirectionToString() const;
-
-    virtual int ActionFromString(const std::string& str);
-    virtual int DirectionFromString(const std::string& str);
-
-private:
-    std::string m_parseError;
-    Action m_action;
-    Direction m_direction;
-};
-
-class IpTablesRule : public Rule
+class IpTablesRule : public GenericRule
 {
 public:
     IpTablesRule() = default;
     virtual ~IpTablesRule() = default;
     virtual std::string Specification() const override;
 
-// protected:
-//     friend IpTables;
-
-    // TODO: maybe friend methods for these (this could help with sharing code between rules and policies)
-    // TODO: can this be hidden from the public interface without "friend"
-    virtual std::string ActionToString() const override;
-    virtual std::string DirectionToString() const override;
-    virtual std::string ProtocolToString() const override;
-
-    virtual int ActionFromString(const std::string& str) override;
-    virtual int DirectionFromString(const std::string& str) override;
-    virtual int StateFromString(const std::string& str) override;
-    virtual int ProtocolFromString(const std::string& str) override;
+    virtual std::string ActionToString() const;
+    virtual std::string DirectionToString() const;
+    virtual std::string ProtocolToString() const;
 };
 
-template<class RuleT>
+// TODO: policy should be an inner class on GenericFirewall
+class IpTablesPolicy : public IpTablesRule
+{
+public:
+    typedef GenericRule::Action Action;
+    typedef GenericRule::Direction Direction;
+
+    IpTablesPolicy() = default;
+    virtual ~IpTablesPolicy() = default;
+
+    virtual IpTablesPolicy& Parse(const rapidjson::Value& policy) override;
+    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+
+    virtual std::string Specification() const override;
+};
+
+template<class RuleT, class PolicyT>
 class GenericFirewall
 {
 public:
@@ -218,21 +176,22 @@ public:
 
     virtual State Detect() const = 0;
     virtual std::string Fingerprint() const = 0;
-    virtual std::vector<Policy> GetDefaultPolicies() const = 0;
+    virtual std::vector<PolicyT> GetDefaultPolicies() const = 0;
 
     virtual int SetRules(const std::vector<RuleT>& rules) = 0;
-    virtual int SetDefaultPolicies(const std::vector<Policy> policies) = 0;
+    virtual int SetDefaultPolicies(const std::vector<PolicyT> policies) = 0;
 
 protected:
     Status m_status;
     std::string m_statusMessage;
 };
 
-class IpTables : public GenericFirewall<IpTablesRule>
+class IpTables : public GenericFirewall<IpTablesRule, IpTablesPolicy>
 {
 public:
-    typedef IpTablesRule Rule;
     typedef GenericFirewall::State State;
+    typedef IpTablesPolicy Policy;
+    typedef IpTablesRule Rule;
 
     IpTables() = default;
     ~IpTables() = default;
@@ -292,9 +251,10 @@ private:
 };
 
 template<class RuleT>
-std::vector<RuleT> ParseRules(const rapidjson::Value& rules);
+std::vector<RuleT> ParseRules(const rapidjson::Value& value);
 
-std::vector<Policy> ParsePolicies(const rapidjson::Value& rules);
+template<class PolicyT>
+std::vector<PolicyT> ParsePolicies(const rapidjson::Value& rules);
 
 template <class FirewallT>
 class FirewallModule : public FirewallModuleBase
@@ -306,7 +266,8 @@ public:
 protected:
     typedef typename FirewallT::State State;
     typedef typename FirewallT::Status Status;
-    // typedef typename FirewallT::Policy Policy;
+    typedef typename FirewallT::Policy Policy;
+    typedef typename FirewallT::Rule Rule;
 
     virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
     {
@@ -355,7 +316,7 @@ protected:
     virtual int SetDefaultPolicies(rapidjson::Document& document) override
     {
         int status = 0;
-        std::vector<Policy> policies = ParsePolicies(document);
+        std::vector<Policy> policies = ParsePolicies<Policy>(document);
 
         if (!policies.empty())
         {
@@ -372,8 +333,16 @@ protected:
     virtual int SetRules(rapidjson::Document& document) override
     {
         int status = 0;
-
         std::vector<Rule> rules = ParseRules<Rule>(document);
+
+        if (!rules.empty())
+        {
+            status = m_firewall.SetRules(rules);
+        }
+        else
+        {
+            status = -1;
+        }
 
         return status;
     }
