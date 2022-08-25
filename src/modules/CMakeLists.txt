@@ -44,16 +44,8 @@ add_module(PMC)
 add_module(Settings)
 add_module(Tpm)
 add_module(Ztsi)
-
 if (BUILD_RUST)
-    # Fetch Corrosion to link the Rust Modules with the CMake Build Line
-    include(FetchContent)
-    FetchContent_Declare(
-        Corrosion
-        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.2.1 # Optionally specify a commit hash, version tag or branch here
-    )
-    FetchContent_MakeAvailable(Corrosion)
+    corrosion_import_crate(MANIFEST_PATH daemonconfiguration/Cargo.toml)
 endif()
 
 if (BUILD_SAMPLES)
