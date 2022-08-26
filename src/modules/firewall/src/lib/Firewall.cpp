@@ -801,7 +801,7 @@ IpTablesPolicy& IpTablesPolicy::Parse(const rapidjson::Value& value)
 std::string IpTablesPolicy::Specification() const
 {
     std::stringstream spec;
-    spec << DirectionToString() << " " << ActionToString;
+    spec << DirectionToString() << " " << ActionToString();
     return spec.str();
 }
 

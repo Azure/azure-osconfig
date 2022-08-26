@@ -123,9 +123,9 @@ public:
     virtual ~IpTablesRule() = default;
     virtual std::string Specification() const override;
 
-    virtual std::string ActionToString() const;
-    virtual std::string DirectionToString() const;
-    virtual std::string ProtocolToString() const;
+    virtual std::string ActionToString() const override;
+    virtual std::string DirectionToString() const override;
+    virtual std::string ProtocolToString() const override;
 };
 
 // TODO: policy should be an inner class on GenericFirewall
