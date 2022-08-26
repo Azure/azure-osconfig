@@ -27,7 +27,7 @@ inputs:
   tag:
     description: The container tag.
     required: false
-    default: latest
+    default: "289651"
 
 outputs:
   id:
