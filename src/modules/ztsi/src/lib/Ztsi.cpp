@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "CommonUtils.h"
 #include "Mmi.h"
@@ -24,6 +25,8 @@ static const char g_configurationPropertyMaxManualAttestationsPerDay[] = "maxMan
 static const bool g_defaultEnabled = false;
 static const int g_defaultMaxScheduledAttestationsPerDay = 10;
 static const int g_defaultMaxManualAttestationsPerDay = 10;
+
+static const int g_totalAttestationsAllowedPerDay = 100;
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
 static const unsigned int g_lockWait = 20;
@@ -340,14 +343,14 @@ int Ztsi::SetEnabled(bool enabled)
         if (enabled != configuration.enabled)
         {
             configuration.enabled = enabled;
-            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : MMI_OK;
+            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
         }
     }
     else if (ENOENT == status)
     {
         // If the configuration file doesn't exist, create it with the desired enabled state
         configuration.enabled = enabled;
-        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : MMI_OK;
+        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
     }
 
     return status;
@@ -356,21 +359,22 @@ int Ztsi::SetEnabled(bool enabled)
 int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
-
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
     status = ReadAgentConfiguration(configuration);
     if ((MMI_OK == status) || (EINVAL == status))
     {
-        configuration.enabled = m_lastEnabledState;
-        configuration.maxScheduledAttestationsPerDay = maxScheduledAttestationsPerDay;
-        status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : MMI_OK;
+        if (maxScheduledAttestationsPerDay != configuration.maxScheduledAttestationsPerDay){
+            configuration.enabled = m_lastEnabledState;
+            configuration.maxScheduledAttestationsPerDay = maxScheduledAttestationsPerDay;
+            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
+        }
     }
     else if (ENOENT == status)
     {
         // If the configuration file doesn't exist, create it with the desired maxScheduledAttestationsPerDay state
         configuration.enabled = m_lastEnabledState;
         configuration.maxScheduledAttestationsPerDay = maxScheduledAttestationsPerDay;
-        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : MMI_OK;
+        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
     }
 
     return status;
@@ -378,22 +382,26 @@ int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
 
 int Ztsi::SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay)
 {
+    std::cout << "calling set max manual attestations with value" + maxManualAttestationsPerDay << std::endl;
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
 
     status = ReadAgentConfiguration(configuration);
     if ((MMI_OK == status) || (EINVAL == status))
     {
-        configuration.enabled = m_lastEnabledState;
-        configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
-        status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : MMI_OK;
+        if (maxManualAttestationsPerDay != configuration.maxManualAttestationsPerDay){
+            configuration.enabled = m_lastEnabledState;
+            configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
+            std::cout << "configuration.maxManualAttestationsPerDay is now" << maxManualAttestationsPerDay << std::endl;
+            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
+        }
     }
     else if (ENOENT == status)
     {
         // If the configuration file doesn't exist, create it with the desired maxManualAttestationsPerDay state
         configuration.enabled = m_lastEnabledState;
         configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
-        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : MMI_OK;
+        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
     }
 
     return status;
@@ -412,10 +420,10 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
         isValid = false;
     }
 
-        if (configuration.maxManualAttestationsPerDay + configuration.maxScheduledAttestationsPerDay > 100){
+        if (configuration.maxManualAttestationsPerDay + configuration.maxScheduledAttestationsPerDay > g_totalAttestationsAllowedPerDay){
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ZtsiLog::Get(), "The total number of attestations per day (Scheduled + Manual) cannot exceed 100");
+            OsConfigLogError(ZtsiLog::Get(), "The total number of attestations per day (Scheduled + Manual) cannot exceed %s", std::to_string(g_totalAttestationsAllowedPerDay).c_str());
         }
 
         isValid = false;
@@ -610,6 +618,7 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
 
 int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
+    std::cout << "\n\n writing config to file \n\n";
     int status = MMI_OK;
     std::FILE* file = nullptr;
 

@@ -23,8 +23,8 @@ static const char g_reportedMaxScheduledAttestationsPerDay[] ="maxScheduledAttes
 static const char g_reportedMaxManualAttestationsPerDay[] = "maxManualAttestationsPerDay";
 
 static const Ztsi::EnabledState g_defaultEnabledState = Ztsi::EnabledState::Unknown;
-static const int g_defaultMaxScheduledAttestationsPerDay = 48;
-static const int g_defaultMaxManualAttestationsPerDay = 100;
+static const int g_defaultMaxScheduledAttestationsPerDay = 10;
+static const int g_defaultMaxManualAttestationsPerDay = 10;
 
 #define STRFTIME_DATE_FORMAT "%Y%m%d"
 #define SSCANF_DATE_FORMAT "%4d%2d%2d"
@@ -40,8 +40,8 @@ namespace OSConfig::Platform::Tests
             std::stringstream expected;
             expected << "{\n";
             expected << "    \"enabled\": " << (enabled ? "true" : "false") << ",\n";
-            expected << "    \"maxScheduledAttestationsPerDay\": \"" << maxScheduledAttestationsPerDay << "\"\n";
-            expected << "    \"maxManualAttestationsPerDay\": \"" << maxManualAttestationsPerDay << "\"\n";
+            expected << "    \"maxScheduledAttestationsPerDay\": " << maxScheduledAttestationsPerDay << ",\n";
+            expected << "    \"maxManualAttestationsPerDay\": " << maxManualAttestationsPerDay << "\n";
             expected << "}";
             return expected.str();
         }
@@ -82,7 +82,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, GetSetMaxScheduledAttestationsPerDay)
     {
-        char maxScheduledAttestationsPerDay[] = "100";
+        char maxScheduledAttestationsPerDay[] = "24";
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -96,7 +96,7 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(ZtsiTests, GetSetMaxManualAttestationsPerDay)
     {
-        char maxManualAttestationsPerDay[] = "100";
+        char maxManualAttestationsPerDay[] = "24";
         MMI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -173,25 +173,25 @@ namespace OSConfig::Platform::Tests
         {
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxScheduledAttestationsPerDay(maxScheduledAttestationsPerDay1));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay1, 5);
+            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay1, g_defaultMaxManualAttestationsPerDay);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay1, 5);
+            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay1, g_defaultMaxManualAttestationsPerDay);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxScheduledAttestationsPerDay(maxScheduledAttestationsPerDay2));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay2, 5);
+            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay2, g_defaultMaxManualAttestationsPerDay);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
 
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(false));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
-            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay2, 5);
+            expected = ZtsiTests::BuildFileContents(false, maxScheduledAttestationsPerDay2, g_defaultMaxManualAttestationsPerDay);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
         }
@@ -210,7 +210,7 @@ namespace OSConfig::Platform::Tests
             ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
             ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
-            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay, 5);
+            expected = ZtsiTests::BuildFileContents(true, maxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay);
             actual = ZtsiTests::ReadFileContents();
             ASSERT_STREQ(expected.c_str(), actual.c_str());
         }
@@ -237,15 +237,16 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
         ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
-        std::string expected = ZtsiTests::BuildFileContents(true, 5, maxManualAttestationsPerDay1);
+        std::string expected = ZtsiTests::BuildFileContents(true, g_defaultMaxScheduledAttestationsPerDay, maxManualAttestationsPerDay1);
         std::string actual = ZtsiTests::ReadFileContents();
+        ASSERT_EQ(maxManualAttestationsPerDay1, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
         ASSERT_STREQ(expected.c_str(), actual.c_str());
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_EQ(maxManualAttestationsPerDay1, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
 
         // Modify JSON contents with valid data
         std::ofstream file(ZtsiTests::filename);
-        file << ZtsiTests::BuildFileContents(false, 5, maxManualAttestationsPerDay2);
+        file << ZtsiTests::BuildFileContents(false, g_defaultMaxScheduledAttestationsPerDay, maxManualAttestationsPerDay2);
         file.close();
 
         // Get should return the new contents
@@ -261,8 +262,10 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxManualAttestationsPerDay(maxManualAttestationsPerDay));
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
 
-        std::string expected = ZtsiTests::BuildFileContents(true, 0, maxManualAttestationsPerDay);
+        std::string expected = ZtsiTests::BuildFileContents(true, g_defaultMaxScheduledAttestationsPerDay, maxManualAttestationsPerDay);
         std::string actual = ZtsiTests::ReadFileContents();
+        
+        ASSERT_EQ(maxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
         ASSERT_STREQ(expected.c_str(), actual.c_str());
         ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_EQ(maxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
