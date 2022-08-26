@@ -19,11 +19,11 @@
 
 static const char g_configurationPropertyEnabled[] = "enabled";
 static const char g_configurationPropertyMaxScheduledAttestationsPerDay[] = "maxScheduledAttestationsPerDay";
-static const char g_configurationPropertyMaxAttestationsPerDay[] = "maxAttestationsPerDay";
+static const char g_configurationPropertyMaxManualAttestationsPerDay[] = "maxManualAttestationsPerDay";
 
 static const bool g_defaultEnabled = false;
-static const int g_defaultMaxScheduledAttestationsPerDay = 48;
-static const int g_defaultMaxAttestationsPerDay = 100;
+static const int g_defaultMaxScheduledAttestationsPerDay = 10;
+static const int g_defaultMaxManualAttestationsPerDay = 10;
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
 static const unsigned int g_lockWait = 20;
@@ -32,10 +32,10 @@ static const unsigned int g_lockWaitMaxRetries = 5;
 const std::string Ztsi::m_componentName = "Ztsi";
 const std::string Ztsi::m_desiredEnabled = "desiredEnabled";
 const std::string Ztsi::m_desiredMaxScheduledAttestationsPerDay = "desiredMaxScheduledAttestationsPerDay";
-const std::string Ztsi::m_desiredMaxAttestationsPerDay = "desiredMaxAttestationsPerDay";
+const std::string Ztsi::m_desiredMaxManualAttestationsPerDay = "desiredMaxManualAttestationsPerDay";
 const std::string Ztsi::m_reportedEnabled = "enabled";
 const std::string Ztsi::m_reportedMaxScheduledAttestationsPerDay = "maxScheduledAttestationsPerDay";
-const std::string Ztsi::m_reportedMaxAttestationsPerDay = "maxAttestationsPerDay";
+const std::string Ztsi::m_reportedMaxManualAttestationsPerDay = "maxManualAttestationsPerDay";
 
 int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
@@ -95,7 +95,7 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_agentConfigurationFile = filePath;
     m_agentConfigurationDir = filePath.substr(0, filePath.find_last_of("/"));
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    m_lastAvailableConfiguration = { g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxAttestationsPerDay};
+    m_lastAvailableConfiguration = { g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
     m_lastEnabledState = false;
 }
 
@@ -201,9 +201,9 @@ int Ztsi::Get(const char* componentName, const char* objectName, MMI_JSON_STRING
                 document.SetInt(static_cast<int>(enabledState));
                 status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
             }
-            else if (0 == Ztsi::m_reportedMaxAttestationsPerDay.compare(objectName)){
-                int maxAttestationsPerDay = GetMaxAttestationsPerDay();
-                document.SetInt(maxAttestationsPerDay);
+            else if (0 == Ztsi::m_reportedMaxManualAttestationsPerDay.compare(objectName)){
+                int maxManualAttestationsPerDay = GetMaxManualAttestationsPerDay();
+                document.SetInt(maxManualAttestationsPerDay);
                 status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
             }
 
@@ -276,15 +276,15 @@ int Ztsi::Set(const char* componentName, const char* objectName, const MMI_JSON_
                     status = EINVAL;
                 }
             }
-            else if (0 == Ztsi::m_desiredMaxAttestationsPerDay.compare(objectName))
+            else if (0 == Ztsi::m_desiredMaxManualAttestationsPerDay.compare(objectName))
             {
                 if (document.IsInt())
                 {
-                    status = SetMaxAttestationsPerDay(document.GetInt());
+                    status = SetMaxManualAttestationsPerDay(document.GetInt());
                 }
                 else
                 {
-                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxAttestationsPerDay.c_str());
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxManualAttestationsPerDay.c_str());
                     status = EINVAL;
                 }
             }
@@ -311,26 +311,26 @@ unsigned int Ztsi::GetMaxPayloadSizeBytes()
 
 Ztsi::EnabledState Ztsi::GetEnabledState()
 {
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
     return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : EnabledState::Unknown;
 }
 
 int Ztsi::GetMaxScheduledAttestationsPerDay()
 {
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
     return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxScheduledAttestationsPerDay : g_defaultMaxScheduledAttestationsPerDay;
 }
 
-int Ztsi::GetMaxAttestationsPerDay()
+int Ztsi::GetMaxManualAttestationsPerDay()
 {
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
-    return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxAttestationsPerDay : g_defaultMaxAttestationsPerDay;
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
+    return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxManualAttestationsPerDay : g_defaultMaxManualAttestationsPerDay;
 }
 
 int Ztsi::SetEnabled(bool enabled)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
     m_lastEnabledState = enabled;
 
     status = ReadAgentConfiguration(configuration);
@@ -356,7 +356,7 @@ int Ztsi::SetEnabled(bool enabled)
 int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
 
     status = ReadAgentConfiguration(configuration);
     if ((MMI_OK == status) || (EINVAL == status))
@@ -376,23 +376,23 @@ int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
     return status;
 }
 
-int Ztsi::SetMaxAttestationsPerDay(int maxAttestationsPerDay)
+int Ztsi::SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxAttestationsPerDay};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
 
     status = ReadAgentConfiguration(configuration);
     if ((MMI_OK == status) || (EINVAL == status))
     {
         configuration.enabled = m_lastEnabledState;
-        configuration.maxAttestationsPerDay = maxAttestationsPerDay;
+        configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
         status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : MMI_OK;
     }
     else if (ENOENT == status)
     {
-        // If the configuration file doesn't exist, create it with the desired maxAttestationsPerDay state
+        // If the configuration file doesn't exist, create it with the desired maxManualAttestationsPerDay state
         configuration.enabled = m_lastEnabledState;
-        configuration.maxAttestationsPerDay = maxAttestationsPerDay;
+        configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
         status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : MMI_OK;
     }
 
@@ -403,14 +403,24 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
     bool isValid = true;
 
-    if (configuration.maxAttestationsPerDay < 0 || configuration.maxScheduledAttestationsPerDay < 0){
+    if (configuration.maxManualAttestationsPerDay < 0 || configuration.maxScheduledAttestationsPerDay < 0){
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ZtsiLog::Get(), "MaxAttestationsPerDay and MaxScheduledAttestationsPerDay must both be nonnegative");
+            OsConfigLogError(ZtsiLog::Get(), "MaxManualAttestationsPerDay and MaxScheduledAttestationsPerDay must both be nonnegative");
         }
 
         isValid = false;
     }
+
+        if (configuration.maxManualAttestationsPerDay + configuration.maxScheduledAttestationsPerDay > 100){
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(ZtsiLog::Get(), "The total number of attestations per day (Scheduled + Manual) cannot exceed 100");
+        }
+
+        isValid = false;
+    }
+
     return isValid;
 }
 
@@ -576,21 +586,21 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
             status = EINVAL;
         }
 
-        if (document.HasMember(g_configurationPropertyMaxAttestationsPerDay))
+        if (document.HasMember(g_configurationPropertyMaxManualAttestationsPerDay))
         {
-            if (document[g_configurationPropertyMaxAttestationsPerDay].IsInt())
+            if (document[g_configurationPropertyMaxManualAttestationsPerDay].IsInt())
             {
-                configuration.maxScheduledAttestationsPerDay = document[g_configurationPropertyMaxAttestationsPerDay].GetInt();
+                configuration.maxScheduledAttestationsPerDay = document[g_configurationPropertyMaxManualAttestationsPerDay].GetInt();
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyMaxAttestationsPerDay);
+                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyMaxManualAttestationsPerDay);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyMaxAttestationsPerDay, m_agentConfigurationFile.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyMaxManualAttestationsPerDay, m_agentConfigurationFile.c_str());
             status = EINVAL;
         }
     }
@@ -684,8 +694,8 @@ std::string Ztsi::BuildConfigurationJson(const AgentConfiguration& configuration
     writer.Key(g_configurationPropertyMaxScheduledAttestationsPerDay);
     writer.Int(configuration.maxScheduledAttestationsPerDay);
 
-    writer.Key(g_configurationPropertyMaxAttestationsPerDay);
-    writer.Int(configuration.maxAttestationsPerDay);
+    writer.Key(g_configurationPropertyMaxManualAttestationsPerDay);
+    writer.Int(configuration.maxManualAttestationsPerDay);
 
     writer.EndObject();
 

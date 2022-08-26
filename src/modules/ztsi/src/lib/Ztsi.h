@@ -46,7 +46,7 @@ public:
     {
         bool enabled;
         int maxScheduledAttestationsPerDay;
-        int maxAttestationsPerDay;
+        int maxManualAttestationsPerDay;
     };
 
     Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes = 0);
@@ -58,10 +58,10 @@ public:
 
     virtual EnabledState GetEnabledState();
     virtual int GetMaxScheduledAttestationsPerDay();
-    virtual int GetMaxAttestationsPerDay();
+    virtual int GetMaxManualAttestationsPerDay();
     virtual int SetEnabled(bool enabled);
     virtual int SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay);
-    virtual int SetMaxAttestationsPerDay(int maxAttestationsPerDay);
+    virtual int SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay);
     virtual unsigned int GetMaxPayloadSizeBytes();
 
 private:
@@ -80,10 +80,10 @@ private:
     static const std::string m_componentName;
     static const std::string m_desiredEnabled;
     static const std::string m_desiredMaxScheduledAttestationsPerDay;
-    static const std::string m_desiredMaxAttestationsPerDay;
+    static const std::string m_desiredMaxManualAttestationsPerDay;
     static const std::string m_reportedEnabled;
     static const std::string m_reportedMaxScheduledAttestationsPerDay;
-    static const std::string m_reportedMaxAttestationsPerDay;
+    static const std::string m_reportedMaxManualAttestationsPerDay;
 
     std::string m_agentConfigurationDir;
     std::string m_agentConfigurationFile;
