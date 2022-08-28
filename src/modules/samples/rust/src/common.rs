@@ -11,6 +11,7 @@ pub enum MmiError {
     FailedRead,
     FailedAllocate,
     InvalidArgument,
+    PayloadSizeExceeded,
     SerdeError,
 }
 
@@ -36,6 +37,7 @@ impl Into<c_int> for MmiError {
     fn into(self) -> c_int {
         match self {
             MmiError::FailedAllocate => ENOMEM,
+            MmiError::PayloadSizeExceeded => ENOMEM,
             _ => EINVAL,
         }
     }
@@ -52,6 +54,9 @@ impl fmt::Display for MmiError {
             }
             MmiError::InvalidArgument => {
                 write!(f, "There was an invalid argument")
+            }
+            MmiError::PayloadSizeExceeded => {
+                write!(f, "The payload exceeded max payload bytes size")
             }
             MmiError::SerdeError => {
                 write!(f, "There was an error serializing or deserializing")

@@ -117,8 +117,8 @@ impl Sample {
             if self.max_payload_size_bytes != 0
                 && payload.len() as u32 > self.max_payload_size_bytes
             {
-                println!("Payload size exceeds max payload size bytes");
-                Err(MmiError::InvalidArgument)
+                println!("Payload size exceeded max payload size bytes in set");
+                Err(MmiError::PayloadSizeExceeded)
             } else {
                 match object_name {
                     DESIRED_STRING_OBJECT_NAME => {
@@ -181,7 +181,8 @@ impl Sample {
             if self.max_payload_size_bytes != 0
             && payload.len() as u32 > self.max_payload_size_bytes {
                 // In other modules you could prioritize parts of the payload
-                Err(MmiError::InvalidArgument)
+                println!("Payload size exceeded max payload size bytes in get");
+                Err(MmiError::PayloadSizeExceeded)
             } else {
                 Ok(payload)
             }
