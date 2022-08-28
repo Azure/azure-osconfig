@@ -8,8 +8,8 @@ use std::process::Command;
 
 use crate::MmiError;
 
-const COMPONENT_NAME: &str = "DaemonConfiguration";
-const OBJECT_NAME: &str = "dameons";
+const COMPONENT_NAME: &str = "SystemdDaemonConfiguration";
+const OBJECT_NAME: &str = "daemonConfiguration";
 
 // r# Denotes a Rust Raw String
 const INFO: &str = r#"{
@@ -19,7 +19,7 @@ const INFO: &str = r#"{
     "VersionMajor": 1,
     "VersionMinor": 0,
     "VersionInfo": "",
-    "Components": ["DaemonConfiguration"],
+    "Components": ["SystemdDaemonConfiguration"],
     "Lifetime": 1,
     "UserAccount": 0}"#;
 
@@ -164,7 +164,8 @@ impl DaemonConfiguration {
             if self.max_payload_size_bytes != 0
                 && payload.len() as u32 > self.max_payload_size_bytes
             {
-                Err(MmiError::InvalidArgument)
+                println!("Payload size exceeded max payload size bytes in get");
+                Err(MmiError::PayloadSizeExceeded)
             } else {
                 Ok(payload)
             }
@@ -304,9 +305,6 @@ mod tests {
             if let Err(e) = invalid_object_result {
                 assert_eq!(e, MmiError::InvalidArgument);
             }
-            let payload = daemon_config
-                .get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME)
-                .unwrap();
         } else {
             let systemd_result: Result<String, MmiError> =
                 daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
