@@ -296,7 +296,7 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         return status;
     }
 
-    if (!IsValidMimObjectPayload(log, payload, payloadSizeBytes))
+    if (!IsValidMimObjectPayload(payload, payloadSizeBytes, log))
     {
         status = EINVAL;
         OsConfigLogError(log, "CallMpiSet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
