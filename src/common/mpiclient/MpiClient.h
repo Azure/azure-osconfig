@@ -9,12 +9,12 @@ extern "C"
 {
 #endif
 
-MPI_HANDLE CallMpiOpen(void* log, const char* clientName, const unsigned int maxPayloadSizeBytes);
-void CallMpiClose(void* log, MPI_HANDLE clientSession);
-int CallMpiSet(void* log, const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes);
-int CallMpiGet(void* log, const char* componentName, const char* propertyName, MPI_JSON_STRING* payload, int* payloadSizeBytes);
-int CallMpiSetDesired(void* log, const MPI_JSON_STRING payload, const int payloadSizeBytes);
-int CallMpiGetReported(void* log, MPI_JSON_STRING* payload, int* payloadSizeBytes);
+MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes, void* log);
+void CallMpiClose(MPI_HANDLE clientSession, void* log);
+int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes, void* log);
+int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STRING* payload, int* payloadSizeBytes, void* log);
+int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes, void* log);
+int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* log);
 void CallMpiFree(MPI_JSON_STRING payload);
 
 #ifdef __cplusplus

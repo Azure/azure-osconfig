@@ -19,7 +19,7 @@
 
 extern MPI_HANDLE g_mpiHandle;
 
-static int CallMpi(void* log, const char* name, const char* request, char** response, int* responseSize)
+static int CallMpi(const char* name, const char* request, char** response, int* responseSize, void* log)
 {
     const char* mpiSocket = "/run/osconfig/mpid.sock";
     const char* dataFormat = "POST /%s/ HTTP/1.1\r\nHost: OSConfig\r\nUser-Agent: OSConfig\r\nAccept: */*\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s";
@@ -183,7 +183,7 @@ static char* ParseString(void* log, char* jsonString)
     return returnValue;
 }
 
-MPI_HANDLE CallMpiOpen(void* log, const char* clientName, const unsigned int maxPayloadSizeBytes)
+MPI_HANDLE CallMpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes, void* log)
 {
     const char *name = "MpiOpen";
     const char *requestBodyFormat = "{ \"ClientName\": \"%s\", \"MaxPayloadSizeBytes\": %d }";
@@ -215,7 +215,7 @@ MPI_HANDLE CallMpiOpen(void* log, const char* clientName, const unsigned int max
 
     snprintf(request, requestSize, requestBodyFormat, clientName, maxPayloadSizeBytes);
 
-    status = CallMpi(log, name, request, &response, &responseSize);
+    status = CallMpi(name, request, &response, &responseSize, log);
 
     FREE_MEMORY(request);
 
@@ -235,7 +235,7 @@ MPI_HANDLE CallMpiOpen(void* log, const char* clientName, const unsigned int max
     return mpiHandle;
 }
 
-void CallMpiClose(void* log, MPI_HANDLE clientSession)
+void CallMpiClose(MPI_HANDLE clientSession, void* log)
 {
     const char *name = "MpiClose";
     const char *requestBodyFormat = "{ \"ClientSession\": %s }";
@@ -262,7 +262,7 @@ void CallMpiClose(void* log, MPI_HANDLE clientSession)
 
     snprintf(request, requestSize, requestBodyFormat, (char*)clientSession);
 
-    CallMpi(log, name, request, &response, &responseSize);
+    CallMpi(name, request, &response, &responseSize, log);
 
     FREE_MEMORY(request);
     FREE_MEMORY(response);
@@ -270,7 +270,7 @@ void CallMpiClose(void* log, MPI_HANDLE clientSession)
     OsConfigLogInfo(log, "CallMpiClose(%p)", clientSession);
 }
 
-int CallMpiSet(void* log, const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes)
+int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JSON_STRING payload, const int payloadSizeBytes, void* log)
 {
     const char *name = "MpiSet";
     static const char *requestBodyFormat = "{ \"ClientSession\": %s, \"ComponentName\": \"%s\", \"ObjectName\": \"%s\", \"Payload\": %s }";
@@ -296,7 +296,7 @@ int CallMpiSet(void* log, const char* componentName, const char* propertyName, c
         return status;
     }
 
-    if (!IsValidMimObjectPayload(payload, payloadSizeBytes, log))
+    if (!IsValidMimObjectPayload(log, payload, payloadSizeBytes))
     {
         status = EINVAL;
         OsConfigLogError(log, "CallMpiSet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
@@ -315,7 +315,7 @@ int CallMpiSet(void* log, const char* componentName, const char* propertyName, c
 
     snprintf(request, requestSize, requestBodyFormat, (char*)g_mpiHandle, componentName, propertyName, payload);
 
-    status = CallMpi(log, name, request, &response, &responseSize);
+    status = CallMpi(name, request, &response, &responseSize, log);
 
     FREE_MEMORY(request);
 
@@ -338,7 +338,7 @@ int CallMpiSet(void* log, const char* componentName, const char* propertyName, c
     return status;
 };
 
-int CallMpiGet(void* log, const char* componentName, const char* propertyName, MPI_JSON_STRING* payload, int* payloadSizeBytes)
+int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STRING* payload, int* payloadSizeBytes, void* log)
 {
     const char *name = "MpiGet";
     const char *requestBodyFormat = "{ \"ClientSession\": %s, \"ComponentName\": \"%s\", \"ObjectName\": \"%s\" }";
@@ -376,7 +376,7 @@ int CallMpiGet(void* log, const char* componentName, const char* propertyName, M
 
     snprintf(request, requestSize, requestBodyFormat, (char*)g_mpiHandle, componentName, propertyName);
 
-    status = CallMpi(log, name, request, payload, payloadSizeBytes);
+    status = CallMpi(name, request, payload, payloadSizeBytes, log);
 
     FREE_MEMORY(request);
 
@@ -405,7 +405,7 @@ int CallMpiGet(void* log, const char* componentName, const char* propertyName, M
     return status;
 };
 
-int CallMpiSetDesired(void* log, const MPI_JSON_STRING payload, const int payloadSizeBytes)
+int CallMpiSetDesired(const MPI_JSON_STRING payload, const int payloadSizeBytes, void* log)
 {
     const char *name = "MpiSetDesired";
     static const char *requestBodyFormat = "{ \"ClientSession\": %s, \"Payload\": %s }";
@@ -443,7 +443,7 @@ int CallMpiSetDesired(void* log, const MPI_JSON_STRING payload, const int payloa
 
     snprintf(request, requestSize, requestBodyFormat, (char*)g_mpiHandle, payload);
 
-    status = CallMpi(log, name, request, &response, &responseSize);
+    status = CallMpi(name, request, &response, &responseSize, log);
 
     FREE_MEMORY(request);
 
@@ -466,7 +466,7 @@ int CallMpiSetDesired(void* log, const MPI_JSON_STRING payload, const int payloa
     return status;
 }
 
-int CallMpiGetReported(void* log, MPI_JSON_STRING* payload, int* payloadSizeBytes)
+int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* log)
 {
     const char *name = "MpiGetReported";
     static const char *requestBodyFormat = "{ \"ClientSession\": %s }";
@@ -504,7 +504,7 @@ int CallMpiGetReported(void* log, MPI_JSON_STRING* payload, int* payloadSizeByte
 
     snprintf(request, requestSize, requestBodyFormat, (char*)g_mpiHandle);
 
-    status = CallMpi(log, name, request, payload, payloadSizeBytes);
+    status = CallMpi(name, request, payload, payloadSizeBytes, log);
 
     FREE_MEMORY(request);
 
