@@ -83,7 +83,10 @@ impl SystemctlInfo for Systemctl {
                 continue;
             }
             let daemon = Self::create_daemon(&service["service"], &service["status"])?;
-            services.push(daemon);
+            // Only report enabled daemons with State not being Other
+            if daemon.state != State::Other && daemon.state != State::Dead && daemon.auto_start_status == AutoStartStatus::Enabled {
+                services.push(daemon);
+            }
         }
         Ok(services)
     }
@@ -94,7 +97,7 @@ impl SystemctlInfo for Systemctl {
             return Err(MmiError::SystemctlError);
         }
         let substate = &substate[9..];
-        let state = match substate {
+        let state = match substate.trim() {
             "running" => State::Running,
             "failed" => State::Failed,
             "exited" => State::Exited,
@@ -200,11 +203,11 @@ mod tests {
             alsa-restore.service                       static          enabled      
             alsa-utils.service                         masked          enabled      
             apport-forward@.service                    static          enabled      
-            apport.service                             generated       enabled      
+            apport.service                             enabled         enabled      
             netplan-ovs-cleanup.service                enabled-runtime enabled
-            osconfig.service                           enabled         enabled      
-            rtkit-daemon.service                       disabled        enabled      
-            saned.service                              masked          enabled           
+            osconfig.service                           disabled        enabled      
+            rtkit-daemon.service                       enabled         enabled      
+            saned.service                              enabled         enabled           
             spice-vdagent.service                      indirect        enabled           
             
             9 unit files listed."#;
@@ -224,7 +227,10 @@ mod tests {
                     continue;
                 }
                 let daemon = Self::create_daemon(&service["service"], &service["status"])?;
-                services.push(daemon);
+                // Only report enabled daemons with State not being Other
+                if daemon.state != State::Other && daemon.state != State::Dead && daemon.auto_start_status == AutoStartStatus::Enabled {
+                    services.push(daemon);
+                }
             }
             Ok(services)
         }
@@ -324,44 +330,19 @@ mod tests {
             let payload = payload.unwrap();
             let expected = "[\
                 {\
-                    \"name\":\"alsa-restore\",\
-                    \"state\":\"dead\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"alsa-utils\",\
-                    \"state\":\"running\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
                     \"name\":\"apport\",\
                     \"state\":\"failed\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"netplan-ovs-cleanup\",\
-                    \"state\":\"exited\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"osconfig\",\
-                    \"state\":\"dead\",\
                     \"autoStartStatus\":\"enabled\"\
                 },\
                 {\
                     \"name\":\"rtkit-daemon\",\
                     \"state\":\"exited\",\
-                    \"autoStartStatus\":\"disabled\"\
+                    \"autoStartStatus\":\"enabled\"\
                 },\
                 {\
                     \"name\":\"saned\",\
                     \"state\":\"running\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"spice-vdagent\",\
-                    \"state\":\"dead\",\
-                    \"autoStartStatus\":\"other\"\
+                    \"autoStartStatus\":\"enabled\"\
                 }\
             ]";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
