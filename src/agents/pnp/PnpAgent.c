@@ -3,7 +3,6 @@
 
 #include "inc/AgentCommon.h"
 #include "inc/PnpUtils.h"
-#include "inc/MpiClient.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
 #include "inc/ConfigUtils.h"

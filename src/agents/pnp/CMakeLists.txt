@@ -19,7 +19,6 @@ project(osconfig)
 set(osconfig_files
     ./AisUtils.c
     ./ConfigUtils.c
-    ./MpiClient.c
     ./PnpAgent.c
     ./PnpUtils.c)
 
@@ -68,7 +67,8 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         aziotsharedutil
         tracelogging
         logging
-        commonutils)
+        commonutils
+        mpiclient)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)
 
@@ -94,6 +94,7 @@ else()
         aziotsharedutil
         logging
         commonutils
+        mpiclient
         lttngh
         hsm_security_client
         msr_riot
