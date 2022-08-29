@@ -10,4 +10,5 @@ endif()
 
 add_subdirectory(logging)
 add_subdirectory(commonutils)
+add_subdirectory(mpiclient)
 add_subdirectory(parson)
