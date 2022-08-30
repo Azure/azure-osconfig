@@ -36,7 +36,8 @@ impl From<serde_json::Error> for MmiError {
 }
 
 impl From<std::io::Error> for MmiError {
-    fn from(_err: std::io::Error) -> MmiError {
+    fn from(err: std::io::Error) -> MmiError {
+        println!("{}",err);
         MmiError::SystemctlError
     }
 }
