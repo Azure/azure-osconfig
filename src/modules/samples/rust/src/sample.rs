@@ -181,11 +181,11 @@ impl Sample {
             if self.max_payload_size_bytes != 0
             && payload.len() as u32 > self.max_payload_size_bytes {
                 // In other modules you could prioritize parts of the payload
-                println!("Payload size exceeded max payload size bytes in get");
-                Err(MmiError::PayloadSizeExceeded)
-            } else {
-                Ok(payload)
+                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                let payload_bytes = payload.into_bytes();
+                let payload = &payload_bytes[0..max_payload_size_bytes];
             }
+            Ok(payload)
         } else {
             println!("Invalid component name: {}", component_name);
             Err(MmiError::InvalidArgument)
