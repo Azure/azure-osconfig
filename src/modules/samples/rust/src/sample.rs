@@ -32,6 +32,8 @@ const INFO: &str = r#"{
     "Lifetime": 1,
     "UserAccount": 0}"#;
 
+type Result<T> = std::result::Result<T, MmiError>;
+
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
 // #[repr(u8)] changes the enum to an integer enum akin to one in C
 #[repr(u8)]
@@ -100,7 +102,7 @@ impl Sample {
         }
     }
 
-    pub fn get_info(_client_name: &str) -> Result<&str, MmiError> {
+    pub fn get_info(_client_name: &str) -> Result<&str> {
         // This sample module makes no use of the client_name, but
         // it may be copied, compared, etc. here
         // In the case of an error, an error code Err(i32) could be returned instead
@@ -112,7 +114,7 @@ impl Sample {
         component_name: &str,
         object_name: &str,
         payload: &str,
-    ) -> Result<i32, MmiError> {
+    ) -> Result<i32> {
         if COMPONENT_NAME.eq(component_name) {
             if self.max_payload_size_bytes != 0
                 && payload.len() as u32 > self.max_payload_size_bytes
@@ -154,7 +156,7 @@ impl Sample {
         }
     }
 
-    pub fn get(&self, component_name: &str, object_name: &str) -> Result<String, MmiError> {
+    pub fn get(&self, component_name: &str, object_name: &str) -> Result<String> {
         if COMPONENT_NAME.eq(component_name) {
             let json_value = match object_name {
                 REPORTED_STRING_OBJECT_NAME => {
@@ -211,7 +213,7 @@ mod tests {
 
     #[test]
     fn info_size() {
-        let sample_info: Result<&str, MmiError> = Sample::get_info("Test_client_name");
+        let sample_info: Result<&str> = Sample::get_info("Test_client_name");
         assert!(sample_info.is_ok());
         let sample_info: &str = sample_info.unwrap();
         assert_eq!(INFO, sample_info);
@@ -221,13 +223,13 @@ mod tests {
     #[test]
     fn invalid_get() {
         let sample = Sample::new(MAX_PAYLOAD_BYTES);
-        let invalid_component_result: Result<String, MmiError> =
+        let invalid_component_result: Result<String> =
             sample.get("Invalid component", DESIRED_STRING_OBJECT_NAME);
         assert!(invalid_component_result.is_err());
         if let Err(e) = invalid_component_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
-        let invalid_object_result: Result<String, MmiError> =
+        let invalid_object_result: Result<String> =
             sample.get(COMPONENT_NAME, "Invalid object");
         assert!(invalid_object_result.is_err());
         if let Err(e) = invalid_object_result {
@@ -240,7 +242,7 @@ mod tests {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
         let valid_json_payload = r#""Rust Sample Module""#;
         let invalid_json_payload = r#"Invalid payload"#;
-        let invalid_component_result: Result<i32, MmiError> = sample.set(
+        let invalid_component_result: Result<i32> = sample.set(
             "Invalid component",
             DESIRED_STRING_OBJECT_NAME,
             valid_json_payload,
@@ -249,13 +251,13 @@ mod tests {
         if let Err(e) = invalid_component_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
-        let invalid_object_result: Result<i32, MmiError> =
+        let invalid_object_result: Result<i32> =
             sample.set(COMPONENT_NAME, "Invalid object", valid_json_payload);
         assert!(invalid_object_result.is_err());
         if let Err(e) = invalid_object_result {
             assert_eq!(e, MmiError::InvalidArgument);
         }
-        let invalid_payload_result: Result<i32, MmiError> = sample.set(
+        let invalid_payload_result: Result<i32> = sample.set(
             COMPONENT_NAME,
             DESIRED_STRING_OBJECT_NAME,
             invalid_json_payload,
@@ -270,11 +272,11 @@ mod tests {
     fn get_set_string_object() {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
         let json_payload = r#""Rust Sample Module""#;
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_STRING_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> =
+        let get_result: Result<String> =
             sample.get(COMPONENT_NAME, REPORTED_STRING_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
@@ -285,11 +287,11 @@ mod tests {
     fn get_set_integer_object() {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
         let json_payload = r#"12345"#;
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_INTEGER_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> =
+        let get_result: Result<String> =
             sample.get(COMPONENT_NAME, REPORTED_INTEGER_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
@@ -300,11 +302,11 @@ mod tests {
     fn get_set_boolean_object() {
         let mut sample = Sample::new(MAX_PAYLOAD_BYTES);
         let json_payload = r#"true"#;
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_BOOLEAN_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> =
+        let get_result: Result<String> =
             sample.get(COMPONENT_NAME, REPORTED_BOOLEAN_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
@@ -331,12 +333,12 @@ mod tests {
                     \"key2\":2\
                 }\
             }";
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
 
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
+        let get_result: Result<String> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
         assert!(json_strings_eq::<Object>(get_result.as_str(), json_payload));
@@ -362,11 +364,11 @@ mod tests {
                     \"key2\":null\
                 }\
             }";
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
+        let get_result: Result<String> = sample.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
         assert!(json_strings_eq::<Object>(get_result.as_str(), json_payload));
@@ -394,11 +396,11 @@ mod tests {
                     }\
                 }\
             ]";
-        let set_result: Result<i32, MmiError> =
+        let set_result: Result<i32> =
             sample.set(COMPONENT_NAME, DESIRED_ARRAY_OBJECT_NAME, json_payload);
         assert!(set_result.is_ok());
         assert_eq!(0, set_result.unwrap());
-        let get_result: Result<String, MmiError> =
+        let get_result: Result<String> =
             sample.get(COMPONENT_NAME, REPORTED_ARRAY_OBJECT_NAME);
         assert!(get_result.is_ok());
         let get_result: String = get_result.unwrap();
