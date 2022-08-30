@@ -98,10 +98,7 @@ impl SystemctlInfo for Systemctl {
             }
             let daemon = self.create_daemon(&service["service"], &service["status"])?;
             // Only report enabled daemons with State not being Other
-            if daemon.state != State::Other
-                && daemon.state != State::Dead
-                && daemon.auto_start_status == AutoStartStatus::Enabled
-            {
+            if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
                 services.push(daemon);
             }
         }
@@ -240,11 +237,13 @@ impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
             let daemons = self.system_caller.get_daemons()?;
             let json_value = serde_json::to_value::<&Vec<Daemon>>(&daemons)?;
             let payload: String = serde_json::to_string(&json_value)?;
-            if self.max_payload_size_bytes != 0
-                && payload.len() as u32 > self.max_payload_size_bytes
+            if (self.max_payload_size_bytes != 0)
+                && (payload.len() as u32 > self.max_payload_size_bytes)
             {
-                println!("Payload size exceeded max payload size bytes in get");
-                Err(MmiError::PayloadSizeExceeded)
+                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                let payload_bytes = payload.into_bytes();
+                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                Ok(truncated_payload)
             } else {
                 Ok(payload)
             }
@@ -390,10 +389,7 @@ mod tests {
                 }
                 let daemon = self.create_daemon(&service["service"], &service["status"])?;
                 // Only report enabled daemons with State not being Other
-                if daemon.state != State::Other
-                    && daemon.state != State::Dead
-                    && daemon.auto_start_status == AutoStartStatus::Enabled
-                {
+                if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
                     services.push(daemon);
                 }
             }
@@ -590,6 +586,21 @@ mod tests {
             let payload: String = daemon_config
                 .get(COMPONENT_NAME, REPORTED_OBJECT_NAME)
                 .unwrap();
+            assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
+        }
+    }
+
+    #[test]
+    fn get_truncated_payload() {
+        let daemon_config = DaemonConfiguration::new(16, SystemctlTest::new());
+        if libsystemd::daemon::booted() {
+            let payload = daemon_config.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
+            assert!(payload.is_ok());
+            let payload = payload.unwrap();
+            println!("{}", payload);
+            let expected = "[\
+                {\
+                    \"name\":\"appor";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
         }
     }
