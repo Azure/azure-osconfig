@@ -183,7 +183,7 @@ impl SystemctlInfo for Systemctl {
             // Unit is already enabled
             Ok(false)
         } else {
-            let output = Command::new("systemctl").args(["enable", name]).output()?;
+            Command::new("systemctl").args(["enable", name]).output()?;
             Ok(true)
         }
     }
@@ -254,7 +254,7 @@ impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
         &mut self,
         component_name: &str,
         object_name: &str,
-        payload_str_slice: &str,
+        payload: &str,
     ) -> Result<i32> {
         if !libsystemd::daemon::booted() {
             // Whether the caller was booted using Systemd
@@ -265,13 +265,13 @@ impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
         } else if !DESIRED_OBJECT_NAME.eq(object_name) {
             println!("Invalid object name: {}", object_name);
             Err(MmiError::InvalidArgument)
-        } else if self.max_payload_size_bytes != 0
-            && payload_str_slice.len() as u32 > self.max_payload_size_bytes
+        } else if (self.max_payload_size_bytes != 0)
+            && (payload.len() as u32 > self.max_payload_size_bytes)
         {
             println!("Payload size exceeds max payload size bytes");
-            Err(MmiError::InvalidArgument)
+            Err(MmiError::PayloadSizeExceeded)
         } else {
-            let desired_daemons = serde_json::from_str::<Vec<DesiredDaemon>>(payload_str_slice)?;
+            let desired_daemons = serde_json::from_str::<Vec<DesiredDaemon>>(payload)?;
             for desired_daemon in desired_daemons {
                 if !self.system_caller.exists(&desired_daemon.name)? {
                     println!(
