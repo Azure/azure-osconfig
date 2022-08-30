@@ -185,9 +185,11 @@ impl Sample {
                 // In other modules you could prioritize parts of the payload
                 println!("Payload size exceeded max payload size bytes in get so it was truncated.");
                 let payload_bytes = payload.into_bytes();
-                let payload = &payload_bytes[0..max_payload_size_bytes];
+                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                Ok(truncated_payload)
+            } else {
+                Ok(payload)
             }
-            Ok(payload)
         } else {
             println!("Invalid component name: {}", component_name);
             Err(MmiError::InvalidArgument)

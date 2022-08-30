@@ -5,6 +5,7 @@ use libc::{c_int, EINVAL, ENOMEM};
 use std::ffi::NulError;
 use std::fmt;
 use std::str::Utf8Error;
+use std::string::FromUtf8Error;
 
 #[derive(Debug, PartialEq)]
 pub enum MmiError {
@@ -13,6 +14,12 @@ pub enum MmiError {
     InvalidArgument,
     PayloadSizeExceeded,
     SerdeError,
+}
+
+impl From<FromUtf8Error> for MmiError {
+    fn from(_err: FromUtf8Error) -> MmiError {
+        MmiError::FailedRead
+    }
 }
 
 impl From<Utf8Error> for MmiError {
