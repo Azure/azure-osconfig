@@ -84,7 +84,7 @@ impl SystemctlInfo for Systemctl {
             }
             let daemon = Self::create_daemon(&service["service"], &service["status"])?;
             // Only report enabled daemons with State not being Other
-            if daemon.state != State::Other && daemon.state != State::Dead && daemon.auto_start_status == AutoStartStatus::Enabled {
+            if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
                 services.push(daemon);
             }
         }
@@ -164,8 +164,8 @@ impl DaemonConfiguration {
             let daemons = T::get_daemons()?;
             let json_value = serde_json::to_value::<&Vec<Daemon>>(&daemons)?;
             let payload: String = serde_json::to_string(&json_value)?;
-            if self.max_payload_size_bytes != 0
-                && payload.len() as u32 > self.max_payload_size_bytes
+            if (self.max_payload_size_bytes != 0)
+                && (payload.len() as u32 > self.max_payload_size_bytes)
             {
                 println!("Payload size exceeded max payload size bytes in get");
                 Err(MmiError::PayloadSizeExceeded)
@@ -228,7 +228,7 @@ mod tests {
                 }
                 let daemon = Self::create_daemon(&service["service"], &service["status"])?;
                 // Only report enabled daemons with State not being Other
-                if daemon.state != State::Other && daemon.state != State::Dead && daemon.auto_start_status == AutoStartStatus::Enabled {
+                if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
                     services.push(daemon);
                 }
             }
