@@ -167,8 +167,10 @@ impl DaemonConfiguration {
             if (self.max_payload_size_bytes != 0)
                 && (payload.len() as u32 > self.max_payload_size_bytes)
             {
-                println!("Payload size exceeded max payload size bytes in get");
-                Err(MmiError::PayloadSizeExceeded)
+                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                let payload_bytes = payload.into_bytes();
+                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                Ok(truncated_payload)
             } else {
                 Ok(payload)
             }
@@ -345,6 +347,21 @@ mod tests {
                     \"autoStartStatus\":\"enabled\"\
                 }\
             ]";
+            assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
+        }
+    }
+
+    #[test]
+    fn get_truncated_payload() {
+        let daemon_config = DaemonConfiguration::new(16);
+        if libsystemd::daemon::booted() {
+            let payload = daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
+            assert!(payload.is_ok());
+            let payload = payload.unwrap();
+            println!("{}", payload);
+            let expected = "[\
+                {\
+                    \"name\":\"appor";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
         }
     }
