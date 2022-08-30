@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-#include <iostream>
 
 #include "CommonUtils.h"
 #include "Mmi.h"
@@ -321,6 +320,7 @@ Ztsi::EnabledState Ztsi::GetEnabledState()
 int Ztsi::GetMaxScheduledAttestationsPerDay()
 {
     AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
+    // this is probably where things are going wrong
     return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxScheduledAttestationsPerDay : g_defaultMaxScheduledAttestationsPerDay;
 }
 
@@ -382,7 +382,6 @@ int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
 
 int Ztsi::SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay)
 {
-    std::cout << "calling set max manual attestations with value" + maxManualAttestationsPerDay << std::endl;
     int status = MMI_OK;
     AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
 
@@ -392,7 +391,6 @@ int Ztsi::SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay)
         if (maxManualAttestationsPerDay != configuration.maxManualAttestationsPerDay){
             configuration.enabled = m_lastEnabledState;
             configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
-            std::cout << "configuration.maxManualAttestationsPerDay is now" << maxManualAttestationsPerDay << std::endl;
             status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
         }
     }
@@ -618,7 +616,6 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
 
 int Ztsi::WriteAgentConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
-    std::cout << "\n\n writing config to file \n\n";
     int status = MMI_OK;
     std::FILE* file = nullptr;
 
@@ -653,7 +650,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
     int status = MMI_OK;
     struct stat sb;
 
-    // Create /etc/ztsi/ if it does not exist
+    // Create /etc/sim-agent/ if it does not exist
     if (0 != stat(m_agentConfigurationDir.c_str(), &sb))
     {
         if (0 == mkdir(m_agentConfigurationDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR))
@@ -667,7 +664,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
         }
     }
 
-    // Create /etc/ztsi/agent.conf if it does not exist
+    // Create /etc/sim-agent/agent.conf if it does not exist
     if (0 != stat(m_agentConfigurationFile.c_str(), &sb))
     {
         std::ofstream newFile(m_agentConfigurationFile, std::ios::out | std::ios::trunc);
