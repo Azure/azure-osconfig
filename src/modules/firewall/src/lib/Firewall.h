@@ -75,7 +75,7 @@ public:
 
     virtual GenericRule& Parse(const rapidjson::Value& rule);
 
-    virtual std::string GetParseError() const
+    virtual std::vector<std::string> GetParseError() const
     {
         return m_parseError;
     }
@@ -92,7 +92,6 @@ public:
 
     virtual std::string Specification() const = 0;
 
-    // REVIEW: make these a single template function
     virtual int ActionFromString(const std::string& str);
     virtual int DirectionFromString(const std::string& str);
     virtual int StateFromString(const std::string& str);
@@ -101,6 +100,7 @@ public:
     virtual std::string ActionToString() const = 0;
     virtual std::string DirectionToString() const = 0;
     virtual std::string ProtocolToString() const = 0;
+
 protected:
     Action m_action;
     Direction m_direction;
@@ -110,7 +110,7 @@ protected:
     std::string m_sourcePort;
     std::string m_destinationPort;
 
-    std::string m_parseError;
+    std::vector<std::string> m_parseError;
 
 private:
     State m_desiredState;
@@ -126,9 +126,14 @@ public:
     virtual std::string ActionToString() const override;
     virtual std::string DirectionToString() const override;
     virtual std::string ProtocolToString() const override;
+
+    virtual std::string ActionToTarget() const;
+    virtual std::string DirectionToChain() const;
+
+    virtual int ActionFromTarget(const std::string& str);
+    virtual int DirectionFromChain(const std::string& str);
 };
 
-// TODO: policy should be an inner class on GenericFirewall
 class IpTablesPolicy : public IpTablesRule
 {
 public:
@@ -140,6 +145,8 @@ public:
 
     virtual IpTablesPolicy& Parse(const rapidjson::Value& policy) override;
     virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+
+    virtual int ActionFromString(const std::string& str) override;
 
     virtual std::string Specification() const override;
 };
@@ -166,12 +173,12 @@ public:
 
     virtual Status GetStatus() const
     {
-        return m_status;
+        return (m_policyStatusMessage.empty() && m_ruleStatusMessage.empty()) ? Status::Success : Status::Failure;
     }
 
     virtual std::string GetStatusMessage() const
     {
-        return m_statusMessage;
+        return m_policyStatusMessage + m_ruleStatusMessage;
     }
 
     virtual State Detect() const = 0;
@@ -182,8 +189,8 @@ public:
     virtual int SetDefaultPolicies(const std::vector<PolicyT> policies) = 0;
 
 protected:
-    Status m_status;
-    std::string m_statusMessage;
+    std::string m_policyStatusMessage;
+    std::string m_ruleStatusMessage;
 };
 
 class IpTables : public GenericFirewall<IpTablesRule, IpTablesPolicy>
@@ -204,8 +211,8 @@ public:
     int SetDefaultPolicies(const std::vector<Policy> policies) override;
 
 private:
-    int Add(const Rule& rule);
-    int Remove(const Rule& rule);
+    int Add(const Rule& rule, std::string& error);
+    int Remove(const Rule& rule, std::string& error);
     bool Exists(const Rule& rule) const;
 };
 
@@ -218,12 +225,12 @@ public:
     // Reported properties
     static const std::string m_firewallReportedFingerprint;
     static const std::string m_firewallReportedState;
-    static const std::string m_firewallReportedDefaults;
+    static const std::string m_firewallReportedDefaultPolicies;
     static const std::string m_firewallReportedConfigurationStatus;
     static const std::string m_firewallReportedConfigurationStatusDetail;
 
     // Desired properties
-    static const std::string m_firewallDesiredDefaults;
+    static const std::string m_firewallDesiredDefaultPolicies;
     static const std::string m_firewallDesiredRules;
 
     FirewallModuleBase(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
@@ -235,12 +242,11 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
 
 protected:
-    // TODO: make all these const
-    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
-    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
-    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
-    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
-    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) = 0;
+    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
+    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
+    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
+    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
+    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
 
     virtual int SetDefaultPolicies(rapidjson::Document& document) = 0;
     virtual int SetRules(rapidjson::Document& document) = 0;
@@ -250,11 +256,27 @@ private:
     size_t m_lastPayloadHash;
 };
 
-template<class RuleT>
-std::vector<RuleT> ParseRules(const rapidjson::Value& value);
+template<class T>
+std::vector<T> ParseArray(const rapidjson::Value& value)
+{
+    std::vector<T> rules;
 
-template<class PolicyT>
-std::vector<PolicyT> ParsePolicies(const rapidjson::Value& rules);
+    if (value.IsArray())
+    {
+        for (auto& value : value.GetArray())
+        {
+            T rule;
+            rule.Parse(value);
+            rules.push_back(rule);
+        }
+    }
+    else
+    {
+        OsConfigLogError(FirewallLog::Get(), "JSON value is not an array");
+    }
+
+    return rules;
+}
 
 template <class FirewallT>
 class FirewallModule : public FirewallModuleBase
@@ -269,23 +291,21 @@ protected:
     typedef typename FirewallT::Policy Policy;
     typedef typename FirewallT::Rule Rule;
 
-    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         State state = m_firewall.Detect();
-        // TODO: Convert enum to string value
-        int value = static_cast<int>(state);
-        writer.Int(value);
+        writer.String((state == State::Enabled) ? "enabled" : ((state == State::Disabled) ? "disabled" : "unknown"));
         return 0;
     }
 
-    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         std::string fingerprint = m_firewall.Fingerprint();
         writer.String(fingerprint.c_str());
         return 0;
     }
 
-    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         std::vector<Policy> policies = m_firewall.GetDefaultPolicies();
         writer.StartArray();
@@ -297,16 +317,14 @@ protected:
         return 0;
     }
 
-    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         Status status = m_firewall.GetStatus();
-        // TODO: Convert enum to string value
-        int value = static_cast<int>(status);
-        writer.Int(value);
+        writer.String((status == Status::Success) ? "success" : ((status == Status::Failure) ? "failure" : "unknown"));
         return 0;
     }
 
-    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) override
+    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         std::string statusDetail = m_firewall.GetStatusMessage();
         writer.String(statusDetail.c_str());
@@ -315,36 +333,14 @@ protected:
 
     virtual int SetDefaultPolicies(rapidjson::Document& document) override
     {
-        int status = 0;
-        std::vector<Policy> policies = ParsePolicies<Policy>(document);
-
-        if (!policies.empty())
-        {
-            status = m_firewall.SetDefaultPolicies(policies);
-        }
-        else
-        {
-            status = -1;
-        }
-
-        return status;
+        std::vector<Policy> policies = ParseArray<Policy>(document);
+        return (!policies.empty()) ? m_firewall.SetDefaultPolicies(policies) : -1;
     }
 
     virtual int SetRules(rapidjson::Document& document) override
     {
-        int status = 0;
-        std::vector<Rule> rules = ParseRules<Rule>(document);
-
-        if (!rules.empty())
-        {
-            status = m_firewall.SetRules(rules);
-        }
-        else
-        {
-            status = -1;
-        }
-
-        return status;
+        std::vector<Rule> rules = ParseArray<Rule>(document);
+        return (!rules.empty()) ? m_firewall.SetRules(rules) : -1;
     }
 
 private:
