@@ -8,8 +8,8 @@ use std::process::Command;
 
 use crate::MmiError;
 
-const COMPONENT_NAME: &str = "DaemonConfiguration";
-const OBJECT_NAME: &str = "dameons";
+const COMPONENT_NAME: &str = "SystemdDaemonConfiguration";
+const OBJECT_NAME: &str = "daemonConfiguration";
 
 // r# Denotes a Rust Raw String
 const INFO: &str = r#"{
@@ -19,7 +19,7 @@ const INFO: &str = r#"{
     "VersionMajor": 1,
     "VersionMinor": 0,
     "VersionInfo": "",
-    "Components": ["DaemonConfiguration"],
+    "Components": ["SystemdDaemonConfiguration"],
     "Lifetime": 1,
     "UserAccount": 0}"#;
 
@@ -83,7 +83,10 @@ impl SystemctlInfo for Systemctl {
                 continue;
             }
             let daemon = Self::create_daemon(&service["service"], &service["status"])?;
-            services.push(daemon);
+            // Only report enabled daemons with State not being Other
+            if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+                services.push(daemon);
+            }
         }
         Ok(services)
     }
@@ -94,7 +97,7 @@ impl SystemctlInfo for Systemctl {
             return Err(MmiError::SystemctlError);
         }
         let substate = &substate[9..];
-        let state = match substate {
+        let state = match substate.trim() {
             "running" => State::Running,
             "failed" => State::Failed,
             "exited" => State::Exited,
@@ -161,10 +164,13 @@ impl DaemonConfiguration {
             let daemons = T::get_daemons()?;
             let json_value = serde_json::to_value::<&Vec<Daemon>>(&daemons)?;
             let payload: String = serde_json::to_string(&json_value)?;
-            if self.max_payload_size_bytes != 0
-                && payload.len() as u32 > self.max_payload_size_bytes
+            if (self.max_payload_size_bytes != 0)
+                && (payload.len() as u32 > self.max_payload_size_bytes)
             {
-                Err(MmiError::InvalidArgument)
+                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                let payload_bytes = payload.into_bytes();
+                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                Ok(truncated_payload)
             } else {
                 Ok(payload)
             }
@@ -199,11 +205,11 @@ mod tests {
             alsa-restore.service                       static          enabled      
             alsa-utils.service                         masked          enabled      
             apport-forward@.service                    static          enabled      
-            apport.service                             generated       enabled      
+            apport.service                             enabled         enabled      
             netplan-ovs-cleanup.service                enabled-runtime enabled
-            osconfig.service                           enabled         enabled      
-            rtkit-daemon.service                       disabled        enabled      
-            saned.service                              masked          enabled           
+            osconfig.service                           disabled        enabled      
+            rtkit-daemon.service                       enabled         enabled      
+            saned.service                              enabled         enabled           
             spice-vdagent.service                      indirect        enabled           
             
             9 unit files listed."#;
@@ -223,7 +229,10 @@ mod tests {
                     continue;
                 }
                 let daemon = Self::create_daemon(&service["service"], &service["status"])?;
-                services.push(daemon);
+                // Only report enabled daemons with State not being Other
+                if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+                    services.push(daemon);
+                }
             }
             Ok(services)
         }
@@ -304,9 +313,6 @@ mod tests {
             if let Err(e) = invalid_object_result {
                 assert_eq!(e, MmiError::InvalidArgument);
             }
-            let payload = daemon_config
-                .get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME)
-                .unwrap();
         } else {
             let systemd_result: Result<String, MmiError> =
                 daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
@@ -326,46 +332,36 @@ mod tests {
             let payload = payload.unwrap();
             let expected = "[\
                 {\
-                    \"name\":\"alsa-restore\",\
-                    \"state\":\"dead\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"alsa-utils\",\
-                    \"state\":\"running\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
                     \"name\":\"apport\",\
                     \"state\":\"failed\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"netplan-ovs-cleanup\",\
-                    \"state\":\"exited\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"osconfig\",\
-                    \"state\":\"dead\",\
                     \"autoStartStatus\":\"enabled\"\
                 },\
                 {\
                     \"name\":\"rtkit-daemon\",\
                     \"state\":\"exited\",\
-                    \"autoStartStatus\":\"disabled\"\
+                    \"autoStartStatus\":\"enabled\"\
                 },\
                 {\
                     \"name\":\"saned\",\
                     \"state\":\"running\",\
-                    \"autoStartStatus\":\"other\"\
-                },\
-                {\
-                    \"name\":\"spice-vdagent\",\
-                    \"state\":\"dead\",\
-                    \"autoStartStatus\":\"other\"\
+                    \"autoStartStatus\":\"enabled\"\
                 }\
             ]";
+            assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
+        }
+    }
+
+    #[test]
+    fn get_truncated_payload() {
+        let daemon_config = DaemonConfiguration::new(16);
+        if libsystemd::daemon::booted() {
+            let payload = daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
+            assert!(payload.is_ok());
+            let payload = payload.unwrap();
+            println!("{}", payload);
+            let expected = "[\
+                {\
+                    \"name\":\"appor";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
         }
     }
