@@ -265,9 +265,9 @@ namespace tests
             Rule("present", "accept", "in"),
             Rule("present", "accept", "in", "tcp"),
             Rule("present", "reject", "in", "udp", "0.0.0.0"),
-            Rule("absent", "reject", "out", "icmp", "0.0.0.0", "0.0.0.0"),
-            Rule("absent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80),
-            Rule("absent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("notPresent", "reject", "out", "icmp", "0.0.0.0", "0.0.0.0"),
+            Rule("notPresent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80),
+            Rule("notPresent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         std::string initialFingerprint = "\"0\"";
@@ -293,7 +293,7 @@ namespace tests
         std::vector<std::string> rules = {
             Rule("present", "accept", "in"),
             Rule("invalid", "invalid", "invalid"), // invalid rule
-            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         std::string initialFingerprint = "\"0\"";
@@ -370,9 +370,9 @@ namespace tests
             Rule("present", "accept", "in"),
             Rule("present", "accept", "in", "tcp"),
             Rule("present", "accept", "in", "udp", "0.0.0.0"),
-            Rule("absent", "accept", "out", "icmp", "0.0.0.0", "0.0.0.0"),
-            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80),
-            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("notPresent", "accept", "out", "icmp", "0.0.0.0", "0.0.0.0"),
+            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80),
+            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         for (auto ruleJson : rules)
