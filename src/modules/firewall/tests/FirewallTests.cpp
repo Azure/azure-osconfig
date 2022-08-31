@@ -184,7 +184,7 @@ namespace tests
 
     TEST_F(FirewallTests, GetSetDefaultPolicies)
     {
-        std::string policiesJson = "[{\"direction\": \"in\", \"action\": \"accept\"}, {\"direction\": \"out\", \"action\": \"reject\"}]";
+        std::string policiesJson = "[{\"direction\": \"in\", \"action\": \"accept\"}, {\"direction\": \"out\", \"action\": \"drop\"}]";
         EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedDefaultPolicies.c_str(), &payload, &payloadSizeBytes));
         EXPECT_TRUE(JsonEq(std::string(payload, payloadSizeBytes), policiesJson));
@@ -342,9 +342,7 @@ namespace tests
             Policy("in", "accept"),
             Policy("out", "accept"),
             Policy("in", "drop"),
-            Policy("out", "drop"),
-            Policy("in", "reject"),
-            Policy("out", "reject")
+            Policy("out", "drop")
         };
 
         for (auto policyJson : policies)
@@ -436,7 +434,8 @@ namespace tests
             "{\"direction\": \"invalid\", \"action\": \"accept\"}",
             "{\"direction\": \"in\"}",
             "{\"direction\": \"in\", \"action\": 123}",
-            "{\"direction\": \"in\", \"action\": \"invalid\"}"
+            "{\"direction\": \"in\", \"action\": \"invalid\"}",
+            "{\"direction\": \"in\", \"action\": \"reject\"}",
         };
 
         for (auto policyJson : invalidPolicies)
