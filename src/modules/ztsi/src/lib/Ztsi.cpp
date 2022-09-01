@@ -13,6 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 
+
 #include "CommonUtils.h"
 #include "Mmi.h"
 #include "Ztsi.h"
@@ -596,7 +597,7 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
         {
             if (document[g_configurationPropertyMaxManualAttestationsPerDay].IsInt())
             {
-                configuration.maxScheduledAttestationsPerDay = document[g_configurationPropertyMaxManualAttestationsPerDay].GetInt();
+                configuration.maxManualAttestationsPerDay = document[g_configurationPropertyMaxManualAttestationsPerDay].GetInt();
             }
             else
             {
