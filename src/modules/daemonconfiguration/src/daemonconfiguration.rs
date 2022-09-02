@@ -66,11 +66,11 @@ pub struct DesiredDaemon {
 pub trait SystemctlInfo {
     /// Returns a new SystemctlInfo Instance.
     fn new() -> Self;
-    /// If successful, returns an Ok(Vec<Daemon>) with all enabled systemd daemons with State not being 
+    /// If successful, returns an Ok(Vec<Daemon>) with all enabled systemd daemons with State not being
     /// Other or dead (Running, failed, or exited). Err(MmiError) if the operation fails.
     fn get_daemons(&self) -> Result<Vec<Daemon>>;
     /// If successful, returns an Ok(String) containing the all daemon names, auto start statuses, and vendor preset
-    /// auto start statuses. Err(MmiError) if the operation fails. 
+    /// auto start statuses. Err(MmiError) if the operation fails.
     /// The string will be formatted as so:
     /// "UNIT FILE                                  STATE           VENDOR PRESET
     ///  <daemon_name>                              <auto_start_status> <vendor_auto_start_status>
@@ -80,7 +80,7 @@ pub trait SystemctlInfo {
     /// and it's auto start statuses as strings. Err(MmiError) if the operation fails.
     fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon>;
     /// If successful, returns an Ok(String) containing the state of the daemon with name "name".
-    /// Err(MmiError) if the operation fails. 
+    /// Err(MmiError) if the operation fails.
     /// The string will be formatted as so:
     /// "substate=<state>"
     fn show_substate_property(&self, name: &str) -> Result<String>;
@@ -123,7 +123,10 @@ impl SystemctlInfo for Systemctl {
             }
             let daemon = self.create_daemon(&service["service"], &service["status"])?;
             // Only report enabled daemons with State not being Other or dead
-            if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+            if (daemon.state != State::Other)
+                && (daemon.state != State::Dead)
+                && (daemon.auto_start_status == AutoStartStatus::Enabled)
+            {
                 services.push(daemon);
             }
         }
@@ -261,9 +264,13 @@ impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
             if (self.max_payload_size_bytes != 0)
                 && (payload.len() as u32 > self.max_payload_size_bytes)
             {
-                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                println!(
+                    "Payload size exceeded max payload size bytes in get so it was truncated."
+                );
                 let payload_bytes = payload.into_bytes();
-                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                let truncated_payload = String::from_utf8(
+                    (&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec(),
+                )?;
                 Ok(truncated_payload)
             } else {
                 Ok(payload)
@@ -271,12 +278,7 @@ impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
         }
     }
 
-    pub fn set(
-        &mut self,
-        component_name: &str,
-        object_name: &str,
-        payload: &str,
-    ) -> Result<i32> {
+    pub fn set(&mut self, component_name: &str, object_name: &str, payload: &str) -> Result<i32> {
         if !libsystemd::daemon::booted() {
             // Whether the caller was booted using Systemd
             Err(MmiError::SystemdError)
@@ -410,7 +412,10 @@ mod tests {
                 }
                 let daemon = self.create_daemon(&service["service"], &service["status"])?;
                 // Only report enabled daemons with State not being Other
-                if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+                if (daemon.state != State::Other)
+                    && (daemon.state != State::Dead)
+                    && (daemon.auto_start_status == AutoStartStatus::Enabled)
+                {
                     services.push(daemon);
                 }
             }
