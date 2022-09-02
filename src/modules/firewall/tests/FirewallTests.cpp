@@ -93,7 +93,7 @@ namespace tests
             m_ruleStatusMessage += error + "\n";
         }
 
-        return errors.empty() ? 0 : -1;
+        return errors.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     int MockFirewall::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
@@ -120,7 +120,7 @@ namespace tests
             m_policyStatusMessage += error + "\n";
         }
 
-        return errors.empty() ? 0 : -1;
+        return errors.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     class FirewallTests : public ::testing::Test
@@ -204,7 +204,7 @@ namespace tests
 
         ClearPayload();
 
-        EXPECT_EQ(-1, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
+        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
 
         // Check the new fingerprint
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
@@ -237,7 +237,7 @@ namespace tests
         return json;
     }
 
-    std::string Rule(const std::string desiredState, const std::string& action, const std::string& direction, const std::string& protocol = "", const std::string& src = "", const std::string& dst = "", int srcPort = -1, int dstPort = -1)
+    std::string Rule(const std::string desiredState, const std::string& action, const std::string& direction, const std::string& protocol = "", const std::string& src = "", const std::string& dst = "", int srcPort = EXIT_FAILURE, int dstPort = EXIT_FAILURE)
     {
         std::string rule = "{\"desiredState\": \"" + desiredState + "\", \"action\": \"" + action + "\", \"direction\": \"" + direction + "\"";
         if (!protocol.empty()) {
@@ -249,10 +249,10 @@ namespace tests
         if (!dst.empty()) {
             rule += ", \"dst\": \"" + dst + "\"";
         }
-        if (srcPort != -1) {
+        if (srcPort != EXIT_FAILURE) {
             rule += ", \"srcPort\": " + std::to_string(srcPort);
         }
-        if (dstPort != -1) {
+        if (dstPort != EXIT_FAILURE) {
             rule += ", \"dstPort\": " + std::to_string(dstPort);
         }
         rule += "}";
@@ -309,7 +309,7 @@ namespace tests
 
         ClearPayload();
 
-        EXPECT_EQ(-1, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
+        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
 
         // Check the new fingerprint
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));

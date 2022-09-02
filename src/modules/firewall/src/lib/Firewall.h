@@ -70,9 +70,6 @@ public:
         Icmp,
     };
 
-    GenericRule() = default;
-    virtual ~GenericRule() = default;
-
     virtual GenericRule& Parse(const rapidjson::Value& rule);
 
     virtual std::vector<std::string> GetParseError() const
@@ -92,10 +89,10 @@ public:
 
     virtual std::string Specification() const = 0;
 
-    virtual int ActionFromString(const std::string& str);
-    virtual int DirectionFromString(const std::string& str);
-    virtual int StateFromString(const std::string& str);
-    virtual int ProtocolFromString(const std::string& str);
+    virtual int SetActionFromString(const std::string& str);
+    virtual int SetDirectionFromString(const std::string& str);
+    virtual int SetStateFromString(const std::string& str);
+    virtual int SetProtocolFromString(const std::string& str);
 
     virtual std::string ActionToString() const = 0;
     virtual std::string DirectionToString() const = 0;
@@ -119,8 +116,6 @@ private:
 class IpTablesRule : public GenericRule
 {
 public:
-    IpTablesRule() = default;
-    virtual ~IpTablesRule() = default;
     virtual std::string Specification() const override;
 
     virtual std::string ActionToString() const override;
@@ -130,8 +125,8 @@ public:
     virtual std::string ActionToTarget() const;
     virtual std::string DirectionToChain() const;
 
-    virtual int ActionFromTarget(const std::string& str);
-    virtual int DirectionFromChain(const std::string& str);
+    virtual int SetActionFromTarget(const std::string& str);
+    virtual int SetDirectionFromChain(const std::string& str);
 };
 
 class IpTablesPolicy : public IpTablesRule
@@ -140,13 +135,10 @@ public:
     typedef GenericRule::Action Action;
     typedef GenericRule::Direction Direction;
 
-    IpTablesPolicy() = default;
-    virtual ~IpTablesPolicy() = default;
-
     virtual IpTablesPolicy& Parse(const rapidjson::Value& policy) override;
     virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
-    virtual int ActionFromString(const std::string& str) override;
+    virtual int SetActionFromString(const std::string& str) override;
 
     virtual std::string Specification() const override;
 };
@@ -168,8 +160,6 @@ public:
         Enabled,
         Disabled
     };
-
-    virtual ~GenericFirewall() = default;
 
     virtual Status GetStatus() const
     {
@@ -199,9 +189,6 @@ public:
     typedef GenericFirewall::State State;
     typedef IpTablesPolicy Policy;
     typedef IpTablesRule Rule;
-
-    IpTables() = default;
-    ~IpTables() = default;
 
     State Detect() const override;
     std::string Fingerprint() const override;
@@ -283,7 +270,6 @@ class FirewallModule : public FirewallModuleBase
 {
 public:
     FirewallModule(unsigned int maxPayloadSize) : FirewallModuleBase(maxPayloadSize) {}
-    ~FirewallModule() = default;
 
 protected:
     typedef typename FirewallT::State State;
@@ -314,33 +300,33 @@ protected:
             policy.Serialize(writer);
         }
         writer.EndArray();
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         Status status = m_firewall.GetStatus();
         writer.String((status == Status::Success) ? "success" : ((status == Status::Failure) ? "failure" : "unknown"));
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         std::string statusDetail = m_firewall.GetStatusMessage();
         writer.String(statusDetail.c_str());
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     virtual int SetDefaultPolicies(rapidjson::Document& document) override
     {
         std::vector<Policy> policies = ParseArray<Policy>(document);
-        return (!policies.empty()) ? m_firewall.SetDefaultPolicies(policies) : -1;
+        return (!policies.empty()) ? m_firewall.SetDefaultPolicies(policies) : EINVAL;
     }
 
     virtual int SetRules(rapidjson::Document& document) override
     {
         std::vector<Rule> rules = ParseArray<Rule>(document);
-        return (!rules.empty()) ? m_firewall.SetRules(rules) : -1;
+        return (!rules.empty()) ? m_firewall.SetRules(rules) : EINVAL;
     }
 
 private:

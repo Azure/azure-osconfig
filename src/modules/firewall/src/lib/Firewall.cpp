@@ -268,7 +268,7 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
     return status;
 }
 
-int GenericRule::ActionFromString(const std::string& str)
+int GenericRule::SetActionFromString(const std::string& str)
 {
     int status = 0;
 
@@ -287,13 +287,13 @@ int GenericRule::ActionFromString(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid action: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
 }
 
-int GenericRule::DirectionFromString(const std::string& str)
+int GenericRule::SetDirectionFromString(const std::string& str)
 {
     int status = 0;
 
@@ -308,13 +308,13 @@ int GenericRule::DirectionFromString(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid direction: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
 }
 
-int GenericRule::StateFromString(const std::string& str)
+int GenericRule::SetStateFromString(const std::string& str)
 {
     int status = 0;
 
@@ -329,13 +329,13 @@ int GenericRule::StateFromString(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid desired state: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
 }
 
-int GenericRule::ProtocolFromString(const std::string& str)
+int GenericRule::SetProtocolFromString(const std::string& str)
 {
     int status = 0;
 
@@ -358,7 +358,7 @@ int GenericRule::ProtocolFromString(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid protocol: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
@@ -373,7 +373,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             if (value[g_desiredState].IsString())
             {
                 std::string state = value[g_desiredState].GetString();
-                if (0 != StateFromString(state))
+                if (0 != SetStateFromString(state))
                 {
                     m_parseError.push_back("Invalid enum value for '" + std::string(g_desiredState) + "': " + state);
                 }
@@ -393,7 +393,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             if (value[g_action].IsString())
             {
                 std::string action = value[g_action].GetString();
-                if (0 != ActionFromString(action))
+                if (0 != SetActionFromString(action))
                 {
                     m_parseError.push_back("Invalid enum value for '" + std::string(g_action) + "': " + action);
                 }
@@ -413,7 +413,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             if (value[g_direction].IsString())
             {
                 std::string direction = value[g_direction].GetString();
-                if (0 != DirectionFromString(direction))
+                if (0 != SetDirectionFromString(direction))
                 {
                     m_parseError.push_back("Invalid enum value for '" + std::string(g_direction) + "': " + direction);
                 }
@@ -433,7 +433,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             if (value[g_protocol].IsString())
             {
                 std::string protocol = value[g_protocol].GetString();
-                if (0 != ProtocolFromString(protocol))
+                if (0 != SetProtocolFromString(protocol))
                 {
                     m_parseError.push_back("Invalid enum value for '" + std::string(g_protocol) + "': " + protocol);
                 }
@@ -510,8 +510,9 @@ std::string IpTablesRule::ActionToString() const
             return g_actionDrop;
         case Action::Reject:
             return g_actionReject;
+        default:
+            return "";
     }
-    return "";
 }
 
 std::string IpTablesRule::DirectionToString() const
@@ -531,8 +532,9 @@ std::string IpTablesRule::ProtocolToString() const
             return g_protocolUDP;
         case Protocol::Icmp:
             return g_protocolICMP;
+        default:
+            return "";
     }
-    return "";
 }
 
 std::string IpTablesRule::ActionToTarget() const
@@ -545,11 +547,12 @@ std::string IpTablesRule::ActionToTarget() const
             return g_targetDrop;
         case Action::Reject:
             return g_targetReject;
+        default:
+            return "";
     }
-    return "";
 }
 
-int IpTablesRule::ActionFromTarget(const std::string& str)
+int IpTablesRule::SetActionFromTarget(const std::string& str)
 {
     int status = 0;
 
@@ -568,13 +571,13 @@ int IpTablesRule::ActionFromTarget(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid action: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
 }
 
-int IpTablesRule::DirectionFromChain(const std::string& str)
+int IpTablesRule::SetDirectionFromChain(const std::string& str)
 {
     int status = 0;
 
@@ -589,7 +592,7 @@ int IpTablesRule::DirectionFromChain(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid direction: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
@@ -681,7 +684,7 @@ std::string IpTables::Fingerprint() const
     return hash;
 }
 
-int IpTablesPolicy::ActionFromString(const std::string& str)
+int IpTablesPolicy::SetActionFromString(const std::string& str)
 {
     int status = 0;
 
@@ -696,7 +699,7 @@ int IpTablesPolicy::ActionFromString(const std::string& str)
     else
     {
         OsConfigLogError(FirewallLog::Get(), "Invalid action: %s", str.c_str());
-        status = -1;
+        status = EINVAL;
     }
 
     return status;
@@ -718,12 +721,13 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
     {
         std::string specification = policy.Specification();
         std::string command = "iptables -P " + specification;
+        int commandStatus = 0;
         char* textResult = nullptr;
 
-        if (0 != ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get()))
+        if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
         {
             errors.push_back("Failed to set default policy (" + specification + "): " + std::string(textResult));
-            status = -1;
+            status = commandStatus;
         }
 
         FREE_MEMORY(textResult);
@@ -871,7 +875,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         }
 
         m_ruleStatusMessage = errorMessage;
-        status = -1;
+        status = EINVAL;
     }
     else
     {
@@ -904,9 +908,9 @@ std::vector<IpTablesPolicy> IpTables::GetDefaultPolicies() const
 
                 if (std::regex_match(line, match, policyRegex))
                 {
-                    if (0 == policy.ActionFromTarget(match[2]))
+                    if (0 == policy.SetActionFromTarget(match[2]))
                     {
-                        if (0 == policy.DirectionFromChain(match[1]))
+                        if (0 == policy.SetDirectionFromChain(match[1]))
                         {
                             policies.push_back(policy);
                         }
@@ -949,7 +953,7 @@ IpTablesPolicy& IpTablesPolicy::Parse(const rapidjson::Value& value)
     {
         if (value[g_action].IsString())
         {
-            if (0 != ActionFromString(value[g_action].GetString()))
+            if (0 != SetActionFromString(value[g_action].GetString()))
             {
                 m_parseError.push_back("Invalid action: " + std::string(value[g_action].GetString()));
             }
@@ -968,7 +972,7 @@ IpTablesPolicy& IpTablesPolicy::Parse(const rapidjson::Value& value)
     {
         if (value[g_direction].IsString())
         {
-            if (0 != DirectionFromString(value[g_direction].GetString()))
+            if (0 != SetDirectionFromString(value[g_direction].GetString()))
             {
                 m_parseError.push_back("Invalid direction: " + std::string(value[g_direction].GetString()));
             }
