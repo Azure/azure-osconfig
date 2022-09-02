@@ -64,15 +64,40 @@ pub struct DesiredDaemon {
 }
 
 pub trait SystemctlInfo {
+    /// Returns a new SystemctlInfo Instance.
     fn new() -> Self;
+    /// If successful, returns an Ok(Vec<Daemon>) with all enabled systemd daemons with State not being 
+    /// Other or dead (Running, failed, or exited). Err(MmiError) if the operation fails.
     fn get_daemons(&self) -> Result<Vec<Daemon>>;
+    /// If successful, returns an Ok(String) containing the all daemon names, auto start statuses, and vendor preset
+    /// auto start statuses. Err(MmiError) if the operation fails. 
+    /// The string will be formatted as so:
+    /// "UNIT FILE                                  STATE           VENDOR PRESET
+    ///  <daemon_name>                              <auto_start_status> <vendor_auto_start_status>
+    ///  ..."
     fn list_unit_files(&self) -> Result<String>;
-    fn show_substate_property(&self, name: &str) -> Result<String>;
+    /// If successful, returns an Ok(Daemon) representing a current Daemon. Accepts the name of the daemon
+    /// and it's auto start statuses as strings. Err(MmiError) if the operation fails.
     fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon>;
+    /// If successful, returns an Ok(String) containing the state of the daemon with name "name".
+    /// Err(MmiError) if the operation fails. 
+    /// The string will be formatted as so:
+    /// "substate=<state>"
+    fn show_substate_property(&self, name: &str) -> Result<String>;
+    /// Check if a daemon with name "name" exits. Returns Ok(true) if the daemon exists, Ok(false) if the
+    /// daemon doesn't exist. Err(MmiError) if the operation fails.
     fn exists(&self, name: &str) -> Result<bool>;
+    /// Start systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
     fn start(&mut self, name: &str) -> Result<bool>;
+    /// stop systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
     fn stop(&mut self, name: &str) -> Result<bool>;
+    /// enable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
     fn enable(&mut self, name: &str) -> Result<bool>;
+    /// disable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
     fn disable(&mut self, name: &str) -> Result<bool>;
 }
 
@@ -97,7 +122,7 @@ impl SystemctlInfo for Systemctl {
                 continue;
             }
             let daemon = self.create_daemon(&service["service"], &service["status"])?;
-            // Only report enabled daemons with State not being Other
+            // Only report enabled daemons with State not being Other or dead
             if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
                 services.push(daemon);
             }
@@ -152,7 +177,6 @@ impl SystemctlInfo for Systemctl {
         Ok(systemctl_crate::exists(name)?)
     }
 
-    // Start systemd daemon with name "name". Returns true if successful, false otherwise.
     fn start(&mut self, name: &str) -> Result<bool> {
         let unit = systemctl::Unit::from_systemctl(name)?;
         if unit.is_active()? {
@@ -164,7 +188,6 @@ impl SystemctlInfo for Systemctl {
         }
     }
 
-    // Stop systemd daemon with name "name". Returns true if successful, false otherwise.
     fn stop(&mut self, name: &str) -> Result<bool> {
         let unit = systemctl::Unit::from_systemctl(name)?;
         if !unit.is_active()? {
@@ -176,7 +199,6 @@ impl SystemctlInfo for Systemctl {
         }
     }
 
-    // Enable systemd daemon with name "name". Returns true if successful, false otherwise.
     fn enable(&mut self, name: &str) -> Result<bool> {
         let unit = systemctl::Unit::from_systemctl(name)?;
         if unit.auto_start == systemctl_crate::AutoStartStatus::Enabled {
@@ -188,7 +210,6 @@ impl SystemctlInfo for Systemctl {
         }
     }
 
-    // Disable systemd daemon with name "name". Returns true if successful, false otherwise.
     fn disable(&mut self, name: &str) -> Result<bool> {
         let unit = systemctl::Unit::from_systemctl(name)?;
         if unit.auto_start == systemctl_crate::AutoStartStatus::Disabled {
