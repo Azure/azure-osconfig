@@ -285,12 +285,11 @@ namespace OSConfig::Platform::Tests
         int maxScheduledAttestationsPerDay = 24;
         int maxManualAttestationsPerDay = 24;
 
-        // Should cache enabled state
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-        ASSERT_EQ(g_defaultEnabledState, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_EQ(g_defaultMaxScheduledAttestationsPerDay, ZtsiTests::ztsi->GetMaxScheduledAttestationsPerDay());
         ASSERT_EQ(g_defaultMaxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
-        ASSERT_FALSE(FileExists(ZtsiTests::filename.c_str()));
+        ASSERT_TRUE(FileExists(ZtsiTests::filename.c_str()));
 
         // Should return max attestations per day and cached enabled state
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetMaxScheduledAttestationsPerDay(maxScheduledAttestationsPerDay));
@@ -312,9 +311,8 @@ namespace OSConfig::Platform::Tests
         ASSERT_EQ(g_defaultMaxScheduledAttestationsPerDay, ZtsiTests::ztsi->GetMaxScheduledAttestationsPerDay());
         ASSERT_EQ(g_defaultMaxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
 
-        // Should cache enabled state
         ASSERT_EQ(MMI_OK, ZtsiTests::ztsi->SetEnabled(true));
-        ASSERT_EQ(Ztsi::EnabledState::Disabled, ZtsiTests::ztsi->GetEnabledState());
+        ASSERT_EQ(Ztsi::EnabledState::Enabled, ZtsiTests::ztsi->GetEnabledState());
         ASSERT_EQ(g_defaultMaxScheduledAttestationsPerDay, ZtsiTests::ztsi->GetMaxScheduledAttestationsPerDay());
         ASSERT_EQ(g_defaultMaxManualAttestationsPerDay, ZtsiTests::ztsi->GetMaxManualAttestationsPerDay());
 
