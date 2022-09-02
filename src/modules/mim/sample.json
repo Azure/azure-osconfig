@@ -72,8 +72,33 @@
                       "enumValue":  0
                     },
                     {
-                      "name": "enumValue1",
+                      "name": "value1",
                       "enumValue":  1
+                    },
+                    {
+                      "name": "value2",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "stringEnumerationSetting",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "string",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": "none"
+                    },
+                    {
+                      "name": "value1",
+                      "enumValue": "value1"
+                    },
+                    {
+                      "name": "value2",
+                      "enumValue": "value2"
                     }
                   ]
                 }
@@ -124,7 +149,7 @@
           }
         },
         {
-          "name": "ReportedObject",
+          "name": "reportedObject",
           "type": "mimObject",
           "desired": false,
           "schema": {
@@ -153,8 +178,33 @@
                       "enumValue":  0
                     },
                     {
-                      "name": "enumValue1",
+                      "name": "value1",
                       "enumValue":  1
+                    },
+                    {
+                      "name": "value2",
+                      "enumValue": 2
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "stringEnumerationSetting",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "string",
+                  "enumValues": [
+                    {
+                      "name": "none",
+                      "enumValue": "none"
+                    },
+                    {
+                      "name": "value1",
+                      "enumValue": "value1"
+                    },
+                    {
+                      "name": "value2",
+                      "enumValue": "value2"
                     }
                   ]
                 }
@@ -247,6 +297,27 @@
                   }
                 },
                 {
+                  "name": "stringEnumerationSetting",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "string",
+                    "enumValues": [
+                      {
+                        "name": "none",
+                        "enumValue": "none"
+                      },
+                      {
+                        "name": "value1",
+                        "enumValue": "value1"
+                      },
+                      {
+                        "name": "value2",
+                        "enumValue": "value2"
+                      }
+                    ]
+                  }
+                },
+                {
                   "name": "stringsArraySetting",
                   "schema": {
                     "type": "array",
@@ -324,12 +395,33 @@
                         "enumValue": 0
                       },
                       {
-                        "name": "enumValue1",
+                        "name": "value1",
                         "enumValue": 1
                       },
                       {
-                        "name": "enumValue2",
+                        "name": "value2",
                         "enumValue": 2
+                      }
+                    ]
+                  }
+                },
+                {
+                  "name": "stringEnumerationSetting",
+                  "schema": {
+                    "type": "enum",
+                    "valueSchema": "string",
+                    "enumValues": [
+                      {
+                        "name": "none",
+                        "enumValue": "none"
+                      },
+                      {
+                        "name": "value1",
+                        "enumValue": "value1"
+                      },
+                      {
+                        "name": "value2",
+                        "enumValue": "value2"
                       }
                     ]
                   }

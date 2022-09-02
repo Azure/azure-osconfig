@@ -5,7 +5,8 @@ std::string g_configFile = "/etc/osconfig/osconfig.json";
 std::string g_defaultPath = "testplate.json";
 std::string g_fullLogging = "FullLogging";
 
-static std::string str_tolower(std::string s) {
+static std::string str_tolower(std::string s)
+{
     std::transform(s.begin(), s.end(), s.begin(), 
                    [](unsigned char c){ return std::tolower(c); }
                   );
@@ -18,9 +19,8 @@ void RegisterRecipesWithGTest(TestRecipes &testRecipes)
     {
         // See gtest.h for details on this test registration
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
-        std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
-            "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
+            "ModulesTest", TestRecipeParser::GetTestName(recipe).c_str(), nullptr, nullptr, __FILE__, __LINE__,
             [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);

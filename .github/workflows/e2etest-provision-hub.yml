@@ -26,7 +26,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Provision Iot Hub
-        id: provisionm-hub
+        id: provision-hub
         env:
           ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}

@@ -21,9 +21,9 @@ jobs:
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
     secrets: inherit
 
-  provision-hosts:
-    name: Provision Host VM
-    uses: ./.github/workflows/e2etest-provision-hosts.yml
+  provision-ais:
+    name: Create Device Identities
+    uses: ./.github/workflows/e2etest-provision-ais.yml
     needs:
       - provision-hub
       - fetch-targets
@@ -33,7 +33,20 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
     secrets: inherit
 
-  run-tests:
+  provision-hosts:
+    name: Provision Host VM
+    uses: ./.github/workflows/e2etest-provision-hosts.yml
+    needs:
+      - provision-ais
+      - provision-hub
+      - fetch-targets
+    with:
+      environment: e2e-github-main
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+    secrets: inherit
+
+  run-modulestest:
     name: Run Tests
     uses: ./.github/workflows/e2etest-run-tests.yml
     needs:
@@ -44,8 +57,7 @@ jobs:
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
-      memThreshold: 50
-      repeatForXHours: 4
+      repeatForXHours: 1
       testNameSuffix: (reliability-platform)
     secrets: inherit
 
@@ -58,7 +70,7 @@ jobs:
       - fetch-targets
       - provision-hub
       - provision-hosts
-      - run-tests
+      - run-modulestest
 
     steps:
       - name: Azure Login
