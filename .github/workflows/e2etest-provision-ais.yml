@@ -7,11 +7,11 @@ on:
         type: string
         required: true
       environment:
-        description: The name of the target environment
+        description: The name of the target github environment
         type: string
         required: true
       resourceGroupName:
-        description: The name of the target environment
+        description: The name of the target resource group
         type: string
         required: true
 
