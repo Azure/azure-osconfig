@@ -629,9 +629,10 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
         std::smatch dnsServersPrefixMatch;
         if (std::regex_search(globalDnsServersData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
         {
+            bool isValidData = true;
             std::string dnsServers;
             std::stringstream globalDnsServersStream(dnsServersPrefixMatch.suffix().str());
-            while(std::getline(globalDnsServersStream, dnsServers))
+            while(isValidData && std::getline(globalDnsServersStream, dnsServers))
             {
                 std::string dnsServer;
                 std::stringstream line(dnsServers);
@@ -644,6 +645,7 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
                     }
                     else
                     {
+                        isValidData = false;
                         break;
                     }
                 }
@@ -683,8 +685,9 @@ void NetworkingObjectBase::GenerateDnsServersMap()
             std::smatch dnsServersPrefixMatch;
             if (std::regex_search(interfaceData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
             {
+                bool isValidData = true;
                 std::stringstream dnsServerStream(dnsServersPrefixMatch.suffix().str());
-                while(std::getline(dnsServerStream, dnsServers))
+                while(isValidData && std::getline(dnsServerStream, dnsServers))
                 {
                     std::string dnsServer;
                     std::stringstream line(dnsServers);
@@ -706,6 +709,7 @@ void NetworkingObjectBase::GenerateDnsServersMap()
                         }
                         else
                         {
+                            isValidData = false;
                             break;
                         }
                     }
