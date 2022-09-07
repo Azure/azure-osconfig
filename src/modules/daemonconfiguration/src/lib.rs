@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 use common::MmiError;
-use daemonconfiguration::{DaemonConfiguration, Systemctl};
+use daemonconfiguration::{DaemonConfiguration, Systemctl, SystemctlInfo};
 use libc::{c_char, c_int, c_uint, c_void, EINVAL};
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
@@ -56,7 +56,7 @@ fn mmi_get_info_helper(
 ) -> Result<i32, MmiError> {
     // The question operator will either unwrap and continue or return an Err(MmiError)
     let client_name: &str = client_name.to_str()?;
-    let info: &str = DaemonConfiguration::get_info(client_name)?;
+    let info: &str = DaemonConfiguration::<Systemctl>::get_info(client_name)?;
     let payload_string: CString = CString::new(info)?;
     let payload_size = payload_string.as_bytes().len();
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);
@@ -74,8 +74,8 @@ pub extern "C" fn MmiOpen(client_name: *const c_char, max_payload_size_bytes: c_
         println!("MmiOpen called with null clientName");
         ptr::null_mut() as *mut c_void
     } else {
-        let daemon_config_box: Box<DaemonConfiguration> =
-            Box::<DaemonConfiguration>::new(DaemonConfiguration::new(max_payload_size_bytes));
+        let daemon_config_box: Box<DaemonConfiguration<Systemctl>> =
+            Box::<DaemonConfiguration<Systemctl>>::new(DaemonConfiguration::<Systemctl>::new(max_payload_size_bytes, Systemctl::new()));
         Box::into_raw(daemon_config_box) as *mut c_void
     }
 }
@@ -84,8 +84,8 @@ pub extern "C" fn MmiOpen(client_name: *const c_char, max_payload_size_bytes: c_
 pub extern "C" fn MmiClose(client_session: MmiHandle) {
     if !client_session.is_null() {
         // The "_" variable name is to throwaway anything stored into it
-        let _: Box<DaemonConfiguration> =
-            unsafe { Box::from_raw(client_session as *mut DaemonConfiguration) };
+        let _: Box<DaemonConfiguration<Systemctl>> =
+            unsafe { Box::from_raw(client_session as *mut DaemonConfiguration<Systemctl>) };
     }
 }
 
@@ -101,8 +101,8 @@ pub extern "C" fn MmiSet(
         println!("MmiSet called with null clientSession");
         EINVAL
     } else {
-        let daemon_config: &mut DaemonConfiguration =
-            unsafe { &mut *(client_session as *mut DaemonConfiguration) };
+        let daemon_config: &mut DaemonConfiguration<Systemctl> =
+            unsafe { &mut *(client_session as *mut DaemonConfiguration<Systemctl>) };
         let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
         // Payload is not null terminated so we may not use CString::from_ptr
@@ -122,7 +122,7 @@ pub extern "C" fn MmiSet(
 }
 
 fn mmi_set_helper(
-    daemon_config: &mut DaemonConfiguration,
+    daemon_config: &mut DaemonConfiguration<Systemctl>,
     component_name: &CStr,
     object_name: &CStr,
     payload: &[u8],
@@ -149,8 +149,8 @@ pub extern "C" fn MmiGet(
         println!("MmiGet called with Invalid payloadSizeBytes");
         EINVAL
     } else {
-        let daemon_config: &DaemonConfiguration =
-            unsafe { &*(client_session as *mut DaemonConfiguration) };
+        let daemon_config: &DaemonConfiguration<Systemctl> =
+            unsafe { &*(client_session as *mut DaemonConfiguration<Systemctl>) };
         let component_name: &CStr = unsafe { CStr::from_ptr(component_name) };
         let object_name: &CStr = unsafe { CStr::from_ptr(object_name) };
         let result: Result<i32, MmiError> = mmi_get_helper(
@@ -172,7 +172,7 @@ pub extern "C" fn MmiGet(
 }
 
 fn mmi_get_helper(
-    daemon_config: &DaemonConfiguration,
+    daemon_config: &DaemonConfiguration<Systemctl>,
     component_name: &CStr,
     object_name: &CStr,
     payload: *mut MmiJsonString,
@@ -180,7 +180,7 @@ fn mmi_get_helper(
 ) -> Result<i32, MmiError> {
     let component_name: &str = component_name.to_str()?;
     let object_name: &str = object_name.to_str()?;
-    let payload_string: String = daemon_config.get::<Systemctl>(component_name, object_name)?;
+    let payload_string: String = daemon_config.get(component_name, object_name)?;
     let payload_string: CString = CString::new(payload_string)?;
     let payload_size = payload_string.as_bytes().len();
     let payload_ptr: MmiJsonString = CString::into_raw(payload_string);

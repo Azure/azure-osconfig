@@ -5,11 +5,15 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+use systemctl as systemctl_crate;
 
 use crate::MmiError;
 
 const COMPONENT_NAME: &str = "SystemdDaemonConfiguration";
-const OBJECT_NAME: &str = "daemonConfiguration";
+const REPORTED_OBJECT_NAME: &str = "daemonConfiguration";
+const DESIRED_OBJECT_NAME: &str = "desiredDaemonConfiguration";
+
+type Result<T> = std::result::Result<T, MmiError>;
 
 // r# Denotes a Rust Raw String
 const INFO: &str = r#"{
@@ -50,29 +54,73 @@ pub struct Daemon {
     auto_start_status: AutoStartStatus,
 }
 
+// An object representing the desired settings for a daemon
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DesiredDaemon {
+    name: String,
+    started: bool,
+    enabled: bool,
+}
+
 pub trait SystemctlInfo {
-    fn get_daemons() -> Result<Vec<Daemon>, MmiError>;
-    fn list_unit_files() -> Result<String, MmiError>;
-    fn show_substate_property(name: &str) -> Result<String, MmiError>;
-    fn create_daemon(name: &str, auto_start_status: &str) -> Result<Daemon, MmiError>;
+    /// Returns a new SystemctlInfo Instance.
+    fn new() -> Self;
+
+    /// If successful, returns an Ok(Vec<Daemon>) with all enabled systemd daemons with State not being
+    /// Other or dead (Running, failed, or exited). Err(MmiError) if the operation fails.
+    fn get_daemons(&self) -> Result<Vec<Daemon>>;
+
+    /// If successful, returns an Ok(String) containing the all daemon names, auto start statuses, and vendor preset
+    /// auto start statuses. Err(MmiError) if the operation fails.
+    /// The string will be formatted as so:
+    /// "UNIT FILE                                  STATE           VENDOR PRESET
+    ///  <daemon_name>                              <auto_start_status> <vendor_auto_start_status>
+    ///  ..."
+    fn list_unit_files(&self) -> Result<String>;
+    /// If successful, returns an Ok(Daemon) representing a current Daemon. Accepts the name of the daemon
+    /// and it's auto start statuses as strings. Err(MmiError) if the operation fails.
+
+    fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon>;
+
+    /// If successful, returns an Ok(String) containing the state of the daemon with name "name".
+    /// Err(MmiError) if the operation fails.
+    /// The string will be formatted as so:
+    /// "substate=<state>"
+    fn show_substate_property(&self, name: &str) -> Result<String>;
+
+    /// Check if a daemon with name "name" exits. Returns Ok(true) if the daemon exists, Ok(false) if the
+    /// daemon doesn't exist. Err(MmiError) if the operation fails.
+    fn exists(&self, name: &str) -> Result<bool>;
+
+    /// Start systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
+    fn start(&mut self, name: &str) -> Result<bool>;
+
+    /// stop systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
+    fn stop(&mut self, name: &str) -> Result<bool>;
+
+    /// enable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
+    fn enable(&mut self, name: &str) -> Result<bool>;
+
+    /// disable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
+    /// daemon was already started. Err(MmiError) if the operation fails.
+    fn disable(&mut self, name: &str) -> Result<bool>;
 }
 
 pub struct Systemctl {}
 
 impl SystemctlInfo for Systemctl {
-    fn list_unit_files() -> Result<String, MmiError> {
-        let output = {
-            Command::new("systemctl")
-                .args(["list-unit-files", "--type=service"])
-                .output()?
-        };
-        Ok(String::from(std::str::from_utf8(&output.stdout)?))
+    fn new() -> Self {
+        Systemctl {}
     }
 
-    fn get_daemons() -> Result<Vec<Daemon>, MmiError> {
-        let systemctl_output = Self::list_unit_files()?;
+    fn get_daemons(&self) -> Result<Vec<Daemon>> {
+        let systemctl_output = self.list_unit_files()?;
         // Lazy_static prevents the regex from being compiled multiple times
-        // https://docs.rs/regex/latest/regex/#example-avoid-compiling-the-same-regex-in-a-loop 
+        // https://docs.rs/regex/latest/regex/#example-avoid-compiling-the-same-regex-in-a-loop
         lazy_static! {
             static ref RE: Regex =
                 Regex::new(r"(?P<service>[\w_@\-\\\.]*)\.service\s+(?P<status>[\w-]+)").unwrap();
@@ -82,17 +130,29 @@ impl SystemctlInfo for Systemctl {
             if service["service"].ends_with("@") {
                 continue;
             }
-            let daemon = Self::create_daemon(&service["service"], &service["status"])?;
-            // Only report enabled daemons with State not being Other
-            if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+            let daemon = self.create_daemon(&service["service"], &service["status"])?;
+            // Only report enabled daemons with State not being Other or dead
+            if (daemon.state != State::Other)
+                && (daemon.state != State::Dead)
+                && (daemon.auto_start_status == AutoStartStatus::Enabled)
+            {
                 services.push(daemon);
             }
         }
         Ok(services)
     }
 
-    fn create_daemon(name: &str, auto_start_status: &str) -> Result<Daemon, MmiError> {
-        let substate = Self::show_substate_property(name)?;
+    fn list_unit_files(&self) -> Result<String> {
+        let output = {
+            Command::new("systemctl")
+                .args(["list-unit-files", "--type=service"])
+                .output()?
+        };
+        Ok(String::from(std::str::from_utf8(&output.stdout)?))
+    }
+
+    fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon> {
+        let substate = self.show_substate_property(name)?;
         if !substate.starts_with("SubState=") {
             return Err(MmiError::SystemctlError);
         }
@@ -116,7 +176,7 @@ impl SystemctlInfo for Systemctl {
         })
     }
 
-    fn show_substate_property(name: &str) -> Result<String, MmiError> {
+    fn show_substate_property(&self, name: &str) -> Result<String> {
         let output = {
             Command::new("systemctl")
                 .args(["show", name, "--property=SubState"])
@@ -124,52 +184,102 @@ impl SystemctlInfo for Systemctl {
         };
         Ok(String::from(std::str::from_utf8(&output.stdout)?))
     }
-}
 
-#[derive(Default, Debug)]
-pub struct DaemonConfiguration {
-    max_payload_size_bytes: u32,
-}
+    fn exists(&self, name: &str) -> Result<bool> {
+        Ok(systemctl_crate::exists(name)?)
+    }
 
-impl DaemonConfiguration {
-    pub fn new(max_payload_size_bytes: u32) -> Self {
-        // The result is returned if the ending semicolon is omitted
-        DaemonConfiguration {
-            max_payload_size_bytes: max_payload_size_bytes,
+    fn start(&mut self, name: &str) -> Result<bool> {
+        let unit = systemctl::Unit::from_systemctl(name)?;
+        if unit.is_active()? {
+            // Unit is already started
+            Ok(false)
+        } else {
+            let exit_status = unit.restart()?;
+            Ok(exit_status.success())
         }
     }
 
-    pub fn get_info(_client_name: &str) -> Result<&str, MmiError> {
+    fn stop(&mut self, name: &str) -> Result<bool> {
+        let unit = systemctl::Unit::from_systemctl(name)?;
+        if !unit.is_active()? {
+            // Unit is already stopped
+            Ok(false)
+        } else {
+            let exit_status = systemctl_crate::stop(name)?;
+            Ok(exit_status.success())
+        }
+    }
+
+    fn enable(&mut self, name: &str) -> Result<bool> {
+        let unit = systemctl::Unit::from_systemctl(name)?;
+        if unit.auto_start == systemctl_crate::AutoStartStatus::Enabled {
+            // Unit is already enabled
+            Ok(false)
+        } else {
+            Command::new("systemctl").args(["enable", name]).output()?;
+            Ok(true)
+        }
+    }
+
+    fn disable(&mut self, name: &str) -> Result<bool> {
+        let unit = systemctl::Unit::from_systemctl(name)?;
+        if unit.auto_start == systemctl_crate::AutoStartStatus::Disabled {
+            // Unit is already disabled
+            Ok(false)
+        } else {
+            Command::new("systemctl").args(["disable", name]).output()?;
+            Ok(true)
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct DaemonConfiguration<SystemCaller: SystemctlInfo> {
+    max_payload_size_bytes: u32,
+    system_caller: SystemCaller,
+}
+
+impl<SystemCaller: SystemctlInfo> DaemonConfiguration<SystemCaller> {
+    pub fn new(max_payload_size_bytes: u32, system_caller: SystemCaller) -> Self {
+        // The result is returned if the ending semicolon is omitted
+        DaemonConfiguration {
+            max_payload_size_bytes: max_payload_size_bytes,
+            system_caller: system_caller,
+        }
+    }
+
+    pub fn get_info(_client_name: &str) -> Result<&str> {
         // This daemon_config module makes no use of the client_name, but
         // it may be copied, compared, etc. here
         // In the case of an error, an error code Err(i32) could be returned instead
         Ok(INFO)
     }
 
-    pub fn get<T: SystemctlInfo>(
-        &self,
-        component_name: &str,
-        object_name: &str,
-    ) -> Result<String, MmiError> {
+    pub fn get(&self, component_name: &str, object_name: &str) -> Result<String> {
         if !libsystemd::daemon::booted() {
             // Whether the caller was booted using Systemd
             Err(MmiError::SystemdError)
         } else if !COMPONENT_NAME.eq(component_name) {
             println!("Invalid component name: {}", component_name);
             Err(MmiError::InvalidArgument)
-        } else if !OBJECT_NAME.eq(object_name) {
+        } else if !REPORTED_OBJECT_NAME.eq(object_name) {
             println!("Invalid object name: {}", object_name);
             Err(MmiError::InvalidArgument)
         } else {
-            let daemons = T::get_daemons()?;
+            let daemons = self.system_caller.get_daemons()?;
             let json_value = serde_json::to_value::<&Vec<Daemon>>(&daemons)?;
             let payload: String = serde_json::to_string(&json_value)?;
             if (self.max_payload_size_bytes != 0)
                 && (payload.len() as u32 > self.max_payload_size_bytes)
             {
-                println!("Payload size exceeded max payload size bytes in get so it was truncated.");
+                println!(
+                    "Payload size exceeded max payload size bytes in get so it was truncated."
+                );
                 let payload_bytes = payload.into_bytes();
-                let truncated_payload = String::from_utf8((&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec())?;
+                let truncated_payload = String::from_utf8(
+                    (&payload_bytes[0..self.max_payload_size_bytes as usize]).to_vec(),
+                )?;
                 Ok(truncated_payload)
             } else {
                 Ok(payload)
@@ -177,13 +287,50 @@ impl DaemonConfiguration {
         }
     }
 
-    pub fn set(
-        &mut self,
-        component_name: &str,
-        object_name: &str,
-        payload_str_slice: &str,
-    ) -> Result<i32, MmiError> {
-        unimplemented!("Daemon Manipulation is not yet supported");
+    pub fn set(&mut self, component_name: &str, object_name: &str, payload: &str) -> Result<i32> {
+        if !libsystemd::daemon::booted() {
+            // Whether the caller was booted using Systemd
+            Err(MmiError::SystemdError)
+        } else if !COMPONENT_NAME.eq(component_name) {
+            println!("Invalid component name: {}", component_name);
+            Err(MmiError::InvalidArgument)
+        } else if !DESIRED_OBJECT_NAME.eq(object_name) {
+            println!("Invalid object name: {}", object_name);
+            Err(MmiError::InvalidArgument)
+        } else if (self.max_payload_size_bytes != 0)
+            && (payload.len() as u32 > self.max_payload_size_bytes)
+        {
+            println!("Payload size exceeds max payload size bytes");
+            Err(MmiError::PayloadSizeExceeded)
+        } else {
+            let desired_daemons = serde_json::from_str::<Vec<DesiredDaemon>>(payload)?;
+            for desired_daemon in desired_daemons {
+                if !self.system_caller.exists(&desired_daemon.name)? {
+                    println!(
+                        "Daemon {} wasn't set. Was not found by systemctl",
+                        desired_daemon.name
+                    );
+                } else if desired_daemon.started && !desired_daemon.enabled {
+                    println!(
+                        "Daemon {} wasn't set. Disabled daemons cannot be started",
+                        desired_daemon.name
+                    );
+                } else if desired_daemon.started {
+                    // Enable and start
+                    self.system_caller.enable(&desired_daemon.name)?;
+                    self.system_caller.start(&desired_daemon.name)?;
+                } else if !desired_daemon.started && desired_daemon.enabled {
+                    // Stop and leave Enabled
+                    self.system_caller.stop(&desired_daemon.name)?;
+                    self.system_caller.enable(&desired_daemon.name)?;
+                } else {
+                    // Stop and disable
+                    self.system_caller.stop(&desired_daemon.name)?;
+                    self.system_caller.disable(&desired_daemon.name)?;
+                }
+            }
+            Ok(0)
+        }
     }
 
     #[cfg(test)]
@@ -195,29 +342,76 @@ impl DaemonConfiguration {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
     const MAX_PAYLOAD_BYTES: u32 = 0;
 
-    struct SystemctlTest {}
+    struct SystemctlTest {
+        auto_start_statuses: HashMap<String, String>,
+        states: HashMap<String, String>,
+    }
 
     impl SystemctlInfo for SystemctlTest {
-        fn list_unit_files() -> Result<String, MmiError> {
-            let list_unit_output = r#"UNIT FILE                                  STATE           VENDOR PRESET
-            alsa-restore.service                       static          enabled      
-            alsa-utils.service                         masked          enabled      
-            apport-forward@.service                    static          enabled      
-            apport.service                             enabled         enabled      
-            netplan-ovs-cleanup.service                enabled-runtime enabled
-            osconfig.service                           disabled        enabled      
-            rtkit-daemon.service                       enabled         enabled      
-            saned.service                              enabled         enabled           
-            spice-vdagent.service                      indirect        enabled           
-            
-            9 unit files listed."#;
-            Ok(String::from(list_unit_output))
+        fn new() -> Self {
+            let auto_start_statuses = HashMap::from([
+                (String::from("alsa-restore"), String::from("static")),
+                (String::from("alsa-utils"), String::from("masked")),
+                (String::from("apport-forward@"), String::from("static")),
+                (String::from("apport"), String::from("enabled")),
+                (
+                    String::from("netplan-ovs-cleanup"),
+                    String::from("enabled-runtime"),
+                ),
+                (String::from("osconfig"), String::from("disabled")),
+                (String::from("rtkit-daemon"), String::from("enabled")),
+                (String::from("saned"), String::from("enabled")),
+                (String::from("spice-vdagent"), String::from("indirect")),
+            ]);
+            let states = HashMap::from([
+                (String::from("alsa-restore"), String::from("dead")),
+                (String::from("alsa-utils"), String::from("running")),
+                (String::from("apport-forward@"), String::from("")),
+                (String::from("apport"), String::from("failed")),
+                (String::from("netplan-ovs-cleanup"), String::from("exited")),
+                (String::from("osconfig"), String::from("dead")),
+                (String::from("rtkit-daemon"), String::from("exited")),
+                (String::from("saned"), String::from("running")),
+                (String::from("spice-vdagent"), String::from("dead")),
+            ]);
+            SystemctlTest {
+                auto_start_statuses: auto_start_statuses,
+                states: states,
+            }
         }
 
-        fn get_daemons() -> Result<Vec<Daemon>, MmiError> {
-            let systemctl_output = Self::list_unit_files()?;
+        fn list_unit_files(&self) -> Result<String> {
+            let list_unit_output = format!(
+                "UNIT FILE                                  STATE           VENDOR PRESET
+                alsa-restore.service                       {}          enabled      
+                alsa-utils.service                         {}          enabled      
+                apport-forward@.service                    {}          enabled      
+                apport.service                             {}         enabled      
+                netplan-ovs-cleanup.service                {} enabled
+                osconfig.service                           {}        enabled      
+                rtkit-daemon.service                       {}         enabled      
+                saned.service                              {}         enabled           
+                spice-vdagent.service                      {}        enabled           
+                
+                9 unit files listed.",
+                self.auto_start_statuses["alsa-restore"],
+                self.auto_start_statuses["alsa-utils"],
+                self.auto_start_statuses["apport-forward@"],
+                self.auto_start_statuses["apport"],
+                self.auto_start_statuses["netplan-ovs-cleanup"],
+                self.auto_start_statuses["osconfig"],
+                self.auto_start_statuses["rtkit-daemon"],
+                self.auto_start_statuses["saned"],
+                self.auto_start_statuses["spice-vdagent"]
+            );
+            Ok(list_unit_output)
+        }
+
+        fn get_daemons(&self) -> Result<Vec<Daemon>> {
+            let systemctl_output = self.list_unit_files()?;
             lazy_static! {
                 static ref RE: Regex =
                     Regex::new(r"(?P<service>[\w_@\-\\\.]*)\.service\s+(?P<status>[\w-]+)")
@@ -228,17 +422,20 @@ mod tests {
                 if service["service"].ends_with("@") {
                     continue;
                 }
-                let daemon = Self::create_daemon(&service["service"], &service["status"])?;
+                let daemon = self.create_daemon(&service["service"], &service["status"])?;
                 // Only report enabled daemons with State not being Other
-                if (daemon.state != State::Other) && (daemon.state != State::Dead) && (daemon.auto_start_status == AutoStartStatus::Enabled) {
+                if (daemon.state != State::Other)
+                    && (daemon.state != State::Dead)
+                    && (daemon.auto_start_status == AutoStartStatus::Enabled)
+                {
                     services.push(daemon);
                 }
             }
             Ok(services)
         }
 
-        fn create_daemon(name: &str, auto_start_status: &str) -> Result<Daemon, MmiError> {
-            let substate = Self::show_substate_property(name)?;
+        fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon> {
+            let substate = self.show_substate_property(name)?;
             if !substate.starts_with("SubState=") {
                 return Err(MmiError::SystemctlError);
             }
@@ -262,25 +459,43 @@ mod tests {
             })
         }
 
-        fn show_substate_property(name: &str) -> Result<String, MmiError> {
-            let substate_output = match name {
-                "alsa-restore" => "SubState=dead",
-                "alsa-utils" => "SubState=running",
-                "apport" => "SubState=failed",
-                "netplan-ovs-cleanup" => "SubState=exited",
-                "osconfig" => "SubState=dead",
-                "rtkit-daemon" => "SubState=exited",
-                "saned" => "SubState=running",
-                "spice-vdagent" => "SubState=dead",
-                _ => "SubState=unknown",
-            };
-            Ok(String::from(substate_output))
+        fn show_substate_property(&self, name: &str) -> Result<String> {
+            let substate_output = format!("SubState={}", self.states[name]);
+            Ok(substate_output)
+        }
+
+        fn exists(&self, name: &str) -> Result<bool> {
+            Ok(systemctl_crate::exists(name)?)
+        }
+
+        fn start(&mut self, name: &str) -> Result<bool> {
+            self.states
+                .insert(String::from(name), String::from("running"));
+            Ok(true)
+        }
+
+        fn stop(&mut self, name: &str) -> Result<bool> {
+            self.states.insert(String::from(name), String::from("dead"));
+            Ok(true)
+        }
+
+        fn enable(&mut self, name: &str) -> Result<bool> {
+            self.auto_start_statuses
+                .insert(String::from(name), String::from("enabled"));
+            Ok(true)
+        }
+
+        fn disable(&mut self, name: &str) -> Result<bool> {
+            self.auto_start_statuses
+                .insert(String::from(name), String::from("disabled"));
+            Ok(true)
         }
     }
 
     #[test]
     fn build_daemon_config() {
-        let daemon_config = DaemonConfiguration::new(MAX_PAYLOAD_BYTES);
+        let daemon_config =
+            DaemonConfiguration::<SystemctlTest>::new(MAX_PAYLOAD_BYTES, SystemctlTest::new());
         assert_eq!(
             daemon_config.get_max_payload_size_bytes(),
             MAX_PAYLOAD_BYTES
@@ -289,8 +504,8 @@ mod tests {
 
     #[test]
     fn info_size() {
-        let daemon_config_info: Result<&str, MmiError> =
-            DaemonConfiguration::get_info("Test_client_name");
+        let daemon_config_info: Result<&str> =
+            DaemonConfiguration::<SystemctlTest>::get_info("Test_client_name");
         assert!(daemon_config_info.is_ok());
         let daemon_config_info: &str = daemon_config_info.unwrap();
         assert_eq!(INFO, daemon_config_info);
@@ -299,23 +514,24 @@ mod tests {
 
     #[test]
     fn invalid_get() {
-        let daemon_config = DaemonConfiguration::new(MAX_PAYLOAD_BYTES);
+        let daemon_config =
+            DaemonConfiguration::<SystemctlTest>::new(MAX_PAYLOAD_BYTES, SystemctlTest::new());
         if libsystemd::daemon::booted() {
-            let invalid_component_result: Result<String, MmiError> =
-                daemon_config.get::<SystemctlTest>("Invalid component", OBJECT_NAME);
+            let invalid_component_result: Result<String> =
+                daemon_config.get("Invalid component", REPORTED_OBJECT_NAME);
             assert!(invalid_component_result.is_err());
             if let Err(e) = invalid_component_result {
                 assert_eq!(e, MmiError::InvalidArgument);
             }
-            let invalid_object_result: Result<String, MmiError> =
-                daemon_config.get::<SystemctlTest>(COMPONENT_NAME, "Invalid object");
+            let invalid_object_result: Result<String> =
+                daemon_config.get(COMPONENT_NAME, "Invalid object");
             assert!(invalid_object_result.is_err());
             if let Err(e) = invalid_object_result {
                 assert_eq!(e, MmiError::InvalidArgument);
             }
         } else {
-            let systemd_result: Result<String, MmiError> =
-                daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
+            let systemd_result: Result<String> =
+                daemon_config.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
             assert!(systemd_result.is_err());
             if let Err(e) = systemd_result {
                 assert_eq!(e, MmiError::SystemdError);
@@ -324,10 +540,46 @@ mod tests {
     }
 
     #[test]
-    fn valid_get() {
-        let daemon_config = DaemonConfiguration::new(MAX_PAYLOAD_BYTES);
+    fn invalid_set() {
+        let mut daemon_config =
+            DaemonConfiguration::<SystemctlTest>::new(MAX_PAYLOAD_BYTES, SystemctlTest::new());
+        let valid_json_payload = r#"[{name: "osconfig", started:true, enabled:true}]"#;
+        let invalid_json_payload = r#"Invalid payload"#;
         if libsystemd::daemon::booted() {
-            let payload = daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
+            let invalid_component_result: Result<i32> =
+                daemon_config.set("Invalid component", DESIRED_OBJECT_NAME, valid_json_payload);
+            assert!(invalid_component_result.is_err());
+            if let Err(e) = invalid_component_result {
+                assert_eq!(e, MmiError::InvalidArgument);
+            }
+            let invalid_object_result: Result<i32> =
+                daemon_config.set(COMPONENT_NAME, "Invalid object", valid_json_payload);
+            assert!(invalid_object_result.is_err());
+            if let Err(e) = invalid_object_result {
+                assert_eq!(e, MmiError::InvalidArgument);
+            }
+            let invalid_payload_result: Result<i32> =
+                daemon_config.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, invalid_json_payload);
+            assert!(invalid_payload_result.is_err());
+            if let Err(e) = invalid_payload_result {
+                assert_eq!(e, MmiError::SerdeError);
+            }
+        } else {
+            let systemd_result: Result<i32> =
+                daemon_config.set(COMPONENT_NAME, REPORTED_OBJECT_NAME, valid_json_payload);
+            assert!(systemd_result.is_err());
+            if let Err(e) = systemd_result {
+                assert_eq!(e, MmiError::SystemdError);
+            }
+        }
+    }
+
+    #[test]
+    fn get_set() {
+        let mut daemon_config =
+            DaemonConfiguration::<SystemctlTest>::new(MAX_PAYLOAD_BYTES, SystemctlTest::new());
+        if libsystemd::daemon::booted() {
+            let payload = daemon_config.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
             assert!(payload.is_ok());
             let payload = payload.unwrap();
             let expected = "[\
@@ -348,21 +600,45 @@ mod tests {
                 }\
             ]";
             assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
+            let set_payload = r#"[{"name": "osconfig", "started": true, "enabled": true}, {"name": "saned", "started": false, "enabled": false}]"#;
+            let set_result = daemon_config.set(COMPONENT_NAME, DESIRED_OBJECT_NAME, set_payload);
+            assert!(set_result.is_ok());
+            assert_eq!(0, set_result.unwrap());
+            let expected = "[\
+                {\
+                    \"name\":\"apport\",\
+                    \"state\":\"failed\",\
+                    \"autoStartStatus\":\"enabled\"\
+                },\
+                {\
+                    \"name\":\"osconfig\",\
+                    \"state\":\"running\",\
+                    \"autoStartStatus\":\"enabled\"\
+                },\
+                {\
+                    \"name\":\"rtkit-daemon\",\
+                    \"state\":\"exited\",\
+                    \"autoStartStatus\":\"enabled\"\
+                }\
+            ]";
+            let payload: String = daemon_config
+                .get(COMPONENT_NAME, REPORTED_OBJECT_NAME)
+                .unwrap();
+            assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
         }
     }
 
     #[test]
     fn get_truncated_payload() {
-        let daemon_config = DaemonConfiguration::new(16);
+        let daemon_config = DaemonConfiguration::new(16, SystemctlTest::new());
         if libsystemd::daemon::booted() {
-            let payload = daemon_config.get::<SystemctlTest>(COMPONENT_NAME, OBJECT_NAME);
+            let payload = daemon_config.get(COMPONENT_NAME, REPORTED_OBJECT_NAME);
             assert!(payload.is_ok());
             let payload = payload.unwrap();
-            println!("{}", payload);
             let expected = "[\
                 {\
-                    \"name\":\"appor";
-            assert!(json_strings_eq::<Vec<Daemon>>(payload.as_str(), expected));
+                    \"autoStartStat";
+            assert_eq!(payload, expected);
         }
     }
 
