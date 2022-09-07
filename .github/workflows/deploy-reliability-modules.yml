@@ -3,103 +3,57 @@ on:
   schedule:
   - cron: '0 10 * * *' #10am UTC / 6pm PST
 
-env:
-  build-type: Release
-  container-workspace: /azure-osconfig
-  repeat-for-x-hours: 4
-
 jobs:
-  unit-test:
-    name: Unit test
+  fetch-targets:
+    name: Fetch Test Targets
+    uses: ./.github/workflows/e2etest-fetch-targets.yml
+    with:
+      environment: modulestest
+    secrets: inherit
+
+  provision-hosts:
+    name: Provision Host VM
+    uses: ./.github/workflows/e2etest-provision-hosts.yml
+    needs:
+      - fetch-targets
+    with:
+      environment: modulestest
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+    secrets: inherit
+
+  run-modulestest:
+    name: Run Modules Tests (Test Recipes)
+    uses: ./.github/workflows/e2etest-run-modulestest.yml
+    needs:
+      - fetch-targets
+      - provision-hosts
+    with:
+      environment: modulestest
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+      repeatForXHours: 4
+      testNameSuffix: (reliability-modules)
+    secrets: inherit
+
+  deprovision-resources:
+    name: Deprovision Cloud Resources
+    if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 1440
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
-        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
-        exclude:
-          - os: ubuntu20.04
-            variant: {arch: arm, platform: linux/arm/v7}
+    environment: modulestest
+    needs:
+      - fetch-targets
+      - provision-hosts
+      - run-modulestest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Azure Login
+        uses: azure/login@v1
         with:
-          submodules: recursive
-          clean: true
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Run container
-        id: container
-        uses: ./.github/actions/container-run
+      - name: Delete resource group
+        uses: azure/CLI@v1
         with:
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
-          platform: ${{ matrix.variant.platform }}
-          mount: ${{ github.workspace }}:${{ env.container-workspace }}
-          tag: "270554"
-
-      - name: Generate build
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          cmd: |
-            mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
-
-      - name: Build azure-osconfig
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: cmake --build . --config ${{ env.build-type }}
-
-      - name: Set variables
-        id: set-variables
-        run: |
-          echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
-
-      - name: Run modulestest
-        if: success() || failure()
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build/modules/test
-          cmd: |
-            function checkResult(){
-              if [[ \$1 -ne 0 ]]; then
-                echo '::error title=Module Test Failure::The modules tests failed at run number \$2'
-                exit \$1
-              fi
-            }
-            result=0
-            end=$(date -d "+${{ env.repeat-for-x-hours }} hours" +%s)
-            mkdir -p /etc/osconfig/
-            echo Using date \$end
-            while [[ \$(date +%s) -lt \$end ]]; do
-              echo Performing test run \$((++runNumber))
-              result=\$(./modulestest --gtest_output=xml:${{ env.container-workspace }}/build/gtest-output/TestRecipes.xml testplate.json)
-              checkResult \$result \$runNumber
-            done
-
-      - name: Generate test report
-        uses: ./.github/actions/gtest-xml
-        if: success() || failure()
-        with:
-          path: ./build/gtest-output
-          output: ./${{ steps.set-variables.outputs.xml }}
-
-      - uses: actions/upload-artifact@v2
-        if: success() || failure()
-        with:
-          name: unit-test
-          path: ./${{ steps.set-variables.outputs.xml }}
-
-      - name: Publish test report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }}) (reliability-platform)
-          path: ./${{ steps.set-variables.outputs.xml }}
-          reporter: java-junit
+          inlineScript: |
+            az group delete --name ${{ needs.fetch-targets.outputs.resourceGroupName }} --yes --no-wait

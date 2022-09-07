@@ -13,3 +13,4 @@ gtest_discover_tests(testfactorytests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../../mim/sample.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/mim/)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/recipes/test.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/recipes/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/recipes/testInvalid.json DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/recipes/)

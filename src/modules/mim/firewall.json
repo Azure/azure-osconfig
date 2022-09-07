@@ -103,10 +103,6 @@
                       {
                         "name": "drop",
                         "enumValue": "drop"
-                      },
-                      {
-                        "name": "reject",
-                        "enumValue": "reject"
                       }
                     ]
                   }
@@ -263,10 +259,6 @@
                       {
                         "name": "drop",
                         "enumValue": "drop"
-                      },
-                      {
-                        "name": "reject",
-                        "enumValue": "reject"
                       }
                     ]
                   }

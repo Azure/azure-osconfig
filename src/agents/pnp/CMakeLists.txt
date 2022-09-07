@@ -19,7 +19,6 @@ project(osconfig)
 set(osconfig_files
     ./AisUtils.c
     ./ConfigUtils.c
-    ./MpiClient.c
     ./PnpAgent.c
     ./PnpUtils.c)
 
@@ -68,7 +67,8 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         aziotsharedutil
         tracelogging
         logging
-        commonutils)
+        commonutils
+        mpiclient)
 else()
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)
 
@@ -94,6 +94,7 @@ else()
         aziotsharedutil
         logging
         commonutils
+        mpiclient
         lttngh
         hsm_security_client
         msr_riot
@@ -111,3 +112,9 @@ install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}
 install(FILES daemon/${target_name}.toml DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
 install(FILES telemetryevents/OsConfigAgentTelemetry.conf DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/azure-device-telemetryd)
+
+add_custom_command(
+    TARGET ${target_name}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/daemon/${target_name}.toml /etc/aziot/identityd/config.d/${target_name}.toml
+)

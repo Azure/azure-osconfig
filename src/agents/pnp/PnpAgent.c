@@ -3,7 +3,6 @@
 
 #include "inc/AgentCommon.h"
 #include "inc/PnpUtils.h"
-#include "inc/MpiClient.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
 #include "inc/ConfigUtils.h"
@@ -362,7 +361,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
     {
         sleep(1);
         
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes)))
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
         {
             LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
             g_exitState = PlatformInitializationFailure;
@@ -415,7 +414,7 @@ void CloseAgent(void)
 
     if (NULL != g_mpiHandle)
     {
-        CallMpiClose(g_mpiHandle);
+        CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
 
@@ -433,12 +432,12 @@ static void SaveReportedConfigurationToFile()
     int mpiResult = MPI_OK;
     if (g_localManagement)
     {
-        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
         {
             CallMpiFree(payload);
 
-            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes);
+            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         }
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
@@ -492,10 +491,10 @@ static void LoadDesiredConfigurationFromFile()
         {
             OsConfigLogInfo(GetLog(), "Processing DC payload from %s", DC_FILE);
             
-            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
             if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
             {
-                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes);
+                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
             }
             
             if (MPI_OK == mpiResult)

@@ -1,6 +1,6 @@
 {
   "name": "CommandRunnerModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "CommandRunner",

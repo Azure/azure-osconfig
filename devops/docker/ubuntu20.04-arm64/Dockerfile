@@ -16,7 +16,8 @@ RUN apt -y update && apt-get -y install \
     libgmock-dev \
     liblttng-ust-dev \
     rapidjson-dev \
-    ninja-build\
+    ninja-build \
+    python3-jsonschema \
     wget \
     jq \
     bc
