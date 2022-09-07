@@ -61,5 +61,50 @@
         "Desired": false,
         "ExpectedResult": 22,
         "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "defaultPolicies",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "configurationStatus",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "configurationStatusDetail",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "firewallDesiredDefaultPolicies",
+        "Desired": true,
+        "Payload": "[{\"action\": \"accept\", \"direction\": \"in\"}, {\"action\": \"drop\", \"direction\": \"out\"}]",
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "firewallDesiredDefaultPolicies",
+        "Desired": true,
+        "Payload": "[{\"action\": \"reject\", \"direction\": \"in\"}]",
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Firewall",
+        "ObjectName": "desiredFirewallRules",
+        "Desired": true,
+        "Payload": "[{\"desiredState\": \"present\", \"action\": \"accept\", \"direction\": \"in\", \"protocol\": \"tcp\", \"sourcePort\": 80, \"sourceAddress\": \"0.0.0.0\"}]",
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
     }
 ]
