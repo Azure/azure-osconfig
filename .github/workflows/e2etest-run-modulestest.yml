@@ -1,0 +1,92 @@
+name: Run Tests
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: The name of the target environment
+        type: string
+        required: true
+      distroName:
+        description: The name of the target distro
+        type: string
+        required: true
+      resourceGroupName:
+        description: The name of the target environment
+        type: string
+        required: true
+      buildType:
+        description: The name of the build type
+        type: string
+        default: Release
+        required: false
+      repeatForXHours:
+        description: Repeat the test suite for X hours, every test run gets a new test-report
+        type: number
+        required: false
+      testNameSuffix:
+        description: The name to use for the suffix of the test report
+        type: string
+        required: false
+
+jobs:
+  run-tests:
+    name: ${{ matrix.distroName }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix:
+        distroName: ${{ fromJson(inputs.distroName) }}
+    runs-on: ${{ inputs.resourceGroupName }}-${{ matrix.distroName }}
+    timeout-minutes: 1440
+    steps:
+      - name: Checkout code
+        run: |
+          git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_REF_NAME --recursive .
+
+      - name: Generate build
+        run: |
+          mkdir build && cd build
+          cmake ../src -DCMAKE_build-type=${{ inputs.buildType }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        run: |
+          cmake --build ./build --config ${{ inputs.buildType }}
+
+      - name: Run modulestest
+        if: success()
+        run: |
+          mkdir -p /etc/osconfig/
+          cd build
+          function checkResult(){
+            if [[ $1 -ne 0 ]]; then
+              echo '::error title=E2E Test Failure::The E2E tests failed at run number $runNumber'
+              exit $1
+            fi
+          }
+          runNumber=1
+          if [[ ${{ inputs.repeatForXHours }} -gt 0 ]];then
+            end=`date -d "+${{inputs.repeatForXHours}} hours" +%s`
+            while [[ $(date +%s) -lt $end ]]; do
+              echo Performing test run $((++runNumber))
+              ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
+              checkResult $?
+            done
+          else
+            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
+            checkResult $?
+          fi
+
+      - name: Generate test report
+        uses: ./.github/actions/gtest-xml
+        if: success() || failure()
+        with:
+          path: ./build/gtest-output
+          output: ./${{ matrix.distroName }}.xml
+
+      - name: Publish test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Modulestest Test report (${{ matrix.distroName }}) ${{ inputs.testNameSuffix }}
+          path: ./${{ matrix.distroName }}.xml
+          reporter: java-junit

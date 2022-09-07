@@ -1,0 +1,52 @@
+name: Provision AIS
+on:
+  workflow_call:
+    inputs:
+      distroName:
+        description: The name of the target distro
+        type: string
+        required: true
+      environment:
+        description: The name of the target github environment
+        type: string
+        required: true
+      resourceGroupName:
+        description: The name of the target resource group
+        type: string
+        required: true
+
+jobs:
+  provision-ais:
+    name: ${{ matrix.distroName }}
+    environment: ${{ inputs.environment }}
+    strategy:
+      fail-fast: false
+      matrix:
+        distroName: ${{ fromJson(inputs.distroName) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Retreive target test data
+        id: get-test-data
+        run: |
+          target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
+          device_id=$(echo $target | jq .device_id | tr -d \")
+          echo Using device id: $device_id
+          echo ::set-output name=device_id::$device_id
+
+      - name: Create device identity
+        id: provision-ais
+        run: |
+          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p ${{ secrets.CLIENT_SECRET }} --tenant ${{ secrets.TENANT_ID }}
+          az extension add --name azure-iot
+          
+          echo -n 'Creating Iot Hub Identity - ${{ inputs.resourceGroupName }}-${{ steps.get-test-data.outputs.device_id }}'
+          az iot hub device-identity create --device-id "${{ steps.get-test-data.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none;
+
+          DEVICE_CONN_STR="`az iot hub device-identity connection-string show --hub-name ${{ inputs.resourceGroupName }}-iothub --device-id ${{ steps.get-test-data.outputs.device_id }} --output tsv`"
+          echo '' && echo Adding to Key Vault
+          az keyvault secret set --name "${{ inputs.resourceGroupName }}-${{ steps.get-test-data.outputs.device_id }}" --vault-name ${{ secrets.KEY_VAULT_NAME }} --value $DEVICE_CONN_STR > /dev/null
+          echo ::set-output name=DEVICE_CONN_STR::$DEVICE_CONN_STR
+          echo ::add-mask::$DEVICE_CONN_STR
