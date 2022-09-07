@@ -27,7 +27,7 @@ namespace tests
         }
         else
         {
-            return testing::AssertionFailure() << "expected:\n" << expectedJson << "\n but got:\n" << actualJson;
+            return testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
         }
     }
 
@@ -78,6 +78,7 @@ namespace tests
             if (!rule.HasParseError())
             {
                 m_rules.push_back(rule);
+                OsConfigLogInfo(FirewallLog::Get(), "Added rule: %s", rule.Specification().c_str());
             }
             else
             {
@@ -91,6 +92,7 @@ namespace tests
         for (const std::string& error : errors)
         {
             m_ruleStatusMessage += error + "\n";
+            OsConfigLogInfo(FirewallLog::Get(), "SET RULES ERROR: %s", error.c_str());
         }
 
         return errors.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -187,7 +189,7 @@ namespace tests
         std::string policiesJson = "[{\"direction\": \"in\", \"action\": \"accept\"}, {\"direction\": \"out\", \"action\": \"drop\"}]";
         EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
         EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedDefaultPolicies.c_str(), &payload, &payloadSizeBytes));
-        EXPECT_TRUE(JsonEq(std::string(payload, payloadSizeBytes), policiesJson));
+        EXPECT_TRUE(JsonEq(policiesJson, std::string(payload, payloadSizeBytes)));
     }
 
     TEST_F(FirewallTests, SetDefaultPoliciesWithError)
@@ -422,7 +424,7 @@ namespace tests
             IpTablesRule rule;
             rule.Parse(document);
 
-            EXPECT_TRUE(rule.HasParseError());
+            EXPECT_TRUE(rule.HasParseError()) << ruleJson;
         }
     }
 
@@ -449,7 +451,7 @@ namespace tests
             IpTablesPolicy policy;
             policy.Parse(document);
 
-            EXPECT_TRUE(policy.HasParseError());
+            EXPECT_TRUE(policy.HasParseError()) << policyJson;
         }
     }
 } // namespace tests

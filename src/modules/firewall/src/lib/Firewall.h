@@ -40,34 +40,98 @@ private:
     static OSCONFIG_LOG_HANDLE m_logHandle;
 };
 
+class StringEnum
+{
+public:
+    StringEnum() = default;
+    StringEnum(const std::string& value) : m_value(value) {}
+    virtual ~StringEnum() = default;
+
+    virtual bool IsValid() const = 0;
+
+    std::string ToString() const
+    {
+        return m_value;
+    }
+
+    bool operator==(const char* other) const
+    {
+        return m_value.compare(other) == 0;
+    }
+
+    bool operator!=(const char* other) const
+    {
+        return m_value.compare(other) != 0;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const StringEnum& se)
+    {
+        os << se.ToString();
+        return os;
+    }
+
+protected:
+    std::string m_value;
+};
+
 class GenericRule
 {
 public:
-    enum class State
+    class State : public StringEnum
     {
-        Present,
-        Absent
+    public:
+        static const std::array<std::string, 2> m_values;
+
+        State() = default;
+        State(const std::string& value) : StringEnum(value) {}
+
+        bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
     };
 
-    enum class Action
+    class Action : public StringEnum
     {
-        Accept,
-        Drop,
-        Reject
+    public:
+        static const std::array<std::string, 3> m_values;
+
+        Action() = default;
+        Action(const std::string& value) : StringEnum(value) {}
+        virtual ~Action() = default;
+
+        virtual bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
     };
 
-    enum class Direction
+    class Direction : public StringEnum
     {
-        In,
-        Out
+    public:
+        static const std::array<std::string, 2> m_values;
+
+        Direction() = default;
+        Direction(const std::string& value) : StringEnum(value) {}
+
+        bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
     };
 
-    enum class Protocol
+    class Protocol : public StringEnum
     {
-        Any,
-        Tcp,
-        Udp,
-        Icmp,
+    public:
+        static const std::array<std::string, 4> m_values;
+
+        Protocol() = default;
+        Protocol(const std::string& value) : StringEnum(value) {}
+
+        bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
     };
 
     virtual GenericRule& Parse(const rapidjson::Value& rule);
@@ -89,15 +153,6 @@ public:
 
     virtual std::string Specification() const = 0;
 
-    virtual int SetActionFromString(const std::string& str);
-    virtual int SetDirectionFromString(const std::string& str);
-    virtual int SetStateFromString(const std::string& str);
-    virtual int SetProtocolFromString(const std::string& str);
-
-    virtual std::string ActionToString() const = 0;
-    virtual std::string DirectionToString() const = 0;
-    virtual std::string ProtocolToString() const = 0;
-
 protected:
     Action m_action;
     Direction m_direction;
@@ -113,32 +168,78 @@ private:
     State m_desiredState;
 };
 
+class GenericPolicy
+{
+public:
+    class Action : public StringEnum
+    {
+    public:
+        static const std::array<std::string, 2> m_values;
+
+        Action() = default;
+        Action(const std::string& value) : StringEnum(value) {}
+
+        bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
+    };
+
+    class Direction : public StringEnum
+    {
+    public:
+        static const std::array<std::string, 2> m_values;
+
+        Direction() = default;
+        Direction(const std::string& value) : StringEnum(value) {}
+
+        bool IsValid() const override
+        {
+            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
+        }
+    };
+
+    virtual GenericPolicy& Parse(const rapidjson::Value& rule);
+    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+
+    virtual std::vector<std::string> GetParseError() const
+    {
+        return m_parseError;
+    }
+
+    virtual bool HasParseError() const
+    {
+        return !m_parseError.empty();
+    }
+
+    virtual std::string Specification() const = 0;
+
+protected:
+    Action m_action;
+    Direction m_direction;
+
+    std::vector<std::string> m_parseError;
+};
+
 class IpTablesRule : public GenericRule
 {
 public:
+    IpTablesRule() = default;
+
     virtual std::string Specification() const override;
-
-    virtual std::string ActionToString() const override;
-    virtual std::string DirectionToString() const override;
-    virtual std::string ProtocolToString() const override;
-
-    virtual std::string ActionToTarget() const;
-    virtual std::string DirectionToChain() const;
-
-    virtual int SetActionFromTarget(const std::string& str);
-    virtual int SetDirectionFromChain(const std::string& str);
 };
 
-class IpTablesPolicy : public IpTablesRule
+class IpTablesPolicy : public GenericPolicy
 {
 public:
-    typedef GenericRule::Action Action;
-    typedef GenericRule::Direction Direction;
 
-    virtual IpTablesPolicy& Parse(const rapidjson::Value& policy) override;
-    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+    IpTablesPolicy() = default;
 
-    virtual int SetActionFromString(const std::string& str) override;
+
+    // TODO: override Action implmentation
+    // virtual int SetActionFromString(const std::string& str) override;
+    virtual int SetActionFromTarget(const std::string& str);
+    virtual int SetDirectionFromChain(const std::string& str);
 
     virtual std::string Specification() const override;
 };
