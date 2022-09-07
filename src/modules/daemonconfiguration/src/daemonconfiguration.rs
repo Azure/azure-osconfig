@@ -66,9 +66,11 @@ pub struct DesiredDaemon {
 pub trait SystemctlInfo {
     /// Returns a new SystemctlInfo Instance.
     fn new() -> Self;
+
     /// If successful, returns an Ok(Vec<Daemon>) with all enabled systemd daemons with State not being
     /// Other or dead (Running, failed, or exited). Err(MmiError) if the operation fails.
     fn get_daemons(&self) -> Result<Vec<Daemon>>;
+
     /// If successful, returns an Ok(String) containing the all daemon names, auto start statuses, and vendor preset
     /// auto start statuses. Err(MmiError) if the operation fails.
     /// The string will be formatted as so:
@@ -78,24 +80,31 @@ pub trait SystemctlInfo {
     fn list_unit_files(&self) -> Result<String>;
     /// If successful, returns an Ok(Daemon) representing a current Daemon. Accepts the name of the daemon
     /// and it's auto start statuses as strings. Err(MmiError) if the operation fails.
+
     fn create_daemon(&self, name: &str, auto_start_status: &str) -> Result<Daemon>;
+
     /// If successful, returns an Ok(String) containing the state of the daemon with name "name".
     /// Err(MmiError) if the operation fails.
     /// The string will be formatted as so:
     /// "substate=<state>"
     fn show_substate_property(&self, name: &str) -> Result<String>;
+
     /// Check if a daemon with name "name" exits. Returns Ok(true) if the daemon exists, Ok(false) if the
     /// daemon doesn't exist. Err(MmiError) if the operation fails.
     fn exists(&self, name: &str) -> Result<bool>;
+
     /// Start systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
     /// daemon was already started. Err(MmiError) if the operation fails.
     fn start(&mut self, name: &str) -> Result<bool>;
+
     /// stop systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
     /// daemon was already started. Err(MmiError) if the operation fails.
     fn stop(&mut self, name: &str) -> Result<bool>;
+
     /// enable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
     /// daemon was already started. Err(MmiError) if the operation fails.
     fn enable(&mut self, name: &str) -> Result<bool>;
+
     /// disable systemd daemon with name "name". Returns Ok(true) if successful, Ok(false) if the
     /// daemon was already started. Err(MmiError) if the operation fails.
     fn disable(&mut self, name: &str) -> Result<bool>;
@@ -348,7 +357,10 @@ mod tests {
                 (String::from("alsa-utils"), String::from("masked")),
                 (String::from("apport-forward@"), String::from("static")),
                 (String::from("apport"), String::from("enabled")),
-                (String::from("netplan-ovs-cleanup"), String::from("enabled-runtime")),
+                (
+                    String::from("netplan-ovs-cleanup"),
+                    String::from("enabled-runtime"),
+                ),
                 (String::from("osconfig"), String::from("disabled")),
                 (String::from("rtkit-daemon"), String::from("enabled")),
                 (String::from("saned"), String::from("enabled")),
