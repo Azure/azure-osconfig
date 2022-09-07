@@ -272,7 +272,6 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
                 State state = State(value[g_desiredState].GetString());
                 if (state.IsValid())
                 {
-                    OsConfigLogInfo(FirewallLog::Get(), "Desired state: %s", state.ToString().c_str());
                     m_desiredState = state;
                 }
                 else
@@ -297,7 +296,6 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
                 Action action = Action(value[g_action].GetString());
                 if (action.IsValid())
                 {
-                    OsConfigLogInfo(FirewallLog::Get(), "Action: %s", action.ToString().c_str());
                     m_action = action;
                 }
                 else
@@ -322,7 +320,6 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
                 Direction direction = Direction(value[g_direction].GetString());
                 if (direction.IsValid())
                 {
-                    OsConfigLogInfo(FirewallLog::Get(), "Direction: %s", direction.ToString().c_str());
                     m_direction = direction;
                 }
                 else
@@ -447,7 +444,7 @@ std::string IpTablesRule::Specification() const
 
     if (!m_sourcePort.empty())
     {
-        ruleSpec << "-sport " << m_sourcePort << " ";
+        ruleSpec << "--source-port " << m_sourcePort << " ";
     }
 
     if (!m_destinationAddress.empty())
@@ -457,7 +454,7 @@ std::string IpTablesRule::Specification() const
 
     if (!m_destinationPort.empty())
     {
-        ruleSpec << "-dport " << m_destinationPort << " ";
+        ruleSpec << "--destination-port " << m_destinationPort << " ";
     }
 
     ruleSpec << "-j ";
@@ -542,10 +539,10 @@ std::string IpTablesPolicy::Specification() const
     }
     else
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid direction: %s", m_direction.ToString().c_str());
+        OsConfigLogError(FirewallLog::Get(), "Invalid direction: '%s'", m_direction.ToString().c_str());
     }
 
-    if (m_action == "allow")
+    if (m_action == "accept")
     {
         target = g_targetAccept;
     }
@@ -555,7 +552,7 @@ std::string IpTablesPolicy::Specification() const
     }
     else
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid action: %s", m_action.ToString().c_str());
+        OsConfigLogError(FirewallLog::Get(), "Invalid action: '%s'", m_action.ToString().c_str());
     }
 
     return chain + " " + target;
@@ -564,22 +561,33 @@ std::string IpTablesPolicy::Specification() const
 int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
 {
     int status = 0;
+    int index = 0;
     std::vector<std::string> errors;
 
     for (auto& policy : policies)
     {
-        std::string specification = policy.Specification();
-        std::string command = "iptables -P " + specification;
-        int commandStatus = 0;
-        char* textResult = nullptr;
-
-        if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+        if (!policy.HasParseError())
         {
-            errors.push_back("Failed to set default policy (" + specification + "): " + std::string(textResult));
-            status = commandStatus;
+            std::string specification = policy.Specification();
+            std::string command = "iptables -P " + specification;
+            int commandStatus = 0;
+            char* textResult = nullptr;
+
+            if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+            {
+                errors.push_back("Failed to set default policy (" + specification + "): " + std::string(textResult));
+                status = commandStatus;
+            }
+
+            FREE_MEMORY(textResult);
+        }
+        else
+        {
+            errors.push_back("Failed to set default policy (" + std::to_string(index) + ")");
+            status = EINVAL;
         }
 
-        FREE_MEMORY(textResult);
+        index++;
     }
 
     std::string errorMessage = "";
@@ -756,7 +764,7 @@ int IpTablesPolicy::SetActionFromTarget(const std::string& str)
     }
     else
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid target (%s)", str.c_str());
+        OsConfigLogError(FirewallLog::Get(), "Invalid target: '%s'", str.c_str());
         status = EINVAL;
     }
 
@@ -777,7 +785,7 @@ int IpTablesPolicy::SetDirectionFromChain(const std::string& str)
     }
     else
     {
-        OsConfigLogError(FirewallLog::Get(), "Invalid chain (%s)", str.c_str());
+        OsConfigLogError(FirewallLog::Get(), "Invalid chain: '%s')", str.c_str());
         status = EINVAL;
     }
 

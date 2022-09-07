@@ -235,9 +235,6 @@ public:
 
     IpTablesPolicy() = default;
 
-
-    // TODO: override Action implmentation
-    // virtual int SetActionFromString(const std::string& str) override;
     virtual int SetActionFromTarget(const std::string& str);
     virtual int SetDirectionFromChain(const std::string& str);
 
@@ -356,6 +353,14 @@ std::vector<T> ParseArray(const rapidjson::Value& value)
             T rule;
             rule.Parse(value);
             rules.push_back(rule);
+
+            if (rule.HasParseError())
+            {
+                for (auto& error : rule.GetParseError())
+                {
+                    OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+                }
+            }
         }
     }
     else
