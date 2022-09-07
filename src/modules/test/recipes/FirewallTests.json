@@ -87,7 +87,7 @@
         "ComponentName": "Firewall",
         "ObjectName": "firewallDesiredDefaultPolicies",
         "Desired": true,
-        "Payload": "[{\"action\": \"accept\", \"direction\": \"in\"}, {\"action\": \"drop\", \"direction\": \"out\"}]",
+        "Payload": "[{\"action\": \"accept\", \"direction\": \"in\"}, {\"action\": \"accept\", \"direction\": \"out\"}]",
         "ExpectedResult": 0,
         "WaitSeconds": 0
     },
