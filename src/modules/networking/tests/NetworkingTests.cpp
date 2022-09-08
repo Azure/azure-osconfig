@@ -340,7 +340,7 @@ namespace OSConfig::Platform::Tests
             "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
             "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
             "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
-            "\"dnsServers\":\"docker0=1.1.1.1,10.20.20.20,172.29.64.1,8.8.8.8;eth0=1.1.1.1,10.20.20.20,172.127.41.161,172.32.64.165,8.8.8.8\","
+            "\"dnsServers\":\"docker0=1.1.1.1,10.20.30.40,100.10.20.30,2.2.2.2;eth0=1.1.1.1,10.20.30.40,100.40.50.60,2.2.2.2,3.3.3.3\","
             "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
@@ -505,7 +505,7 @@ namespace OSConfig::Platform::Tests
             "DNSSEC setting: no\n"
             "DNSSEC supported: no\n"
             "Current DNS Server: 1.1.1.1\n"
-            "DNS Servers: 1.1.1.1 8.8.8.8\n"
+            "DNS Servers: 1.1.1.1 2.2.2.2\n"
             "DNSSEC NTA: 10.in-addr.arpa\n"
             "Link 1 (docker0)\n"
             "Current Scopes: DNS\n"
@@ -515,8 +515,8 @@ namespace OSConfig::Platform::Tests
             "DNSOverTLS setting: no\n"
             "DNSSEC setting: no\n"
             "DNSSEC supported: no\n"
-            "Current DNS Server: 172.29.64.1\n"
-            "DNS Servers: 172.29.64.1 10.20.20.20\n"
+            "Current DNS Server: 10.20.30.40\n"
+            "DNS Servers: 10.20.30.40 100.10.20.30\n"
             "DNS Domain: mshome.net\n"
             "Link 2 (eth0)\n"
             "Current Scopes: DNS\n"
@@ -526,10 +526,12 @@ namespace OSConfig::Platform::Tests
             "DNSOverTLS setting: no\n"
             "DNSSEC setting: no\n"
             "DNSSEC supported: no\n"
-            "Current DNS Server: 172.127.41.161\n"
-            "DNS Servers: 172.127.41.161 10.20.20.20\n"
-            "172.32.64.165\n"
+            "Current DNS Server: 10.20.30.40\n"
+            "DNS Servers: 10.20.30.40 100.40.50.60\n"
+            "2.2.2.2 3.3.3.3\n"
             "DNS Domain: mshome.net\n";
+
+
 
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
