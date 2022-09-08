@@ -363,14 +363,14 @@ protected:
     {
         State state = m_firewall.Detect();
         writer.String((state == State::Enabled) ? "enabled" : ((state == State::Disabled) ? "disabled" : "unknown"));
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
     {
         std::string fingerprint = m_firewall.Fingerprint();
         writer.String(fingerprint.c_str());
-        return 0;
+        return EXIT_SUCCESS;
     }
 
     virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
