@@ -120,7 +120,6 @@ find_program(RUSTC_EXECUTABLE rustc
 mark_as_advanced(RUSTC_EXECUTABLE)
 
 # Fetch Corrosion to link the Rust Modules with the CMake Build Line
-
 if(CARGO_EXECUTABLE AND RUSTC_EXECUTABLE)
     set(BUILD_RUST true)
     add_subdirectory(corrosion)
