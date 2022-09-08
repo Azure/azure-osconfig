@@ -9,6 +9,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <regex>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -56,12 +57,12 @@ public:
 
     bool operator==(const char* other) const
     {
-        return m_value.compare(other) == 0;
+        return (m_value.compare(other) == 0);
     }
 
     bool operator!=(const char* other) const
     {
-        return m_value.compare(other) != 0;
+        return (m_value.compare(other) != 0);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const StringEnum& se)
@@ -74,66 +75,70 @@ protected:
     std::string m_value;
 };
 
+class DesiredState : public StringEnum
+{
+public:
+    DesiredState() = default;
+    DesiredState(const std::string& value) : StringEnum(value) {}
+
+    bool IsValid() const override
+    {
+        return (m_values.find(m_value) != m_values.end());
+    }
+
+private:
+    static const std::set<std::string> m_values;
+};
+
+class Action : public StringEnum
+{
+public:
+    Action() = default;
+    Action(const std::string& value) : StringEnum(value) {}
+    virtual ~Action() = default;
+
+    virtual bool IsValid() const override
+    {
+        return (m_values.find(m_value) != m_values.end());
+    }
+
+private:
+    static const std::set<std::string> m_values;
+};
+
+class Direction : public StringEnum
+{
+public:
+    Direction() = default;
+    Direction(const std::string& value) : StringEnum(value) {}
+
+    bool IsValid() const override
+    {
+        return (m_values.find(m_value) != m_values.end());
+    }
+
+private:
+    static const std::set<std::string> m_values;
+};
+
+class Protocol : public StringEnum
+{
+public:
+    Protocol() = default;
+    Protocol(const std::string& value) : StringEnum(value) {}
+
+    bool IsValid() const override
+    {
+        return (m_values.find(m_value) != m_values.end());
+    }
+
+private:
+    static const std::set<std::string> m_values;
+};
+
 class GenericRule
 {
 public:
-    class State : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 2> m_values;
-
-        State() = default;
-        State(const std::string& value) : StringEnum(value) {}
-
-        bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
-    class Action : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 3> m_values;
-
-        Action() = default;
-        Action(const std::string& value) : StringEnum(value) {}
-        virtual ~Action() = default;
-
-        virtual bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
-    class Direction : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 2> m_values;
-
-        Direction() = default;
-        Direction(const std::string& value) : StringEnum(value) {}
-
-        bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
-    class Protocol : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 4> m_values;
-
-        Protocol() = default;
-        Protocol(const std::string& value) : StringEnum(value) {}
-
-        bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
     virtual GenericRule& Parse(const rapidjson::Value& rule);
 
     virtual std::vector<std::string> GetParseError() const
@@ -146,7 +151,7 @@ public:
         return !m_parseError.empty();
     }
 
-    virtual State GetDesiredState() const
+    virtual DesiredState GetDesiredState() const
     {
         return m_desiredState;
     }
@@ -165,40 +170,12 @@ protected:
     std::vector<std::string> m_parseError;
 
 private:
-    State m_desiredState;
+    DesiredState m_desiredState;
 };
 
 class GenericPolicy
 {
 public:
-    class Action : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 2> m_values;
-
-        Action() = default;
-        Action(const std::string& value) : StringEnum(value) {}
-
-        bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
-    class Direction : public StringEnum
-    {
-    public:
-        static const std::array<std::string, 2> m_values;
-
-        Direction() = default;
-        Direction(const std::string& value) : StringEnum(value) {}
-
-        bool IsValid() const override
-        {
-            return std::find(m_values.begin(), m_values.end(), m_value) != m_values.end();
-        }
-    };
-
     virtual GenericPolicy& Parse(const rapidjson::Value& rule);
     virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
 
@@ -232,13 +209,12 @@ public:
 class IpTablesPolicy : public GenericPolicy
 {
 public:
-
     IpTablesPolicy() = default;
+
+    virtual std::string Specification() const override;
 
     virtual int SetActionFromTarget(const std::string& str);
     virtual int SetDirectionFromChain(const std::string& str);
-
-    virtual std::string Specification() const override;
 };
 
 template<class RuleT, class PolicyT>

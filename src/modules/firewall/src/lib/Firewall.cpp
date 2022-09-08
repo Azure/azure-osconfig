@@ -25,13 +25,10 @@ const std::string FirewallModuleBase::m_firewallReportedConfigurationStatusDetai
 const std::string FirewallModuleBase::m_firewallDesiredDefaultPolicies = "firewallDesiredDefaultPolicies";
 const std::string FirewallModuleBase::m_firewallDesiredRules = "desiredFirewallRules";
 
-const std::array<std::string, 2> GenericRule::State::m_values = { "present", "notPresent" };
-const std::array<std::string, 3> GenericRule::Action::m_values = { "accept", "reject", "drop" };
-const std::array<std::string, 2> GenericRule::Direction::m_values = { "in", "out" };
-const std::array<std::string, 4> GenericRule::Protocol::m_values = { "any", "tcp", "udp", "icmp" };
-
-const std::array<std::string, 2> GenericPolicy::Action::m_values = { "accept", "drop" };
-const std::array<std::string, 2> GenericPolicy::Direction::m_values = { "in", "out" };
+const std::set<std::string> DesiredState::m_values = { "present", "notPresent" };
+const std::set<std::string> Action::m_values = { "accept", "reject", "drop" };
+const std::set<std::string> Direction::m_values = { "in", "out" };
+const std::set<std::string> Protocol::m_values = { "any", "tcp", "udp", "icmp" };
 
 const char g_desiredState[] = "desiredState";
 const char g_action[] = "action";
@@ -269,7 +266,7 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
         {
             if (value[g_desiredState].IsString())
             {
-                State state = State(value[g_desiredState].GetString());
+                DesiredState state = DesiredState(value[g_desiredState].GetString());
                 if (state.IsValid())
                 {
                     m_desiredState = state;
@@ -690,7 +687,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         }
         else
         {
-            Rule::State state = rule.GetDesiredState();
+            DesiredState state = rule.GetDesiredState();
             if (state == "present")
             {
                 if (Exists(rule))
@@ -861,7 +858,7 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
         if (value[g_action].IsString())
         {
             Action action = Action(value[g_action].GetString());
-            if (action.IsValid())
+            if (action.IsValid() && (action != "reject"))
             {
                 m_action = action;
             }

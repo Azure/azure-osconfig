@@ -15,11 +15,11 @@ namespace tests
 
         if (expected.Parse(expectedJson.c_str()).HasParseError())
         {
-            return testing::AssertionFailure() << "expected JSON is not valid JSON";
+            return testing::AssertionFailure() << "expected JSON is not valid JSON" << expectedJson;
         }
         else if (actual.Parse(actualJson.c_str()).HasParseError())
         {
-            return testing::AssertionFailure() << "actual JSON is not valid JSON";
+            return testing::AssertionFailure() << "actual JSON is not valid JSON" << actualJson;
         }
         else if (actual == expected)
         {
@@ -60,7 +60,7 @@ namespace tests
 
     std::string MockFirewall::Fingerprint() const
     {
-        // For testing purposes, return the number of rules + the number of default policies.
+        // For testing purposes, return the number of rules plus the number of default policies.
         return std::to_string(m_rules.size() + m_defaultPolicies.size());
     }
 
