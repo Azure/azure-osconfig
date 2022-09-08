@@ -41,8 +41,12 @@ jobs:
     steps:
       - name: Checkout code
         run: |
-          git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_REF_NAME --recursive .
-
+          if [[ ${{ github.event_name }} == 'pull_request' ]];then
+            git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_HEAD_REF --recursive .
+          else
+            git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_REF_NAME --recursive .
+          fi
+          
       - name: Generate build
         run: |
           mkdir build && cd build
