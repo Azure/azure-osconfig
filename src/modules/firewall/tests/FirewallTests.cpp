@@ -12,23 +12,22 @@ namespace tests
     {
         rapidjson::Document actual;
         rapidjson::Document expected;
+        testing::AssertionResult result = testing::AssertionSuccess();
 
         if (expected.Parse(expectedJson.c_str()).HasParseError())
         {
-            return testing::AssertionFailure() << "expected JSON is not valid JSON" << expectedJson;
+            result = testing::AssertionFailure() << "expected JSON is not valid JSON" << expectedJson;
         }
         else if (actual.Parse(actualJson.c_str()).HasParseError())
         {
-            return testing::AssertionFailure() << "actual JSON is not valid JSON" << actualJson;
+            result = testing::AssertionFailure() << "actual JSON is not valid JSON" << actualJson;
         }
-        else if (actual == expected)
+        else if (actual != expected)
         {
-            return testing::AssertionSuccess();
+            result = testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
         }
-        else
-        {
-            return testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
-        }
+
+        return result;
     }
 
     class MockFirewall : public GenericFirewall<IpTablesRule, IpTablesPolicy>
@@ -239,22 +238,27 @@ namespace tests
         return json;
     }
 
-    std::string Rule(const std::string desiredState, const std::string& action, const std::string& direction, const std::string& protocol = "", const std::string& src = "", const std::string& dst = "", int srcPort = EXIT_FAILURE, int dstPort = EXIT_FAILURE)
+    std::string Rule(const std::string desiredState, const std::string& action, const std::string& direction, const std::string& protocol = "", const std::string& src = "", const std::string& dst = "", int srcPort = 0, int dstPort = 0)
     {
         std::string rule = "{\"desiredState\": \"" + desiredState + "\", \"action\": \"" + action + "\", \"direction\": \"" + direction + "\"";
-        if (!protocol.empty()) {
+        if (!protocol.empty())
+        {
             rule += ", \"protocol\": \"" + protocol + "\"";
         }
-        if (!src.empty()) {
+        if (!src.empty())
+        {
             rule += ", \"src\": \"" + src + "\"";
         }
-        if (!dst.empty()) {
+        if (!dst.empty())
+        {
             rule += ", \"dst\": \"" + dst + "\"";
         }
-        if (srcPort != EXIT_FAILURE) {
+        if (srcPort != 0)
+        {
             rule += ", \"srcPort\": " + std::to_string(srcPort);
         }
-        if (dstPort != EXIT_FAILURE) {
+        if (dstPort != 0)
+        {
             rule += ", \"dstPort\": " + std::to_string(dstPort);
         }
         rule += "}";
