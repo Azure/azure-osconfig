@@ -93,30 +93,24 @@ endif()
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
 
-if(CMAKE_HOST_WIN32)
-	set(USER_HOME "$ENV{USERPROFILE}")
-else()
-	set(USER_HOME "$ENV{HOME}")
-endif()
-
 if(NOT DEFINED CARGO_HOME)
-	if("$ENV{CARGO_HOME}" STREQUAL "")
-		set(CARGO_HOME "${USER_HOME}/.cargo")
-	else()
-		set(CARGO_HOME "$ENV{CARGO_HOME}")
-	endif()
+    if("$ENV{CARGO_HOME}" STREQUAL "")
+        set(CARGO_HOME "$ENV{HOME}/.cargo")
+    else()
+        set(CARGO_HOME "$ENV{CARGO_HOME}")
+    endif()
 endif()
 
 # Find cargo executable
 find_program(CARGO_EXECUTABLE cargo
-	HINTS "${CARGO_HOME}"
-	PATH_SUFFIXES "bin")
+    HINTS "${CARGO_HOME}"
+    PATH_SUFFIXES "bin")
 mark_as_advanced(CARGO_EXECUTABLE)
 
 # Find rustc executable
 find_program(RUSTC_EXECUTABLE rustc
-	HINTS "${CARGO_HOME}"
-	PATH_SUFFIXES "bin")
+    HINTS "${CARGO_HOME}"
+    PATH_SUFFIXES "bin")
 mark_as_advanced(RUSTC_EXECUTABLE)
 
 # Fetch Corrosion to link the Rust Modules with the CMake Build Line
