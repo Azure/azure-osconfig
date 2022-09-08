@@ -25,7 +25,7 @@ const std::string FirewallModuleBase::m_firewallReportedConfigurationStatusDetai
 const std::string FirewallModuleBase::m_firewallDesiredDefaultPolicies = "firewallDesiredDefaultPolicies";
 const std::string FirewallModuleBase::m_firewallDesiredRules = "desiredFirewallRules";
 
-const std::set<std::string> DesiredState::m_values = { "present", "notPresent" };
+const std::set<std::string> DesiredState::m_values = { "present", "absent" };
 const std::set<std::string> Action::m_values = { "accept", "reject", "drop" };
 const std::set<std::string> Direction::m_values = { "in", "out" };
 const std::set<std::string> Protocol::m_values = { "any", "tcp", "udp", "icmp" };
@@ -706,7 +706,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
                     errors.push_back("Failed to add rule (" + std::to_string(index) + "): " + error);
                 }
             }
-            else if (state == "notPresent")
+            else if (state == "absent")
             {
                 while (Exists(rule))
                 {
