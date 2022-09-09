@@ -16,14 +16,14 @@ const std::string FirewallModuleBase::m_moduleInfo = R"""({
 
 const std::string FirewallModuleBase::m_firewallComponent = "Firewall";
 
-const std::string FirewallModuleBase::m_firewallReportedFingerprint = "firewallFingerprint";
-const std::string FirewallModuleBase::m_firewallReportedState = "firewallState";
-const std::string FirewallModuleBase::m_firewallReportedDefaultPolicies = "defaultPolicies";
-const std::string FirewallModuleBase::m_firewallReportedConfigurationStatus = "configurationStatus";
-const std::string FirewallModuleBase::m_firewallReportedConfigurationStatusDetail = "configurationStatusDetail";
+const std::string FirewallModuleBase::m_reportedFingerprint = "fingerprint";
+const std::string FirewallModuleBase::m_reportedState = "state";
+const std::string FirewallModuleBase::m_reportedDefaultPolicies = "defaultPolicies";
+const std::string FirewallModuleBase::m_reportedConfigurationStatus = "configurationStatus";
+const std::string FirewallModuleBase::m_reportedConfigurationStatusDetail = "configurationStatusDetail";
 
-const std::string FirewallModuleBase::m_firewallDesiredDefaultPolicies = "firewallDesiredDefaultPolicies";
-const std::string FirewallModuleBase::m_firewallDesiredRules = "desiredFirewallRules";
+const std::string FirewallModuleBase::m_desiredDefaultPolicies = "desiredDefaultPolicies";
+const std::string FirewallModuleBase::m_desiredRules = "desiredRules";
 
 const std::set<std::string> DesiredState::m_values = { "present", "absent" };
 const std::set<std::string> Action::m_values = { "accept", "reject", "drop" };
@@ -124,23 +124,23 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
         *payloadSizeBytes = 0;
         *payload = nullptr;
 
-        if (0 == m_firewallReportedState.compare(objectName))
+        if (0 == m_reportedState.compare(objectName))
         {
             status = GetState(writer);
         }
-        else if (0 == m_firewallReportedFingerprint.compare(objectName))
+        else if (0 == m_reportedFingerprint.compare(objectName))
         {
             status = GetFingerprint(writer);
         }
-        else if (0 == m_firewallReportedDefaultPolicies.compare(objectName))
+        else if (0 == m_reportedDefaultPolicies.compare(objectName))
         {
             status = GetDefaultPolicies(writer);
         }
-        else if (0 == m_firewallReportedConfigurationStatus.compare(objectName))
+        else if (0 == m_reportedConfigurationStatus.compare(objectName))
         {
             status = GetConfigurationStatus(writer);
         }
-        else if (0 == m_firewallReportedConfigurationStatusDetail.compare(objectName))
+        else if (0 == m_reportedConfigurationStatusDetail.compare(objectName))
         {
             status = GetConfigurationStatusDetail(writer);
         }
@@ -219,11 +219,11 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
 
                 if (!document.HasParseError())
                 {
-                    if (0 == m_firewallDesiredRules.compare(objectName))
+                    if (0 == m_desiredRules.compare(objectName))
                     {
                         status = SetRules(document);
                     }
-                    else if (0 == m_firewallDesiredDefaultPolicies.compare(objectName))
+                    else if (0 == m_desiredDefaultPolicies.compare(objectName))
                     {
                         status = SetDefaultPolicies(document);
                     }

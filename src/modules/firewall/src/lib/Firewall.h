@@ -284,15 +284,15 @@ public:
     static const std::string m_firewallComponent;
 
     // Reported properties
-    static const std::string m_firewallReportedFingerprint;
-    static const std::string m_firewallReportedState;
-    static const std::string m_firewallReportedDefaultPolicies;
-    static const std::string m_firewallReportedConfigurationStatus;
-    static const std::string m_firewallReportedConfigurationStatusDetail;
+    static const std::string m_reportedFingerprint;
+    static const std::string m_reportedState;
+    static const std::string m_reportedDefaultPolicies;
+    static const std::string m_reportedConfigurationStatus;
+    static const std::string m_reportedConfigurationStatusDetail;
 
     // Desired properties
-    static const std::string m_firewallDesiredDefaultPolicies;
-    static const std::string m_firewallDesiredRules;
+    static const std::string m_desiredDefaultPolicies;
+    static const std::string m_desiredRules;
 
     FirewallModuleBase(unsigned int maxPayloadSizeBytes) : m_maxPayloadSizeBytes(maxPayloadSizeBytes) {}
     virtual ~FirewallModuleBase() = default;

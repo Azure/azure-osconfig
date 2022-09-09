@@ -1,28 +1,28 @@
 [
     {
         "ComponentName": "Firewall",
-        "ObjectName": "firewallState",
+        "ObjectName": "state",
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0
     },
     {
         "ComponentName": "Firewall",
-        "ObjectName": "firewallFingerprint",
+        "ObjectName": "fingerprint",
         "Desired": false,
         "ExpectedResult": 0,
         "WaitSeconds": 0
     },
     {
         "ComponentName": "invalidComponentName",
-        "ObjectName": "firewallState",
+        "ObjectName": "state",
         "Desired": false,
         "ExpectedResult": 22,
         "WaitSeconds": 0
     },
     {
         "ComponentName": "invalidComponentName",
-        "ObjectName": "firewallFingerprint",
+        "ObjectName": "fingerprint",
         "Desired": false,
         "ExpectedResult": 22,
         "WaitSeconds": 0
@@ -36,14 +36,14 @@
     },
     {
         "ComponentName": "",
-        "ObjectName": "firewallState",
+        "ObjectName": "state",
         "Desired": false,
         "ExpectedResult": 22,
         "WaitSeconds": 0
     },
     {
         "ComponentName": "",
-        "ObjectName": "firewallFingerprint",
+        "ObjectName": "fingerprint",
         "Desired": false,
         "ExpectedResult": 22,
         "WaitSeconds": 0
@@ -85,7 +85,7 @@
     },
     {
         "ComponentName": "Firewall",
-        "ObjectName": "firewallDesiredDefaultPolicies",
+        "ObjectName": "desiredDefaultPolicies",
         "Desired": true,
         "Payload": "[{\"action\": \"accept\", \"direction\": \"in\"}, {\"action\": \"accept\", \"direction\": \"out\"}]",
         "ExpectedResult": 0,
@@ -93,7 +93,7 @@
     },
     {
         "ComponentName": "Firewall",
-        "ObjectName": "firewallDesiredDefaultPolicies",
+        "ObjectName": "desiredDefaultPolicies",
         "Desired": true,
         "Payload": "[{\"action\": \"reject\", \"direction\": \"in\"}]",
         "ExpectedResult": 22,
