@@ -101,7 +101,7 @@
     },
     {
         "ComponentName": "Firewall",
-        "ObjectName": "desiredFirewallRules",
+        "ObjectName": "desiredRules",
         "Desired": true,
         "Payload": "[{\"desiredState\": \"present\", \"action\": \"accept\", \"direction\": \"in\", \"protocol\": \"tcp\", \"sourcePort\": 80, \"sourceAddress\": \"0.0.0.0\"}]",
         "ExpectedResult": 0,
