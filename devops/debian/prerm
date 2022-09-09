@@ -44,4 +44,9 @@ if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
 fi
 # End automatically added section
 
+# MSFT change: Remove module identity on package removal
+if [ "$1" = remove ]; then
+    rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
+fi
+
 exit 0
