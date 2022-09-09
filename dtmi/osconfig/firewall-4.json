@@ -8,9 +8,9 @@
    {
      "@type": "Property",
      "name": "firewallState",
-     "writeable": false,
+     "writable": false,
      "schema": {
-       "type": "enum",
+       "@type": "Enum",
        "valueSchema": "string",
        "enumValues": [
          {
@@ -31,15 +31,15 @@
    {
      "@type": "Property",
      "name": "firewallFingerprint",
-     "writeable": false,
+     "writable": false,
      "schema": "string"
    },
    {
      "@type": "Property",
      "name": "configurationStatus",
-     "writeable": false,
+     "writable": false,
      "schema": {
-       "type": "enum",
+       "@type": "Enum",
        "valueSchema": "string",
        "enumValues": [
          {
@@ -60,13 +60,13 @@
    {
      "@type": "Property",
      "name": "configurationStatusDetail",
-     "writeable": false,
+     "writable": false,
      "schema": "string"
    },
    {
      "@type": "Property",
      "name": "defaultPolicies",
-     "writeable": false,
+     "writable": false,
      "schema": {
        "type": "array",
        "elementSchema": {
@@ -75,7 +75,7 @@
            {
              "name": "direction",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -92,7 +92,7 @@
            {
              "name": "action",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -113,7 +113,7 @@
    {
      "@type": "Property",
      "name": "desiredFirewallRules",
-     "writeable": true,
+     "writable": true,
      "schema": {
        "type": "array",
        "elementSchema": {
@@ -122,7 +122,7 @@
            {
              "name": "desiredState",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -139,7 +139,7 @@
            {
              "name": "action",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -160,7 +160,7 @@
            {
              "name": "direction",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -177,7 +177,7 @@
            {
              "name": "protocol",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -222,7 +222,7 @@
    {
      "@type": "Property",
      "name": "firewallDesiredDefaultPolicies",
-     "writeable": true,
+     "writable": true,
      "schema": {
        "type": "array",
        "elementSchema": {
@@ -231,7 +231,7 @@
            {
              "name": "direction",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                  {
@@ -248,7 +248,7 @@
            {
              "name": "action",
              "schema": {
-               "type": "enum",
+               "@type": "Enum",
                "valueSchema": "string",
                "enumValues": [
                   {
