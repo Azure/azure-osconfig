@@ -7,7 +7,7 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "firewallState",
+          "name": "state",
           "type": "mimObject",
           "desired": false,
           "schema": {
@@ -30,7 +30,7 @@
           }
         },
         {
-          "name": "firewallFingerprint",
+          "name": "fingerprint",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -112,7 +112,7 @@
           }
         },
         {
-          "name": "desiredFirewallRules",
+          "name": "desiredRules",
           "type": "mimObject",
           "desired": true,
           "schema": {
@@ -221,7 +221,7 @@
           }
         },
         {
-          "name": "firewallDesiredDefaultPolicies",
+          "name": "desiredDefaultPolicies",
           "type": "mimObject",
           "desired": true,
           "schema": {
