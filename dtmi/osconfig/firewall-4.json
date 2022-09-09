@@ -7,7 +7,7 @@
   "contents": [
    {
      "@type": "Property",
-     "name": "firewallState",
+     "name": "state",
      "writable": false,
      "schema": {
        "@type": "Enum",
@@ -30,7 +30,7 @@
    },
    {
      "@type": "Property",
-     "name": "firewallFingerprint",
+     "name": "fingerprint",
      "writable": false,
      "schema": "string"
    },
@@ -112,7 +112,7 @@
    },
    {
      "@type": "Property",
-     "name": "desiredFirewallRules",
+     "name": "desiredRules",
      "writable": true,
      "schema": {
        "@type": "Array",
@@ -221,7 +221,7 @@
    },
    {
      "@type": "Property",
-     "name": "firewallDesiredDefaultPolicies",
+     "name": "desiredDefaultPolicies",
      "writable": true,
      "schema": {
        "@type": "Array",
