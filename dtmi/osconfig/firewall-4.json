@@ -68,9 +68,9 @@
      "name": "defaultPolicies",
      "writable": false,
      "schema": {
-       "type": "array",
+       "@type": "Array",
        "elementSchema": {
-         "type": "object",
+         "@type": "Object",
          "fields": [
            {
              "name": "direction",
@@ -115,9 +115,9 @@
      "name": "desiredFirewallRules",
      "writable": true,
      "schema": {
-       "type": "array",
+       "@type": "Array",
        "elementSchema": {
-         "type": "object",
+         "@type": "Object",
          "fields": [
            {
              "name": "desiredState",
@@ -224,9 +224,9 @@
      "name": "firewallDesiredDefaultPolicies",
      "writable": true,
      "schema": {
-       "type": "array",
+       "@type": "Array",
        "elementSchema": {
-         "type": "object",
+         "@type": "Object",
          "fields": [
            {
              "name": "direction",
