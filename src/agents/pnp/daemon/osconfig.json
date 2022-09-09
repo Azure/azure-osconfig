@@ -87,11 +87,11 @@
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "firewallState"
+      "ObjectName": "state"
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "firewallFingerprint"
+      "ObjectName": "fingerprint"
     },
     {
       "ComponentName": "HostName",
