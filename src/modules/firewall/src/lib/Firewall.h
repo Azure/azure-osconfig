@@ -402,13 +402,13 @@ protected:
     virtual int SetDefaultPolicies(rapidjson::Document& document) override
     {
         std::vector<Policy> policies = ParseArray<Policy>(document);
-        return (!policies.empty()) ? m_firewall.SetDefaultPolicies(policies) : EINVAL;
+        return m_firewall.SetDefaultPolicies(policies);
     }
 
     virtual int SetRules(rapidjson::Document& document) override
     {
         std::vector<Rule> rules = ParseArray<Rule>(document);
-        return (!rules.empty()) ? m_firewall.SetRules(rules) : EINVAL;
+        return m_firewall.SetRules(rules);
     }
 
 private:
