@@ -2,7 +2,7 @@
   "CommandLogging": 0,
   "FullLogging": 0,
   "LocalManagement": 0,
-  "ModelVersion": 10,
+  "ModelVersion": 11,
   "IotHubProtocol": 2,
   "Reported": [
     {
