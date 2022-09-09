@@ -91,7 +91,6 @@ namespace tests
         for (const std::string& error : errors)
         {
             m_ruleStatusMessage += error + "\n";
-            OsConfigLogInfo(FirewallLog::Get(), "SET RULES ERROR: %s", error.c_str());
         }
 
         return errors.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -271,9 +270,9 @@ namespace tests
             Rule("present", "accept", "in"),
             Rule("present", "accept", "in", "tcp"),
             Rule("present", "reject", "in", "udp", "0.0.0.0"),
-            Rule("notPresent", "reject", "out", "icmp", "0.0.0.0", "0.0.0.0"),
-            Rule("notPresent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80),
-            Rule("notPresent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("absent", "reject", "out", "icmp", "0.0.0.0", "0.0.0.0"),
+            Rule("absent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80),
+            Rule("absent", "drop", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         std::string initialFingerprint = "\"0\"";
@@ -299,7 +298,7 @@ namespace tests
         std::vector<std::string> rules = {
             Rule("present", "accept", "in"),
             Rule("invalid", "invalid", "invalid"), // invalid rule
-            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         std::string initialFingerprint = "\"0\"";
@@ -374,9 +373,9 @@ namespace tests
             Rule("present", "accept", "in"),
             Rule("present", "accept", "in", "tcp"),
             Rule("present", "accept", "in", "udp", "0.0.0.0"),
-            Rule("notPresent", "accept", "out", "icmp", "0.0.0.0", "0.0.0.0"),
-            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80),
-            Rule("notPresent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
+            Rule("absent", "accept", "out", "icmp", "0.0.0.0", "0.0.0.0"),
+            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80),
+            Rule("absent", "accept", "out", "any", "0.0.0.0", "0.0.0.0", 80, 443),
         };
 
         for (auto ruleJson : rules)
