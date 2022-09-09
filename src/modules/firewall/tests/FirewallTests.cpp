@@ -160,16 +160,16 @@ namespace tests
 
     TEST_F(FirewallTests, GetInvalidInput)
     {
-        EXPECT_EQ(EINVAL, firewall->Get("invalid_component", Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, firewall->Get("invalid_component", Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_EQ(EINVAL, firewall->Get(Firewall::m_firewallComponent.c_str(), "invalid_object", &payload, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), nullptr, &payloadSizeBytes));
-        EXPECT_EQ(EINVAL, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, nullptr));
+        EXPECT_EQ(EINVAL, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), nullptr, &payloadSizeBytes));
+        EXPECT_EQ(EINVAL, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, nullptr));
     }
 
     TEST_F(FirewallTests, GetFingerprint)
     {
         std::string expectedFingerprint = "\"0\"";
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedFingerprint.length());
     }
@@ -177,7 +177,7 @@ namespace tests
     TEST_F(FirewallTests, GetState)
     {
         std::string expectedState = "\"disabled\"";
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedState.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedState.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedState.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedState.length());
     }
@@ -185,8 +185,8 @@ namespace tests
     TEST_F(FirewallTests, GetSetDefaultPolicies)
     {
         std::string policiesJson = "[{\"direction\": \"in\", \"action\": \"accept\"}, {\"direction\": \"out\", \"action\": \"drop\"}]";
-        EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedDefaultPolicies.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_desiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedDefaultPolicies.c_str(), &payload, &payloadSizeBytes));
         EXPECT_TRUE(JsonEq(policiesJson, std::string(payload, payloadSizeBytes)));
     }
 
@@ -198,30 +198,30 @@ namespace tests
         std::string expectedStatus = "\"failure\"";
 
         // Check the initial fingerprint
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), initialFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, initialFingerprint.length());
 
         ClearPayload();
 
-        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
+        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_desiredDefaultPolicies.c_str(), (MMI_JSON_STRING)policiesJson.c_str(), policiesJson.length()));
 
         // Check the new fingerprint
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedFingerprint.length());
 
         ClearPayload();
 
         // Check the status
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedConfigurationStatus.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedConfigurationStatus.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedStatus.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedStatus.length());
 
         ClearPayload();
 
         // Check the status message
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedConfigurationStatusDetail.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedConfigurationStatusDetail.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STRNE(std::string(payload, payloadSizeBytes).c_str(), "\"\"");
         EXPECT_GT(payloadSizeBytes, strlen("\"\""));
     }
@@ -280,15 +280,15 @@ namespace tests
 
         std::string json = RuleJsonArray(rules);
 
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), initialFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, initialFingerprint.length());
 
         FREE_MEMORY(payload);
         payloadSizeBytes = 0;
 
-        EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_desiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedFingerprint.length());
     }
@@ -308,30 +308,30 @@ namespace tests
         std::string json = RuleJsonArray(rules);
 
         // Check the initial fingerprint
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), initialFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, initialFingerprint.length());
 
         ClearPayload();
 
-        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallDesiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
+        EXPECT_EQ(EXIT_FAILURE, firewall->Set(Firewall::m_firewallComponent.c_str(), Firewall::m_desiredRules.c_str(), (MMI_JSON_STRING)json.c_str(), json.length()));
 
         // Check the new fingerprint
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedFingerprint.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedFingerprint.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), expectedFingerprint.c_str());
         EXPECT_EQ(payloadSizeBytes, expectedFingerprint.length());
 
         ClearPayload();
 
         // Check the status
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedConfigurationStatus.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedConfigurationStatus.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STREQ(std::string(payload, payloadSizeBytes).c_str(), "\"failure\"");
         EXPECT_EQ(payloadSizeBytes, std::string("\"failure\"").length());
 
         ClearPayload();
 
         // Check the status message
-        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_firewallReportedConfigurationStatusDetail.c_str(), &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, firewall->Get(Firewall::m_firewallComponent.c_str(), Firewall::m_reportedConfigurationStatusDetail.c_str(), &payload, &payloadSizeBytes));
         EXPECT_STRNE(std::string(payload, payloadSizeBytes).c_str(), "\"\"");
         EXPECT_GT(payloadSizeBytes, strlen("\"\""));
     }
