@@ -79,10 +79,6 @@
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "configurationStatus"
-    },
-    {
-      "ComponentName": "Firewall",
       "ObjectName": "configurationStatusDetail"
     },
     {
@@ -96,10 +92,6 @@
     {
       "ComponentName": "Firewall",
       "ObjectName": "firewallFingerprint"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "defaultPolicies"
     },
     {
       "ComponentName": "HostName",
