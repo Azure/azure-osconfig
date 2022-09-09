@@ -7,8 +7,8 @@
   "contents": [
    {
      "@type": "Property",
-     "name": "firewallState",
-     "writeable": false,
+    "name": "state",
+    "writable": false,
      "schema": {
        "type": "enum",
        "valueSchema": "string",
@@ -30,14 +30,14 @@
    },
    {
      "@type": "Property",
-     "name": "firewallFingerprint",
-     "writeable": false,
+    "name": "fingerprint",
+    "writable": false,
      "schema": "string"
    },
    {
      "@type": "Property",
      "name": "configurationStatus",
-     "writeable": false,
+    "writable": false,
      "schema": {
        "type": "enum",
        "valueSchema": "string",
@@ -60,13 +60,13 @@
    {
      "@type": "Property",
      "name": "configurationStatusDetail",
-     "writeable": false,
+    "writable": false,
      "schema": "string"
    },
    {
      "@type": "Property",
      "name": "defaultPolicies",
-     "writeable": false,
+    "writable": false,
      "schema": {
        "type": "array",
        "elementSchema": {
@@ -112,8 +112,8 @@
    },
    {
      "@type": "Property",
-     "name": "desiredFirewallRules",
-     "writeable": true,
+    "name": "desiredRules",
+    "writable": true,
      "schema": {
        "type": "array",
        "elementSchema": {
@@ -221,8 +221,8 @@
    },
    {
      "@type": "Property",
-     "name": "firewallDesiredDefaultPolicies",
-     "writeable": true,
+    "name": "desiredDefaultPolicies",
+    "writable": true,
      "schema": {
        "type": "array",
        "elementSchema": {
