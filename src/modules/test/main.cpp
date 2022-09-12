@@ -232,7 +232,7 @@ int main(int argc, char **argv)
         else
         {
             PrintUsage();
-            return 1;
+            return EINVAL;
         }
     }
     else
@@ -247,6 +247,9 @@ int main(int argc, char **argv)
     int status = 0;
     if (ss.str().length() > 0)
     {
+        // Remove the CommandRunner's persistent cache to allow tests run same command ids repeated times
+        std::remove("/etc/osconfig/osconfig_commandrunner.cache");
+
         status = RUN_ALL_TESTS();
 
         std::cout << "[==========]" << std::endl;
@@ -257,9 +260,7 @@ int main(int argc, char **argv)
     else
     {
         std::cerr << "No tests found." << std::endl;
-        status = 1;
     }
 
-    
     return status;
 }
