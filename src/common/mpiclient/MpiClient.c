@@ -347,8 +347,8 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     char* request = NULL;
     int requestSize = 0;
-    char* statusFromResponse = NULL;
     int status = MPI_OK;
+    char* statusFromResponse = NULL;
     
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
@@ -385,9 +385,9 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     if (HTTP_INTERNAL_SERVER_ERROR == status)
     {
-        if ((NULL != payload) && (payloadSizeBytes > 0))
+        if ((NULL != *payload) && (*payloadSizeBytes > 0))
         {
-            statusFromResponse = ParseString(log, payload);
+            statusFromResponse = ParseString(log, *payload);
             status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
             FREE_MEMORY(statusFromResponse);
 
@@ -400,7 +400,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
             status = EINVAL;
         }
     }
-    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload)) || (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, log)))
+    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload)) || (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, log))))
     {
         status = EINVAL;
         OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);
@@ -487,6 +487,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* lo
     char* request = NULL;
     int requestSize = 0;
     int status = MPI_OK;
+    char* statusFromResponse = NULL;
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
@@ -523,9 +524,9 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* lo
 
     if (HTTP_INTERNAL_SERVER_ERROR == status)
     {
-        if ((NULL != payload) && (payloadSizeBytes > 0))
+        if ((NULL != *payload) && (*payloadSizeBytes > 0))
         {
-            statusFromResponse = ParseString(log, payload);
+            statusFromResponse = ParseString(log, *payload);
             status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
             FREE_MEMORY(statusFromResponse);
         }
