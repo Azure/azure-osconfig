@@ -27,6 +27,7 @@
 #include <CommonUtils.h>
 #include <Mmi.h>
 #include <Logging.h>
+#include <version.h>
 
 // Use <filesystem> or <experimental/filesystem> based on gcc lib availability
 #if __has_include(<filesystem>)
@@ -49,5 +50,7 @@
 
 #define TestLogInfo(format, ...) {printf(format, ##__VA_ARGS__); std::cout << std::endl;}
 #define TestLogError(format, ...) {fprintf(stderr, format, ##__VA_ARGS__); std::cerr << std::endl;}
+
+#define DefaultClientName "Azure OSConfig " OSCONFIG_VERSION
 
 #endif // MODULESTESTCOMMON_H
