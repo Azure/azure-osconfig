@@ -20,7 +20,7 @@ void RecipeInvoker::TestBody()
         if (0 == m_recipe.m_expectedResult)
         {
             JSON_Value *root_value = json_parse_string(payload);
-            ASSERT_NE(nullptr, root_value);
+            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: <null>";
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
             EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";
@@ -88,9 +88,6 @@ void RecipeInvoker::TestBody()
                 json_value_free(recipe_payload);
                 json_value_free(returned_payload);
             }
-
-            // Remove the CommandRunner's persistent cache to allow tests run same command ids repeated times
-            std::remove("/etc/osconfig/osconfig_commandrunner.cache");
         }
     }
 

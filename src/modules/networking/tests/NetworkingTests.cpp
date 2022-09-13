@@ -111,7 +111,7 @@ namespace OSConfig::Platform::Tests
         "default via 172.13.145.1 dev eth0 proto";
 
     std::string g_testCommandOutputDnsServers =
-        "Link 2 (docker0)\n"
+        "Link 1 (docker0)\n"
         "Current Scopes: DNS\n"
         "DefaultRoute setting: yes\n"
         "LLMNR setting: yes\n"
@@ -123,7 +123,7 @@ namespace OSConfig::Platform::Tests
         "DNS Servers: 8.8.8.8\n"
         "172.29.64.1\n"
         "DNS Domain: mshome.net\n"
-        "Link 3 (eth0)\n"
+        "Link 2 (eth0)\n"
         "Current Scopes: DNS\n"
         "DefaultRoute setting: yes\n"
         "LLMNR setting: yes\n"
@@ -333,6 +333,17 @@ namespace OSConfig::Platform::Tests
             "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
             "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
+        
+        const char* payloadExpectedMultipleDnsServersPerLine =
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=1.1.1.1,10.20.30.40,100.10.20.30,2.2.2.2;eth0=1.1.1.1,10.20.30.40,100.40.50.60,2.2.2.2,3.3.3.3\","
+            "\"dhcpEnabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"enabled\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\","
+            "\"connected\":\"br-1234=unknown;docker0=true;eth0=false;veth=unknown\"}";
 
         std::string testCommandOutputInterfaceNames = "br-1234\ndocker0\nveth\neth0";
 
@@ -486,6 +497,42 @@ namespace OSConfig::Platform::Tests
             "DNSSEC supported: no\n"
             "DNS Domain: mshome.net\n";
 
+        std::string testCommandOutputMultipleDnsServersPerLine =
+            "Global\n"
+            "LLMNR setting: no\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "Current DNS Server: 1.1.1.1\n"
+            "DNS Servers: 1.1.1.1 2.2.2.2\n"
+            "DNSSEC NTA: 10.in-addr.arpa\n"
+            "Link 1 (docker0)\n"
+            "Current Scopes: DNS\n"
+            "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "Current DNS Server: 10.20.30.40\n"
+            "DNS Servers: 10.20.30.40 100.10.20.30\n"
+            "DNS Domain: mshome.net\n"
+            "Link 2 (eth0)\n"
+            "Current Scopes: DNS\n"
+            "DefaultRoute setting: yes\n"
+            "LLMNR setting: yes\n"
+            "MulticastDNS setting: no\n"
+            "DNSOverTLS setting: no\n"
+            "DNSSEC setting: no\n"
+            "DNSSEC supported: no\n"
+            "Current DNS Server: 10.20.30.40\n"
+            "DNS Servers: 10.20.30.40 100.40.50.60\n"
+            "2.2.2.2 3.3.3.3\n"
+            "DNS Domain: mshome.net\n";
+
+
+
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
@@ -525,6 +572,19 @@ namespace OSConfig::Platform::Tests
 
         resultString = std::string(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpectedOnlyGlobalDnsServers);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+
+        testModule.runCommandCount = 0;
+        testModule.returnValues[4] = testCommandOutputMultipleDnsServersPerLine;
+
+        result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        resultString = std::string(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpectedMultipleDnsServersPerLine);
 
         EXPECT_NE(payload, nullptr);
         delete payload;

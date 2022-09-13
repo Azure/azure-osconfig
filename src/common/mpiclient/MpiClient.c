@@ -17,6 +17,8 @@
 
 #define MPI_MAX_CONTENT_LENGTH 64
 
+#define HTTP_INTERNAL_SERVER_ERROR 500
+
 extern MPI_HANDLE g_mpiHandle;
 
 static int CallMpi(const char* name, const char* request, char** response, int* responseSize, void* log)
@@ -346,7 +348,8 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     char* request = NULL;
     int requestSize = 0;
     int status = MPI_OK;
-
+    char* statusFromResponse = NULL;
+    
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
         status = EPERM;
@@ -380,9 +383,27 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
 
     FREE_MEMORY(request);
 
-    if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
+    if (HTTP_INTERNAL_SERVER_ERROR == status)
     {
-        OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response length (%p, %d)", componentName, propertyName, *payload, *payloadSizeBytes);
+        if ((NULL != *payload) && (*payloadSizeBytes > 0))
+        {
+            statusFromResponse = ParseString(log, *payload);
+            status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
+            FREE_MEMORY(statusFromResponse);
+
+            FREE_MEMORY(*payload);
+            *payloadSizeBytes = 0;
+        }
+        else
+        {
+            OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response for HTTP internal server error (500)", componentName, propertyName);
+            status = EINVAL;
+        }
+    }
+    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload)) || (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, log))))
+    {
+        status = EINVAL;
+        OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;
@@ -391,15 +412,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
-
-    if ((NULL != *payload) && (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, log)))
-    {
-        status = EINVAL;
-        OsConfigLogError(log, "CallMpiGet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
-
-        FREE_MEMORY(*payload);
-        *payloadSizeBytes = 0;
     }
 
     return status;
@@ -474,6 +486,7 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* lo
     char* request = NULL;
     int requestSize = 0;
     int status = MPI_OK;
+    char* statusFromResponse = NULL;
 
     if ((NULL == g_mpiHandle) || (0 == strlen((char*)g_mpiHandle)))
     {
@@ -508,9 +521,28 @@ int CallMpiGetReported(MPI_JSON_STRING* payload, int* payloadSizeBytes, void* lo
 
     FREE_MEMORY(request);
 
-    if ((NULL == *payload) || (*payloadSizeBytes != (int)strlen(*payload)))
+    if (HTTP_INTERNAL_SERVER_ERROR == status)
+    {
+        if ((NULL != *payload) && (*payloadSizeBytes > 0))
+        {
+            statusFromResponse = ParseString(log, *payload);
+            status = (NULL == statusFromResponse) ? EINVAL : atoi(statusFromResponse);
+            FREE_MEMORY(statusFromResponse);
+        }
+        else
+        {
+            OsConfigLogError(log, "CallMpiGetReported: invalid response for HTTP internal server error (500)");
+            status = EINVAL;
+        }
+
+        FREE_MEMORY(*payload);
+        *payloadSizeBytes = 0;
+    }
+    else if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
         OsConfigLogError(log, "CallMpiGetReported: invalid response (%p, %d)", *payload, *payloadSizeBytes);
+
+        status = EINVAL;
 
         FREE_MEMORY(*payload);
         *payloadSizeBytes = 0;

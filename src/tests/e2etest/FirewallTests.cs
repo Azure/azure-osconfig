@@ -4,6 +4,12 @@
 using NUnit.Framework;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+
 namespace E2eTesting
 {
     [TestFixture, Category("Firewall")]
@@ -11,31 +17,32 @@ namespace E2eTesting
     {
         protected static string _componentName = "Firewall";
 
-        private static Regex _statePattern = new Regex(@"[0-2]");
         private static Regex _fingerprintPattern = new Regex(@"[0-9a-z]{64}");
 
-        public enum FirewallStateCode
+        [JsonConverter(typeof(StringEnumConverter), typeof(CamelCaseNamingStrategy))]
+        public enum State
         {
-            Unknown = 0,
+            Unknown,
             Enabled,
-            Disabled,
+            Disabled
         }
 
         public partial class Firewall
         {
-            public FirewallStateCode FirewallState { get; set; }
-            public string FirewallFingerprint { get; set; }
+            public State State { get; set; }
+            public string Fingerprint { get; set; }
         }
+
 
         [Test]
         public void FirewallTest_Regex()
         {
-            Firewall reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.FirewallState != FirewallStateCode.Unknown) && (firewall.FirewallFingerprint != null));
+            Firewall reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.State != State.Unknown) && (firewall.Fingerprint != null));
 
             Assert.Multiple(() =>
             {
-                RegexAssert.IsMatch(_statePattern, reported.FirewallState);
-                RegexAssert.IsMatch(_fingerprintPattern, reported.FirewallFingerprint);
+                Assert.AreNotEqual(State.Unknown, reported.State);
+                RegexAssert.IsMatch(_fingerprintPattern, reported.Fingerprint);
             });
         }
     }

@@ -629,18 +629,25 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
         std::smatch dnsServersPrefixMatch;
         if (std::regex_search(globalDnsServersData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
         {
-            std::string dnsServer;
+            bool isValidData = true;
+            std::string dnsServers;
             std::stringstream globalDnsServersStream(dnsServersPrefixMatch.suffix().str());
-            while(std::getline(globalDnsServersStream, dnsServer))
+            while(isValidData && std::getline(globalDnsServersStream, dnsServers))
             {
-                dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
-                if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                std::string dnsServer;
+                std::stringstream line(dnsServers);
+                while (std::getline(line, dnsServer, g_spaceCharacter))
                 {
-                    globalDnsServers.push_back(dnsServer);
-                }
-                else
-                {
-                    break;
+                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                    if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                    {
+                        globalDnsServers.push_back(dnsServer);
+                    }
+                    else
+                    {
+                        isValidData = false;
+                        break;
+                    }
                 }
             }
         }
@@ -674,30 +681,37 @@ void NetworkingObjectBase::GenerateDnsServersMap()
         if (IsKnownInterfaceName(interfaceName))
         {
             std::map<std::string, std::vector<std::string>>::iterator dnsServersMapIterator;
-            std::string dnsServer;
+            std::string dnsServers;
             std::smatch dnsServersPrefixMatch;
             if (std::regex_search(interfaceData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
             {
+                bool isValidData = true;
                 std::stringstream dnsServerStream(dnsServersPrefixMatch.suffix().str());
-                while(std::getline(dnsServerStream, dnsServer))
+                while(isValidData && std::getline(dnsServerStream, dnsServers))
                 {
-                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
-                    if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                    std::string dnsServer;
+                    std::stringstream line(dnsServers);
+                    while (std::getline(line, dnsServer, g_spaceCharacter))
                     {
-                        dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
-                        if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                        dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                        if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
                         {
-                            (dnsServersMapIterator->second).push_back(dnsServer);
+                            dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
+                            if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                            {
+                                (dnsServersMapIterator->second).push_back(dnsServer);
+                            }
+                            else
+                            {
+                                std::vector<std::string> dnsServers{ dnsServer };
+                                this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                            }
                         }
                         else
                         {
-                            std::vector<std::string> dnsServers{ dnsServer };
-                            this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                            isValidData = false;
+                            break;
                         }
-                    }
-                    else
-                    {
-                        break;
                     }
                 }
             }
