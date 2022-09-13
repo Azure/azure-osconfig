@@ -407,6 +407,11 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
         m_parseError.push_back("Rule JSON is not an object");
     }
 
+    for (auto& error : m_parseError)
+    {
+        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+    }
+
     return *this;
 }
 
@@ -592,6 +597,7 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
     for (const std::string& error : errors)
     {
         errorMessage += error + "\n";
+        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
     }
 
     m_policyStatusMessage = errorMessage;
@@ -734,6 +740,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         for (const std::string& error : errors)
         {
             errorMessage += error + "\n";
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
         }
 
         m_ruleStatusMessage = errorMessage;
@@ -899,6 +906,11 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
     else
     {
         m_parseError.push_back("Policy must contain direction");
+    }
+
+    for (auto& error : m_parseError)
+    {
+        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
     }
 
     return *this;
