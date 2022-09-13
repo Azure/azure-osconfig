@@ -572,7 +572,7 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
             int commandStatus = 0;
             char* textResult = nullptr;
 
-            if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+            if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
             {
                 errors.push_back("Failed to set default policy (" + specification + "): " + std::string(textResult));
                 status = commandStatus;
@@ -611,7 +611,7 @@ bool IpTables::Exists(const IpTables::Rule& rule) const
     char* textResult = nullptr;
     std::string command = "iptables -C " + rule.Specification();
 
-    if (0 == ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get()))
+    if (0 == ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get()))
     {
         exists = true;
     }
@@ -627,7 +627,7 @@ int IpTables::Add(const IpTables::Rule& rule, std::string& error)
     std::string command = "iptables -I " + rule.Specification();
     char* textResult = nullptr;
 
-    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
         if (IsFullLoggingEnabled())
         {
@@ -652,7 +652,7 @@ int IpTables::Remove(const IpTables::Rule& rule, std::string& error)
     std::string command = "iptables -D " + rule.Specification();
     char* textResult = nullptr;
 
-    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
         if (IsFullLoggingEnabled())
         {
