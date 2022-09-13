@@ -314,7 +314,6 @@ protected:
 
 private:
     unsigned int m_maxPayloadSizeBytes;
-    size_t m_lastPayloadHash;
 };
 
 template<class T>

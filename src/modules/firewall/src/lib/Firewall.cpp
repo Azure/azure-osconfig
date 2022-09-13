@@ -206,52 +206,46 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
     else
     {
         std::string payloadJson = std::string(payload, payloadSizeBytes);
-        size_t payloadHash = HashString(payloadJson.c_str());
 
-        if (payloadHash != m_lastPayloadHash)
+        if (0 == m_firewallComponent.compare(componentName))
         {
-            m_lastPayloadHash = payloadHash;
+            rapidjson::Document document;
+            document.Parse(payloadJson.c_str());
 
-            if (0 == m_firewallComponent.compare(componentName))
+            if (!document.HasParseError())
             {
-                rapidjson::Document document;
-                document.Parse(payloadJson.c_str());
-
-                if (!document.HasParseError())
+                if (0 == m_desiredRules.compare(objectName))
                 {
-                    if (0 == m_desiredRules.compare(objectName))
-                    {
-                        status = SetRules(document);
-                    }
-                    else if (0 == m_desiredDefaultPolicies.compare(objectName))
-                    {
-                        status = SetDefaultPolicies(document);
-                    }
-                    else
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Invalid object name: %s", objectName);
-                        status = EINVAL;
-                    }
+                    status = SetRules(document);
+                }
+                else if (0 == m_desiredDefaultPolicies.compare(objectName))
+                {
+                    status = SetDefaultPolicies(document);
                 }
                 else
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
-                        status = EINVAL;
-                    }
-                    else
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
-                        status = EINVAL;
-                    }
+                    OsConfigLogError(FirewallLog::Get(), "Invalid object name: %s", objectName);
+                    status = EINVAL;
                 }
             }
             else
             {
-                OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
-                status = EINVAL;
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
+                    status = EINVAL;
+                }
+                else
+                {
+                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
+                    status = EINVAL;
+                }
             }
+        }
+        else
+        {
+            OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
+            status = EINVAL;
         }
     }
 
@@ -405,6 +399,14 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
     else
     {
         m_parseError.push_back("Rule JSON is not an object");
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        for (auto& error : m_parseError)
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     return *this;
@@ -570,7 +572,7 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
             int commandStatus = 0;
             char* textResult = nullptr;
 
-            if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+            if (0 != (commandStatus = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
             {
                 errors.push_back("Failed to set default policy (" + specification + "): " + std::string(textResult));
                 status = commandStatus;
@@ -592,6 +594,10 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
     for (const std::string& error : errors)
     {
         errorMessage += error + "\n";
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     m_policyStatusMessage = errorMessage;
@@ -605,7 +611,7 @@ bool IpTables::Exists(const IpTables::Rule& rule) const
     char* textResult = nullptr;
     std::string command = "iptables -C " + rule.Specification();
 
-    if (0 == ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get()))
+    if (0 == ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get()))
     {
         exists = true;
     }
@@ -618,10 +624,10 @@ bool IpTables::Exists(const IpTables::Rule& rule) const
 int IpTables::Add(const IpTables::Rule& rule, std::string& error)
 {
     int status = 0;
-    std::string command = "iptables -A " + rule.Specification();
+    std::string command = "iptables -I " + rule.Specification();
     char* textResult = nullptr;
 
-    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
         if (IsFullLoggingEnabled())
         {
@@ -646,7 +652,7 @@ int IpTables::Remove(const IpTables::Rule& rule, std::string& error)
     std::string command = "iptables -D " + rule.Specification();
     char* textResult = nullptr;
 
-    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
+    if (0 != (status = ExecuteCommand(nullptr, command.c_str(), true, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
     {
         if (IsFullLoggingEnabled())
         {
@@ -734,6 +740,10 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         for (const std::string& error : errors)
         {
             errorMessage += error + "\n";
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+            }
         }
 
         m_ruleStatusMessage = errorMessage;
@@ -741,7 +751,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
     }
     else
     {
-        m_policyStatusMessage = "";
+        m_ruleStatusMessage = "";
     }
 
     return status;
@@ -899,6 +909,14 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
     else
     {
         m_parseError.push_back("Policy must contain direction");
+    }
+
+    for (auto& error : m_parseError)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     return *this;
