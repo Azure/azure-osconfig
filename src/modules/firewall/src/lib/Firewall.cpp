@@ -247,7 +247,6 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
             OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
             status = EINVAL;
         }
-
     }
 
     return status;
@@ -402,9 +401,12 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
         m_parseError.push_back("Rule JSON is not an object");
     }
 
-    for (auto& error : m_parseError)
+    if (IsFullLoggingEnabled())
     {
-        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        for (auto& error : m_parseError)
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     return *this;
@@ -592,7 +594,10 @@ int IpTables::SetDefaultPolicies(const std::vector<IpTablesPolicy> policies)
     for (const std::string& error : errors)
     {
         errorMessage += error + "\n";
-        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     m_policyStatusMessage = errorMessage;
@@ -735,7 +740,10 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
         for (const std::string& error : errors)
         {
             errorMessage += error + "\n";
-            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+            }
         }
 
         m_ruleStatusMessage = errorMessage;
@@ -905,7 +913,10 @@ GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
 
     for (auto& error : m_parseError)
     {
-        OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
+        }
     }
 
     return *this;
