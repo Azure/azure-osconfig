@@ -46,7 +46,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if dpkg -l | grep -m 1 -o cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if dpkg -l | grep -m 1 -o rolldice > PmcTestsTemp.txt; then apt-get remove -y rolldice > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 10
   },
@@ -91,7 +91,7 @@
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "desiredState",
     "Desired": true,
-    "Payload": "{\"packages\":[\"cowsay\"],\"gpgKeys\":{\"invalidGpgKey\":\"https://packages.microsoft.com/keys/invalidKeyName\"},\"sources\":{\"microsoft-repo\":\"deb [arch=amd64,arm64,armhf signed-by=invalidGpgKey] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
+    "Payload": "{\"packages\":[\"rolldice\"],\"gpgKeys\":{\"invalidGpgKey\":\"https://packages.microsoft.com/keys/invalidKeyName\"},\"sources\":{\"microsoft-repo\":\"deb [arch=amd64,arm64,armhf signed-by=invalidGpgKey] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
     "ExpectedResult": 2,
     "WaitSeconds": 1
   },
@@ -114,15 +114,15 @@
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "desiredState",
     "Desired": true,
-    "Payload": "{\"packages\":[\"cowsay\"],\"gpgKeys\":{\"microsoft-key\":\"https://packages.microsoft.com/keys/microsoft.asc\"},\"sources\":{\"microsoft-repo\":\"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
+    "Payload": "{\"packages\":[\"rolldice\"],\"gpgKeys\":{\"microsoft-key\":\"https://packages.microsoft.com/keys/microsoft.asc\"},\"sources\":{\"microsoft-repo\":\"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
     "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "WaitSeconds": 5
   },
   {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"dpkg -l | grep -m 1 -o cowsay\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"dpkg -l | grep -m 1 -o rolldice\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -130,7 +130,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"resultCode\":0,\"textResult\":\"cowsay \",\"currentState\":2}",
+    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"resultCode\":0,\"textResult\":\"rolldice \",\"currentState\":2}",
     "ExpectedResult": 0
   },
   {
@@ -167,7 +167,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"uninstallPackageForTestIfNotPreviouslyInstalled\",\"arguments\":\"if ! cat PmcTestsTemp.txt | grep -o cowsay > /dev/null; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"uninstallPackageForTestIfNotPreviouslyInstalled\",\"arguments\":\"if ! cat PmcTestsTemp.txt | grep -o rolldice > /dev/null; then apt-get remove -y rolldice > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 5
   },
