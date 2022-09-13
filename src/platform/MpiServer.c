@@ -345,7 +345,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                                 status = HTTP_INTERNAL_SERVER_ERROR;
                                 if (IsFullLoggingEnabled())
                                 {
-                                    OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
+                                    OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                                 }
                             }
                         }
@@ -355,7 +355,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                         status = HTTP_INTERNAL_SERVER_ERROR;
                         if (IsFullLoggingEnabled())
                         {
-                            OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s'", uri, component, object, client);
+                            OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed to for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
                         }
                     }
                 }
@@ -374,16 +374,16 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 }
                 else if (MPI_OK != (mpiStatus = handlers.mpiSetDesired((MPI_HANDLE)client, (MPI_JSON_STRING)payload, strlen(payload))))
                 {
-                    OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
                     status = HTTP_INTERNAL_SERVER_ERROR;
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to for client '%s' with %d (returning %d)", uri, client, mpiStatus, status);
                 }
             }
             else if (0 == strcmp(uri, MPI_GET_REPORTED_URI))
             {
                 if (MPI_OK != (mpiStatus = handlers.mpiGetReported((MPI_HANDLE)client, response, responseSize)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "%s: failed for client %s, status %d", uri, client, mpiStatus);
                     status = HTTP_INTERNAL_SERVER_ERROR;
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to for client '%s' with %d (returning %d)", uri, client, mpiStatus, status);
                 }
             }
         }
