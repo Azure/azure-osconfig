@@ -751,7 +751,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
     }
     else
     {
-        m_policyStatusMessage = "";
+        m_ruleStatusMessage = "";
     }
 
     return status;
