@@ -206,53 +206,48 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
     else
     {
         std::string payloadJson = std::string(payload, payloadSizeBytes);
-        size_t payloadHash = HashString(payloadJson.c_str());
 
-        if (payloadHash != m_lastPayloadHash)
+        if (0 == m_firewallComponent.compare(componentName))
         {
-            m_lastPayloadHash = payloadHash;
+            rapidjson::Document document;
+            document.Parse(payloadJson.c_str());
 
-            if (0 == m_firewallComponent.compare(componentName))
+            if (!document.HasParseError())
             {
-                rapidjson::Document document;
-                document.Parse(payloadJson.c_str());
-
-                if (!document.HasParseError())
+                if (0 == m_desiredRules.compare(objectName))
                 {
-                    if (0 == m_desiredRules.compare(objectName))
-                    {
-                        status = SetRules(document);
-                    }
-                    else if (0 == m_desiredDefaultPolicies.compare(objectName))
-                    {
-                        status = SetDefaultPolicies(document);
-                    }
-                    else
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Invalid object name: %s", objectName);
-                        status = EINVAL;
-                    }
+                    status = SetRules(document);
+                }
+                else if (0 == m_desiredDefaultPolicies.compare(objectName))
+                {
+                    status = SetDefaultPolicies(document);
                 }
                 else
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
-                        status = EINVAL;
-                    }
-                    else
-                    {
-                        OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
-                        status = EINVAL;
-                    }
+                    OsConfigLogError(FirewallLog::Get(), "Invalid object name: %s", objectName);
+                    status = EINVAL;
                 }
             }
             else
             {
-                OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
-                status = EINVAL;
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
+                    status = EINVAL;
+                }
+                else
+                {
+                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
+                    status = EINVAL;
+                }
             }
         }
+        else
+        {
+            OsConfigLogError(FirewallLog::Get(), "Invalid component name: %s", componentName);
+            status = EINVAL;
+        }
+
     }
 
     return status;
