@@ -414,7 +414,6 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
         OsConfigLogInfo(log, "CallMpiGet(%p, %s, %s, %.*s, %d bytes): %d", g_mpiHandle, componentName, propertyName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
-
     return status;
 };
 
