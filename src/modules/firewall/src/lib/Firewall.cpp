@@ -624,7 +624,7 @@ bool IpTables::Exists(const IpTables::Rule& rule) const
 int IpTables::Add(const IpTables::Rule& rule, std::string& error)
 {
     int status = 0;
-    std::string command = "iptables -A " + rule.Specification();
+    std::string command = "iptables -I " + rule.Specification();
     char* textResult = nullptr;
 
     if (0 != (status = ExecuteCommand(nullptr, command.c_str(), false, false, 0, 0, &textResult, nullptr, FirewallLog::Get())))
