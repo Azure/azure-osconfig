@@ -17,7 +17,6 @@ option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
-option(BUILD_RUST "Build Rust Modules" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros;-Wunused-const-variable=2>")
@@ -93,6 +92,34 @@ endif()
 
 set(PLATFORM_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/platform/inc)
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/modules/inc)
+
+if(NOT DEFINED CARGO_HOME)
+    if("$ENV{CARGO_HOME}" STREQUAL "")
+        set(CARGO_HOME "$ENV{HOME}/.cargo")
+    else()
+        set(CARGO_HOME "$ENV{CARGO_HOME}")
+    endif()
+endif()
+
+# Find cargo executable
+find_program(CARGO_EXECUTABLE cargo
+    HINTS "${CARGO_HOME}"
+    PATH_SUFFIXES "bin")
+mark_as_advanced(CARGO_EXECUTABLE)
+
+# Find rustc executable
+find_program(RUSTC_EXECUTABLE rustc
+    HINTS "${CARGO_HOME}"
+    PATH_SUFFIXES "bin")
+mark_as_advanced(RUSTC_EXECUTABLE)
+
+# Fetch Corrosion to link the Rust Modules with the CMake Build Line
+if(CARGO_EXECUTABLE AND RUSTC_EXECUTABLE)
+    set(BUILD_RUST true)
+    add_subdirectory(corrosion)
+else()
+    set(BUILD_RUST false)
+endif()
 
 if (BUILD_TESTS)
     enable_testing()

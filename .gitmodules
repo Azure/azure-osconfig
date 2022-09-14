@@ -4,3 +4,6 @@
 [submodule "src/agents/pnp/tracelogging"]
 	path = src/agents/pnp/tracelogging
 	url = https://github.com/microsoft/tracelogging
+[submodule "src/corrosion"]
+	path = src/corrosion
+	url = https://github.com/corrosion-rs/corrosion.git
