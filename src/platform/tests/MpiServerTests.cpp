@@ -288,8 +288,10 @@ namespace Tests
         int responseSize = 0;
 
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"Error_Component\", \"ObjectName\": \"Error_Object\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(nullptr, response);
-        EXPECT_EQ(0, responseSize);
+        EXPECT_NE(nullptr, response);
+        EXPECT_GT(responseSize, strlen("\"\""));
+
+        responseSize = 0;
         FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_SET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"\", \"ObjectName\": \"\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
@@ -304,8 +306,10 @@ namespace Tests
         int responseSize = 0;
 
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"Error_Component\", \"ObjectName\": \"Error_Object\"}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(nullptr, response);
-        EXPECT_EQ(0, responseSize);
+        EXPECT_NE(nullptr, response);
+        EXPECT_GT(responseSize, strlen("\"\""));
+
+        responseSize = 0;
         FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_GET_URI, "{\"ClientSession\": \"Valid_Client\", \"ComponentName\": \"\", \"ObjectName\": \"\"}", &response, &responseSize, g_mpiCalls));
@@ -320,8 +324,10 @@ namespace Tests
         int responseSize = 0;
 
         EXPECT_EQ(HTTP_INTERNAL_SERVER_ERROR, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": \"Valid_Client\", \"Payload\": {}}", &response, &responseSize, g_mpiCalls));
-        EXPECT_EQ(nullptr, response);
-        EXPECT_EQ(0, responseSize);
+        EXPECT_NE(nullptr, response);
+        EXPECT_GT(responseSize, strlen("\"\""));
+
+        responseSize = 0;
         FREE_MEMORY(response);
 
         EXPECT_EQ(HTTP_OK, HandleMpiCall(MPI_SET_DESIRED_URI, "{\"ClientSession\": \"Valid_Client\", \"Payload\": \"MockPayload\"}", &response, &responseSize, g_mpiCalls));
