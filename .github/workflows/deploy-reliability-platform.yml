@@ -46,7 +46,7 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
     secrets: inherit
 
-  run-modulestest:
+  run-tests:
     name: Run Tests
     uses: ./.github/workflows/e2etest-run-tests.yml
     needs:
@@ -58,6 +58,7 @@ jobs:
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
       repeatForXHours: 1
+      allowedMemoryDelta: 0
       testNameSuffix: (reliability-platform)
     secrets: inherit
 
@@ -70,7 +71,7 @@ jobs:
       - fetch-targets
       - provision-hub
       - provision-hosts
-      - run-modulestest
+      - run-tests
 
     steps:
       - name: Azure Login

@@ -14,7 +14,7 @@ bool RecipeModuleSessionLoader::Load(const std::vector<std::string> &modulePaths
                 auto search = g_componentModuleSessionMap.find(component);
                 if (search == g_componentModuleSessionMap.end())
                 {
-                    auto session = std::make_shared<MmiSession>(mm, g_defaultClient);
+                    auto session = std::make_shared<MmiSession>(mm, GetFullClientName());
                     if (modulePath == _mainModulePath)
                     {
                         _mainSession = session;

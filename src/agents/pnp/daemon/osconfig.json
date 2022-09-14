@@ -2,7 +2,7 @@
   "CommandLogging": 0,
   "FullLogging": 0,
   "LocalManagement": 0,
-  "ModelVersion": 10,
+  "ModelVersion": 11,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -75,11 +75,23 @@
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "firewallState"
+      "ObjectName": "configurationStatus"
     },
     {
       "ComponentName": "Firewall",
-      "ObjectName": "firewallFingerprint"
+      "ObjectName": "configurationStatusDetail"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "defaultPolicies"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "state"
+    },
+    {
+      "ComponentName": "Firewall",
+      "ObjectName": "fingerprint"
     },
     {
       "ComponentName": "HostName",

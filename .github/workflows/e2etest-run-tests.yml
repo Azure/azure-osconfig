@@ -133,11 +133,11 @@ jobs:
 
           result=`bc -l <<< "result=$resultagent;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
           if [ "$result" == 1 ]; then
-            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
+            echo "::error title=CPU usage exceeded::CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
           fi
           result=`bc -l <<< "result=$resultplatform;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
           if [ "$result" == 1 ]; then
-            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
+            echo "::error title=CPU usage exceeded::CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
           fi
 
       - name: Run E2E tests
@@ -175,11 +175,11 @@ jobs:
 
           result=`bc -l <<< "result=$resultagent;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
           if [ "$result" == 1 ]; then
-            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
+            echo "::error title=CPU usage exceeded::CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultagent" && exit 1
           fi
           result=`bc -l <<< "result=$resultplatform;if(result < ${{ inputs.cpuThreshold }}) print 0 else print 1;"`
           if [ "$result" == 1 ]; then
-            echo "::error CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
+            echo "::error title=CPU usage exceeded::CPU usage has exceeded allowable threshold (${{ inputs.cpuThreshold }}%), current usage: $resultplatform" && exit 1
           fi
 
       - name: Stop OSConfig
@@ -197,8 +197,8 @@ jobs:
           
           # Check if the delta is greater than defined threshold
           result=`bc -l <<< "delta=$delta;high=1+(0.${{ inputs.allowedMemoryDelta }});low=1-(0.${{ inputs.allowedMemoryDelta }});if(high > delta && delta > low) print 0 else print 1;"`
-          if [ "$result" == 1 ]; then
-            echo "::error Memory usage has exceeded allowable delta (${{ inputs.allowedMemoryDelta }}%), current delta: $delta" && exit 1
+          if [[ ${{ inputs.allowedMemoryDelta }} != 0 && "$result" == 1 ]]; then
+            echo "::error title=Memory usage exceeded::Memory usage has exceeded allowable delta (${{ inputs.allowedMemoryDelta }}%), current delta: $delta" && exit 1
           fi
 
       - name: Stage logs
