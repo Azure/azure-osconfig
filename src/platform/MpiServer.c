@@ -162,7 +162,7 @@ HTTP_STATUS SetErrorResponse(const char* uri, int mpiStatus, char** response, in
     const char* errorFormat = "\"%d\"";
     HTTP_STATUS status = HTTP_OK;
 
-    if (mpiStatus != 0)
+    if (MPI_OK != mpiStatus)
     {
         status = HTTP_INTERNAL_SERVER_ERROR;
         size = strlen(errorFormat) + MAX_ERROR_LENGTH + 1;
@@ -175,7 +175,6 @@ HTTP_STATUS SetErrorResponse(const char* uri, int mpiStatus, char** response, in
         else
         {
             OsConfigLogError(GetPlatformLog(), "%s: failed to allocate memory for error response", uri);
-            status = HTTP_INTERNAL_SERVER_ERROR;
         }
     }
 
