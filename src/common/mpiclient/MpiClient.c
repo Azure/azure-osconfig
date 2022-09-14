@@ -115,10 +115,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     {
         httpStatus = ReadHttpStatusFromSocket(socketHandle, log);
         status = (200 == httpStatus) ? MPI_OK : httpStatus;
-    }
 
-    if (MPI_OK == status)
-    {
         *responseSize = ReadHttpContentLengthFromSocket(socketHandle, log);
         *response = (char*)malloc(*responseSize + 1);
         if (NULL != *response)
@@ -127,8 +124,11 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
             
             if (*responseSize != read(socketHandle, *response, *responseSize))
             {
+                if ((MPI_OK == status) || (IsFullLoggingEnabled()))
+                {
+                    OsConfigLogError(log, "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
+                }
                 status = errno ? errno : EIO;
-                OsConfigLogError(log, "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
             }
         }
         else
