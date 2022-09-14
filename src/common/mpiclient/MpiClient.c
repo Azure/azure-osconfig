@@ -124,7 +124,7 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
             
             if (*responseSize != read(socketHandle, *response, *responseSize))
             {
-                if ((MPI_OK == status) || (IsFullLoggingEnabled()))
+                if ((MPI_OK == status) || IsFullLoggingEnabled())
                 {
                     OsConfigLogError(log, "CallMpi(%s): failed to read %d bytes response from socket '%s' (%d)", name, *responseSize, mpiSocket, status);
                 }
