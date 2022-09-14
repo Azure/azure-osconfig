@@ -54,7 +54,7 @@
 #define DEFAULT_CLIENT_NAME "Azure OSConfig"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
-#define DEFAULT_DEVICE_MODEL_ID 7
+#define DEFAULT_DEVICE_MODEL_ID 11
 #define DEFAULT_FULL_CLIENT_NAME_TEMPLATE DEFAULT_CLIENT_NAME " %d;%s"
 #define CLIENT_NAME_MAX_SIZE 128
 
@@ -89,7 +89,7 @@ static inline std::string GetFullClientName()
         TestLogError("GetModelVersionFromJsonConfig: No configuration data, using default (%d)", DEFAULT_DEVICE_MODEL_ID);
     }
 
-    char fullClientName[CLIENT_NAME_MAX_SIZE];
+    char fullClientName[CLIENT_NAME_MAX_SIZE] = {0};
     snprintf(fullClientName, sizeof(fullClientName), DEFAULT_FULL_CLIENT_NAME_TEMPLATE, modelNumber, OSCONFIG_VERSION);
     return fullClientName;
 }
