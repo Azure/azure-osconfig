@@ -1,6 +1,5 @@
 [
     {
-        "RecipeName": "SampleRecipe",
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
@@ -10,7 +9,6 @@
         "WaitSeconds": 0
     },
     {
-        "RecipeName": "SampleRecipe-NoPayloadOrPayloadSize",
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,

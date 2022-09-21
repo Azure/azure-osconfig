@@ -1,0 +1,59 @@
+name: Modules Reliability Tests
+on:
+  schedule:
+  - cron: '0 10 * * *' #10am UTC / 6pm PST
+
+jobs:
+  fetch-targets:
+    name: Fetch Test Targets
+    uses: ./.github/workflows/e2etest-fetch-targets.yml
+    with:
+      environment: modulestest
+    secrets: inherit
+
+  provision-hosts:
+    name: Provision Host VM
+    uses: ./.github/workflows/e2etest-provision-hosts.yml
+    needs:
+      - fetch-targets
+    with:
+      environment: modulestest
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+    secrets: inherit
+
+  run-modulestest:
+    name: Run Modules Tests (Test Recipes)
+    uses: ./.github/workflows/e2etest-run-modulestest.yml
+    needs:
+      - fetch-targets
+      - provision-hosts
+    with:
+      environment: modulestest
+      resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
+      distroName: ${{ needs.fetch-targets.outputs.distroName }}
+      repeatForXHours: 4
+      testNameSuffix: (reliability-modules)
+    secrets: inherit
+
+  deprovision-resources:
+    name: Deprovision Cloud Resources
+    if: always()
+    runs-on: ubuntu-latest
+    environment: modulestest
+    needs:
+      - fetch-targets
+      - provision-hosts
+      - run-modulestest
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Delete resource group
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az group delete --name ${{ needs.fetch-targets.outputs.resourceGroupName }} --yes --no-wait

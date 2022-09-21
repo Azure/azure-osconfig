@@ -49,7 +49,7 @@ namespace Tests
 
     TEST_F(ManagementModuleTests, LoadModule)
     {
-        ManagementModule module(g_validModulePathV1);
+        ManagementModule module(TEST_VALID_MODULE_PATH_V1);
         EXPECT_EQ(0, module.Load());
 
         ManagementModule::Info info = module.GetInfo();
@@ -60,20 +60,20 @@ namespace Tests
 
     TEST_F(ManagementModuleTests, LoadModuleInvalidPath)
     {
-        const std::string invalidPath = g_moduleDir;
+        const std::string invalidPath = TEST_MODULE_DIR;
         ManagementModule invalidModule(invalidPath + "/blah.so");
         EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModuleInvalidMmi)
     {
-        ManagementModule invalidModule(g_invalidModulePath);
+        ManagementModule invalidModule(TEST_INVALID_MODULE_PATH);
         EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
     TEST_F(ManagementModuleTests, LoadModuleInvalidModuleInfo)
     {
-        ManagementModule invalidModule(g_invalidGetInfoModulePath);
+        ManagementModule invalidModule(TEST_INVALID_GETINFO_MODULE_PATH);
         EXPECT_EQ(EINVAL, invalidModule.Load());
     }
 
@@ -152,15 +152,15 @@ namespace Tests
     {
         MockManagementModule mockModule;
         std::vector<std::pair<std::string, std::string>> objects = {
-            {g_string, g_stringPayload},
-            {g_integer, g_integerPayload},
-            {g_boolean, g_booleanPayload},
-            {g_integerArray, g_integerArrayPayload},
-            {g_stringArray, g_stringArrayPayload},
-            {g_integerMap, g_integerMapPayload},
-            {g_stringMap, g_stringMapPayload},
-            {g_object, g_objectPayload},
-            {g_objectArray, g_objectArrayPayload}
+            {TEST_OBJECT_STRING, TEST_OBJECT_STRING_PAYLOAD},
+            {TEST_OBJECT_INTEGER, TEST_OBJECT_INTEGER_PAYLOAD},
+            {TEST_OBJECT_BOOLEAN, TEST_OBJECT_BOOLEAN_PAYLOAD},
+            {TEST_OBJECT_INTEGER_ARRAY, TEST_OBJECT_INTEGER_ARRAY_PAYLOAD},
+            {TEST_OBJECT_STRING_ARRAY, TEST_OBJECT_STRING_ARRAY_PAYLOAD},
+            {TEST_OBJECT_INTEGER_MAP, TEST_OBJECT_INTEGER_MAP_PAYLOAD},
+            {TEST_OBJECT_STRING_MAP, TEST_OBJECT_STRING_MAP_PAYLOAD},
+            {TEST_OBJECT, TEST_OBJECT_PAYLOAD},
+            {TEST_OBJECT_ARRAY, TEST_OBJECT_ARRAY_PAYLOAD}
         };
 
         mockModule.MmiSet(

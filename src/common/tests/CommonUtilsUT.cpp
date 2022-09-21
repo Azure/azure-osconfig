@@ -98,87 +98,84 @@ TEST_F(CommonUtilsTest, SavePayloadToFileInvalidArgument)
     EXPECT_FALSE(SavePayloadToFile(m_path, m_data, 0, nullptr));
 }
 
+struct ExecuteCommandOptions
+{
+    const char* command;
+    bool replaceEol;
+    bool forJson;
+    unsigned int maxTextResultBytes;
+    unsigned int timeoutSeconds;
+    const char* expectedTextResult;
+};
+
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResult)
 {
     char* textResult = nullptr;
 
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 0, 0, &textResult, nullptr, nullptr));
-    // Echo appends an end of line character:
-    EXPECT_STREQ("test123\n", textResult);
+    ExecuteCommandOptions options[] = {
+        { "echo test123", false, true, 0, 0, "test123\n" },
+        { "echo test123", false, true, 0, 10, "test123\n" },
+        { "echo test123", true, true, 0, 0, "test123 "},
+        { "echo test123", false, true, 5, 0, "test"},
+        { "echo test123", false, true, 1, 0, "" },
+        { "echo test123", false, true, 8, 0, "test123" }
+    };
 
-    if (nullptr != textResult)
+    int optionsSize = ARRAY_SIZE(options);
+
+    for (int i = 0; i < optionsSize; i++)
     {
-        free(textResult);
+        EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
+        EXPECT_STREQ(textResult, options[i].expectedTextResult);
+        FREE_MEMORY(textResult);
     }
 }
 
-TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTimeout)
+struct ExecuteTwoCommandsOptions
+{
+    const char* command;
+    bool replaceEol;
+    bool forJson;
+    unsigned int maxTextResultBytes;
+    unsigned int timeoutSeconds;
+    const char* expectedTextResultOne;
+    const char* expectedTextResultTwo;
+};
+
+TEST_F(CommonUtilsTest, ExecuteMultipleCommandsAsOneCommandWithTextResult)
 {
     char* textResult = nullptr;
 
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 0, 10, &textResult, nullptr, nullptr));
-    // Echo appends an end of line character:
-    EXPECT_STREQ("test123\n", textResult);
+    ExecuteTwoCommandsOptions options[] = {
+        { "echo alpha; echo beta", true, true, 0, 0, "alpha ", "beta " },
+        { "((echo alpha1); (echo beta1))", true, true, 0, 0, "alpha1 ", "beta1 " },
+        { "((echo alpha12); echo beta12)", true, true, 0, 0, "alpha12 ", "beta12 " },
+        { "echo alpha123 && echo beta123", true, true, 0, 0, "beta123 ", "alpha123 " },
+        { "((echo alpha1234)&&(echo beta1234))", true, true, 0, 0, "beta1234 ", "alpha1234 " },
+        { "((echo alpha12345) && echo beta12345)", true, true, 0, 0, "beta12345 ", "alpha12345 " },
+        { "echo alpha123456 > null; echo beta123456", true, true, 0, 0, "beta123456 ", nullptr },
+        { "echo alpha1234567 > null && echo beta1234567", true, true, 0, 0, "beta1234567 ", nullptr }
+    };
 
-    if (nullptr != textResult)
+    int optionsSize = ARRAY_SIZE(options);
+
+    for (int i = 0; i < optionsSize; i++)
     {
-        free(textResult);
-    }
-}
+        EXPECT_EQ(0, ExecuteCommand(nullptr, options[i].command, options[i].replaceEol, options[i].forJson, options[i].maxTextResultBytes, options[i].timeoutSeconds, &textResult, nullptr, nullptr));
+        EXPECT_NE(nullptr, textResult);
+        EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultOne));
+        
+        if (nullptr != options[i].expectedTextResultTwo)
+        {
+            EXPECT_NE(nullptr, strstr(textResult, options[i].expectedTextResultTwo));
+            EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne) + strlen(options[i].expectedTextResultTwo));
+        }
+        else
+        {
+            EXPECT_EQ(strlen(textResult), strlen(options[i].expectedTextResultOne));
+        }
 
-TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithEolMapping)
-{
-    char* textResult = nullptr;
-
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", true, true, 0, 0, &textResult, nullptr, nullptr));
-    // Echo appends an end of line character that's replaced with space:
-    EXPECT_STREQ("test123 ", textResult);
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
-}
-
-TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTruncation)
-{
-    char* textResult = nullptr;
-
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 5, 0, &textResult, nullptr, nullptr));
-    // Only first 5 characters including a null terminator are returned:
-    EXPECT_STREQ("test", textResult);
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
-}
-
-TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTruncationOfOne)
-{
-    char* textResult = nullptr;
-
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 1, 0, &textResult, nullptr, nullptr));
-    // Only the null terminator is returned, meaning empty string:
-    EXPECT_STREQ("", textResult);
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
-}
-
-TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultAndTruncationOfEol)
-{
-    char* textResult = nullptr;
-
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "echo test123", false, true, 8, 0, &textResult, nullptr, nullptr));
-    // The EOL appended by echo is truncated from the result (replaced with the null terminator in this case):
-    EXPECT_STREQ("test123", textResult);
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
+        FREE_MEMORY(textResult);
     }
 }
 
@@ -209,11 +206,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithSpecialCharactersInTextResult)
     EXPECT_EQ(0, ExecuteCommand(nullptr, command, true, true, strlen(command), 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ(expectedResult, textResult);
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-        textResult = nullptr;
-    }
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithoutTextResult)
@@ -253,10 +246,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithStdErrOutput)
     EXPECT_EQ(127, ExecuteCommand(nullptr, "blah", true, true, 100, 0, &textResult, nullptr, nullptr));
     EXPECT_NE(nullptr, strstr(textResult, "sh: 1: blah: not found "));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 void* TestTimeoutCommand(void*)
@@ -265,10 +255,7 @@ void* TestTimeoutCommand(void*)
 
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 
     return nullptr;
 }
@@ -289,10 +276,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandThatTimesOut)
 
     EXPECT_EQ(ETIME, ExecuteCommand(nullptr, "sleep 10", false, true, 0, 1, &textResult, nullptr, nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 static int numberOfTimes = 0;
@@ -330,10 +314,7 @@ void* TestCancelCommand(void*)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 
     return nullptr;
 }
@@ -356,10 +337,7 @@ TEST_F(CommonUtilsTest, CancelCommand)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand(nullptr, "sleep 20", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 void* TestCancelCommandWithContext(void*)
@@ -370,10 +348,7 @@ void* TestCancelCommandWithContext(void*)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 
     return nullptr;
 }
@@ -398,10 +373,7 @@ TEST_F(CommonUtilsTest, CancelCommandWithContext)
 
     EXPECT_EQ(ECANCELED, ExecuteCommand((void*)(&context), "sleep 30", false, true, 0, 120, &textResult, &(CallbackContext::TestCommandCallback), nullptr));
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
@@ -411,10 +383,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithAllCharacters)
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo 'abc\"123'", true, false, 0, 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ("abc\"123 ", textResult);
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithMappedJsonCharacters)
@@ -424,10 +393,7 @@ TEST_F(CommonUtilsTest, ExecuteCommandWithTextResultWithMappedJsonCharacters)
     EXPECT_EQ(0, ExecuteCommand(nullptr, "echo 'abc\"123'", true, true, 0, 0, &textResult, nullptr, nullptr));
     EXPECT_STREQ("abc 123 ", textResult);
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, ExecuteLongCommand)
@@ -460,20 +426,9 @@ TEST_F(CommonUtilsTest, ExecuteLongCommand)
         EXPECT_STREQ(expectedResult, textResult);
     }
 
-    if (nullptr != command)
-    {
-        free(command);
-    }
-
-    if (nullptr != expectedResult)
-    {
-        free(expectedResult);
-    }
-
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(command);
+    FREE_MEMORY(expectedResult);
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
@@ -502,10 +457,7 @@ TEST_F(CommonUtilsTest, ExecuteTooLongCommand)
         free(command);
     }
 
-    if (nullptr != textResult)
-    {
-        free(textResult);
-    }
+    FREE_MEMORY(textResult);
 }
 
 TEST_F(CommonUtilsTest, HashString)

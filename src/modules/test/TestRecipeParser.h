@@ -14,6 +14,7 @@ struct TestRecipeMetadata
     std::string m_modulePath;
     std::string m_mimPath;
     std::string m_testRecipesPath;
+    std::shared_ptr<RecipeModuleSessionLoader> m_recipeModuleSessionLoader;
 };
 struct TestRecipe
 {
@@ -34,6 +35,7 @@ class TestRecipeParser
 {
 public:
     static TestRecipes ParseTestRecipe(std::string path);
+    static std::string GetTestName(TestRecipe &recipe);
 };
 
 #endif // TESTRECIPEPARSER_H

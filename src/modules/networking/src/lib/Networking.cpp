@@ -629,18 +629,25 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
         std::smatch dnsServersPrefixMatch;
         if (std::regex_search(globalDnsServersData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
         {
-            std::string dnsServer;
+            bool isValidData = true;
+            std::string dnsServers;
             std::stringstream globalDnsServersStream(dnsServersPrefixMatch.suffix().str());
-            while(std::getline(globalDnsServersStream, dnsServer))
+            while(isValidData && std::getline(globalDnsServersStream, dnsServers))
             {
-                dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
-                if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                std::string dnsServer;
+                std::stringstream line(dnsServers);
+                while (std::getline(line, dnsServer, g_spaceCharacter))
                 {
-                    globalDnsServers.push_back(dnsServer);
-                }
-                else
-                {
-                    break;
+                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                    if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                    {
+                        globalDnsServers.push_back(dnsServer);
+                    }
+                    else
+                    {
+                        isValidData = false;
+                        break;
+                    }
                 }
             }
         }
@@ -674,30 +681,37 @@ void NetworkingObjectBase::GenerateDnsServersMap()
         if (IsKnownInterfaceName(interfaceName))
         {
             std::map<std::string, std::vector<std::string>>::iterator dnsServersMapIterator;
-            std::string dnsServer;
+            std::string dnsServers;
             std::smatch dnsServersPrefixMatch;
             if (std::regex_search(interfaceData, dnsServersPrefixMatch, g_dnsServersPrefixPattern))
             {
+                bool isValidData = true;
                 std::stringstream dnsServerStream(dnsServersPrefixMatch.suffix().str());
-                while(std::getline(dnsServerStream, dnsServer))
+                while(isValidData && std::getline(dnsServerStream, dnsServers))
                 {
-                    dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
-                    if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
+                    std::string dnsServer;
+                    std::stringstream line(dnsServers);
+                    while (std::getline(line, dnsServer, g_spaceCharacter))
                     {
-                        dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
-                        if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                        dnsServer.erase(remove(dnsServer.begin(), dnsServer.end(), g_spaceCharacter), dnsServer.end());
+                        if ((std::regex_match(dnsServer, g_ipv4Pattern)) || (std::regex_match(dnsServer, g_ipv6Pattern)))
                         {
-                            (dnsServersMapIterator->second).push_back(dnsServer);
+                            dnsServersMapIterator = this->m_dnsServersMap.find(interfaceName);
+                            if (dnsServersMapIterator != this->m_dnsServersMap.end())
+                            {
+                                (dnsServersMapIterator->second).push_back(dnsServer);
+                            }
+                            else
+                            {
+                                std::vector<std::string> dnsServers{ dnsServer };
+                                this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                            }
                         }
                         else
                         {
-                            std::vector<std::string> dnsServers{ dnsServer };
-                            this->m_dnsServersMap.insert(std::pair<std::string, std::vector<std::string>>(interfaceName, dnsServers));
+                            isValidData = false;
+                            break;
                         }
-                    }
-                    else
-                    {
-                        break;
                     }
                 }
             }
@@ -864,72 +878,106 @@ int NetworkingObjectBase::TruncateValueStrings(std::vector<std::pair<std::string
 }
 
 int NetworkingObjectBase::Get(
-        MMI_HANDLE clientSession,
         const char* componentName,
         const char* objectName,
         MMI_JSON_STRING* payload,
         int* payloadSizeBytes)
 {
-    UNUSED(clientSession);
-    UNUSED(componentName);
-    UNUSED(objectName);
-
     int status = MMI_OK;
 
-    RefreshSettingsStrings();
-
-    std::vector<std::pair<std::string, std::string>> fieldValueVector;
-    fieldValueVector.push_back(make_pair(g_interfaceTypes, m_settings.interfaceTypes));
-    fieldValueVector.push_back(make_pair(g_macAddresses, m_settings.macAddresses));
-    fieldValueVector.push_back(make_pair(g_ipAddresses, m_settings.ipAddresses));
-    fieldValueVector.push_back(make_pair(g_subnetMasks, m_settings.subnetMasks));
-    fieldValueVector.push_back(make_pair(g_defaultGateways, m_settings.defaultGateways));
-    fieldValueVector.push_back(make_pair(g_dnsServers, m_settings.dnsServers));
-    fieldValueVector.push_back(make_pair(g_dhcpEnabled, m_settings.dhcpEnabled));
-    fieldValueVector.push_back(make_pair(g_enabled, m_settings.enabled));
-    fieldValueVector.push_back(make_pair(g_connected, m_settings.connected));
-
-    status = TruncateValueStrings(fieldValueVector);
-    rapidjson::StringBuffer sb;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
-    writer.StartObject();
-    int writeResult = 0;
-    for (size_t i = 0; i < fieldValueVector.size(); i++)
+    if ((nullptr == componentName) || (0 != std::strcmp(componentName, NETWORKING)))
     {
-        writeResult += WriteJsonElement(&writer, fieldValueVector[i].first.c_str(), fieldValueVector[i].second.c_str());
-    }
-    writer.EndObject();
-
-    std::string networkingJsonString(sb.GetString());
-    networkingJsonString.erase(std::find(networkingJsonString.begin(), networkingJsonString.end(), '\0'), networkingJsonString.end());
-
-    *payloadSizeBytes = networkingJsonString.length();
-
-    if (((m_maxPayloadSizeBytes > 0) && (m_maxPayloadSizeBytes <= g_templateWithDotsSize) && ((unsigned int)*payloadSizeBytes != g_templateWithDotsSize)) ||
-        ((m_maxPayloadSizeBytes > g_templateWithDotsSize) && ((unsigned int)*payloadSizeBytes > m_maxPayloadSizeBytes)))
-    {
-        OsConfigLogInfo(NetworkingLog::Get(), "Networking payload to report %u bytes, need to report %u bytes, reporting empty strings", (unsigned int)*payloadSizeBytes, m_maxPayloadSizeBytes);
-        *payloadSizeBytes = g_templateWithDotsSize;
-    }
-
-    if (writeResult > 0)
-    {
-        *payloadSizeBytes = g_templateWithDotsSize;
-    }
-
-    *payload = new (std::nothrow) char[*payloadSizeBytes];
-    if (nullptr == *payload)
-    {
-        if (nullptr != payloadSizeBytes)
+        if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(NetworkingLog::Get(), "Networking::Get insufficient buffer space available to allocate %d bytes", *payloadSizeBytes);
+            OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) componentName %s is invalid, %s is expected",
+                componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), componentName, NETWORKING);
         }
-        status = ENOMEM;
+        status = EINVAL;
+    }
+    else if ((nullptr == objectName) || (0 != std::strcmp(objectName, NETWORK_CONFIGURATION)))
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) objectName %s is invalid, %s is expected",
+                componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), objectName, NETWORK_CONFIGURATION);
+        }
+        status = EINVAL;
+    }
+    else if (nullptr == payload)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payload %.*s is null",
+                componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0), *payload);
+        }
+        status = EINVAL;
+    }
+    else if (nullptr == payloadSizeBytes)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(NetworkingLog::Get(), "NetworkingObjectBase::Get(%s, %s, %.*s, %d) payloadSizeBytes %d is null",
+                componentName, objectName, (payloadSizeBytes ? *payloadSizeBytes : 0), *payload, (payloadSizeBytes ? *payloadSizeBytes : 0), (payloadSizeBytes ? *payloadSizeBytes : 0));
+        }
+        status = EINVAL;
     }
     else
     {
-        std::fill(*payload, *payload + *payloadSizeBytes, 0);
-        std::memcpy(*payload, ((*payloadSizeBytes) == (int)g_templateWithDotsSize) ? g_templateWithDots : networkingJsonString.c_str(), *payloadSizeBytes);
+        RefreshSettingsStrings();
+
+        std::vector<std::pair<std::string, std::string>> fieldValueVector;
+        fieldValueVector.push_back(make_pair(g_interfaceTypes, m_settings.interfaceTypes));
+        fieldValueVector.push_back(make_pair(g_macAddresses, m_settings.macAddresses));
+        fieldValueVector.push_back(make_pair(g_ipAddresses, m_settings.ipAddresses));
+        fieldValueVector.push_back(make_pair(g_subnetMasks, m_settings.subnetMasks));
+        fieldValueVector.push_back(make_pair(g_defaultGateways, m_settings.defaultGateways));
+        fieldValueVector.push_back(make_pair(g_dnsServers, m_settings.dnsServers));
+        fieldValueVector.push_back(make_pair(g_dhcpEnabled, m_settings.dhcpEnabled));
+        fieldValueVector.push_back(make_pair(g_enabled, m_settings.enabled));
+        fieldValueVector.push_back(make_pair(g_connected, m_settings.connected));
+
+        status = TruncateValueStrings(fieldValueVector);
+        rapidjson::StringBuffer sb;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+        writer.StartObject();
+        int writeResult = 0;
+        for (size_t i = 0; i < fieldValueVector.size(); i++)
+        {
+            writeResult += WriteJsonElement(&writer, fieldValueVector[i].first.c_str(), fieldValueVector[i].second.c_str());
+        }
+        writer.EndObject();
+
+        std::string networkingJsonString(sb.GetString());
+        networkingJsonString.erase(std::find(networkingJsonString.begin(), networkingJsonString.end(), '\0'), networkingJsonString.end());
+
+        *payloadSizeBytes = networkingJsonString.length();
+
+        if (((m_maxPayloadSizeBytes > 0) && (m_maxPayloadSizeBytes <= g_templateWithDotsSize) && ((unsigned int)*payloadSizeBytes != g_templateWithDotsSize)) ||
+            ((m_maxPayloadSizeBytes > g_templateWithDotsSize) && ((unsigned int)*payloadSizeBytes > m_maxPayloadSizeBytes)))
+        {
+            OsConfigLogInfo(NetworkingLog::Get(), "Networking payload to report %u bytes, need to report %u bytes, reporting empty strings", (unsigned int)*payloadSizeBytes, m_maxPayloadSizeBytes);
+            *payloadSizeBytes = g_templateWithDotsSize;
+        }
+
+        if (writeResult > 0)
+        {
+            *payloadSizeBytes = g_templateWithDotsSize;
+        }
+
+        *payload = new (std::nothrow) char[*payloadSizeBytes];
+        if (nullptr == *payload)
+        {
+            if (nullptr != payloadSizeBytes)
+            {
+                OsConfigLogError(NetworkingLog::Get(), "Networking::Get insufficient buffer space available to allocate %d bytes", *payloadSizeBytes);
+            }
+            status = ENOMEM;
+        }
+        else
+        {
+            std::fill(*payload, *payload + *payloadSizeBytes, 0);
+            std::memcpy(*payload, ((*payloadSizeBytes) == (int)g_templateWithDotsSize) ? g_templateWithDots : networkingJsonString.c_str(), *payloadSizeBytes);
+        }
     }
 
     return status;

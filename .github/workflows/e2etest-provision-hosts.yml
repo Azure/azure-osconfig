@@ -83,16 +83,4 @@ jobs:
 
           runner=$rg-$distroName
           echo Created self-hosted runner "$runner"
-        
-      - name: Create device identity
-        run: |
-          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p ${{ secrets.CLIENT_SECRET }} --tenant ${{ secrets.TENANT_ID }}
-          az extension add --name azure-iot
           
-          # VM + IotHub provisioning happening in parallel - loop until the IoT Hub is available
-          echo -n 'Creating Iot Hub Identity - ${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}'
-          az iot hub device-identity create --device-id "${{ steps.provision-vm.outputs.device_id }}" --hub-name ${{ inputs.resourceGroupName }}-iothub --output none;
-
-          device_conn_str="`az iot hub device-identity connection-string show --hub-name ${{ inputs.resourceGroupName }}-iothub --device-id ${{ steps.provision-vm.outputs.device_id }} --output tsv`"
-          echo '' && echo Adding to Key Vault
-          az keyvault secret set --name "${{ inputs.resourceGroupName }}-${{ steps.provision-vm.outputs.device_id }}" --vault-name ${{ secrets.KEY_VAULT_NAME }} --value $device_conn_str > /dev/null

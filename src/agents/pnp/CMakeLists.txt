@@ -19,7 +19,6 @@ project(osconfig)
 set(osconfig_files
     ./AisUtils.c
     ./ConfigUtils.c
-    ./MpiClient.c
     ./PnpAgent.c
     ./PnpUtils.c)
 
@@ -44,7 +43,7 @@ else ()
 endif ()
 
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security)
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wunused-macros)
 
     target_include_directories(${target_name} PUBLIC
         ${azure_iot_sdks_SOURCE_DIR}/deps/parson
@@ -54,7 +53,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         ${UMOCK_C_INC_FOLDER}
         ${MACRO_UTILS_INC_FOLDER}
         ${IOTHUB_CLIENT_INC_FOLDER}
-        ${UHTTP_C_INC_FOLDER},
+        ${UHTTP_C_INC_FOLDER}
         ${PLATFORM_INC_DIR})
 
     target_link_libraries(${target_name}
@@ -68,9 +67,10 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         aziotsharedutil
         tracelogging
         logging
-        commonutils)
+        commonutils
+        mpiclient)
 else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Werror -Wformat-security -Wno-nonnull -Wno-unused-result)
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)
 
     find_package (azure_c_shared_utility REQUIRED)
     find_package (azure_macro_utils_c REQUIRED)
@@ -80,7 +80,8 @@ else()
 
     target_include_directories(${target_name} PUBLIC
         ${SHARED_UTIL_INC_FOLDER}
-        ${MACRO_UTILS_INC_FOLDERP})
+        ${MACRO_UTILS_INC_FOLDERP}
+        ${PLATFORM_INC_DIR})
 
     target_link_libraries(${target_name}
         parson
@@ -93,6 +94,7 @@ else()
         aziotsharedutil
         logging
         commonutils
+        mpiclient
         lttngh
         hsm_security_client
         msr_riot
@@ -110,3 +112,9 @@ install(FILES daemon/${target_name}.conn DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}
 install(FILES daemon/${target_name}.toml DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/osconfig)
 install(FILES daemon/${target_name}.service DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/systemd/system)
 install(FILES telemetryevents/OsConfigAgentTelemetry.conf DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/azure-device-telemetryd)
+
+add_custom_command(
+    TARGET ${target_name}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/daemon/${target_name}.toml /etc/aziot/identityd/config.d/${target_name}.toml
+)

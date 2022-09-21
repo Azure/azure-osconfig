@@ -45,6 +45,7 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mpi.h>
+#include <MpiClient.h>
 #include <version.h>
 
 #define OSCONFIG_PLATFORM "osconfig-platform"

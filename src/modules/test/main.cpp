@@ -5,15 +5,22 @@ std::string g_configFile = "/etc/osconfig/osconfig.json";
 std::string g_defaultPath = "testplate.json";
 std::string g_fullLogging = "FullLogging";
 
+static std::string str_tolower(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(), 
+                   [](unsigned char c){ return std::tolower(c); }
+                  );
+    return s;
+}
+
 void RegisterRecipesWithGTest(TestRecipes &testRecipes)
 {
     for (TestRecipe recipe : *testRecipes)
     {
         // See gtest.h for details on this test registration
         // https://github.com/google/googletest/blob/v1.10.x/googletest/include/gtest/gtest.h#L2438
-        std::string testName(recipe.m_componentName + "." + recipe.m_objectName);
         testing::RegisterTest(
-            "ModulesTest", testName.c_str(), nullptr, nullptr, __FILE__, __LINE__,
+            "ModulesTest", TestRecipeParser::GetTestName(recipe).c_str(), nullptr, nullptr, __FILE__, __LINE__,
             [recipe]()->RecipeFixture *
             {
                 return new RecipeInvoker(recipe);
@@ -25,36 +32,62 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
 {
     TestRecipes testRecipes = std::make_shared<std::vector<TestRecipe>>();
     JSON_Value *root_value;
-    std::cout << "Using test recipes: " << g_defaultPath << std::endl;
-    root_value = json_parse_file_with_comments(g_defaultPath.c_str());
+    
+    char buf[PATH_MAX] = {0};
+    char *res = realpath("/proc/self/exe", buf);
+    if (res == nullptr)
+    {
+        TestLogError("Could not find the executable path");
+        return testRecipes;
+    }
+    std::string fullPath(buf);
+    fullPath = fullPath.substr(0, fullPath.find_last_of("/") + 1) + g_defaultPath;
+    if (!std::filesystem::exists(fullPath.c_str()))
+    {
+        TestLogError("Could not find test configuration: %s\n 'jq' may be missing, install application and rebuild.", fullPath.c_str());
+        return testRecipes;
+    }
 
-    if (json_value_get_type(root_value) != JSONArray)
+    std::cout << "Using test recipes: " << fullPath.c_str() << std::endl;
+    root_value = json_parse_file_with_comments(fullPath.c_str());
+
+    if (json_value_get_type(root_value) != JSONObject)
     {
         json_value_free(root_value);
         return testRecipes;
     }
 
-    JSON_Array *jsonTestRecipesMetadata = json_value_get_array(root_value);
+    JSON_Object *rootObject = json_value_get_object(root_value);
+    JSON_Array  *jsonModules = json_object_get_array(rootObject, "Modules");
+    std::vector<std::string> modulePaths;
+    for (size_t i = 0; i < json_array_get_count(jsonModules); i++)
+    {
+        modulePaths.push_back(json_array_get_string(jsonModules, i));
+    }
+
+    JSON_Array *jsonTestRecipesMetadata = json_object_get_array(rootObject, "Recipes");
     JSON_Object *jsonTestRecipeMetadata = nullptr;
     for (size_t i = 0; i < json_array_get_count(jsonTestRecipesMetadata); i++)
     {
         jsonTestRecipeMetadata = json_array_get_object(jsonTestRecipesMetadata, i);
 
+        std::string mainModulePath = json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str());
         TestRecipeMetadata recipeMetadata = {
             json_object_get_string(jsonTestRecipeMetadata, g_moduleName.c_str()),
-            json_object_get_string(jsonTestRecipeMetadata, g_modulePath.c_str()),
+            mainModulePath,
             json_object_get_string(jsonTestRecipeMetadata, g_mimPath.c_str()),
             json_object_get_string(jsonTestRecipeMetadata, g_testRecipesPath.c_str()),
-        };
+            std::make_shared<RecipeModuleSessionLoader>(mainModulePath)};
 
         // Add recipe if no specific module specified or if the module name matches
-        if ((moduleName.empty()) || (moduleName == recipeMetadata.m_moduleName))
+        if ((moduleName.empty()) || (str_tolower(moduleName) == str_tolower(recipeMetadata.m_moduleName)))
         {
             std::cout << "Adding test recipes for " << recipeMetadata.m_moduleName << std::endl;
             ss << "Module : " << recipeMetadata.m_modulePath << std::endl;
             ss << "Mmi    : " << recipeMetadata.m_mimPath << std::endl;
             ss << "Recipe : " << recipeMetadata.m_testRecipesPath << std::endl;
 
+            recipeMetadata.m_recipeModuleSessionLoader->Load(modulePaths);
             TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
             for (auto &recipe : *recipes)
             {
@@ -79,8 +112,10 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
         modulePath,
         mimPath,
         testRecipesPath,
+        std::make_shared<RecipeModuleSessionLoader>(modulePath)
     };
 
+    recipeMetadata.m_recipeModuleSessionLoader->Load(std::vector<std::string>{modulePath});
     TestRecipes recipes = TestRecipeParser::ParseTestRecipe(recipeMetadata.m_testRecipesPath);
     for (auto &recipe : *recipes)
     {
@@ -138,7 +173,7 @@ int main(int argc, char **argv)
     TestRecipes testRecipes;
 
     std::stringstream ss;
-    
+
     if (argc == 1)
     {
         PrintUsage();
@@ -180,8 +215,6 @@ int main(int argc, char **argv)
         }
         else
         {
-            // TODO: TGest specific modulename -- if found!
-            // std::cout << "Testing Module ---> " << argv[1] << std::endl;
             testRecipes = LoadValuesFromConfiguration(ss, argv[1]);
         }
     }
@@ -199,7 +232,7 @@ int main(int argc, char **argv)
         else
         {
             PrintUsage();
-            return 1;
+            return EINVAL;
         }
     }
     else
@@ -211,11 +244,23 @@ int main(int argc, char **argv)
         RegisterRecipesWithGTest(testRecipes);
     }
 
-    int status = RUN_ALL_TESTS();
+    int status = 0;
+    if (ss.str().length() > 0)
+    {
+        // Remove the CommandRunner's persistent cache to allow tests run same command ids repeated times
+        std::remove("/etc/osconfig/osconfig_commandrunner.cache");
 
-    std::cout << "[==========]"   << std::endl;
-    std::cout << "Test Summary: " << std::endl << ss.str();
-    std::cout << "[==========]"   << std::endl;
+        status = RUN_ALL_TESTS();
+
+        std::cout << "[==========]" << std::endl;
+        std::cout << "Test Summary: " << std::endl
+                  << ss.str();
+        std::cout << "[==========]" << std::endl;
+    }
+    else
+    {
+        std::cerr << "No tests found." << std::endl;
+    }
 
     return status;
 }

@@ -4,7 +4,7 @@
 project(modulestest)
 
 set(CMAKE_CXX_STANDARD 17)
-add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.cpp RecipeInvoker.cpp)
+add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.cpp RecipeModuleSessionLoader.cpp RecipeInvoker.cpp)
 
 target_link_libraries(testfactorylib
     ${CMAKE_DL_LIBS}
@@ -22,22 +22,20 @@ target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
 find_program(JQ_EXEC jq)
 if(JQ_EXEC)
     add_custom_target(modulerecipeconfiguration
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh ${CMAKE_CURRENT_BINARY_DIR}/testplate.json ${CMAKE_CURRENT_BINARY_DIR}/..
         COMMENT "Generating module recipe configuration"
     )
     add_dependencies(modulestest modulerecipeconfiguration)
-else()
-    set(jq_error "'jq' application required for generating module recipe configuration")
-    message(WARNING ${jq_error})
-    add_custom_target(modulerecipeconfiguration
-        COMMAND true
-        COMMENT ${jq_error}
-    )
 endif()
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
     target_link_libraries(modulestest stdc++fs)
 endif()
+
+add_custom_command(TARGET modulestest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:modulestest> ${CMAKE_BINARY_DIR}/modulestest
+    DEPENDS $<TARGET_FILE:modulestest>
+)
 
 if (BUILD_TESTS)
     add_subdirectory(unit-tests)

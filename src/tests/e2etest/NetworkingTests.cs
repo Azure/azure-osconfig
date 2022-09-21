@@ -74,9 +74,9 @@ namespace E2eTesting
         }
 
         [Test]
-        public async Task NetworkingTest_Get()
+        public void NetworkingTest_Get()
         {
-            NetworkConfiguration reported = await GetReported<NetworkConfiguration>(_componentName, _reportedPropertyName, (NetworkConfiguration network) => {
+            NetworkConfiguration reported = GetReported<NetworkConfiguration>(_componentName, _reportedPropertyName, (NetworkConfiguration network) => {
                 return network.InterfaceTypes != null &&
                        network.MacAddresses != null &&
                        network.IpAddresses != null &&

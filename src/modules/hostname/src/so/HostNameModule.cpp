@@ -19,7 +19,6 @@
 #define ERROR_GENERAL_EXCEPTION "%s threw an exception"
 #define ERROR_INVALID_CLIENT_SESSION "%s called with an invalid client session"
 #define ERROR_INVALID_ARGUMENTS "%s called with an invalid argument"
-#define ERROR_INVALID_PAYLOAD "%s called with an invalid payload"
 
 constexpr const char* g_moduleName = "HostName";
 constexpr const char g_moduleInfo[] = R""""({
@@ -32,7 +31,6 @@ constexpr const char g_moduleInfo[] = R""""({
     "Components": ["HostName"],
     "Lifetime": 2,
     "UserAccount": 0})"""";
-constexpr const char g_emptyPayload[] = "\"\"";
 
 void __attribute__((constructor)) InitModule()
 {

@@ -44,7 +44,6 @@ static int NormalizeStatus(int status)
 static int SystemCommand(void* context, const char* command, int timeoutSeconds, CommandCallback callback, void* log)
 {
     const int callbackIntervalSeconds = 5; //seconds
-    const int signalIntervalMicroSeconds = 25000; //microseconds
     const int defaultCommandTimeout = 60; //seconds
 
     pid_t intermediateProcess = -1;
@@ -237,7 +236,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
     size_t commandLineLength = 0;
     size_t maximumCommandLine = 0;
     char commandTextResultFile[MAX_COMMAND_RESULT_FILE_NAME] = {0};
-    bool redirectedOutputCommand = false;
+    bool wrappedCommand = false;
 
     if ((NULL == command) || (0 == system(NULL)))
     {
@@ -248,16 +247,13 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         return -1;
     }
 
-    redirectedOutputCommand = (bool)(strchr(command, '>'));
+    commandLineLength = strlen(command);
+    wrappedCommand = (('(' == command[0]) || (')' == command[commandLineLength]));
 
-    commandLineLength = strlen(command) + 1;
-    if (!redirectedOutputCommand)
-    {
-        // Append a random number to the results file to prevent parallel commands overwriting each other results
-        snprintf(commandTextResultFile, sizeof(commandTextResultFile), g_commandTextResultFileTemplate, rand());
+    // Append a random number to the results file to prevent parallel commands overwriting each other results
+    snprintf(commandTextResultFile, sizeof(commandTextResultFile), g_commandTextResultFileTemplate, rand());
 
-        commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) ;
-    }
+    commandLineLength += strlen(g_commandSeparator) + strlen(commandTextResultFile) + strlen(g_commandTerminator) + (wrappedCommand ? 0 : 2) + 1;
 
     maximumCommandLine = (size_t)sysconf(_SC_ARG_MAX);
     if (commandLineLength > maximumCommandLine)
@@ -279,23 +275,15 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
         return ENOMEM;
     }
 
-    // If the command includes a redirector ('>') skip redirecting for text results (as there won't be any)
-    if (redirectedOutputCommand)
-    {
-        snprintf(commandLine, commandLineLength, "%s", command);
-    }
-    else
-    {
-        snprintf(commandLine, commandLineLength, "%s%s%s%s", command, g_commandSeparator, commandTextResultFile, g_commandTerminator);
-    }
-
+    snprintf(commandLine, commandLineLength, wrappedCommand ? "%s%s%s%s" : "(%s)%s%s%s", command, g_commandSeparator, commandTextResultFile, g_commandTerminator);
+ 
     // Execute the command with the requested timeout: error ETIME (62) means the command timed out
     status = SystemCommand(context, commandLine, timeoutSeconds, callback, log);
 
     free(commandLine);
 
     // Read the text result from the output of the command, if any, whether command succeeded or failed
-    if ((NULL != textResult) && (!redirectedOutputCommand))
+    if (NULL != textResult)
     {
         resultsFile = fopen(commandTextResultFile, "r");
         if (resultsFile)
@@ -307,7 +295,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
             if (fileSize > 0)
             {
                 // Truncate to desired maximum, if any
-                if ((maxTextResultBytes > 0) && ((fileSize + 1) > maxTextResultBytes))
+                if ((maxTextResultBytes > 0) && (((size_t)fileSize + 1) > maxTextResultBytes))
                 {
                     fileSize = (maxTextResultBytes > 1) ? (maxTextResultBytes - 1) : 0;
                 }

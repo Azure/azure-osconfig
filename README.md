@@ -125,11 +125,7 @@ OSConfig uses two local files as local digital twins in MIM JSON format:
 
 ## Configuration
 
-OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
-
-```bash
-sudo systemctl kill -s SIGHUP osconfig.service
-```
+OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, restart OSConfig to make it apply the change.
 
 ### Adjusting the reporting interval
 
@@ -192,7 +188,7 @@ The networking protocol that OSConfig uses to connect to the IoT Hub is configur
 
 ```json
 {
-    "Protocol": 2
+    "IotHubProtocol": 2
 }
 ```
 
@@ -206,7 +202,7 @@ Value | Description
 
 ## HTTP proxy configuration
 
-When the configured protocol is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
+When the configured IotHubProtocol value is set to value 2 (MQTT over Web Socket) OSConfig attempts to use the HTTP proxy information configured in one of the following environment variables, the first such variable that is locally present:
 
 1. `http_proxy`
 1. `https_proxy`

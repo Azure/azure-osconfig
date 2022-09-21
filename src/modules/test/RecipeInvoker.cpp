@@ -2,74 +2,73 @@
 
 void RecipeInvoker::TestBody()
 {
-    ASSERT_STRNE(m_recipe.m_metadata.m_modulePath.c_str(), "") << "No module path defined!";
-    auto module = std::make_shared<ManagementModule>(m_recipe.m_metadata.m_modulePath);
-    MmiSession session(module, g_defaultClient);
-    ASSERT_EQ(0, module->Load()) << "Failed to load module!";
-    ASSERT_EQ(0, session.Open()) << "Failed to open session!";
-
     MMI_JSON_STRING payload = nullptr;
     int payloadSize = 0;
 
+    auto session = m_recipe.m_metadata.m_recipeModuleSessionLoader->GetSession(m_recipe.m_componentName);
+
     if (m_recipe.m_desired)
     {
-        EXPECT_EQ(m_recipe.m_expectedResult, session.Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
+        // If no payloadSizeBytes defined, use the size of the payload
+        m_recipe.m_payloadSizeBytes = (0 == m_recipe.m_payloadSizeBytes) ? std::strlen(m_recipe.m_payload.c_str()) : m_recipe.m_payloadSizeBytes;
+        EXPECT_EQ(m_recipe.m_expectedResult, session->Set(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), (MMI_JSON_STRING)m_recipe.m_payload.c_str(), m_recipe.m_payloadSizeBytes)) << "Failed JSON payload: " << m_recipe.m_payload;
     }
     else
     {
-        ASSERT_EQ(m_recipe.m_expectedResult, session.Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
+        ASSERT_EQ(m_recipe.m_expectedResult, session->Get(m_recipe.m_componentName.c_str(), m_recipe.m_objectName.c_str(), &payload, &payloadSize));
 
         if (0 == m_recipe.m_expectedResult)
         {
             JSON_Value *root_value = json_parse_string(payload);
-            ASSERT_NE(nullptr, root_value);
+            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: <null>";
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
             EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";
-            EXPECT_NE(0, m_recipe.m_mimObjects->at(m_recipe.m_componentName)->size()) << "No MimObjects for " << m_recipe.m_componentName << "!";
-            auto map = m_recipe.m_mimObjects->at(m_recipe.m_componentName)->at(m_recipe.m_objectName);
 
-            std::string payloadStr(payload, payloadSize);
+            // Only validate MimObjects from the calling module recipe
+            if (m_recipe.m_mimObjects->end() != m_recipe.m_mimObjects->find(m_recipe.m_objectName))
+            {
+                EXPECT_NE(0, m_recipe.m_mimObjects->at(m_recipe.m_componentName)->size()) << "No MimObjects for " << m_recipe.m_componentName << "!";
+                auto map = m_recipe.m_mimObjects->at(m_recipe.m_componentName)->at(m_recipe.m_objectName);
 
-            // Validate settings + supported values
-            TestLogInfo("Validating settings and supported values for '%s'", m_recipe.m_objectName.c_str());
-            if ((map.m_type.compare("array") == 0) ||
-                (map.m_type.compare("map") == 0))
-            {
-                EXPECT_EQ(JSONArray, json_value_get_type(root_value)) << "Expecting '" << m_recipe.m_objectName << "' to contain an array" << std::endl << "JSON: " << payloadStr;
-            }
-            else
-            {
-                for (auto setting : *map.m_settings)
+                std::string payloadStr(payload, payloadSize);
+
+                // Validate settings + supported values
+                TestLogInfo("Validating settings and supported values for '%s'", m_recipe.m_objectName.c_str());
+                if ((map.m_type.compare("array") == 0) ||
+                    (map.m_type.compare("map") == 0))
                 {
-                    if (setting.second.type.compare("string") == 0)
+                    EXPECT_EQ(JSONArray, json_value_get_type(root_value)) << "Expecting '" << m_recipe.m_objectName << "' to contain an array" << std::endl << "JSON: " << payloadStr;
+                }
+                else
+                {
+                    for (auto setting : *map.m_settings)
                     {
-                        EXPECT_NE(nullptr, json_object_get_string(jsonObject, setting.second.name.c_str())) << "Expecting '" << m_recipe.m_objectName << "' to contain string setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
-
-                        std::string value = json_object_get_string(jsonObject, setting.second.name.c_str());
-                        if (setting.second.allowedValues->size() && std::find(setting.second.allowedValues->begin(), setting.second.allowedValues->end(), value) == setting.second.allowedValues->end())
+                        if (setting.second.type.compare("string") == 0)
                         {
-                            FAIL() << "Field '" << setting.second.name << "' contains unsupported value '" << value << "'" << std::endl << "JSON: " << payloadStr;
+                            EXPECT_NE(nullptr, json_object_get_string(jsonObject, setting.second.name.c_str())) << "Expecting '" << m_recipe.m_objectName << "' to contain string setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
+
+                            std::string value = json_object_get_string(jsonObject, setting.second.name.c_str());
+                            if (setting.second.allowedValues->size() && std::find(setting.second.allowedValues->begin(), setting.second.allowedValues->end(), value) == setting.second.allowedValues->end())
+                            {
+                                FAIL() << "Field '" << setting.second.name << "' contains unsupported value '" << value << "'" << std::endl << "JSON: " << payloadStr;
+                            }
+                        }
+                        else if (setting.second.type.compare("integer") == 0)
+                        {
+                            JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
+                            EXPECT_EQ(JSONNumber, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain integer setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
+                        }
+                        else if (setting.second.type.compare("boolean") == 0)
+                        {
+                            JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
+                            EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
                         }
                     }
-                    else if (setting.second.type.compare("integer") == 0)
-                    {
-                        JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
-                        EXPECT_EQ(JSONNumber, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain integer setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
-                    }
-                    else if (setting.second.type.compare("boolean") == 0)
-                    {
-                        JSON_Value *value = json_object_get_value(jsonObject, setting.second.name.c_str());
-                        EXPECT_EQ(JSONBoolean, json_value_get_type(value)) << "Expecting '" << m_recipe.m_objectName << "' to contain boolean setting '" << setting.second.name << "'" << std::endl << "JSON: " << payloadStr;
-                    }
-                    else
-                    {
-                        FAIL() << "Unsupported type: " << setting.second.type << std::endl << "JSON: " << payloadStr;
-                    }
                 }
-            }
 
-            json_value_free(root_value);
+                json_value_free(root_value);
+            }
 
             // Validate payload size
             if (m_recipe.m_payloadSizeBytes)
@@ -97,8 +96,6 @@ void RecipeInvoker::TestBody()
         std::cout << "Waiting for " << m_recipe.m_waitSeconds << " seconds" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(m_recipe.m_waitSeconds));
     }
-
-    session.Close();
 }
 
 void BasicModuleTester::TestBody()

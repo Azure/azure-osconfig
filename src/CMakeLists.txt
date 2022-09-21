@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.2)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
-set(PATCH_VERSION "3" CACHE STRING "Patch version")
+set(PATCH_VERSION "4" CACHE STRING "Patch version")
 
 option(BUILD_AGENTS "Build OSConfig PnP Agent" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
@@ -19,11 +19,7 @@ option(BUILD_TESTS "Build test collateral" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
 
-option(COMPILE_WITH_STRICTNESS "Builds with additional strict compiler options." ON)
-if (COMPILE_WITH_STRICTNESS)
-    message(STATUS "Compiling with additional strictness")
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wreorder;-Wall;-Wextra;-Werror;-Wformat-security;-Wno-nonnull;-Wno-unused-result>")
-endif()
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wreorder;-Wno-nonnull;-Wno-unused-result;-Wunused-macros;-Wunused-const-variable=2>")
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_compile_options("-Wno-psabi;-fPIC")

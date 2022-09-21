@@ -364,7 +364,7 @@ namespace Tests
         int payloadSizeBytes = 0;
         const char emptyPayload[] = "{}";
 
-        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonNoneReported));
+        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(TEST_MODULE_DIR, TEST_CONFIG_JSON_NONE_REPORTED));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
         EXPECT_EQ(0, mpiSession->Open());
@@ -381,16 +381,16 @@ namespace Tests
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonSingleReported));
+        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(TEST_MODULE_DIR, TEST_CONFIG_JSON_SINGLE_REPORTED));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
         EXPECT_EQ(0, mpiSession->Open());
 
-        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_singleObjectPayload, strlen(g_singleObjectPayload)));
+        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)TEST_SINGLE_OBJECT_PAYLOAD, strlen(TEST_SINGLE_OBJECT_PAYLOAD)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
-        EXPECT_TRUE(JSON_EQ(g_singleObjectPayload, actual));
+        EXPECT_TRUE(JSON_EQ(TEST_SINGLE_OBJECT_PAYLOAD, actual));
     }
 
     TEST_F(ModuleManagerTests, LoadModulesMultipleReported)
@@ -398,30 +398,30 @@ namespace Tests
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
-        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonMultipleReported));
+        ASSERT_EQ(MPI_OK, m_mockModuleManager->LoadModules(TEST_MODULE_DIR, TEST_CONFIG_JSON_MULTIPLE_REPORTED));
 
         std::shared_ptr<MpiSession> mpiSession = std::make_shared<MpiSession>(*m_mockModuleManager, m_defaultClient);
         EXPECT_EQ(0, mpiSession->Open());
 
-        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)g_multipleObjectsPayload, strlen(g_multipleObjectsPayload)));
+        EXPECT_EQ(MPI_OK, mpiSession->SetDesired((MPI_JSON_STRING)TEST_MULTIPLE_OBJECT_PAYLOAD, strlen(TEST_MULTIPLE_OBJECT_PAYLOAD)));
         EXPECT_EQ(MPI_OK, mpiSession->GetReported(&payload, &payloadSizeBytes));
 
         std::string actual(payload, payloadSizeBytes);
-        EXPECT_TRUE(JSON_EQ(g_multipleObjectsPayload, actual));
+        EXPECT_TRUE(JSON_EQ(TEST_MULTIPLE_OBJECT_PAYLOAD, actual));
     }
 
     TEST_F(ModuleManagerTests, LoadModulesInvalidDirectory)
     {
-        ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules("/invalid/path", g_configJsonNoneReported));
+        ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules("/invalid/path", TEST_CONFIG_JSON_NONE_REPORTED));
     }
 
     TEST_F(ModuleManagerTests, LoadModulesInvalidConfigPath)
     {
-        ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules(g_moduleDir, "/invalid/path/config.json"));
+        ASSERT_EQ(ENOENT, m_mockModuleManager->LoadModules(TEST_MODULE_DIR, "/invalid/path/config.json"));
     }
 
     TEST_F(ModuleManagerTests, LoadModulesInvalidConfig)
     {
-        ASSERT_EQ(EINVAL, m_mockModuleManager->LoadModules(g_moduleDir, g_configJsonInvalid));
+        ASSERT_EQ(EINVAL, m_mockModuleManager->LoadModules(TEST_MODULE_DIR, TEST_CONFIG_JSON_INVALID));
     }
 } // namespace Tests

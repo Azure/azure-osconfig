@@ -66,7 +66,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyName, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -87,7 +87,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyName, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -108,7 +108,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyName, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -136,7 +136,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -164,7 +164,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -192,7 +192,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -221,7 +221,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -244,7 +244,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -263,7 +263,7 @@ namespace OSConfig::Platform::Tests
             };
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, nullptr, nullptr, 0);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, nullptr, nullptr, 0);
 
         EXPECT_EQ(status, EINVAL);
     }
@@ -276,7 +276,7 @@ namespace OSConfig::Platform::Tests
             };
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyName, nullptr, 0);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, nullptr, 0);
 
         EXPECT_EQ(status, EINVAL);
     }
@@ -299,7 +299,7 @@ namespace OSConfig::Platform::Tests
         int payloadSizeBytes;
 
         HostNameBaseTests testModule(textResults, 1);
-        int status = testModule.Get(&testModule, g_componentName, g_propertyHosts, &payload, &payloadSizeBytes);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
 
         std::string result(payload, payloadSizeBytes);
 
@@ -323,7 +323,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, name.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredName, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredName, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, MMI_OK);
 
@@ -344,7 +344,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, hosts.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredHosts, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredHosts, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, MMI_OK);
 
@@ -365,7 +365,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, hosts.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredHosts, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredHosts, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, MMI_OK);
 
@@ -383,7 +383,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, name.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, nullptr, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, nullptr, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, EINVAL);
 
@@ -398,7 +398,7 @@ namespace OSConfig::Platform::Tests
             };
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredName, nullptr, 0);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredName, nullptr, 0);
 
         EXPECT_EQ(status, EINVAL);
     }
@@ -414,7 +414,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, name.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredName, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredName, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, EINVAL);
 
@@ -434,7 +434,7 @@ namespace OSConfig::Platform::Tests
         std::memcpy(payload, hosts.c_str(), payloadSizeBytes);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredHosts, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredHosts, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, EINVAL);
 
@@ -450,7 +450,7 @@ namespace OSConfig::Platform::Tests
         std::fill(payload, payload + payloadSizeBytes, 0);
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
-        int status = testModule.Set(&testModule, g_componentName, g_propertyDesiredHosts, payload, payloadSizeBytes);
+        int status = testModule.Set(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyDesiredHosts, payload, payloadSizeBytes);
 
         EXPECT_EQ(status, E2BIG);
 

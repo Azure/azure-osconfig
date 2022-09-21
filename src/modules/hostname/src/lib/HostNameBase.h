@@ -11,12 +11,6 @@
 #define HOST_NAME_CONFIGURATOR_LOGFILE "/var/log/osconfig_hostname.log"
 #define HOST_NAME_CONFIGURATOR_ROLLEDLOGFILE "/var/log/osconfig_hostname.bak"
 
-constexpr const char* g_componentName = "HostName";
-constexpr const char* g_propertyDesiredName = "desiredName";
-constexpr const char* g_propertyDesiredHosts = "desiredHosts";
-constexpr const char* g_propertyName = "name";
-constexpr const char* g_propertyHosts = "hosts";
-
 class HostNameLog
 {
 public:
@@ -42,6 +36,12 @@ private:
 class HostNameBase
 {
 public:
+    static const char* m_componentName;
+    static const char* m_propertyDesiredName;
+    static const char* m_propertyDesiredHosts;
+    static const char* m_propertyName;
+    static const char* m_propertyHosts;
+
     HostNameBase(size_t maxPayloadSizeBytes);
     virtual ~HostNameBase();
     virtual int RunCommand(const char* command, bool replaceEol, std::string* textResult) = 0;

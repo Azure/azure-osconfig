@@ -65,6 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 if [ ! -e /etc/aziot/identityd/config.d/osconfig.toml ]; then
+    mkdir -p /etc/aziot/identityd/config.d
     cp /etc/osconfig/osconfig.toml /etc/aziot/identityd/config.d/
 fi
 %systemd_post osconfig-platform.service
@@ -81,8 +82,8 @@ systemctl start osconfig.service
 %files
 %defattr(-, root, root, -)
 %{_bindir}/osconfig
+%{_bindir}/osconfig-platform
 /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
-/etc/osconfig/osconfig_commandrunner.cache
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
 /etc/osconfig/osconfig.toml

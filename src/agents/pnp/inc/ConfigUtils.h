@@ -23,7 +23,7 @@
 #define LOCAL_MANAGEMENT "LocalManagement"
 #define LOCAL_PRIORITY "LocalPriority"
 
-#define PROTOCOL "Protocol"
+#define PROTOCOL "IotHubProtocol"
 #define PROTOCOL_AUTO 0
 #define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
@@ -51,7 +51,7 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
 int GetReportingIntervalFromJsonConfig(const char* jsonString);
 int GetModelVersionFromJsonConfig(const char* jsonString);
 int GetLocalManagementFromJsonConfig(const char* jsonString);
-int GetProtocolFromJsonConfig(const char* jsonString);
+int GetIotHubProtocolFromJsonConfig(const char* jsonString);
 
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties);
 
