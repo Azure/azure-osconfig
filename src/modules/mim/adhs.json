@@ -3,7 +3,7 @@
   "type": "mimModel",
   "contents": [
     {
-      "name": "adhsConfiguration",
+      "name": "AdhsConfiguration",
       "type": "mimComponent",
       "contents": [
         {
