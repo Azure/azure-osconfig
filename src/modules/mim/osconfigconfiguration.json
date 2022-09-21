@@ -7,7 +7,7 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "desiredConfiguration",
+          "name": "configuration",
           "type": "mimObject",
           "desired": false,
           "schema": {
@@ -84,6 +84,7 @@
         },
         {
           "name": "iotHubProtocol",
+          "desired": true,
           "schema": {
             "type": "enum",
             "valueSchema": "integer",
