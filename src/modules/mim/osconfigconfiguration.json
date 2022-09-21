@@ -7,9 +7,9 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "configuration",
+          "name": "desiredConfiguration",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": {
             "fields": [
               {
@@ -55,36 +55,36 @@
         {
           "name": "modelVersion",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "integer"
         },
         {
           "name": "refreshInterval",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "integer"
         },
         {
           "name": "localManagementEnabled",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "boolean"
         },
         {
           "name": "fullLoggingEnabled",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "boolean"
         },
         {
           "name": "commandLoggingEnabled",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "boolean"
         },
         {
           "name": "iotHubProtocol",
-          "desired": true,
+          "desired": false,
           "schema": {
             "type": "enum",
             "valueSchema": "integer",
