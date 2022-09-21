@@ -125,11 +125,7 @@ OSConfig uses two local files as local digital twins in MIM JSON format:
 
 ## Configuration
 
-OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, to make OSConfig apply the change, restart or refresh OSConfig with the command:
-
-```bash
-sudo systemctl kill -s SIGHUP osconfig.service
-```
+OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, restart OSConfig to make it apply the change.
 
 ### Adjusting the reporting interval
 
