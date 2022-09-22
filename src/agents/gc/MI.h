@@ -1,11 +1,5 @@
-/*
-**==============================================================================
-**
-** Copyright (c) Microsoft Corporation. All rights reserved. See file LICENSE
-** for license information.
-**
-**==============================================================================
-*/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #ifndef _MI_h
 #define _MI_h

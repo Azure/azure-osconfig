@@ -1,11 +1,5 @@
-/*
-**==============================================================================
-**
-** Copyright (c) Microsoft Corporation. All rights reserved. See file LICENSE
-** for license information.
-**
-**==============================================================================
-*/
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 
 #ifndef _SAL_h
 #define _SAL_h
