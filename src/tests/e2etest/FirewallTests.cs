@@ -126,17 +126,8 @@ namespace E2eTesting
                     Action = Action.Accept,
                     Direction = Direction.In,
                     Protocol = Protocol.Tcp,
-                    SourceAddress = "0.0.0.0",
+                    SourceAddress = "bing.com",
                     SourcePort = 1234
-                },
-                new Rule
-                {
-                    DesiredState = DesiredState.Absent,
-                    Action = Action.Accept,
-                    Direction = Direction.In,
-                    Protocol = Protocol.Tcp,
-                    DestinationAddress = "bing.com",
-                    DestinationPort = 9876
                 }
             };
 
@@ -147,12 +138,6 @@ namespace E2eTesting
 
             reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.Fingerprint != initialFingerprint));
 
-            Assert.Multiple(() =>
-            {
-                Assert.AreEqual(State.Enabled, reported.State);
-                Assert.AreNotEqual(initialFingerprint, reported.Fingerprint);
-            });
-
             // Remove the rule added by the test
             desired = new Rule[]
             {
@@ -162,7 +147,7 @@ namespace E2eTesting
                     Action = Action.Accept,
                     Direction = Direction.In,
                     Protocol = Protocol.Tcp,
-                    SourceAddress = "0.0.0.0",
+                    SourceAddress = "bing.com",
                     SourcePort = 1234
                 }
             };
@@ -171,6 +156,12 @@ namespace E2eTesting
 
             // Reset the desired state to empty
             SetDesired<Rule[]>(_componentName, _desiredRules, new Rule[0]);
+
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(State.Enabled, reported.State);
+                Assert.AreNotEqual(initialFingerprint, reported.Fingerprint);
+            });
         }
 
         [Test]

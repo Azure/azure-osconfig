@@ -32,7 +32,8 @@ namespace E2eTesting
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                NullValueHandling = NullValueHandling.Ignore
             };
 
             _iotHubDataSource = new IotHubDataSource();
