@@ -100,6 +100,7 @@ namespace E2eTesting
             public string Fingerprint { get; set; }
             public ConfigurationStatus ConfigurationStatus { get; set; }
             public string ConfigurationStatusDetail { get; set; }
+            public Policy[] DefaultPolicies { get; set; }
         }
 
 
@@ -183,14 +184,15 @@ namespace E2eTesting
 
             SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, desired);
 
-            var reported = GetReported<Policy[]>(_componentName, _reportedDefaultPolicies, (Policy[] policies) => (policies.Length == 2));
+            var reported = GetReported<Firewall>(_componentName, (Firewall firewall) => ((firewall.DefaultPolicies != null) && (firewall.DefaultPolicies.Length == 2)));
+            var reportedPolicies = reported.DefaultPolicies;
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(desired[0].Action, reported[0].Action);
-                Assert.AreEqual(desired[0].Direction, reported[0].Direction);
-                Assert.AreEqual(desired[1].Action, reported[1].Action);
-                Assert.AreEqual(desired[1].Direction, reported[1].Direction);
+                Assert.AreEqual(desired[0].Action, reportedPolicies[0].Action);
+                Assert.AreEqual(desired[0].Direction, reportedPolicies[0].Direction);
+                Assert.AreEqual(desired[1].Action, reportedPolicies[1].Action);
+                Assert.AreEqual(desired[1].Direction, reportedPolicies[1].Direction);
             });
 
             SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, new Policy[0]);
