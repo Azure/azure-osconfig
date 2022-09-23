@@ -1073,3 +1073,45 @@ TEST_F(CommonUtilsTest, MillisecondsSleep)
     EXPECT_EQ(EINVAL, SleepMilliseconds(negativeValue));
     EXPECT_EQ(EINVAL, SleepMilliseconds(tooBigValue));
 }
+
+TEST_F(CommonUtilsTest, ConfigurationTests)
+{
+    const char* configuration = "{"
+        "\"CommandLogging\": 0,"
+        "\"FullLogging\": 1,"
+        "\"LocalManagement\": 3,"
+        "\"ModelVersion\": 12,"
+        "\"IotHubProtocol\": 2,"
+        "\"Reported\": ["
+        "  {"
+        "    \"ComponentName\": \"CommandRunner\","
+        "    \"ObjectName\": \"commandStatus\""
+        "  },"
+        "  {"
+        "    \"ComponentName\": \"DeviceInfo\","
+        "    \"ObjectName\": \"osName\""
+        "  },"
+        "  {"
+        "    \"ComponentName\": \"TestABC\","
+        "    \"ObjectName\": \"TestVa12lue\""
+        "  }"
+        "],"
+        "\"ReportingIntervalSeconds\": 30"
+        "}";
+
+    REPORTED_PROPERTY* reportedProperties = nullptr;
+    
+    EXPECT_FALSE(false, IsCommandLoggingEnabledInJsonConfig(configuration));
+    EXPECT_TRUE(true, IsFullLoggingEnabledInJsonConfig(configuration));
+    EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
+    EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
+    EXPECT_EQ(3, GetLocalManagementFromJsonConfig(configuration, nullptr));
+    EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
+
+    EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
+    EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
+    EXPECT_STREQ("osName", reportedProperties[0].propertyName);
+    EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
+    EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
+    FREE_MEMORY(reportedProperties);
+}
