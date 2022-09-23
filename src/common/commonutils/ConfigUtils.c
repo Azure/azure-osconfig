@@ -20,11 +20,11 @@
 #define MODEL_VERSION_NAME "ModelVersion"
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_MANAGEMENT "LocalManagement"
-#define LOCAL_PRIORITY "LocalPriority"
 
 #define PROTOCOL "IotHubProtocol"
 #define PROTOCOL_AUTO 0
-#define PROTOCOL_MQTT 1
+// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
+//#define PROTOCOL_MQTT 1 
 #define PROTOCOL_MQTT_WS 2
 
 #define DEFAULT_DEVICE_MODEL_ID 7
