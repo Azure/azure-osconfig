@@ -627,7 +627,7 @@ int main(int argc, char *argv[])
     if (NULL != jsonConfiguration)
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
-        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
+        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
