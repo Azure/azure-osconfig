@@ -1076,23 +1076,24 @@ TEST_F(CommonUtilsTest, MillisecondsSleep)
 
 TEST_F(CommonUtilsTest, LoadConfiguration)
 {
-    const char* configuration = "{"
-        "\"CommandLogging\": 0,"
-        "\"FullLogging\": 1,"
-        "\"LocalManagement\": 3,"
-        "\"ModelVersion\": 11,"
-        "\"IotHubProtocol\": 2,"
-        "\"Reported\": ["
-        "  {"
-        "    \"ComponentName\": \"DeviceInfo\","
-        "    \"ObjectName\": \"osName\""
-        "  },"
-        "  {"
-        "    \"ComponentName\": \"TestABC\","
-        "    \"ObjectName\": \"TestVa12lue\""
-        "  }"
-        "],"
-        "\"ReportingIntervalSeconds\": 30"
+    const char* configuration = 
+        "{"
+          "\"CommandLogging\": 0,"
+          "\"FullLogging\": 1,"
+          "\"LocalManagement\": 3,"
+          "\"ModelVersion\": 11,"
+          "\"IotHubProtocol\": 2,"
+          "\"Reported\": ["
+          "  {"
+          "    \"ComponentName\": \"DeviceInfo\","
+          "    \"ObjectName\": \"osName\""
+          "  },"
+          "  {"
+          "    \"ComponentName\": \"TestABC\","
+          "    \"ObjectName\": \"TestVa12lue\""
+          "  }"
+          "],"
+          "\"ReportingIntervalSeconds\": 30"
         "}";
 
     REPORTED_PROPERTY* reportedProperties = nullptr;
