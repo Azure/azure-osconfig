@@ -70,13 +70,13 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (NULL == valueName)
     {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
+        OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
         return valueToReturn;
     }
 
     if (minValue >= maxValue)
     {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)",
+        OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)",
             minValue, maxValue, valueName, defaultValue);
         return valueToReturn;
     }
@@ -95,12 +95,12 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
                 }
                 else if (valueToReturn < minValue)
                 {
-                    LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
+                    OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
                     valueToReturn = minValue;
                 }
                 else if (valueToReturn > maxValue)
                 {
-                    LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
+                    OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
                     valueToReturn = maxValue;
                 }
                 else
@@ -110,18 +110,18 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
             }
             else
             {
-                LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
+                OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
             }
             json_value_free(rootValue);
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
+            OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
         }
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
+        OsConfigLogError(GetLog(), "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
     }
 
     return valueToReturn;
@@ -162,7 +162,7 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 
     if (NULL == reportedProperties)
     {
-        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
+        OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: called with an invalid argument, no properties to report");
         return 0;
     }
     
@@ -207,44 +207,44 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
                                     }
                                     else
                                     {
-                                        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: %s or %s missing at position %d of %d, no property to report",
+                                        OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: %s or %s missing at position %d of %d, no property to report",
                                             REPORTED_COMPONENT_NAME, REPORTED_SETTING_NAME, (int)(i + 1), (int)numReported);
                                     }
                                 }
                                 else
                                 {
-                                    LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_array_get_object failed at position %d of %d, no reported property",
+                                    OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: json_array_get_object failed at position %d of %d, no reported property",
                                         (int)(i + 1), (int)numReported);
                                 }
                             }
                         }
                         else
                         {
-                            LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: out of memory, cannot allocate %d bytes for %d reported properties",
+                            OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: out of memory, cannot allocate %d bytes for %d reported properties",
                                 (int)bufferSize, (int)numReported);
                         }
                     }
                 }
                 else
                 {
-                    LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: no valid %s array in configuration, no properties to report", REPORTED_NAME);
+                    OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: no valid %s array in configuration, no properties to report", REPORTED_NAME);
                 }
             }
             else
             {
-                LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_value_get_object(root) failed, no properties to report");
+                OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: json_value_get_object(root) failed, no properties to report");
             }
 
             json_value_free(rootValue);
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: json_parse_string failed, no properties to report");
+            OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: json_parse_string failed, no properties to report");
         }
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "LoadReportedFromJsonConfig: no configuration data, no properties to report");
+        OsConfigLogError(GetLog(), "LoadReportedFromJsonConfig: no configuration data, no properties to report");
     }
 
     return numReportedProperties;
