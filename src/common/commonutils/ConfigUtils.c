@@ -3,17 +3,12 @@
 
 #include "Internal.h"
 
-// 30 seconds
-#define DEFAULT_REPORTING_INTERVAL 30
-
 // 1 second
 #define MIN_REPORTING_INTERVAL 1
 
 // 24 hours
 #define MAX_REPORTING_INTERVAL 86400
 
-#define COMMAND_LOGGING "CommandLogging"
-#define FULL_LOGGING "FullLogging"
 #define REPORTED_NAME "Reported"
 #define REPORTED_COMPONENT_NAME "ComponentName"
 #define REPORTED_SETTING_NAME "ObjectName"
@@ -22,12 +17,7 @@
 #define LOCAL_MANAGEMENT "LocalManagement"
 
 #define PROTOCOL "IotHubProtocol"
-#define PROTOCOL_AUTO 0
-// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
-//#define PROTOCOL_MQTT 1 
-#define PROTOCOL_MQTT_WS 2
 
-#define DEFAULT_DEVICE_MODEL_ID 7
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
