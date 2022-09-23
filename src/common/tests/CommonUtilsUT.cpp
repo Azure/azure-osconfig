@@ -1101,8 +1101,8 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     REPORTED_PROPERTY* reportedProperties = nullptr;
     
-    EXPECT_FALSE(false, IsCommandLoggingEnabledInJsonConfig(configuration));
-    EXPECT_TRUE(true, IsFullLoggingEnabledInJsonConfig(configuration));
+    EXPECT_FALSE(IsCommandLoggingEnabledInJsonConfig(configuration));
+    EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(3, GetLocalManagementFromJsonConfig(configuration, nullptr));
