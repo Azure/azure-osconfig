@@ -63,7 +63,7 @@ char* GetHttpProxyData(void* log)
             proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
-                LogErrorWithTelemetry(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
+                OsConfigLogError(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
             }
             else
             {
