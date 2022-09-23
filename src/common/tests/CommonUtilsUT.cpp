@@ -1080,13 +1080,9 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
         "\"CommandLogging\": 0,"
         "\"FullLogging\": 1,"
         "\"LocalManagement\": 3,"
-        "\"ModelVersion\": 12,"
+        "\"ModelVersion\": 11,"
         "\"IotHubProtocol\": 2,"
         "\"Reported\": ["
-        "  {"
-        "    \"ComponentName\": \"CommandRunner\","
-        "    \"ObjectName\": \"commandStatus\""
-        "  },"
         "  {"
         "    \"ComponentName\": \"DeviceInfo\","
         "    \"ObjectName\": \"osName\""
@@ -1105,8 +1101,10 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
     EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
-    EXPECT_EQ(3, GetLocalManagementFromJsonConfig(configuration, nullptr));
     EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
+
+    // The value of 3 is too big, shall be changed to 1
+    EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
 
     EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
     EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
