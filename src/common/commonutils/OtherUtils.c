@@ -40,7 +40,7 @@ int SleepMilliseconds(long milliseconds)
     return nanosleep(&interval, &remaining);
 }
 
-char* GetHttpProxyData(void)
+char* GetHttpProxyData(void* log)
 {
     const char* proxyVariables[] = {
         "http_proxy",
@@ -63,11 +63,11 @@ char* GetHttpProxyData(void)
             proxyData = DuplicateString(environmentVariable);
             if (NULL == proxyData)
             {
-                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
+                LogErrorWithTelemetry(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
             }
             else
             {
-                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
+                OsConfigLogInfo(log, "Proxy data from %s: %s", proxyVariables[i], proxyData);
             }
             break;
         }

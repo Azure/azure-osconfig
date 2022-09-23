@@ -691,7 +691,7 @@ int main(int argc, char *argv[])
     if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
     {
         // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-        if (NULL != (proxyData = GetHttpProxyData()))
+        if (NULL != (proxyData = GetHttpProxyData(GetLog())))
         {
             if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
             {
