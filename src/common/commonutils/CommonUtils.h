@@ -25,6 +25,8 @@
 #define EOL 10
 #endif
 
+#define MAX_COMPONENT_NAME 256
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -95,7 +97,8 @@ bool IsDaemonActive(const char* name, void* log);
 bool EnableAndStartDaemon(const char* name, void* log);
 void StopAndDisableDaemon(const char* name, void* log);
 
-///////////////////////////////////////////////////////
+char* GetHttpProxyData(void);
+
 typedef struct REPORTED_PROPERTY
 {
     char componentName[MAX_COMPONENT_NAME];
@@ -109,12 +112,7 @@ int GetReportingIntervalFromJsonConfig(const char* jsonString);
 int GetModelVersionFromJsonConfig(const char* jsonString);
 int GetLocalManagementFromJsonConfig(const char* jsonString);
 int GetIotHubProtocolFromJsonConfig(const char* jsonString);
-
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties);
-
-char* GetHttpProxyData(void);
-
-///////////////////////////////////////////////////////
 
 #ifdef __cplusplus
 }

@@ -27,8 +27,6 @@
 #define PROTOCOL_MQTT 1
 #define PROTOCOL_MQTT_WS 2
 
-#define MAX_COMPONENT_NAME 256
-
 #define DEFAULT_DEVICE_MODEL_ID 7
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
@@ -250,40 +248,4 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     }
 
     return numReportedProperties;
-}
-
-char* GetHttpProxyData()
-{
-    const char* proxyVariables[] = {
-        "http_proxy",
-        "https_proxy",
-        "HTTP_PROXY",
-        "HTTPS_PROXY"
-    };
-    int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
-
-    char* proxyData = NULL;
-    char* environmentVariable = NULL;
-    int i = 0;
-
-    for (i = 0; i < proxyVariablesSize; i++)
-    {
-        environmentVariable = getenv(proxyVariables[i]);
-        if (NULL != environmentVariable)
-        {
-            // The environment variable string must be treated as read-only, make a copy for our use:
-            proxyData = DuplicateString(environmentVariable);
-            if (NULL == proxyData)
-            {
-                LogErrorWithTelemetry(GetLog(), "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
-            }
-            else
-            {
-                OsConfigLogInfo(GetLog(), "Proxy data from %s: %s", proxyVariables[i], proxyData);
-            }
-            break;
-        }
-    }
-
-    return proxyData;
 }
