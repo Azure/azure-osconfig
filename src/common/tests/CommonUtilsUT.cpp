@@ -1074,7 +1074,7 @@ TEST_F(CommonUtilsTest, MillisecondsSleep)
     EXPECT_EQ(EINVAL, SleepMilliseconds(tooBigValue));
 }
 
-TEST_F(CommonUtilsTest, ConfigurationTests)
+TEST_F(CommonUtilsTest, LoadConfiguration)
 {
     const char* configuration = "{"
         "\"CommandLogging\": 0,"
