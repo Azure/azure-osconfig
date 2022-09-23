@@ -1,8 +1,37 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include "inc/AgentCommon.h"
-#include "inc/ConfigUtils.h"
+#include "Internal.h"
+
+// 30 seconds
+#define DEFAULT_REPORTING_INTERVAL 30
+
+// 1 second
+#define MIN_REPORTING_INTERVAL 1
+
+// 24 hours
+#define MAX_REPORTING_INTERVAL 86400
+
+#define COMMAND_LOGGING "CommandLogging"
+#define FULL_LOGGING "FullLogging"
+#define REPORTED_NAME "Reported"
+#define REPORTED_COMPONENT_NAME "ComponentName"
+#define REPORTED_SETTING_NAME "ObjectName"
+#define MODEL_VERSION_NAME "ModelVersion"
+#define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
+#define LOCAL_MANAGEMENT "LocalManagement"
+#define LOCAL_PRIORITY "LocalPriority"
+
+#define PROTOCOL "IotHubProtocol"
+#define PROTOCOL_AUTO 0
+#define PROTOCOL_MQTT 1
+#define PROTOCOL_MQTT_WS 2
+
+#define MAX_COMPONENT_NAME 256
+
+#define DEFAULT_DEVICE_MODEL_ID 7
+#define MIN_DEVICE_MODEL_ID 7
+#define MAX_DEVICE_MODEL_ID 999
 
 static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
 {

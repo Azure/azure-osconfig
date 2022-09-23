@@ -18,7 +18,6 @@ project(osconfig)
 
 set(osconfig_files
     ./AisUtils.c
-    ./ConfigUtils.c
     ./PnpAgent.c
     ./PnpUtils.c)
 

@@ -95,6 +95,27 @@ bool IsDaemonActive(const char* name, void* log);
 bool EnableAndStartDaemon(const char* name, void* log);
 void StopAndDisableDaemon(const char* name, void* log);
 
+///////////////////////////////////////////////////////
+typedef struct REPORTED_PROPERTY
+{
+    char componentName[MAX_COMPONENT_NAME];
+    char propertyName[MAX_COMPONENT_NAME];
+    size_t lastPayloadHash;
+} REPORTED_PROPERTY;
+
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
+bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
+int GetReportingIntervalFromJsonConfig(const char* jsonString);
+int GetModelVersionFromJsonConfig(const char* jsonString);
+int GetLocalManagementFromJsonConfig(const char* jsonString);
+int GetIotHubProtocolFromJsonConfig(const char* jsonString);
+
+int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties);
+
+char* GetHttpProxyData(void);
+
+///////////////////////////////////////////////////////
+
 #ifdef __cplusplus
 }
 #endif

@@ -5,7 +5,6 @@
 #include "inc/PnpUtils.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
-#include "inc/ConfigUtils.h"
 
 // TraceLogging Provider UUID: CF452C24-662B-4CC5-9726-5EFE827DB281
 TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
