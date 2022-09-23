@@ -626,11 +626,11 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration);
+        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
-        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
-        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration);
+        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
+        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
+        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
         FREE_MEMORY(jsonConfiguration);
     }
 
