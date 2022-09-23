@@ -16,6 +16,9 @@
 #define REPORTING_INTERVAL_SECONDS "ReportingIntervalSeconds"
 #define LOCAL_MANAGEMENT "LocalManagement"
 
+#define COMMAND_LOGGING "CommandLogging"
+#define FULL_LOGGING "FullLogging"
+
 #define PROTOCOL "IotHubProtocol"
 
 #define MIN_DEVICE_MODEL_ID 7
