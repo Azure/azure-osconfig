@@ -514,10 +514,12 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
     OSConfig_PrototypeResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
     MI_Context_PostInstance(context, &(test_result_object.__instance));
 
-    miResult = MI_RESULT_OK;
-    MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
-
 Exit:
+    if (MI_RESULT_OK != miResult)
+    {
+        MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
+    }
+
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != MI_Instance_Delete(miValueResult.instance)))
     {
         OsConfigLogInfo(GetLog(), "TestTargetResource: MI_Instance_Delete failed");
@@ -636,12 +638,11 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
     strncpy(g_reportedStringResult, "PASS", ARRAY_SIZE(g_reportedStringResult) - 1);
     g_reportedIntegerStatus = 0;
 
-    miResult = MI_RESULT_OK;
-    MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
-
 Exit:
     if (MI_RESULT_OK != miResult)
     {
+        MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
+
         memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));
         strncpy(g_reportedStringResult, "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
         g_reportedIntegerStatus = miResult;
