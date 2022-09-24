@@ -3,7 +3,7 @@
 
 project(configurationlib)
 
-add_library(configurationlib STATIC DeviceInfo.c)
+add_library(configurationlib STATIC Configuration.c)
 set_property(TARGET configurationlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(configurationlib PRIVATE logging commonutils)

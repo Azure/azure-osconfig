@@ -12,7 +12,7 @@
 
 static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "OsConfigConfiguration";
-static const char* g_desiredConfigurationObject = "desiredConfiguration";
+//static const char* g_desiredConfigurationObject = "desiredConfiguration";
 static const char* g_modelVersionObject = "modelVersion";
 static const char* g_refreshIntervalObject = "refreshInterval";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
@@ -37,8 +37,7 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"OsConfigConfigurati
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static char* g_configurationComponent = NULL;
-static char* g_desiredConfiguration = NULL; //needed? Not really
+//static char* g_desiredConfiguration = NULL; //needed? Not really
 
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
@@ -59,7 +58,7 @@ void ConfigurationInitialize(void)
 {
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
-    jsonConfiguration = LoadStringFromFile(g_osConfigConfigurationFile, false, ConfigurationGetLog());
+    char* jsonConfiguration = LoadStringFromFile(g_osConfigConfigurationFile, false, ConfigurationGetLog());
     if (NULL != jsonConfiguration)
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
@@ -70,7 +69,7 @@ void ConfigurationInitialize(void)
     }
     else
     {
-        OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", CONFIG_FILE);
+        OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", g_osConfigConfigurationFile);
     }
         
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
@@ -146,7 +145,6 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char* value = NULL;
     char buffer[10] = {0};
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -175,27 +173,27 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            snprintf(value, sizeof(value), "%u", g_modelVersion);
+            snprintf(buffer, sizeof(buffer), "%u", g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            snprintf(value, sizeof(value), "%s", g_refreshIntervalObject ? "true" : "false");
+            snprintf(buffer, sizeof(buffer), "%s", g_refreshIntervalObject ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            snprintf(value, sizeof(value), "%s", g_localManagementEnabled ? "true" : "false");
+            snprintf(buffer, sizeof(buffer), "%s", g_localManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            snprintf(value, sizeof(value), "%s", g_fullLoggingEnabledObject ? "true" : "false");
+            snprintf(buffer, sizeof(buffer), "%s", g_fullLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            snprintf(value, sizeof(value), "%s", g_commandLoggingEnabled ? "true" : "false");
+            snprintf(buffer, sizeof(buffer), "%s", g_commandLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
-            snprintf(value, sizeof(value), "%u", g_iotHubProtocol);
+            snprintf(buffer, sizeof(buffer), "%u", g_iotHubProtocol);
         }
         else
         {
@@ -206,11 +204,11 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = strlen(value);
+        *payloadSizeBytes = strlen(buffer);
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated",
+            OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported buffer will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
@@ -219,7 +217,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (*payload)
         {
-            memcpy(*payload, value, *payloadSizeBytes);
+            memcpy(*payload, buffer, *payloadSizeBytes);
         }
         else
         {

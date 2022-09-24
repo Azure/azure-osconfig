@@ -12,7 +12,7 @@ using namespace std;
 class ConfigurationTest : public ::testing::Test
 {
     protected:
-        const char* m_expectedMmiInfo = "{\"Name\": \"Configuration\","
+        const char* m_expectedMmiInfo = "{\"Name\": \"OsConfigConfiguration\","
             "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
@@ -25,14 +25,14 @@ class ConfigurationTest : public ::testing::Test
         const char* m_configurationModuleName = "OSConfig Configuration module";
         const char* m_configurationComponentName = "OsConfigConfiguration";
 
-        static const char* m_modelVersionObject = "modelVersion";
-        static const char* m_refreshIntervalObject = "refreshInterval";
-        static const char* m_localManagementEnabledObject = "localManagementEnabled";
-        static const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
-        static const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
-        static const char* m_iotHubProtocolObject = "iotHubProtocol";
+        const char* m_modelVersionObject = "modelVersion";
+        const char* m_refreshIntervalObject = "refreshInterval";
+        const char* m_localManagementEnabledObject = "localManagementEnabled";
+        const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
+        const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
+        const char* m_iotHubProtocolObject = "iotHubProtocol";
         //TBD: add desired object    
-        //static const char* m_desiredConfigurationObject = "desiredConfiguration";
+        //const char* m_desiredConfigurationObject = "desiredConfiguration";
 
         const char* m_clientName = "Test";
 
@@ -100,13 +100,10 @@ TEST_F(ConfigurationTest, MmiSet)
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     
-    EXPECT_EQ(EPERM, ConfigurationMmiSet(handle, m_osInfoComponentName, m_osVersionObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EPERM, ConfigurationMmiSet(handle, m_configurationComponentName, m_modelVersionObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
     
     ConfigurationMmiClose(handle);
 }
-
-#define STRING_QUOTE "\""
-#define OSCONFIG_VERSION_PAYLOAD STRING_QUOTE OSCONFIG_VERSION STRING_QUOTE
 
 TEST_F(ConfigurationTest, MmiGet)
 {
