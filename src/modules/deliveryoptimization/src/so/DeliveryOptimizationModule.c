@@ -6,7 +6,7 @@
 
 void __attribute__((constructor)) InitModule(void)
 {
-    DeliveryOptimizationInitialize();
+    DeliveryOptimizationInitialize("/etc/deliveryoptimization-agent/admin-config.json");
 }
 
 void __attribute__((destructor)) DestroyModule(void)

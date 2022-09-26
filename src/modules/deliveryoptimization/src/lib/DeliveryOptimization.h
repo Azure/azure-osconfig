@@ -9,7 +9,7 @@ extern "C"
 {
 #endif
 
-void DeliveryOptimizationInitialize(void);
+void DeliveryOptimizationInitialize(const char* configFile);
 void DeliveryOptimizationShutdown(void);
 
 MMI_HANDLE DeliveryOptimizationMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);

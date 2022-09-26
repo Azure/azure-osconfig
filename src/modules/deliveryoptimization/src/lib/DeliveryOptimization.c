@@ -34,8 +34,6 @@ static const char* g_desiredCacheHostSourceSettingName = "cacheHostSource";
 static const char* g_desiredCacheHostFallbackSettingName = "cacheHostFallback";
 static const char* g_desiredPercentageDownloadThrottleSettingName = "percentageDownloadThrottle";
 
-const char* g_deliveryOptimizationConfigFile = "/etc/deliveryoptimization-agent/admin-config.json";
-
 static const char* g_cacheHostConfigName = "DOCacheHost";
 static const char* g_cacheHostSourceConfigName = "DOCacheHostSource";
 static const char* g_cacheHostFallbackConfigName = "DOCacheHostFallback";
@@ -44,18 +42,20 @@ static const char* g_percentageDownloadThrottleConfigName = "DOPercentageDownloa
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
+static const char* g_deliveryOptimizationConfigFile = NULL;
 static const char* g_deliveryoptimizationLogFile = "/var/log/osconfig_deliveryoptimization.log";
 static const char* g_deliveryoptimizationRolledLogFile = "/var/log/osconfig_deliveryoptimization.bak";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE DeliveryOptimizationGetLog(void)
+static OSCONFIG_LOG_HANDLE DeliveryOptimizationGetLog()
 {
     return g_log;
 }
 
-void DeliveryOptimizationInitialize(void)
+void DeliveryOptimizationInitialize(const char* configFile)
 {
+    g_deliveryOptimizationConfigFile = configFile;
     g_log = OpenLog(g_deliveryoptimizationLogFile, g_deliveryoptimizationRolledLogFile);
         
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "%s initialized", g_deliveryOptimizationModuleName);
