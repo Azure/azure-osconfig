@@ -1,6 +1,6 @@
 {
   "CommandLogging": 0,
-  "FullLogging": 0,
+  "FullLogging": 1,
   "LocalManagement": 0,
   "ModelVersion": 11,
   "IotHubProtocol": 2,
@@ -8,6 +8,22 @@
     {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "percentageDownloadThrottle"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostSource"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHost"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostFallback"
     },
     {
       "ComponentName": "DeviceInfo",
@@ -130,5 +146,5 @@
       "ObjectName": "serviceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 30
+  "ReportingIntervalSeconds": 5
 }
