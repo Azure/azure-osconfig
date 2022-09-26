@@ -62,6 +62,7 @@ add_module(PMC)
 add_module(Settings)
 add_module(Tpm)
 add_module(Ztsi)
+add_module(DeliveryOptimization)
 
 if (BUILD_SAMPLES)
     add_module_custom_target(Samples cppsample Sample Sample)
