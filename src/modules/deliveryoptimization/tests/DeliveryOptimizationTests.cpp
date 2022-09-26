@@ -83,11 +83,9 @@ TEST_F(DeliveryOptimizationTest, MmiGetInfo)
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiGetCacheHost)
+TEST_F(DeliveryOptimizationTest, MmiGetWithConfigFile)
 {
-    // NOTE: WIP.
-
-    const char* testData = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\",\"cacheHostSource\":1,\"cacheHostFallback\":2,\"percentageDownloadThrottle\":3}";
+    const char* testData = "{\"DOCacheHost\":\"10.0.0.0:80,host.com:8080\",\"DOCacheHostSource\":1,\"DOCacheHostFallback\":2,\"DOPercentageDownloadThrottle\":3}";
     EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
 
     MMI_HANDLE handle = NULL;
@@ -105,8 +103,105 @@ TEST_F(DeliveryOptimizationTest, MmiGetCacheHost)
     EXPECT_STREQ(payloadString, "\"10.0.0.0:80,host.com:8080\"");
     FREE_MEMORY(payloadString);
     DeliveryOptimizationMmiFree(payload);
-    DeliveryOptimizationMmiClose(handle);
 
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostSourceObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "1");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostFallbackObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "2");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedPercentageDownloadThrottleObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "3");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    DeliveryOptimizationMmiClose(handle);
+    EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
+}
+
+TEST_F(DeliveryOptimizationTest, MmiGetWithEmptyConfigFile)
+{
+    const char* testData = "{}";
+    EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
+
+    MMI_HANDLE handle = NULL;
+    char* payload = nullptr;
+    char* payloadString = nullptr;
+    int payloadSizeBytes = 0;
+
+    EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "\"\"");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostSourceObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "0");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostFallbackObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "0");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    payload = nullptr;
+    payloadSizeBytes = 0;
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedPercentageDownloadThrottleObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "0");
+    FREE_MEMORY(payloadString);
+    DeliveryOptimizationMmiFree(payload);
+
+    DeliveryOptimizationMmiClose(handle);
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 }
 
