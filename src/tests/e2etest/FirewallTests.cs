@@ -69,7 +69,7 @@ namespace E2eTesting
             Icmp
         }
 
-        public partial class Rule
+        public class Rule
         {
             public DesiredState DesiredState { get; set; }
             public Action Action { get; set; }
@@ -88,13 +88,13 @@ namespace E2eTesting
             Drop
         }
 
-        public partial class Policy
+        public class Policy
         {
             public Action Action { get; set; }
             public Direction Direction { get; set; }
         }
 
-        public partial class Firewall
+        public class Firewall
         {
             public State State { get; set; }
             public string Fingerprint { get; set; }
