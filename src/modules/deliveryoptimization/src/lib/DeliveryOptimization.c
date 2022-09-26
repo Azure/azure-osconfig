@@ -359,7 +359,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                         }
                         else 
                         {
-                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid percentageDownloadThrottle (%d)", cacheHostSource);
+                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid cacheHostSource (%d)", cacheHostSource);
                             status = EINVAL;
                         }
                     }
