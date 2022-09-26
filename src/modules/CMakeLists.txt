@@ -45,6 +45,8 @@ function(add_module_custom_name moduleDir targetName mimName recipeName)
     add_module_custom_target(${moduleDir} ${targetName} ${mimName} ${recipeName})
 endfunction()
 
+set(ignoreMe "${CMAKE_BUILDCD_TYPE}")
+
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
 
