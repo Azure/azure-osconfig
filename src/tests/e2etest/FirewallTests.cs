@@ -162,6 +162,7 @@ namespace E2eTesting
             {
                 Assert.AreEqual(State.Enabled, reported.State);
                 Assert.AreNotEqual(initialFingerprint, reported.Fingerprint);
+                Assert.AreEqual(string.Empty, reported.ConfigurationStatusDetail);
             });
         }
 
@@ -193,6 +194,9 @@ namespace E2eTesting
                 Assert.AreEqual(desired[0].Direction, reportedPolicies[0].Direction);
                 Assert.AreEqual(desired[1].Action, reportedPolicies[1].Action);
                 Assert.AreEqual(desired[1].Direction, reportedPolicies[1].Direction);
+                Assert.AreEqual(State.Enabled, reported.State);
+                Assert.AreEqual(ConfigurationStatus.Success, reported.ConfigurationStatus);
+                Assert.AreEqual(string.Empty, reported.ConfigurationStatusDetail);
             });
 
             SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, new Policy[0]);
