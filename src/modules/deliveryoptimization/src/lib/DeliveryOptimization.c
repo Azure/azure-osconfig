@@ -24,7 +24,6 @@ static const char* g_deliveryoptimizationModuleInfo = "{\"Name\": \"DeliveryOpti
 static const char* g_deliveryOptimizationModuleName = "DeliveryOptimization module";
 static const char* g_deliveryOptimizationComponentName = "DeliveryOptimization";
 
-// TODO: Rename.
 static const char* g_reportedCacheHostObjectName = "cacheHost";
 static const char* g_reportedCacheHostSourceObjectName = "cacheHostSource";
 static const char* g_reportedCacheHostFallbackObjectName = "cacheHostFallback";
@@ -35,11 +34,7 @@ static const char* g_desiredCacheHostSourceSettingName = "cacheHostSource";
 static const char* g_desiredCacheHostFallbackSettingName = "cacheHostFallback";
 static const char* g_desiredPercentageDownloadThrottleSettingName = "percentageDownloadThrottle";
 
-#ifdef TEST_CODE
-const char* g_deliveryOptimizationConfigFile = "/tmp/test.json";
-#else
 const char* g_deliveryOptimizationConfigFile = "/etc/deliveryoptimization-agent/admin-config.json";
-#endif
 
 static const char* g_cacheHostConfigName = "DOCacheHost";
 static const char* g_cacheHostSourceConfigName = "DOCacheHostSource";
