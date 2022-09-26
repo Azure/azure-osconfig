@@ -43,9 +43,17 @@ const std::string Sample::m_info = R""""({
 
 OSCONFIG_LOG_HANDLE SampleLog::m_log = nullptr;
 
-Sample::Sample(unsigned int maxPayloadSizeBytes)
+Sample::Sample(unsigned int maxPayloadSizeBytes) :
+    m_stringValue(""),
+    m_integerValue(0),
+    m_booleanValue(false),
+    m_maxPayloadSizeBytes(maxPayloadSizeBytes)
 {
-    m_maxPayloadSizeBytes = maxPayloadSizeBytes;
+    m_objectValue.stringSetting = "";
+    m_objectValue.integerSetting = 0;
+    m_objectValue.booleanSetting = false;
+    m_objectValue.integerEnumerationSetting = IntegerEnumeration::None;
+    m_objectValue.stringEnumerationSetting = StringEnumeration::None;
 }
 
 int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
