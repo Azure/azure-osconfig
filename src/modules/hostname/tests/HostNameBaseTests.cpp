@@ -62,8 +62,8 @@ namespace OSConfig::Platform::Tests
                 {"cat /etc/hostname", "device"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
@@ -73,7 +73,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithNewLine)
@@ -83,8 +83,8 @@ namespace OSConfig::Platform::Tests
                 {"cat /etc/hostname", "device\n\r"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
@@ -94,7 +94,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithNullTerminator)
@@ -104,8 +104,8 @@ namespace OSConfig::Platform::Tests
                 {"cat /etc/hostname", "device\0"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
@@ -115,7 +115,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithZeroPayloadByteSize)
@@ -125,8 +125,8 @@ namespace OSConfig::Platform::Tests
                 {"cat /etc/hostname", "device"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, 0);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
@@ -153,8 +153,8 @@ namespace OSConfig::Platform::Tests
                  "ff02::3 ip6-allhosts"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -164,7 +164,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithNewLine)
@@ -181,8 +181,8 @@ namespace OSConfig::Platform::Tests
                  "ff02::3 ip6-allhosts\n\r"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -192,7 +192,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithNullTerminator)
@@ -209,8 +209,8 @@ namespace OSConfig::Platform::Tests
                  "ff02::3 ip6-allhosts\n\0"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -220,7 +220,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithComments)
@@ -238,8 +238,8 @@ namespace OSConfig::Platform::Tests
                  "ff02::3 ip6-allhosts\n"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -249,7 +249,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithWhitespace)
@@ -261,8 +261,8 @@ namespace OSConfig::Platform::Tests
                  "::1 ip6-localhost   ip6-loopback   \n"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, g_maxPayloadSizeBytes);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -272,7 +272,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetInvalidObject)
@@ -316,8 +316,8 @@ namespace OSConfig::Platform::Tests
                  "ff02::3 ip6-allhosts\n\0"},
             };
 
-        MMI_JSON_STRING payload;
-        int payloadSizeBytes;
+        MMI_JSON_STRING payload = nullptr;
+        int payloadSizeBytes = 0;
 
         HostNameBaseTests testModule(textResults, 1);
         int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyHosts, &payload, &payloadSizeBytes);
@@ -327,7 +327,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetName)
@@ -348,7 +348,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetHosts)
@@ -369,7 +369,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetHostsWithWhitespace)
@@ -390,7 +390,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidObject)
@@ -408,7 +408,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidPayload)
@@ -439,7 +439,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidHosts)
@@ -459,7 +459,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, SetPayloadTooLarge)
@@ -475,7 +475,7 @@ namespace OSConfig::Platform::Tests
 
         EXPECT_EQ(status, E2BIG);
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
 } // namespace OSConfig::Platform::Tests
