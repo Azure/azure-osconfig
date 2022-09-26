@@ -103,13 +103,7 @@ public:
         std::vector<std::string> removedIntegerMapSettingKeys;
     };
 
-    Sample(unsigned int maxPayloadSizeBytes) :
-        m_stringValue(""),
-        m_integerValue(0),
-        m_booleanValue(false),
-        m_objectValue({ "", 0, false, IntegerEnumeration::None, StringEnumeration::None, {}, {}, {}, {}, {}, {} }),
-        m_maxPayloadSizeBytes(maxPayloadSizeBytes) {};
-
+    Sample(unsigned int maxPayloadSizeBytes);
     virtual ~Sample() = default;
 
     static int GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes);
