@@ -43,11 +43,6 @@ const std::string Sample::m_info = R""""({
 
 OSCONFIG_LOG_HANDLE SampleLog::m_log = nullptr;
 
-Sample::Sample(unsigned int maxPayloadSizeBytes)
-{
-    m_maxPayloadSizeBytes = maxPayloadSizeBytes;
-}
-
 int Sample::GetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
