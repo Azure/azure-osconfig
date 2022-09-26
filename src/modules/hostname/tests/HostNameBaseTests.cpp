@@ -136,7 +136,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        delete payload;
+        FREE_MEMORY(payload);
     }
 
     TEST(HostNameBaseTests, GetHosts)
