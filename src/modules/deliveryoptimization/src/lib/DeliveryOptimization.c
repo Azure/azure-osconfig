@@ -64,7 +64,8 @@ void DeliveryOptimizationInitialize(const char* configFile)
 void DeliveryOptimizationShutdown(void)
 {
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "%s shutting down", g_deliveryOptimizationModuleName);
-    
+
+    g_deliveryOptimizationConfigFile = NULL;
     CloseLog(&g_log);
 }
 
