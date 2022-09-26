@@ -118,6 +118,27 @@ namespace OSConfig::Platform::Tests
         delete payload;
     }
 
+    TEST(HostNameBaseTests, GetNameWithZeroPayloadByteSize)
+    {
+        const std::map<std::string, std::string> textResults =
+            {
+                {"cat /etc/hostname", "device"},
+            };
+
+        MMI_JSON_STRING payload;
+        int payloadSizeBytes;
+
+        HostNameBaseTests testModule(textResults, 0);
+        int status = testModule.Get(&testModule, HostNameBase::m_componentName, HostNameBase::m_propertyName, &payload, &payloadSizeBytes);
+
+        std::string result(payload, payloadSizeBytes);
+
+        EXPECT_EQ(status, MMI_OK);
+        EXPECT_STREQ(result.c_str(), "\"device\"");
+
+        delete payload;
+    }
+
     TEST(HostNameBaseTests, GetHosts)
     {
         const std::map<std::string, std::string> textResults =
