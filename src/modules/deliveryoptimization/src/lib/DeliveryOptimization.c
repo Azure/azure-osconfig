@@ -104,9 +104,7 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
         return status;
     }
     
-    *payload = NULL;
     *payloadSizeBytes = (int)strlen(g_deliveryoptimizationModuleInfo);
-    
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
@@ -339,8 +337,8 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                 JSON_Value* newValue = json_value_init_object();
                 JSON_Object* newObject = json_value_get_object(newValue);
 
-                const int count = json_object_get_count(rootObject);
-                for (int i = 0; i < count; i++)
+                const unsigned int count = json_object_get_count(rootObject);
+                for (unsigned int i = 0; i < count; i++)
                 {
                     const char* name = json_object_get_name(rootObject, i);
                     JSON_Value* currentValue = json_object_get_value(rootObject, name);
@@ -352,7 +350,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                     }
                     else if ((0 == strcmp(name, g_desiredCacheHostSourceSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        int cacheHostSource = (int)json_value_get_number(currentValue);
+                        const int cacheHostSource = (int)json_value_get_number(currentValue);
                         if ((cacheHostSource >= 0) && (cacheHostSource <= 3))
                         {
                             json_object_set_number(newObject, g_cacheHostSourceConfigName, cacheHostSource);
@@ -365,12 +363,12 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                     }
                     else if ((0 == strcmp(name, g_desiredCacheHostFallbackSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        int cacheHostFallback = (int)json_value_get_number(currentValue);
+                        const int cacheHostFallback = (int)json_value_get_number(currentValue);
                         json_object_set_number(newObject, g_cacheHostFallbackConfigName, cacheHostFallback);
                     }
                     else if ((0 == strcmp(name, g_desiredPercentageDownloadThrottleSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        int percentageDownloadThrottle = (int)json_value_get_number(currentValue);
+                        const int percentageDownloadThrottle = (int)json_value_get_number(currentValue);
                         if ((percentageDownloadThrottle >= 0) && (percentageDownloadThrottle <= 100))
                         {
                             json_object_set_number(newObject, g_percentageDownloadThrottleConfigName, percentageDownloadThrottle);
