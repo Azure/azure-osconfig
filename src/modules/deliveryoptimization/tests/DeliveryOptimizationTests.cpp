@@ -21,13 +21,21 @@ class DeliveryOptimizationTest : public ::testing::Test
             "\"Components\": [\"DeliveryOptimization\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";
+
+        const char* m_deliveryOptimizationComponentName = "DeliveryOptimization";
+        const char* m_reportedCacheHostObjectName = "cacheHost";
+        const char* m_reportedCacheHostSourceObjectName = "cacheHostSource";
+        const char* m_reportedCacheHostFallbackObjectName = "cacheHostFallback";
+        const char* m_reportedPercentageDownloadThrottleObjectName = "percentageDownloadThrottle";
+
+        const char* m_deliveryOptimizationConfigFile = "test-config.json";
         
         const char* m_clientName = "Test";
         int m_normalMaxPayloadSizeBytes = 1024;
 
         void SetUp()
         {
-            DeliveryOptimizationInitialize("test-config.json");
+            DeliveryOptimizationInitialize(m_deliveryOptimizationConfigFile);
         }
 
         void TearDown()
@@ -73,9 +81,33 @@ TEST_F(DeliveryOptimizationTest, MmiGetInfo)
     EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
     EXPECT_STREQ(m_expectedMmiInfo, payloadString);
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+}
 
+TEST_F(DeliveryOptimizationTest, MmiGetCacheHost)
+{
+    // NOTE: WIP.
+
+    const char* testData = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\",\"cacheHostSource\":1,\"cacheHostFallback\":2,\"percentageDownloadThrottle\":3}";
+    EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
+
+    MMI_HANDLE handle = NULL;
+    char* payload = nullptr;
+    char* payloadString = nullptr;
+    int payloadSizeBytes = 0;
+
+    EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiGet(handle, m_deliveryOptimizationComponentName, m_reportedCacheHostObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "\"10.0.0.0:80,host.com:8080\"");
     FREE_MEMORY(payloadString);
     DeliveryOptimizationMmiFree(payload);
+    DeliveryOptimizationMmiClose(handle);
+
+    EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 }
 
 // TODO: ...
