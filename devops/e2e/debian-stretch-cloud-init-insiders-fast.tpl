@@ -26,7 +26,7 @@ apt_sources:
 package_upgrade: true
 runcmd:
   # Install aziot-identity-service
-  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_debian9_amd64.deb -O aziot-identity-service.deb
+  - wget https://github.com/Azure/azure-iotedge/releases/download/1.4.1/aziot-identity-service_1.4.1-1_debian10_amd64.deb -O aziot-identity-service.deb
   - apt install -y ./aziot-identity-service.deb
   # Install GitHub Actions Runner
   - mkdir actions-runner && cd actions-runner && curl -o runner.tar.gz -L ${github_runner_tar_gz_package} && tar xzf ./runner.tar.gz
