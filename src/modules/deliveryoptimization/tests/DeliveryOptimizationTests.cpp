@@ -330,11 +330,11 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithAllSettings)
     char *actualFileContent = nullptr;
 
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\",\"cacheHostSource\":1,\"cacheHostFallback\":2,\"percentageDownloadThrottle\":3}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\",\"cacheHostSource\":1,\"cacheHostFallback\":2,\"percentageDownloadThrottle\":3}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
     FREE_MEMORY(actualFileContent);
@@ -353,11 +353,11 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithOneSetting)
     char *actualFileContent = nullptr;
 
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\"}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\"}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
     FREE_MEMORY(actualFileContent);
@@ -373,11 +373,11 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidSetting)
     char *actualFileContent = nullptr;
 
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{\"testSetting\":\"testValue\"}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{\"testSetting\":\"testValue\"}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
     FREE_MEMORY(actualFileContent);
@@ -393,11 +393,11 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithEmptyObject)
     char *actualFileContent = nullptr;
 
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(MMI_OK, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
     EXPECT_STREQ(expectedFileContent, actualFileContent = LoadStringFromFile(m_deliveryOptimizationConfigFile, false, nullptr));
     EXPECT_EQ(expectedFileContentSizeBytes, strlen(actualFileContent));
     FREE_MEMORY(actualFileContent);
@@ -409,11 +409,11 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithEmptyObject)
 TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidCacheHostSource)
 {
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{\"cacheHostSource\":-1}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{\"cacheHostSource\":-1}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     DeliveryOptimizationMmiClose(handle);
 }
@@ -421,11 +421,25 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidCacheHostSource)
 TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidPercentageDownloadThrottle)
 {
     MMI_HANDLE handle = NULL;
-    const char *payloadString = "{\"percentageDownloadThrottle\":-1}";
-    const int payloadSizeBytes = strlen(payloadString);
+    const char *payload = "{\"percentageDownloadThrottle\":-1}";
+    const int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payloadString, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     DeliveryOptimizationMmiClose(handle);
+}
+
+TEST_F(DeliveryOptimizationTest, MmiSetOutsideSession)
+{
+    MMI_HANDLE handle = NULL;
+    const char *payload = "{\"cacheHostSource\":0}";
+    const int payloadSizeBytes = strlen(payload);
+
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
+
+    EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    DeliveryOptimizationMmiClose(handle);
+
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }
