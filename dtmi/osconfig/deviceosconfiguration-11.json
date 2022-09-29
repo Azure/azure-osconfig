@@ -10,6 +10,11 @@
       "name": "CommandRunner"
     },
     {
+      "schema": "dtmi:osconfig:deliveryoptimization;1",
+      "@type": "Component",
+      "name": "DeliveryOptimization"
+    },
+    {
       "schema": "dtmi:osconfig:deviceinfo;5",
       "@type": "Component",
       "name": "DeviceInfo"
