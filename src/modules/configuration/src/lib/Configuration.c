@@ -12,7 +12,7 @@
 
 static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "OsConfigConfiguration";
-//static const char* g_desiredConfigurationObject = "desiredConfiguration";
+static const char* g_desiredConfigurationObject = "desiredConfiguration";
 static const char* g_modelVersionObject = "modelVersion";
 static const char* g_refreshIntervalObject = "refreshInterval";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
@@ -20,6 +20,7 @@ static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 
+static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
 static const char* g_configurationLogFile = "/var/log/osconfig_configuration.log";
@@ -54,25 +55,88 @@ static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
     return g_log;
 }
 
-void ConfigurationInitialize(void)
+static char* LoadConfigurationFromFile(void)
 {
-    g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
-
-    char* jsonConfiguration = LoadStringFromFile(g_osConfigConfigurationFile, false, ConfigurationGetLog());
-    if (NULL != jsonConfiguration)
+    char* jsonConfiguration = NULL;
+    
+    if (NULL != (jsonConfiguration = LoadStringFromFile(g_osConfigConfigurationFile, false, ConfigurationGetLog())))
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_localManagementEnabled = GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_fullLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_commandLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
-        FREE_MEMORY(jsonConfiguration);
     }
     else
     {
         OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", g_osConfigConfigurationFile);
     }
+
+    return jsonConfiguration;
+}
+
+
+void ConfigurationInitialize(void)
+{
+    g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
+
+    // Load configuration from file and free buffer
+    FREE_MEMORY(LoadConfigurationFromFile(void));
         
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
+}
+
+static int UpdateConfiguration(void)
+{
+    int status = MMI_OK;
+
+    int modelVersion = g_modelVersion;
+    int refreshInterval = g_refreshInterval;
+    bool localManagementEnabled = g_localManagementEnabled;
+    bool fullLoggingEnabled = g_fullLoggingEnabled;
+    bool commandLoggingEnabled = g_commandLoggingEnabled;
+    int iotHubProtocol = g_iotHubProtocol;
+
+    char* jsonConfiguration = LoadConfigurationFromFile(void);
+
+    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
+        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
+    {
+        modelVersion = g_modelVersion;
+        refreshInterval = g_refreshInterval;
+        localManagementEnabled = g_localManagementEnabled;
+        fullLoggingEnabled = g_fullLoggingEnabled;
+        commandLoggingEnabled = g_commandLoggingEnabled;
+        iotHubProtocol = g_iotHubProtocol;
+
+        /* Do it here rather in commonutils as no other component will need to change these
+        SetModelVersionToJsonConfig(jsonConfiguration, modelVersion, ConfigurationGetLog());
+        SetReportingIntervalToJsonConfig(jsonConfiguration, refreshInterval, ConfigurationGetLog());
+        SetLocalManagementToJsonConfig(jsonConfiguration, localManagementEnabled, ConfigurationGetLog());
+        SetCommandLoggingEnabledInJsonConfig(jsonConfiguration, g_fullLoggingEnabled, ConfigurationGetLog());
+        SetFullLoggingEnabledInJsonConfig(jsonConfiguration, g_commandLoggingEnabled, ConfigurationGetLog());
+        SetIotHubProtocolToJsonConfig(jsonConfiguration, iotHubProtocol, ConfigurationGetLog());
+        */
+
+        if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog())
+        {
+            if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
+                status = ESRCH;
+            }
+        }
+        else
+        {
+            OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
+            status = ENOENT;
+        }
+    }
+        
+    FREE_MEMORY(jsonConfiguration);
+
+    return status;
 }
 
 void ConfigurationShutdown(void)
@@ -171,6 +235,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     
     if (MMI_OK == status)
     {
+        FREE_MEMORY(LoadConfigurationFromFile(void));
+
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
             snprintf(buffer, sizeof(buffer), "%u", g_modelVersion);
@@ -237,15 +303,129 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
 int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    OsConfigLogInfo(ConfigurationGetLog(), "No desired objects, MmiSet not implemented");
+    int status = MMI_OK;
+
+    char* payloadString = NULL;
+
+    int modelVersion = g_modelVersion;
+    int refreshInterval = g_refreshInterval;
+    bool localManagementEnabled = g_localManagementEnabled;
+    bool fullLoggingEnabled = g_fullLoggingEnabled;
+    bool commandLoggingEnabled = g_commandLoggingEnabled;
+    int iotHubProtocol = g_iotHubProtocol;
+
+    JSON_Value* jsonValue = NULL;
+    JSON_Value_Type jsonValueType = JSONError;
+    JSON_Object jsonObject = NULL;
+
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes) || (payloadSizeBytes != strlen(payload)))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
+        status = EINVAL;
+        return status;
+    }
+
+    if (!IsValidSession(clientSession))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
+        status = EINVAL;
+    }
+
+    if ((MMI_OK == status) && (strcmp(componentName, g_configurationComponentName)))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
+        status = EINVAL;
+    }
+
+    if ((MMI_OK == status) && (strcmp(objectName, g_desiredConfigurationObject)))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name (%s)", objectName);
+        status = EINVAL;
+    }
+
+    if (MMI_OK == status)
+    {
+        if (NULL != (payloadString = malloc(payloadSizeBytes + 1)))
+        {
+            memset(payloadString, 0, payloadSizeBytes + 1);
+            memcpy(payloadString, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(ConfigurationGetLog(), "Failed to allocate %d bytes of memory, MmiSet failed", payloadSizeBytes + 1);
+            status = ENOMEM;
+        }
+    }
+
+    if (MMI_OK == status)
+    {
+        if (NULL == (jsonValue = json_parse_string(payloadString)))
+        {
+            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, MmiSet failed", payloadString);
+            status = EINVAL;
+        }
+        else if (JSONObject != json_value_get_type(jsonValue))
+        {
+            OsConfigLogError(ConfigurationGetLog(), "json_value_get_type(%s) did not return JSONObject, MmiSet failed", payloadString);
+            status = EINVAL;
+        }
+        else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
+        {
+            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, MmiSet failed", payloadString);
+            status = EINVAL;
+        }
+
+        if (MMI_OK == status)
+        {
+            if (0 != (modelVersion = (int)json_object_get_number(jsonObject, g_modelVersionObject)))
+            {
+                g_modelVersion = modelVersion;
+            }
+
+            if (0 != (refreshInterval = (int)json_object_get_number(jsonObject, g_refreshIntervalObject)))
+            {
+                g_refreshInterval = refreshInterval;
+            }
+
+            if (-1 != (localManagementEnabled = json_object_get_boolean(jsonObject, g_localManagementEnabledObject)))
+            {
+                g_localManagementEnabled = localManagementEnabled ? true : false;
+            }
+
+            if (-1 != (fullLoggingEnabled = json_object_get_boolean(jsonObject, g_fullLoggingEnabledObject)))
+            {
+                g_fullLoggingEnabled = fullLoggingEnabled ? true : false;
+            }
+
+            if (-1 != (commandLoggingEnabled = json_object_get_boolean(jsonObject, g_commandLoggingEnabledObject)))
+            {
+                g_commandLoggingEnabled = commandLoggingEnabled ? true : false;
+            }
+
+            iotHubProtocol = (int)json_object_get_number(jsonObject, g_iotHubProtocolObject);
+            if ((0 == iotHubProtocol) || (1 == iotHubProtocol) || (2 == iotHubProtocol))
+            {
+                g_iotHubProtocol = iotHubProtocol;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value (%d), ignored", g_iotHubProtocolObject, iotHubProtocol);
+            }
+
+            status = UpdateConfiguration(void);
+        }
+    }
+
+    if (jsonValue)
+    {
+        json_value_free(jsonValue);
+    }
     
-    UNUSED(clientSession);
-    UNUSED(componentName);
-    UNUSED(objectName);
-    UNUSED(payload);
-    UNUSED(payloadSizeBytes);
-    
-    return EPERM;
+    FREE_MEMORY(payloadString);
+
+    OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+
+    return status;
 }
 
 void ConfigurationMmiFree(MMI_JSON_STRING payload)
