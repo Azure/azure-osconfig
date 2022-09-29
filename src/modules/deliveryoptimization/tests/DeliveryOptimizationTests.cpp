@@ -86,7 +86,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetInfo)
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiGetWithConfigFile)
+TEST_F(DeliveryOptimizationTest, MmiGetConfigFile)
 {
     const char* testData = "{\"DOCacheHost\":\"10.0.0.0:80,host.com:8080\",\"DOCacheHostSource\":1,\"DOCacheHostFallback\":2,\"DOPercentageDownloadThrottle\":3}";
     EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
@@ -147,7 +147,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetWithConfigFile)
     EXPECT_EQ(0, remove(m_deliveryOptimizationConfigFile));
 }
 
-TEST_F(DeliveryOptimizationTest, MmiGetWithEmptyConfigFile)
+TEST_F(DeliveryOptimizationTest, MmiGetEmptyConfigFile)
 {
     const char* testData = "{}";
     EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
@@ -317,7 +317,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetOutsideSession)
     EXPECT_EQ(0, payloadSizeBytes);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithAllSettings)
+TEST_F(DeliveryOptimizationTest, MmiSetAllSettings)
 {
     const char* expectedFileContent = 
     "{\n"
@@ -343,7 +343,7 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithAllSettings)
     DeliveryOptimizationMmiClose(handle);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithOneSetting)
+TEST_F(DeliveryOptimizationTest, MmiSetOneSetting)
 {
     const char* expectedFileContent = 
     "{\n"
@@ -366,7 +366,31 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithOneSetting)
     DeliveryOptimizationMmiClose(handle);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidSetting)
+TEST_F(DeliveryOptimizationTest, MmiSetInvalidComponent)
+{
+    MMI_HANDLE handle = NULL;
+    const char *payload = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\"}";
+    const int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, "Test123", m_desiredDeliveryOptimizationPoliciesObjectName, (MMI_JSON_STRING)payload, payloadSizeBytes));
+
+    DeliveryOptimizationMmiClose(handle);
+}
+
+TEST_F(DeliveryOptimizationTest, MmiSetInvalidObject)
+{
+    MMI_HANDLE handle = NULL;
+    const char *payload = "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\"}";
+    const int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = DeliveryOptimizationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, DeliveryOptimizationMmiSet(handle, m_deliveryOptimizationComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
+
+    DeliveryOptimizationMmiClose(handle);
+}
+
+TEST_F(DeliveryOptimizationTest, MmiSetInvalidSetting)
 {
     const char* expectedFileContent = "{}";
     const int expectedFileContentSizeBytes = strlen(expectedFileContent);
@@ -386,7 +410,7 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidSetting)
     DeliveryOptimizationMmiClose(handle);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithEmptyObject)
+TEST_F(DeliveryOptimizationTest, MmiSetEmptyObject)
 {
     const char* expectedFileContent = "{}";
     const int expectedFileContentSizeBytes = strlen(expectedFileContent);
@@ -406,7 +430,7 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithEmptyObject)
     DeliveryOptimizationMmiClose(handle);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidCacheHostSource)
+TEST_F(DeliveryOptimizationTest, MmiSetInvalidCacheHostSource)
 {
     MMI_HANDLE handle = NULL;
     const char *payload = "{\"cacheHostSource\":-1}";
@@ -418,7 +442,7 @@ TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidCacheHostSource)
     DeliveryOptimizationMmiClose(handle);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiSetWithInvalidPercentageDownloadThrottle)
+TEST_F(DeliveryOptimizationTest, MmiSetInvalidPercentageDownloadThrottle)
 {
     MMI_HANDLE handle = NULL;
     const char *payload = "{\"percentageDownloadThrottle\":-1}";
