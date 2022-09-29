@@ -78,6 +78,7 @@ systemctl start osconfig.service
 %postun
 %systemd_postun osconfig.service
 %systemd_postun osconfig-platform.service
+rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 
 %files
 %defattr(-, root, root, -)
