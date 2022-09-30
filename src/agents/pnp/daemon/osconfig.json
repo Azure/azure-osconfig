@@ -6,6 +6,30 @@
   "IotHubProtocol": 2,
   "Reported": [
     {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "commandLoggingEnabled"
+    },
+    {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "fullLoggingEnabled"
+    },
+    {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "iotHubProtocol"
+    },
+    {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "localManagementEnabled"
+    },
+    {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "modelVersion"
+    },
+    {
+      "ComponentName": "OsConfigConfiguration",
+      "ObjectName": "refreshInterval"
+    },
+    {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
     },
