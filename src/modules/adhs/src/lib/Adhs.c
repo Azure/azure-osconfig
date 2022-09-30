@@ -91,7 +91,7 @@ static bool IsValidPayload(const MMI_JSON_STRING payload, const unsigned int pay
 
 static bool IsValidMatchOffsets(const regmatch_t regmatch, const int max)
 {
-    return (regmatch.rm_so >= 0) && (regmatch.rm_so < max) && (regmatch.rm_so < regmatch.rm_eo);
+    return ((regmatch.rm_so >= 0) && (regmatch.rm_so < max) && (regmatch.rm_so < regmatch.rm_eo));
 }
 
 void AdhsMmiClose(MMI_HANDLE clientSession)
@@ -113,6 +113,7 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
 
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
+        OsConfigLogError(AdhsGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
     
@@ -196,7 +197,8 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                         
                         for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
                         {
-                            if ((currentMatchSizeBytes == strlen(g_permissionConfigMapKeys[i])) && (0 == strncmp(currentMatch, g_permissionConfigMapKeys[i], currentMatchSizeBytes)))
+                            if ((currentMatchSizeBytes == strlen(g_permissionConfigMapKeys[i])) && 
+                                (0 == strncmp(currentMatch, g_permissionConfigMapKeys[i], currentMatchSizeBytes)))
                             {
                                 value = g_permissionConfigMapValues[i];
                                 break;

@@ -102,6 +102,7 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
 
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
+        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
     
