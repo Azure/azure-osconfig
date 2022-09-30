@@ -166,20 +166,17 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         OsConfigLogError(AdhsGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
+    else if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
     {
         OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-
-    if ((MMI_OK == status) && (strcmp(objectName, g_reportedOptInObjectName)))
+    else if ((MMI_OK == status) && (strcmp(objectName, g_reportedOptInObjectName)))
     {
         OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", componentName);
         status = EINVAL;
     }
-
-    if (MMI_OK == status)
+    else
     {
         fileContent = LoadStringFromFile(g_adhsConfigFile, false, AdhsGetLog());
         if (NULL != fileContent)
@@ -251,10 +248,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
             value = g_permissionConfigMapValues[0];
             status = MMI_OK;
         }
-    }
 
-    if (MMI_OK == status)
-    {
         *payloadSizeBytes = strlen(value);
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
@@ -295,34 +289,28 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet(%s, %s, %p, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
-        return status;
     }
-
-    if (!IsValidSession(clientSession))
+    else if (!IsValidSession(clientSession))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
+    else if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(objectName, g_desiredOptInObjectName)))
+    else if ((MMI_OK == status) && (strcmp(objectName, g_desiredOptInObjectName)))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (!IsValidPayload(payload, payloadSizeBytes)))
+    else if ((MMI_OK == status) && (!IsValidPayload(payload, payloadSizeBytes)))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet(%.*s, %d) called with invalid payload", payloadSizeBytes, payload, payloadSizeBytes);
         status = EINVAL;
     }
-
-    if (MMI_OK == status)
+    else
     {
         for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
         {

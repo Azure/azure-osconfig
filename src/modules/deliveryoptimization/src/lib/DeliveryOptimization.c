@@ -154,14 +154,12 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
+    else if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-
-    if (MMI_OK == status)
+    else
     {
         if (0 == strcmp(objectName, g_reportedCacheHostObjectName))
         {
@@ -315,28 +313,23 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet(%s, %s, %p, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
-        return status;
     }
-
-    if (!IsValidSession(clientSession))
+    else if (!IsValidSession(clientSession))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
+    else if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-        
-    if ((MMI_OK == status) && (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName)))
+    else if ((MMI_OK == status) && (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName)))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
-
-    if (MMI_OK == status)
+    else 
     {
         // Make sure that payload is null-terminated for json_parse_string.
         buffer = malloc(payloadSizeBytes + 1);
