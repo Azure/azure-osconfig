@@ -83,9 +83,34 @@ TEST_F(AdhsTest, MmiGetInfo)
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 }
 
-TEST_F(AdhsTest, MmiGetConfigFile)
+TEST_F(AdhsTest, MmiGetValidConfigFile1)
 {
     const char* testData = "Permission = \"Required\"";
+    EXPECT_TRUE(SavePayloadToFile(m_adhsConfigFile, testData, strlen(testData), nullptr));
+
+    MMI_HANDLE handle = NULL;
+    char* payload = nullptr;
+    char* payloadString = nullptr;
+    int payloadSizeBytes = 0;
+
+    EXPECT_NE(nullptr, handle = AdhsMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+
+    EXPECT_EQ(MMI_OK, AdhsMmiGet(handle, m_adhsComponentName, g_reportedOptInObjectName, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_STREQ(payloadString, "1");
+    FREE_MEMORY(payloadString);
+    AdhsMmiFree(payload);
+
+    AdhsMmiClose(handle);
+    EXPECT_EQ(0, remove(m_adhsConfigFile));
+}
+
+TEST_F(AdhsTest, MmiGetValidConfigFile2)
+{
+    const char* testData = "# Comment\nNumber = 0\n  Permission=\'Required\'\nArray = [1, 2, 3]";
     EXPECT_TRUE(SavePayloadToFile(m_adhsConfigFile, testData, strlen(testData), nullptr));
 
     MMI_HANDLE handle = NULL;

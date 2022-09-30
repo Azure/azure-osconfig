@@ -86,7 +86,7 @@ TEST_F(DeliveryOptimizationTest, MmiGetInfo)
     EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
 }
 
-TEST_F(DeliveryOptimizationTest, MmiGetConfigFile)
+TEST_F(DeliveryOptimizationTest, MmiGetValidConfigFile)
 {
     const char* testData = "{\"DOCacheHost\":\"10.0.0.0:80,host.com:8080\",\"DOCacheHostSource\":1,\"DOCacheHostFallback\":2,\"DOPercentageDownloadThrottle\":3}";
     EXPECT_TRUE(SavePayloadToFile(m_deliveryOptimizationConfigFile, testData, strlen(testData), nullptr));
