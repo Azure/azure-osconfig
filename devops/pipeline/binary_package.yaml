@@ -98,6 +98,11 @@ trigger:
 pr: none
 
 stages:
+- template: stages/source_build.yaml
+  parameters:
+    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
+    publishArtifact: true
+
 - ${{ each target in parameters.build_targets }}:
   - template: stages/binary_build.yaml
     parameters:
