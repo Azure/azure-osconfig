@@ -3,10 +3,21 @@
 
 #include <Mmi.h>
 #include <DeliveryOptimization.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#define DELIVERY_OPTIMZATION_DIRECTORY "/etc/deliveryoptimization-agent/"
+#define DELIVERY_OPTIMZATION_CONFIG_FILE DELIVERY_OPTIMZATION_DIRECTORY "admin-config.json"
 
 void __attribute__((constructor)) InitModule(void)
 {
-    DeliveryOptimizationInitialize("/etc/deliveryoptimization-agent/admin-config.json");
+    struct stat st = {0};
+    if (-1 == stat(DELIVERY_OPTIMZATION_DIRECTORY, &st))
+    {
+        mkdir(DELIVERY_OPTIMZATION_DIRECTORY, 0700);
+    }
+    DeliveryOptimizationInitialize(DELIVERY_OPTIMZATION_CONFIG_FILE);
 }
 
 void __attribute__((destructor)) DestroyModule(void)
