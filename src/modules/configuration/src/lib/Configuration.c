@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdatomic.h>
 #include <version.h>
+#include <parson.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
@@ -82,7 +83,8 @@ void ConfigurationInitialize(void)
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
     // Load configuration from file and free buffer
-    FREE_MEMORY(LoadConfigurationFromFile(void));
+    char* configuration = LoadConfigurationFromFile();
+    FREE_MEMORY(configuration);
         
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
 }
@@ -92,8 +94,7 @@ static int UpdateConfiguration(void)
     int status = MMI_OK;
 
     JSON_Value* jsonValue = NULL;
-    JSON_Value_Type jsonValueType = JSONError;
-    JSON_Object jsonObject = NULL;
+    JSON_Object* jsonObject = NULL;
 
     int modelVersion = g_modelVersion;
     int refreshInterval = g_refreshInterval;
@@ -102,7 +103,7 @@ static int UpdateConfiguration(void)
     bool commandLoggingEnabled = g_commandLoggingEnabled;
     int iotHubProtocol = g_iotHubProtocol;
 
-    char* jsonConfiguration = LoadConfigurationFromFile(void);
+    char* jsonConfiguration = LoadConfigurationFromFile();
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
@@ -127,7 +128,6 @@ static int UpdateConfiguration(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
-                status = ENOATTR;
             }
             
             if (JSONSuccess == json_object_set_number(jsonObject, g_refreshIntervalObject, (double)refreshInterval))
@@ -157,7 +157,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_boolean(jsonObject, g_commandLoggingEnabledObject, commandLoggingEnabledEnabled))
+            if (JSONSuccess == json_object_set_boolean(jsonObject, g_commandLoggingEnabledObject, commandLoggingEnabled))
             {
                 g_commandLoggingEnabled = commandLoggingEnabled;
             }
@@ -183,7 +183,7 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog())
+            if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog()))
             {
                 if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
                 {
@@ -275,6 +275,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 {
     int status = MMI_OK;
     char buffer[10] = {0};
+    char* configuration = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -300,7 +301,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     
     if (MMI_OK == status)
     {
-        FREE_MEMORY(LoadConfigurationFromFile(void));
+        configuration = LoadConfigurationFromFile();
+        FREE_MEMORY(configuration);
 
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
@@ -374,16 +376,15 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     int modelVersion = g_modelVersion;
     int refreshInterval = g_refreshInterval;
-    bool localManagementEnabled = g_localManagementEnabled;
-    bool fullLoggingEnabled = g_fullLoggingEnabled;
-    bool commandLoggingEnabled = g_commandLoggingEnabled;
+    int localManagementEnabled = g_localManagementEnabled ? 1 : 0;
+    int fullLoggingEnabled = g_fullLoggingEnabled ? 1 : 0;
+    int commandLoggingEnabled = g_commandLoggingEnabled ? 1 : 0;
     int iotHubProtocol = g_iotHubProtocol;
 
     JSON_Value* jsonValue = NULL;
-    JSON_Value_Type jsonValueType = JSONError;
-    JSON_Object jsonObject = NULL;
+    JSON_Object* jsonObject = NULL;
 
-    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes) || (payloadSizeBytes != strlen(payload)))
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
@@ -477,7 +478,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value (%d), ignored", g_iotHubProtocolObject, iotHubProtocol);
             }
 
-            status = UpdateConfiguration(void);
+            status = UpdateConfiguration();
         }
     }
 
