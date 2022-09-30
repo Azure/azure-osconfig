@@ -27,6 +27,7 @@ static const char* g_adhsComponentName = "Adhs";
 static const char* g_reportedOptInObjectName = "optIn";
 static const char* g_desiredOptInObjectName = "desiredOptIn";
 
+static const char* g_adhsConfigFileFormat = "Permission = \"%s\"\n";
 static const char* g_permissionConfigPattern = "\\bPermission\\s*=\\s*([\\\"'])([A-Za-z0-9]*)\\1";
 static const char* g_permissionConfigName = "Permission";
 static const char* g_permissionConfigMapKeys[] = {"None", "Required", "Optional"};
@@ -331,12 +332,11 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
         if (NULL != value)
         {
-            const char* format = "Permission = \"%s\"\n";
-            const int fileContentSizeBytes = snprintf(NULL, 0, format, value);
+            const int fileContentSizeBytes = snprintf(NULL, 0, g_adhsConfigFileFormat, value);
             char *fileContent = malloc(fileContentSizeBytes + 1);
             if (fileContent)
             {
-                snprintf(fileContent, fileContentSizeBytes + 1, format, value);
+                snprintf(fileContent, fileContentSizeBytes + 1, g_adhsConfigFileFormat, value);
                 if (!SavePayloadToFile(g_adhsConfigFile, fileContent, fileContentSizeBytes, AdhsGetLog()))
                 {
                     OsConfigLogError(AdhsGetLog(), "MmiSet failed to write TOML file (%s)", g_adhsConfigFile);
