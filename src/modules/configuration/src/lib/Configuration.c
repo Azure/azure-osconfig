@@ -310,7 +310,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_refreshIntervalObject ? "true" : "false");
+            snprintf(buffer, sizeof(buffer), "%u", g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
