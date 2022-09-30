@@ -91,6 +91,10 @@ static int UpdateConfiguration(void)
 {
     int status = MMI_OK;
 
+    JSON_Value* jsonValue = NULL;
+    JSON_Value_Type jsonValueType = JSONError;
+    JSON_Object jsonObject = NULL;
+
     int modelVersion = g_modelVersion;
     int refreshInterval = g_refreshInterval;
     bool localManagementEnabled = g_localManagementEnabled;
@@ -103,34 +107,95 @@ static int UpdateConfiguration(void)
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
     {
-        modelVersion = g_modelVersion;
-        refreshInterval = g_refreshInterval;
-        localManagementEnabled = g_localManagementEnabled;
-        fullLoggingEnabled = g_fullLoggingEnabled;
-        commandLoggingEnabled = g_commandLoggingEnabled;
-        iotHubProtocol = g_iotHubProtocol;
-
-        /* Do it here rather in commonutils as no other component will need to change these
-        SetModelVersionToJsonConfig(jsonConfiguration, modelVersion, ConfigurationGetLog());
-        SetReportingIntervalToJsonConfig(jsonConfiguration, refreshInterval, ConfigurationGetLog());
-        SetLocalManagementToJsonConfig(jsonConfiguration, localManagementEnabled, ConfigurationGetLog());
-        SetCommandLoggingEnabledInJsonConfig(jsonConfiguration, g_fullLoggingEnabled, ConfigurationGetLog());
-        SetFullLoggingEnabledInJsonConfig(jsonConfiguration, g_commandLoggingEnabled, ConfigurationGetLog());
-        SetIotHubProtocolToJsonConfig(jsonConfiguration, iotHubProtocol, ConfigurationGetLog());
-        */
-
-        if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog())
+        if (NULL == (jsonValue = json_parse_string(jsonConfiguration)))
         {
-            if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfiguration failed", jsonConfiguration);
+            status = EINVAL;
+        }
+        else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
+        {
+            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfiguration failed", jsonConfiguration);
+            status = EINVAL;
+        }
+
+        if (MMI_OK == status)
+        {
+            if (JSONSuccess == json_object_set_number(jsonObject, g_modelVersionObject, (double)modelVersion))
             {
-                OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
-                status = ESRCH;
+                g_modelVersion = modelVersion;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
+                status = ENOATTR;
+            }
+            
+            if (JSONSuccess == json_object_set_number(jsonObject, g_refreshIntervalObject, (double)refreshInterval))
+            {
+                g_refreshInterval = refreshInterval;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
+            }
+            
+            if (JSONSuccess == json_object_set_boolean(jsonObject, g_localManagementEnabledObject, localManagementEnabled))
+            {
+                g_localManagementEnabled = localManagementEnabled;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
+            }
+            
+            if (JSONSuccess == json_object_set_boolean(jsonObject, g_fullLoggingEnabledObject, fullLoggingEnabled))
+            {
+                g_fullLoggingEnabled = fullLoggingEnabled;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
+            }
+
+            if (JSONSuccess == json_object_set_boolean(jsonObject, g_commandLoggingEnabledObject, commandLoggingEnabledEnabled))
+            {
+                g_commandLoggingEnabled = commandLoggingEnabled;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
+            }
+            
+            if (JSONSuccess == json_object_set_number(jsonObject, g_iotHubProtocolObject, (double)iotHubProtocol))
+            {
+                g_iotHubProtocol = iotHubProtocol;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_iotHubProtocolObject, iotHubProtocol);
             }
         }
-        else
+
+        if (jsonValue)
         {
-            OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
-            status = ENOENT;
+            json_value_free(jsonValue);
+        }
+
+        if (MMI_OK == status)
+        {
+            if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog())
+            {
+                if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+                {
+                    OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
+                    status = ESRCH;
+                }
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
+                status = ENOENT;
+            }
         }
     }
         
