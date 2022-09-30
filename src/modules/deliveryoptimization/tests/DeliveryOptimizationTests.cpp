@@ -13,7 +13,7 @@ class DeliveryOptimizationTest : public ::testing::Test
 {
     protected:
         const char* m_expectedMmiInfo = "{\"Name\": \"DeliveryOptimization\","
-            "\"Description\": \"Provides functionality to observe and configure Delivery Optimization\","
+            "\"Description\": \"Provides functionality to observe and configure Delivery Optimization (DO)\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
             "\"VersionMinor\": 0,"

@@ -13,7 +13,7 @@ class AdhsTest : public ::testing::Test
 {
     protected:
         const char* m_expectedMmiInfo = "{\"Name\": \"Adhs\","
-            "\"Description\": \"Provides functionality to observe and configure ADHS\","
+            "\"Description\": \"Provides functionality to observe and configure Azure Device Health Services (ADHS)\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
             "\"VersionMinor\": 0,"
