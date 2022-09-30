@@ -1,0 +1,9 @@
+[
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "fullLoggingEnabled",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  }
+]
