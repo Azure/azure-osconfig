@@ -287,7 +287,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 {
     int status = MMI_OK;
 
-    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes < 0))
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet(%s, %s, %p, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;

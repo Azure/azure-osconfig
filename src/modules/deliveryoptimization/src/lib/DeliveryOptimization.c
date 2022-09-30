@@ -296,7 +296,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
 {
     int status = MMI_OK;
 
-    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes < 0))
+    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet(%s, %s, %p, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
