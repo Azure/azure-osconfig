@@ -1,0 +1,55 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:osconfig:adhs;1",
+  "@type": "Interface",
+  "displayName": "Settings",
+  "description": "Provides functionality to observe and configure ADHS",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "optIn",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "none",
+            "enumValue": 0
+          },
+          {
+            "name": "required",
+            "enumValue": 1
+          },
+          {
+            "name": "optional",
+            "enumValue": 2
+          }
+        ]
+      },
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "desiredOptIn",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "none",
+            "enumValue": 0
+          },
+          {
+            "name": "required",
+            "enumValue": 1
+          },
+          {
+            "name": "optional",
+            "enumValue": 2
+          }
+        ]
+      },
+      "writable": true
+    }
+  ]
+}

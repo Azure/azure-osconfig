@@ -5,6 +5,11 @@
   "displayName": "Device OS Configuration",
   "contents": [
     {
+      "schema": "dtmi:osconfig:adhs;1",
+      "@type": "Component",
+      "name": "Adhs"
+    },
+    {
       "schema": "dtmi:osconfig:commandrunner;3",
       "@type": "Component",
       "name": "CommandRunner"
