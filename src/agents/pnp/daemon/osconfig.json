@@ -1,6 +1,6 @@
 {
   "CommandLogging": 0,
-  "FullLogging": 1,
+  "FullLogging": 0,
   "LocalManagement": 0,
   "ModelVersion": 12,
   "IotHubProtocol": 2,
@@ -150,5 +150,5 @@
       "ObjectName": "serviceUrl"
     }
   ],
-  "ReportingIntervalSeconds": 5
+  "ReportingIntervalSeconds": 30
 }

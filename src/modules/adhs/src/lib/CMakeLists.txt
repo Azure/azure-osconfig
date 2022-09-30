@@ -6,7 +6,7 @@ project(adhslib)
 add_library(adhslib STATIC Adhs.c)
 set_property(TARGET adhslib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_link_libraries(adhslib PRIVATE logging commonutils parsonlib)
+target_link_libraries(adhslib PRIVATE logging commonutils)
 target_include_directories(adhslib
     PUBLIC
         ${MODULES_INC_DIR}
