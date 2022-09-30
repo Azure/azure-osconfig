@@ -1,3 +1,85 @@
 [
-
+    {
+        "ComponentName": "Adhs",
+        "ObjectName": "optIn",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Adhs",
+        "ObjectName": "invalidObjectName",
+        "Desired": false,
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\":\"saveConfig\",\"arguments\":\"mkdir -p /etc/azure-device-health-services/ && touch /etc/azure-device-health-services/config.toml && cp /etc/azure-device-health-services/config.toml config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 1
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandStatus",
+        "Desired": false,
+        "Payload": "{\"commandId\":\"saveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "ExpectedResult": 0
+    },
+    {
+        "ComponentName": "Adhs",
+        "ObjectName": "desiredOptIn",
+        "Desired": true,
+        "Payload": "1",
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\":\"validateOptIn\",\"arguments\":\"cat /etc/azure-device-health-services/config.toml | grep 'Permission = \\\"Required\\\"'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 1
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandStatus",
+        "Desired": false,
+        "Payload": "{\"commandId\":\"validateOptIn\",\"resultCode\":0,\"textResult\":\"Permission =  Required  \",\"currentState\":2}",
+        "ExpectedResult": 0
+    },
+    {
+        "ComponentName": "Adhs",
+        "ObjectName": "desiredOptIn",
+        "Desired": true,
+        "Payload": "-1",
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "Adhs",
+        "ObjectName": "desiredOptIn",
+        "Desired": true,
+        "Payload": "3",
+        "ExpectedResult": 22,
+        "WaitSeconds": 0
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandArguments",
+        "Desired": true,
+        "Payload": "{\"commandId\":\"restoreConfig\",\"arguments\":\"cp config.toml /etc/azure-device-health-services/config.toml && rm -f config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "ExpectedResult": 0,
+        "WaitSeconds": 1
+    },
+    {
+        "ComponentName": "CommandRunner",
+        "ObjectName": "commandStatus",
+        "Desired": false,
+        "Payload": "{\"commandId\":\"restoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "ExpectedResult": 0
+    }
 ]
