@@ -50,6 +50,7 @@ set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for i
 
 add_module(Adhs)
 add_module(CommandRunner)
+add_module(DeliveryOptimization)
 add_module(DeviceInfo)
 add_module(Firewall)
 add_module(Hostname)
@@ -58,7 +59,6 @@ add_module(PMC)
 add_module(Settings)
 add_module(Tpm)
 add_module(Ztsi)
-add_module(DeliveryOptimization)
 
 if (BUILD_SAMPLES)
     add_module_custom_target(Samples cppsample Sample Sample)

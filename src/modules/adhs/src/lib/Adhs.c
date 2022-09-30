@@ -28,12 +28,11 @@ static const char* g_adhsComponentName = "Adhs";
 static const char* g_reportedOptInObjectName = "optIn";
 static const char* g_desiredOptInObjectName = "desiredOptIn";
 
+static const char* g_permissionConfigPattern = "\\bPermission\\s*=\\s*([\\\"'])([A-Za-z0-9]*)\\1";
 static const char* g_permissionConfigName = "Permission";
-// static const char* g_permissionNoneConfigValue = "None";
-// static const char* g_permissionRequiredConfigValue = "Required";
-// static const char* g_permissionOptionalConfigValue = "Optional";
-
-static const char* g_permissionPattern = "\\bPermission\\s*=\\s*([\\\"'])([A-Za-z0-9]*)\\1";
+static const char* g_permissionConfigMapKeys[] = { "None", "Required", "Optional" };
+static const char* g_permissionConfigMapValues[] = { "0", "1", "2" };
+static const unsigned int g_permissionConfigMapCount = ARRAY_SIZE(g_permissionConfigMapKeys);
 
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
@@ -77,6 +76,23 @@ MMI_HANDLE AdhsMmiOpen(const char* clientName, const unsigned int maxPayloadSize
 static bool IsValidSession(MMI_HANDLE clientSession)
 {
     return ((NULL == clientSession) || (0 != strcmp(g_adhsModuleName, (char*)clientSession)) || (g_referenceCount <= 0)) ? false : true;
+}
+
+static bool IsValidPayload(const MMI_JSON_STRING payload, const unsigned int payloadSizeBytes)
+{
+    for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
+    {
+        if ((payloadSizeBytes == strlen(g_permissionConfigMapValues[i])) && (0 == strncmp(payload, g_permissionConfigMapValues[i], payloadSizeBytes)))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsValidMatchOffsets(const regmatch_t regmatch, const int max)
+{
+    return (regmatch.rm_so >= 0) && (regmatch.rm_so < max) && (regmatch.rm_so < regmatch.rm_eo);
 }
 
 void AdhsMmiClose(MMI_HANDLE clientSession)
@@ -155,47 +171,45 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         status = EINVAL;
     }
 
-    char* value = NULL;
+    const char* value = NULL;
 
     if (MMI_OK == status)
     {
         char* fileContent = LoadStringFromFile(g_adhsConfigFile, false, AdhsGetLog());
         if (NULL != fileContent)
         {
-            const unsigned int matchGroupsSize = 3;
-            regmatch_t matchGroups[matchGroupsSize];
+            const unsigned int matchGroupsCount = 3;
+            regmatch_t matchGroups[matchGroupsCount];
             regex_t permissionRegex;
 
-            if (0 == regcomp(&permissionRegex, g_permissionPattern, REG_EXTENDED))
+            if (0 == regcomp(&permissionRegex, g_permissionConfigPattern, REG_EXTENDED))
             {
-                if (0 == regexec(&permissionRegex, fileContent, matchGroupsSize, matchGroups, 0))
+                if (0 == regexec(&permissionRegex, fileContent, matchGroupsCount, matchGroups, 0))
                 {
                     // Property value is located in the third match group.
                     const unsigned int fileContentSizeBytes = strlen(fileContent);
-                    if ((matchGroups[0].rm_so != -1) && (matchGroups[0].rm_eo != -1) &&
-                        (matchGroups[1].rm_so != -1) && (matchGroups[1].rm_eo != -1) &&
-                        (matchGroups[2].rm_so > -1) && ((unsigned int)matchGroups[2].rm_so < fileContentSizeBytes) &&
-                        (matchGroups[2].rm_eo > -1) && ((unsigned int)matchGroups[2].rm_eo < fileContentSizeBytes) && 
-                        (matchGroups[2].rm_so < matchGroups[2].rm_eo))
+                    if ((IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
+                        (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
+                        (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)))
                     {
-                        const unsigned int valueSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
-                        value = malloc(valueSizeBytes + 1);
-                        if (value != *payload)
+                        const char* currentMatch = fileContent + matchGroups[2].rm_so;
+                        const unsigned int currentMatchSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
+                        
+                        for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
                         {
-                            value[valueSizeBytes] = '\0';
-                            strncpy(value, fileContent + matchGroups[2].rm_so, valueSizeBytes);
-                        }
-                        else
-                        {
-                            OsConfigLogError(AdhsGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                            status = ENOMEM;
+                            if ((currentMatchSizeBytes == strlen(g_permissionConfigMapKeys[i])) && (0 == strncmp(currentMatch, g_permissionConfigMapKeys[i], currentMatchSizeBytes)))
+                            {
+                                value = g_permissionConfigMapValues[i];
+                                break;
+                            }
                         }
                     }
-                    else 
+
+                    if (NULL == value) 
                     {
                         if (IsFullLoggingEnabled())
                         {
-                            OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property (%s)", g_permissionConfigName);
+                            OsConfigLogError(AdhsGetLog(), "MmiGet failed to find valid TOML property (%s)", g_permissionConfigName);
                         }
                         status = EINVAL;
                     }
@@ -213,7 +227,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
             } 
             else 
             {
-                OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression (%s)", g_permissionPattern);
+                OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression (%s)", g_permissionConfigPattern);
                 status = EINVAL;
             }
             
@@ -231,13 +245,14 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         // Reset status and payload if TOML file could not be parsed or property not found, as it may yet have to be configured.
         if (MMI_OK != status)
         {
+            value = g_permissionConfigMapValues[0];
             status = MMI_OK;
         }
     }
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = ((NULL != value) ? strlen(value) : 0) + 2;
+        *payloadSizeBytes = strlen(value);
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
@@ -248,7 +263,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
         if (NULL != *payload)
         {
-            snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", (NULL != value) ? value : "");
+            strncpy(*payload, value, *payloadSizeBytes);
         }
         else
         {
@@ -262,8 +277,6 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
     {
         OsConfigLogInfo(AdhsGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
-
-    FREE_MEMORY(value);
 
     return status;
 }
@@ -296,92 +309,46 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
         OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported object name (%s)", objectName);
         status = EINVAL;
     }
+        
+    if ((MMI_OK == status) && (!IsValidPayload(payload, payloadSizeBytes)))
+    {
+        OsConfigLogError(AdhsGetLog(), "MmiSet(%p, %d) called with invalid payload", payload, payloadSizeBytes);
+        status = EINVAL;
+    }
 
-    // if (MMI_OK == status)
-    // {
-    //     // Make sure that payload is null-terminated for json_parse_string.
-    //     char* buffer = malloc(payloadSizeBytes + 1);
-    //     if (NULL != buffer)
-    //     {
-    //         buffer[payloadSizeBytes] = '\0';
-    //         strncpy(buffer, payload, payloadSizeBytes);
+    if (MMI_OK == status)
+    {
+        const char* value = NULL; 
+        for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
+        {
+            if ((payloadSizeBytes == (int)strlen(g_permissionConfigMapValues[i])) && (0 == strncmp(payload, g_permissionConfigMapValues[i], payloadSizeBytes)))
+            {
+                value = g_permissionConfigMapKeys[i];
+                break;
+            }
+        }
 
-    //         JSON_Value* rootValue = json_parse_string(buffer);
-    //         if (json_value_get_type(rootValue) == JSONObject)
-    //         {
-    //             JSON_Object* rootObject = json_value_get_object(rootValue);
-
-    //             // Create new JSON_Value with validated output.
-    //             JSON_Value* newValue = json_value_init_object();
-    //             JSON_Object* newObject = json_value_get_object(newValue);
-
-    //             const unsigned int count = json_object_get_count(rootObject);
-    //             for (unsigned int i = 0; i < count; i++)
-    //             {
-    //                 const char* name = json_object_get_name(rootObject, i);
-    //                 JSON_Value* currentValue = json_object_get_value(rootObject, name);
-
-    //                 if ((0 == strcmp(name, g_desiredCacheHostSettingName)) && (JSONString == json_value_get_type(currentValue)))
-    //                 {
-    //                     const char* cacheHost = json_value_get_string(currentValue);
-    //                     json_object_set_string(newObject, g_cacheHostConfigName, cacheHost);
-    //                 }
-    //                 else if ((0 == strcmp(name, g_desiredCacheHostSourceSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
-    //                 {
-    //                     const int cacheHostSource = (int)json_value_get_number(currentValue);
-    //                     if ((cacheHostSource >= 0) && (cacheHostSource <= 3))
-    //                     {
-    //                         json_object_set_number(newObject, g_cacheHostSourceConfigName, cacheHostSource);
-    //                     }
-    //                     else 
-    //                     {
-    //                         OsConfigLogError(AdhsGetLog(), "MmiSet called with invalid cacheHostSource (%d)", cacheHostSource);
-    //                         status = EINVAL;
-    //                     }
-    //                 }
-    //                 else if ((0 == strcmp(name, g_desiredCacheHostFallbackSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
-    //                 {
-    //                     const int cacheHostFallback = (int)json_value_get_number(currentValue);
-    //                     json_object_set_number(newObject, g_cacheHostFallbackConfigName, cacheHostFallback);
-    //                 }
-    //                 else if ((0 == strcmp(name, g_desiredPercentageDownloadThrottleSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
-    //                 {
-    //                     const int percentageDownloadThrottle = (int)json_value_get_number(currentValue);
-    //                     if ((percentageDownloadThrottle >= 0) && (percentageDownloadThrottle <= 100))
-    //                     {
-    //                         json_object_set_number(newObject, g_percentageDownloadThrottleConfigName, percentageDownloadThrottle);
-    //                     }
-    //                     else 
-    //                     {
-    //                         OsConfigLogError(AdhsGetLog(), "MmiSet called with invalid percentageDownloadThrottle (%d)", percentageDownloadThrottle);
-    //                         status = EINVAL;
-    //                     }
-    //                 }
-    //             }
-
-    //             if (JSONSuccess != json_serialize_to_file_pretty(newValue, g_adhsConfigFile))
-    //             {
-    //                 OsConfigLogError(AdhsGetLog(), "MmiSet failed to write JSON file (%s)", g_adhsConfigFile);
-    //                 status = EIO;
-    //             }
-
-    //             json_value_free(newValue);
-    //         }
-    //         else
-    //         {
-    //             OsConfigLogError(AdhsGetLog(), "MmiSet failed to parse JSON (%.*s)", payloadSizeBytes, payload);
-    //             status = EINVAL;
-    //         }
-
-    //         json_value_free(rootValue);
-    //         FREE_MEMORY(buffer);
-    //     }
-    //     else 
-    //     {
-    //         OsConfigLogError(AdhsGetLog(), "MmiSet failed to allocate %d bytes", payloadSizeBytes + 1);
-    //         status = ENOMEM;
-    //     }
-    // }
+        if (NULL != value)
+        {
+            const char* format = "Permission = \"%s\"\n";
+            const int fileContentSizeBytes = snprintf(NULL, 0, format, value);
+            char *fileContent = malloc(fileContentSizeBytes + 1);
+            if (fileContent)
+            {
+                snprintf(fileContent, fileContentSizeBytes + 1, format, value);
+                if (!SavePayloadToFile(g_adhsConfigFile, fileContent, fileContentSizeBytes, AdhsGetLog()))
+                {
+                    OsConfigLogError(AdhsGetLog(), "MmiSet failed to write TOML file (%s)", g_adhsConfigFile);
+                    status = EIO;
+                }
+            }
+            else 
+            {
+                OsConfigLogError(AdhsGetLog(), "MmiSet: failed to allocate %d bytes", fileContentSizeBytes + 1);
+                status = ENOMEM;
+            }
+        }
+    }
 
     OsConfigLogInfo(AdhsGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
     
