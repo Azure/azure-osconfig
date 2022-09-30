@@ -160,34 +160,44 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
     if (MMI_OK == status)
     {
         char* fileContent = LoadStringFromFile(g_adhsConfigFile, false, AdhsGetLog());
-        const unsigned int fileContentSizeBytes = strlen(fileContent);
-
-        const unsigned int matchGroupsCount = 3;
-        regmatch_t matchGroups[matchGroupsCount];
-        regex_t permissionRegex;
-
-        if (0 == regcomp(&permissionRegex, g_permissionPattern, REG_EXTENDED))
+        if (NULL != fileContent)
         {
-            if (0 == regexec(&permissionRegex, fileContent, matchGroupsCount, matchGroups, 0))
+            const unsigned int matchGroupsSize = 3;
+            regmatch_t matchGroups[matchGroupsSize];
+            regex_t permissionRegex;
+
+            if (0 == regcomp(&permissionRegex, g_permissionPattern, REG_EXTENDED))
             {
-                // Property value is located in the third match group.
-                if ((matchGroups[0].rm_so != -1) && (matchGroups[0].rm_eo != -1) &&
-                    (matchGroups[1].rm_so != -1) && (matchGroups[1].rm_eo != -1) &&
-                    (matchGroups[2].rm_so > -1) && ((unsigned int)matchGroups[2].rm_so < fileContentSizeBytes) &&
-                    (matchGroups[2].rm_eo > -1) && ((unsigned int)matchGroups[2].rm_eo < fileContentSizeBytes) && 
-                    (matchGroups[2].rm_so < matchGroups[2].rm_eo))
+                if (0 == regexec(&permissionRegex, fileContent, matchGroupsSize, matchGroups, 0))
                 {
-                    const unsigned int valueSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
-                    value = malloc(valueSizeBytes + 1);
-                    if (value != *payload)
+                    // Property value is located in the third match group.
+                    const unsigned int fileContentSizeBytes = strlen(fileContent);
+                    if ((matchGroups[0].rm_so != -1) && (matchGroups[0].rm_eo != -1) &&
+                        (matchGroups[1].rm_so != -1) && (matchGroups[1].rm_eo != -1) &&
+                        (matchGroups[2].rm_so > -1) && ((unsigned int)matchGroups[2].rm_so < fileContentSizeBytes) &&
+                        (matchGroups[2].rm_eo > -1) && ((unsigned int)matchGroups[2].rm_eo < fileContentSizeBytes) && 
+                        (matchGroups[2].rm_so < matchGroups[2].rm_eo))
                     {
-                        value[valueSizeBytes] = '\0';
-                        strncpy(value, fileContent + matchGroups[2].rm_so, valueSizeBytes);
+                        const unsigned int valueSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
+                        value = malloc(valueSizeBytes + 1);
+                        if (value != *payload)
+                        {
+                            value[valueSizeBytes] = '\0';
+                            strncpy(value, fileContent + matchGroups[2].rm_so, valueSizeBytes);
+                        }
+                        else
+                        {
+                            OsConfigLogError(AdhsGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                            status = ENOMEM;
+                        }
                     }
-                    else
+                    else 
                     {
-                        OsConfigLogError(AdhsGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                        status = ENOMEM;
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property (%s)", g_permissionConfigName);
+                        }
+                        status = EINVAL;
                     }
                 }
                 else 
@@ -198,25 +208,25 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                     }
                     status = EINVAL;
                 }
-            }
+
+                regfree(&permissionRegex);
+            } 
             else 
             {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property (%s)", g_permissionConfigName);
-                }
+                OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression (%s)", g_permissionPattern);
                 status = EINVAL;
             }
-
-            regfree(&permissionRegex);
-        } 
+            
+            FREE_MEMORY(fileContent);
+        }
         else 
         {
-            OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression (%s)", g_permissionPattern);
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(AdhsGetLog(), "MmiGet failed to read TOML file (%s)", g_adhsConfigFile);
+            }
             status = EINVAL;
         }
-        
-        FREE_MEMORY(fileContent);
 
         // Reset status and payload if TOML file could not be parsed or property not found, as it may yet have to be configured.
         if (MMI_OK != status)
