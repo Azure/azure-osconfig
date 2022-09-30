@@ -7,7 +7,6 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
-#include <parson.h>
 #include <regex.h>
 
 #include "Adhs.h"
