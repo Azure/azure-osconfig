@@ -6,14 +6,13 @@
         "ExpectedResult": 0,
         "WaitSeconds": 0
     },
-    // TODO: Enable this test once the bug is fixed
-    // {
-    //     "ComponentName": "SampleComponent",
-    //     "ObjectName": "reportedIntegerObject",
-    //     "Desired": false,
-    //     "ExpectedResult": 0,
-    //     "WaitSeconds": 0
-    // },
+    {
+        "ComponentName": "SampleComponent",
+        "ObjectName": "reportedIntegerObject",
+        "Desired": false,
+        "ExpectedResult": 0,
+        "WaitSeconds": 0
+    },
     {
         "ComponentName": "SampleComponent",
         "ObjectName": "reportedBooleanObject",
