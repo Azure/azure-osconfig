@@ -17,7 +17,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\":\"saveConfig\",\"arguments\":\"mkdir -p /etc/azure-device-health-services/ && touch /etc/azure-device-health-services/config.toml && cp /etc/azure-device-health-services/config.toml config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "Payload": "{\"commandId\":\"adhsSaveConfig\",\"arguments\":\"mkdir -p /etc/azure-device-health-services/ && touch /etc/azure-device-health-services/config.toml && cp /etc/azure-device-health-services/config.toml config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
         "ExpectedResult": 0,
         "WaitSeconds": 1
     },
@@ -25,7 +25,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"saveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "Payload": "{\"commandId\":\"adhsSaveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
         "ExpectedResult": 0
     },
     {
@@ -71,7 +71,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\":\"restoreConfig\",\"arguments\":\"cp config.toml /etc/azure-device-health-services/config.toml && rm -f config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "Payload": "{\"commandId\":\"adhsRestoreConfig\",\"arguments\":\"cp config.toml /etc/azure-device-health-services/config.toml && rm -f config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
         "ExpectedResult": 0,
         "WaitSeconds": 1
     },
@@ -79,7 +79,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"restoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "Payload": "{\"commandId\":\"adhsRestoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
         "ExpectedResult": 0
     }
 ]
