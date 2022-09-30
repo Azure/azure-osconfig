@@ -38,7 +38,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\":\"saveConfig\",\"arguments\":\"mkdir -p /etc/deliveryoptimization-agent/ && touch /etc/deliveryoptimization-agent/admin-config.json && cp /etc/deliveryoptimization-agent/admin-config.json admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "Payload": "{\"commandId\":\"deliveryOptimizationSaveConfig\",\"arguments\":\"mkdir -p /etc/deliveryoptimization-agent/ && touch /etc/deliveryoptimization-agent/admin-config.json && cp /etc/deliveryoptimization-agent/admin-config.json admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
         "ExpectedResult": 0,
         "WaitSeconds": 1
     },
@@ -46,7 +46,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"saveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "Payload": "{\"commandId\":\"deliveryOptimizationSaveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
         "ExpectedResult": 0
     },
     {
@@ -137,7 +137,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandArguments",
         "Desired": true,
-        "Payload": "{\"commandId\":\"restoreConfig\",\"arguments\":\"cp admin-config.json /etc/deliveryoptimization-agent/admin-config.json && rm -f admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+        "Payload": "{\"commandId\":\"deliveryOptimizationRestoreConfig\",\"arguments\":\"cp admin-config.json /etc/deliveryoptimization-agent/admin-config.json && rm -f admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
         "ExpectedResult": 0,
         "WaitSeconds": 1
     },
@@ -145,7 +145,7 @@
         "ComponentName": "CommandRunner",
         "ObjectName": "commandStatus",
         "Desired": false,
-        "Payload": "{\"commandId\":\"restoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+        "Payload": "{\"commandId\":\"deliveryOptimizationRestoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
         "ExpectedResult": 0
     }
 ]
