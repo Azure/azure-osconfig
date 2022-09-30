@@ -208,7 +208,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                     }
 
                     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
-                    if (NULL != payload)
+                    if (NULL != *payload)
                     {
                         strncpy(*payload, json, *payloadSizeBytes);
                     }

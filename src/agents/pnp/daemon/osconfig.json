@@ -6,6 +6,10 @@
   "IotHubProtocol": 2,
   "Reported": [
     {
+      "ComponentName": "Adhs",
+      "ObjectName": "optIn"
+    },
+    {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
     },

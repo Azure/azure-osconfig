@@ -53,6 +53,7 @@ endfunction()
 set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
 
+add_module(Adhs)
 add_module(CommandRunner)
 add_module(DeviceInfo)
 add_module(Firewall)
