@@ -19,8 +19,9 @@ void RecipeInvoker::TestBody()
 
         if (0 == m_recipe.m_expectedResult)
         {
-            JSON_Value *root_value = json_parse_string(payload);
-            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: <null>";
+            std::string payloadString(payload, payloadSize);
+            JSON_Value* root_value = json_parse_string(payloadString.c_str());
+            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: " << payloadString;
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
             EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";
