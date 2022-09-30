@@ -339,6 +339,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
             fileContent = malloc(fileContentSizeBytes + 1);
             if (fileContent)
             {
+                memset(fileContent, 0, payloadSizeBytes + 1);
                 snprintf(fileContent, fileContentSizeBytes + 1, g_adhsConfigFileFormat, value);
                 if (!SavePayloadToFile(g_adhsConfigFile, fileContent, fileContentSizeBytes, AdhsGetLog()))
                 {

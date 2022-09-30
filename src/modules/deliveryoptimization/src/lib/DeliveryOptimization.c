@@ -342,7 +342,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
         buffer = malloc(payloadSizeBytes + 1);
         if (NULL != buffer)
         {
-            buffer[payloadSizeBytes] = '\0';
+            memset(buffer, 0, payloadSizeBytes + 1);
             strncpy(buffer, payload, payloadSizeBytes);
 
             rootValue = json_parse_string(buffer);
