@@ -1,13 +1,23 @@
 {
   "@context": "dtmi:dtdl:context;2",
-  "@id": "dtmi:osconfig:deviceosconfiguration;12",
+  "@id": "dtmi:osconfig:deviceosconfiguration;13",
   "@type": "Interface",
   "displayName": "Device OS Configuration",
   "contents": [
     {
+      "schema": "dtmi:osconfig:adhs;1",
+      "@type": "Component",
+      "name": "Adhs"
+    },
+    {
       "schema": "dtmi:osconfig:commandrunner;3",
       "@type": "Component",
       "name": "CommandRunner"
+    },
+    {
+      "schema": "dtmi:osconfig:deliveryoptimization;1",
+      "@type": "Component",
+      "name": "DeliveryOptimization"
     },
     {
       "schema": "dtmi:osconfig:deviceinfo;5",
@@ -33,11 +43,6 @@
       "schema": "dtmi:osconfig:pmc;1",
       "@type": "Component",
       "name": "Pmc"
-    },
-    {
-      "schema": "dtmi:osconfig:settings;2",
-      "@type": "Component",
-      "name": "Settings"
     },
     {
       "schema": "dtmi:osconfig:tpm;3",
