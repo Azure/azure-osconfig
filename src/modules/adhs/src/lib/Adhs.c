@@ -311,7 +311,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
         
     if ((MMI_OK == status) && (!IsValidPayload(payload, payloadSizeBytes)))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiSet(%p, %d) called with invalid payload", payload, payloadSizeBytes);
+        OsConfigLogError(AdhsGetLog(), "MmiSet(%.*s, %d) called with invalid payload", payloadSizeBytes, payload, payloadSizeBytes);
         status = EINVAL;
     }
 
