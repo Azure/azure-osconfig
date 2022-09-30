@@ -11,7 +11,7 @@
 #include "Configuration.h"
 
 static const char* g_configurationModuleName = "OSConfig Configuration module";
-static const char* g_configurationComponentName = "OsConfigConfiguration";
+static const char* g_configurationComponentName = "Configuration";
 static const char* g_desiredConfigurationObject = "desiredConfiguration";
 static const char* g_modelVersionObject = "modelVersion";
 static const char* g_refreshIntervalObject = "refreshInterval";
@@ -26,13 +26,13 @@ static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 static const char* g_configurationLogFile = "/var/log/osconfig_configuration.log";
 static const char* g_configurationRolledLogFile = "/var/log/osconfig_configuration.bak";
 
-static const char* g_configurationModuleInfo = "{\"Name\": \"OsConfigConfiguration\","
+static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
     "\"VersionMinor\": 0,"
     "\"VersionInfo\": \"Nickel\","
-    "\"Components\": [\"OsConfigConfiguration\"],"
+    "\"Components\": [\"Configuration\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 

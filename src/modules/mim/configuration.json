@@ -3,7 +3,7 @@
   "type": "MimModel",
   "contents": [
     {
-      "name": "OsConfigConfiguration",
+      "name": "Configuration",
       "type": "mimComponent",
       "contents": [
         {

@@ -12,18 +12,18 @@ using namespace std;
 class ConfigurationTest : public ::testing::Test
 {
     protected:
-        const char* m_expectedMmiInfo = "{\"Name\": \"OsConfigConfiguration\","
+        const char* m_expectedMmiInfo = "{\"Name\": \"Configuration\","
             "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
             "\"VersionMinor\": 0,"
             "\"VersionInfo\": \"Nickel\","
-            "\"Components\": [\"OsConfigConfiguration\"],"
+            "\"Components\": [\"Configuration\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";
 
         const char* m_configurationModuleName = "OSConfig Configuration module";
-        const char* m_configurationComponentName = "OsConfigConfiguration";
+        const char* m_configurationComponentName = "Configuration";
 
         const char* m_modelVersionObject = "modelVersion";
         const char* m_refreshIntervalObject = "refreshInterval";
