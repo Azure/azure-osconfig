@@ -5,19 +5,9 @@
   "displayName": "Device OS Configuration",
   "contents": [
     {
-      "schema": "dtmi:osconfig:adhs;1",
-      "@type": "Component",
-      "name": "Adhs"
-    },
-    {
       "schema": "dtmi:osconfig:commandrunner;3",
       "@type": "Component",
       "name": "CommandRunner"
-    },
-    {
-      "schema": "dtmi:osconfig:deliveryoptimization;1",
-      "@type": "Component",
-      "name": "DeliveryOptimization"
     },
     {
       "schema": "dtmi:osconfig:deviceinfo;5",
