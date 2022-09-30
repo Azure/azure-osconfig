@@ -29,8 +29,8 @@ static const char* g_desiredOptInObjectName = "desiredOptIn";
 
 static const char* g_permissionConfigPattern = "\\bPermission\\s*=\\s*([\\\"'])([A-Za-z0-9]*)\\1";
 static const char* g_permissionConfigName = "Permission";
-static const char* g_permissionConfigMapKeys[] = { "None", "Required", "Optional" };
-static const char* g_permissionConfigMapValues[] = { "0", "1", "2" };
+static const char* g_permissionConfigMapKeys[] = {"None", "Required", "Optional"};
+static const char* g_permissionConfigMapValues[] = {"0", "1", "2"};
 static const unsigned int g_permissionConfigMapCount = ARRAY_SIZE(g_permissionConfigMapKeys);
 
 static atomic_int g_referenceCount = 0;
