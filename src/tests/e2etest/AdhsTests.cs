@@ -2,9 +2,6 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -27,7 +24,7 @@ namespace E2eTesting
         [Test]
         public void AdhsTest_Get()
         {
-            Adhs reported = GetReported<Adhs>(_componentName, (Adhs adhs) => (adhs.OptIn == 0));
+            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 0));
 
             Assert.Multiple(() =>
             {
@@ -43,9 +40,9 @@ namespace E2eTesting
                 DesiredOptIn = 1 
             };
 
-            SetDesired<DesiredAdhs>(_componentName, desired);
+            SetDesired(_componentName, desired);
 
-            Adhs reported = GetReported<Adhs>(_componentName, (Adhs adhs) => (adhs.OptIn == 1));
+            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 1));
 
             Assert.Multiple(() =>
             {

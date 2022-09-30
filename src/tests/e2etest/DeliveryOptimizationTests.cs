@@ -2,9 +2,6 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
-using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -38,7 +35,7 @@ namespace E2eTesting
         [Test]
         public void DeliveryOptimizationTest_Get()
         {
-            DeliveryOptimization reported = GetReported<DeliveryOptimization>(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost != null));
+            DeliveryOptimization reported = GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost != null));
 
             Assert.Multiple(() =>
             {
@@ -63,9 +60,9 @@ namespace E2eTesting
                 }   
             };
 
-            SetDesired<DesiredDeliveryOptimization>(_componentName, desired);
+            SetDesired(_componentName, desired);
 
-            DeliveryOptimization reported = GetReported<DeliveryOptimization>(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost == desired.DesiredDeliveryOptimizationPolicies.CacheHost && 
+            DeliveryOptimization reported = GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost == desired.DesiredDeliveryOptimizationPolicies.CacheHost && 
                 deliveryOptimization.CacheHostSource == desired.DesiredDeliveryOptimizationPolicies.CacheHostSource && 
                 deliveryOptimization.CacheHostFallback == desired.DesiredDeliveryOptimizationPolicies.CacheHostFallback && 
                 deliveryOptimization.PercentageDownloadThrottle == desired.DesiredDeliveryOptimizationPolicies.PercentageDownloadThrottle));
