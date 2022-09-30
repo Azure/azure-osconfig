@@ -2,7 +2,7 @@
   "@context": "dtmi:dtdl:context;2",
   "@id": "dtmi:osconfig:deliveryoptimization;1",
   "@type": "Interface",
-  "displayName": "Settings",
+  "displayName": "Delivery Optimization",
   "description": "Provides functionality to observe and configure Delivery Optimization",
   "contents": [
     {

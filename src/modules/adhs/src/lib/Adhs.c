@@ -12,7 +12,7 @@
 #include "Adhs.h"
 
 static const char* g_adhsModuleInfo = "{\"Name\": \"Adhs\","
-    "\"Description\": \"Provides functionality to observe and configure ADHS\","
+    "\"Description\": \"Provides functionality to observe and configure Azure Device Health Services (ADHS) \","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
     "\"VersionMinor\": 0,"
