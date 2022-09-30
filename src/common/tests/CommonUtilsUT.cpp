@@ -1073,3 +1073,44 @@ TEST_F(CommonUtilsTest, MillisecondsSleep)
     EXPECT_EQ(EINVAL, SleepMilliseconds(negativeValue));
     EXPECT_EQ(EINVAL, SleepMilliseconds(tooBigValue));
 }
+
+TEST_F(CommonUtilsTest, LoadConfiguration)
+{
+    const char* configuration = 
+        "{"
+          "\"CommandLogging\": 0,"
+          "\"FullLogging\": 1,"
+          "\"LocalManagement\": 3,"
+          "\"ModelVersion\": 11,"
+          "\"IotHubProtocol\": 2,"
+          "\"Reported\": ["
+          "  {"
+          "    \"ComponentName\": \"DeviceInfo\","
+          "    \"ObjectName\": \"osName\""
+          "  },"
+          "  {"
+          "    \"ComponentName\": \"TestABC\","
+          "    \"ObjectName\": \"TestVa12lue\""
+          "  }"
+          "],"
+          "\"ReportingIntervalSeconds\": 30"
+        "}";
+
+    REPORTED_PROPERTY* reportedProperties = nullptr;
+    
+    EXPECT_FALSE(IsCommandLoggingEnabledInJsonConfig(configuration));
+    EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
+    EXPECT_EQ(30, GetReportingIntervalFromJsonConfig(configuration, nullptr));
+    EXPECT_EQ(11, GetModelVersionFromJsonConfig(configuration, nullptr));
+    EXPECT_EQ(2, GetIotHubProtocolFromJsonConfig(configuration, nullptr));
+
+    // The value of 3 is too big, shall be changed to 1
+    EXPECT_EQ(1, GetLocalManagementFromJsonConfig(configuration, nullptr));
+
+    EXPECT_EQ(2, LoadReportedFromJsonConfig(configuration, &reportedProperties, nullptr));
+    EXPECT_STREQ("DeviceInfo", reportedProperties[0].componentName);
+    EXPECT_STREQ("osName", reportedProperties[0].propertyName);
+    EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
+    EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
+    FREE_MEMORY(reportedProperties);
+}
