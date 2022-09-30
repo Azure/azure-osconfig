@@ -12,7 +12,7 @@
 #include "DeliveryOptimization.h"
 
 static const char* g_deliveryoptimizationModuleInfo = "{\"Name\": \"DeliveryOptimization\","
-    "\"Description\": \"Provides functionality to observe and configure Delivery Optimization\","
+    "\"Description\": \"Provides functionality to observe and configure Delivery Optimization (DO)\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
     "\"VersionMinor\": 0,"

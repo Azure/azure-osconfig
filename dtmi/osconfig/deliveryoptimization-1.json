@@ -3,7 +3,7 @@
   "@id": "dtmi:osconfig:deliveryoptimization;1",
   "@type": "Interface",
   "displayName": "Delivery Optimization",
-  "description": "Provides functionality to observe and configure Delivery Optimization",
+  "description": "Provides functionality to observe and configure Delivery Optimization (DO)",
   "contents": [
     {
       "@type": "Property",
