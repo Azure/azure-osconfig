@@ -45,11 +45,6 @@
       "name": "Pmc"
     },
     {
-      "schema": "dtmi:osconfig:settings;2",
-      "@type": "Component",
-      "name": "Settings"
-    },
-    {
       "schema": "dtmi:osconfig:tpm;3",
       "@type": "Component",
       "name": "Tpm"

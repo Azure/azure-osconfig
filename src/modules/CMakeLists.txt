@@ -56,7 +56,6 @@ add_module(Firewall)
 add_module(Hostname)
 add_module(Networking)
 add_module(PMC)
-add_module(Settings)
 add_module(Tpm)
 add_module(Ztsi)
 
