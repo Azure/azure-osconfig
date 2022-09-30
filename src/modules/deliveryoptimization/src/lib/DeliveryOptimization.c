@@ -131,6 +131,13 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
 int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
+    const char* jsonPropertyName = NULL;
+    int jsonPropertyType = JSONNull;
+    JSON_Value *rootValue = NULL;
+    JSON_Object *rootObject = NULL;
+    JSON_Value *value = NULL;
+    char *json = NULL;
+    const char* emptyJsonPayload = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -153,9 +160,6 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
-
-    const char* jsonPropertyName = NULL;
-    int jsonPropertyType = JSONNull;
 
     if (MMI_OK == status)
     {
@@ -188,16 +192,16 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
 
     if ((MMI_OK == status) && (NULL != jsonPropertyName) && (JSONNull != jsonPropertyType))
     {
-        JSON_Value* rootValue = json_parse_file(g_deliveryOptimizationConfigFile);
+        rootValue = json_parse_file(g_deliveryOptimizationConfigFile);
 
         if (json_value_get_type(rootValue) == JSONObject)
         {
-            JSON_Object* rootObject = json_value_get_object(rootValue);
+            rootObject = json_value_get_object(rootValue);
 
             if (json_object_has_value_of_type(rootObject, jsonPropertyName, jsonPropertyType))
             {
-                JSON_Value* value = json_object_get_value(rootObject, jsonPropertyName);
-                char* json = json_serialize_to_string(value);
+                value = json_object_get_value(rootObject, jsonPropertyName);
+                json = json_serialize_to_string(value);
 
                 if (NULL != json)
                 {
@@ -257,7 +261,6 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         // Reset status and payload if JSON file could not be parsed or property not found, as it may yet have to be configured.
         if (MMI_OK != status)
         {
-            const char* emptyJsonPayload = NULL;
             if (JSONNumber == jsonPropertyType)
             {
                 emptyJsonPayload = "0";
@@ -295,6 +298,18 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
 int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
+    char *buffer = NULL;
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* newValue = NULL;
+    JSON_Object* newObject = NULL;
+    unsigned int count = 0;
+    const char* name = NULL;
+    JSON_Value *currentValue = NULL;
+    const char* cacheHost = NULL;
+    int cacheHostSource = 0;
+    int cacheHostFallback = 0;
+    int percentageDownloadThrottle = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
@@ -324,35 +339,35 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
     if (MMI_OK == status)
     {
         // Make sure that payload is null-terminated for json_parse_string.
-        char* buffer = malloc(payloadSizeBytes + 1);
+        buffer = malloc(payloadSizeBytes + 1);
         if (NULL != buffer)
         {
             buffer[payloadSizeBytes] = '\0';
             strncpy(buffer, payload, payloadSizeBytes);
 
-            JSON_Value* rootValue = json_parse_string(buffer);
+            rootValue = json_parse_string(buffer);
             if (json_value_get_type(rootValue) == JSONObject)
             {
-                JSON_Object* rootObject = json_value_get_object(rootValue);
+                rootObject = json_value_get_object(rootValue);
 
                 // Create new JSON_Value with validated output.
-                JSON_Value* newValue = json_value_init_object();
-                JSON_Object* newObject = json_value_get_object(newValue);
+                newValue = json_value_init_object();
+                newObject = json_value_get_object(newValue);
 
-                const unsigned int count = json_object_get_count(rootObject);
+                count = json_object_get_count(rootObject);
                 for (unsigned int i = 0; i < count; i++)
                 {
-                    const char* name = json_object_get_name(rootObject, i);
-                    JSON_Value* currentValue = json_object_get_value(rootObject, name);
+                    name = json_object_get_name(rootObject, i);
+                    currentValue = json_object_get_value(rootObject, name);
 
                     if ((0 == strcmp(name, g_desiredCacheHostSettingName)) && (JSONString == json_value_get_type(currentValue)))
                     {
-                        const char* cacheHost = json_value_get_string(currentValue);
+                        cacheHost = json_value_get_string(currentValue);
                         json_object_set_string(newObject, g_cacheHostConfigName, cacheHost);
                     }
                     else if ((0 == strcmp(name, g_desiredCacheHostSourceSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        const int cacheHostSource = (int)json_value_get_number(currentValue);
+                        cacheHostSource = (int)json_value_get_number(currentValue);
                         if ((cacheHostSource >= 0) && (cacheHostSource <= 3))
                         {
                             json_object_set_number(newObject, g_cacheHostSourceConfigName, cacheHostSource);
@@ -365,12 +380,12 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                     }
                     else if ((0 == strcmp(name, g_desiredCacheHostFallbackSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        const int cacheHostFallback = (int)json_value_get_number(currentValue);
+                        cacheHostFallback = (int)json_value_get_number(currentValue);
                         json_object_set_number(newObject, g_cacheHostFallbackConfigName, cacheHostFallback);
                     }
                     else if ((0 == strcmp(name, g_desiredPercentageDownloadThrottleSettingName)) && (JSONNumber == json_value_get_type(currentValue)))
                     {
-                        const int percentageDownloadThrottle = (int)json_value_get_number(currentValue);
+                        percentageDownloadThrottle = (int)json_value_get_number(currentValue);
                         if ((percentageDownloadThrottle >= 0) && (percentageDownloadThrottle <= 100))
                         {
                             json_object_set_number(newObject, g_percentageDownloadThrottleConfigName, percentageDownloadThrottle);

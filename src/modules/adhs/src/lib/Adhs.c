@@ -143,6 +143,13 @@ int AdhsMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* payloa
 int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
+    const char* value = NULL;
+    char* fileContent = NULL;
+    unsigned int fileContentSizeBytes = 0;
+    regmatch_t matchGroups[3] = {0};
+    regex_t permissionRegex = {0};
+    char* currentMatch = NULL;
+    unsigned int currentMatchSizeBytes = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -172,29 +179,23 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         status = EINVAL;
     }
 
-    const char* value = NULL;
-
     if (MMI_OK == status)
     {
-        char* fileContent = LoadStringFromFile(g_adhsConfigFile, false, AdhsGetLog());
+        fileContent = LoadStringFromFile(g_adhsConfigFile, false, AdhsGetLog());
         if (NULL != fileContent)
         {
-            const unsigned int matchGroupsCount = 3;
-            regmatch_t matchGroups[matchGroupsCount];
-            regex_t permissionRegex;
-
+            fileContentSizeBytes = strlen(fileContent);
             if (0 == regcomp(&permissionRegex, g_permissionConfigPattern, REG_EXTENDED))
             {
-                if (0 == regexec(&permissionRegex, fileContent, matchGroupsCount, matchGroups, 0))
+                if (0 == regexec(&permissionRegex, fileContent, 3, matchGroups, 0))
                 {
                     // Property value is located in the third match group.
-                    const unsigned int fileContentSizeBytes = strlen(fileContent);
                     if ((IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
                         (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
                         (IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)))
                     {
-                        const char* currentMatch = fileContent + matchGroups[2].rm_so;
-                        const unsigned int currentMatchSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
+                        currentMatch = fileContent + matchGroups[2].rm_so;
+                        currentMatchSizeBytes = matchGroups[2].rm_eo - matchGroups[2].rm_so;
                         
                         for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
                         {
@@ -286,6 +287,9 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
 int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
+    const char* value = NULL; 
+    char* fileContent = NULL;
+    unsigned int fileContentSizeBytes = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
@@ -320,7 +324,6 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
     if (MMI_OK == status)
     {
-        const char* value = NULL; 
         for (unsigned int i = 0; i < g_permissionConfigMapCount; i++)
         {
             if ((payloadSizeBytes == (int)strlen(g_permissionConfigMapValues[i])) && (0 == strncmp(payload, g_permissionConfigMapValues[i], payloadSizeBytes)))
@@ -332,8 +335,8 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
 
         if (NULL != value)
         {
-            const int fileContentSizeBytes = snprintf(NULL, 0, g_adhsConfigFileFormat, value);
-            char *fileContent = malloc(fileContentSizeBytes + 1);
+            fileContentSizeBytes = snprintf(NULL, 0, g_adhsConfigFileFormat, value);
+            fileContent = malloc(fileContentSizeBytes + 1);
             if (fileContent)
             {
                 snprintf(fileContent, fileContentSizeBytes + 1, g_adhsConfigFileFormat, value);
@@ -342,6 +345,8 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
                     OsConfigLogError(AdhsGetLog(), "MmiSet failed to write TOML file (%s)", g_adhsConfigFile);
                     status = EIO;
                 }
+
+                FREE_MEMORY(fileContent);
             }
             else 
             {
