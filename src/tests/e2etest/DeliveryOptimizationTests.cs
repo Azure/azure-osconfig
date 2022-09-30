@@ -39,10 +39,9 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual("", reported.CacheHost);
-                Assert.AreEqual(0, reported.CacheHostSource);
-                Assert.AreEqual(0, reported.CacheHostFallback);
-                Assert.AreEqual(0, reported.PercentageDownloadThrottle);
+                Assert.NotNull(reported.CacheHost);
+                Assert.That(reported.CacheHostSource, Is.InRange(0, 3));
+                Assert.That(reported.PercentageDownloadThrottle, Is.InRange(0, 100));
             });
         }
         

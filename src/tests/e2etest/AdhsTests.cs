@@ -24,11 +24,11 @@ namespace E2eTesting
         [Test]
         public void AdhsTest_Get()
         {
-            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 0));
+            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 1 || adhs.OptIn == 2 || adhs.OptIn == 3));
 
             Assert.Multiple(() =>
             {
-                Assert.AreEqual(0, reported.OptIn);
+               Assert.That(reported.OptIn, Is.InRange(0, 2));
             });
         }
         
