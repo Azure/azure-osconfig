@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace E2eTesting
 {
-
     [TestFixture, Category("Adhs")]
     public class AdhsTests : E2ETest
     {
@@ -28,7 +27,7 @@ namespace E2eTesting
 
             Assert.Multiple(() =>
             {
-               Assert.That(reported.OptIn, Is.InRange(0, 2));
+                Assert.That(reported.OptIn, Is.InRange(0, 2));
             });
         }
         

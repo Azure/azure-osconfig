@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace E2eTesting
 {
-
     [TestFixture, Category("DeliveryOptimization")]
     public class DeliveryOptimizationTests : E2ETest
     {
