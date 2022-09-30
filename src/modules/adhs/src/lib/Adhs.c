@@ -263,10 +263,10 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
         }
 
-        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
+        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (NULL != *payload)
         {
-            strncpy(*payload, value, *payloadSizeBytes);
+            memcpy(*payload, value, *payloadSizeBytes);
         }
         else
         {
