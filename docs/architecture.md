@@ -133,7 +133,7 @@ In addition to the common MpiGet and MpiSet an additional pair of MpiGetReported
 Example:
 
 ```json
-{"CommandRunner":{"commandArguments":{"commandId":"726","arguments":"ls", "action":4}}, "DeliveryOptimization":{"desiredDeliveryOptimizationPolicies":{"percentageDownloadThrottle":90,"cacheHostSource":2, "cacheHost":"Test cache host","cacheHostFallback":2021}}} 
+{"CommandRunner":{"commandArguments":{"commandId":"726","arguments":"ls", "action":4}}, "Settings":{"deviceHealthTelemetryConfiguration":2, "deliveryOptimizationPolicies":{"percentageDownloadThrottle":90,"cacheHostSource":2, "cacheHost":"Test cache host","cacheHostFallback":2021}}} 
 ```
 
 This format is following the MIM JSON payload schema described in the [OSConfig Management Modules](modules.md) specification.
