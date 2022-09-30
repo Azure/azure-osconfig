@@ -157,7 +157,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         
     if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
     {
-        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
+        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
 
@@ -185,7 +185,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         }
         else
         {
-            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported object name (%s)", objectName);
+            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported object name '%s'", objectName);
             status = EINVAL;
         }
     }
@@ -230,7 +230,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                 {
                     if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to serialize JSON property (%s)", jsonPropertyName);
+                        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to serialize JSON property '%s'", jsonPropertyName);
                     }
                     status = EINVAL;
                 }
@@ -239,7 +239,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
             {
                 if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to find JSON property (%s)", jsonPropertyName);
+                    OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to find JSON property '%s'", jsonPropertyName);
                 }
                 status = EINVAL;
             }
@@ -248,7 +248,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to parse JSON file (%s)", g_deliveryOptimizationConfigFile);
+                OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet failed to parse JSON file '%s'", g_deliveryOptimizationConfigFile);
             }
             status = EINVAL;
         }
@@ -326,13 +326,13 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
         
     if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
     {
-        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
+        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
         
     if ((MMI_OK == status) && (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName)))
     {
-        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name (%s)", objectName);
+        OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
 
@@ -374,7 +374,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                         }
                         else 
                         {
-                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid cacheHostSource (%d)", cacheHostSource);
+                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid cacheHostSource %d", cacheHostSource);
                             status = EINVAL;
                         }
                     }
@@ -392,7 +392,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
                         }
                         else 
                         {
-                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid percentageDownloadThrottle (%d)", percentageDownloadThrottle);
+                            OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called with invalid percentageDownloadThrottle %d", percentageDownloadThrottle);
                             status = EINVAL;
                         }
                     }
@@ -400,7 +400,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
 
                 if (JSONSuccess != json_serialize_to_file_pretty(newValue, g_deliveryOptimizationConfigFile))
                 {
-                    OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet failed to write JSON file (%s)", g_deliveryOptimizationConfigFile);
+                    OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet failed to write JSON file '%s'", g_deliveryOptimizationConfigFile);
                     status = EIO;
                 }
 
@@ -408,7 +408,7 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
             }
             else
             {
-                OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet failed to parse JSON (%.*s)", payloadSizeBytes, payload);
+                OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet failed to parse JSON '%.*s'", payloadSizeBytes, payload);
                 status = EINVAL;
             }
 

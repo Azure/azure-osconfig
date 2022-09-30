@@ -169,13 +169,13 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         
     if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
+        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
 
     if ((MMI_OK == status) && (strcmp(objectName, g_reportedOptInObjectName)))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name (%s)", componentName);
+        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", componentName);
         status = EINVAL;
     }
 
@@ -212,7 +212,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                     {
                         if (IsFullLoggingEnabled())
                         {
-                            OsConfigLogError(AdhsGetLog(), "MmiGet failed to find valid TOML property (%s)", g_permissionConfigName);
+                            OsConfigLogError(AdhsGetLog(), "MmiGet failed to find valid TOML property '%s'", g_permissionConfigName);
                         }
                         status = EINVAL;
                     }
@@ -221,7 +221,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 {
                     if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property (%s)", g_permissionConfigName);
+                        OsConfigLogError(AdhsGetLog(), "MmiGet failed to find TOML property '%s'", g_permissionConfigName);
                     }
                     status = EINVAL;
                 }
@@ -230,7 +230,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
             } 
             else 
             {
-                OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression (%s)", g_permissionConfigPattern);
+                OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression '%s'", g_permissionConfigPattern);
                 status = EINVAL;
             }
             
@@ -240,7 +240,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         {
             if (IsFullLoggingEnabled())
             {
-                OsConfigLogError(AdhsGetLog(), "MmiGet failed to read TOML file (%s)", g_adhsConfigFile);
+                OsConfigLogError(AdhsGetLog(), "MmiGet failed to read TOML file '%s'", g_adhsConfigFile);
             }
             status = EINVAL;
         }
@@ -306,13 +306,13 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
         
     if ((MMI_OK == status) && (strcmp(componentName, g_adhsComponentName)))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
+        OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
         
     if ((MMI_OK == status) && (strcmp(objectName, g_desiredOptInObjectName)))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported object name (%s)", objectName);
+        OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
         
@@ -343,7 +343,7 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 snprintf(fileContent, fileContentSizeBytes + 1, g_adhsConfigFileFormat, value);
                 if (!SavePayloadToFile(g_adhsConfigFile, fileContent, fileContentSizeBytes, AdhsGetLog()))
                 {
-                    OsConfigLogError(AdhsGetLog(), "MmiSet failed to write TOML file (%s)", g_adhsConfigFile);
+                    OsConfigLogError(AdhsGetLog(), "MmiSet failed to write TOML file '%s'", g_adhsConfigFile);
                     status = EIO;
                 }
 
