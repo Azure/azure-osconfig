@@ -110,6 +110,7 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
+        memset(*payload, 0, *payloadSizeBytes);
         memcpy(*payload, g_deliveryoptimizationModuleInfo, *payloadSizeBytes);
         status = MMI_OK;
     }
@@ -154,7 +155,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
+    else if (strcmp(componentName, g_deliveryOptimizationComponentName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
@@ -213,7 +214,8 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
                     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
                     if (NULL != *payload)
                     {
-                        strncpy(*payload, json, *payloadSizeBytes);
+                        memset(*payload, 0, *payloadSizeBytes);
+                        memcpy(*payload, json, *payloadSizeBytes);
                     }
                     else 
                     {
@@ -273,6 +275,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
 
             if (NULL != payload)
             {
+                memset(*payload, 0, *payloadSizeBytes);
                 strncpy(*payload, emptyJsonPayload, *payloadSizeBytes);
                 status = MMI_OK;
             }
@@ -319,12 +322,12 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if ((MMI_OK == status) && (strcmp(componentName, g_deliveryOptimizationComponentName)))
+    else if (strcmp(componentName, g_deliveryOptimizationComponentName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-    else if ((MMI_OK == status) && (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName)))
+    else if (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
