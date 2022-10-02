@@ -100,7 +100,13 @@ rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 /usr/lib/osconfig/tpm.so
 /usr/lib/osconfig/ztsi.so
 
-%changelog
+% changelog
+* Fri Sept 30 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.4.20220930
+- DTMI model moved to this repo
+- Support for MIM enumerations of strings
+- New Firewall v3
+- New MPI Client common library
+- Various fixes and improvements
 * Fri Jun 10 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.3.20220610
 - Detached Agent and Platform running in separate daemon processes.
 - Platform daemon controlled through the Agent.
