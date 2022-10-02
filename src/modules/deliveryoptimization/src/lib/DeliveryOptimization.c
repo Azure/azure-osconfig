@@ -334,12 +334,12 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
     }
     else 
     {
-        // Make sure that payload is null-terminated for json_parse_string.
+        // Copy payload to local buffer with null terminator for json_parse_string.
         buffer = malloc(payloadSizeBytes + 1);
         if (NULL != buffer)
         {
             memset(buffer, 0, payloadSizeBytes + 1);
-            strncpy(buffer, payload, payloadSizeBytes);
+            memcpy(buffer, payload, payloadSizeBytes);
 
             rootValue = json_parse_string(buffer);
             if (json_value_get_type(rootValue) == JSONObject)
