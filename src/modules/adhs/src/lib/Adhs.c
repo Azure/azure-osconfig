@@ -167,12 +167,12 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         OsConfigLogError(AdhsGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if (strcmp(componentName, g_adhsComponentName))
+    else if (0 != strcmp(componentName, g_adhsComponentName))
     {
         OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-    else if (strcmp(objectName, g_reportedOptInObjectName))
+    else if (0 != strcmp(objectName, g_reportedOptInObjectName))
     {
         OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", componentName);
         status = EINVAL;
@@ -231,8 +231,6 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
                 OsConfigLogError(AdhsGetLog(), "MmiGet failed to compile regular expression '%s'", g_permissionConfigPattern);
                 status = EINVAL;
             }
-            
-            FREE_MEMORY(fileContent);
         }
         else 
         {
@@ -277,6 +275,8 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
         OsConfigLogInfo(AdhsGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
+    FREE_MEMORY(fileContent);
+
     return status;
 }
 
@@ -297,12 +297,12 @@ int AdhsMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* 
         OsConfigLogError(AdhsGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if (strcmp(componentName, g_adhsComponentName))
+    else if (0 != strcmp(componentName, g_adhsComponentName))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-    else if (strcmp(objectName, g_desiredOptInObjectName))
+    else if (0 != strcmp(objectName, g_desiredOptInObjectName))
     {
         OsConfigLogError(AdhsGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;

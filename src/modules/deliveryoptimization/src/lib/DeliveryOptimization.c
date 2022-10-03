@@ -11,7 +11,7 @@
 
 #include "DeliveryOptimization.h"
 
-static const char* g_deliveryoptimizationModuleInfo = "{\"Name\": \"DeliveryOptimization\","
+static const char* g_deliveryOptimizationModuleInfo = "{\"Name\": \"DeliveryOptimization\","
     "\"Description\": \"Provides functionality to observe and configure Delivery Optimization (DO)\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
@@ -43,8 +43,8 @@ static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static const char* g_deliveryOptimizationConfigFile = NULL;
-static const char* g_deliveryoptimizationLogFile = "/var/log/osconfig_deliveryoptimization.log";
-static const char* g_deliveryoptimizationRolledLogFile = "/var/log/osconfig_deliveryoptimization.bak";
+static const char* g_deliveryOptimizationLogFile = "/var/log/osconfig_deliveryoptimization.log";
+static const char* g_deliveryOptimizationRolledLogFile = "/var/log/osconfig_deliveryoptimization.bak";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
@@ -56,7 +56,7 @@ static OSCONFIG_LOG_HANDLE DeliveryOptimizationGetLog()
 void DeliveryOptimizationInitialize(const char* configFile)
 {
     g_deliveryOptimizationConfigFile = configFile;
-    g_log = OpenLog(g_deliveryoptimizationLogFile, g_deliveryoptimizationRolledLogFile);
+    g_log = OpenLog(g_deliveryOptimizationLogFile, g_deliveryOptimizationRolledLogFile);
         
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "%s initialized", g_deliveryOptimizationModuleName);
 }
@@ -106,12 +106,12 @@ int DeliveryOptimizationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payl
         return status;
     }
     
-    *payloadSizeBytes = (int)strlen(g_deliveryoptimizationModuleInfo);
+    *payloadSizeBytes = (int)strlen(g_deliveryOptimizationModuleInfo);
     *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
     if (*payload)
     {
         memset(*payload, 0, *payloadSizeBytes);
-        memcpy(*payload, g_deliveryoptimizationModuleInfo, *payloadSizeBytes);
+        memcpy(*payload, g_deliveryOptimizationModuleInfo, *payloadSizeBytes);
         status = MMI_OK;
     }
     else
@@ -155,7 +155,7 @@ int DeliveryOptimizationMmiGet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if (strcmp(componentName, g_deliveryOptimizationComponentName))
+    else if (0 != strcmp(componentName, g_deliveryOptimizationComponentName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
@@ -322,12 +322,12 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    else if (strcmp(componentName, g_deliveryOptimizationComponentName))
+    else if (0 != strcmp(componentName, g_deliveryOptimizationComponentName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-    else if (strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName))
+    else if (0 != strcmp(objectName, g_desiredDeliveryOptimizationPoliciesObjectName))
     {
         OsConfigLogError(DeliveryOptimizationGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
@@ -409,7 +409,6 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
             }
 
             json_value_free(rootValue);
-            FREE_MEMORY(buffer);
         }
         else 
         {
@@ -420,6 +419,8 @@ int DeliveryOptimizationMmiSet(MMI_HANDLE clientSession, const char* componentNa
 
     OsConfigLogInfo(DeliveryOptimizationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
     
+    FREE_MEMORY(buffer);
+
     return status;
 }
 
