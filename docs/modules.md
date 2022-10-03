@@ -43,7 +43,7 @@ This model assumes a declarative style of communication between the upper layers
 - Declarative style: the model describes the desired state (what), the platform decides how to get there. 
 - Procedural style: the model relies on programmatic step-by-step negotiation of what and how. 
 
-For PnP, the Twins start empty and gradually get filled in with content (desired, from the remote operator and reported, from the device). When the OSConfig starts, it receives the full desired Twin and dispatches that to modules. From there on, incremental changes of the desired Twin are communicated to OSConfig (and the Modules), one (possibly partial, just the changed settings) object at a time. In the opposite direction, OSConfig periodically updates the reported Twin with one MIM object at a time, reading from the modules. Modules can also have their own MIM-specified actions to request the update of a reported MIM object (example: RefreshCommandStatus Action for CommandRunner.CommandArguments to update CommandRunner.CommandStatus for a particular command).
+For PnP, the Twins start empty and gradually get filled in with content (desired, from the remote operator and reported, from the device). When the OSConfig starts, it receives the full desired Twin and dispatches that to modules. From there on, incremental changes of the desired Twin are communicated to OSConfig (and the Modules), one (possibly partial, just the changed settings) object at a time. In the opposite direction, OSConfig periodically updates the reported Twin with one MIM object at a time, reading from the modules. Modules can also have their own MIM-specified actions to request the update of a reported MIM object (example: refreshCommandStatus Action for CommandRunner.commandArguments to update CommandRunner.commandStatus for a particular command).
 
 ### 3.1.1. MIM Components 
 
@@ -69,9 +69,9 @@ There are two types of PnP properties:
 - Readable, holding Reported Twin values. These properties are exclusively updated from the device and seen as read-only from the IoT Hub.
 - Writeable, holding Desired Twin values. These properties are exclusively updated from the IoT Hub. The device can reject an update request but cannot update such property.
 
-Same as PnP properties, the MIM objects (together with the settings they contain) are unidirectional, either reported or desired, not both.  For writeable settings, desired objects normally may be paired with reported objects. For read-only settings there can be only reported objects. There also could be desired objects without reported counterparts. Once the desired and reported objects are modeled, the module must adhere to this model (report reported, accept desired) and respect it. 
+Same as PnP properties, the MIM objects (together with the settings they contain) are unidirectional, either reported or desired, not both. For writeable settings, desired objects normally may be paired with reported objects. For read-only settings there can be only reported objects. There also could be desired objects without reported counterparts. Once the desired and reported objects are modeled, the module must adhere to this model (report reported, accept desired) and respect it. 
 
-When the desired MIM object is distinctly different from its reported MIM object the two objects can be linked together (to be able to reference each other) via a common MIM setting. For example, the Command Runner OSConfig component's desired CommandArguments object is linked to the matching reported CommandStatus object via the CommandId MIM setting that both contain. 
+When the desired MIM object is distinctly different from its reported MIM object the two objects can be linked together (to be able to reference each other) via a common MIM setting. For example, the CommandRunner OSConfig component's desired commandArguments object is linked to the matching reported commandStatus object via the commandId MIM setting that both contain. 
 
 Each MIM object contains one or multiple MIM settings, either in a single instance or in multiple instances, as a array object. 
 
@@ -85,7 +85,7 @@ Example of an MIM object that contains multiple MIM settings:
 
 ```JSON
 { 
-  "name": "TpmStatus", 
+  "name": "tpmStatus", 
   "type": "mimObject", 
   "desired": false,
   "schema": {
@@ -325,7 +325,7 @@ The model is composed by a list of components, several lists (one for each compo
 1. For each object, list the setting(s) contained within this object. 
 1. For each object, answer if this is an array object (where all settings repeat a variable number of times as items into an array) or not. 
 1. Describe each setting with answers to the following questions:
-    1. What is the setting name? The name of the setting, in CamelCase.
+    1. What is the setting name? The name of the setting, in camelCase.
     1. What is the access: desired or reported for the setting?
     1. What does the setting? A short description of the setting (what the setting does, in few words).
     1. What is the value type for the setting? Answer can be: boolean, integer, enumeration of integers or strings, array of integers or strings, map of integers or strings, character string (UTF-8).
@@ -334,7 +334,7 @@ The model is composed by a list of components, several lists (one for each compo
     1. Does this setting depend on any other setting in this or another object? List what. 
     1. Is this setting required or optional? Can this setting be skipped at run time to be reported/updated?
 
-Example: desired setting Action of CommandArguments: 
+Example: desired setting action of commandArguments: 
 
 Question | Answer
 -----|-----
@@ -344,23 +344,23 @@ Setting | action
 Access | Desired (no matching reported setting)
 Description | The action for this command
 Value type | Enumeration of integers
-Supported values | 0 (None), 1 (Reboot), 2 (Shutdown), 3 (RunCommand), 4 (RefreshCommandStatus), 5 (CancelCommand)
+Supported values | 0 (none), 1 (reboot), 2 (shutdown), 3 (runCommand), 4 (refreshCommandStatus), 5 (cancelCommand)
 Links two objects | No
-Relation to other settings | RunCommand runs the command described by the Arguments setting value of this object. RefreshCommandStatus requests the CommandStatus object of this component to be refreshed for the CommandId setting value of this object.
+Relation to other settings | runCommand runs the command described by the arguments setting value of this object. refreshCommandStatus requests the commandStatus object of this component to be refreshed for the commandId setting value of this object.
 Required | Yes
 
-Example: setting CommandId links desired object CommandArguments and reported object CommandStatus:
+Example: setting commandId links desired object commandArguments and reported object commandStatus:
 
 Question | Answer
 -----|-----
 Component | CommandRunner
 Object | commandArguments
 Setting | commandId
-Access | Desired (matching CommandStatus.CommandId as reported)
+Access | Desired (matching commandStatus.commandId as reported)
 Description | The identifier for this command, as provided with the command request
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
-Links two objects | Yes. commandArguments with commandStatus. The setting value identifies a command and links this desired CommandArguments object with the reported commandStatus object.
+Links two objects | Yes. commandArguments with commandStatus. The setting value identifies a command and links this desired commandArguments object with the reported commandStatus object.
 Relation to other settings | None
 Required | Yes
 
@@ -370,21 +370,21 @@ Component | CommandRunner
 Object | commandStatus
 Setting | commandId
 Access | Reported
-Description | The identifier for this command, originally provided via a CommandArguments object, now reported back to indicate the command this result (status) is for.
+Description | The identifier for this command, originally provided via a commandArguments object, now reported back to indicate the command this result (status) is for.
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
 Links two objects | Yes. commandArguments with commandStatus. The setting value identifies a command and links this reported commandStatus object with the respective desired commandArguments object.
 Relation to other settings | None
 Required | Yes
 
-Example: fictive setting FooPolicy, both desired and reported, optional:
+Example: fictive setting fooPolicy, both desired and reported, optional:
 
 Question | Answer
 -----|-----
 Component | FooPolicies
 Object | desiredFooPolicies
 Setting | fooPolicy
-Access | Desired (matching ReportedFooPolicies.FooPolicy as reported)
+Access | Desired (matching ReportedFooPolicies.fooPolicy as reported)
 Description | A fictive desired policy
 Value type | String
 Supported values | Any UTF-8 character string up to 256 bytes long.
@@ -758,7 +758,7 @@ or:
 
 Etc.
 
-Example of serialized JSON payload for CommandRunner.CommandArguments and Settings:
+Example of serialized JSON payload for CommandRunner.commandArguments and Settings:
 
 ```JSON
 {"CommandRunner":{"commandArguments":{"commandId":"A","arguments":"date","action":4}},"Settings":{"deviceHealthTelemetryConfiguration":2,"deliveryOptimizationPolicies":{"percentageDownloadThrottle": 55,"cacheHostSource": 0,"cacheHost": "abc","cacheHostFallback":2022}}}
@@ -840,7 +840,7 @@ void MmiClose(MMI_HANDLE clientSession);
 
 ## 4.4. MmiSet
 
-MmiSet takes as input arguments a handle returned by MmiOpen, the name of the component (for OSConfig this will be the name of the PnP interface/component, e.g. "CommandRunner"), the name of the object (for OSConfig this will be the be PnP property name, e.g. "CommandArguments"), the desired object payload formatted as JSON and not null terminated UTF-8 character string  and the length (size) in bytes of the JSON payload (without null terminator). The module can use the clientSession handle (module specific, could be a C structure or C++ class) to give context to the call or can ignore it. 
+MmiSet takes as input arguments a handle returned by MmiOpen, the name of the component (for OSConfig this will be the name of the PnP interface/component, e.g. "CommandRunner"), the name of the object (for OSConfig this will be the be PnP property name, e.g. "commandArguments"), the desired object payload formatted as JSON and not null terminated UTF-8 character string  and the length (size) in bytes of the JSON payload (without null terminator). The module can use the clientSession handle (module specific, could be a C structure or C++ class) to give context to the call or can ignore it. 
 
 The objectName and payload must must match a desired MIM object from the componentName MIM component and present in the module's MIM. There can only be one single MIM object per MmiSet call. Modules must not accept MmiSet calls that are not following their MIM precisely.
 
@@ -1065,24 +1065,24 @@ WaitSeconds | Integer | Optional | If not omitted and not zero, this is the wait
 
 The Module Test Recipe JSONs are saved under [src/modules/test/recipes/](../src/modules/test/recipes/) as JSON files, one for each module, named as module name with a "Tests" suffix ("ModuleNameTests.json"). For example: CommandRunnerTests.json, DeviceInfoTests.json. 
 
-Example of a recipe with two CommandRunner test objects, one desired CommandArguments and one reported CommandStatus:
+Example of a recipe with two CommandRunner test objects, one desired commandArguments and one reported commandStatus:
 
 ```JSON
 [
   {
     "ComponentName": "CommandRunner",
-    "ObjectName": "CommandArguments",
+    "ObjectName": "commandArguments",
     "Desired": 1,
-    "Payload": "{\"CommandId\":\"1\",\"Arguments\":\"ls\",\"Timeout\":60,\"SingleLineTextResult\":true,\"Action\":3}",
+    "Payload": "{\"commandId\":\"1\",\"arguments\":\"ls\",\"timeout\":60,\"singleLineTextResult\":true,\"action\":3}",
     "PayloadSizeBytes": 88,
     "ExpectedResult": 0,
     "WaitSeconds": 10
   },
   {
     "ComponentName": "CommandRunner",
-    "ObjectName": "CommandStatus",
+    "ObjectName": "commandStatus",
     "Desired": 0,
-    "Payload": "{\"CommandId\":\"1\",\"ResultCode\":0,\"TextResult\":\"a.foo b.foo\",\"CurrentState\": 2}",
+    "Payload": "{\"commandId\":\"1\",\"resultCode\":0,\"textResult\":\"a.foo b.foo\",\"currentState\": 2}",
     "ExpectedResult": 0
   }
 ]
@@ -1103,7 +1103,7 @@ MIM can be directly translated to [Digital Twins Definition Language (DTDL)](htt
 MIM | DTDL | Notes
 -----|-----|-----
 MIM component | PnP interface | Each MIM component can be translated to a [PnP interface](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#interface). For example the [CommandRunner MIM component](../src/modules/mim/commandrunner.json) component is translated to the [CommandRunner PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/commandrunner-2.json). 
-Complex MIM object (containing multiple MIM settings) | Complex PnP property of object type | Each complex MIM object can be translated to a complex [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example CommandRunner.CommandArguments in [CommandRunner MIM](../src/modules/mim/commandrunner.json) and [CommandRunner PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/commandrunner-2.json). 
+Complex MIM object (containing multiple MIM settings) | Complex PnP property of object type | Each complex MIM object can be translated to a complex [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example CommandRunner.commandArguments in [CommandRunner MIM](../src/modules/mim/commandrunner.json) and [CommandRunner PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/commandrunner-2.json). 
 Simple MIM object (containing a single MIM setting) | Simple PnP property | Each simple MIM object can be translated to a simple [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property) with the same name. For example Tpm.TpmVersion in [Tpm MIM](../src/modules/mim/tpm.json) and [Tpm PnP interface](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/osconfig/tpm-1.json).
 Desired MIM object | Writeable (also called read-write) PnP property | Each desired MIM object can be translated to a writeable (read-write) [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property).
 Reported MIM object | Read-only PnP property | Each desired MIM object can be translated to a read-only [PnP property](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md#property). 

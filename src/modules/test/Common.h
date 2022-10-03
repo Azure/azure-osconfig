@@ -75,7 +75,7 @@ static inline std::string GetFullClientName()
             }
             else
             {
-                TestLogError("GetModelVersionFromJsonConfig: Failed to reveive value, using default (%d)", DEFAULT_DEVICE_MODEL_ID);
+                TestLogError("GetModelVersionFromJsonConfig: Failed to receive value, using default (%d)", DEFAULT_DEVICE_MODEL_ID);
             }
             json_value_free(rootValue);
         }

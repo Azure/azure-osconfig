@@ -480,7 +480,7 @@ std::string IpTablesRule::Specification() const
 
 IpTables::State IpTables::Detect() const
 {
-    const char* command = "iptables -S";
+    const char* command = "iptables -S | grep -E \"^-A (INPUT|OUTPUT)\" | wc -l";
 
     State state = State::Unknown;
     char* textResult = nullptr;
@@ -489,7 +489,8 @@ IpTables::State IpTables::Detect() const
     {
         if (textResult && (strlen(textResult) > 0))
         {
-            state = State::Enabled;
+            int ruleCount = atoi(textResult);
+            state = (ruleCount > 0) ? State::Enabled : State::Disabled;
         }
         else
         {
@@ -696,20 +697,12 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
             DesiredState state = rule.GetDesiredState();
             if (state == "present")
             {
-                if (Exists(rule))
+                if (!Exists(rule))
                 {
-                    while (Exists(rule))
+                    if (0 != Add(rule, error))
                     {
-                        if (0 != Remove(rule, error))
-                        {
-                            errors.push_back("Failed to remove rule (" + std::to_string(index) + "): " + error);
-                        }
+                        errors.push_back("Failed to add rule (" + std::to_string(index) + "): " + error);
                     }
-                }
-
-                if (0 != Add(rule, error))
-                {
-                    errors.push_back("Failed to add rule (" + std::to_string(index) + "): " + error);
                 }
             }
             else if (state == "absent")

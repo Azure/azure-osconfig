@@ -5,7 +5,6 @@
 #include "inc/PnpUtils.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
-#include "inc/ConfigUtils.h"
 
 // TraceLogging Provider UUID: CF452C24-662B-4CC5-9726-5EFE827DB281
 TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
@@ -627,11 +626,11 @@ int main(int argc, char *argv[])
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
     if (NULL != jsonConfiguration)
     {
-        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration);
-        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties);
-        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration);
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration);
-        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration);
+        g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
+        g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
+        g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
+        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
+        g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
         FREE_MEMORY(jsonConfiguration);
     }
 
@@ -692,7 +691,7 @@ int main(int argc, char *argv[])
     if (PROTOCOL_MQTT_WS == g_iotHubProtocol)
     {
         // Read the proxy options from environment variables, parse and fill the HTTP_PROXY_OPTIONS structure to pass to the SDK:
-        if (NULL != (proxyData = GetHttpProxyData()))
+        if (NULL != (proxyData = GetHttpProxyData(GetLog())))
         {
             if (ParseHttpProxyData((const char*)proxyData, &proxyHostAddress, &proxyPort, &proxyUsername, &proxyPassword, GetLog()))
             {
