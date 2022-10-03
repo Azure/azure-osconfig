@@ -82,7 +82,8 @@ void ConfigurationInitialize(void)
 
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
-    FREE_MEMORY(configuration = LoadConfigurationFromFile());
+    configuration = LoadConfigurationFromFile();
+    FREE_MEMORY(configuration);
         
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
 }
@@ -299,7 +300,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     
     if (MMI_OK == status)
     {
-        FREE_MEMORY(configuration = LoadConfigurationFromFile());
+        configuration = LoadConfigurationFromFile();
 
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
@@ -361,6 +362,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         OsConfigLogInfo(ConfigurationGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
+
+    FREE_MEMORY(configuration);
 
     return status;
 }
