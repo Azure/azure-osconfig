@@ -6,6 +6,10 @@
   "IotHubProtocol": 2,
   "Reported": [
     {
+      "ComponentName": "Adhs",
+      "ObjectName": "optIn"
+    },
+    {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
     },
@@ -32,6 +36,22 @@
     {
       "ComponentName": "Configuration",
       "ObjectName": "refreshInterval"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "percentageDownloadThrottle"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostSource"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHost"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostFallback"
     },
     {
       "ComponentName": "DeviceInfo",
