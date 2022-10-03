@@ -39,8 +39,6 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-//static char* g_desiredConfiguration = NULL; //needed? Not really
-
 static int g_modelVersion = DEFAULT_DEVICE_MODEL_ID;
 static int g_refreshInterval = DEFAULT_REPORTING_INTERVAL;
 static bool g_localManagementEnabled = false;
@@ -80,11 +78,11 @@ static char* LoadConfigurationFromFile(void)
 
 void ConfigurationInitialize(void)
 {
+    char* configuration = NULL;
+
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
-    // Load configuration from file and free buffer
-    char* configuration = LoadConfigurationFromFile();
-    FREE_MEMORY(configuration);
+    FREE_MEMORY(configuration = LoadConfigurationFromFile());
         
     OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
 }
@@ -301,8 +299,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     
     if (MMI_OK == status)
     {
-        configuration = LoadConfigurationFromFile();
-        FREE_MEMORY(configuration);
+        FREE_MEMORY(configuration = LoadConfigurationFromFile());
 
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
