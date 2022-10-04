@@ -46,7 +46,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if dpkg -l | grep -m 1 -o cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if apt-cache show cowsay | grep -m 1 -o cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 10
   },
@@ -101,7 +101,7 @@
     "Desired": true,
     "Payload": "{\"commandId\":\"removeInvalidGpgKey\",\"arguments\":\"rm /usr/share/keyrings/invalidGpgKey.gpg\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "WaitSeconds": 5
   },
   {
     "ComponentName": "CommandRunner",
@@ -122,7 +122,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"dpkg -l | grep -m 1 -o cowsay\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"apt-cache show cowsay | grep -m 1 -o cowsay\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
