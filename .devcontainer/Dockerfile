@@ -16,7 +16,6 @@ RUN apt -y update && apt-get -y install \
     libcurl4-openssl-dev \
     libgmock-dev \
     libgtest-dev \
-    liblttng-ust-dev \
     libssl-dev \
     ninja-build \
     python3-jsonschema \

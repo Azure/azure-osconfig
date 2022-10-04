@@ -144,7 +144,6 @@ set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST ${CPACK_EXCLUDES})
 # https://www.debian.org/doc/manuals/maint-guide/
 set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
 set(CPACK_DEBIAN_PACKAGE_VERSION ${OsConfigVersionString})
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "liblttng-ust0 (>= 2.7)")
 set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
 set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")

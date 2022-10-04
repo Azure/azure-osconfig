@@ -1,3 +1,6 @@
 [submodule "src/agents/pnp/azure-iot-sdk-c"]
 	path = src/agents/pnp/azure-iot-sdk-c
 	url = https://github.com/Azure/azure-iot-sdk-c
+[submodule "src/agents/pnp/tracelogging"]
+	path = src/agents/pnp/tracelogging
+	url = https://github.com/microsoft/tracelogging
