@@ -2,12 +2,32 @@
   "CommandLogging": 0,
   "FullLogging": 0,
   "LocalManagement": 0,
-  "ModelVersion": 11,
+  "ModelVersion": 12,
   "IotHubProtocol": 2,
   "Reported": [
     {
+      "ComponentName": "Adhs",
+      "ObjectName": "optIn"
+    },
+    {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "percentageDownloadThrottle"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostSource"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHost"
+    },
+    {
+      "ComponentName": "DeliveryOptimization",
+      "ObjectName": "cacheHostFallback"
     },
     {
       "ComponentName": "DeviceInfo",

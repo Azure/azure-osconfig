@@ -31,7 +31,7 @@
                       "enumValue": 1
                     },
                     {
-                      "name": "deviceDiscoverySerivce",
+                      "name": "deviceDiscoveryService",
                       "enumValue": 2
                     },
                     {
@@ -75,7 +75,7 @@
                  "enumValue": 1
               },
               {
-                 "name": "deviceDiscoverySerivce",
+                 "name": "deviceDiscoveryService",
                  "enumValue": 2
               },
               {
