@@ -26,7 +26,7 @@ static const char* g_fullLoggingEnabled = "FullLogging";
 static const char* g_localManagementEnabled = "LocalManagement";
 static const char* g_modelVersion = "ModelVersion";
 static const char* g_iotHubProtocol = "IotHubProtocol";
-static const char* g_refreshIntervalSeconds = "ReportingIntervalSeconds";
+static const char* g_refreshInterval = "ReportingIntervalSeconds";
 
 static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
@@ -128,13 +128,6 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            static const char* g_commandLoggingEnabled = "CommandLogging";
-            static const char* g_fullLoggingEnabled = "FullLogging";
-            static const char* g_localManagementEnabled = "LocalManagement";
-            static const char* g_modelVersion = "ModelVersion";
-            static const char* g_iotHubProtocol = "IotHubProtocol";
-            static const char* g_refreshInterval = "ReportingIntervalSeconds";
-            
             if (JSONSuccess == json_object_set_number(jsonObject, g_modelVersion, (double)modelVersion))
             {
                 g_modelVersion = modelVersion;
