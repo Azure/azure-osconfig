@@ -102,7 +102,8 @@ static int UpdateConfiguration(void)
     bool commandLoggingEnabled = g_commandLoggingEnabled;
     int iotHubProtocol = g_iotHubProtocol;
 
-    char* jsonConfiguration = LoadConfigurationFromFile();
+    char* existingConfiguration = LoadConfigurationFromFile();
+    char* newConfiguration = NULL;
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
@@ -175,14 +176,12 @@ static int UpdateConfiguration(void)
             }
         }
 
-        if (jsonValue)
-        {
-            json_value_free(jsonValue);
-        }
-
         if (MMI_OK == status)
         {
-            if (SavePayloadToFile(g_osConfigConfigurationFile, jsonConfiguration, strlen(jsonConfiguration), ConfigurationGetLog()))
+            newConfiguration = json_serialize_to_string(jsonValue);
+            OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);
+            
+            if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
             {
                 if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
                 {
@@ -198,7 +197,13 @@ static int UpdateConfiguration(void)
         }
     }
         
-    FREE_MEMORY(jsonConfiguration);
+    if (jsonValue)
+    {
+        json_value_free(jsonValue);
+    }
+
+    FREE_MEMORY(existingConfiguration);
+    FREE_MEMORY(newConfiguration);
 
     return status;
 }
