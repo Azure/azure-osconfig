@@ -7,29 +7,46 @@
   "contents": [
     {
       "@type": "Property",
-      "name": "CirewallRules",
+      "name": "desiredConfiguration",
       "schema": {
         "@type": "Object",
         "fields": [
-           {
-            "name": "Directions",
-            "schema": "string"
+          {
+            "name": "refreshInterval",
+            "schema": "integer"
           },
           {
-            "name": "Targets",
-            "schema": "string"
+            "name": "localManagementEnabled",
+            "schema": "boolean"
           },
           {
-            "name": "Protocols",
-            "schema": "string"
+            "name": "fullLoggingEnabled",
+            "schema": "boolean"
           },
           {
-            "name": "IpAddresses",
-            "schema": "string"
+            "name": "commandLoggingEnabled",
+            "schema": "boolean"
           },
           {
-            "name": "Ports",
-            "schema": "string"
+            "name": "iotHubProtocol",
+            "schema": {
+              "@type": "Enum",
+              "valueSchema": "integer",
+              "enumValues": [
+                {
+                  "name": "auto",
+                  "enumValue": 0
+                },
+                {
+                  "name": "mqtt",
+                  "enumValue": 1
+                },
+                {
+                  "name": "mqttWebSocket",
+                  "enumValue": 2
+                }
+              ]
+            }
           }
         ]
       },
