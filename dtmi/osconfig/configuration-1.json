@@ -7,6 +7,32 @@
   "contents": [
     {
       "@type": "Property",
+      "name": "desiredConfiguration",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "desiredRefreshInterval",
+            "schema": "integer"
+          },
+          {
+            "name": "desiredLocalManagementEnabled",
+            "schema": "boolean"
+          },
+          {
+            "name": "desiredFullLoggingEnabled",
+            "schema": "boolean"
+          },
+          {
+            "name": "desiredCommandLoggingEnabled",
+            "schema": "boolean"
+          }
+        ]
+      },
+      "writable": true
+    },
+    {
+      "@type": "Property",
       "name": "modelVersion",
       "schema":"integer",
       "writable": false
@@ -33,6 +59,24 @@
       "@type": "Property",
       "name": "commandLoggingEnabled",
       "schema":"boolean",
+      "writable": false
+    },
+    {
+      "name": "iotHubProtocol",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          { 
+            "name": "mqtt",
+            "enumValue": 0
+          },
+          {
+            "name": "mqttWebSocket",
+            "enumValue": 1
+          }
+        ]
+      },
       "writable": false
     }
   ]
