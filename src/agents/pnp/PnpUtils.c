@@ -135,7 +135,7 @@ static IOTHUB_CLIENT_RESULT PropertyUpdateFromIotHubCallback(const char* compone
 
     if (NULL == componentName)
     {
-        LogErrorWithTelemetry(GetLog(), "PropertyUpdateFromIotHubCallback: property %s arrived with a NULL component name, indicating root", propertyName);
+        OsConfigLogError(GetLog(), "PropertyUpdateFromIotHubCallback: property %s arrived with a NULL component name, indicating root", propertyName);
         return result;
     }
 
@@ -157,7 +157,7 @@ static char* CopyPayloadToString(const unsigned char* payload, size_t size)
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "CopyPayloadToString: out pof memory allocating %d bytes", (int)sizeToAllocate);
+        OsConfigLogError(GetLog(), "CopyPayloadToString: out pof memory allocating %d bytes", (int)sizeToAllocate);
     }
 
     return jsonStr;
@@ -185,7 +185,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
     jsonString = CopyPayloadToString(payload, size);
     if (NULL == jsonString)
     {
-        LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: CopyPayloadToString failed");
+        OsConfigLogError(GetLog(), "ProcessJsonFromTwin: CopyPayloadToString failed");
         result = IOTHUB_CLIENT_ERROR;
     }
 
@@ -194,7 +194,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
         rootValue = json_parse_string(jsonString);
         if (NULL == rootValue)
         {
-            LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: json_parse_string(root) failed");
+            OsConfigLogError(GetLog(), "ProcessJsonFromTwin: json_parse_string(root) failed");
             result = IOTHUB_CLIENT_ERROR;
         }
     }
@@ -204,7 +204,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
         rootObject = json_value_get_object(rootValue);
         if (NULL == rootObject)
         {
-            LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: json_value_get_object(root) failed, cannot get desired object");
+            OsConfigLogError(GetLog(), "ProcessJsonFromTwin: json_value_get_object(root) failed, cannot get desired object");
             result = IOTHUB_CLIENT_ERROR;
         }
     }
@@ -228,7 +228,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
 
         if (NULL == desiredObject)
         {
-            LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: no desired object");
+            OsConfigLogError(GetLog(), "ProcessJsonFromTwin: no desired object");
             result = IOTHUB_CLIENT_ERROR;
         }
     }
@@ -244,12 +244,12 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
             }
             else
             {
-                LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: field %s type is not JSONNumber, cannot read the desired version", g_desiredVersion);
+                OsConfigLogError(GetLog(), "ProcessJsonFromTwin: field %s type is not JSONNumber, cannot read the desired version", g_desiredVersion);
             }
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: json_object_get_value(%s) failed, cannot read the desired version", g_desiredVersion);
+            OsConfigLogError(GetLog(), "ProcessJsonFromTwin: json_object_get_value(%s) failed, cannot read the desired version", g_desiredVersion);
         }
 
         numChildren = json_object_get_count(desiredObject);
@@ -277,7 +277,7 @@ static IOTHUB_CLIENT_RESULT ProcessJsonFromTwin(DEVICE_TWIN_UPDATE_STATE updateS
 
                     if ((NULL == propertyName) || (NULL == propertyValue))
                     {
-                        LogErrorWithTelemetry(GetLog(), "ProcessJsonFromTwin: error retrieving property name and/or value from %s (child[%d])", componentName, (int)i);
+                        OsConfigLogError(GetLog(), "ProcessJsonFromTwin: error retrieving property name and/or value from %s (child[%d])", componentName, (int)i);
                         continue;
                     }
 
@@ -316,7 +316,7 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
 
     if ((NULL == payload) || (0 == size))
     {
-        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  (int)size);
+        OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed, no payload to queue (%p, %d)", payload,  (int)size);
         return;
     }
    
@@ -336,7 +336,7 @@ static void QueueDesiredTwinUpdate(DEVICE_TWIN_UPDATE_STATE updateState, const u
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "QueueDesiredTwinUpdate failed to allocate buffer for new payload (%d bytes)", (int)size);
+        OsConfigLogError(GetLog(), "QueueDesiredTwinUpdate failed to allocate buffer for new payload (%d bytes)", (int)size);
     }
 
     // Circular buffer, when full, continue overwritting from beginning
@@ -403,14 +403,14 @@ static bool IotHubSetOption(const char* optionName, const void* value)
 {
     if ((NULL == g_moduleHandle) || (NULL == optionName) || (NULL == value))
     {
-        LogErrorWithTelemetry(GetLog(), "Invalid argument, IotHubSetOption failed");
+        OsConfigLogError(GetLog(), "Invalid argument, IotHubSetOption failed");
         return false;
     }
 
     IOTHUB_CLIENT_RESULT iothubClientResult = IOTHUB_CLIENT_ERROR;
     if (IOTHUB_CLIENT_OK != (iothubClientResult = IoTHubDeviceClient_LL_SetOption(g_moduleHandle, optionName, value)))
     {
-        LogErrorWithTelemetry(GetLog(), "Failed to set option %s, error %d", optionName, iothubClientResult);
+        OsConfigLogError(GetLog(), "Failed to set option %s, error %d", optionName, iothubClientResult);
         IoTHubDeviceClient_LL_Destroy(g_moduleHandle);
         g_moduleHandle = NULL;
 
@@ -434,25 +434,25 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
 
     if (NULL != g_moduleHandle)
     {
-        LogErrorWithTelemetry(GetLog(), "IotHubInitialize called at the wrong time");
+        OsConfigLogError(GetLog(), "IotHubInitialize called at the wrong time");
         return NULL;
     }
 
     if ((NULL == modelId) || (NULL == productInfo))
     {
-        LogErrorWithTelemetry(GetLog(), "IotHubInitialize called without model id and/or product info");
+        OsConfigLogError(GetLog(), "IotHubInitialize called without model id and/or product info");
         return NULL;
     }
 
     if (0 != IoTHub_Init())
     {
-        LogErrorWithTelemetry(GetLog(), "IoTHub_Init failed");
+        OsConfigLogError(GetLog(), "IoTHub_Init failed");
     }
     else
     {
         if (NULL == (g_moduleHandle = IoTHubDeviceClient_LL_CreateFromConnectionString(connectionString, protocol)))
         {
-            LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_CreateFromConnectionString failed");
+            OsConfigLogError(GetLog(), "IoTHubDeviceClient_LL_CreateFromConnectionString failed");
         }
         else
         {
@@ -476,17 +476,17 @@ IOTHUB_DEVICE_CLIENT_LL_HANDLE IotHubInitialize(const char* modelId, const char*
 
             if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetDeviceTwinCallback(g_moduleHandle, ModuleTwinCallback, (void*)g_moduleHandle)))
             {
-                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_SetDeviceTwinCallback failed with %d", iothubResult);
+                OsConfigLogError(GetLog(), "IoTHubDeviceClient_SetDeviceTwinCallback failed with %d", iothubResult);
             }
             else if (IOTHUB_CLIENT_OK != (iothubResult = IoTHubDeviceClient_LL_SetConnectionStatusCallback(g_moduleHandle, IotHubConnectionStatusCallback, (void*)g_moduleHandle)))
             {
-                LogErrorWithTelemetry(GetLog(), "IoTHubDeviceClient_LL_SetConnectionStatusCallback failed with %d", iothubResult);
+                OsConfigLogError(GetLog(), "IoTHubDeviceClient_LL_SetConnectionStatusCallback failed with %d", iothubResult);
             }
         }
 
         if (NULL == g_moduleHandle)
         {
-            LogErrorWithTelemetry(GetLog(), "IotHubInitialize failed");
+            OsConfigLogError(GetLog(), "IotHubInitialize failed");
             IoTHub_Deinit();
         }
     }
@@ -536,7 +536,7 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
     if (NULL == g_moduleHandle)
     {
-        LogErrorWithTelemetry(GetLog(), "%s: the component needs to be initialized before reporting properties", componentName);
+        OsConfigLogError(GetLog(), "%s: the component needs to be initialized before reporting properties", componentName);
         return IOTHUB_CLIENT_ERROR;
     }
 
@@ -583,21 +583,13 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
 
                 if (IOTHUB_CLIENT_OK != result)
                 {
-                    LogErrorWithTelemetry(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
+                    OsConfigLogError(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
                 }
             }
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "%s: out of memory allocating %u bytes to report property %s", componentName, decoratedLength, propertyName);
-        }
-
-        if (reportProperty)
-        {
-            TraceLoggingWrite(g_providerHandle, "ReportPropertyToIotHub",
-                TraceLoggingString(componentName, "Component"),
-                TraceLoggingString(propertyName, "Property"),
-                TraceLoggingInt32((int32_t)result, "Result"));
+            OsConfigLogError(GetLog(), "%s: out of memory allocating %u bytes to report property %s", componentName, decoratedLength, propertyName);
         }
     }
     else
@@ -607,16 +599,12 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
         {
             if (MPI_OK == mpiResult)
             {
-                LogErrorWithTelemetry(GetLog(), "%s.%s: MpiGet returned MMI_OK with no payload", componentName, propertyName);
+                OsConfigLogError(GetLog(), "%s.%s: MpiGet returned MMI_OK with no payload", componentName, propertyName);
             }
             else
             {
-                LogErrorWithTelemetry(GetLog(), "%s.%s: MpiGet failed with %d", componentName, propertyName, mpiResult);
+                OsConfigLogError(GetLog(), "%s.%s: MpiGet failed with %d", componentName, propertyName, mpiResult);
             }
-        }
-        else
-        {
-            LogErrorJustTelemetry(GetLog(), "%s.%s: MpiGet failed with %d", componentName, propertyName, mpiResult);
         }
         result = IOTHUB_CLIENT_ERROR;
     }
@@ -669,7 +657,7 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "%s.%s: MpiSet failed with %d", componentName, propertyName, mpiResult);
+            OsConfigLogError(GetLog(), "%s.%s: MpiSet failed with %d", componentName, propertyName, mpiResult);
             result = IOTHUB_CLIENT_INVALID_ARG;
             propertyUpdateResult = PNP_STATUS_BAD_DATA;
         }
@@ -678,11 +666,6 @@ IOTHUB_CLIENT_RESULT UpdatePropertyFromIotHub(const char* componentName, const c
 
         json_free_serialized_string(serializedValue);
     }
-
-    TraceLoggingWrite(g_providerHandle, "UpdatePropertyFromIotHub",
-        TraceLoggingString(componentName, "Component"),
-        TraceLoggingString(propertyName, "Property"),
-        TraceLoggingInt32((int32_t)result, "Result"));
 
     return result;
 }
@@ -728,12 +711,12 @@ IOTHUB_CLIENT_RESULT AckPropertyUpdateToIotHub(const char* componentName, const 
 
         if (IOTHUB_CLIENT_OK != result)
         {
-            LogErrorWithTelemetry(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
+            OsConfigLogError(GetLog(), "%s.%s: IoTHubDeviceClient_LL_SendReportedState failed with %d", componentName, propertyName, result);
         }
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "%s: out of memory allocating %u bytes to acknowledge property %s", componentName, ackValueLength, propertyName);
+        OsConfigLogError(GetLog(), "%s: out of memory allocating %u bytes to acknowledge property %s", componentName, ackValueLength, propertyName);
     }
 
     FREE_MEMORY(ackBuffer);

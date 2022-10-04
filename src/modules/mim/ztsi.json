@@ -7,10 +7,16 @@
       "type": "mimComponent", 
       "contents": [
         { 
-          "name": "desiredServiceUrl", 
+          "name": "desiredMaxScheduledAttestationsPerDay", 
           "type": "mimObject", 
           "desired": true,
-          "schema": "string"
+          "schema": "integer"
+        },
+        { 
+          "name": "desiredMaxManualAttestationsPerDay", 
+          "type": "mimObject", 
+          "desired": true,
+          "schema": "integer"
         },
         { 
           "name": "desiredEnabled", 
@@ -19,10 +25,16 @@
           "schema": "boolean"
         },
         { 
-          "name": "serviceUrl", 
+          "name": "maxScheduledAttestationsPerDay", 
           "type": "mimObject", 
           "desired": false,
-          "schema": "string"
+          "schema": "integer"
+        },
+        { 
+          "name": "maxManualAttestationsPerDay", 
+          "type": "mimObject", 
+          "desired": false,
+          "schema": "integer"
         },
         { 
           "name": "enabled", 
