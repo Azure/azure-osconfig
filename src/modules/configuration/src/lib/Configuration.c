@@ -21,6 +21,13 @@ static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 
+static const char* g_commandLoggingEnabled = "CommandLogging";
+static const char* g_fullLoggingEnabled = "FullLogging";
+static const char* g_localManagementEnabled = "LocalManagement";
+static const char* g_modelVersion = "ModelVersion";
+static const char* g_iotHubProtocol = "IotHubProtocol";
+static const char* g_refreshIntervalSeconds = "ReportingIntervalSeconds";
+
 static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
@@ -121,7 +128,14 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            if (JSONSuccess == json_object_set_number(jsonObject, g_modelVersionObject, (double)modelVersion))
+            static const char* g_commandLoggingEnabled = "CommandLogging";
+            static const char* g_fullLoggingEnabled = "FullLogging";
+            static const char* g_localManagementEnabled = "LocalManagement";
+            static const char* g_modelVersion = "ModelVersion";
+            static const char* g_iotHubProtocol = "IotHubProtocol";
+            static const char* g_refreshInterval = "ReportingIntervalSeconds";
+            
+            if (JSONSuccess == json_object_set_number(jsonObject, g_modelVersion, (double)modelVersion))
             {
                 g_modelVersion = modelVersion;
             }
@@ -130,7 +144,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_refreshIntervalObject, (double)refreshInterval))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_refreshInterval, (double)refreshInterval))
             {
                 g_refreshInterval = refreshInterval;
             }
@@ -139,7 +153,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
             }
             
-            if (JSONSuccess == json_object_set_boolean(jsonObject, g_localManagementEnabledObject, localManagementEnabled))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_localManagementEnabled, (double)(localManagementEnabled ? 1 : 0)))
             {
                 g_localManagementEnabled = localManagementEnabled;
             }
@@ -148,7 +162,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
             }
             
-            if (JSONSuccess == json_object_set_boolean(jsonObject, g_fullLoggingEnabledObject, fullLoggingEnabled))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_fullLoggingEnabled, (double)(fullLoggingEnabled ? 1: 0)))
             {
                 g_fullLoggingEnabled = fullLoggingEnabled;
             }
@@ -157,7 +171,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_boolean(jsonObject, g_commandLoggingEnabledObject, commandLoggingEnabled))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_commandLoggingEnabled, (double)(commandLoggingEnabled ? 1 : 0))
             {
                 g_commandLoggingEnabled = commandLoggingEnabled;
             }
@@ -166,7 +180,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_iotHubProtocolObject, (double)iotHubProtocol))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_iotHubProtocol, (double)iotHubProtocol))
             {
                 g_iotHubProtocol = iotHubProtocol;
             }
@@ -178,7 +192,6 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            // Investigate: the JSON object is successfully updated, however the changes appear lost when serializing
             newConfiguration = json_serialize_to_string_pretty(jsonValue);
             OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);  //delete this
             
