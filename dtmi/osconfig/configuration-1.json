@@ -7,32 +7,6 @@
   "contents": [
     {
       "@type": "Property",
-      "name": "desiredConfiguration",
-      "schema": {
-        "@type": "Object",
-        "fields": [
-          {
-            "name": "desiredRefreshInterval",
-            "schema": "integer"
-          },
-          {
-            "name": "desiredLocalManagementEnabled",
-            "schema": "boolean"
-          },
-          {
-            "name": "desiredFullLoggingEnabled",
-            "schema": "boolean"
-          },
-          {
-            "name": "desiredCommandLoggingEnabled",
-            "schema": "boolean"
-          }
-        ]
-      },
-      "writable": true
-    },
-    {
-      "@type": "Property",
       "name": "modelVersion",
       "schema": "integer",
       "writable": false
