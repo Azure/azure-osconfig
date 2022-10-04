@@ -2,9 +2,8 @@
 # Install build essentials for Debian 9 base Docker Image - (based on Ubuntu 18.04 build requirements)
 apt -y update
 apt-get -y install software-properties-common gpg
-apt-add-repository ppa:lttng/stable-2.10 -y
 apt -y update
-apt-get -y install git cmake build-essential curl libcurl4-openssl-dev libssl1.0-dev uuid-dev libgtest-dev google-mock liblttng-ust-dev rapidjson-dev ninja-build wget
+apt-get -y install git cmake build-essential curl libcurl4-openssl-dev libssl1.0-dev uuid-dev libgtest-dev google-mock rapidjson-dev ninja-build wget
 
 # Outdated CMake on Debian 9
 cd ~

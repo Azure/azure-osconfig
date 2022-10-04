@@ -40,8 +40,6 @@
 #include "azure_c_shared_utility/socketio.h"
 #include "azure_uhttp_c/uhttp.h"
 
-#include "tracelogging/TraceLoggingProvider.h"
-
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mpi.h>
@@ -53,23 +51,6 @@
 // Max number of bytes allowed to go through to Twins (4KB)
 #define OSCONFIG_MAX_PAYLOAD 4096
 
-#define LogErrorJustTelemetry(log, FORMAT, ...) {\
-    {\
-        char errorMessage[512] = {0};\
-        if (0 < snprintf(errorMessage, ARRAY_SIZE(errorMessage), FORMAT, ##__VA_ARGS__))\
-        {\
-            TraceLoggingWrite(g_providerHandle, "LogError", TraceLoggingString(errorMessage, "ErrorMessage"));\
-        }\
-    }\
-}\
-
-#define LogErrorWithTelemetry(log, FORMAT, ...) {\
-    OsConfigLogError(log, FORMAT, ##__VA_ARGS__);\
-    LogErrorJustTelemetry(log, FORMAT, ##__VA_ARGS__);\
-}\
-
 OSCONFIG_LOG_HANDLE GetLog();
-
-TRACELOGGING_DECLARE_PROVIDER(g_providerHandle);
 
 #endif // AGENTCOMMON_H
