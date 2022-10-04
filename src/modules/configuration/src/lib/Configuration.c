@@ -178,7 +178,7 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            newConfiguration = json_serialize_to_string(jsonValue);
+            newConfiguration = json_serialize_to_string_pretty(jsonValue);
             OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);
             
             if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
