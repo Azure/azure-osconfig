@@ -7,8 +7,32 @@
   "contents": [
     {
       "@type": "Property",
-      "name": "modelVersion",
-      "schema": "integer",
+      "name": "CirewallRules",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+           {
+            "name": "Directions",
+            "schema": "string"
+          },
+          {
+            "name": "Targets",
+            "schema": "string"
+          },
+          {
+            "name": "Protocols",
+            "schema": "string"
+          },
+          {
+            "name": "IpAddresses",
+            "schema": "string"
+          },
+          {
+            "name": "Ports",
+            "schema": "string"
+          }
+        ]
+      },
       "writable": false
     }
   ]
