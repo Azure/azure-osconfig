@@ -41,7 +41,6 @@ packages:
   - libcurl4-openssl-dev
   - libgmock-dev
   - libgtest-dev
-  - liblttng-ust-dev
   - libssl-dev
   - lsb-release
   - ninja-build

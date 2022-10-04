@@ -106,7 +106,6 @@ packages:
   - jo
   - jq
   - libcurl4-openssl-dev
-  - liblttng-ust-dev
   - libssl-dev
   - lsb-release
   - ninja-build

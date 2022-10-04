@@ -32,8 +32,6 @@ cmake --version
 gcc --version
 ```
 
-Add the dependencies necessary to build *TraceLogging* as described at [github.com/microsoft/tracelogging/](https://github.com/microsoft/tracelogging/blob/master/README.md#dependencies).
-
 Install and configure the *Azure IoT Identity Service (AIS)* package as described at [azure.github.io/iot-identity-service/](https://azure.github.io/iot-identity-service/).
 
 ### Build
@@ -246,10 +244,6 @@ cmake --build . --config Release|Debug  --target install
 sudo systemctl enable osconfig.service
 sudo systemctl start osconfig.service
 ```
-
-## Health Telemetry
-
-OSConfig emits device health telemetry via TraceLogging calls for the events configured in [OsConfigAgentTelemetry.conf](src/agents/pnp/telemetryevents/OsConfigAgentTelemetry.conf). This telemetry can be configured via OSConfig's [ADHS module](src/modules/adhs/). The service responsible of collecting these local TraceLogging calls (azure-device-telemetryd.service) is not currently available for Ubuntu and Debian and there is no emitted telemetry in that case.
 
 ---
 

@@ -114,7 +114,7 @@ static char* FormatAllocateString(const char* format, ...)
 
     if (NULL == format)
     {
-        LogErrorWithTelemetry(GetLog(), "FormatAllocateString: invalid argument");
+        OsConfigLogError(GetLog(), "FormatAllocateString: invalid argument");
         return stringToReturn;
     }
 
@@ -127,12 +127,12 @@ static char* FormatAllocateString(const char* format, ...)
     {
         if (0 != mallocAndStrcpy_s(&stringToReturn, buffer))
         {
-            LogErrorWithTelemetry(GetLog(), "FormatAllocateString: out of memory");
+            OsConfigLogError(GetLog(), "FormatAllocateString: out of memory");
         }
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)", formatResult, MAX_FORMAT_ALLOCATE_STRING);
+        OsConfigLogError(GetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)", formatResult, MAX_FORMAT_ALLOCATE_STRING);
     }
 
     return stringToReturn;
@@ -181,7 +181,7 @@ static void HttpReceiveCallback(void* callback, HTTP_CALLBACK_REASON reason, con
             context->httpResponse = BUFFER_create(content, contentSize);
             if (NULL == context->httpResponse)
             {
-                LogErrorWithTelemetry(GetLog(), "HttpReceiveCallback: out of memory");
+                OsConfigLogError(GetLog(), "HttpReceiveCallback: out of memory");
             }
             else
             {
@@ -219,7 +219,7 @@ static HTTP_CLIENT_HANDLE HttpOpenClient(const char* udsSocketPath, AIS_HTTP_CON
 
     if (NULL == udsSocketPath)
     {
-        LogErrorWithTelemetry(GetLog(), "HttpOpenClient: invalid argument");
+        OsConfigLogError(GetLog(), "HttpOpenClient: invalid argument");
         return clientHandle;
     }
 
@@ -229,18 +229,18 @@ static HTTP_CLIENT_HANDLE HttpOpenClient(const char* udsSocketPath, AIS_HTTP_CON
 
     if (NULL == (clientHandle = uhttp_client_create(socketio_get_interface_description(), &config, HttpErrorCallback, context)))
     {
-        LogErrorWithTelemetry(GetLog(), "HttpOpenClient: uhttp_client_create failed");
+        OsConfigLogError(GetLog(), "HttpOpenClient: uhttp_client_create failed");
     }
     else if (HTTP_CLIENT_OK != (httpResult = uhttp_client_set_option(clientHandle, OPTION_ADDRESS_TYPE, OPTION_ADDRESS_TYPE_DOMAIN_SOCKET)))
     {
-        LogErrorWithTelemetry(GetLog(), "HttpOpenClient: uhttp_client_set_option failed with %d", httpResult);
+        OsConfigLogError(GetLog(), "HttpOpenClient: uhttp_client_set_option failed with %d", httpResult);
         uhttp_client_destroy(clientHandle);
         clientHandle = NULL;
 
     }
     else if (HTTP_CLIENT_OK != (httpResult = uhttp_client_open(clientHandle, udsSocketPath, 0, HttpConnectedCallback, context)))
     {
-        LogErrorWithTelemetry(GetLog(), "HttpOpenClient: uhttp_client_open failed with %d", httpResult);
+        OsConfigLogError(GetLog(), "HttpOpenClient: uhttp_client_open failed with %d", httpResult);
         uhttp_client_destroy(clientHandle);
         clientHandle = NULL;
     }
@@ -255,11 +255,11 @@ static HTTP_HEADERS_HANDLE HttpCreateHeader(void)
 
     if (NULL == (httpHeadersHandle = HTTPHeaders_Alloc()))
     {
-        LogErrorWithTelemetry(GetLog(), "HttpCreateHeader: HTTPHeaders_Alloc failed, out of memory");
+        OsConfigLogError(GetLog(), "HttpCreateHeader: HTTPHeaders_Alloc failed, out of memory");
     }
     else if (HTTP_HEADERS_OK != (httpHeadersResult = HTTPHeaders_AddHeaderNameValuePair(httpHeadersHandle, HTTP_HEADER_NAME, HTTP_HEADER_VALUE)))
     {
-        LogErrorWithTelemetry(GetLog(), "HttpCreateHeader: HTTPHeaders_AddHeaderNameValuePair(%s, %s) failed with %d", HTTP_HEADER_NAME, HTTP_HEADER_VALUE, (int)httpHeadersResult);
+        OsConfigLogError(GetLog(), "HttpCreateHeader: HTTPHeaders_AddHeaderNameValuePair(%s, %s) failed with %d", HTTP_HEADER_NAME, HTTP_HEADER_VALUE, (int)httpHeadersResult);
     }
 
     return httpHeadersHandle;
@@ -283,7 +283,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
 
     if ((NULL == udsSocketPath) || (NULL == apiUriPath) || (NULL == response))
     {
-        LogErrorWithTelemetry(GetLog(), "SendAisRequest: invalid argument");
+        OsConfigLogError(GetLog(), "SendAisRequest: invalid argument");
         return result;
     }
 
@@ -294,7 +294,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
 
     if (NULL == (clientHandle = HttpOpenClient(udsSocketPath, &context)))
     {
-        LogErrorWithTelemetry(GetLog(), "SendAisRequest: HttpOpenClient failed");
+        OsConfigLogError(GetLog(), "SendAisRequest: HttpOpenClient failed");
     }
 
     // Send the request and wait for completion
@@ -317,7 +317,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
 
         if (HTTP_CLIENT_OK != (httpResult = uhttp_client_execute_request(clientHandle, clientRequestType, apiUriPath, httpHeadersHandle, (const unsigned char*)payload, payloadLen, HttpReceiveCallback, &context)))
         {
-            LogErrorWithTelemetry(GetLog(), "SendAisRequest: uhttp_client_execute_request failed with %d", (int)httpResult);
+            OsConfigLogError(GetLog(), "SendAisRequest: uhttp_client_execute_request failed with %d", (int)httpResult);
         }
         else
         {
@@ -334,7 +334,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
 
             if (true == timedOut)
             {
-                LogErrorWithTelemetry(GetLog(), "SendAisRequest: timed out waiting for uhttp_client_execute_request completion");
+                OsConfigLogError(GetLog(), "SendAisRequest: timed out waiting for uhttp_client_execute_request completion");
                 result = AIS_ERROR;
             }
             else
@@ -350,12 +350,12 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
     {
         if (0 != (bufferSize = BUFFER_size(context.httpResponse, &responseLen)))
         {
-            LogErrorWithTelemetry(GetLog(), "SendAisRequest: BUFFER_size failed returning non-zero %d", bufferSize);
+            OsConfigLogError(GetLog(), "SendAisRequest: BUFFER_size failed returning non-zero %d", bufferSize);
             result = AIS_ERROR;
         }
         else if ((responseLen > AIS_RESPONSE_SIZE_MAX) && (responseLen < AIS_RESPONSE_SIZE_MIN))
         {
-            LogErrorWithTelemetry(GetLog(), "SendAisRequest: response size out of supported range (%d, %d)", AIS_RESPONSE_SIZE_MIN, AIS_RESPONSE_SIZE_MAX);
+            OsConfigLogError(GetLog(), "SendAisRequest: response size out of supported range (%d, %d)", AIS_RESPONSE_SIZE_MIN, AIS_RESPONSE_SIZE_MAX);
             result = AIS_ERROR;
         }
         else
@@ -373,7 +373,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
             }
             else
             {
-                LogErrorWithTelemetry(GetLog(), "SendAisRequest: out of memory allocating %d bytes", (int)(responseLen + 1));
+                OsConfigLogError(GetLog(), "SendAisRequest: out of memory allocating %d bytes", (int)(responseLen + 1));
                 result = AIS_ERROR;
             }
         }
@@ -400,7 +400,7 @@ static int SendAisRequest(const char* udsSocketPath, const char* apiUriPath, con
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "SendAisRequest(%s) failed with %d", udsSocketPath, result);
+        OsConfigLogError(GetLog(), "SendAisRequest(%s) failed with %d", udsSocketPath, result);
     }
 
     return result;
@@ -417,7 +417,7 @@ static int RequestSignatureFromAis(const char* keyHandle, const char* deviceUri,
 
     if ((NULL == response) || (NULL == keyHandle) || (NULL == deviceUri) || (NULL == expiry))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: invalid argument");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: invalid argument");
         return result;
     }
 
@@ -425,31 +425,31 @@ static int RequestSignatureFromAis(const char* keyHandle, const char* deviceUri,
 
     if (NULL == (payloadValue = json_value_init_object()))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_value_init_object failed");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_value_init_object failed");
     }
     else if (NULL == (payloadObj = json_value_get_object(payloadValue)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_value_get_object failed");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_value_get_object failed");
     }
     else if (NULL == (uriToSign = FormatAllocateString(g_uriToSignTemplate, deviceUri, expiry)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: failed to format device URI to sign");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: failed to format device URI to sign");
     }
     else if (NULL == (encodedUriToSign = Azure_Base64_Encode_Bytes((unsigned char*)uriToSign, strlen(uriToSign))))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: Azure_Base64_Encode_Bytes failed");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: Azure_Base64_Encode_Bytes failed");
     }
     else if (JSONSuccess != json_object_set_string(payloadObj, AIS_SIGN_KEYHANDLE, keyHandle))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_object_set_string(%s) failed", AIS_SIGN_KEYHANDLE);
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_object_set_string(%s) failed", AIS_SIGN_KEYHANDLE);
     }
     else if (JSONSuccess != json_object_set_string(payloadObj, AIS_SIGN_ALGORITHM, AIS_SIGN_ALGORITHM_VALUE))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_object_set_string(AIS_SIGN_ALGORITHM) failed");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_object_set_string(AIS_SIGN_ALGORITHM) failed");
     }
     else if (JSONSuccess != json_object_dotset_string(payloadObj, AIS_SIGN_PARAMETERS_MESSAGE, STRING_c_str(encodedUriToSign)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_object_dotset_string(AIS_SIGN_PARAMETERS_MESSAGE) failed");
+        OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_object_dotset_string(AIS_SIGN_PARAMETERS_MESSAGE) failed");
     }
     else
     {
@@ -460,7 +460,7 @@ static int RequestSignatureFromAis(const char* keyHandle, const char* deviceUri,
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "RequestSignatureFromAis: json_serialize_to_string failed");
+            OsConfigLogError(GetLog(), "RequestSignatureFromAis: json_serialize_to_string failed");
         }
     }
 
@@ -486,7 +486,7 @@ static int RequestCertificateFromAis(const char* certificateId, char** response)
 
     if (NULL == response)
     {
-        LogErrorWithTelemetry(GetLog(), "RequestCertificateFromAis: invalid argument");
+        OsConfigLogError(GetLog(), "RequestCertificateFromAis: invalid argument");
         return result;
     }
 
@@ -494,7 +494,7 @@ static int RequestCertificateFromAis(const char* certificateId, char** response)
 
     if (NULL == (requestUri = FormatAllocateString(g_certificateUriTemplate, AIS_CERT_URI, certificateId, AIS_API_VERSION)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestCertificateFromAis: failed to format certificate URI string");
+        OsConfigLogError(GetLog(), "RequestCertificateFromAis: failed to format certificate URI string");
     }
     else
     {
@@ -547,42 +547,42 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
     }
     else if (NULL == (identityResponseJson = json_parse_string(identityResponseString)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_parse_string failed");
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_parse_string failed");
         result = AIS_ERROR;
     }
     else if (NULL == (identityResponseJsonObject = json_value_get_object(identityResponseJson)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(identityResponseJsonObject) failed");
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(identityResponseJsonObject) failed");
         result = AIS_ERROR;
     }
     else if (NULL == (specJsonObject = json_value_get_object(json_object_get_value(identityResponseJsonObject, AIS_RESPONSE_SPEC))))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_value(%s) failed", AIS_RESPONSE_SPEC);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_value(%s) failed", AIS_RESPONSE_SPEC);
         result = AIS_ERROR;
     }
     else if (NULL == (hubName = json_object_get_string(specJsonObject, AIS_RESPONSE_HUBNAME)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_HUBNAME);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_HUBNAME);
         result = AIS_ERROR;
     }
     else if (NULL == (deviceId = json_object_get_string(specJsonObject, AIS_RESPONSE_DEVICEID)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_DEVICEID);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_DEVICEID);
         result = AIS_ERROR;
     }
     else if (NULL == (authJsonObject = json_value_get_object(json_object_get_value(specJsonObject, AIS_RESPONSE_AUTH))))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(%s) failed", AIS_RESPONSE_AUTH);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(%s) failed", AIS_RESPONSE_AUTH);
         result = AIS_ERROR;
     }
     else if (NULL == (authType = json_object_get_string(authJsonObject, AIS_RESPONSE_AUTH_TYPE)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(%s) failed", AIS_RESPONSE_AUTH_TYPE);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(%s) failed", AIS_RESPONSE_AUTH_TYPE);
         result = AIS_ERROR;
     }
     else if (NULL == (keyHandle = json_object_get_string(authJsonObject, AIS_RESPONSE_AUTH_KEYHANDLE)))
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_AUTH_KEYHANDLE);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_AUTH_KEYHANDLE);
         result = AIS_ERROR;
     }
     else if (NULL == (moduleId = json_object_get_string(specJsonObject, AIS_RESPONSE_MODULEID)))
@@ -608,41 +608,41 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
                 FormatAllocateString(g_resourceUriModuleTemplate, hubName, deviceId, moduleId) :
                 FormatAllocateString(g_resourceUriDeviceTemplate, hubName, deviceId))))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: failed to format resource URI string");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: failed to format resource URI string");
                 result = AIS_ERROR;
             }
             else if (0 == snprintf(expiryStr, ARRAY_SIZE(expiryStr), "%ld", expiryTime))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: snprintf for expiry string failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: snprintf for expiry string failed");
                 result = AIS_ERROR;
             }
             else if (AIS_SUCCESS != (result = RequestSignatureFromAis(keyHandle, resourceUri, expiryStr, &signResponseString)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: RequestSignatureFromAis failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: RequestSignatureFromAis failed");
             }
             else if (NULL == (signResponseJson = json_parse_string(signResponseString)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_parse_string(signResponseString) failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_parse_string(signResponseString) failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (signResponseJsonObject = json_value_get_object(signResponseJson)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(signResponseJsonObject) failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(signResponseJsonObject) failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (signature = json_object_get_string(signResponseJsonObject, AIS_SIGN_RESP_SIGNATURE)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_SIGN_RESP_SIGNATURE);
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_SIGN_RESP_SIGNATURE);
                 result = AIS_ERROR;
             }
             else if (NULL == (encodedSignature = URL_EncodeString(signature)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: URL_EncodeString(signature) failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: URL_EncodeString(signature) failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (sharedAccessSignature = FormatAllocateString(g_sharedAccessSignatureTemplate, resourceUri, STRING_c_str(encodedSignature), expiryStr)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: failed to format shared access signature string");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: failed to format shared access signature string");
                 result = AIS_ERROR;
             }
             else if (NULL == (connectionString = (useModuleId ? (useGatewayHost ?
@@ -651,7 +651,7 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
                 FormatAllocateString(g_connectionStringSasGatewayHostDeviceTemplate, hubName, deviceId, sharedAccessSignature, gatewayHost) :
                 FormatAllocateString(g_connectionStringSasDeviceTemplate, hubName, deviceId, sharedAccessSignature)))))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: failed to format connection string");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: failed to format connection string");
                 result = AIS_ERROR;
             }
         }
@@ -661,42 +661,42 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
 
             if ((NULL == x509Certificate) || (NULL == x509PrivateKeyHandle))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: invalid argument(s) for X.509 authentication");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: invalid argument(s) for X.509 authentication");
                 result = AIS_ERROR;
             }
             else if (NULL == (certId = json_object_get_string(authJsonObject, AIS_RESPONSE_AUTH_CERTID)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_AUTH_CERTID);
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_RESPONSE_AUTH_CERTID);
                 result = AIS_ERROR;
             }
             else if (AIS_ERROR == RequestCertificateFromAis(certId, &certificateResponseString))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: RequestCertificateFromAis failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: RequestCertificateFromAis failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (certificateResponseJson = json_parse_string(certificateResponseString)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_parse_string(certificateResponseString) failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_parse_string(certificateResponseString) failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (certificateResponseJsonObject = json_value_get_object(certificateResponseJson)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(certificateResponseJson) failed");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_value_get_object(certificateResponseJson) failed");
                 result = AIS_ERROR;
             }
             else if (NULL == (certificate = json_object_get_string(certificateResponseJsonObject, AIS_CERT_RESP_PEM)))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_CERT_RESP_PEM);
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: json_object_get_string(%s) failed", AIS_CERT_RESP_PEM);
                 result = AIS_ERROR;
             }
             else if (0 != mallocAndStrcpy_s(x509Certificate, certificate))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: mallocAndStrcpy_s(%s) failed, cannot make copy of X.509 certificate", certificate);
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: mallocAndStrcpy_s(%s) failed, cannot make copy of X.509 certificate", certificate);
                 result = AIS_ERROR;
             }
             else if (0 != mallocAndStrcpy_s(x509PrivateKeyHandle, keyHandle))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: mallocAndStrcpy_s(%s) failed, cannot make copy of X.509 private key handle", keyHandle);
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: mallocAndStrcpy_s(%s) failed, cannot make copy of X.509 private key handle", keyHandle);
                 result = AIS_ERROR;
             }
             else if (NULL == (connectionString = (useModuleId ? (useGatewayHost ?
@@ -705,13 +705,13 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
                 FormatAllocateString(g_connectionStringX509GatewayHostDeviceTemplate, hubName, deviceId, gatewayHost) :
                 FormatAllocateString(g_connectionStringX509DeviceTemplate, hubName, deviceId)))))
             {
-                LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: failed to format connection string");
+                OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: failed to format connection string");
                 result = AIS_ERROR;
             }
         }
         else
         {
-            LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis: unsupported authentication type (%s)", authType);
+            OsConfigLogError(GetLog(), "RequestConnectionStringFromAis: unsupported authentication type (%s)", authType);
             result = AIS_ERROR;
         }
     }
@@ -725,11 +725,10 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
         {
             OsConfigLogInfo(GetLog(), "Connection string: %s", connectionString);
         }
-        TraceLoggingWrite(g_providerHandle, "AgentConnect", TraceLoggingString(connectAs, "As"), TraceLoggingString(authType, "AuthType"), TraceLoggingString(connectTo, "To"));
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "RequestConnectionStringFromAis failed with %d", result);
+        OsConfigLogError(GetLog(), "RequestConnectionStringFromAis failed with %d", result);
     }
 
     json_value_free(identityResponseJson);
@@ -747,8 +746,6 @@ char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateK
         FREE_MEMORY(*x509Certificate);
         FREE_MEMORY(*x509PrivateKeyHandle);
     }
-
-    TraceLoggingWrite(g_providerHandle, "RequestConnectionStringFromAis", TraceLoggingInt32((int32_t)result, "Result"));
 
     return connectionString;
 }
