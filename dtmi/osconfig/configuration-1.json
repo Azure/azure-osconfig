@@ -38,11 +38,11 @@
                   "enumValue": 0
                 },
                 {
-                  "name": "mqtt",
+                  "name": "mAqtt",
                   "enumValue": 1
                 },
                 {
-                  "name": "mqttWebSocket",
+                  "name": "mAqttWebSocket",
                   "enumValue": 2
                 }
               ]
@@ -88,11 +88,11 @@
         "valueSchema": "integer",
         "enumValues": [
           { 
-            "name": "mqtt",
+            "name": "mAqtt",
             "enumValue": 0
           },
           {
-            "name": "mqttWebSocket",
+            "name": "mAqttWebSocket",
             "enumValue": 1
           }
         ]
