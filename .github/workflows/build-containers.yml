@@ -1,60 +1,124 @@
 name: Build Containers
 
 on:
+  # pull_request:
+  #   paths: [devops/docker/**/Dockerfile]
   push:
-    branches: [main, future/**]
-    paths: [devops/docker/**/Dockerfile]
+    # branches: [main, future/**]
+    # paths: [devops/docker/**/Dockerfile]
+
+env:
+  BUILD_TYPE: Release
+  LOCAL_IMAGE: /tmp/image.tar
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
+  TAG: latest
 
 jobs:
   list-containers:
     name: List modified containers
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      containers: ${{ steps.matrix.outputs.containers }}
     steps:
       - uses: actions/checkout@v2
 
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v18.7
-        with:
-          files: ./devops/docker/**/Dockerfile
+      # TODO:
+      # - name: Get changed files
+      #   id: changed-files
+      #   uses: tj-actions/changed-files@v18.7
+      #   with:
+      #     files: ./devops/docker/**/Dockerfile
 
-      - id: set-matrix
-        run: echo "::set-output name=matrix::$(echo -n ${{ steps.changed-files.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')"
+      - name: Create build matrix
+        id: matrix
+        run: |
+          # TODO: echo ::set-output name=containers::$(echo -n ${{ steps.changed-files.outputs.all_changed_files }} | jq -R -s -c 'split(" ")')
+          echo ::set-output name=containers::$(ls -1 ./devops/docker/**/Dockerfile | jq -R . | jq -s .)
 
   docker:
-    name: Build and push
+    name: Docker
     needs: list-containers
-    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
+    runs-on: ubuntu-latest
+    # runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
     strategy:
-        matrix:
-            container: ${{ fromJson(needs.list-containers.outputs.matrix) }}
+      matrix:
+        container: ${{ fromJson(needs.list-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          # Only checkout submodules recursively if this is a pull request
+          submodules: ${{ github.event_name == 'pull_request' && 'recursive' || 'false' }}
 
-      - name: Set image
+      - name: Setup image
         id: image
         run: |
-          DOCKERFILE=${{ matrix.container }}
-          echo "::set-output name=name::$(echo ${DOCKERFILE%/*}-dev)"
-          echo "::set-output name=path::$(dirname ${DOCKERFILE})"
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+          dockerfile=${{ matrix.container }}
+          # TODO: image=${dockerfile#devops/docker/}
+          image=${dockerfile#./devops/docker/}
+          image=${image%/*}
+          arch=${image#*-}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+          # case $arch in
+          #   ("amd64")  arch="x86_64";;
+          #   ("arm64")  arch="aarch64";;
+          #   ("arm")    arch="armv7l";;
+          # esac
 
-      - name: Login to ACR
-        uses: docker/login-action@v1
+          echo "::set-output name=name::$(echo -n $image)"
+          echo "::set-output name=path::$(dirname ${dockerfile})"
+          echo "::set-output name=arch::$(echo -n $arch)"
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker login
+        uses: docker/login-action@v2
         with:
-          registry: ${{ secrets.ACR_REGISTRY }}
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Docker build & push
         uses: docker/build-push-action@v2
         with:
           context: ${{ steps.image.outputs.path }}
-          push: true
-          tags: ${{ steps.image.outputs.name }}:latest, ${{ steps.image.outputs.name }}:${{ github.run_number }}
+          # Only push the image if there is a push event to the main branch
+          # TODO: push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          # push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:latest
+            ${{ steps.image.outputs.name }}:${{ github.run_number }}
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+          outputs: type=docker,dest=${{ env.LOCAL_IMAGE }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.image.outputs.name }}
+          path: ${{ env.LOCAL_IMAGE }}
+
+      # Test the container image on 'pull_request' events
+
+      - name: Run container (test)
+        # if: ${{ github.event_name == 'pull_request' }}
+        id: container
+        uses: ./.github/actions/container-run
+        with:
+          image: ${{ steps.image.outputs.name }}
+          local: ${{ env.LOCAL_IMAGE }}
+          arch: ${{ steps.image.outputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          tag: ${{ github.sha }}
+
+      - name: Build azure-osconfig (test)
+        # if: ${{ github.event_name == 'pull_request' }}
+        uses: ./.github/actions/container-exec
+        with:
+          container: ${{ steps.container.outputs.id }}
+          cmd: |
+            mkdir build && cd build
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+            cmake --build . --config ${{ env.BUILD_TYPE }}

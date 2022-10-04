@@ -2,32 +2,23 @@ name: Container run
 description: Run a docker container
 
 inputs:
-  registry:
-    description: Server address ofthe  Docker registry.
+  image:
+    description: The name of the image.
+    required: true
+  local:
+    description: The path to a local image.
     required: false
-    default: osconfig.azurecr.io
-  username:
-    description: Username used to login to the Docker registry.
-    required: true
-  password:
-    description: Password or personal access token used to login to the Docker registry.
-    required: true
-  os:
-    description: The container OS.
-    required: true
   arch:
     description: The container architecture.
-    required: true
-  platform:
-    description: The multiarch platform.
-    required: true
+    required: false
+    default: linux/amd64
   mount:
     description: The volume to mount.
     required: true
   tag:
     description: The container tag.
     required: false
-    default: "289651"
+    default: latest
 
 outputs:
   id:
@@ -38,16 +29,26 @@ runs:
   using: composite
   steps:
     - name: Login to container registry
-      uses: docker/login-action@v1
+      if: ${{ !inputs.local }}
+      uses: docker/login-action@v2
       with:
         registry: ${{ inputs.registry }}
-        username: ${{ inputs.username }}
-        password: ${{ inputs.password }}
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
 
     - name: Setup QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Setup container
       id: container
-      run: echo '::set-output name=id::$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ inputs.registry }}/${{ inputs.os }}-dev-${{ inputs.arch }}:${{ inputs.tag }})'
+      run: |
+        if [[ -n "${{ inputs.local }}" ]]; then
+          echo "Loading local image: $image"
+          docker load -i ${{ inputs.local }}
+        fi
+
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.arch }} ${{ inputs.image }}:${{ inputs.tag }})
+
+        echo Container ${{ inputs.image }}:${{ inputs.tag }} running: $id
+        echo ::set-output name=id::$id
       shell: bash
