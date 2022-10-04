@@ -178,8 +178,9 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
+            // Investigate: the JSON object is successfully updated, however the changes appear lost when serializing
             newConfiguration = json_serialize_to_string_pretty(jsonValue);
-            OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);
+            OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);  //delete this
             
             if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
             {
