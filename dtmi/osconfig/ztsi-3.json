@@ -2,8 +2,8 @@
   "@context": "dtmi:dtdl:context;2",
   "@id": "dtmi:osconfig:ztsi;3",
   "@type": "Interface",
-  "displayName": "SIM Agent Configuration",
-  "description": "Provides functionality to remotely configure the SIM Agent on device",
+  "displayName": "ZTSI Agent Configuration",
+  "description": "Provides functionality to remotely configure the ZTSI Agent on device",
   "contents": [
     {
       "@type": "Property",
