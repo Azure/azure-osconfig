@@ -5,33 +5,28 @@
   "displayName": "Configuration",
   "description": "Provides functionality to remotely manage OSConfig configuration on device",
   "contents": [
+{
+      "@type": "Property",
+      "name": "DesiredName",
+      "schema":"string",
+      "writable": true
+    },
     {
       "@type": "Property",
-      "name": "modelVersion",
-      "schema": "integer",
+      "name": "DesiredHosts",
+      "schema":"string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema":"string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "refreshInterval",
-      "schema": "integer",
-      "writable": false
-    },
-    {
-      "@type": "Property",
-      "name": "localManagementEnabled",
-      "schema": "boolean",
-      "writable": false
-    },
-    {
-      "@type": "Property",
-      "name": "fullLoggingEnabled",
-      "schema": "boolean",
-      "writable": false
-    },
-    {
-      "name": "commandLoggingEnabled",
-      "schema": "boolean",
+      "name": "Hosts",
+      "schema":"string",
       "writable": false
     }
   ]
