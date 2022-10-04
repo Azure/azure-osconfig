@@ -164,7 +164,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_number(jsonObject, g_commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0))
+            if (JSONSuccess == json_object_set_number(jsonObject, g_commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0)))
             {
                 g_commandLoggingEnabled = commandLoggingEnabled;
             }
