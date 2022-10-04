@@ -34,24 +34,6 @@
       "name": "commandLoggingEnabled",
       "schema":"boolean",
       "writable": false
-    },
-    {
-      "name": "iotHubProtocol",
-      "schema": {
-        "@type": "Enum",
-        "valueSchema": "integer",
-        "enumValues": [
-          { 
-            "name": "mqtt",
-            "enumValue": 0
-          },
-          {
-            "name": "mqttWebSocket",
-            "enumValue": 1
-          }
-        ]
-      },
-      "writable": false
     }
   ]
 }
