@@ -11,9 +11,6 @@ tdnf -y install git \
                 gmock-devel \
                 curl \
                 openssl \
-                lttng-tools \
-                lttng-ust-devel \
-                tracelogging-devel \
                 rapidjson \
                 curl-devel \
                 openssl-devel \

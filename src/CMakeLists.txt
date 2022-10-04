@@ -125,7 +125,6 @@ set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
     "${CMAKE_SOURCE_DIR}/agents/pnp/azure-iot-sdk-c/"
-    "${CMAKE_SOURCE_DIR}/agents/pnp/tracelogging/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/"
 )
