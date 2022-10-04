@@ -26,27 +26,6 @@
           {
             "name": "desiredCommandLoggingEnabled",
             "schema": "boolean"
-          },
-          {
-            "name": "desiredIotHubProtocol",
-            "schema": {
-              "@type": "Enum",
-              "valueSchema": "integer",
-              "enumValues": [
-                {
-                  "name": "auto",
-                  "enumValue": 0
-                },
-                {
-                  "name": "mAqtt",
-                  "enumValue": 1
-                },
-                {
-                  "name": "mAqttWebSocket",
-                  "enumValue": 2
-                }
-              ]
-            }
           }
         ]
       },
@@ -79,24 +58,6 @@
     {
       "name": "commandLoggingEnabled",
       "schema": "boolean",
-      "writable": false
-    },
-    {
-      "name": "iotHubProtocol",
-      "schema": {
-        "@type": "Enum",
-        "valueSchema": "integer",
-        "enumValues": [
-          { 
-            "name": "mAqtt",
-            "enumValue": 0
-          },
-          {
-            "name": "mAqttWebSocket",
-            "enumValue": 1
-          }
-        ]
-      },
       "writable": false
     }
   ]
