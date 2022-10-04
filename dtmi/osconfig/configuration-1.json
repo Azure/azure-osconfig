@@ -12,23 +12,23 @@
         "@type": "Object",
         "fields": [
           {
-            "name": "refreshInterval",
+            "name": "desiredRefreshInterval",
             "schema": "integer"
           },
           {
-            "name": "localManagementEnabled",
+            "name": "desiredLocalManagementEnabled",
             "schema": "boolean"
           },
           {
-            "name": "fullLoggingEnabled",
+            "name": "desiredFullLoggingEnabled",
             "schema": "boolean"
           },
           {
-            "name": "commandLoggingEnabled",
+            "name": "desiredCommandLoggingEnabled",
             "schema": "boolean"
           },
           {
-            "name": "iotHubProtocol",
+            "name": "desiredIotHubProtocol",
             "schema": {
               "@type": "Enum",
               "valueSchema": "integer",
