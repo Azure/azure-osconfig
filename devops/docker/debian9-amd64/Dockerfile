@@ -9,7 +9,6 @@ RUN apt -y update && apt-get -y install \
     libcurl4-openssl-dev \
     libssl-dev \
     uuid-dev \
-    liblttng-ust-dev \
     rapidjson-dev \
     ninja-build \
     python3-jsonschema \

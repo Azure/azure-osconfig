@@ -253,7 +253,7 @@ For more details on the Logging library and its use by modules see the [OSConfig
 
 ## 4.11. Telemetry
 
-The OSConfig Agents and the OSConfig Management Platform have their own Telemetry Providers and write events using [TraceLogging](https://github.com/microsoft/tracelogging). To provide a Telemetry helper library for Modules on top of existing TraceLogging is not yet decided.
+OSConfig has its own Telemetry via its product information submitted to the IoT Hub. OpenTelemetry is a potential future path.
 
 ## 4.12. Monitoring
 

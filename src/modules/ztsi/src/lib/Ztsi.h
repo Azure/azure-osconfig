@@ -44,8 +44,9 @@ public:
 
     struct AgentConfiguration
     {
-        std::string serviceUrl;
         bool enabled;
+        int maxScheduledAttestationsPerDay;
+        int maxManualAttestationsPerDay;
     };
 
     Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes = 0);
@@ -56,9 +57,11 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
 
     virtual EnabledState GetEnabledState();
-    virtual std::string GetServiceUrl();
+    virtual int GetMaxScheduledAttestationsPerDay();
+    virtual int GetMaxManualAttestationsPerDay();
     virtual int SetEnabled(bool enabled);
-    virtual int SetServiceUrl(const std::string& serviceUrl);
+    virtual int SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay);
+    virtual int SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay);
     virtual unsigned int GetMaxPayloadSizeBytes();
 
 private:
@@ -75,10 +78,12 @@ private:
     virtual std::string BuildConfigurationJson(const AgentConfiguration& configuration);
 
     static const std::string m_componentName;
-    static const std::string m_desiredServiceUrl;
     static const std::string m_desiredEnabled;
-    static const std::string m_reportedServiceUrl;
+    static const std::string m_desiredMaxScheduledAttestationsPerDay;
+    static const std::string m_desiredMaxManualAttestationsPerDay;
     static const std::string m_reportedEnabled;
+    static const std::string m_reportedMaxScheduledAttestationsPerDay;
+    static const std::string m_reportedMaxManualAttestationsPerDay;
 
     std::string m_agentConfigurationDir;
     std::string m_agentConfigurationFile;

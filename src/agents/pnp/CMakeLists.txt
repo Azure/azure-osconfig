@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-# The Azure IoT C SDK requires C99.
-# TraceLogging requires C11.
-# To use TraceLogging this component compiles as C11.
-# Without TraceLogging this component can be compiled as C99.
-
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4.7)
@@ -33,14 +28,6 @@ else ()
     #find_package(azure-iot-sdk-c REQUIRED)
 endif ()
 
-if (EXISTS ${PROJECT_SOURCE_DIR}/tracelogging/CMakeLists.txt)
-    message(STATUS "Using tracelogging as source")
-    add_subdirectory(tracelogging EXCLUDE_FROM_ALL)
-else ()
-    message(STATUS "Using tracelogging as package")
-    find_package(tracelogging REQUIRED)
-endif ()
-
 if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
     target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wunused-macros)
 
@@ -64,7 +51,6 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/azure-iot-sdk-c/CMakeLists.txt)
         umqtt
         uhttp
         aziotsharedutil
-        tracelogging
         logging
         commonutils
         mpiclient)
@@ -94,7 +80,6 @@ else()
         logging
         commonutils
         mpiclient
-        lttngh
         hsm_security_client
         msr_riot
         prov_device_client

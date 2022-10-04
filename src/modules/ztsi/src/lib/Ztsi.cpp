@@ -13,25 +13,32 @@
 #include <time.h>
 #include <unistd.h>
 
+
 #include "CommonUtils.h"
 #include "Mmi.h"
 #include "Ztsi.h"
 
 static const char g_configurationPropertyEnabled[] = "enabled";
-static const char g_configurationPropertyServiceUrl[] = "serviceUrl";
+static const char g_configurationPropertyMaxScheduledAttestationsPerDay[] = "maxScheduledAttestationsPerDay";
+static const char g_configurationPropertyMaxManualAttestationsPerDay[] = "maxManualAttestationsPerDay";
 
 static const bool g_defaultEnabled = false;
-static const std::string g_defaultServiceUrl = "";
+static const int g_defaultMaxScheduledAttestationsPerDay = 10;
+static const int g_defaultMaxManualAttestationsPerDay = 10;
+
+static const int g_totalAttestationsAllowedPerDay = 100;
 
 // Block for a maximum of (20 milliseconds x 5 retries) 100ms
 static const unsigned int g_lockWait = 20;
 static const unsigned int g_lockWaitMaxRetries = 5;
 
 const std::string Ztsi::m_componentName = "Ztsi";
-const std::string Ztsi::m_desiredServiceUrl = "desiredServiceUrl";
 const std::string Ztsi::m_desiredEnabled = "desiredEnabled";
-const std::string Ztsi::m_reportedServiceUrl = "serviceUrl";
+const std::string Ztsi::m_desiredMaxScheduledAttestationsPerDay = "desiredMaxScheduledAttestationsPerDay";
+const std::string Ztsi::m_desiredMaxManualAttestationsPerDay = "desiredMaxManualAttestationsPerDay";
 const std::string Ztsi::m_reportedEnabled = "enabled";
+const std::string Ztsi::m_reportedMaxScheduledAttestationsPerDay = "maxScheduledAttestationsPerDay";
+const std::string Ztsi::m_reportedMaxManualAttestationsPerDay = "maxManualAttestationsPerDay";
 
 int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigned int maxPayloadSizeBytes, rapidjson::Document& document)
 {
@@ -91,7 +98,7 @@ Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
     m_agentConfigurationFile = filePath;
     m_agentConfigurationDir = filePath.substr(0, filePath.find_last_of("/"));
     m_maxPayloadSizeBytes = maxPayloadSizeBytes;
-    m_lastAvailableConfiguration = {g_defaultServiceUrl, g_defaultEnabled};
+    m_lastAvailableConfiguration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
     m_lastEnabledState = false;
 }
 
@@ -197,10 +204,17 @@ int Ztsi::Get(const char* componentName, const char* objectName, MMI_JSON_STRING
                 document.SetInt(static_cast<int>(enabledState));
                 status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
             }
-            else if (0 == Ztsi::m_reportedServiceUrl.compare(objectName))
+            else if (0 == Ztsi::m_reportedMaxManualAttestationsPerDay.compare(objectName))
             {
-                std::string serviceUrl = GetServiceUrl();
-                document.SetString(serviceUrl.c_str(), document.GetAllocator());
+                int maxManualAttestationsPerDay = GetMaxManualAttestationsPerDay();
+                document.SetInt(maxManualAttestationsPerDay);
+                status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
+            }
+
+            else if (0 == Ztsi::m_reportedMaxScheduledAttestationsPerDay.compare(objectName))
+            {
+                int maxScheduledAttestationsPerDay = GetMaxScheduledAttestationsPerDay();
+                document.SetInt(maxScheduledAttestationsPerDay);
                 status = SerializeJsonObject(payload, payloadSizeBytes, maxPayloadSizeBytes, document);
             }
             else
@@ -255,15 +269,27 @@ int Ztsi::Set(const char* componentName, const char* objectName, const MMI_JSON_
                     status = EINVAL;
                 }
             }
-            else if (0 == Ztsi::m_desiredServiceUrl.compare(objectName))
+            else if (0 == Ztsi::m_desiredMaxScheduledAttestationsPerDay.compare(objectName))
             {
-                if (document.IsString())
+                if (document.IsInt())
                 {
-                    status = SetServiceUrl(document.GetString());
+                    status = SetMaxScheduledAttestationsPerDay(document.GetInt());
                 }
                 else
                 {
-                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type string", Ztsi::m_desiredServiceUrl.c_str());
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxScheduledAttestationsPerDay.c_str());
+                    status = EINVAL;
+                }
+            }
+            else if (0 == Ztsi::m_desiredMaxManualAttestationsPerDay.compare(objectName))
+            {
+                if (document.IsInt())
+                {
+                    status = SetMaxManualAttestationsPerDay(document.GetInt());
+                }
+                else
+                {
+                    OsConfigLogError(ZtsiLog::Get(), "'%s' is not of type int", Ztsi::m_desiredMaxManualAttestationsPerDay.c_str());
                     status = EINVAL;
                 }
             }
@@ -290,20 +316,26 @@ unsigned int Ztsi::GetMaxPayloadSizeBytes()
 
 Ztsi::EnabledState Ztsi::GetEnabledState()
 {
-    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
     return (MMI_OK == ReadAgentConfiguration(configuration)) ? (configuration.enabled ? EnabledState::Enabled : EnabledState::Disabled) : EnabledState::Unknown;
 }
 
-std::string Ztsi::GetServiceUrl()
+int Ztsi::GetMaxScheduledAttestationsPerDay()
 {
-    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
-    return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.serviceUrl : g_defaultServiceUrl;
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
+    return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxScheduledAttestationsPerDay : g_defaultMaxScheduledAttestationsPerDay;
+}
+
+int Ztsi::GetMaxManualAttestationsPerDay()
+{
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
+    return (MMI_OK == ReadAgentConfiguration(configuration)) ? configuration.maxManualAttestationsPerDay : g_defaultMaxManualAttestationsPerDay;
 }
 
 int Ztsi::SetEnabled(bool enabled)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay , g_defaultMaxManualAttestationsPerDay};
     m_lastEnabledState = enabled;
 
     status = ReadAgentConfiguration(configuration);
@@ -313,40 +345,64 @@ int Ztsi::SetEnabled(bool enabled)
         if (enabled != configuration.enabled)
         {
             configuration.enabled = enabled;
-            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : MMI_OK;
+            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
         }
     }
     else if (ENOENT == status)
     {
         // If the configuration file doesn't exist, create it with the desired enabled state
         configuration.enabled = enabled;
-        configuration.serviceUrl = g_defaultServiceUrl;
-        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : MMI_OK;
+        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
     }
 
     return status;
 }
 
-int Ztsi::SetServiceUrl(const std::string& serviceUrl)
+int Ztsi::SetMaxScheduledAttestationsPerDay(int maxScheduledAttestationsPerDay)
 {
     int status = MMI_OK;
-    AgentConfiguration configuration = {g_defaultServiceUrl, g_defaultEnabled};
-
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
     status = ReadAgentConfiguration(configuration);
     if ((MMI_OK == status) || (EINVAL == status))
     {
-        if (serviceUrl != configuration.serviceUrl)
+        if (maxScheduledAttestationsPerDay != configuration.maxScheduledAttestationsPerDay)
         {
             configuration.enabled = m_lastEnabledState;
-            configuration.serviceUrl = serviceUrl;
+            configuration.maxScheduledAttestationsPerDay = maxScheduledAttestationsPerDay;
             status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
         }
     }
     else if (ENOENT == status)
     {
-        // If the configuration file doesn't exist, create it with the desired serviceUrl
+        // If the configuration file doesn't exist, create it with the desired maxScheduledAttestationsPerDay state
         configuration.enabled = m_lastEnabledState;
-        configuration.serviceUrl = serviceUrl;
+        configuration.maxScheduledAttestationsPerDay = maxScheduledAttestationsPerDay;
+        status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
+    }
+
+    return status;
+}
+
+int Ztsi::SetMaxManualAttestationsPerDay(int maxManualAttestationsPerDay)
+{
+    int status = MMI_OK;
+    AgentConfiguration configuration = {g_defaultEnabled, g_defaultMaxScheduledAttestationsPerDay, g_defaultMaxManualAttestationsPerDay};
+
+    status = ReadAgentConfiguration(configuration);
+    if ((MMI_OK == status) || (EINVAL == status))
+    {
+        if (maxManualAttestationsPerDay != configuration.maxManualAttestationsPerDay)
+        {
+            configuration.enabled = m_lastEnabledState;
+            configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
+            status = IsValidConfiguration(configuration) ? WriteAgentConfiguration(configuration) : EINVAL;
+        }
+    }
+    else if (ENOENT == status)
+    {
+        // If the configuration file doesn't exist, create it with the desired maxManualAttestationsPerDay state
+        configuration.enabled = m_lastEnabledState;
+        configuration.maxManualAttestationsPerDay = maxManualAttestationsPerDay;
         status = IsValidConfiguration(configuration) ? CreateConfigurationFile(configuration) : EINVAL;
     }
 
@@ -357,26 +413,26 @@ bool Ztsi::IsValidConfiguration(const Ztsi::AgentConfiguration& configuration)
 {
     bool isValid = true;
 
-    if (configuration.serviceUrl.empty() && configuration.enabled)
+    if (configuration.maxManualAttestationsPerDay < 0 || configuration.maxScheduledAttestationsPerDay < 0)
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ZtsiLog::Get(), "ServiceUrl is empty and enabled is true");
+            OsConfigLogError(ZtsiLog::Get(), "MaxManualAttestationsPerDay and MaxScheduledAttestationsPerDay must both be nonnegative");
         }
 
         isValid = false;
     }
 
-    std::regex urlPattern("((http|https)://)(www.)?[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
-    if (!configuration.serviceUrl.empty() && !regex_match(configuration.serviceUrl, urlPattern))
+    if (configuration.maxManualAttestationsPerDay + configuration.maxScheduledAttestationsPerDay > g_totalAttestationsAllowedPerDay)
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogError(ZtsiLog::Get(), "Invalid serviceUrl '%s'", configuration.serviceUrl.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "The total number of attestations per day (Scheduled + Manual) cannot exceed %s", std::to_string(g_totalAttestationsAllowedPerDay).c_str());
         }
 
         isValid = false;
     }
+
     return isValid;
 }
 
@@ -524,21 +580,39 @@ int Ztsi::ParseAgentConfiguration(const std::string& configurationJson, Ztsi::Ag
             status = EINVAL;
         }
 
-        if (document.HasMember(g_configurationPropertyServiceUrl))
+        if (document.HasMember(g_configurationPropertyMaxScheduledAttestationsPerDay))
         {
-            if (document[g_configurationPropertyServiceUrl].IsString())
+            if (document[g_configurationPropertyMaxScheduledAttestationsPerDay].IsInt())
             {
-                configuration.serviceUrl = document[g_configurationPropertyServiceUrl].GetString();
+                configuration.maxScheduledAttestationsPerDay = document[g_configurationPropertyMaxScheduledAttestationsPerDay].GetInt();
             }
             else
             {
-                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyServiceUrl);
+                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyMaxScheduledAttestationsPerDay);
                 status = EINVAL;
             }
         }
         else
         {
-            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyServiceUrl, m_agentConfigurationFile.c_str());
+            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyMaxScheduledAttestationsPerDay, m_agentConfigurationFile.c_str());
+            status = EINVAL;
+        }
+
+        if (document.HasMember(g_configurationPropertyMaxManualAttestationsPerDay))
+        {
+            if (document[g_configurationPropertyMaxManualAttestationsPerDay].IsInt())
+            {
+                configuration.maxManualAttestationsPerDay = document[g_configurationPropertyMaxManualAttestationsPerDay].GetInt();
+            }
+            else
+            {
+                OsConfigLogError(ZtsiLog::Get(), "Invalid value for %s", g_configurationPropertyMaxManualAttestationsPerDay);
+                status = EINVAL;
+            }
+        }
+        else
+        {
+            OsConfigLogError(ZtsiLog::Get(), "Missing field '%s' in file %s", g_configurationPropertyMaxManualAttestationsPerDay, m_agentConfigurationFile.c_str());
             status = EINVAL;
         }
     }
@@ -582,7 +656,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
     int status = MMI_OK;
     struct stat sb;
 
-    // Create /etc/ztsi/ if it does not exist
+    // Create /etc/sim-agent/ if it does not exist
     if (0 != stat(m_agentConfigurationDir.c_str(), &sb))
     {
         if (0 == mkdir(m_agentConfigurationDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR))
@@ -596,7 +670,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
         }
     }
 
-    // Create /etc/ztsi/agent.conf if it does not exist
+    // Create /etc/sim-agent/agent.conf if it does not exist
     if (0 != stat(m_agentConfigurationFile.c_str(), &sb))
     {
         std::ofstream newFile(m_agentConfigurationFile, std::ios::out | std::ios::trunc);
@@ -629,8 +703,11 @@ std::string Ztsi::BuildConfigurationJson(const AgentConfiguration& configuration
     writer.Key(g_configurationPropertyEnabled);
     writer.Bool(configuration.enabled);
 
-    writer.Key(g_configurationPropertyServiceUrl);
-    writer.String(configuration.serviceUrl.c_str());
+    writer.Key(g_configurationPropertyMaxScheduledAttestationsPerDay);
+    writer.Int(configuration.maxScheduledAttestationsPerDay);
+
+    writer.Key(g_configurationPropertyMaxManualAttestationsPerDay);
+    writer.Int(configuration.maxManualAttestationsPerDay);
 
     writer.EndObject();
 

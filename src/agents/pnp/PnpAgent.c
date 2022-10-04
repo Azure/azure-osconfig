@@ -6,10 +6,6 @@
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
 
-// TraceLogging Provider UUID: CF452C24-662B-4CC5-9726-5EFE827DB281
-TRACELOGGING_DEFINE_PROVIDER(g_providerHandle, "Microsoft.Azure.OsConfigAgent",
-    (0xcf452c24, 0x662b, 0x4cc5, 0x97, 0x26, 0x5e, 0xfe, 0x82, 0x7d, 0xb2, 0x81));
-
 // 100 milliseconds
 #define DOWORK_SLEEP 100
 
@@ -121,16 +117,6 @@ OSCONFIG_LOG_HANDLE GetLog()
     return g_agentLog;
 }
 
-void InitTraceLogging(void)
-{
-    TraceLoggingRegister(g_providerHandle);
-}
-
-void CloseTraceLogging(void)
-{
-    TraceLoggingUnregister(g_providerHandle);
-}
-
 #define EOL_TERMINATOR "\n"
 #define ERROR_MESSAGE_CRASH "[ERROR] OSConfig crash due to "
 #define ERROR_MESSAGE_SIGSEGV ERROR_MESSAGE_CRASH "segmentation fault (SIGSEGV)" EOL_TERMINATOR
@@ -219,7 +205,7 @@ static void RefreshConnection()
         FREE_MEMORY(g_iotHubConnectionString);
         if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
         {
-            LogErrorWithTelemetry(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
+            OsConfigLogError(GetLog(), "RefreshConnection: out of memory making copy of the connection string");
             FREE_MEMORY(connectionString);
         }
     }
@@ -286,7 +272,7 @@ static void ForkDaemon()
     pid_t pidDaemon = fork();
     if (pidDaemon < 0)
     {
-        LogErrorWithTelemetry(GetLog(), "fork() failed, could not fork daemon process");
+        OsConfigLogError(GetLog(), "fork() failed, could not fork daemon process");
         exit(EXIT_FAILURE);
     }
 
@@ -300,7 +286,7 @@ static void ForkDaemon()
     // The forked daemon process becomes session leader
     if (setsid() < 0)
     {
-        LogErrorWithTelemetry(GetLog(), "setsid() failed, could not fork daemon process");
+        OsConfigLogError(GetLog(), "setsid() failed, could not fork daemon process");
         exit(EXIT_FAILURE);
     }
 
@@ -311,7 +297,7 @@ static void ForkDaemon()
     pidDaemon = fork();
     if (pidDaemon < 0)
     {
-        LogErrorWithTelemetry(GetLog(), "Second fork() failed, could not fork daemon process");
+        OsConfigLogError(GetLog(), "Second fork() failed, could not fork daemon process");
         exit(EXIT_FAILURE);
     }
 
@@ -362,14 +348,14 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
         
         if (NULL == (g_mpiHandle = CallMpiOpen(g_productName, g_maxPayloadSizeBytes, GetLog())))
         {
-            LogErrorWithTelemetry(GetLog(), "MpiOpen failed");
+            OsConfigLogError(GetLog(), "MpiOpen failed");
             g_exitState = PlatformInitializationFailure;
             status = false;
         }
     }
     else
     {
-        LogErrorWithTelemetry(GetLog(), "Platform could not be started");
+        OsConfigLogError(GetLog(), "Platform could not be started");
         g_exitState = PlatformInitializationFailure;
     }
 
@@ -529,7 +515,7 @@ static void AgentDoWork(void)
                 }
                 else
                 {
-                    LogErrorWithTelemetry(GetLog(), "AgentDoWork: out of memory making copy of the connection string");
+                    OsConfigLogError(GetLog(), "AgentDoWork: out of memory making copy of the connection string");
                     g_exitState = IotHubInitializationFailure;
                     SignalInterrupt(SIGQUIT);
                 }
@@ -599,7 +585,6 @@ int main(int argc, char *argv[])
     }
 
     g_agentLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-    InitTraceLogging();
 
     if (forkDaemon)
     {
@@ -619,8 +604,6 @@ int main(int argc, char *argv[])
     {
         OsConfigLogInfo(GetLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
-
-    TraceLoggingWrite(g_providerHandle, "AgentStart", TraceLoggingInt32((int32_t)pid, "Pid"), TraceLoggingString(OSCONFIG_VERSION, "Version"));
 
     // Load remaining configuration
     jsonConfiguration = LoadStringFromFile(CONFIG_FILE, false, GetLog());
@@ -713,7 +696,7 @@ int main(int argc, char *argv[])
         {
             if (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString))
             {
-                LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string from AIS");
+                OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from AIS");
                 g_exitState = NoConnectionString;
                 goto done;
             }
@@ -730,7 +713,7 @@ int main(int argc, char *argv[])
             g_connectionStringSource = FromCommandline;
             if (0 != mallocAndStrcpy_s(&connectionString, argv[1]))
             {
-                LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string from the command line");
+                OsConfigLogError(GetLog(), "Out of memory making copy of the connection string from the command line");
                 g_exitState = NoConnectionString;
                 goto done;
             }
@@ -754,7 +737,7 @@ int main(int argc, char *argv[])
 
     if (connectionString && (0 != mallocAndStrcpy_s(&g_iotHubConnectionString, connectionString)))
     {
-        LogErrorWithTelemetry(GetLog(), "Out of memory making copy of the connection string");
+        OsConfigLogError(GetLog(), "Out of memory making copy of the connection string");
         goto done;
     }
 
@@ -767,7 +750,7 @@ int main(int argc, char *argv[])
 
     if (!RefreshMpiClientSession(NULL))
     {
-        LogErrorWithTelemetry(GetLog(), "Failed to start the platform");
+        OsConfigLogError(GetLog(), "Failed to start the platform");
         goto done;
     }
 
@@ -779,7 +762,7 @@ int main(int argc, char *argv[])
     
     if (!InitializeAgent())
     {
-        LogErrorWithTelemetry(GetLog(), "Failed to initialize the OSConfig PnP Agent");
+        OsConfigLogError(GetLog(), "Failed to initialize the OSConfig PnP Agent");
         goto done;
     }
 
@@ -799,12 +782,6 @@ int main(int argc, char *argv[])
 done:
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent (PID: %d) exiting with %d", pid, g_stopSignal);
 
-    TraceLoggingWrite(g_providerHandle, "AgentShutdown",
-        TraceLoggingInt32((int32_t)pid, "Pid"),
-        TraceLoggingString(OSCONFIG_VERSION, "Version"),
-        TraceLoggingInt32((int32_t)g_stopSignal, "ExitCode"),
-        TraceLoggingInt32((int32_t)g_exitState, "ExitState"));
-
     FREE_MEMORY(g_x509Certificate);
     FREE_MEMORY(g_x509PrivateKeyHandle);
     FREE_MEMORY(connectionString);
@@ -814,7 +791,6 @@ done:
     
     StopAndDisableDaemon(OSCONFIG_PLATFORM, GetLog());
 
-    CloseTraceLogging();
     CloseLog(&g_agentLog);
 
     // Once the SDK is done, we can free these
