@@ -63,14 +63,19 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
 
     if (NULL == valueName)
     {
-        OsConfigLogError(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetIntegerFromJsonConfig: no value name, using the specified default (%d)", defaultValue);
+        }
         return valueToReturn;
     }
 
     if (minValue >= maxValue)
     {
-        OsConfigLogError(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)",
-            minValue, maxValue, valueName, defaultValue);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetIntegerFromJsonConfig: bad min (%d) and/or max (%d) values for %s, using default (%d)", minValue, maxValue, valueName, defaultValue);
+        }
         return valueToReturn;
     }
 
@@ -84,35 +89,44 @@ static int GetIntegerFromJsonConfig(const char* valueName, const char* jsonStrin
                 if (0 == valueToReturn)
                 {
                     valueToReturn = defaultValue;
-                    OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s value not found or 0, using default (%d)", valueName, defaultValue);
+                    }
                 }
                 else if (valueToReturn < minValue)
                 {
-                    OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too small, using minimum (%d)", valueName, valueToReturn, minValue);
+                    }
                     valueToReturn = minValue;
                 }
                 else if (valueToReturn > maxValue)
                 {
-                    OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(log, "GetIntegerFromJsonConfig: %s value %d too big, using maximum (%d)", valueName, valueToReturn, maxValue);
+                    }
                     valueToReturn = maxValue;
                 }
-                else
+                else if (IsFullLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "GetIntegerFromJsonConfig: %s: %d", valueName, valueToReturn);
                 }
             }
-            else
+            else if (IsFullLoggingEnabled())
             {
                 OsConfigLogError(log, "GetIntegerFromJsonConfig: json_value_get_object(root) failed, using default (%d) for %s", defaultValue, valueName);
             }
             json_value_free(rootValue);
         }
-        else
+        else if (IsFullLoggingEnabled())
         {
             OsConfigLogError(log, "GetIntegerFromJsonConfig: json_parse_string failed, using default (%d) for %s", defaultValue, valueName);
         }
     }
-    else
+    else if (IsFullLoggingEnabled())
     {
         OsConfigLogError(log, "GetIntegerFromJsonConfig: no configuration data, using default (%d) for %s", defaultValue, valueName);
     }
