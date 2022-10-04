@@ -606,10 +606,6 @@ IOTHUB_CLIENT_RESULT ReportPropertyToIotHub(const char* componentName, const cha
                 OsConfigLogError(GetLog(), "%s.%s: MpiGet failed with %d", componentName, propertyName, mpiResult);
             }
         }
-        else
-        {
-            LogErrorJustTelemetry(GetLog(), "%s.%s: MpiGet failed with %d", componentName, propertyName, mpiResult);
-        }
         result = IOTHUB_CLIENT_ERROR;
     }
 
