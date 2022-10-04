@@ -60,7 +60,6 @@ Source | Destination | Description
 [src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
 [src/agents/pnp/daemon/osconfig.toml](src/agents/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
-[src/agents/pnp/telemetryevents/OsConfigAgentTelemetry.conf](src/agents/pnp/telemetryevents/OsConfigAgentTelemetry.conf) | /etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf | Device health telemetry events (not active on Ubuntu and Debian)
 [src/modules/adhs/](src/modules/adhs/) | /usr/lib/osconfig/adhs.so | The Azure Device Health Services (ADHS) module binary
 [src/modules/deliveryoptimization/](src/modules/deliveryoptimization/) | /usr/lib/osconfig/deliveryoptimization.so | The Delivery Optimization (DO) module binary
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The Device info module binary
