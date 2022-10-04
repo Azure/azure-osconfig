@@ -108,14 +108,14 @@ static int UpdateConfiguration(void)
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
     {
-        if (NULL == (jsonValue = json_parse_string(jsonConfiguration)))
+        if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfiguration failed", jsonConfiguration);
+            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfiguration failed", existingConfiguration);
             status = EINVAL;
         }
         else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfiguration failed", jsonConfiguration);
+            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfiguration failed", existingConfiguration);
             status = EINVAL;
         }
 
