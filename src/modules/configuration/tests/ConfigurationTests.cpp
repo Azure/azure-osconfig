@@ -233,6 +233,23 @@ struct ConfigurationCombination
     int expectedResult;
 };
 
+char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
+{
+    char* output = nullptr;
+
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
+
+    if (nullptr != output)
+    {
+        memcpy(output, payload, payloadSizeBytes);
+        output[payloadSizeBytes] = 0;
+    }
+
+    return output;
+}
+
 TEST_F(ConfigurationTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
@@ -288,8 +305,9 @@ TEST_F(ConfigurationTest, MmiSet)
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
     
-    char* getPayload = nullptr;
-    int getPayloadSize = 0;
+    char* payload = nullptr;
+    char* payloadString = nullptr;
+    int payloadSizeBytes = 0;
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
@@ -300,30 +318,44 @@ TEST_F(ConfigurationTest, MmiSet)
 
         if (MMI_OK == testCombinations[i].expectedResult)
         {
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_refreshIntervalObject, &getPayload,&getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].refreshInterval);
-            FREE_MEMORY(getPayload);
-            getPayloadSize = 0;
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_refreshIntervalObject, &payload, &payloadSizeBytes));
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            EXPECT_STREQ(payloadString, testCombinations[i].refreshInterval);
+            FREE_MEMORY(payload);
+            FREE_MEMORY(payloadString);
+            payloadSizeBytes = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &getPayload,&getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].localManagementEnabled);
-            FREE_MEMORY(getPayload);
-            getPayloadSize = 0;
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &payload, &payloadSizeBytes));
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            EXPECT_STREQ(payloadString, testCombinations[i].localManagementEnabled);
+            FREE_MEMORY(payload);
+            FREE_MEMORY(payloadString);
+            payloadSizeBytes = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &getPayload,&getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].fullLoggingEnabled);
-            FREE_MEMORY(getPayload);
-            getPayloadSize = 0;
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &payload, &payloadSizeBytes));
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            EXPECT_STREQ(payloadString, testCombinations[i].fullLoggingEnabled);
+            FREE_MEMORY(payload);
+            payloadSizeBytes = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &getPayload,&getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].commandLoggingEnabled);
-            FREE_MEMORY(getPayload);
-            getPayloadSize = 0;
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &payload, &payloadSizeBytes));
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            EXPECT_STREQ(payloadString, testCombinations[i].commandLoggingEnabled);
+            FREE_MEMORY(payload);
+            FREE_MEMORY(payloadString);
+            payloadSizeBytes = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &getPayload,&getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].iotHubProtocol);
-            FREE_MEMORY(getPayload);
-            getPayloadSize = 0;
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &payload, &payloadSizeBytes));
+            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+            EXPECT_STREQ(payloadString, testCombinations[i].iotHubProtocol);
+            FREE_MEMORY(payload);
+            FREE_MEMORY(payloadString);
+            payloadSizeBytes = 0;
         }
     }
 
