@@ -54,7 +54,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if apt-cache show cowsay | grep -m 1 -o cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if apt-cache search -n cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 10
   },
@@ -124,13 +124,13 @@
     "Desired": true,
     "Payload": "{\"packages\":[\"cowsay\"],\"gpgKeys\":{\"microsoft-key\":\"https://packages.microsoft.com/keys/microsoft.asc\"},\"sources\":{\"microsoft-repo\":\"deb [arch=amd64,arm64,armhf signed-by=microsoft-key] https://packages.microsoft.com/ubuntu/20.04/prod focal main\"}}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 10
   },
   {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"apt-cache show cowsay | grep -m 1 -o cowsay\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"arguments\":\"dpkg -s cowsay | grep installed\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -138,7 +138,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"resultCode\":0,\"textResult\":\"cowsay \",\"currentState\":2}",
+    "Payload": "{\"commandId\":\"validatePackageInstalled\",\"resultCode\":0,\"textResult\":\"Status: install ok installed \",\"currentState\":2}",
     "ExpectedResult": 0
   },
   {
@@ -220,7 +220,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"removeTempFile\",\"arguments\":\"rm PmcTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"removeTempFile\",\"arguments\":\"rm -f PmcTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
