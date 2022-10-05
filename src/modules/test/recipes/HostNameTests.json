@@ -113,7 +113,7 @@
     "Desired": true,
     "Payload": "{\"commandId\":\"validateHostNameReset\",\"arguments\":\"if hostname | grep $(cat HostNameTestsTemp.txt) > /dev/null; then echo True; else echo False; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "WaitSeconds": 5
   },
   {
     "ComponentName": "CommandRunner",
