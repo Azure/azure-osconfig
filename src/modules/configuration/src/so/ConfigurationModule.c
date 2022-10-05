@@ -4,9 +4,11 @@
 #include <Mmi.h>
 #include <Configuration.h>
 
+static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
+
 void __attribute__((constructor)) InitModule(void)
 {
-    ConfigurationInitialize();
+    ConfigurationInitialize(g_osConfigConfigurationFile);
 }
 
 void __attribute__((destructor)) DestroyModule(void)

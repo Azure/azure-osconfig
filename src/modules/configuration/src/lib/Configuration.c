@@ -24,6 +24,9 @@ static const char* g_iotHubProtocolObject = "iotHubProtocol";
 static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
+#define MAX_CONFIGURATION_PATH 256
+char* g_configurationFile[MAX_CONFIGURATION_PATH] = {0};
+
 static const char* g_configurationLogFile = "/var/log/osconfig_configuration.log";
 static const char* g_configurationRolledLogFile = "/var/log/osconfig_configuration.bak";
 
@@ -54,11 +57,12 @@ static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
     return g_log;
 }
 
-static char* LoadConfigurationFromFile(void)
+static char* LoadConfigurationFromFile(const char* configurationFile)
 {
     char* jsonConfiguration = NULL;
-    
-    if (NULL != (jsonConfiguration = LoadStringFromFile(g_osConfigConfigurationFile, false, ConfigurationGetLog())))
+    const char* fileToLoadFrom = configurationFile ? configurationFile : g_osConfigConfigurationFile;
+
+    if (NULL != (jsonConfiguration = LoadStringFromFile(fileToLoadFrom, false, ConfigurationGetLog())))
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
@@ -69,23 +73,27 @@ static char* LoadConfigurationFromFile(void)
     }
     else
     {
-        OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", g_osConfigConfigurationFile);
+        OsConfigLogError(ConfigurationGetLog(), "Could not read configuration from %s", fileToLoadFrom);
     }
 
     return jsonConfiguration;
 }
 
 
-void ConfigurationInitialize(void)
+void ConfigurationInitialize(const char* configurationFile)
 {
     char* configuration = NULL;
+    size_t nameLength = configurationFile ? (ARRAY_SIZE(g_configurationFile) - 1) : strlen(g_osConfigConfigurationFile);
 
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
-    configuration = LoadConfigurationFromFile();
+    memset(g_configurationFile, 0, sizeof(g_configurationFile));
+    strncpy(g_configurationFile, configurationFile ? configurationFile : g_osConfigConfigurationFile, nameLength)
+
+    configuration = LoadConfigurationFromFile(g_configurationFile);
     FREE_MEMORY(configuration);
         
-    OsConfigLogInfo(ConfigurationGetLog(), "%s initialized", g_configurationModuleName);
+    OsConfigLogInfo(ConfigurationGetLog(), "%s initialized, configuration file: %s", g_configurationFile);
 }
 
 static int UpdateConfiguration(void)
@@ -109,8 +117,14 @@ static int UpdateConfiguration(void)
     bool commandLoggingEnabled = g_commandLoggingEnabled;
     int iotHubProtocol = g_iotHubProtocol;
 
-    char* existingConfiguration = LoadConfigurationFromFile();
+    char* existingConfiguration = LoadConfigurationFromFile(g_configurationFile);
     char* newConfiguration = NULL;
+
+    if (!existingConfiguration)
+    {
+        OsConfigLogError(ConfigurationGetLog(), "No configuration file, cannot update configuration");
+        return ENOENT;
+    }
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
@@ -186,23 +200,40 @@ static int UpdateConfiguration(void)
         if (MMI_OK == status)
         {
             newConfiguration = json_serialize_to_string_pretty(jsonValue);
-            OsConfigLogInfo(ConfigurationGetLog(), "New configuration: %s", newConfiguration);  //delete this
             
-            if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
+            if (newConfiguration)
             {
-                if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+                if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
-                    OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
-                    status = ESRCH;
+                    if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+                    {
+                        OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
+                        status = ESRCH;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
+                    status = ENOENT;
                 }
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
-                status = ENOENT;
+                OsConfigLogError(ConfigurationGetLog(), "json_serialize_to_string_pretty failed");
+                status = EIO;
             }
         }
     }
+
+    if (MMI__OK == status)
+    {
+        OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
+    }
+    else
+    {
+        OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", , IsFullLoggingEnabled() ? newConfiguration : "-");
+    }
+
         
     if (jsonValue)
     {
@@ -310,10 +341,14 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         status = EINVAL;
     }
     
+    if ((MMI_OK == status) && (NULL == (configuration = LoadConfigurationFromFile(g_configurationFile))))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "Cannot load configuration from %s, MmiGet failed");
+        status = ENOENT;
+    }
+
     if (MMI_OK == status)
     {
-        configuration = LoadConfigurationFromFile();
-
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
             snprintf(buffer, sizeof(buffer), "%u", g_modelVersion);

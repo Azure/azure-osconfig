@@ -1,8 +1,97 @@
 [
   {
     "ComponentName": "Configuration",
-    "ObjectName": "fullLoggingEnabled",
+    "ObjectName": "desiredConfiguration",
+    "Desired": true,
+    "Payload": "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":true,\"iotHubProtocol\":0}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "RefreshInterval",
     "Desired": false,
+    "Payload": "5",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "LocalManagementEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "FullLoggingEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "CommandLoggingEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "IotHubProtocol",
+    "Desired": false,
+    "Payload": "0",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredConfiguration",
+    "Desired": true,
+    "Payload": "{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "RefreshInterval",
+    "Desired": false,
+    "Payload": "30",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "LocalManagementEnabled",
+    "Desired": false,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "FullLoggingEnabled",
+    "Desired": false,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "CommandLoggingEnabled",
+    "Desired": false,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "IotHubProtocol",
+    "Desired": false,
+    "Payload": "2",
     "ExpectedResult": 0,
     "WaitSeconds": 0
   }
