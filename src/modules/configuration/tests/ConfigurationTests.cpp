@@ -247,7 +247,7 @@ TEST_F(ConfigurationTest, MmiSet)
             "false",
             "0", 
             MMI_OK
-        },
+        }/*,
         { 
             "{\"refreshInterval\":3,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}",
             "3",
@@ -283,7 +283,7 @@ TEST_F(ConfigurationTest, MmiSet)
             "false",
             "2",
             EINVAL
-        }
+        }*/
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);

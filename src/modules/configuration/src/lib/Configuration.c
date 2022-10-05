@@ -66,9 +66,9 @@ static char* LoadConfigurationFromFile(const char* fileName)
     {
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_refreshInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
-        g_localManagementEnabled = GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
-        g_fullLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
-        g_commandLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_localManagementEnabled = (GetLocalManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog())) ? true : false;
+        g_fullLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
+        g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
@@ -78,7 +78,6 @@ static char* LoadConfigurationFromFile(const char* fileName)
 
     return jsonConfiguration;
 }
-
 
 void ConfigurationInitialize(const char* configurationFile)
 {
@@ -207,10 +206,10 @@ static int UpdateConfiguration(void)
         if (MMI_OK == status)
         {
             newConfiguration = json_serialize_to_string_pretty(jsonValue);
-            
+
             if (newConfiguration)
             {
-                if (SavePayloadToFile(g_osConfigConfigurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
+                if (SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
                     if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
                     {
@@ -240,7 +239,6 @@ static int UpdateConfiguration(void)
     {
         OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
     }
-
         
     if (jsonValue)
     {
