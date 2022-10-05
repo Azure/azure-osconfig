@@ -40,7 +40,7 @@ class ConfigurationTest : public ::testing::Test
                 "\"LocalManagement\" : 0,"
                 "\"ModelVersion\" : 14,"
                 "\"IotHubProtocol\" : 2,"
-                "\ReportingIntervalSeconds\": 30"
+                "\"ReportingIntervalSeconds\": 30"
             "}";
         
         const char* m_testConfigurationFile = "~testConfiguration.json";
@@ -62,14 +62,6 @@ class ConfigurationTest : public ::testing::Test
             EXPECT_EQ(0, remove(m_testConfigurationFile));
         }
 };
-
-TEST_F(ConfigurationTest, MmiOpen)
-{
-    MMI_HANDLE handle = nullptr;
-    EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    ConfigurationMmiClose(handle);
-}
-
 
 TEST_F(ConfigurationTest, MmiOpen)
 {
@@ -233,11 +225,11 @@ TEST_F(ConfigurationTest, MmiGetOutsideSession)
 struct ConfigurationCombination
 {
     const char* desired;
-    char* refreshInterval;
-    char* localManagementEnabled;
-    char* fullLoggingEnabled;
-    char* commandLoggingEnabled;
-    char* iotHubProtocol;
+    const char* refreshInterval;
+    const char* localManagementEnabled;
+    const char* fullLoggingEnabled;
+    const char* commandLoggingEnabled;
+    const char* iotHubProtocol;
     int expectedResult;
 };
 
@@ -245,20 +237,57 @@ TEST_F(ConfigurationTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
 
-    const ConfigurationCombination* testCombinations = 
+    ConfigurationCombination testCombinations[] = 
     {
-        {"{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":false,\"iotHubProtocol\":0}", "5", "true", "true", "false", "0", MMI_OK},
-        {"{\"refreshInterval\":3,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}", "3", "false", "false", "true", "1", MMI_OK},
-        {"{\"refreshInterval\" : 15, \"localManagementEnabled\": false, \"fullLoggingEnabled\": false, \"commandLoggingEnabled\": true, \"iotHubProtocol\":1}", "15", "false", "false", "true", "1", MMI_OK},
-        {"{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}", "30", "false", "false", "false", "2", MMI_OK},
-        {"{{{{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}", "30", "false", "false", "false", "2", EINVAL}
+        { 
+            "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":false,\"iotHubProtocol\":0}",
+            "5",
+            "true",
+            "true",
+            "false",
+            "0", 
+            MMI_OK
+        },
+        { 
+            "{\"refreshInterval\":3,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}",
+            "3",
+            "false",
+            "false",
+            "true",
+            "1",
+            MMI_OK
+        },
+        { 
+            "{\"refreshInterval\" : 15, \"localManagementEnabled\": false, \"fullLoggingEnabled\": false, \"commandLoggingEnabled\": true, \"iotHubProtocol\":1}",
+            "15",
+            "false",
+            "false",
+            "true",
+            "1",
+            MMI_OK
+        },
+        { 
+            "{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
+            "30",
+            "false",
+            "false",
+            "false",
+            "2",
+            MMI_OK
+        },
+        { 
+            "{{{{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
+            "30",
+            "false",
+            "false",
+            "false",
+            "2",
+            EINVAL
+        }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
     
-    const char* payload = "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":false,\"iotHubProtocol\":0}";
-    int payloadSizeBytes = strlen(payload);
-
     char* getPayload = nullptr;
     int getPayloadSize = 0;
 
@@ -266,32 +295,33 @@ TEST_F(ConfigurationTest, MmiSet)
 
     for (int i = 0; i < numTestCombinations; i++)
     {
-        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, testCombinations[i].desired, strlen(testCombinations[i].desired)));
+        EXPECT_EQ(testCombinations[i].expectedResult, 
+            ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)testCombinations[i].desired, strlen(testCombinations[i].desired)));
 
         if (MMI_OK == testCombinations[i].expectedResult)
         {
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_refreshIntervalObject, &getPayload, $getPayloadSize));
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_refreshIntervalObject, &getPayload,&getPayloadSize));
             EXPECT_STREQ(getPayload, testCombinations[i].refreshInterval);
             FREE_MEMORY(getPayload);
             getPayloadSize = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &getPayload, $getPayloadSize));
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &getPayload,&getPayloadSize));
             EXPECT_STREQ(getPayload, testCombinations[i].localManagementEnabled);
             FREE_MEMORY(getPayload);
             getPayloadSize = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &getPayload, $getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].fullLoggingEnabledObject);
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &getPayload,&getPayloadSize));
+            EXPECT_STREQ(getPayload, testCombinations[i].fullLoggingEnabled);
             FREE_MEMORY(getPayload);
             getPayloadSize = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &getPayload, $getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].commandLoggingEnabledObject);
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &getPayload,&getPayloadSize));
+            EXPECT_STREQ(getPayload, testCombinations[i].commandLoggingEnabled);
             FREE_MEMORY(getPayload);
             getPayloadSize = 0;
 
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &getPayload, $getPayloadSize));
-            EXPECT_STREQ(getPayload, testCombinations[i].iotHubProtocolObject);
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &getPayload,&getPayloadSize));
+            EXPECT_STREQ(getPayload, testCombinations[i].iotHubProtocol);
             FREE_MEMORY(getPayload);
             getPayloadSize = 0;
         }
@@ -307,7 +337,7 @@ TEST_F(ConfigurationTest, MmiSetInvalidComponent)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, "Test123", m_modelVersionObject, payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, "Test123", m_modelVersionObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
     ConfigurationMmiClose(handle);
 }
 
@@ -318,7 +348,7 @@ TEST_F(ConfigurationTest, MmiSetInvalidObject)
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, "Test123", payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
     ConfigurationMmiClose(handle);
 }
 
@@ -328,9 +358,9 @@ TEST_F(ConfigurationTest, MmiSetOutsideSession)
     const char* payload = "{\"refreshInterval\":15,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}";
     int payloadSizeBytes = strlen(payload);
 
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     ConfigurationMmiClose(handle);
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }

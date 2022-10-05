@@ -25,7 +25,7 @@ static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
 #define MAX_CONFIGURATION_PATH 256
-char* g_configurationFile[MAX_CONFIGURATION_PATH] = {0};
+char g_configurationFile[MAX_CONFIGURATION_PATH] = {0};
 
 static const char* g_configurationLogFile = "/var/log/osconfig_configuration.log";
 static const char* g_configurationRolledLogFile = "/var/log/osconfig_configuration.bak";
@@ -57,10 +57,10 @@ static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
     return g_log;
 }
 
-static char* LoadConfigurationFromFile(const char* configurationFile)
+static char* LoadConfigurationFromFile(const char* fileName)
 {
     char* jsonConfiguration = NULL;
-    const char* fileToLoadFrom = configurationFile ? configurationFile : g_osConfigConfigurationFile;
+    const char* fileToLoadFrom = fileName ? fileName : g_osConfigConfigurationFile;
 
     if (NULL != (jsonConfiguration = LoadStringFromFile(fileToLoadFrom, false, ConfigurationGetLog())))
     {
@@ -88,12 +88,19 @@ void ConfigurationInitialize(const char* configurationFile)
     g_log = OpenLog(g_configurationLogFile, g_configurationRolledLogFile);
 
     memset(g_configurationFile, 0, sizeof(g_configurationFile));
-    strncpy(g_configurationFile, configurationFile ? configurationFile : g_osConfigConfigurationFile, nameLength)
+    strncpy(g_configurationFile, configurationFile ? configurationFile : g_osConfigConfigurationFile, nameLength);
 
     configuration = LoadConfigurationFromFile(g_configurationFile);
     FREE_MEMORY(configuration);
         
-    OsConfigLogInfo(ConfigurationGetLog(), "%s initialized, configuration file: %s", g_configurationFile);
+    OsConfigLogInfo(ConfigurationGetLog(), "%s initialized for target configuration file: %s", g_configurationModuleName, g_configurationFile);
+}
+
+void ConfigurationShutdown(void)
+{
+    OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
+    
+    CloseLog(&g_log);
 }
 
 static int UpdateConfiguration(void)
@@ -225,13 +232,13 @@ static int UpdateConfiguration(void)
         }
     }
 
-    if (MMI__OK == status)
+    if (MMI_OK == status)
     {
         OsConfigLogInfo(ConfigurationGetLog(), "New configuration successfully applied: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
     }
     else
     {
-        OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", , IsFullLoggingEnabled() ? newConfiguration : "-");
+        OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
     }
 
         
@@ -244,13 +251,6 @@ static int UpdateConfiguration(void)
     FREE_MEMORY(newConfiguration);
 
     return status;
-}
-
-void ConfigurationShutdown(void)
-{
-    OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
-    
-    CloseLog(&g_log);
 }
 
 MMI_HANDLE ConfigurationMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -343,7 +343,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     
     if ((MMI_OK == status) && (NULL == (configuration = LoadConfigurationFromFile(g_configurationFile))))
     {
-        OsConfigLogError(ConfigurationGetLog(), "Cannot load configuration from %s, MmiGet failed");
+        OsConfigLogError(ConfigurationGetLog(), "Cannot load configuration from %s, MmiGet failed", g_configurationFile);
         status = ENOENT;
     }
 

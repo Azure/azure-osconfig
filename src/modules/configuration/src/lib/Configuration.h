@@ -9,7 +9,7 @@ extern "C"
 {
 #endif
 
-void ConfigurationInitialize(void);
+void ConfigurationInitialize(const char* fileName);
 void ConfigurationShutdown(void);
 
 MMI_HANDLE ConfigurationMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes);
