@@ -233,23 +233,6 @@ struct ConfigurationCombination
     int expectedResult;
 };
 
-char* CopyPayloadToString(const char* payload, int payloadSizeBytes)
-{
-    char* output = nullptr;
-
-    EXPECT_NE(nullptr, payload);
-    EXPECT_NE(0, payloadSizeBytes);
-    EXPECT_NE(nullptr, output = (char*)malloc(payloadSizeBytes + 1));
-
-    if (nullptr != output)
-    {
-        memcpy(output, payload, payloadSizeBytes);
-        output[payloadSizeBytes] = 0;
-    }
-
-    return output;
-}
-
 TEST_F(ConfigurationTest, MmiSet)
 {
     MMI_HANDLE handle = nullptr;
