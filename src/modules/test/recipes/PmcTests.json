@@ -46,7 +46,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"installMicrosoftPublicKey\",\"arguments\":\"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"addMicrosoftPublicKey\",\"arguments\":\"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 10
   },
@@ -220,7 +220,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"removeTempFilePmc\",\"arguments\":\"find -name 'PmcTestsTemp.txt' -delete\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"removeTempFilePmc\",\"arguments\":\"rm PmcTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
