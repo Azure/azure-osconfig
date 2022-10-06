@@ -213,8 +213,8 @@ static int UpdateConfiguration(void)
                 {
                     if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
                     {
+                        // Log the error but not fail, configuration is still applied for next time OSConfig restarts
                         OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
-                        status = ESRCH;
                     }
                 }
                 else
