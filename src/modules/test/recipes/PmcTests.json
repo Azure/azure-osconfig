@@ -46,14 +46,6 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"addMicrosoftPublicKey\",\"arguments\":\"apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB3E94ADBE1229CF\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 10
-  },
-  {
-    "ComponentName": "CommandRunner",
-    "ObjectName": "commandArguments",
-    "Desired": true,
     "Payload": "{\"commandId\":\"uninstallPackageForTest\",\"arguments\":\"if apt-cache search -n cowsay > PmcTestsTemp.txt; then apt-get remove -y cowsay > /dev/null; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 10
