@@ -17,7 +17,7 @@ class ConfigurationTest : public ::testing::Test
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
             "\"VersionMinor\": 0,"
-            "\"VersionInfo\": \"Nickel\","
+            "\"VersionInfo\": \"Zinc\","
             "\"Components\": [\"Configuration\"],"
             "\"Lifetime\": 2,"
             "\"UserAccount\": 0}";

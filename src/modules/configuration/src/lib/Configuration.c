@@ -35,7 +35,7 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
     "\"VersionMinor\": 0,"
-    "\"VersionInfo\": \"Nickel\","
+    "\"VersionInfo\": \"Zinc\","
     "\"Components\": [\"Configuration\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
