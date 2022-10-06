@@ -2,17 +2,18 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - src/**
-  pull_request:
-    paths:
-      - src/**
+  #   branches:
+  #     - main
+  #   paths:
+  #     - src/**
+  # pull_request:
+  #   paths:
+  #     - src/**
 
 env:
-  build-type: Release
-  container-workspace: /azure-osconfig
+  BUILD_TYPE: Release
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
 
 jobs:
   unit-test:
@@ -21,10 +22,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
-        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
+        variant:
+          [
+            { arch: arm, platform: linux/arm/v7 },
+            { arch: arm64, platform: linux/arm64/v8 },
+            { arch: amd64, platform: linux/amd64 },
+          ]
         exclude:
           - os: ubuntu20.04
-            variant: {arch: arm, platform: linux/arm/v7}
+            variant: { arch: arm, platform: linux/arm/v7 }
 
     steps:
       - uses: actions/checkout@v3
@@ -32,17 +38,20 @@ jobs:
           submodules: recursive
           clean: true
 
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
         with:
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
-          platform: ${{ matrix.variant.platform }}
-          mount: ${{ github.workspace }}:${{ env.container-workspace }}
-          tag: "289651"
+          image: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.variant.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          arch: ${{ matrix.variant.platform }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -50,93 +59,45 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: cmake --build . --config ${{ env.build-type }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
 
       - name: Set test output
         id: test
-        run: echo '::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml'
+        run: |
+          echo ::set-output name=log::${{ matrix.os }}-${{ matrix.variant.arch }}.log
+          echo ::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
+        continue-on-error: true
         with:
           container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: ctest
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: ctest --verbose >> ${{ steps.test.outputs.log }}
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
-        if: success() || failure()
         with:
           path: ./build/gtest-output
-          output: ./${{ steps.test.outputs.xml }}
+          output: ${{ steps.test.outputs.xml }}
 
       - uses: actions/upload-artifact@v2
-        if: success() || failure()
         with:
           name: unit-test
-          path: ./${{ steps.test.outputs.xml }}
+          path: |
+            ${{ steps.test.outputs.log }}
+            ${{ steps.test.outputs.xml }}
 
       - name: Publish test report
         uses: dorny/test-reporter@v1
-        if: success() || failure()
         with:
           name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
-          path: ./${{ steps.test.outputs.xml }}
+          path: ${{ steps.test.outputs.xml }}
           reporter: java-junit
-
-  coverage:
-    name: Code coverage
-    runs-on: ubuntu-latest
-    container:
-      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:289651
-      credentials:
-        username: ${{ secrets.ACR_CLIENT_ID }}
-        password: ${{ secrets.ACR_CLIENT_SECRET }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build azure-osconfig
-        run: |
-          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
-          cmake --build ./build --config Debug
-
-      - name: Run ctest
-        working-directory: ./build
-        run: ctest
-
-      - name: Run gcovr
-        working-directory: ./build
-        run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
-
-      - name: Generate markdown report
-        uses: irongut/CodeCoverageSummary@v1.2.0
-        with:
-          filename: ./build/coverage.xml
-          fail_below_min: true
-          format: markdown
-          hide_complexity: true
-          output: both
-          badge: true
-          thresholds: '60 80'
-
-      - name: Create coverage report
-        uses: ./.github/actions/check-run
-        with:
-          name: Coverage report
-          title: Code coverage
-          markdown: ./code-coverage-results.md
-
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: code-coverage
-          path: |
-            ./build/coverage.xml
-            ./code-coverage-results.md

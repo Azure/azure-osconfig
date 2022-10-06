@@ -2,12 +2,13 @@ name: Container run
 description: Run a docker container
 
 inputs:
+  registry:
+    description: Container registry
+    required: false
+    default: ghcr.io
   image:
     description: The name of the image.
     required: true
-  local:
-    description: The path to a local image.
-    required: false
   arch:
     description: The container architecture.
     required: false
@@ -28,27 +29,30 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Login to container registry
-      if: ${{ !inputs.local }}
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ inputs.registry }}
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
-
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v2
 
     - name: Setup container
+      id: image
+      run: |
+        if [ -n "${{ inputs.local }}" ]; then
+          echo "Loading image from ${{ inputs.local }}"
+          docker load -i ${{ inputs.local }}
+          echo ::set-output name=name::${{ inputs.image }}::${{ inputs.tag }}
+        else
+          image=${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }}
+          echo "Pulling image from $image"
+          docker pull $image
+          echo ::set-output name=name::$image
+        fi
+      shell: bash
+
+    - name: Run container
       id: container
       run: |
-        if [[ -n "${{ inputs.local }}" ]]; then
-          echo "Loading local image: $image"
-          docker load -i ${{ inputs.local }}
-        fi
+        echo Running container ${{ steps.image.outputs.name }}
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.arch }} ${{ steps.image.outputs.name }})
 
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.arch }} ${{ inputs.image }}:${{ inputs.tag }})
-
-        echo Container ${{ inputs.image }}:${{ inputs.tag }} running: $id
+        echo Container ID: $id
         echo ::set-output name=id::$id
       shell: bash
