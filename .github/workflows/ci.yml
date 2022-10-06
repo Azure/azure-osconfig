@@ -98,3 +98,52 @@ jobs:
           name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
           path: ${{ steps.test.outputs.xml }}
           reporter: java-junit
+
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    container:
+      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:289651
+      credentials:
+        username: ${{ secrets.ACR_CLIENT_ID }}
+        password: ${{ secrets.ACR_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build azure-osconfig
+        run: |
+          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
+          cmake --build ./build --config Debug
+      - name: Run ctest
+        working-directory: ./build
+        run: ctest
+
+      - name: Run gcovr
+        working-directory: ./build
+        run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
+
+      - name: Generate markdown report
+        uses: irongut/CodeCoverageSummary@v1.2.0
+        with:
+          filename: ./build/coverage.xml
+          fail_below_min: true
+          format: markdown
+          hide_complexity: true
+          output: both
+          badge: true
+          thresholds: "60 80"
+
+      - name: Create coverage report
+        uses: ./.github/actions/check-run
+        with:
+          name: Coverage report
+          title: Code coverage
+          markdown: ./code-coverage-results.md
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: code-coverage
+          path: |
+            ./build/coverage.xml
+            ./code-coverage-results.md
