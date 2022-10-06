@@ -11,8 +11,8 @@ on:
   #     - src/**
 
 env:
-  build-type: Release
-  container-workspace: /azure-osconfig
+  BUILD_TYPE: Release
+  MOUNT: /azure-osconfig
 
 jobs:
   unit-test:
@@ -41,7 +41,7 @@ jobs:
           os: ${{ matrix.os }}
           arch: ${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
-          mount: ${{ github.workspace }}:${{ env.container-workspace }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: "289651"
 
       - name: Generate build
@@ -50,14 +50,14 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.build-type }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: cmake --build . --config ${{ env.build-type }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
 
       - name: Set test output
         id: test
