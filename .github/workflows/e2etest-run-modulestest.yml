@@ -46,7 +46,7 @@ jobs:
           else
             git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_REF_NAME --recursive .
           fi
-          
+
       - name: Generate build
         run: |
           mkdir build && cd build
@@ -76,7 +76,7 @@ jobs:
               checkResult $?
             done
           else
-            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
+            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml > ${{ matrix.distroName }}.log
             checkResult $?
           fi
 
@@ -94,3 +94,9 @@ jobs:
           name: Modulestest Test report (${{ matrix.distroName }}) ${{ inputs.testNameSuffix }}
           path: ./${{ matrix.distroName }}.xml
           reporter: java-junit
+
+      - uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: modulestest
+          path: ./build/${{ matrix.distroName }}.log
