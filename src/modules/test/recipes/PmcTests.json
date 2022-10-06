@@ -220,7 +220,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"removeTempFile\",\"arguments\":\"find -name 'PmcTestsTemp.txt' -delete\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"removeTempFilePmc\",\"arguments\":\"find -name 'PmcTestsTemp.txt' -delete\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
@@ -228,7 +228,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
-    "Payload": "{\"commandId\":\"removeTempFile\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+    "Payload": "{\"commandId\":\"removeTempFilePmc\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
     "ExpectedResult": 0
   }
 ]
