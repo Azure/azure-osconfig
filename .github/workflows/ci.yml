@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - src/**
-  # pull_request:
-  #   paths:
-  #     - src/**
+    branches:
+      - main
+    paths:
+      - src/**
+  pull_request:
+    paths:
+      - src/**
 
 env:
   BUILD_TYPE: Release
