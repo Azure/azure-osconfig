@@ -1,15 +1,29 @@
 [
   {
     "ComponentName": "Configuration",
+    "ObjectName": "notImplemented",
+    "Desired": false,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "notImplemented",
+    "Desired": true,
+    "ExpectedResult": 22,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "Configuration",
     "ObjectName": "desiredConfiguration",
     "Desired": true,
     "Payload": "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":true,\"iotHubProtocol\":0}",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "RefreshInterval",
+    "ObjectName": "refreshInterval",
     "Desired": false,
     "Payload": "5",
     "ExpectedResult": 0,
@@ -17,7 +31,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "LocalManagementEnabled",
+    "ObjectName": "localManagementEnabled",
     "Desired": false,
     "Payload": "true",
     "ExpectedResult": 0,
@@ -25,7 +39,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "FullLoggingEnabled",
+    "ObjectName": "fullLoggingEnabled",
     "Desired": false,
     "Payload": "true",
     "ExpectedResult": 0,
@@ -33,7 +47,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "CommandLoggingEnabled",
+    "ObjectName": "commandLoggingEnabled",
     "Desired": false,
     "Payload": "true",
     "ExpectedResult": 0,
@@ -41,7 +55,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "IotHubProtocol",
+    "ObjectName": "iotHubProtocol",
     "Desired": false,
     "Payload": "0",
     "ExpectedResult": 0,
@@ -57,7 +71,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "RefreshInterval",
+    "ObjectName": "refreshInterval",
     "Desired": false,
     "Payload": "30",
     "ExpectedResult": 0,
@@ -65,7 +79,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "LocalManagementEnabled",
+    "ObjectName": "localManagementEnabled",
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
@@ -73,7 +87,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "FullLoggingEnabled",
+    "ObjectName": "fullLoggingEnabled",
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
@@ -81,7 +95,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "CommandLoggingEnabled",
+    "ObjectName": "commandLoggingEnabled",
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
@@ -89,7 +103,7 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "IotHubProtocol",
+    "ObjectName": "iotHubProtocol",
     "Desired": false,
     "Payload": "2",
     "ExpectedResult": 0,
