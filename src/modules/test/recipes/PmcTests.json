@@ -220,7 +220,7 @@
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
     "Desired": true,
-    "Payload": "{\"commandId\":\"removeTempFile\",\"arguments\":\"rm -f PmcTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "Payload": "{\"commandId\":\"removeTempFile\",\"arguments\":\"find -name 'PmcTestsTemp.txt' -delete\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
     "ExpectedResult": 0,
     "WaitSeconds": 1
   },
