@@ -76,7 +76,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: ctest --verbose >> ${{ steps.test.outputs.log }}
+          cmd: ctest --verbose > ../${{ steps.test.outputs.log }}
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
@@ -85,6 +85,7 @@ jobs:
           output: ${{ steps.test.outputs.xml }}
 
       - uses: actions/upload-artifact@v2
+        if: always()
         with:
           name: unit-test
           path: |
