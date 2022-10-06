@@ -245,8 +245,12 @@ static int UpdateConfiguration(void)
         json_value_free(jsonValue);
     }
 
+    if (newConfiguration)
+    {
+        json_free_serialized_string(newConfiguration);
+    }
+    
     FREE_MEMORY(existingConfiguration);
-    FREE_MEMORY(newConfiguration);
 
     return status;
 }
@@ -284,6 +288,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 
     if ((NULL == payload) || (NULL == payloadSizeBytes))
     {
+        OsConfigLogError(ConfigurationGetLog(), "MmiGetInfo(%s, %p, %p) called with invalid arguments", clientName, payload, payloadSizeBytes);
         return status;
     }
     
@@ -332,20 +337,17 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
     }
-    
-    if ((MMI_OK == status) && (strcmp(componentName, g_configurationComponentName)))
+    else if (0 != strcmp(componentName, g_configurationComponentName))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
-    
-    if ((MMI_OK == status) && (NULL == (configuration = LoadConfigurationFromFile(g_configurationFile))))
+    else if (NULL == (configuration = LoadConfigurationFromFile(g_configurationFile)))
     {
         OsConfigLogError(ConfigurationGetLog(), "Cannot load configuration from %s, MmiGet failed", g_configurationFile);
         status = ENOENT;
     }
-
-    if (MMI_OK == status)
+    else
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {

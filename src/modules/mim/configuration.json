@@ -90,12 +90,16 @@
             "valueSchema": "integer",
             "enumValues": [
               { 
-                "name": "mqtt",
+                "name": "auto",
                 "enumValue": 0
+              },
+              { 
+                "name": "mqtt",
+                "enumValue": 1
               },
               {
                 "name": "mqttWebSocket",
-                "enumValue": 1
+                "enumValue": 2
               }
             ]
           }
