@@ -3,7 +3,7 @@
   "type": "MimModel",
   "contents": [
     {
-      "name": "OsConfigConfiguration",
+      "name": "Configuration",
       "type": "mimComponent",
       "contents": [
         {
@@ -84,18 +84,23 @@
         },
         {
           "name": "iotHubProtocol",
+          "type": "mimObject",
           "desired": false,
           "schema": {
             "type": "enum",
             "valueSchema": "integer",
             "enumValues": [
               { 
-                "name": "mqtt",
+                "name": "auto",
                 "enumValue": 0
+              },
+              { 
+                "name": "mqtt",
+                "enumValue": 1
               },
               {
                 "name": "mqttWebSocket",
-                "enumValue": 1
+                "enumValue": 2
               }
             ]
           }

@@ -106,6 +106,7 @@ int SleepMilliseconds(long milliseconds);
 bool IsDaemonActive(const char* name, void* log);
 bool EnableAndStartDaemon(const char* name, void* log);
 void StopAndDisableDaemon(const char* name, void* log);
+bool RestartDaemon(const char* name, void* log);
 
 char* GetHttpProxyData(void* log);
 

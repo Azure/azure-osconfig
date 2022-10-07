@@ -84,13 +84,15 @@ rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 /etc/osconfig/osconfig.toml
 /etc/systemd/system/osconfig.service
 /etc/systemd/system/osconfig-platform.service
+/usr/lib/osconfig/adhs.so
 /usr/lib/osconfig/commandrunner.so
+/usr/lib/osconfig/configuration.so
+/usr/lib/osconfig/deliveryoptimization.so
 /usr/lib/osconfig/deviceinfo.so
 /usr/lib/osconfig/firewall.so
 /usr/lib/osconfig/hostname.so
 /usr/lib/osconfig/networking.so
 /usr/lib/osconfig/pmc.so
-/usr/lib/osconfig/settings.so
 /usr/lib/osconfig/tpm.so
 /usr/lib/osconfig/ztsi.so
 

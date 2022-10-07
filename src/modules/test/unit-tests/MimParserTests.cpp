@@ -7,7 +7,7 @@ namespace Tests
     TEST(MimParserTests, LoadInvalidMim)
     {
         pMimObjects mimObjects = MimParser::ParseMim("");
-        ASSERT_EQ(mimObjects->size(), 0);
+        ASSERT_EQ(mimObjects, nullptr);
     }
 
     TEST(MimParserTests, LoadMim)

@@ -2,7 +2,7 @@
   "CommandLogging": 0,
   "FullLogging": 0,
   "LocalManagement": 0,
-  "ModelVersion": 12,
+  "ModelVersion": 14,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -12,6 +12,30 @@
     {
       "ComponentName": "CommandRunner",
       "ObjectName": "commandStatus"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "commandLoggingEnabled"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "fullLoggingEnabled"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "iotHubProtocol"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "localManagementEnabled"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "modelVersion"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "refreshInterval"
     },
     {
       "ComponentName": "DeliveryOptimization",
