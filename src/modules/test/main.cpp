@@ -92,7 +92,7 @@ TestRecipes LoadValuesFromConfiguration(std::stringstream& ss, std::string modul
             pMimObjects mimObjects = MimParser::ParseMim(recipeMetadata.m_mimPath);
             if (nullptr == mimObjects)
             {
-                TestLogError("WARNING, could not parse mim file '%s'. MIM validation will be skipped for '%s'", recipeMetadata.m_mimPath.c_str(), recipeMetadata.m_modulePath.c_str());
+                TestLogError("WARNING, could not parse MIM file '%s'. MIM validation will be skipped for '%s'", recipeMetadata.m_mimPath.c_str(), recipeMetadata.m_modulePath.c_str());
             }
             for (auto &recipe : *recipes)
             {
@@ -125,7 +125,7 @@ TestRecipes LoadValuesFromCLI(char* modulePath, char* mimPath, char* testRecipes
     pMimObjects mimObjects = MimParser::ParseMim(recipeMetadata.m_mimPath);
     if (nullptr == mimObjects)
     {
-        TestLogError("WARNING, could not parse mim file '%s'. MIM validation will be skipped for '%s'", recipeMetadata.m_mimPath.c_str(), modulePath);
+        TestLogError("WARNING, could not parse MIM file '%s'. MIM validation will be skipped for '%s'", recipeMetadata.m_mimPath.c_str(), modulePath);
     }
     for (auto &recipe : *recipes)
     {
