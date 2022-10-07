@@ -33,7 +33,7 @@ pMimObjects MimParser::ParseMim(std::string path)
     if (json_value_get_type(root_value) != JSONObject)
     {
         json_value_free(root_value);
-        return mimObjects;
+        return nullptr;
     }
 
     JSON_Object *root_object = json_value_get_object(root_value);
@@ -51,6 +51,12 @@ pMimObjects MimParser::ParseMim(std::string path)
         for (size_t y = 0; y < json_array_get_count(jsonMimObjects); y++)
         {
             root_object = json_array_get_object(jsonMimObjects, y);
+
+            if (nullptr == json_object_get_string(root_object, g_type.c_str()))
+            {
+                TestLogError("WARNING, missing '%s' for object '%s'", g_type.c_str(), json_object_get_string(root_object, g_name.c_str()));
+                continue;
+            }
 
             if (0 == strcmp(json_object_get_string(root_object, g_type.c_str()), g_mimObject.c_str()))
             {
