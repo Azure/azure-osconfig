@@ -9,5 +9,19 @@ on:
 
 jobs:
   package:
+    name: Package
     uses: ./.github/workflows/build-package.yml
-    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu18.04, ubuntu20.04, debian9]
+        variant:
+          [
+            { arch: arm, platform: linux/arm/v7 },
+            { arch: arm64, platform: linux/arm64/v8 },
+            { arch: amd64, platform: linux/amd64 },
+          ]
+    with:
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.variant.arch }}
+      platform: ${{ matrix.variant.platform }}

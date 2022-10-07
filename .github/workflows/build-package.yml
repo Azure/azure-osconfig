@@ -3,84 +3,79 @@ name: Build Package
 on:
   workflow_call:
     inputs:
-      os:
-        description: The list of operating systems to use in the strategy matrix.
-        type: string
-        required: false
-        default: '["ubuntu18.04", "ubuntu20.04", "debian9"]'
-      variant:
-        description: The list of variants to use in the strategy matrix.
-        type: string
-        required: false
-        default: '[{"arch": "arm", "platform": "linux/arm/v7"}, {"arch": "arm64", "platform": "linux/arm64/v8"}, {"arch": "amd64", "platform": "linux/amd64"}]'
       artifact:
-        description: The artifact to publish.
+        description: The artifact to create containing the packages.
         type: string
         required: false
-        default: 'package'
+        default: "package"
       build-type:
-        description: The build type to use.
+        description: The type of build to perform (Debug | Release).
         type: string
-        default: Release
         required: false
-      signed:
-        description: If the packages should be signed. This will create a second artifact for the signed packages (<artifact_name>-signed).
-        type: boolean
-        required: false
-        default: true
+        default: "Release"
+      os:
+        description: The operating system to build for.
+        type: string
+        required: true
+      arch:
+        description: The architecture to build for.
+        type: string
+        required: true
+      platform:
+        description: The platform to build for.
+        type: string
+        required: true
+
+env:
+  BUILD_TYPE: Release
+  MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
 
 jobs:
   package:
     name: Package
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ${{ fromJson(inputs.os) }}
-        variant: ${{ fromJson(inputs.variant) }}
-    env:
-      container-workspace: /azure-osconfig
+
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
           clean: true
 
-      - name: Set version
-        id: version
-        run: echo "::set-output name=tweak::$(echo $(date +'%Y%m%d%H%M'))"
-
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
         with:
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
-          platform: ${{ matrix.variant.platform }}
-          mount: ${{ github.workspace }}:${{ env.container-workspace }}
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
+          mount: ${{ github.workspace }}:${{ env.MOUNT }}
+          platform: ${{ inputs.platform }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
           cmd: |
+            # Set the tweak version (YYMMDD + 2 digit run number + 2 digit run attempt)
+            tweak=$(date +'%Y%m%d')
+            tweak="${tweak}$(printf '%02d' ${{ github.run_number }})"
+            tweak="${tweak}$(printf '%02d' ${{ github.run_attempt }})"
+
             mkdir build && cd build
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION= -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
-          cmd: cmake --build . --config ${{ inputs.build-type }}
+          working-directory: ${{ env.MOUNT }}/build
+          cmd: cmake --build . --config ${{ env.BUILD_TYPE }}
 
       - name: Run cpack
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
-          working-directory: ${{ env.container-workspace }}/build
+          working-directory: ${{ env.MOUNT }}/build
           cmd: cpack -G DEB
 
       - name: Binary footprint delta validation
@@ -94,60 +89,3 @@ jobs:
         with:
           name: ${{ inputs.artifact }}
           path: ./build/osconfig_*
-
-  signing:
-    name: Signing
-    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-windows-pool]
-    if: inputs.signed
-    needs: [package]
-    environment: esrp
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.artifact }}
-          path: ${{ github.workspace }}/osconfig_bin
-
-      - name: Install ESRPClient
-        run: |
-          az storage blob download -f esrpclient.zip -c esrpclient -n esrpclient.zip --connection-string "${{ secrets.BLOB_STORAGE_CONNECTION_STRING }}"
-          Expand-Archive esrpclient.zip
-
-      - name: Stage artifacts for signing
-        working-directory: ${{ github.workspace }}/osconfig_bin
-        run: Get-ChildItem -Recurse -File -Filter *.deb | Move-Item -Destination ${{ github.workspace }}/esrpclient/Input
-
-      - name: Download certificates
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          az keyvault secret download --file certAAD.pfx --encoding base64 --name ${{ secrets.AAD_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
-          az keyvault secret download --file certESRP.pfx --encoding base64 --name ${{ secrets.ESRP_CERTIFICATE }} --vault-name ${{ secrets.KEY_VAULT }}
-
-      - name: Import certificates
-        run: |
-          Set-Location -Path cert:\CurrentUser\My
-          Import-PfxCertificate -FilePath ${{ github.workspace }}\certAAD.pfx
-          Import-PfxCertificate -FilePath ${{ github.workspace }}\certESRP.pfx
-
-      - name: Sign packages
-        working-directory: ${{ github.workspace }}/esrpclient
-        run: |
-          mkdir Output
-          ${{ github.workspace }}\devops\scripts\create_esrp_job.ps1 (ls .\Input\ | select -expand Name) ($pwd.Path + '\Input') ($pwd.Path + '\Output')
-          cat Job.json
-          .\EsrpClient.exe Sign -a "Config\Auth.json" -c "Config\Config.json" -i "Job.json" -o "Output\output.json" -p "Config\Policy.json" -l Verbose
-
-      - name: Validate ESRP signing
-        working-directory: ${{ github.workspace }}/esrpclient
-        run: |
-          $result = (((cat .\Output\output.json | ConvertFrom-Json).submissionResponses | where { $_.statusCode -eq "pass" }).statusCode).Count -eq (ls .\Input\).Count
-          if ($result -eq $false)
-          {
-            Write-Error "Failed signing" -TargetObject $result
-          }
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ inputs.artifact }}-signed
-          path: ${{ github.workspace }}/esrpclient/Output/
