@@ -5,14 +5,13 @@ inputs:
   registry:
     description: Container registry
     required: false
-    default: ghcr.io
-  image:
-    description: The name of the image.
+    default: ""
+  container:
+    description: The name of the container.
     required: true
-  arch:
+  platform:
     description: The container architecture.
-    required: false
-    default: linux/amd64
+    required: true
   mount:
     description: The volume to mount.
     required: true
@@ -33,25 +32,22 @@ runs:
       uses: docker/setup-qemu-action@v2
 
     - name: Setup container
-      id: image
+      id: setup
       run: |
-        if [ -n "${{ inputs.local }}" ]; then
-          echo "Loading image from ${{ inputs.local }}"
-          docker load -i ${{ inputs.local }}
-          echo ::set-output name=name::${{ inputs.image }}::${{ inputs.tag }}
+        if [ -n "${{ inputs.registry }}" ]; then
+          image=${{ inputs.registry }}/${{ inputs.container }}
         else
-          image=${{ inputs.registry }}/${{ inputs.image }}:${{ inputs.tag }}
-          echo "Pulling image from $image"
-          docker pull $image
-          echo ::set-output name=name::$image
+          image=${{ inputs.container }}
         fi
+
+        echo ::set-output name=container::$image
       shell: bash
 
     - name: Run container
       id: container
       run: |
-        echo Running container ${{ steps.image.outputs.name }}
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.arch }} ${{ steps.image.outputs.name }})
+        echo Running container ${{ steps.setup.outputs.container }}:${{ inputs.tag }}...
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
 
         echo Container ID: $id
         echo ::set-output name=id::$id

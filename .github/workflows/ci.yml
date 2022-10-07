@@ -39,15 +39,16 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
         with:
-          image: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.variant.arch }}
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.variant.arch }}
+          platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          arch: ${{ matrix.variant.platform }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
