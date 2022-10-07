@@ -84,6 +84,7 @@
         },
         {
           "name": "iotHubProtocol",
+          "type": "mimObject",
           "desired": false,
           "schema": {
             "type": "enum",
