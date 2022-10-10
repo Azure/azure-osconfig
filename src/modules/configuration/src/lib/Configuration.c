@@ -21,7 +21,6 @@ static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 
-static const char* g_osConfigDaemon = "osconfig";
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
 #define MAX_CONFIGURATION_PATH 256
@@ -50,8 +49,6 @@ static bool g_commandLoggingEnabled = false;
 static int g_iotHubProtocol = 0;
 
 static atomic_int g_referenceCount = 0;
-static atomic_int g_scheduleRestart = 0;
-
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
@@ -102,21 +99,6 @@ void ConfigurationShutdown(void)
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
     
     CloseLog(&g_log);
-}
-
-static void CheckAndRestartOsConfig(void)
-{
-    if (g_scheduleRestart)
-    {
-        if (RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
-        {
-            g_scheduleRestart = 0;
-        }
-        else
-        {
-            OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
-        }
-    }
 }
 
 static int UpdateConfiguration(void)
@@ -224,11 +206,7 @@ static int UpdateConfiguration(void)
         {
             if (NULL != (newConfiguration = json_serialize_to_string_pretty(jsonValue)))
             {
-                if (SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
-                {
-                    g_scheduleRestart = 1;
-                }
-                else
+                if (false == SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
                     OsConfigLogError(ConfigurationGetLog(), "Failed saving configuration to %s", g_osConfigConfigurationFile);
                     status = ENOENT;
