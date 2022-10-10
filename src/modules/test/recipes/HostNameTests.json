@@ -1,0 +1,140 @@
+[
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "name",
+    "Desired": false,
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "hosts",
+    "Desired": false,
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "invalidObjectName",
+    "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "invalidComponentName",
+    "ObjectName": "name",
+    "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "name",
+    "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "",
+    "ObjectName": "",
+    "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "name",
+    "Desired": true,
+    "Payload": "{}",
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\":\"saveHostNameInTempFile\",\"arguments\":\"echo $(hostname) > HostNameTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"saveHostNameInTempFile\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "desiredName",
+    "Desired": true,
+    "Payload": "testHostName",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "HostName",
+    "ObjectName": "name",
+    "Desired": false,
+    "Payload": "\"testHostName\"",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\":\"validateDesiredHostName\",\"arguments\":\"hostname | grep -o testHostName\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"validateDesiredHostName\",\"resultCode\":0,\"textResult\":\"testHostName \",\"currentState\":2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\":\"resetHostName\",\"arguments\":\"hostnamectl set-hostname $(cat HostNameTestsTemp.txt)\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"resetHostName\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\":\"validateHostNameReset\",\"arguments\":\"if hostname | grep $(cat HostNameTestsTemp.txt) > /dev/null; then echo True; else echo False; fi\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 5
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"validateHostNameReset\",\"resultCode\":0,\"textResult\":\"True \",\"currentState\":2}",
+    "ExpectedResult": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandArguments",
+    "Desired": true,
+    "Payload": "{\"commandId\":\"removeTempFileHostName\",\"arguments\":\"rm HostNameTestsTemp.txt\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
+    "ExpectedResult": 0,
+    "WaitSeconds": 1
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "{\"commandId\":\"removeTempFileHostName\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
+    "ExpectedResult": 0
+  }
+]
