@@ -277,7 +277,6 @@ MMI_HANDLE ConfigurationMmiOpen(const char* clientName, const unsigned int maxPa
 
 static bool IsValidSession(MMI_HANDLE clientSession)
 {
-    CheckAndRestartOsConfig();
     return ((NULL == clientSession) || (0 != strcmp(g_configurationModuleName, (char*)clientSession)) || (g_referenceCount <= 0)) ? false : true;
 }
 
@@ -343,6 +342,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     *payload = NULL;
     *payloadSizeBytes = 0;
+
+    CheckAndRestartOsConfig();
 
     if (!IsValidSession(clientSession))
     {
