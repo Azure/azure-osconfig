@@ -72,11 +72,11 @@ jobs:
             end=`date -d "+${{inputs.repeatForXHours}} hours" +%s`
             while [[ $(date +%s) -lt $end ]]; do
               echo Performing test run $((++runNumber))
-              ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
+              (./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml >> ${{ matrix.distroName }}.log) 2>&1 | tee -a ${{ matrix.distroName }}.log
               checkResult $?
             done
           else
-            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml > ${{ matrix.distroName }}.log
+            (./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml >> ${{ matrix.distroName }}.log) 2>&1 | tee -a ${{ matrix.distroName }}.log
             checkResult $?
           fi
 

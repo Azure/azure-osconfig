@@ -1,13 +1,13 @@
 name: CI modulestest
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - src/**
-  pull_request:
-    paths:
-      - src/**
+on: [push]
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - src/**
+  # pull_request:
+  #   paths:
+  #     - src/**
 
 jobs:
   fetch-targets:
