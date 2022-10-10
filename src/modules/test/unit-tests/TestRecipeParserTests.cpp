@@ -86,4 +86,10 @@ namespace Tests
         // Redirect cerr back to original stream
         std::cerr.rdbuf(originalBuffer);
     }
+
+    TEST(TestRecipeParserTests, GetStringWithToken)
+    {
+        const std::string input = "Hello ${echo World} ${echo !}";
+        EXPECT_STRCASEEQ("Hello World!", TestRecipeParser::GetStringWithToken(input).c_str());
+    }
 }

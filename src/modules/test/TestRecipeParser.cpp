@@ -16,6 +16,43 @@ static const std::vector<std::string> g_requiredProperties = {
     g_expectedResult
 };
 
+std::string TestRecipeParser::GetStringWithToken(const std::string& str)
+{
+    std::string result = str;
+    
+    // std::regex words_regex("\\$\\{.*\\}");  // Matches ${...} tokens
+    // auto words_begin = std::sregex_iterator(str.begin(), str.end(), words_regex);
+    // auto words_end = std::sregex_iterator();
+
+    // // Replace all tokens with their values - add to map
+    // for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+    //     std::smatch match = *i;                                   
+    //     result = match.str().substr(7, match.str().length() - 2);  // Remove ${echo } from token
+    //     std::cout << result << '\n';
+    // }
+
+    std::size_t found = std::string::npos;
+    std::size_t foundEnd = 0;
+    while (std::string::npos != (found = str.find("${", foundEnd)))
+    {
+        // get the token
+        foundEnd = str.find("}", found);
+        if (std::string::npos != foundEnd)
+        {
+            std::string token = str.substr(found + 7, foundEnd - found - 7);    // Remove ${echo } from token == 7 chars
+            std::cout << token.c_str() << '\n';
+
+            // TODO: get the value
+
+            // TODO: Add to map
+        }
+    }
+
+    //
+
+    return result;
+}
+
 TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
 {
     JSON_Value *root_value;

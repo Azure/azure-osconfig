@@ -12,11 +12,13 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <parson.h>
 #include <rapidjson/document.h>
 #include <rapidjson/schema.h>
+#include <regex>
 #include <sstream>
 #include <string.h>
 #include <string>

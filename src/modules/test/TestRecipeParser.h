@@ -34,6 +34,7 @@ typedef std::shared_ptr<std::vector<TestRecipe>> TestRecipes;
 class TestRecipeParser
 {
 public:
+    static std::string GetStringWithToken(const std::string &str);
     static TestRecipes ParseTestRecipe(std::string path);
     static std::string GetTestName(TestRecipe &recipe);
 };
