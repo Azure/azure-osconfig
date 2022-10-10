@@ -50,6 +50,8 @@ static bool g_commandLoggingEnabled = false;
 static int g_iotHubProtocol = 0;
 
 static atomic_int g_referenceCount = 0;
+static atomic_int g_scheduleRestart = 0;
+
 static unsigned int g_maxPayloadSizeBytes = 0;
 
 static OSCONFIG_LOG_HANDLE ConfigurationGetLog(void)
@@ -100,6 +102,21 @@ void ConfigurationShutdown(void)
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
     
     CloseLog(&g_log);
+}
+
+static void CheckAndRestartOsConfig(void)
+{
+    if (g_scheduleRestart)
+    {
+        if (RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
+        {
+            g_scheduleRestart = 0;
+        }
+        else
+        {
+            OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
+        }
+    }
 }
 
 static int UpdateConfiguration(void)
@@ -205,17 +222,11 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            newConfiguration = json_serialize_to_string_pretty(jsonValue);
-
-            if (newConfiguration)
+            if (NULL != (newConfiguration = json_serialize_to_string_pretty(jsonValue)))
             {
                 if (SavePayloadToFile(g_configurationFile, newConfiguration, strlen(newConfiguration), ConfigurationGetLog()))
                 {
-                    if (false == RestartDaemon(g_osConfigDaemon, ConfigurationGetLog()))
-                    {
-                        // Log the error but not fail, configuration is still applied for next time OSConfig restarts
-                        OsConfigLogError(ConfigurationGetLog(), "Failed restarting %s to apply configuration", g_osConfigDaemon);
-                    }
+                    g_scheduleRestart = 1;
                 }
                 else
                 {
@@ -266,6 +277,7 @@ MMI_HANDLE ConfigurationMmiOpen(const char* clientName, const unsigned int maxPa
 
 static bool IsValidSession(MMI_HANDLE clientSession)
 {
+    CheckAndRestartOsConfig();
     return ((NULL == clientSession) || (0 != strcmp(g_configurationModuleName, (char*)clientSession)) || (g_referenceCount <= 0)) ? false : true;
 }
 
