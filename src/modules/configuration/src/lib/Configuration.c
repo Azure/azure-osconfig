@@ -321,8 +321,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    CheckAndRestartOsConfig();
-
     if (!IsValidSession(clientSession))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) called outside of a valid session", componentName, objectName);
