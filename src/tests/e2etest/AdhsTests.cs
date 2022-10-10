@@ -23,7 +23,7 @@ namespace E2eTesting
         [Test]
         public void AdhsTest_Get()
         {
-            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 1 || adhs.OptIn == 2 || adhs.OptIn == 3));
+            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 0 || adhs.OptIn == 1 || adhs.OptIn == 2));
 
             Assert.Multiple(() =>
             {
