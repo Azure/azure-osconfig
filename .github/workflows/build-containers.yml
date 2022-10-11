@@ -18,8 +18,8 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  list-containers:
-    name: List modified containers
+  modified-containers:
+    name: Modified containers
     runs-on: ubuntu-latest
     outputs:
       containers: ${{ steps.matrix.outputs.containers }}
@@ -48,8 +48,8 @@ jobs:
 
   docker-build:
     name: Docker build & push
-    needs: list-containers
-    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
+    needs: modified-containers
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
