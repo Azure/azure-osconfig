@@ -55,7 +55,7 @@ jobs:
       packages: write
     strategy:
       matrix:
-        container: ${{ fromJson(needs.list-containers.outputs.containers) }}
+        container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
       - uses: actions/checkout@v2
         with:
