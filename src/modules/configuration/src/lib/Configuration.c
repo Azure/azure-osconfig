@@ -27,6 +27,10 @@ static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnable
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 
+const char* g_auto = "auto";
+const char* g_mqtt = "mqtt";
+const char* g_mqttWebSocket = "mqttWebSocket";
+
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
 #define MAX_CONFIGURATION_PATH 256
@@ -314,7 +318,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char buffer[10] = {0};
+    char buffer[20] = {0};
     char* configuration = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -367,6 +371,21 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
             snprintf(buffer, sizeof(buffer), "%u", g_iotHubProtocol);
+            switch (g_iotHubProtocol)
+            {
+                case 1:
+                    snprintf(buffer, sizeof(buffer), "%s", g_mqtt);
+                    break;
+
+                case 2:
+                    snprintf(buffer, sizeof(buffer), "%s", g_mqttWebSocket);
+                    break;
+
+                case 0:
+                default:
+                    snprintf(buffer, sizeof(buffer), "%s", g_auto);
+
+            }
         }
         else
         {
@@ -414,9 +433,6 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 {
     const char* stringTrue = "true";
     const char* stringFalse = "false";
-    const char* stringAuto = "auto";
-    const char* stringMqtt = "mqtt";
-    const char* stringMqttWebSocket = "mqttWebSocket";
 
     char* payloadString = NULL;
     int status = MMI_OK;
@@ -509,15 +525,15 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredIotHubProtocolObject))
         {
-            if (0 == strcmp(stringAuto, payloadString))
+            if (0 == strcmp(g_auto, payloadString))
             {
                 g_iotHubProtocol = 0;
             }
-            else if (0 == strcmp(stringMqtt, payloadString))
+            else if (0 == strcmp(g_mqtt, payloadString))
             {
                 g_iotHubProtocol = 1;
             }
-            else if (0 == strcmp(stringMqttWebSocket, payloadString))
+            else if (0 == strcmp(g_mqttWebSocket, payloadString))
             {
                 g_iotHubProtocol = 2;
             }
