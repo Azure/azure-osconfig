@@ -40,7 +40,7 @@ jobs:
         id: runner_token
         run: |
           RUNNER_TOKEN=$(gh api --method POST -H "Accept: application/vnd.github.v3+json" /repos/Azure/azure-osconfig/actions/runners/registration-token | jq '.token')
-          echo ::set-output name=RUNNER_TOKEN::$RUNNER_TOKEN
+          echo "RUNNER_TOKEN=$RUNNER_TOKEN" >> $GITHUB_OUTPUT
           echo ::add-mask::$RUNNER_TOKEN
 
       - name: Provision VM - ${{ matrix.distroName }}
@@ -69,7 +69,7 @@ jobs:
           github_runner_tar_gz=`echo $target | jq .github_runner_tar_gz | tr -d \"`
           cloud_init=`echo $target | jq .cloud_init | tr -d \"`
 
-          echo ::set-output name=device_id::$device_id
+          echo "device_id=$device_id" >> $GITHUB_OUTPUT
 
           terraform init
 

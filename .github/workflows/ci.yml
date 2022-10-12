@@ -62,8 +62,8 @@ jobs:
       - name: Set test output
         id: test
         run: |
-          echo ::set-output name=log::${{ matrix.os }}-${{ matrix.variant.arch }}.log
-          echo ::set-output name=xml::${{ matrix.os }}-${{ matrix.variant.arch }}.xml
+          echo "log=${{ matrix.os }}-${{ matrix.variant.arch }}.log" >> $GITHUB_OUTPUT
+          echo "xml=${{ matrix.os }}-${{ matrix.variant.arch }}.xml" >> $GITHUB_OUTPUT
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
