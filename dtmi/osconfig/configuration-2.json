@@ -95,7 +95,7 @@
           },
           { 
             "name": "mqtt",
-            "enumValue": "mqtt""
+            "enumValue": "mqtt"
           },
           {
             "name": "mqttWebSocket",
