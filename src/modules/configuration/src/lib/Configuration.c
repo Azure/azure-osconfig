@@ -27,9 +27,9 @@ static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnable
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 
-const char* g_auto = "auto";
-const char* g_mqtt = "mqtt";
-const char* g_mqttWebSocket = "mqttWebSocket";
+const char* g_auto = "\"auto\"";
+const char* g_mqtt = "\"mqtt\"";
+const char* g_mqttWebSocket = "\"mqttWebSocket\"";
 
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
