@@ -31,14 +31,19 @@ class ConfigurationTest : public ::testing::Test
         const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
         const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
-        const char* m_desiredConfigurationObject = "desiredConfiguration";
+        
+        const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
+        const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
+        const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
+        const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+        const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 
         const char* m_testConfiguration = 
             "{"
                 "\"CommandLogging\": 0,"
                 "\"FullLogging\" : 0,"
                 "\"LocalManagement\" : 0,"
-                "\"ModelVersion\" : 14,"
+                "\"ModelVersion\" : 15,"
                 "\"IotHubProtocol\" : 2,"
                 "\"ReportingIntervalSeconds\": 30"
             "}";
@@ -224,7 +229,6 @@ TEST_F(ConfigurationTest, MmiGetOutsideSession)
 
 struct ConfigurationCombination
 {
-    const char* desired;
     const char* refreshInterval;
     const char* localManagementEnabled;
     const char* fullLoggingEnabled;
@@ -239,51 +243,14 @@ TEST_F(ConfigurationTest, MmiSet)
 
     ConfigurationCombination testCombinations[] = 
     {
-        { 
-            "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":false,\"iotHubProtocol\":0}",
-            "5",
-            "true",
-            "true",
-            "false",
-            "0", 
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\":3,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}",
-            "3",
-            "false",
-            "false",
-            "true",
-            "1",
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\" : 15, \"localManagementEnabled\": false, \"fullLoggingEnabled\": false, \"commandLoggingEnabled\": true, \"iotHubProtocol\":1}",
-            "15",
-            "false",
-            "false",
-            "true",
-            "1",
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
-            "30",
-            "false",
-            "false",
-            "false",
-            "2",
-            MMI_OK
-        },
-        { 
-            "{{{{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
-            "30",
-            "false",
-            "false",
-            "false",
-            "2",
-            EINVAL
-        }
+        { "5", "true", "true", "false", "auto",  MMI_OK },
+        { "3", "false", "false", "true", "mqtt", MMI_OK },
+        { "15", "false", "false", "true", "mqtt", MMI_OK },
+        { "30", "false", "false", "false", "mqttWebSocket", MMI_OK },
+        { "30", "bogus", "false", "false", "mqttWebSocket", EINVAL },
+        { "30", "false", "bogus", "false", "mqttWebSocket", EINVAL },
+        { "30", "false", "false", "bogus", "mqttWebSocket", EINVAL },
+        { "30", "false", "false", "false", "bogus", EINVAL }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
@@ -296,8 +263,8 @@ TEST_F(ConfigurationTest, MmiSet)
 
     for (int i = 0; i < numTestCombinations; i++)
     {
-        EXPECT_EQ(testCombinations[i].expectedResult, 
-            ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)testCombinations[i].desired, strlen(testCombinations[i].desired)));
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, g_desiredRefreshIntervalObject, 
+            (MMI_JSON_STRING)testCombinations[i].refreshInterval, strlen(testCombinations[i].refreshInterval)));
 
         if (MMI_OK == testCombinations[i].expectedResult)
         {
@@ -308,7 +275,13 @@ TEST_F(ConfigurationTest, MmiSet)
             FREE_MEMORY(payload);
             FREE_MEMORY(payloadString);
             payloadSizeBytes = 0;
+        }
 
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, g_desiredLocalManagementEnabledObject, 
+            (MMI_JSON_STRING)testCombinations[i].desiredLocalManagementEnabled, strlen(testCombinations[i].desiredLocalManagementEnabled)));
+
+        if (MMI_OK == testCombinations[i].expectedResult)
+        {
             EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &payload, &payloadSizeBytes));
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
@@ -316,14 +289,26 @@ TEST_F(ConfigurationTest, MmiSet)
             FREE_MEMORY(payload);
             FREE_MEMORY(payloadString);
             payloadSizeBytes = 0;
+        }
+        
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, g_desiredFullLoggingEnabledObject, 
+            (MMI_JSON_STRING)testCombinations[i].desiredFullLoggingEnabled, strlen(testCombinations[i].rdesiredFullLoggingEnabled)));
 
+        if (MMI_OK == testCombinations[i].expectedResult)
+        {
             EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &payload, &payloadSizeBytes));
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
             EXPECT_STREQ(payloadString, testCombinations[i].fullLoggingEnabled);
             FREE_MEMORY(payload);
             payloadSizeBytes = 0;
+        }
+        
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, g_desiredCommandLoggingEnabledObject, 
+            (MMI_JSON_STRING)testCombinations[i].desiredCommandLoggingEnabled, strlen(testCombinations[i].desiredCommandLoggingEnabled)));
 
+        if (MMI_OK == testCombinations[i].expectedResult)
+        {
             EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &payload, &payloadSizeBytes));
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
@@ -331,7 +316,13 @@ TEST_F(ConfigurationTest, MmiSet)
             FREE_MEMORY(payload);
             FREE_MEMORY(payloadString);
             payloadSizeBytes = 0;
+        }
+        
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, g_desiredIotHubProtocolObject, 
+            (MMI_JSON_STRING)testCombinations[i].desiredIotHubProtocol, strlen(testCombinations[i].desiredIotHubProtocol)));
 
+        if (MMI_OK == testCombinations[i].expectedResult)
+        {
             EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &payload, &payloadSizeBytes));
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);

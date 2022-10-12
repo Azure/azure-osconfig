@@ -15,9 +15,9 @@
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "desiredConfiguration",
+    "ObjectName": "desiredRefreshInterval",
     "Desired": true,
-    "Payload": "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":true,\"iotHubProtocol\":0}",
+    "Payload": "5",
     "ExpectedResult": 0,
     "WaitSeconds": 3
   },
@@ -27,47 +27,15 @@
     "Desired": false,
     "Payload": "5",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
-    "ObjectName": "localManagementEnabled",
-    "Desired": false,
-    "Payload": "true",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
-  },
-  {
-    "ComponentName": "Configuration",
-    "ObjectName": "fullLoggingEnabled",
-    "Desired": false,
-    "Payload": "true",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
-  },
-  {
-    "ComponentName": "Configuration",
-    "ObjectName": "commandLoggingEnabled",
-    "Desired": false,
-    "Payload": "true",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
-  },
-  {
-    "ComponentName": "Configuration",
-    "ObjectName": "iotHubProtocol",
-    "Desired": false,
-    "Payload": "0",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
-  },
-  {
-    "ComponentName": "Configuration",
-    "ObjectName": "desiredConfiguration",
+    "ObjectName": "desiredRefreshInterval",
     "Desired": true,
-    "Payload": "{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
+    "Payload": "30",
     "ExpectedResult": 0,
-    "WaitSeconds": 5
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
@@ -75,7 +43,39 @@
     "Desired": false,
     "Payload": "30",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredLocalManagementEnabled",
+    "Desired": true,
+    "Payload": "notImplemented",
+    "ExpectedResult": 22,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredLocalManagementEnabled",
+    "Desired": true,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "localManagementEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredLocalManagementEnabled",
+    "Desired": true,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
@@ -83,7 +83,39 @@
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredFullLoggingEnabled",
+    "Desired": true,
+    "Payload": "notImplemented",
+    "ExpectedResult": 22,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredFullLoggingEnabled",
+    "Desired": true,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "fullLoggingEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredFullLoggingEnabled",
+    "Desired": true,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
@@ -91,7 +123,39 @@
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredCommandLoggingEnabled",
+    "Desired": true,
+    "Payload": "notImplemented",
+    "ExpectedResult": 22,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredCommandLoggingEnabled",
+    "Desired": true,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "commandLoggingEnabled",
+    "Desired": false,
+    "Payload": "true",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredCommandLoggingEnabled",
+    "Desired": true,
+    "Payload": "false",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
@@ -99,14 +163,62 @@
     "Desired": false,
     "Payload": "false",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredIotHubProtocol",
+    "Desired": true,
+    "Payload": "auto",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
   },
   {
     "ComponentName": "Configuration",
     "ObjectName": "iotHubProtocol",
     "Desired": false,
-    "Payload": "2",
+    "Payload": "auto",
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredIotHubProtocol",
+    "Desired": true,
+    "Payload": "mqtt",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "iotHubProtocol",
+    "Desired": false,
+    "Payload": "mqtt",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredIotHubProtocol",
+    "Desired": true,
+    "Payload": "mqttWebSocket",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "iotHubProtocol",
+    "Desired": false,
+    "Payload": "mqttWebSocket",
+    "ExpectedResult": 0,
+    "WaitSeconds": 3
+  },
+  {
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredIotHubProtocol",
+    "Desired": true,
+    "Payload": "notImplemented",
+    "ExpectedResult": 22,
+    "WaitSeconds": 3
   }
 ]

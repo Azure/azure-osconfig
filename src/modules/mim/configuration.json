@@ -7,47 +7,48 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "desiredConfiguration",
+          "name": "desiredRefreshInterval",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
+          "schema": "integer"
+        },
+        {
+          "name": "desiredLocalManagementEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "desiredFullLoggingEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "desiredCommandLoggingEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "desiredIotHubProtocol",
+          "type": "mimObject",
+          "desired": false,
           "schema": {
-            "fields": [
-              {
-                "name": "refreshInterval",
-                "schema": "integer"
+            "type": "enum",
+            "valueSchema": "string",
+            "enumValues": [
+              { 
+                "name": "auto",
+                "enumValue": "auto"
+              },
+              { 
+                "name": "mqtt",
+                "enumValue": "mqtt"
               },
               {
-                "name": "localManagementEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "fullLoggingEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "commandLoggingEnabled",
-                "schema": "boolean"
-              },
-              {
-                "name": "iotHubProtocol",
-                "schema": {
-                  "type": "enum",
-                  "valueSchema": "integer",
-                  "enumValues": [
-                    { 
-                      "name": "auto",
-                      "enumValue": 0
-                    },
-                    {
-                      "name": "mqtt",
-                      "enumValue": 1
-                    },
-                    {
-                      "name": "mqttWebSocket",
-                      "enumValue": 2
-                    }
-                  ]
-                }
+                "name": "mqttWebSocket",
+                "enumValue": "mqttWebSocket"
               }
             ]
           }
@@ -88,19 +89,19 @@
           "desired": false,
           "schema": {
             "type": "enum",
-            "valueSchema": "integer",
+            "valueSchema": "string",
             "enumValues": [
               { 
                 "name": "auto",
-                "enumValue": 0
+                "enumValue": "auto"
               },
               { 
                 "name": "mqtt",
-                "enumValue": 1
+                "enumValue": "mqtt"
               },
               {
                 "name": "mqttWebSocket",
-                "enumValue": 2
+                "enumValue": "mqttWebSocket"
               }
             ]
           }

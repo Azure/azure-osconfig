@@ -1,0 +1,109 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:osconfig:configuration;2",
+  "@type": "Interface",
+  "displayName": "Configuration",
+  "description": "Provides functionality to remotely manage OSConfig configuration on device",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "desiredRefreshInterval",
+      "schema":"integer",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "desiredLocalManagementEnabled",
+      "schema":"boolean",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "desiredFullLoggingEnabled",
+      "schema":"boolean",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "desiredCommandLoggingEnabled",
+      "schema":"boolean",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "desiredIotHubProtocol",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "string",
+        "enumValues": [
+          {
+            "name": "auto",
+            "enumValue": "auto"
+          },
+          { 
+            "name": "mqtt",
+            "enumValue": "mqtt"
+          },
+          {
+            "name": "mqttWebSocket",
+            "enumValue": "mqttWebSocket"
+          }
+        ]
+      },
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "modelVersion",
+      "schema":"integer",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "refreshInterval",
+      "schema":"integer",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "localManagementEnabled",
+      "schema":"boolean",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "fullLoggingEnabled",
+      "schema":"boolean",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "commandLoggingEnabled",
+      "schema":"boolean",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "iotHubProtocol",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "string",
+        "enumValues": [
+          {
+            "name": "auto",
+            "enumValue": "auto"
+          },
+          { 
+            "name": "mqtt",
+            "enumValue": "mqtt""
+          },
+          {
+            "name": "mqttWebSocket",
+            "enumValue": "mqttWebSocket"
+          }
+        ]
+      },
+      "writable": false
+    }
+  ]
+}
