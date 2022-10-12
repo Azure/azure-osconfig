@@ -54,7 +54,6 @@
 #define DEFAULT_CLIENT_NAME "Azure OSConfig"
 #define MODEL_VERSION_NAME "ModelVersion"
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
-#define DEFAULT_DEVICE_MODEL_ID 11
 #define DEFAULT_FULL_CLIENT_NAME_TEMPLATE DEFAULT_CLIENT_NAME " %d;%s"
 #define CLIENT_NAME_MAX_SIZE 128
 

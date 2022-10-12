@@ -461,11 +461,11 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
         {
-            if (0 == strcmp(stringTrue, payloadString)
+            if (0 == strcmp(stringTrue, payloadString))
             {
                 g_localManagementEnabled = true;
             }
-            else if (0 == strcmp(stringFalse, payloadString)
+            else if (0 == strcmp(stringFalse, payloadString))
             {
                 g_localManagementEnabled = false;
             }
@@ -477,13 +477,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
         {
-            if (0 == strcmp(stringTrue, payloadString)
+            if (0 == strcmp(stringTrue, payloadString))
             {
-                g_desiredFullLoggingEnabled = true;
+                g_fullLoggingEnabled = true;
             }
-            else if (0 == strcmp(stringFalse, payloadString)
+            else if (0 == strcmp(stringFalse, payloadString))
             {
-                g_desiredFullLoggingEnabled = false;
+                g_fullLoggingEnabled = false;
             }
             else
             {
@@ -493,13 +493,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
         {
-            if (0 == strcmp(stringTrue, payloadString)
+            if (0 == strcmp(stringTrue, payloadString))
             {
-                g_desiredCommandLoggingEnabled = true;
+                g_commandLoggingEnabled = true;
             }
-            else if (0 == strcmp(stringFalse, payloadString)
+            else if (0 == strcmp(stringFalse, payloadString))
             {
-                g_desiredCommandLoggingEnabled = false;
+                g_commandLoggingEnabled = false;
             }
             else
             {
@@ -511,15 +511,15 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         {
             if (0 == strcmp(stringAuto, payloadString))
             {
-                iotHubProtocol = 0;
+                g_iotHubProtocol = 0;
             }
             else if (0 == strcmp(stringMqtt, payloadString))
             {
-                iotHubProtocol = 1;
+                g_iotHubProtocol = 1;
             }
             else if (0 == strcmp(stringMqttWebSocket, payloadString))
             {
-                iotHubProtocol = 2;
+                g_iotHubProtocol = 2;
             }
             else
             {
