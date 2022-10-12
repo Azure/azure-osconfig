@@ -253,10 +253,10 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
         { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
         { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
-        { m_desiredIotHubProtocolObject, "auto", 0, m_iotHubProtocolObject, "auto" },
-        { m_desiredIotHubProtocolObject, "mqtt", 0, m_iotHubProtocolObject, "mqtt" },
-        { m_desiredIotHubProtocolObject, "mqttWebSocket", 0, m_iotHubProtocolObject, "mqttWebSocket" },
-        { m_desiredIotHubProtocolObject, "notImplemented", 22, m_iotHubProtocolObject, "mqttWebSocket" }
+        { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
+        { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
+        { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
+        { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
