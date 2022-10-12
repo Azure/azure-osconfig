@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace E2eTesting
 {
-    [TestFixture, Category("Ztsi")]
+    [TestFixture, Category("Ztsi"), Ignore("Stability Issues")]
     public class ZtsiTests : E2ETest
     {
         private static readonly string _componentName = "Ztsi";
