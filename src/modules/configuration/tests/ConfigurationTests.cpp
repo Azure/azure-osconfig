@@ -31,14 +31,19 @@ class ConfigurationTest : public ::testing::Test
         const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
         const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
-        const char* m_desiredConfigurationObject = "desiredConfiguration";
+        
+        const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
+        const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
+        const char* m_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
+        const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+        const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 
         const char* m_testConfiguration = 
             "{"
                 "\"CommandLogging\": 0,"
                 "\"FullLogging\" : 0,"
                 "\"LocalManagement\" : 0,"
-                "\"ModelVersion\" : 14,"
+                "\"ModelVersion\" : 15,"
                 "\"IotHubProtocol\" : 2,"
                 "\"ReportingIntervalSeconds\": 30"
             "}";
@@ -224,13 +229,11 @@ TEST_F(ConfigurationTest, MmiGetOutsideSession)
 
 struct ConfigurationCombination
 {
-    const char* desired;
-    const char* refreshInterval;
-    const char* localManagementEnabled;
-    const char* fullLoggingEnabled;
-    const char* commandLoggingEnabled;
-    const char* iotHubProtocol;
+    const char* desiredObject;
+    const char* desiredValue;
     int expectedResult;
+    const char* reportedObject;
+    const char* reportedValue;
 };
 
 TEST_F(ConfigurationTest, MmiSet)
@@ -239,51 +242,21 @@ TEST_F(ConfigurationTest, MmiSet)
 
     ConfigurationCombination testCombinations[] = 
     {
-        { 
-            "{\"refreshInterval\":5,\"localManagementEnabled\":true,\"fullLoggingEnabled\":true,\"commandLoggingEnabled\":false,\"iotHubProtocol\":0}",
-            "5",
-            "true",
-            "true",
-            "false",
-            "0", 
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\":3,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}",
-            "3",
-            "false",
-            "false",
-            "true",
-            "1",
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\" : 15, \"localManagementEnabled\": false, \"fullLoggingEnabled\": false, \"commandLoggingEnabled\": true, \"iotHubProtocol\":1}",
-            "15",
-            "false",
-            "false",
-            "true",
-            "1",
-            MMI_OK
-        },
-        { 
-            "{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
-            "30",
-            "false",
-            "false",
-            "false",
-            "2",
-            MMI_OK
-        },
-        { 
-            "{{{{\"refreshInterval\":30,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":false,\"iotHubProtocol\":2}",
-            "30",
-            "false",
-            "false",
-            "false",
-            "2",
-            EINVAL
-        }
+        { m_desiredRefreshIntervalObject, "5", 0, m_refreshIntervalObject, "5" },
+        { m_desiredRefreshIntervalObject, "30", 0, m_refreshIntervalObject, "30" },
+        { m_desiredLocalManagementEnabledObject, "true", 0, m_localManagementEnabledObject, "true" },
+        { m_desiredLocalManagementEnabledObject, "false", 0, m_localManagementEnabledObject, "false" },
+        { m_desiredLocalManagementEnabledObject, "notImplemented", 22, m_localManagementEnabledObject, "false" },
+        { m_desiredFullLoggingEnabledObject, "true", 0, m_fullLoggingEnabledObject, "true" },
+        { m_desiredFullLoggingEnabledObject, "false", 0, m_fullLoggingEnabledObject, "false" },
+        { m_desiredFullLoggingEnabledObject, "notImplemented", 22, m_fullLoggingEnabledObject, "false" },
+        { m_desiredCommandLoggingEnabledObject, "true", 0, m_commandLoggingEnabledObject, "true" },
+        { m_desiredCommandLoggingEnabledObject, "false", 0, m_commandLoggingEnabledObject, "false" },
+        { m_desiredCommandLoggingEnabledObject, "notImplemented", 22, m_commandLoggingEnabledObject, "false" },
+        { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
+        { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
+        { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
+        { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
@@ -296,46 +269,15 @@ TEST_F(ConfigurationTest, MmiSet)
 
     for (int i = 0; i < numTestCombinations; i++)
     {
-        EXPECT_EQ(testCombinations[i].expectedResult, 
-            ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)testCombinations[i].desired, strlen(testCombinations[i].desired)));
+        EXPECT_EQ(testCombinations[i].expectedResult, ConfigurationMmiSet(handle, m_configurationComponentName, 
+            testCombinations[i].desiredObject, (MMI_JSON_STRING)testCombinations[i].desiredValue, strlen(testCombinations[i].desiredValue)));
 
         if (MMI_OK == testCombinations[i].expectedResult)
         {
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_refreshIntervalObject, &payload, &payloadSizeBytes));
+            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, testCombinations[i].reportedObject, &payload, &payloadSizeBytes));
             EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
             EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            EXPECT_STREQ(payloadString, testCombinations[i].refreshInterval);
-            FREE_MEMORY(payload);
-            FREE_MEMORY(payloadString);
-            payloadSizeBytes = 0;
-
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_localManagementEnabledObject, &payload, &payloadSizeBytes));
-            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            EXPECT_STREQ(payloadString, testCombinations[i].localManagementEnabled);
-            FREE_MEMORY(payload);
-            FREE_MEMORY(payloadString);
-            payloadSizeBytes = 0;
-
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_fullLoggingEnabledObject, &payload, &payloadSizeBytes));
-            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            EXPECT_STREQ(payloadString, testCombinations[i].fullLoggingEnabled);
-            FREE_MEMORY(payload);
-            payloadSizeBytes = 0;
-
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_commandLoggingEnabledObject, &payload, &payloadSizeBytes));
-            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            EXPECT_STREQ(payloadString, testCombinations[i].commandLoggingEnabled);
-            FREE_MEMORY(payload);
-            FREE_MEMORY(payloadString);
-            payloadSizeBytes = 0;
-
-            EXPECT_EQ(MMI_OK, ConfigurationMmiGet(handle, m_configurationComponentName, m_iotHubProtocolObject, &payload, &payloadSizeBytes));
-            EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-            EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-            EXPECT_STREQ(payloadString, testCombinations[i].iotHubProtocol);
+            EXPECT_STREQ(payloadString, testCombinations[i].reportedValue);
             FREE_MEMORY(payload);
             FREE_MEMORY(payloadString);
             payloadSizeBytes = 0;
@@ -348,7 +290,7 @@ TEST_F(ConfigurationTest, MmiSet)
 TEST_F(ConfigurationTest, MmiSetInvalidComponent)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "{\"refreshInterval\":15,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}";
+    const char* payload = "1";
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -359,7 +301,7 @@ TEST_F(ConfigurationTest, MmiSetInvalidComponent)
 TEST_F(ConfigurationTest, MmiSetInvalidObject)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "{\"refreshInterval\":15,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}";
+    const char* payload = "false";
     int payloadSizeBytes = strlen(payload);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -370,12 +312,12 @@ TEST_F(ConfigurationTest, MmiSetInvalidObject)
 TEST_F(ConfigurationTest, MmiSetOutsideSession)
 {
     MMI_HANDLE handle = NULL;
-    const char* payload = "{\"refreshInterval\":15,\"localManagementEnabled\":false,\"fullLoggingEnabled\":false,\"commandLoggingEnabled\":true,\"iotHubProtocol\":1}";
+    const char* payload = "30";
     int payloadSizeBytes = strlen(payload);
 
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredRefreshIntervalObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     ConfigurationMmiClose(handle);
-    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredConfigurationObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    EXPECT_EQ(EINVAL, ConfigurationMmiSet(handle, m_configurationComponentName, m_desiredRefreshIntervalObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }

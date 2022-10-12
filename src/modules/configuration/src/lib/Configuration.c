@@ -13,13 +13,23 @@
 
 static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "Configuration";
-static const char* g_desiredConfigurationObject = "desiredConfiguration";
+
 static const char* g_modelVersionObject = "modelVersion";
 static const char* g_refreshIntervalObject = "refreshInterval";
 static const char* g_localManagementEnabledObject = "localManagementEnabled";
 static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
+
+static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
+static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
+static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
+static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
+static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
+
+const char* g_auto = "\"auto\"";
+const char* g_mqtt = "\"mqtt\"";
+const char* g_mqttWebSocket = "\"mqttWebSocket\"";
 
 static const char* g_osConfigConfigurationFile = "/etc/osconfig/osconfig.json";
 
@@ -308,7 +318,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char buffer[10] = {0};
+    char buffer[20] = {0};
     char* configuration = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -361,6 +371,21 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
             snprintf(buffer, sizeof(buffer), "%u", g_iotHubProtocol);
+            switch (g_iotHubProtocol)
+            {
+                case 1:
+                    snprintf(buffer, sizeof(buffer), "%s", g_mqtt);
+                    break;
+
+                case 2:
+                    snprintf(buffer, sizeof(buffer), "%s", g_mqttWebSocket);
+                    break;
+
+                case 0:
+                default:
+                    snprintf(buffer, sizeof(buffer), "%s", g_auto);
+
+            }
         }
         else
         {
@@ -406,19 +431,11 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
 int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    int status = MMI_OK;
+    const char* stringTrue = "true";
+    const char* stringFalse = "false";
 
     char* payloadString = NULL;
-
-    int modelVersion = g_modelVersion;
-    int refreshInterval = g_refreshInterval;
-    int localManagementEnabled = g_localManagementEnabled ? 1 : 0;
-    int fullLoggingEnabled = g_fullLoggingEnabled ? 1 : 0;
-    int commandLoggingEnabled = g_commandLoggingEnabled ? 1 : 0;
-    int iotHubProtocol = g_iotHubProtocol;
-
-    JSON_Value* jsonValue = NULL;
-    JSON_Object* jsonObject = NULL;
+    int status = MMI_OK;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
@@ -431,17 +448,10 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet(%s, %s) called outside of a valid session", componentName, objectName);
         status = EINVAL;
-    }
-
-    if ((MMI_OK == status) && (strcmp(componentName, g_configurationComponentName)))
+    } 
+    else if (0 != strcmp(componentName, g_configurationComponentName))
     {
         OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported component name (%s)", componentName);
-        status = EINVAL;
-    }
-
-    if ((MMI_OK == status) && (strcmp(objectName, g_desiredConfigurationObject)))
-    {
-        OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name (%s)", objectName);
         status = EINVAL;
     }
 
@@ -458,71 +468,93 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             status = ENOMEM;
         }
     }
-
+    
     if (MMI_OK == status)
     {
-        if (NULL == (jsonValue = json_parse_string(payloadString)))
+        if (0 == strcmp(objectName, g_desiredRefreshIntervalObject))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, MmiSet failed", payloadString);
-            status = EINVAL;
+            g_refreshInterval = atoi(payloadString);
         }
-        else if (JSONObject != json_value_get_type(jsonValue))
+        else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_value_get_type(%s) did not return JSONObject, MmiSet failed", payloadString);
-            status = EINVAL;
-        }
-        else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
-        {
-            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, MmiSet failed", payloadString);
-            status = EINVAL;
-        }
-
-        if (MMI_OK == status)
-        {
-            if (0 != (modelVersion = (int)json_object_get_number(jsonObject, g_modelVersionObject)))
+            if (0 == strcmp(stringTrue, payloadString))
             {
-                g_modelVersion = modelVersion;
+                g_localManagementEnabled = true;
             }
-
-            if (0 != (refreshInterval = (int)json_object_get_number(jsonObject, g_refreshIntervalObject)))
+            else if (0 == strcmp(stringFalse, payloadString))
             {
-                g_refreshInterval = refreshInterval;
-            }
-
-            if (-1 != (localManagementEnabled = json_object_get_boolean(jsonObject, g_localManagementEnabledObject)))
-            {
-                g_localManagementEnabled = localManagementEnabled ? true : false;
-            }
-
-            if (-1 != (fullLoggingEnabled = json_object_get_boolean(jsonObject, g_fullLoggingEnabledObject)))
-            {
-                g_fullLoggingEnabled = fullLoggingEnabled ? true : false;
-            }
-
-            if (-1 != (commandLoggingEnabled = json_object_get_boolean(jsonObject, g_commandLoggingEnabledObject)))
-            {
-                g_commandLoggingEnabled = commandLoggingEnabled ? true : false;
-            }
-
-            iotHubProtocol = (int)json_object_get_number(jsonObject, g_iotHubProtocolObject);
-            if ((0 == iotHubProtocol) || (1 == iotHubProtocol) || (2 == iotHubProtocol))
-            {
-                g_iotHubProtocol = iotHubProtocol;
+                g_localManagementEnabled = false;
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value (%d), ignored", g_iotHubProtocolObject, iotHubProtocol);
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredLocalManagementEnabledObject, payloadString);
+                status = EINVAL;
             }
-
-            status = UpdateConfiguration();
+        }
+        else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
+        {
+            if (0 == strcmp(stringTrue, payloadString))
+            {
+                g_fullLoggingEnabled = true;
+            }
+            else if (0 == strcmp(stringFalse, payloadString))
+            {
+                g_fullLoggingEnabled = false;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredFullLoggingEnabledObject, payloadString);
+                status = EINVAL;
+            }
+        }
+        else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
+        {
+            if (0 == strcmp(stringTrue, payloadString))
+            {
+                g_commandLoggingEnabled = true;
+            }
+            else if (0 == strcmp(stringFalse, payloadString))
+            {
+                g_commandLoggingEnabled = false;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredCommandLoggingEnabledObject, payloadString);
+                status = EINVAL;
+            }
+        }
+        else if (0 == strcmp(objectName, g_desiredIotHubProtocolObject))
+        {
+            if (0 == strcmp(g_auto, payloadString))
+            {
+                g_iotHubProtocol = 0;
+            }
+            else if (0 == strcmp(g_mqtt, payloadString))
+            {
+                g_iotHubProtocol = 1;
+            }
+            else if (0 == strcmp(g_mqttWebSocket, payloadString))
+            {
+                g_iotHubProtocol = 2;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredIotHubProtocolObject, payloadString);
+                status = EINVAL;
+            }
+        }
+        else
+        {
+            OsConfigLogError(ConfigurationGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
+            status = EINVAL;
         }
     }
 
-    if (jsonValue)
+    if (MMI_OK == status)
     {
-        json_value_free(jsonValue);
+        status = UpdateConfiguration();
     }
-    
+
     FREE_MEMORY(payloadString);
 
     OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
