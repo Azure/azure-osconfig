@@ -33,14 +33,14 @@ jobs:
       - name: Read E2E target environment definitions
         id: set-matrix
         run: |
-          distroName=`cat ./devops/e2e/${{ secrets.E2E_ENV_FILE }} | jq '.[].distroName' | jq -s .`
-          echo ::set-output name=distroName::${distroName}
+          distroName=`cat ./devops/e2e/${{ secrets.E2E_ENV_FILE }} | jq '.[].distroName' | jq -s . | tr -d '\n'`
+          echo "distroName=$distroName" >> $GITHUB_OUTPUT
 
       - name: Generate random resource group name
         id: set-resource-group
         run: |
           resourceGroupName=`echo osconfig-$(echo $RANDOM | md5sum | head -c 16)`
-          echo ::set-output name=resourceGroupName::${resourceGroupName}
+          echo "resourceGroupName=${resourceGroupName}" >> $GITHUB_OUTPUT
 
       - name: Azure Login
         uses: azure/login@v1
