@@ -39,3 +39,39 @@ int SleepMilliseconds(long milliseconds)
 
     return nanosleep(&interval, &remaining);
 }
+
+char* GetHttpProxyData(void* log)
+{
+    const char* proxyVariables[] = {
+        "http_proxy",
+        "https_proxy",
+        "HTTP_PROXY",
+        "HTTPS_PROXY"
+    };
+    int proxyVariablesSize = ARRAY_SIZE(proxyVariables);
+
+    char* proxyData = NULL;
+    char* environmentVariable = NULL;
+    int i = 0;
+
+    for (i = 0; i < proxyVariablesSize; i++)
+    {
+        environmentVariable = getenv(proxyVariables[i]);
+        if (NULL != environmentVariable)
+        {
+            // The environment variable string must be treated as read-only, make a copy for our use:
+            proxyData = DuplicateString(environmentVariable);
+            if (NULL == proxyData)
+            {
+                OsConfigLogError(log, "Cannot make a copy of the %s variable: %d", proxyVariables[i], errno);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "Proxy data from %s: %s", proxyVariables[i], proxyData);
+            }
+            break;
+        }
+    }
+
+    return proxyData;
+}

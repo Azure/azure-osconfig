@@ -25,12 +25,7 @@ BuildRequires: gmock-devel
 BuildRequires: azure-iot-sdk-c
 BuildRequires: curl
 BuildRequires: openssl
-BuildRequires: lttng-tools
-BuildRequires: lttng-ust-devel
-BuildRequires: tracelogging-devel
 BuildRequires: rapidjson
-Requires: tracelogging
-Requires: lttng-ust
 
 %description
 @LONG_PROJECT_NAME@
@@ -78,28 +73,36 @@ systemctl start osconfig.service
 %postun
 %systemd_postun osconfig.service
 %systemd_postun osconfig-platform.service
+rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 
 %files
 %defattr(-, root, root, -)
 %{_bindir}/osconfig
 %{_bindir}/osconfig-platform
-/etc/azure-device-telemetryd/OsConfigAgentTelemetry.conf
 /etc/osconfig/osconfig.conn
 /etc/osconfig/osconfig.json
 /etc/osconfig/osconfig.toml
 /etc/systemd/system/osconfig.service
 /etc/systemd/system/osconfig-platform.service
+/usr/lib/osconfig/adhs.so
 /usr/lib/osconfig/commandrunner.so
+/usr/lib/osconfig/configuration.so
+/usr/lib/osconfig/deliveryoptimization.so
 /usr/lib/osconfig/deviceinfo.so
 /usr/lib/osconfig/firewall.so
 /usr/lib/osconfig/hostname.so
 /usr/lib/osconfig/networking.so
 /usr/lib/osconfig/pmc.so
-/usr/lib/osconfig/settings.so
 /usr/lib/osconfig/tpm.so
 /usr/lib/osconfig/ztsi.so
 
-%changelog
+% changelog
+* Fri Sept 30 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.4.20220930
+- DTMI model moved to this repo
+- Support for MIM enumerations of strings
+- New Firewall v3
+- New MPI Client common library
+- Various fixes and improvements
 * Fri Jun 10 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.3.20220610
 - Detached Agent and Platform running in separate daemon processes.
 - Platform daemon controlled through the Agent.

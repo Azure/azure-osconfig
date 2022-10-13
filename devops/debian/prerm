@@ -35,7 +35,7 @@ esac
 
 # Automatically added by dh_installsystemd/12.10ubuntu1
 if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
-    # MSFT change: dh_installsystemd uses deb-systemd-invoke which fails
+    # OSConfig Core Team change: dh_installsystemd uses deb-systemd-invoke which fails
     # when /usr/sbin/policy-rc.d fails, use systemctl directly
     systemctl stop 'osconfig.service' >/dev/null || true
     systemctl disable 'osconfig.service' >/dev/null || true
@@ -43,5 +43,10 @@ if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
     systemctl disable 'osconfig-platform.service' >/dev/null || true
 fi
 # End automatically added section
+
+# OSConfig Core Team change: Remove module identity on package removal
+if [ "$1" = remove ]; then
+    rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
+fi
 
 exit 0

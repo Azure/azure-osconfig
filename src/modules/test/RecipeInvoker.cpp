@@ -19,8 +19,9 @@ void RecipeInvoker::TestBody()
 
         if (0 == m_recipe.m_expectedResult)
         {
-            JSON_Value *root_value = json_parse_string(payload);
-            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: <null>";
+            std::string payloadString(payload, payloadSize);
+            JSON_Value* root_value = json_parse_string(payloadString.c_str());
+            ASSERT_NE(nullptr, root_value) << "Invalid JSON payload: " << payloadString;
             JSON_Object *jsonObject = json_value_get_object(root_value);
 
             EXPECT_NE(0, m_recipe.m_mimObjects->size()) << "Invalid MIM JSON!";
@@ -82,8 +83,10 @@ void RecipeInvoker::TestBody()
                 JSON_Value *returned_payload = json_parse_string(payload);
 
                 std::string recipe_payload_str(payload, payloadSize);
-                EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl << "JSON: " << m_recipe.m_payload;
-                EXPECT_TRUE(json_value_equals(recipe_payload, returned_payload)) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << recipe_payload_str << std::endl;
+                EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl << "JSON: " << m_recipe.m_payload.c_str() << std::endl;
+                EXPECT_NE(nullptr, returned_payload) << "Failed to parse returned payload" << std::endl << "JSON: " << recipe_payload_str.c_str() << std::endl;
+                EXPECT_EQ(json_value_get_type(returned_payload), json_value_get_type(recipe_payload)) << "Non matching payload types. Recipe payload: " << json_value_get_type(recipe_payload) << ", returned payload: " << json_value_get_type(returned_payload) << std::endl;
+                EXPECT_EQ(json_value_equals(recipe_payload, returned_payload), 1) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << recipe_payload_str.c_str() << std::endl;
 
                 json_value_free(recipe_payload);
                 json_value_free(returned_payload);

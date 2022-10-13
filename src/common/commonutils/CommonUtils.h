@@ -25,6 +25,18 @@
 #define EOL 10
 #endif
 
+#define DEFAULT_DEVICE_MODEL_ID 15
+
+#define MAX_COMPONENT_NAME 256
+
+// 30 seconds
+#define DEFAULT_REPORTING_INTERVAL 30
+
+#define PROTOCOL_AUTO 0
+// Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
+//#define PROTOCOL_MQTT 1 
+#define PROTOCOL_MQTT_WS 2
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -94,6 +106,24 @@ int SleepMilliseconds(long milliseconds);
 bool IsDaemonActive(const char* name, void* log);
 bool EnableAndStartDaemon(const char* name, void* log);
 void StopAndDisableDaemon(const char* name, void* log);
+bool RestartDaemon(const char* name, void* log);
+
+char* GetHttpProxyData(void* log);
+
+typedef struct REPORTED_PROPERTY
+{
+    char componentName[MAX_COMPONENT_NAME];
+    char propertyName[MAX_COMPONENT_NAME];
+    size_t lastPayloadHash;
+} REPORTED_PROPERTY;
+
+bool IsCommandLoggingEnabledInJsonConfig(const char* jsonString);
+bool IsFullLoggingEnabledInJsonConfig(const char* jsonString);
+int GetReportingIntervalFromJsonConfig(const char* jsonString, void* log);
+int GetModelVersionFromJsonConfig(const char* jsonString, void* log);
+int GetLocalManagementFromJsonConfig(const char* jsonString, void* log);
+int GetIotHubProtocolFromJsonConfig(const char* jsonString, void* log);
+int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, void* log);
 
 #ifdef __cplusplus
 }

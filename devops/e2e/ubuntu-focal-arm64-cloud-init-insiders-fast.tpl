@@ -59,5 +59,5 @@ runcmd:
   - ./svc.sh install
   - ./svc.sh start
   # Install aziot-identity-service - no arm packages available
-  - wget https://github.com/Azure/azure-iotedge/releases/download/1.2.10/aziot-identity-service_1.2.6-1_ubuntu20.04_arm64.deb -O aziot-identity-service.deb
+  - wget https://github.com/Azure/azure-iotedge/releases/download/1.4.1/aziot-identity-service_1.4.1-1_ubuntu20.04_arm64.deb -O aziot-identity-service.deb
   - apt install -y ./aziot-identity-service.deb
