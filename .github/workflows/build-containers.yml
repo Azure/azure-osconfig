@@ -47,7 +47,7 @@ jobs:
           echo containers=$containers >> $GITHUB_OUTPUT
 
   docker-build:
-    name: Docker build & push
+    name: Docker
     needs: modified-containers
     runs-on: ubuntu-latest
     permissions:
