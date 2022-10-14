@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       artifact:
-        description: The artifact to create containing the packages.
+        description: The artifact output containing the packages from this workflow.
         type: string
         required: false
         default: "package"
