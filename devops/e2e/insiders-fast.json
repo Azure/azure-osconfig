@@ -9,7 +9,7 @@
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "test_filter": "TpmTest",
-        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-x64-2.298.2.tar.gz",
         "cloud_init": "devops/e2e/ubuntu-focal-cloud-init-insiders-fast.tpl"
     },
     {
@@ -22,7 +22,7 @@
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "test_filter": "TpmTest",
-        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-x64-2.298.2.tar.gz",
         "cloud_init": "devops/e2e/ubuntu-bionic-cloud-init-insiders-fast.tpl"
     },
     {
@@ -35,7 +35,7 @@
         "vm_size": "Standard_D2plds_v5",
         "location": "West US 2",
         "test_filter": "TpmTest",
-        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-arm64-2.291.1.tar.gz",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-arm64-2.298.2.tar.gz",
         "cloud_init": "devops/e2e/ubuntu-focal-arm64-cloud-init-insiders-fast.tpl"
     },
     {
@@ -46,7 +46,7 @@
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "test_filter": "TpmTest",
-        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.291.1/actions-runner-linux-x64-2.291.1.tar.gz",
+        "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-x64-2.298.2.tar.gz",
         "cloud_init": "devops/e2e/debian-stretch-cloud-init-insiders-fast.tpl"
     }
 ]

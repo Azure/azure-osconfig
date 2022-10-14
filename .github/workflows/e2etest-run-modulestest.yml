@@ -46,15 +46,15 @@ jobs:
           else
             git clone https://github.com/Azure/azure-osconfig --branch $GITHUB_REF_NAME --recursive .
           fi
-          
+
       - name: Generate build
         run: |
           mkdir build && cd build
           cmake ../src -DCMAKE_build-type=${{ inputs.buildType }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
 
-      - name: Build azure-osconfig
+      - name: Build and install azure-osconfig
         run: |
-          cmake --build ./build --config ${{ inputs.buildType }}
+          cmake --build ./build --config ${{ inputs.buildType }} --target install
 
       - name: Run modulestest
         if: success()
@@ -76,7 +76,7 @@ jobs:
               checkResult $?
             done
           else
-            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
+            ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml > ${{ matrix.distroName }}.log
             checkResult $?
           fi
 
@@ -94,3 +94,9 @@ jobs:
           name: Modulestest Test report (${{ matrix.distroName }}) ${{ inputs.testNameSuffix }}
           path: ./${{ matrix.distroName }}.xml
           reporter: java-junit
+
+      - uses: actions/upload-artifact@v2
+        if: success() || failure()
+        with:
+          name: modulestest
+          path: ./build/${{ matrix.distroName }}.log

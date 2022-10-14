@@ -88,18 +88,23 @@ char* GetOsName(void* log)
         // Comment next line to capture the full pretty name including version (example: 'Ubuntu 20.04.3 LTS')
         TruncateAtFirst(textResult, ' ');
     }
-    else if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
-    {
-        // PRETTY_NAME did not work, try ID
-        RemovePrefixBlanks(textResult);
-        RemoveTrailingBlanks(textResult);
-        RemovePrefixUpTo(textResult, '=');
-        RemovePrefixBlanks(textResult);
-        TruncateAtFirst(textResult, ' ');
-    }
-    else    
+    else
     {
         FREE_MEMORY(textResult);
+
+        // PRETTY_NAME did not work, try ID
+        if (0 == ExecuteCommand(NULL, osNameCommand, true, true, 0, 0, &textResult, NULL, log))
+        {
+            RemovePrefixBlanks(textResult);
+            RemoveTrailingBlanks(textResult);
+            RemovePrefixUpTo(textResult, '=');
+            RemovePrefixBlanks(textResult);
+            TruncateAtFirst(textResult, ' ');
+        }
+        else
+        {
+            FREE_MEMORY(textResult);
+        }
     }
 
     if (IsFullLoggingEnabled())

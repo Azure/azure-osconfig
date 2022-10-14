@@ -25,7 +25,7 @@
 #define EOL 10
 #endif
 
-#define DEFAULT_DEVICE_MODEL_ID 11
+#define DEFAULT_DEVICE_MODEL_ID 15
 
 #define MAX_COMPONENT_NAME 256
 
@@ -106,6 +106,7 @@ int SleepMilliseconds(long milliseconds);
 bool IsDaemonActive(const char* name, void* log);
 bool EnableAndStartDaemon(const char* name, void* log);
 void StopAndDisableDaemon(const char* name, void* log);
+bool RestartDaemon(const char* name, void* log);
 
 char* GetHttpProxyData(void* log);
 

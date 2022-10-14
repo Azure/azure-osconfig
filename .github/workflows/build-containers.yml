@@ -44,7 +44,7 @@ jobs:
           fi
 
           echo Containers to build: $containers
-          echo ::set-output name=containers::$containers
+          echo containers=$containers >> $GITHUB_OUTPUT
 
   docker-build:
     name: Docker build & push
@@ -73,10 +73,10 @@ jobs:
 
           repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
 
-          echo ::set-output name=name::$(echo -n $repo/$image)
-          echo ::set-output name=path::$(dirname ${dockerfile})
-          echo ::set-output name=distro::$(echo -n $distro)
-          echo ::set-output name=platform::$(echo -n $platform)
+          echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
+          echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
+          echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
+          echo platform=$(echo -n $platform) >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2

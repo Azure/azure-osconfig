@@ -55,17 +55,17 @@ jobs:
         id: get-test-data
         run: |
           target=`jq '.[] | select(.distroName=="${{ matrix.distroName }}")' ${{ github.workspace }}/devops/e2e/${{ secrets.E2E_ENV_FILE }}`
-          echo ::set-output name=device_id::$(echo $target | jq .device_id | tr -d \")
+          echo "device_id=$(echo $target | jq .device_id | tr -d \")" >> $GITHUB_OUTPUT
 
           test_filter=$(echo $target | jq .test_filter | tr -d \")
           [[ "$test_filter" != "null" ]] && test_filter="--filter \"${test_filter}\"" || test_filter=""
           echo Using test filter: $test_filter
-          echo ::set-output name=test_filter::$test_filter
+          echo "test_filter=$test_filter" >> $GITHUB_OUTPUT
 
           package_path=$(echo $target | jq .package_path | tr -d \")
           [[ "$package_path" != "null" ]] && package_path="${package_path}" || package_path=""
           echo Using package path: $package_path
-          echo ::set-output name=package_path::$package_path
+          echo "package_path=$package_path" >> $GITHUB_OUTPUT
 
       - name: Retreive device identity
         id: hub-identity
@@ -73,12 +73,12 @@ jobs:
           token=`curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' https://login.microsoftonline.com/${{ secrets.TENANT_ID }}/oauth2/v2.0/token --data-urlencode 'grant_type=client_credentials' --data-urlencode 'client_id=${{ secrets.CLIENT_ID }}' --data-urlencode 'client_secret=${{ secrets.CLIENT_SECRET }}' --data-urlencode 'scope=https://vault.azure.net/.default' | jq .access_token | tr -d \"`
 
           iothubowner_connection_string=`curl -s "https://${{ secrets.KEY_VAULT_NAME }}.vault.azure.net/secrets/${{ inputs.resourceGroupName }}-iothubowner?api-version=2016-10-01" -H "Authorization: Bearer $token" | jq .value | tr -d \"`
-          echo iothubowner_connection_string=$iothubowner_connection_string
-          echo ::set-output name=iothubowner_connection_string::$iothubowner_connection_string
+          echo ::add-mask::$iothubowner_connection_string
+          echo "iothubowner_connection_string=$iothubowner_connection_string" >> $GITHUB_OUTPUT
 
           device_conn_str=`curl -s "https://${{ secrets.KEY_VAULT_NAME }}.vault.azure.net/secrets/${{ inputs.resourceGroupName }}-${{ steps.get-test-data.outputs.device_id }}?api-version=2016-10-01" -H "Authorization: Bearer $token" | jq .value | tr -d \"`
-          echo device_conn_str=$device_conn_str
-          echo ::set-output name=device_conn_str::$device_conn_str
+          echo ::add-mask::$device_conn_str
+          echo "device_conn_str=$device_conn_str" >> $GITHUB_OUTPUT
 
       - name: Apply device identity
         run: |
@@ -107,7 +107,7 @@ jobs:
         id: memory-start
         run: |
           mem_start=`free --kilo | sed -n 2p | cut -c 20-32 | tr -d ' '`
-          echo ::set-output name=mem_start::$mem_start
+          echo "mem_start=$mem_start" >> $GITHUB_OUTPUT
 
       - name: Configure and Start OSConfig
         run: |

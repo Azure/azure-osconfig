@@ -38,8 +38,8 @@ runs:
           ("arm")   arch="armv7l";;
         esac
 
-        echo ::set-output name=distroName::${distroName}
-        echo ::set-output name=arch::${arch}
+        echo "distroName=${distroName}" >> $GITHUB_OUTPUT
+        echo "arch::${arch}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Footprint delta validation

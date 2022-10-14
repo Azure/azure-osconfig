@@ -56,3 +56,21 @@ void StopAndDisableDaemon(const char* name, void* log)
     ExecuteCommand(NULL, stopCommand, false, false, 0, 0, NULL, NULL, log);
     ExecuteCommand(NULL, disableCommand, false, false, 0, 0, NULL, NULL, log);
 }
+
+bool RestartDaemon(const char* name, void* log)
+{
+    const char* restartTemplate = "systemctl restart %s";
+    char restartCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
+    bool status = true;
+
+    if (true == IsDaemonActive(name, log))
+    {
+        snprintf(restartCommand, sizeof(restartCommand), restartTemplate, name);
+
+        OsConfigLogInfo(log, "Restarting %s", name);
+
+        status = (0 == ExecuteCommand(NULL, restartCommand, false, false, 0, 0, NULL, NULL, log));
+    }
+
+    return status;
+}

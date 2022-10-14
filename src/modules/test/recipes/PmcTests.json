@@ -1,31 +1,31 @@
 [
   {
-    "ComponentName": "Networking",
-    "ObjectName": "networkConfiguration",
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "state",
     "Desired": false,
     "ExpectedResult": 0
   },
   {
-    "ComponentName": "Networking",
+    "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "invalidObjectName",
     "Desired": false,
     "ExpectedResult": 22
   },
   {
     "ComponentName": "invalidComponentName",
-    "ObjectName": "networkConfiguration",
+    "ObjectName": "state",
     "Desired": false,
     "ExpectedResult": 22
   },
   {
-    "ComponentName": "Networking",
+    "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "",
     "Desired": false,
     "ExpectedResult": 22
   },
   {
     "ComponentName": "",
-    "ObjectName": "networkConfiguration",
+    "ObjectName": "state",
     "Desired": false,
     "ExpectedResult": 22
   },
@@ -33,6 +33,13 @@
     "ComponentName": "",
     "ObjectName": "",
     "Desired": false,
+    "ExpectedResult": 22
+  },
+  {
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "desiredState",
+    "Desired": true,
+    "Payload": "{}",
     "ExpectedResult": 22
   }
 ]

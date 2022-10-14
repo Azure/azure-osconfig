@@ -3,7 +3,7 @@ description: Run a docker container
 
 inputs:
   registry:
-    description: Container registry
+    description: Container registry.
     required: false
     default: ""
   container:
@@ -40,7 +40,7 @@ runs:
           image=${{ inputs.container }}
         fi
 
-        echo ::set-output name=container::$image
+        echo container==$image >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Run container
@@ -50,5 +50,5 @@ runs:
         id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
 
         echo Container ID: $id
-        echo ::set-output name=id::$id
+        echo id=$id >> $GITHUB_OUTPUT
       shell: bash
