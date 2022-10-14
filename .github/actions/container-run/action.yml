@@ -40,7 +40,7 @@ runs:
           image=${{ inputs.container }}
         fi
 
-        echo container==$image >> $GITHUB_OUTPUT
+        echo container=$image >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Run container
