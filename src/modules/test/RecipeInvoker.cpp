@@ -78,12 +78,13 @@ void RecipeInvoker::TestBody()
             if (m_recipe.m_payload.size())
             {
                 JSON_Value *recipe_payload = json_parse_string(m_recipe.m_payload.c_str());
-                JSON_Value *returned_payload = json_parse_string(payload);
+                JSON_Value *returned_payload = json_parse_string(payloadString.c_str());
 
                 EXPECT_NE(nullptr, recipe_payload) << "Failed to parse recipe payload" << std::endl << "JSON: " << m_recipe.m_payload.c_str() << std::endl;
                 EXPECT_NE(nullptr, returned_payload) << "Failed to parse returned payload" << std::endl << "JSON: " << payloadString.c_str() << std::endl;
                 EXPECT_EQ(json_value_get_type(returned_payload), json_value_get_type(recipe_payload)) << "Non matching payload types. Recipe payload: " << json_value_get_type(recipe_payload) << ", returned payload: " << json_value_get_type(returned_payload) << std::endl;
-                EXPECT_STRCASEEQ(m_recipe.m_payload.c_str(), payloadString.c_str()) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << payloadString.c_str() << std::endl;
+                EXPECT_EQ(json_value_equals(recipe_payload, returned_payload), 1) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << payloadString.c_str().c_str() << std::endl;
+                // EXPECT_STRCASEEQ(m_recipe.m_payload.c_str(), payloadString.c_str()) << "Non matching recipe payload" << std::endl << "Recipe   payload: " << m_recipe.m_payload << std::endl << "Returned payload: " << payloadString.c_str() << std::endl;
 
                 json_value_free(recipe_payload);
                 json_value_free(returned_payload);
