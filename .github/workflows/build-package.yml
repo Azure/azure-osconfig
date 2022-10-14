@@ -62,7 +62,7 @@ jobs:
             tweak="${tweak}$(printf '%02d' ${{ github.run_attempt }})"
 
             mkdir build && cd build
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION= -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=$tweak -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
