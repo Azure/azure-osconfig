@@ -39,7 +39,7 @@ runs:
         esac
 
         echo "distroName=${distroName}" >> $GITHUB_OUTPUT
-        echo "arch::${arch}" >> $GITHUB_OUTPUT
+        echo "arch=${arch}" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Footprint delta validation
