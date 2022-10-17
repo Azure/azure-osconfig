@@ -59,7 +59,6 @@ jobs:
       - name: Run modulestest
         if: success()
         run: |
-          mkdir -p /etc/osconfig/
           cd build
           function checkResult(){
             if [[ $1 -ne 0 ]]; then
