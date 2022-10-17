@@ -25,7 +25,7 @@
 #define EOL 10
 #endif
 
-#define DEFAULT_DEVICE_MODEL_ID 15
+#define DEFAULT_DEVICE_MODEL_ID 16
 
 #define MAX_COMPONENT_NAME 256
 
