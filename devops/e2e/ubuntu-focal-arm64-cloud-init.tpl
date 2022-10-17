@@ -22,7 +22,6 @@ apt_sources:
       NdCFTW7wY0Fb1fWJ+/KTsC4=
       =J6gs
       -----END PGP PUBLIC KEY BLOCK-----
-package_upgrade: true
 packages:
   - apt-transport-https
   - azure-cli

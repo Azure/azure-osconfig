@@ -27,7 +27,6 @@ apt_sources:
     source: deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod $RELEASE main
   - msftprodinsidersfast:
     source: deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod insiders-fast main
-package_upgrade: true
 packages:
   - apt-transport-https
   - aziot-identity-service
