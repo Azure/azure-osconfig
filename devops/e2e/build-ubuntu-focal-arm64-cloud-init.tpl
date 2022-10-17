@@ -89,7 +89,6 @@ apt_sources:
       mnjGy66I7kijir0yXlTp8J48OHoVDXGYWpUi1wtOcnlzrLE=
       =cUKW
       -----END PGP PUBLIC KEY BLOCK-----
-package_upgrade: true
 packages:
   - apt-transport-https
   - azure-cli

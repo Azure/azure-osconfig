@@ -24,7 +24,6 @@ apt_sources:
       -----END PGP PUBLIC KEY BLOCK-----
   - msftprod:
     source: deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod $RELEASE main
-package_upgrade: true
 packages:
   - apt-transport-https
   - azure-cli
