@@ -49,7 +49,7 @@ jobs:
   docker-build:
     name: Docker
     needs: modified-containers
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, 1ES.Pool=azure-osconfig-linux-pool]
     permissions:
       contents: read
       packages: write
