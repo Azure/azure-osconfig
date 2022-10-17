@@ -56,10 +56,9 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           cmd: |
-            # Set the tweak version (YYMMDD + 2 digit run number + 2 digit run attempt)
+            # Set the tweak version (YYMMDD + 2 digit run number)
             tweak=$(date +'%Y%m%d')
             tweak="${tweak}$(printf '%02d' ${{ github.run_number }})"
-            tweak="${tweak}$(printf '%02d' ${{ github.run_attempt }})"
 
             mkdir build && cd build
             cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=$tweak -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=ON -G Ninja
