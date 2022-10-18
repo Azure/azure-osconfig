@@ -13,6 +13,21 @@
 // OSConfig's MPI server
 #define MPI_SERVER "osconfig-platform"
 
+#define LogMiContextError(context, miResult, log, FORMAT, ...) {\
+    {\
+        char errorMessage[512] = {0};\
+        if (0 < snprintf(errorMessage, ARRAY_SIZE(errorMessage), FORMAT, ##__VA_ARGS__))\
+        {\
+            MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, errorMessage);\
+        }\
+    }\
+}\
+
+#define LogError(context, miResult, log, FORMAT, ...) {\
+    OsConfigLogError(log, FORMAT, ##__VA_ARGS__);\
+    LogMiContextError(context, miResult, log, FORMAT, ##__VA_ARGS__); \
+}\
+
 // Desired (write; also reported together with read group)
 static char g_prototypeClassKey[MAX_PROTO_STRING_LENGTH] = {0};
 static char g_ensure[MAX_PROTO_STRING_LENGTH] = {0}; //"Present","Absent"
@@ -282,14 +297,14 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: invalid OSConfig_PrototypeResource_GetTargetResource argument");
         miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "GetTargetResource: invalid OSConfig_PrototypeResource_GetTargetResource argument");
         goto Exit;
     }
 
     if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: no PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "GetTargetResource: no PrototypeClassKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -303,19 +318,19 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Construct(&get_result_object, context)))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn(&get_result_object, 0)))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &OSConfig_PrototypeResource_rtti, &resultResourceObject)))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: MI_Context_NewInstance failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: MI_Context_NewInstance failed with %d", miResult);
         goto Exit;
     }
 
@@ -326,7 +341,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         if (!RefreshMpiClientSession())
         {
             mpiResult = ESRCH;
-            OsConfigLogError(GetLog(), "GetTargetResource: could not start the MPI server (%d)", mpiResult);
+            LogError(context, miResult, GetLog(), "GetTargetResource: could not start the MPI server (%d)", mpiResult);
         }
     }
 
@@ -338,7 +353,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             if (NULL == hostName)
             {
                 mpiResult = ENODATA;
-                OsConfigLogError(GetLog(), "GetTargetResource: CallMpiGet for %s and %s returned no payload (%s, %d) (%d)", 
+                LogError(context, miResult, GetLog(), "GetTargetResource: CallMpiGet for %s and %s returned no payload (%s, %d) (%d)", 
                     componentName, objectName, hostName, hostNameLength, mpiResult);
             }
             else
@@ -353,7 +368,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     
     if (MPI_OK != mpiResult)
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: CallMpiGet for %s and %s failed with %d", componentName, objectName, mpiResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: CallMpiGet for %s and %s failed with %d", componentName, objectName, mpiResult);
 
         if ((0 == g_reportedIntegerStatus) || (0 == strcmp(g_reportedStringResult, "PASS")))
         {
@@ -375,7 +390,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
                 }
                 else
                 {
-                    OsConfigLogError(GetLog(), "GetTargetResource: no string value for %s", allParameters[i].name);
+                    LogError(context, miResult, GetLog(), "GetTargetResource: no string value for %s", allParameters[i].name);
                     miResult = MI_RESULT_FAILED;
                 }
                 break;
@@ -393,7 +408,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
         if (MI_RESULT_OK != miResult)
         {
-            OsConfigLogError(GetLog(), "GetTargetResource: MI_Instance_SetElement(%s) failed with %d", allParameters[i].name, miResult);
+            LogError(context, miResult, GetLog(), "GetTargetResource: MI_Instance_SetElement(%s) failed with %d", allParameters[i].name, miResult);
         }
 
         memset(&miValue, 0, sizeof(miValue));
@@ -402,36 +417,31 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     // Set the created output resource instance as the output resource in the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(&get_result_object.__instance, MI_T("OutputResource"), &miValueResource, MI_INSTANCE, 0)))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: MI_Instance_SetElement(OutputResource) failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: MI_Instance_SetElement(OutputResource) failed with %d", miResult);
         goto Exit;
     }
     else
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Post failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Post failed with %d", miResult);
     }
         
 Exit:
-    if (MI_RESULT_OK != miResult)
-    {
-        MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
-    }
-
     // Clean up the Result MI value instance if needed
-    if ((NULL != miValueResult.instance) && (MI_RESULT_OK != MI_Instance_Delete(miValueResult.instance)))
+    if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
-        OsConfigLogInfo(GetLog(), "GetTargetResource: MI_Instance_Delete(miValueResult) failed");
+        LogError(context, miResult, GetLog(), "GetTargetResource: MI_Instance_Delete(miValueResult) failed");
     }
 
     // Clean up the output resource instance
-    if ((NULL != resultResourceObject) && (MI_RESULT_OK != MI_Instance_Delete(resultResourceObject)))
+    if ((NULL != resultResourceObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(resultResourceObject))))
     {
-        OsConfigLogInfo(GetLog(), "GetTargetResource: MI_Instance_Delete(resultResourceObject) failed");
+        LogError(context, miResult, GetLog(), "GetTargetResource: MI_Instance_Delete(resultResourceObject) failed");
     }
 
     // Clean up the GetTargetResource instance
     if (MI_RESULT_OK != (miResult == OSConfig_PrototypeResource_GetTargetResource_Destruct(&get_result_object)))
     {
-        OsConfigLogError(GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Destruct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Destruct failed with %d", miResult);
     }
 
     // Post MI result back to MI to finish
@@ -463,15 +473,15 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
 
     if ((in == NULL) || (in->InputResource.exists == MI_FALSE) || (in->InputResource.value == NULL))
     {
-        OsConfigLogError(GetLog(), "TestTargetResource: invalid OSConfig_PrototypeResource_TestTargetResource argument");
         miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "TestTargetResource: invalid OSConfig_PrototypeResource_TestTargetResource argument");
         goto Exit;
     }
 
     if ((in->InputResource.value->PrototypeClassKey.exists == MI_FALSE) &&  (in->InputResource.value->PrototypeClassKey.value != NULL))
     {
-        OsConfigLogError(GetLog(), "TestTargetResource: no PrototypeClassKey");
         miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "TestTargetResource: no PrototypeClassKey");
         goto Exit;
     }
 
@@ -494,20 +504,20 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
         }
         else
         {
-            OsConfigLogError(GetLog(), "TestTargetResource: unknown ensure value (%s)", in->InputResource.value->Ensure.value);
+            LogError(context, miResult, GetLog(), "TestTargetResource: unknown ensure value (%s)", in->InputResource.value->Ensure.value);
             is_compliant = MI_FALSE;
         }
     }
     
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Construct(&test_result_object, context)))
     {
-        OsConfigLogError(GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn(&test_result_object, 0)))
     {
-        OsConfigLogError(GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
@@ -515,19 +525,14 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
     MI_Context_PostInstance(context, &(test_result_object.__instance));
 
 Exit:
-    if (MI_RESULT_OK != miResult)
+    if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
-        MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
+        LogError(context, miResult, GetLog(), "TestTargetResource: MI_Instance_Delete failed");
     }
 
-    if ((NULL != miValueResult.instance) && (MI_RESULT_OK != MI_Instance_Delete(miValueResult.instance)))
+    if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Destruct(&test_result_object)))
     {
-        OsConfigLogInfo(GetLog(), "TestTargetResource: MI_Instance_Delete failed");
-    }
-
-    if (MI_RESULT_OK != OSConfig_PrototypeResource_TestTargetResource_Destruct(&test_result_object))
-    {
-        OsConfigLogInfo(GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Destruct failed");
     }
 
     OsConfigLogInfo(GetLog(), "TestTargetResource: complete");
@@ -558,27 +563,27 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
-        OsConfigLogError(GetLog(), "SetTargetResource: invalid argument");
         miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "SetTargetResource: invalid argument");
         goto Exit;
     }
 
     if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
     {
-        OsConfigLogError(GetLog(), "SetTargetResource: no PrototypeClassKey");
         miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "SetTargetResource: no PrototypeClassKey");
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Construct(&set_result_object, context)))
     {
-        OsConfigLogError(GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
     {
-        OsConfigLogError(GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
@@ -602,7 +607,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
             if (!RefreshMpiClientSession())
             {
                 mpiResult = ESRCH;
-                OsConfigLogError(GetLog(), "SetTargetResource: could not start the MPI server (%d)", mpiResult);
+                LogError(context, miResult, GetLog(), "SetTargetResource: could not start the MPI server (%d)", mpiResult);
             }
         }
 
@@ -615,7 +620,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
             }
             else
             {
-                OsConfigLogError(GetLog(), "SetTargetResource: CallMpiSet for %s and %s failed with %d", componentName, objectName, mpiResult);
+                LogError(context, miResult, GetLog(), "SetTargetResource: CallMpiSet for %s and %s failed with %d", componentName, objectName, mpiResult);
             }
         }
 
@@ -641,16 +646,14 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 Exit:
     if (MI_RESULT_OK != miResult)
     {
-        MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, 0);
-
         memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));
         strncpy(g_reportedStringResult, "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
         g_reportedIntegerStatus = miResult;
     }
     
-    if (MI_RESULT_OK != OSConfig_PrototypeResource_SetTargetResource_Destruct(&set_result_object))
+    if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Destruct(&set_result_object)))
     {
-        OsConfigLogInfo(GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Destruct failed");
     }
     
     OsConfigLogInfo(GetLog(), "SetTargetResource: complete");
