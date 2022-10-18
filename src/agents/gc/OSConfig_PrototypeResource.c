@@ -16,14 +16,10 @@
 #define LogWithMiContext(context, miResult, log, FORMAT, ...) {\
     {\
         char message[512] = {0};\
-        if (0 < snprintf(message, ARRAY_SIZE(message), FORMAT, ##__VA_ARGS__))
-        {\
-            if (MI_RESULT_OK == miResult)\ 
-            {\
+        if (0 < snprintf(message, ARRAY_SIZE(message), FORMAT, ##__VA_ARGS__)) {\
+            if (MI_RESULT_OK == miResult) {\
                 MI_Context_WriteVerbose(context, message);\
-            }\ 
-            else\ 
-            {\
+            } else{\
                 MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, message);\
             }\
         }\
