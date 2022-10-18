@@ -1,6 +1,5 @@
 #cloud-config
 apt_update: true
-package_upgrade: true
 runcmd:
   # Install GitHub Actions Runner
   - mkdir actions-runner && cd actions-runner && curl -o runner.tar.gz -L ${github_runner_tar_gz_package} && tar xzf ./runner.tar.gz

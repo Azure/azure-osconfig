@@ -1,6 +1,5 @@
 #cloud-config
 apt_update: true
-package_upgrade: true
 runcmd:
   # Install aziot-identity-service
   - wget https://github.com/Azure/azure-iotedge/releases/download/1.4.1/aziot-identity-service_1.4.1-1_debian10_amd64.deb -O aziot-identity-service.deb
