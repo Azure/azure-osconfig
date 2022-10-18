@@ -13,34 +13,31 @@
 // OSConfig's MPI server
 #define MPI_SERVER "osconfig-platform"
 
-#define LogMiContextVerbose(context, log, FORMAT, ...) {\
+#define LogWithMiContext(context, miResult, log, FORMAT, ...) {\
     {\
-        char message[512] = { 0 }; \
-        if (0 < snprintf(message, ARRAY_SIZE(message), FORMAT, ##__VA_ARGS__))\
+        char message[512] = {0};\
+        if (0 < snprintf(message, ARRAY_SIZE(message), FORMAT, ##__VA_ARGS__))
         {\
-            MI_Context_WriteVerbose(context, message); \
+            if (MI_RESULT_OK == miResult)\ 
+            {\
+                MI_Context_WriteVerbose(context, message);\
+            }\ 
+            else\ 
+            {\
+                MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, message);\
+            }\
         }\
     }\
 }\
 
 #define LogInfo(context, log, FORMAT, ...) {\
-    OsConfigLogInfo(log, FORMAT, ##__VA_ARGS__); \
-    LogMiContextVerbose(context, log, FORMAT, ##__VA_ARGS__); \
-}\
-
-#define LogMiContextError(context, miResult, log, FORMAT, ...) {\
-    {\
-        char errorMessage[512] = {0};\
-        if (0 < snprintf(errorMessage, ARRAY_SIZE(errorMessage), FORMAT, ##__VA_ARGS__))\
-        {\
-            MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, errorMessage);\
-        }\
-    }\
+    OsConfigLogInfo(log, FORMAT, ##__VA_ARGS__);\
+    LogWithMiContext(context, MI_RESULT_OK, log, FORMAT, ##__VA_ARGS__);\
 }\
 
 #define LogError(context, miResult, log, FORMAT, ...) {\
-    OsConfigLogError(log, FORMAT, ##__VA_ARGS__); \
-    LogMiContextError(context, miResult, log, FORMAT, ##__VA_ARGS__); \
+    OsConfigLogError(log, FORMAT, ##__VA_ARGS__);\
+    LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
 // Desired (write; also reported together with read group)
@@ -674,4 +671,3 @@ Exit:
     LogInfo(context, GetLog(), "OSConfig GC NRP SetTargetResource: complete");
     MI_Context_PostResult(context, miResult);
 }
-
