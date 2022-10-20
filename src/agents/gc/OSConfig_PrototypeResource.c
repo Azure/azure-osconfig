@@ -444,7 +444,7 @@ Exit:
     }
 
     // Clean up the GetTargetResource instance
-    if (MI_RESULT_OK != (miResult == OSConfig_PrototypeResource_GetTargetResource_Destruct(&get_result_object)))
+    if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Destruct(&get_result_object)))
     {
         LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Destruct failed with %d", miResult);
     }
