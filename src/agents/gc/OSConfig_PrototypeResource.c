@@ -450,7 +450,7 @@ Exit:
     }
 
     // Post MI result back to MI to finish
-    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_Invoke_GetTargetResource complete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_Invoke_GetTargetResource complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
 }
 
@@ -540,7 +540,7 @@ Exit:
         LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_TestTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_Invoke_TestTargetResourcecomplete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_Invoke_TestTargetResource complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
 }
 
@@ -661,6 +661,6 @@ Exit:
         LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_SetTargetResource_Destruct failed");
     }
     
-    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_Invoke_SetTargetResource complete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_Invoke_SetTargetResource complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
 }
