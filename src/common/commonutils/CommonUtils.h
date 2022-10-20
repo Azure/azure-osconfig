@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMONUTILS_H
+#define COMMONUTILS_H
 
 #include <stddef.h>
 #include <stdio.h>
@@ -129,4 +129,4 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 }
 #endif
 
-#endif // COMMON_H
+#endif // COMMONUTILS_H
