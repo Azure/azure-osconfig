@@ -127,7 +127,7 @@ void MI_CALL OSConfig_PrototypeResource_Load(
     g_desiredBoolean = false;
     g_reportedBoolean = false;
     g_desiredInteger = 0;
-    g_reportedInteger = 0;
+    //g_reportedInteger = 0;
     g_reportedIntegerStatus = 0;
     
     *self = NULL;
