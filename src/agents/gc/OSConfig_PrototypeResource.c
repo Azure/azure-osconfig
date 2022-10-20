@@ -46,7 +46,7 @@ static unsigned int g_desiredInteger = 0;
 //Reported (read)
 static char g_reportedString[MAX_PROTO_STRING_LENGTH] = {0};
 static bool g_reportedBoolean = false;
-static unsigned int g_reportedInteger = 0;
+//unused for now static unsigned int g_reportedInteger = 0;
 static unsigned int g_reportedIntegerStatus = 0;
 static char g_reportedStringResult[MAX_PROTO_STRING_LENGTH] = {0}; //"PASS", "FAIL", "ERROR", "WARNING", "SKIP"
 
@@ -292,7 +292,8 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         { "DesiredInteger", MI_UINT32, NULL, false, g_desiredInteger },
         { "ReportedString", MI_STRING, g_reportedString, false, 0 },
         { "ReportedBoolean", MI_BOOLEAN, NULL, g_reportedBoolean, 0 },
-        { "ReportedInteger", MI_UINT32, NULL, false, g_reportedInteger },
+        // Set as Boolean in MOF, will keep as such for now { "ReportedInteger", MI_UINT32, NULL, false, g_reportedInteger },
+        { "ReportedInteger", MI_BOOLEAN, NULL, false, g_reportedBoolean },
         { "ReportedIntegerStatus", MI_UINT32, NULL, false, g_reportedIntegerStatus },
         { "ReportedStringResult", MI_STRING, g_reportedStringResult, false, 0 }
     };
