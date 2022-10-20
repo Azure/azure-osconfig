@@ -429,10 +429,6 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Instance_SetElement(OutputResource) failed with %d", miResult);
         goto Exit;
     }
-    else
-    {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Post failed with %d", miResult);
-    }
         
 Exit:
     // Clean up the Result MI value instance if needed
