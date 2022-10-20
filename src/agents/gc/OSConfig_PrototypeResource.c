@@ -294,7 +294,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         { "ReportedBoolean", MI_BOOLEAN, NULL, g_reportedBoolean, 0 },
         { "ReportedInteger", MI_UINT32, NULL, false, g_reportedInteger },
         { "ReportedIntegerStatus", MI_UINT32, NULL, false, g_reportedIntegerStatus },
-        { "ReportedStringStatus", MI_STRING, g_reportedStringResult, false, 0 }
+        { "ReportedStringResult", MI_STRING, g_reportedStringResult, false, 0 }
     };
 
     int allParametersSize = ARRAY_SIZE(allParameters);
