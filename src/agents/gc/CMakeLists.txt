@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(proto_osconfig_nrp)
+# SO binary name must match the class name in MOF with a "lib" prefix added
+project(libOSConfig_PrototypeResource)
 
 add_library(proto_osconfig_nrp 
     SHARED 
