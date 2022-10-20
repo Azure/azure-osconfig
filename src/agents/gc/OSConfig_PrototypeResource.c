@@ -80,7 +80,7 @@ bool RefreshMpiClientSession(void)
     }
     else
     {
-        OsConfigLogError(GetLog(), "MPI server could not be started");
+        OsConfigLogError(GetLog(), "[OSConfig_PrototypeResource] MPI server could not be started");
     }
 
     return status;
@@ -92,12 +92,12 @@ void __attribute__((constructor)) Initialize()
 
     RefreshMpiClientSession();
 
-    OsConfigLogInfo(GetLog(), "OSConfig GC NRP initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[OSConfig_PrototypeResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
 
 void __attribute__((destructor)) Destroy()
 {
-    OsConfigLogInfo(GetLog(), "OSConfig GC NRP terminated (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[OSConfig_PrototypeResource] Terminated (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
     
     if (NULL != g_mpiHandle)
     {
@@ -117,7 +117,7 @@ void MI_CALL OSConfig_PrototypeResource_Load(
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP Load");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] Load");
 
     strncpy(g_prototypeClassKey, "Prototype class key", ARRAY_SIZE(g_prototypeClassKey) - 1);
     strncpy(g_ensure, "Present", ARRAY_SIZE(g_ensure) - 1);
@@ -141,7 +141,7 @@ void MI_CALL OSConfig_PrototypeResource_Unload(
 {
     MI_UNREFERENCED_PARAMETER(self);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP Unload");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] Unload");
 
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
@@ -162,7 +162,7 @@ void MI_CALL OSConfig_PrototypeResource_EnumerateInstances(
     MI_UNREFERENCED_PARAMETER(keysOnly);
     MI_UNREFERENCED_PARAMETER(filter);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP EnumerateInstances");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] EnumerateInstances");
 
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
@@ -181,7 +181,7 @@ void MI_CALL OSConfig_PrototypeResource_GetInstance(
     MI_UNREFERENCED_PARAMETER(resourceClass);
     MI_UNREFERENCED_PARAMETER(propertySet);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP GetInstance");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] GetInstance");
 
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
@@ -198,7 +198,7 @@ void MI_CALL OSConfig_PrototypeResource_CreateInstance(
     MI_UNREFERENCED_PARAMETER(className);
     MI_UNREFERENCED_PARAMETER(newInstance);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP CreateInstance");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] CreateInstance");
 
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
@@ -217,7 +217,7 @@ void MI_CALL OSConfig_PrototypeResource_ModifyInstance(
     MI_UNREFERENCED_PARAMETER(modifiedInstance);
     MI_UNREFERENCED_PARAMETER(propertySet);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP ModifyInstance");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] ModifyInstance");
 
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
@@ -234,7 +234,7 @@ void MI_CALL OSConfig_PrototypeResource_DeleteInstance(
     MI_UNREFERENCED_PARAMETER(className);
     MI_UNREFERENCED_PARAMETER(resourceClass);
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP DeleteInstance");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] DeleteInstance");
 
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
@@ -302,18 +302,18 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
     OSConfig_PrototypeResource_GetTargetResource get_result_object;
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP GetTargetResource: start (namespace %s, class name %s, method name %s)", nameSpace, className, methodName);
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_Invoke_GetTargetResource start (namespace '%s', class name '%s', method name '%s')", nameSpace, className, methodName);
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: invalid OSConfig_PrototypeResource_GetTargetResource argument");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] invalid OSConfig_PrototypeResource_GetTargetResource argument");
         goto Exit;
     }
 
     if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: no PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] no PrototypeClassKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -327,19 +327,19 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Construct(&get_result_object, context)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_GetTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn(&get_result_object, 0)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_GetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &OSConfig_PrototypeResource_rtti, &resultResourceObject)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Context_NewInstance failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Context_NewInstance failed with %d", miResult);
         goto Exit;
     }
 
@@ -350,7 +350,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         if (!RefreshMpiClientSession())
         {
             mpiResult = ESRCH;
-            LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: could not start the MPI server (%d)", mpiResult);
+            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] could not start the MPI server (%d)", mpiResult);
         }
     }
 
@@ -362,7 +362,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             if (NULL == hostName)
             {
                 mpiResult = ENODATA;
-                LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: CallMpiGet for %s and %s returned no payload (%s, %d) (%d)", 
+                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for %s and %s returned no payload (%s, %d) (%d)", 
                     componentName, objectName, hostName, hostNameLength, mpiResult);
             }
             else
@@ -377,7 +377,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     
     if (MPI_OK != mpiResult)
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: CallMpiGet for %s and %s failed with %d", componentName, objectName, mpiResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for %s and %s failed with %d", componentName, objectName, mpiResult);
 
         if ((0 == g_reportedIntegerStatus) || (0 == strcmp(g_reportedStringResult, "PASS")))
         {
@@ -399,7 +399,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
                 }
                 else
                 {
-                    LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: no string value for %s", allParameters[i].name);
+                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] no string value for %s", allParameters[i].name);
                     miResult = MI_RESULT_FAILED;
                 }
                 break;
@@ -417,7 +417,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
 
         if (MI_RESULT_OK != miResult)
         {
-            LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Instance_SetElement(%s) failed with %d", allParameters[i].name, miResult);
+            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement(%s) failed with %d", allParameters[i].name, miResult);
         }
 
         memset(&miValue, 0, sizeof(miValue));
@@ -426,7 +426,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     // Set the created output resource instance as the output resource in the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(&get_result_object.__instance, MI_T("OutputResource"), &miValueResource, MI_INSTANCE, 0)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Instance_SetElement(OutputResource) failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement(OutputResource) failed with %d", miResult);
         goto Exit;
     }
         
@@ -434,23 +434,23 @@ Exit:
     // Clean up the Result MI value instance if needed
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Instance_Delete(miValueResult) failed");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_Delete(miValueResult) failed");
     }
 
     // Clean up the output resource instance
     if ((NULL != resultResourceObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(resultResourceObject))))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: MI_Instance_Delete(resultResourceObject) failed");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_Delete(resultResourceObject) failed");
     }
 
     // Clean up the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Destruct(&get_result_object)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP GetTargetResource: OSConfig_PrototypeResource_GetTargetResource_Destruct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_GetTargetResource_Destruct failed with %d", miResult);
     }
 
     // Post MI result back to MI to finish
-    LogInfo(context, GetLog(), "OSConfig GC NRP GetTargetResource: complete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_Invoke_GetTargetResource complete");
     MI_Context_PostResult(context, miResult);
 }
 
@@ -474,19 +474,19 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
     MI_Value miValueResult;
     memset(&miValueResult, 0, sizeof(MI_Value));
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP TestTargetResource: start (namespace %s, class name %s, method name %s)", nameSpace, className, methodName);
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_Invoke_TestTargetResource start (namespace '%s', class name '%s', method name '%s')", nameSpace, className, methodName);
 
     if ((in == NULL) || (in->InputResource.exists == MI_FALSE) || (in->InputResource.value == NULL))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: invalid OSConfig_PrototypeResource_TestTargetResource argument");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] invalid OSConfig_PrototypeResource_TestTargetResource argument");
         goto Exit;
     }
 
     if ((in->InputResource.value->PrototypeClassKey.exists == MI_FALSE) &&  (in->InputResource.value->PrototypeClassKey.value != NULL))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: no PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] no PrototypeClassKey");
         goto Exit;
     }
 
@@ -509,20 +509,20 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
         }
         else
         {
-            LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: unknown ensure value (%s)", in->InputResource.value->Ensure.value);
+            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] unknown ensure value (%s)", in->InputResource.value->Ensure.value);
             is_compliant = MI_FALSE;
         }
     }
     
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Construct(&test_result_object, context)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_TestTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn(&test_result_object, 0)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_TestTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
@@ -532,15 +532,15 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
 Exit:
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: MI_Instance_Delete failed");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] MI_Instance_Delete failed");
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_TestTargetResource_Destruct(&test_result_object)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP TestTargetResource: OSConfig_PrototypeResource_TestTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_TestTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP TestTargetResource: complete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] OSConfig_PrototypeResource_Invoke_TestTargetResourcecomplete");
     MI_Context_PostResult(context, miResult);
 }
 
@@ -564,31 +564,31 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
     OSConfig_PrototypeResource_SetTargetResource set_result_object;
 
-    LogInfo(context, GetLog(), "OSConfig GC NRP SetTargetResource: start (namespace %s, class name %s, method name %s)", nameSpace, className, methodName);
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_Invoke_SetTargetResource start (namespace '%s', class name '%s', method name '%s')", nameSpace, className, methodName);
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: invalid argument");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] invalid argument");
         goto Exit;
     }
 
     if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: no PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] no PrototypeClassKey");
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Construct(&set_result_object, context)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_SetTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_SetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
@@ -612,7 +612,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
             if (!RefreshMpiClientSession())
             {
                 mpiResult = ESRCH;
-                LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: could not start the MPI server (%d)", mpiResult);
+                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] could not start the MPI server (%d)", mpiResult);
             }
         }
 
@@ -621,11 +621,11 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
             // Set a desired value for OSConfig, in this case HostName.desiredName
             if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, g_desiredString, sizeof(g_desiredString), GetLog())))
             {
-                LogInfo(context, GetLog(), "OSConfig GC NRP SetTargetResource: DesiredString value %s successfully applied to device", g_desiredString);
+                LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredString value %s successfully applied to device", g_desiredString);
             }
             else
             {
-                LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: CallMpiSet for %s and %s failed with %d", componentName, objectName, mpiResult);
+                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] CallMpiSet for %s and %s failed with %d", componentName, objectName, mpiResult);
             }
         }
 
@@ -658,9 +658,9 @@ Exit:
     
     if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_SetTargetResource_Destruct(&set_result_object)))
     {
-        LogError(context, miResult, GetLog(), "OSConfig GC NRP SetTargetResource: OSConfig_PrototypeResource_SetTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_SetTargetResource_Destruct failed");
     }
     
-    LogInfo(context, GetLog(), "OSConfig GC NRP SetTargetResource: complete");
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] OSConfig_PrototypeResource_Invoke_SetTargetResource complete");
     MI_Context_PostResult(context, miResult);
 }
