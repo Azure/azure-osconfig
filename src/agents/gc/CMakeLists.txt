@@ -18,4 +18,5 @@ target_link_libraries(OSConfig_PrototypeResource
     PRIVATE
         commonutils
         logging
-        mpiclient)
+        mpiclient
+        parsonlib)

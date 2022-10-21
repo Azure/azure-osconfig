@@ -282,6 +282,10 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     const char* objectName = "name";
     char* hostName = NULL;
     int hostNameLength = 0;
+    JSON_Value* jsonValue = NULL;
+    const char* jsonString = NULL;
+    char* payloadString = NULL;
+
 
     // Reported values
     struct OSConfig_PrototypeResource_Parameters allParameters[] = {
@@ -350,6 +354,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         if (!RefreshMpiClientSession())
         {
             mpiResult = ESRCH;
+            miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] Failed to start the MPI server (%d)", mpiResult);
         }
     }
@@ -362,14 +367,54 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             if (NULL == hostName)
             {
                 mpiResult = ENODATA;
+                miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", 
                     componentName, objectName, hostName, hostNameLength, mpiResult);
             }
             else
             {
-                memset(g_reportedString, 0, sizeof(g_reportedString));
-                strncpy(g_reportedString, hostName, ARRAY_SIZE(g_reportedString) - 1);
-                LogInfo(context, GetLog(), "GetTargetResource: ReportedString value: '%s' (original: '%s')", g_reportedString, hostName);
+                JSON_Value* jsonValue = NULL;
+                const char* jsonString = NULL;
+                char* payloadString = malloc(hostNameLength + 1);
+                if (payloadString)
+                {
+                    memset(payloadString, 0, hostNameLength + 1);
+                    memcpy(payloadString, hostName, hostNameLength);
+
+                    if (NULL != (jsonValue = json_parse_string(payloadString)))
+                    {
+                        jsonString = json_value_get_string(jsonValue);
+                        if (jsonString)
+                        {
+                            memset(g_reportedString, 0, sizeof(g_reportedString));
+                            strncpy(g_reportedString, jsonString, ARRAY_SIZE(g_reportedString) - 1);
+                        }
+                        else
+                        {
+                            mpiResult = EINVAL;
+                            miResult = MI_RESULT_FAILED;
+                            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] json_value_get_string(%s) failed", payloadString);
+                        }
+                        
+                        json_value_free(jsonValue);
+                    }
+                    else
+                    {
+                        mpiResult = EINVAL;
+                        miResult = MI_RESULT_FAILED;
+                        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] json_parse_string(%s) failed", payloadString);
+                    }
+
+                    FREE_MEMORY(payloadString);
+                }
+                else
+                {
+                    mpiResult = ENOMEM;
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] Failed to allocate %d bytes", hostNameLength + 1);
+                }
+
+                LogInfo(context, GetLog(), "GetTargetResource: ReportedString value: '%s'", g_reportedString);
                 CallMpiFree(hostName);
             }
         }

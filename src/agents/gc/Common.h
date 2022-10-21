@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <parson.h>
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mpi.h>
