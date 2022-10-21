@@ -4,8 +4,6 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OSConfig_PrototypeResource)
 
-COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
-
 add_library(OSConfig_PrototypeResource 
     SHARED 
         module.c
@@ -24,6 +22,7 @@ target_link_libraries(OSConfig_PrototypeResource
         parsonlib)
 
 add_custom_target(stage_create_zip
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OSConfig_Proto_Policy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OSConfig_Proto_Policy.mof" ${PROJECT_BINARY_DIR}/Staging/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OSConfig_PrototypeResource> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OSConfig_PrototypeResource/libOSConfig_PrototypeResource.so
