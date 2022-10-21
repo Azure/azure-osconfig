@@ -473,6 +473,13 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement(OutputResource) failed with %d", miResult);
         goto Exit;
     }
+
+    // Post the GetTargetResource instance
+    if (MI_RESULT_OK != (miResult = OSConfig_PrototypeResource_GetTargetResource_Post(&get_result_object, context)))
+    {
+        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] OSConfig_PrototypeResource_GetTargetResource_Post failed with %d", miResult);
+        goto Exit;
+    }
         
 Exit:
     // Clean up the Result MI value instance if needed
