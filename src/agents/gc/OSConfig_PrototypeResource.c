@@ -419,6 +419,8 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     
     if (MPI_OK != mpiResult)
     {
+        miResult = MI_RESULT_FAILED;
+        
         LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for '%s' and '%s' failed with %d", componentName, objectName, mpiResult);
 
         if ((0 == g_reportedIntegerStatus) || (0 == strcmp(g_reportedStringResult, "PASS")))
@@ -603,6 +605,9 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
     const char* componentName = "HostName";
     const char* objectName = "desiredName";
+    const char* payloadTemplate = "\"%s\"";
+    char* payloadString = NULL;
+    int payloadSize = 0;
 
     OSConfig_PrototypeResource_SetTargetResource set_result_object;
 
@@ -649,10 +654,13 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
         memset(g_desiredString, 0, sizeof(g_desiredString));
         strncpy(g_desiredString, in->InputResource.value->DesiredString.value, ARRAY_SIZE(g_desiredString) - 1);
 
+        // Set a desired value for OSConfig, in this case HostName.desiredName
+
         if (NULL == g_mpiHandle)
         {
             if (!RefreshMpiClientSession())
             {
+                miResult = MI_RESULT_FAILED;
                 mpiResult = ESRCH;
                 LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] Failed starting the MPI server (%d)", mpiResult);
             }
@@ -660,14 +668,29 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
         if (g_mpiHandle)
         {
-            // Set a desired value for OSConfig, in this case HostName.desiredName
-            if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, g_desiredString, sizeof(g_desiredString), GetLog())))
+            payloadSize = (int)strlen(g_desiredString) + 1;
+            if (NULL != (payloadString = malloc(payloadSize)))
             {
-                LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredString value '%s' successfully applied to device", g_desiredString);
+                snprintf(payloadString, payloadSize, payloadTemplate, g_desiredString);
+
+                if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, g_desiredString, sizeof(g_desiredString), GetLog())))
+                {
+                    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes", 
+                        g_desiredString, payloadSize, payloadString, payloadSize);
+                }
+                else
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] CallMpiSet for '%s' and '%s' failed with %d", componentName, objectName, mpiResult);
+                }
+
+                FREE_MEMORY(payloadString);
             }
             else
             {
-                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] CallMpiSet for '%s' and '%s' failed with %d", componentName, objectName, mpiResult);
+                miResult = MI_RESULT_FAILED;
+                mpiResult = ENOMEM;
+                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] Failed to allocate %d bytes", payloadSize);
             }
         }
 
