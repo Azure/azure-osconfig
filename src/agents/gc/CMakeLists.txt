@@ -4,6 +4,8 @@
 # SO binary name must match the class name in MOF with a "lib" prefix added
 project(OSConfig_PrototypeResource)
 
+COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
+
 add_library(OSConfig_PrototypeResource 
     SHARED 
         module.c
