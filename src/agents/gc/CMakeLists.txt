@@ -27,4 +27,5 @@ add_custom_target(create_zip COMMAND
     ${CMAKE_COMMAND} -E tar "cfv" "OSConfig_Proto_Policy.zip" --format=zip
        "${CMAKE_CURRENT_SOURCE_DIR}/OSConfig_Proto_Policy.metaconfig.json"
        "${CMAKE_CURRENT_SOURCE_DIR}/OSConfig_Proto_Policy.mof"
-       "${CMAKE_BINARY_DIR}/Modules/DscNativeResources/OSConfig_PrototypeResource")
+       "${CMAKE_BINARY_DIR}/Modules/DscNativeResources/OSConfig_PrototypeResource"
+       DEPENDS OSConfig_PrototypeResource)
