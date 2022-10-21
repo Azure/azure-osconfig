@@ -88,6 +88,17 @@ bool RefreshMpiClientSession(void)
 
 void __attribute__((constructor)) Initialize()
 {
+    strncpy(g_prototypeClassKey, "Prototype class key", ARRAY_SIZE(g_prototypeClassKey) - 1);
+    strncpy(g_ensure, "Present", ARRAY_SIZE(g_ensure) - 1);
+    strncpy(g_desiredString, "Desired string value", ARRAY_SIZE(g_desiredString) - 1);
+    strncpy(g_reportedString, "Reported string value", ARRAY_SIZE(g_reportedString) - 1);
+    strncpy(g_reportedStringResult, "PASS", ARRAY_SIZE(g_reportedStringResult) - 1);
+    g_desiredBoolean = false;
+    g_reportedBoolean = false;
+    g_desiredInteger = 0;
+    //g_reportedInteger = 0;
+    g_reportedIntegerStatus = 0;
+
     g_log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
     RefreshMpiClientSession();
@@ -119,17 +130,6 @@ void MI_CALL OSConfig_PrototypeResource_Load(
 
     LogInfo(context, GetLog(), "[OSConfig_PrototypeResource] Load");
 
-    strncpy(g_prototypeClassKey, "Prototype class key", ARRAY_SIZE(g_prototypeClassKey) - 1);
-    strncpy(g_ensure, "Present", ARRAY_SIZE(g_ensure) - 1);
-    strncpy(g_desiredString, "Desired string value", ARRAY_SIZE(g_desiredString) - 1);
-    strncpy(g_reportedString, "Reported string value", ARRAY_SIZE(g_reportedString) - 1);
-    strncpy(g_reportedStringResult, "PASS", ARRAY_SIZE(g_reportedStringResult) - 1);
-    g_desiredBoolean = false;
-    g_reportedBoolean = false;
-    g_desiredInteger = 0;
-    //g_reportedInteger = 0;
-    g_reportedIntegerStatus = 0;
-    
     *self = NULL;
 
     MI_Context_PostResult(context, MI_RESULT_OK);
