@@ -32,6 +32,6 @@ add_custom_target(stage_create_zip
 add_custom_target(create_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip" --format=zip .
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip" --format=zip
     DEPENDS stage_create_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
