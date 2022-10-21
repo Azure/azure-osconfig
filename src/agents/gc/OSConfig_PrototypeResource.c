@@ -605,7 +605,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
     const char* componentName = "HostName";
     const char* objectName = "desiredName";
-    const char* payloadTemplate = "\"%s\"";
+    const char payloadTemplate[] = "\"%s\"";
     char* payloadString = NULL;
     int payloadSize = 0;
 
