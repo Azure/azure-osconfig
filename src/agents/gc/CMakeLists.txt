@@ -30,13 +30,8 @@ add_custom_target(stage_create_zip
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OSConfig_PrototypeResource> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OSConfig_PrototypeResource/libOSConfig_PrototypeResource.so
     DEPENDS OSConfig_PrototypeResource)
 
-add_custom_target(create_zip 
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "archive.zip" --format=zip .
-       "${CMAKE_CURRENT_SOURCE_DIR}/testfile.txt"
-       "${CMAKE_CURRENT_SOURCE_DIR}/testdir")
-
 add_custom_target(create_zip ALL
     BYPRODUCTS ${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip" --format=zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/OSConfig_Proto_Policy.zip" --format=zip .
     DEPENDS stage_create_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)
