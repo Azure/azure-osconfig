@@ -373,10 +373,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             }
             else
             {
-                JSON_Value* jsonValue = NULL;
-                const char* jsonString = NULL;
-                char* payloadString = malloc(hostNameLength + 1);
-                if (payloadString)
+                if (NULL != (payloadString = malloc(hostNameLength + 1)))
                 {
                     memset(payloadString, 0, hostNameLength + 1);
                     memcpy(payloadString, hostName, hostNameLength);
