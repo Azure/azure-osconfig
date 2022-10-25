@@ -7,7 +7,7 @@ const std::string FirewallModuleBase::m_moduleInfo = R"""({
     "Name": "Firewall",
     "Description": "Provides functionality to remotely manage firewall rules on device",
     "Manufacturer": "Microsoft",
-    "VersionMajor": 3,
+    "VersionMajor": 4,
     "VersionMinor": 0,
     "VersionInfo": "Zinc",
     "Components": ["Firewall"],
