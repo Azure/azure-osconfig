@@ -171,7 +171,11 @@
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "serviceUrl"
+      "ObjectName": "maxScheduledAttestationsPerDay"
+    },
+    {
+      "ComponentName": "Ztsi",
+      "ObjectName": "maxManualAttestationsPerDay"
     }
   ],
   "ReportingIntervalSeconds": 30
