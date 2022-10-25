@@ -4,7 +4,7 @@
 
 Read about Azure Automanage Machine Configuration (formerly called Azure Policy Guest Configuration) at [learn.microsoft.com/machine-configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/).
 
-## Regenerating the NRP code for a new MOF interface
+## Regenerating the NRP code for a changed resource class:
 
 To regenerate code, see [codegen.cmd](codegen.cmd). Warning: regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
