@@ -440,6 +440,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
                 {
                     miValue.string = (MI_Char*)(allParameters[i].stringValue);
                     miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0);
+                    LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d", allParameters[i].name, miValue.string, miResult);
                 }
                 else
                 {
@@ -451,12 +452,14 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             case MI_BOOLEAN:
                 miValue.boolean = (MI_Boolean)(allParameters[i].booleanValue);
                 miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_BOOLEAN, 0);
+                LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to boolean value '%s' complete with miResult %d", allParameters[i].name, miValue.boolean ? "true" : "false");
                 break;
 
             case MI_UINT32:
             default:
                 miValue.uint32 = (MI_Uint32)(allParameters[i].integerValue);
                 miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_UINT32, 0);
+                LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to integer value '%d' complete with miResult %d", allParameters[i].name, miValue.uint32, miResult);
         }
 
         if (MI_RESULT_OK != miResult)
@@ -711,9 +714,11 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
     // DesiredBoolean
     g_desiredBoolean = in->InputResource.value->DesiredBoolean.value;
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredBoolean value '%s' successfully applied to device", g_desiredBoolean ? "true" : "false");
 
     //DesiredInteger
     g_desiredInteger = in->InputResource.value->DesiredInteger.value;
+    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredInteger value '%d' successfully applied to device", g_desiredInteger);
 
     // Set results to report back
     memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));

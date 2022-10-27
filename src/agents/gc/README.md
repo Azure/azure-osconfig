@@ -44,6 +44,7 @@ Copy the build generated artifacts ZIP package OSConfig_Proto_Policy.zip to a ne
 ```bash
 sudo pwsh
 Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
+Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
 ```
 
 In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_gc_nrp.log`.
