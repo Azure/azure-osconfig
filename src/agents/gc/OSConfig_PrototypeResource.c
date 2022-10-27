@@ -681,12 +681,13 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
 
         if (g_mpiHandle)
         {
-            payloadSize = (int)strlen(g_desiredString) + 1;
-            if (NULL != (payloadString = malloc(payloadSize)))
+            payloadSize = (int)strlen(g_desiredString) + 2;
+            if (NULL != (payloadString = malloc(payloadSize + 1)))
             {
-                snprintf(payloadString, payloadSize, payloadTemplate, g_desiredString);
+                memset(payloadString, 0, payloadSize + 1);
+                snprintf(payloadString, payloadSize + 1, payloadTemplate, g_desiredString);
 
-                if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, g_desiredString, sizeof(g_desiredString), GetLog())))
+                if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog())))
                 {
                     LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes", 
                         g_desiredString, payloadSize, payloadString, payloadSize);
@@ -694,7 +695,8 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_SetTargetResource(
                 else
                 {
                     miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] CallMpiSet for '%s' and '%s' failed with %d", componentName, objectName, mpiResult);
+                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d", 
+                        g_desiredString, payloadSize, payloadString, payloadSize, miResult);
                 }
 
                 FREE_MEMORY(payloadString);
