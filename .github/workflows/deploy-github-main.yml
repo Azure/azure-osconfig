@@ -1,16 +1,16 @@
 name: E2E (GitHub-main)
-on: [push]
-  # workflow_run:
-  #   workflows: ["Package"]
-  #   types:
-  #     - completed
-  #   conclusions:
-  #     - success
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - devops/e2e/**
+on:
+  workflow_run:
+    workflows: ["Package"]
+    types:
+      - completed
+    conclusions:
+      - success
+  push:
+    branches:
+      - main
+    paths:
+      - devops/e2e/**
 
 jobs:
   fetch-targets:

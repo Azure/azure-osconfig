@@ -15,7 +15,7 @@
         "image_publisher": "Canonical",
         "image_offer": "UbuntuServer",
         "image_sku": "18.04-LTS",
-        "image_version": "latest",
+        "image_version": "18.04.202210140",
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
         "github_runner_tar_gz": "https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-x64-2.298.2.tar.gz",
