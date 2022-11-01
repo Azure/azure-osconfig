@@ -17,7 +17,7 @@
         "image_publisher": "Canonical",
         "image_offer": "UbuntuServer",
         "image_sku": "18.04-LTS",
-        "image_version": "latest",
+        "image_version": "18.04.202210140",
         "device_id": "ubuntu1804",
         "vm_size": "Standard_DS1_v2",
         "location": "East US",
