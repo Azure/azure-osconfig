@@ -10,6 +10,9 @@
 // Retail we'll change these to dynamically allocated strings
 #define MAX_PROTO_STRING_LENGTH 256
 
+// Retail we'll change this to 0 meaning no limit
+#define MAX_PAYLOAD_LENGTH MAX_PROTO_STRING_LENGTH
+
 // OSConfig's MPI server
 #define MPI_SERVER "osconfig-platform"
 
@@ -72,7 +75,7 @@ bool RefreshMpiClientSession(void)
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen("GC OSConfig NRP Prototype", 0, GetLog())))
+        if (NULL == (g_mpiHandle = CallMpiOpen("GC OSConfig NRP Prototype", MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "MpiOpen failed");
             status = false;
@@ -266,17 +269,6 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     MI_Value miValue = {0};
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
-    /* Do we need a separate MI_Value for each?
-    MI_Value miValuePrototypeClassKey = {0};
-    MI_Value miValueEnsure = {0};
-    MI_Value miValueDesiredString = {0};
-    MI_Value miValueDesiredBoolean = {0};
-    MI_Value miValueDesiredInteger = {0};
-    MI_Value miValueReportedString = {0};
-    MI_Value miValueReportedBoolean = {0};
-    MI_Value miValueReportedInteger = {0};
-    MI_Value miValueReportedIntegerStatus = {0};
-    MI_Value miValueReportedStringResult = {0};*/
 
     const char* componentName = "HostName";
     const char* objectName = "name";
@@ -285,7 +277,6 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
     char* payloadString = NULL;
-
 
     // Reported values
     struct OSConfig_PrototypeResource_Parameters allParameters[] = {
