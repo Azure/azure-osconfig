@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "networking.so",
+    "MimFile": "networking.json",
+    "ModelName": "NetworkingModel",
+  },
+  {
     "ComponentName": "Networking",
     "ObjectName": "networkConfiguration",
     "Desired": false,

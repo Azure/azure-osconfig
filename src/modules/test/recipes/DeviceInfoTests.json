@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "deviceinfo.so",
+    "MimFile": "deviceinfo.json",
+    "ModelName": "DeviceInfoModel",
+  },
+  {
     "ComponentName": "DeviceInfo",
     "ObjectName": "osName",
     "Desired": false,

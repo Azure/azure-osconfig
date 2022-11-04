@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "commandrunner.so",
+    "MimFile": "commandrunner.json",
+    "ModelName": "CommandRunnerModel",
+  },
+  {
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
     "Desired": false,
