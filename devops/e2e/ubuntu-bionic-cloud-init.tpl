@@ -26,7 +26,6 @@ apt_sources:
     source: deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod $RELEASE main
   - msftprodmultiarch:
     source: deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/multiarch/prod $RELEASE main
-package_upgrade: true
 packages:
   - apt-transport-https
   - aziot-identity-service

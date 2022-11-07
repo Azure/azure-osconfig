@@ -2,7 +2,7 @@
   "CommandLogging": 0,
   "FullLogging": 0,
   "LocalManagement": 0,
-  "ModelVersion": 15,
+  "ModelVersion": 16,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -171,7 +171,11 @@
     },
     {
       "ComponentName": "Ztsi",
-      "ObjectName": "serviceUrl"
+      "ObjectName": "maxScheduledAttestationsPerDay"
+    },
+    {
+      "ComponentName": "Ztsi",
+      "ObjectName": "maxManualAttestationsPerDay"
     }
   ],
   "ReportingIntervalSeconds": 30

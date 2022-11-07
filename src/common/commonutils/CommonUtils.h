@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMONUTILS_H
+#define COMMONUTILS_H
 
 #include <stddef.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@
 #define EOL 10
 #endif
 
-#define DEFAULT_DEVICE_MODEL_ID 15
+#define DEFAULT_DEVICE_MODEL_ID 16
 
 #define MAX_COMPONENT_NAME 256
 
@@ -129,4 +129,4 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 }
 #endif
 
-#endif // COMMON_H
+#endif // COMMONUTILS_H

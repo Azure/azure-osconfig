@@ -25,7 +25,6 @@ apt_sources:
       -----END PGP PUBLIC KEY BLOCK-----
   - msftinsidersfast:
     source: deb [arch=arm64] https://packages.microsoft.com/ubuntu/20.04/prod/ insiders-fast main
-package_upgrade: true
 packages:
   - apt-transport-https
   - azure-cli
