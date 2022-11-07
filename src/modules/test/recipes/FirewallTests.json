@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "firewall.so",
     "MimFile": "firewall.json",
-    "ModelName": "FirewallModel",
+    "ModelName": "FirewallModel"
   },
   {
     "ComponentName": "Firewall",

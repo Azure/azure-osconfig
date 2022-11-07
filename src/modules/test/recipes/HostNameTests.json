@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "hostname.so",
     "MimFile": "hostname.json",
-    "ModelName": "HostNameModel",
+    "ModelName": "HostNameModel"
   },
   {
     "ComponentName": "HostName",

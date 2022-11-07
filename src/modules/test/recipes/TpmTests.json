@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "tpm.so",
     "MimFile": "tpm.json",
-    "ModelName": "TpmModel",
+    "ModelName": "TpmModel"
   },
   {
     "ComponentName": "Tpm",

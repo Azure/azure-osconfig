@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "deliveryoptimization.so",
     "MimFile": "deliveryoptimization.json",
-    "ModelName": "DeliveryOptimizationModel",
+    "ModelName": "DeliveryOptimizationModel"
   },
   {
     "ComponentName": "DeliveryOptimization",

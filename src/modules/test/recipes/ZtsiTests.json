@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "ztsi.so",
     "MimFile": "ztsi.json",
-    "ModelName": "ZtsiModel",
+    "ModelName": "ZtsiModel"
   },
   {
     "ComponentName": "Ztsi",

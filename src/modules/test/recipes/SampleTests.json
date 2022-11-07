@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "sample.so",
     "MimFile": "sample.json",
-    "ModelName": "SampleModel",
+    "ModelName": "SampleModel"
   },
   {
     "ComponentName": "SampleComponent",

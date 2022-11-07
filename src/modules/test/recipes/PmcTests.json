@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "pmc.so",
     "MimFile": "pmc.json",
-    "ModelName": "PackageManagerConfigurationModel",
+    "ModelName": "PackageManagerConfigurationModel"
   },
   {
     "ComponentName": "PackageManagerConfiguration",
