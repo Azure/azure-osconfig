@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "tpm.so",
+    "MimFile": "tpm.json",
+    "ModelName": "TpmModel"
+  },
+  {
     "ComponentName": "Tpm",
     "ObjectName": "tpmStatus",
     "Desired": false,

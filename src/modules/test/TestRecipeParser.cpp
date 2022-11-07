@@ -31,7 +31,7 @@ TestRecipes TestRecipeParser::ParseTestRecipe(std::string path)
 
     JSON_Array *jsonTestRecipes = json_value_get_array(root_value);
     JSON_Object *jsonTestRecipe = nullptr;
-    for (size_t i = 0; i < json_array_get_count(jsonTestRecipes); i++)
+    for (size_t i = 1; i < json_array_get_count(jsonTestRecipes); i++)
     {
         jsonTestRecipe = json_array_get_object(jsonTestRecipes, i);
 

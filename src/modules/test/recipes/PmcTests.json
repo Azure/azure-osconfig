@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "pmc.so",
+    "MimFile": "pmc.json",
+    "ModelName": "PackageManagerConfigurationModel"
+  },
+  {
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "state",
     "Desired": false,

@@ -1,5 +1,10 @@
 [
   {
+    "ModuleBinary": "configuration.so",
+    "MimFile": "configuration.json",
+    "ModelName": "ConfigurationModel"
+  },
+  {
     "ComponentName": "Configuration",
     "ObjectName": "notImplemented",
     "Desired": false,

@@ -1,18 +1,23 @@
 [
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandStatus",
-        "Desired": false,
-        "Payload": "",  // Optional - Only needed Desired=true
-        "PayloadSizeBytes": 0,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    },
-    {
-        "ComponentName": "CommandRunner",
-        "ObjectName": "commandStatus",
-        "Desired": false,
-        "ExpectedResult": 0,
-        "WaitSeconds": 0
-    }
+  {
+    "ModuleBinary": "doesnotexist.so",
+    "MimFile": "doesnotexist.json",
+    "ModelName": "DoesNotExistModel"
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "Payload": "",  // Optional - Only needed Desired=true
+    "PayloadSizeBytes": 0,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  },
+  {
+    "ComponentName": "CommandRunner",
+    "ObjectName": "commandStatus",
+    "Desired": false,
+    "ExpectedResult": 0,
+    "WaitSeconds": 0
+  }
 ]
