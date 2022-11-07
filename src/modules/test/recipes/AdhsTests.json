@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "adhs.so",
     "MimFile": "adhs.json",
-    "ModelName": "AdhsConfigurationModel",
+    "ModelName": "AdhsConfigurationModel"
   },
   {
     "ComponentName": "Adhs",

@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "deviceinfo.so",
     "MimFile": "deviceinfo.json",
-    "ModelName": "DeviceInfoModel",
+    "ModelName": "DeviceInfoModel"
   },
   {
     "ComponentName": "DeviceInfo",

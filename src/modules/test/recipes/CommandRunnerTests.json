@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "commandrunner.so",
     "MimFile": "commandrunner.json",
-    "ModelName": "CommandRunnerModel",
+    "ModelName": "CommandRunnerModel"
   },
   {
     "ComponentName": "CommandRunner",

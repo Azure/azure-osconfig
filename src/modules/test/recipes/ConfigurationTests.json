@@ -2,7 +2,7 @@
   {
     "ModuleBinary": "configuration.so",
     "MimFile": "configuration.json",
-    "ModelName": "ConfigurationModel",
+    "ModelName": "ConfigurationModel"
   },
   {
     "ComponentName": "Configuration",
