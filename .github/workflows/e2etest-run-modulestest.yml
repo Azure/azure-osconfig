@@ -19,8 +19,8 @@ on:
         type: string
         default: Release
         required: false
-      repeatForXHours:
-        description: Repeat the test suite for X hours, every test run gets a new test-report
+      repeatForXMins:
+        description: Repeat the test suite for X mins, every test run gets a new test-report
         type: number
         required: false
       testNameSuffix:
@@ -67,8 +67,8 @@ jobs:
             fi
           }
           runNumber=1
-          if [[ ${{ inputs.repeatForXHours }} -gt 0 ]];then
-            end=`date -d "+${{inputs.repeatForXHours}} hours" +%s`
+          if [[ ${{ inputs.repeatForXMins }} -gt 0 ]];then
+            end=`date -d "+${{inputs.repeatForXMins}} mins" +%s`
             while [[ $(date +%s) -lt $end ]]; do
               echo Performing test run $((++runNumber))
               ./modulestest --gtest_output=xml:gtest-output/TestRecipes.xml
