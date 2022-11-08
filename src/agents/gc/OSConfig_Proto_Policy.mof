@@ -1,6 +1,6 @@
 instance of OSConfig_PrototypeResource as $OSConfig_PrototypeResource0ref
 {
-    ResourceID = "Ensure the host name of the device is configured";
+    ResourceID = "[OSConfig_PrototypeResource] Ensure the host name of the device is configured";
     PrototypeClassKey = "myKey";
     DesiredString = "GC-POC-HOST";
     DesiredInteger = 10;
