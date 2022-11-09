@@ -57,7 +57,7 @@ jobs:
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
       cpuThreshold: 50
-      repeatForXHours: 1
+      repeatForXMins: 80
       allowedMemoryDelta: 0
       testNameSuffix: (reliability-platform)
     secrets: inherit

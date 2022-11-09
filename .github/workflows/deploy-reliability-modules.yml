@@ -32,7 +32,7 @@ jobs:
       environment: modulestest
       resourceGroupName: ${{ needs.fetch-targets.outputs.resourceGroupName }}
       distroName: ${{ needs.fetch-targets.outputs.distroName }}
-      repeatForXHours: 4
+      repeatForXMins: 90
       testNameSuffix: (reliability-modules)
     secrets: inherit
 
