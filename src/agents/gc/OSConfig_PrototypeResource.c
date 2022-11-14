@@ -77,7 +77,7 @@ bool RefreshMpiClientSession(void)
 
         if (NULL == (g_mpiHandle = CallMpiOpen("GC OSConfig NRP Prototype", MAX_PAYLOAD_LENGTH, GetLog())))
         {
-            OsConfigLogError(GetLog(), "MpiOpen failed");
+            OsConfigLogError(GetLog(), "[OSConfig_PrototypeResource] MpiOpen failed");
             status = false;
         }
     }
@@ -242,7 +242,7 @@ void MI_CALL OSConfig_PrototypeResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context* context)
+static MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context* context)
 {
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
@@ -440,7 +440,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
                 {
                     miValue.string = (MI_Char*)(allParameters[i].stringValue);
                     miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0);
-                    LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d", 
+                    LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d", 
                         allParameters[i].name, miValue.string, miResult);
                 }
                 else
@@ -453,7 +453,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             case MI_BOOLEAN:
                 miValue.boolean = (MI_Boolean)(allParameters[i].booleanValue);
                 miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_BOOLEAN, 0);
-                LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to boolean value '%s' complete with miResult %d", 
+                LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement('%s') to boolean value '%s' complete with miResult %d", 
                     allParameters[i].name, miValue.boolean ? "true" : "false", miResult);
                 break;
 
@@ -461,7 +461,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
             default:
                 miValue.uint32 = (MI_Uint32)(allParameters[i].integerValue);
                 miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_UINT32, 0);
-                LogInfo(context, GetLog(), "GetTargetResource: MI_Instance_SetElement('%s') to integer value '%d' complete with miResult %d", 
+                LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Get] MI_Instance_SetElement('%s') to integer value '%d' complete with miResult %d", 
                     allParameters[i].name, miValue.uint32, miResult);
         }
 
