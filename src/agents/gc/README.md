@@ -43,8 +43,8 @@ Copy the build generated artifacts ZIP package OSConfig_Proto_Policy.zip to a ne
 
 ```bash
 sudo pwsh
-Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
 Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
+Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
 ```
 To view the resource class parameters returned by the Get function:
 

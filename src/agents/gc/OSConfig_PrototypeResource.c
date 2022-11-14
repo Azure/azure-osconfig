@@ -242,6 +242,100 @@ void MI_CALL OSConfig_PrototypeResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
+MI_RESULT GetCurrentParameterValuesFromDevice(const char* who)
+{
+    int mpiResult = MPI_OK;
+
+    const char* componentName = "HostName";
+    const char* objectName = "name";
+    char* hostName = NULL;
+    int hostNameLength = 0;
+    JSON_Value* jsonValue = NULL;
+    const char* jsonString = NULL;
+    char* payloadString = NULL;
+
+    // The only parameter retrieved from the device by this PoC NRP is the ReportedString, containing the host name.
+    // A retail NRP will collect all parameters to be reported.
+
+    if (NULL == g_mpiHandle)
+    {
+        if (!RefreshMpiClientSession())
+        {
+            mpiResult = ESRCH;
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] Failed to start the MPI server (%d)", who, mpiResult);
+        }
+    }
+
+    if (g_mpiHandle)
+    {
+        // ReportedString reports the host name, aka device name
+
+        if (MPI_OK == (mpiResult = CallMpiGet(componentName, objectName, &hostName, &hostNameLength, GetLog())))
+        {
+            if (NULL == hostName)
+            {
+                mpiResult = ENODATA;
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", who, componentName, objectName, hostName, hostNameLength, mpiResult);
+            }
+            else
+            {
+                if (NULL != (payloadString = malloc(hostNameLength + 1)))
+                {
+                    memset(payloadString, 0, hostNameLength + 1);
+                    memcpy(payloadString, hostName, hostNameLength);
+
+                    if (NULL != (jsonValue = json_parse_string(payloadString)))
+                    {
+                        jsonString = json_value_get_string(jsonValue);
+                        if (jsonString)
+                        {
+                            memset(g_reportedString, 0, sizeof(g_reportedString));
+                            strncpy(g_reportedString, jsonString, ARRAY_SIZE(g_reportedString) - 1);
+                        }
+                        else
+                        {
+                            mpiResult = EINVAL;
+                            miResult = MI_RESULT_FAILED;
+                            LogError(context, miResult, GetLog(), "[%s] json_value_get_string(%s) failed", who, payloadString);
+                        }
+
+                        json_value_free(jsonValue);
+                    }
+                    else
+                    {
+                        mpiResult = EINVAL;
+                        miResult = MI_RESULT_FAILED;
+                        LogError(context, miResult, GetLog(), "[%s] json_parse_string(%s) failed", who, payloadString);
+                    }
+
+                    FREE_MEMORY(payloadString);
+                }
+                else
+                {
+                    mpiResult = ENOMEM;
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, hostNameLength + 1);
+                }
+
+                LogInfo(context, GetLog(), "[%s] ReportedString value: '%s'", g_reportedString);
+                CallMpiFree(hostName);
+            }
+        }
+    }
+
+    // ReportedIntegerStatus and ReportedStringResult
+    g_reportedIntegerStatus = mpiResult;
+    strncpy(g_reportedStringResult, (MI_RESULT_OK == miResult) ? "PASS : ""FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
+    
+    // The rest of reported parameters
+    g_reportedBoolean = false;
+    //g_reportedInteger = 0;
+
+    return miResult;
+}
+
 struct OSConfig_PrototypeResource_Parameters
 {
     const char* name;
@@ -264,19 +358,10 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(resourceClass);
 
     MI_Result miResult = MI_RESULT_OK;
-    int mpiResult = MPI_OK;
     MI_Instance *resultResourceObject = NULL;
     MI_Value miValue = {0};
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
-
-    const char* componentName = "HostName";
-    const char* objectName = "name";
-    char* hostName = NULL;
-    int hostNameLength = 0;
-    JSON_Value* jsonValue = NULL;
-    const char* jsonString = NULL;
-    char* payloadString = NULL;
 
     // Reported values
     struct OSConfig_PrototypeResource_Parameters allParameters[] = {
@@ -338,89 +423,12 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    if (MI_RESULT_OK != (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Get")))
+    {
+        goto Exit;
+    }
+
     miValueResource.instance = resultResourceObject;
-
-    if (NULL == g_mpiHandle)
-    {
-        if (!RefreshMpiClientSession())
-        {
-            mpiResult = ESRCH;
-            miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] Failed to start the MPI server (%d)", mpiResult);
-        }
-    }
-
-    if (g_mpiHandle)
-    {
-        // Read a simple reported value from OSConfig, such as HostName.name (name of the local host, aka device name)
-        if (MPI_OK == (mpiResult = CallMpiGet(componentName, objectName, &hostName, &hostNameLength, GetLog())))
-        {
-            if (NULL == hostName)
-            {
-                mpiResult = ENODATA;
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", 
-                    componentName, objectName, hostName, hostNameLength, mpiResult);
-            }
-            else
-            {
-                if (NULL != (payloadString = malloc(hostNameLength + 1)))
-                {
-                    memset(payloadString, 0, hostNameLength + 1);
-                    memcpy(payloadString, hostName, hostNameLength);
-
-                    if (NULL != (jsonValue = json_parse_string(payloadString)))
-                    {
-                        jsonString = json_value_get_string(jsonValue);
-                        if (jsonString)
-                        {
-                            memset(g_reportedString, 0, sizeof(g_reportedString));
-                            strncpy(g_reportedString, jsonString, ARRAY_SIZE(g_reportedString) - 1);
-                        }
-                        else
-                        {
-                            mpiResult = EINVAL;
-                            miResult = MI_RESULT_FAILED;
-                            LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] json_value_get_string(%s) failed", payloadString);
-                        }
-                        
-                        json_value_free(jsonValue);
-                    }
-                    else
-                    {
-                        mpiResult = EINVAL;
-                        miResult = MI_RESULT_FAILED;
-                        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] json_parse_string(%s) failed", payloadString);
-                    }
-
-                    FREE_MEMORY(payloadString);
-                }
-                else
-                {
-                    mpiResult = ENOMEM;
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] Failed to allocate %d bytes", hostNameLength + 1);
-                }
-
-                LogInfo(context, GetLog(), "GetTargetResource: ReportedString value: '%s'", g_reportedString);
-                CallMpiFree(hostName);
-            }
-        }
-    }
-    
-    if (MPI_OK != mpiResult)
-    {
-        miResult = MI_RESULT_FAILED;
-        
-        LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Get] CallMpiGet for '%s' and '%s' failed with %d", componentName, objectName, mpiResult);
-
-        if ((0 == g_reportedIntegerStatus) || (0 == strcmp(g_reportedStringResult, "PASS")))
-        {
-            g_reportedIntegerStatus = mpiResult;
-            memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));
-            strncpy(g_reportedStringResult, "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
-        }
-    }
 
     for (int i = 0; i < allParametersSize; i++)
     {
@@ -545,20 +553,41 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
         strncpy(g_prototypeClassKey, in->InputResource.value->PrototypeClassKey.value, ARRAY_SIZE(g_prototypeClassKey) - 1);
     }
 
+    // Ensure is optional, the retail NRP can drop it
     if ((in->InputResource.value->Ensure.exists == MI_TRUE) && (in->InputResource.value->Ensure.value != NULL))
     {
-        if ((!strcmp(in->InputResource.value->Ensure.value, "Present")) || (!strcmp(in->InputResource.value->Ensure.value, "Absent")))
+        if ((0 == strcmp(in->InputResource.value->Ensure.value, "Present")) || (0 == strcmp(in->InputResource.value->Ensure.value, "Absent")))
         {
             memset(g_ensure, 0, sizeof(g_ensure));
             memcpy(g_ensure, in->InputResource.value->Ensure.value, ARRAY_SIZE(g_ensure) - 1);
-
-            // Simulating compliance either way
-            is_compliant = MI_TRUE;
         }
         else
         {
             LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] Unknown ensure value ('%s')", in->InputResource.value->Ensure.value);
-            is_compliant = MI_FALSE;
+        }
+    }
+    
+    if (MI_RESULT_OK == (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Test")))
+    {
+        if ((in->InputResource.value->DesiredString.exists == MI_TRUE) && (in->InputResource.value->DesiredString.value != NULL))
+        {
+            if (0 == strcmp(in->InputResource.value->DesiredString.value, g_reportedString))
+            {
+                is_compliant = MI_TRUE;
+                LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] DesiredString value '%s' matches the current local value", 
+                    in->InputResource.value->DesiredString.value);
+            }
+            else
+            {
+                is_compliant = MI_FALSE;
+                LogError(context, GetLog(), "[OSConfig_PrototypeResource.Test] DesiredString value '%s' does not match the current local value '%s'", 
+                    in->InputResource.value->DesiredString.value, g_reportedString);
+            }
+        }
+        else
+        {
+            is_compliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[OSConfig_PrototypeResource.Test] No DesiredString value, assuming compliance");
         }
     }
     
