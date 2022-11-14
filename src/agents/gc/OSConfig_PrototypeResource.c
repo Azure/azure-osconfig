@@ -242,10 +242,10 @@ void MI_CALL OSConfig_PrototypeResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-MI_RESULT GetCurrentParameterValuesFromDevice(const char* who)
+MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context* context)
 {
+    MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
-
     const char* componentName = "HostName";
     const char* objectName = "name";
     char* hostName = NULL;
@@ -277,7 +277,8 @@ MI_RESULT GetCurrentParameterValuesFromDevice(const char* who)
             {
                 mpiResult = ENODATA;
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", who, componentName, objectName, hostName, hostNameLength, mpiResult);
+                LogError(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", 
+                    who, componentName, objectName, hostName, hostNameLength, mpiResult);
             }
             else
             {
@@ -319,7 +320,7 @@ MI_RESULT GetCurrentParameterValuesFromDevice(const char* who)
                     LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, hostNameLength + 1);
                 }
 
-                LogInfo(context, GetLog(), "[%s] ReportedString value: '%s'", g_reportedString);
+                LogInfo(context, GetLog(), "[%s] ReportedString value: '%s'", who, g_reportedString);
                 CallMpiFree(hostName);
             }
         }
@@ -327,7 +328,7 @@ MI_RESULT GetCurrentParameterValuesFromDevice(const char* who)
 
     // ReportedIntegerStatus and ReportedStringResult
     g_reportedIntegerStatus = mpiResult;
-    strncpy(g_reportedStringResult, (MI_RESULT_OK == miResult) ? "PASS : ""FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
+    strncpy(g_reportedStringResult, (MI_RESULT_OK == miResult) ? "PASS" : "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
     
     // The rest of reported parameters
     g_reportedBoolean = false;
@@ -423,7 +424,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Get")))
+    if (MI_RESULT_OK != (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Get", context)))
     {
         goto Exit;
     }
@@ -567,7 +568,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
         }
     }
     
-    if (MI_RESULT_OK == (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Test")))
+    if (MI_RESULT_OK == (miResult = GetCurrentParameterValuesFromDevice("OSConfig_PrototypeResource.Test", context)))
     {
         if ((in->InputResource.value->DesiredString.exists == MI_TRUE) && (in->InputResource.value->DesiredString.value != NULL))
         {
@@ -580,7 +581,7 @@ void MI_CALL OSConfig_PrototypeResource_Invoke_TestTargetResource(
             else
             {
                 is_compliant = MI_FALSE;
-                LogError(context, GetLog(), "[OSConfig_PrototypeResource.Test] DesiredString value '%s' does not match the current local value '%s'", 
+                LogError(context, miResult, GetLog(), "[OSConfig_PrototypeResource.Test] DesiredString value '%s' does not match the current local value '%s'", 
                     in->InputResource.value->DesiredString.value, g_reportedString);
             }
         }
