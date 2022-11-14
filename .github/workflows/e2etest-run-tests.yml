@@ -29,8 +29,8 @@ on:
         type: number
         default: 10
         required: false
-      repeatForXHours:
-        description: Repeat the test suite for X hours, every test run gets a new test-report
+      repeatForXMins:
+        description: Repeat the test suite for X mins, every test run gets a new test-report
         type: number
         required: false
       testNameSuffix:
@@ -151,8 +151,8 @@ jobs:
               exit $1
             fi
           }
-          if [[ ${{ inputs.repeatForXHours }} -gt 0 ]];then
-            end=`date -d "+${{inputs.repeatForXHours}} hours" +%s`
+          if [[ ${{ inputs.repeatForXMins }} -gt 0 ]];then
+            end=`date -d "+${{inputs.repeatForXMins}} mins" +%s`
             while [[ $(date +%s) -lt $end ]]; do
               echo Performing test run $((++runNumber))
               sudo E2E_OSCONFIG_IOTHUB_CONNSTR="${{ steps.hub-identity.outputs.iothubowner_connection_string }}" E2E_OSCONFIG_DEVICE_ID="${{ steps.get-test-data.outputs.device_id }}" E2E_OSCONFIG_DISTRIBUTION_NAME="${{ matrix.distroName }}" E2E_OSCONFIG_TWIN_TIMEOUT=${{ secrets.TWIN_TIMEOUT }} dotnet test ${{ steps.get-test-data.outputs.test_filter }} --logger "trx;LogFileName=test-results-${{ matrix.distroName }}.trx" --logger "console;verbosity=detailed"
@@ -204,8 +204,8 @@ jobs:
       - name: Stage logs
         if: always()
         run: |
-          sudo cp -f /var/log/osconfig*.log ${{ runner.temp }}
-          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*.log
+          sudo cp -f /var/log/osconfig* ${{ runner.temp }}
+          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*
 
       - name: Check logs
         if: success() || failure()
@@ -220,7 +220,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-logs-${{ matrix.distroName }}
-          path: ${{ runner.temp }}/osconfig*.log
+          path: ${{ runner.temp }}/osconfig*
 
       - name: Upload Test Results
         if: always()
