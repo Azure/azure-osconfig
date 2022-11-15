@@ -244,8 +244,6 @@ void MI_CALL OSConfig_PrototypeResource_DeleteInstance(
 
 static MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context* context)
 {
-    MI_Result miResult = MI_RESULT_OK;
-    int mpiResult = MPI_OK;
     const char* componentName = "HostName";
     const char* objectName = "name";
     char* hostName = NULL;
@@ -253,9 +251,8 @@ static MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
     char* payloadString = NULL;
-
-    // The only parameter retrieved from the device by this PoC NRP is the ReportedString, containing the host name.
-    // A retail NRP will collect all parameters to be reported.
+    int mpiResult = MPI_OK;
+    MI_Result miResult = MI_RESULT_OK;
 
     if (NULL == g_mpiHandle)
     {
@@ -269,8 +266,7 @@ static MI_Result GetCurrentParameterValuesFromDevice(const char* who, MI_Context
 
     if (g_mpiHandle)
     {
-        // ReportedString reports the host name, aka device name
-
+        // ReportedString reports the OSConfig's HostName.desiredName
         if (MPI_OK == (mpiResult = CallMpiGet(componentName, objectName, &hostName, &hostNameLength, GetLog())))
         {
             if (NULL == hostName)
