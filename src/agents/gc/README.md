@@ -114,12 +114,12 @@ Next, go to Azure Portal | Policy | Definitions, select the subscription, then c
 - Definition location: select here the Azure subscription.
 - Name: enter the name for the policy (e.g. for the prototype this can be "Ensure the device host name is configured")
 - Description: enter here the description for the policy
-- Category: Select `Use Existing` and `Guest Configuration`.
-- Policy rule: paste the contents of the JSON file containing the policy definition.
+- Category: Select `Use Existing` and `Guest Configuration`
+- Policy rule: paste the contents of the JSON file containing the policy definition
 
 Then save.
 
-Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select 'Include Arc connected machines' and uncheck the uncheck the 'only show parameters' box. Enter the desired value for the policy parameter, in this case 'DesiredString', containing the desired host name for the device.
+Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the 'only show parameters' box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
 To delete a policy, delete it first from Azure Portal | Policy | Assignments, then from Azure Portal | Policy | Definitions.
 
