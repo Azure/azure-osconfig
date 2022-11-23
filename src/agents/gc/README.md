@@ -147,10 +147,23 @@ On the device, the GC Agent will check on the policy every 15 minutes. The GC Ag
 View last with:
 
 ```bash
-sudo cd /var/lib/GuestConfig/arc_policy_logs\
+sudo su
+cd /var/lib/GuestConfig/arc_policy_logs
 tail gc_agent.log -f
 ```
+View last with:
 
+```bash
+sudo su
+cd /var/lib/GuestConfig/arc_policy_logs
+tail gc_agent.log -f
+```
+We can also copy the full GC logs to a separate folder and view them from there in full. For example:
+
+```bash
+mkdir $HOME/GuestConfig
+sudo cp /var/lib/GuestConfig $HOME -r
+```
 ## Registering the Arc device with a different name
 
 ### Disconnecting the device from Azure 
