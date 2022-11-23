@@ -142,21 +142,21 @@ If necessary, create a new remediation task. Then wait for the updated policy to
 
 ### Monitoring the policy activity from the device side
 
-On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`.
-
-View last with:
+On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`. 
 
 ```bash
 sudo su
 cd /var/lib/GuestConfig/arc_policy_logs
-tail gc_agent.log -f
 ```
 View last with:
 
 ```bash
-sudo su
-cd /var/lib/GuestConfig/arc_policy_logs
 tail gc_agent.log -f
+```
+View the full last GC Agent log with:
+
+```bash
+cat gc_agent.log
 ```
 We can also copy the full GC logs to a separate folder and view them from there in full. For example:
 
