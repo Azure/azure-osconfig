@@ -8,7 +8,8 @@ Read about Azure Automanage Machine Configuration (formerly called Azure Policy 
 
 To regenerate code, see [codegen.cmd](codegen.cmd). 
 
- **Warning** Regenerating code will overwrite all customizations and additions specific to OSConfig. 
+ > **Warning** 
+ > Regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
 ## 3. Building the prototype NRP
 
@@ -59,7 +60,9 @@ In addition to the MC traces written to the the PowerShell console, you can also
 
 ## 5. Onboarding a device to Arc
 
-Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. Specify the desired Azure subscription, resource group and OS (Linux) for the device. Copy and run the generated instructions in the local shell on the device to be onboarded.
+1. Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. 
+2. Specify the desired Azure subscription, resource group and OS (Linux) for the device. 
+3. Copy and run the generated instructions in the local shell on the device to be onboarded.
 
 ## 6. Uploading the ZIP artifacts package
 
@@ -67,7 +70,8 @@ The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be upload
 
 Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OSConfig_Proto_Policy.zip.
 
-**Warning** After each update of the ZIP package the policy definition will need to be updated.
+> **Warning** 
+> After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
 
@@ -125,11 +129,16 @@ Then save.
 
 #### 7.1.3. Asigning the new policy
 
-Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
+Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy: 
+2. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). 
+3. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
+4. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
 #### 7.1.4. Creating a remediation task
 
-One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
+One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). 
+
+For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
 
 #### 7.1.5. Deleting a policy
 
@@ -146,9 +155,11 @@ sudo pwsh
 get-filehash <local path to package>.zip
 ```
 
-Keep the existing policy assignment and change its definition. Go to the Azure Portal | Policy | Definitions, select the policy and edit. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. Carefully replace all with the new token URL and hash. Paste in the new  policy definition contents and save.
-
-If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
+Keep the existing policy assignment and change its definition: 
+1. Go to the Azure Portal | Policy | Definitions, select the policy and edit. 
+2. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. 
+3. Carefully replace all with the new token URL and hash. Paste in the new  policy definition contents and save.
+4. If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
 
 ### 7.3. Monitoring the policy activity from the device side
 
