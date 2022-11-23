@@ -111,10 +111,10 @@ Run these script commands on the Arc device in PowerShell. This will produce a J
 
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
 
-- Definition location: the subsription.
-- Name: any name (e.g. for the prototype this can be "Ensure the device host name is configured")
-- Description: any description"
-- Category: Select 'Use Existing' and 'Guest Configuration'.'
+- Definition location: select here the Azure subscription.
+- Name: enter the name for the policy (e.g. for the prototype this can be "Ensure the device host name is configured")
+- Description: enter here the description for the policy
+- Category: Select `Use Existing` and `Guest Configuration`.
 - Policy rule: paste the contents of the JSON file containing the policy definition.
 
 Then save.
@@ -166,28 +166,16 @@ sudo cp /var/lib/GuestConfig $HOME -r
 ```
 ## Registering the Arc device with a different name
 
-### Disconnecting the device from Azure 
+Disconnect the device from Azure and restart:
 
 ```bash
 sudo azcmagent disconnect
-```
-
-### Cleaning up the device
-
-```bash
 sudo service gcad stop
 sudo rm -rf /var/lib/GuestConfig/
-```
-
-### Restarting the agent
-
-```bash
 sudo service gcad start
 ```
 
-### Re-registering the device into Azure with a different name
-
-Execute following export commands copied from the Arc onboarding script and register the device with the new name: 
+Execute following export commands copied from the Arc onboarding script (filled in with the right data) and register the device with the new name: 
 
 ```bash
 export subscriptionId="...";
