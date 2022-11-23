@@ -81,6 +81,8 @@ Read about [creating custom machine configuration policy definitions](https://le
 
 Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition#create-an-azure-policy-definition).
 
+#### Generate the policy definition
+
 Customize the following commands script with the new package URL. Names in the example below are for the NRP prototype which is configuring the host name of the device:
 
 ```bash
@@ -109,6 +111,8 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 
 Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
+#### Create the new policy
+
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
 
 - Definition location: select here the Azure subscription.
@@ -119,11 +123,17 @@ Next, go to Azure Portal | Policy | Definitions, select the subscription, then c
 
 Then save.
 
+#### Asign the new policy
+
 Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the 'only show parameters' box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
-To delete a policy, delete it first from Azure Portal | Policy | Assignments, then from Azure Portal | Policy | Definitions.
+#### Create a remediation task
 
 One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
+
+#### Deleting a policy
+
+To delete a policy, delete it first from Azure Portal | Policy | Assignments, then from Azure Portal | Policy | Definitions.
 
 ### [If the policy already exists] Editing the existing policy definition
 
