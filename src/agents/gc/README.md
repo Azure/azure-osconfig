@@ -6,7 +6,9 @@ Read about Azure Automanage Machine Configuration (formerly called Azure Policy 
 
 ## 2. Regenerating the NRP code for a changed resource class
 
-To regenerate code, see [codegen.cmd](codegen.cmd). Warning: regenerating code will overwrite all customizations and additions specific to OSConfig. 
+To regenerate code, see [codegen.cmd](codegen.cmd). 
+
+ **Warning** Regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
 ## 3. Building the prototype NRP
 
@@ -65,7 +67,7 @@ The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be upload
 
 Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OSConfig_Proto_Policy.zip.
 
-Important: after each update of the ZIP package the policy definition will need to be updated.
+**Warning** After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
 
