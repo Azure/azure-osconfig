@@ -4,7 +4,7 @@
 
 Read about Azure Automanage Machine Configuration (formerly called Azure Policy Guest Configuration) at [learn.microsoft.com/machine-configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/).
 
-## 2. Regenerating the NRP code for a changed resource class:
+## 2. Regenerating the NRP code for a changed resource class
 
 To regenerate code, see [codegen.cmd](codegen.cmd). Warning: regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
@@ -12,7 +12,7 @@ To regenerate code, see [codegen.cmd](codegen.cmd). Warning: regenerating code w
 
 The prototype NRP binary (libOSConfig_PrototypeResource.so) is built with rest of OSConfig.
 
-## 4. Validating the prototype NRP with PowerShell and the MC Agent
+## 4. Validating the prototype NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
 
@@ -37,7 +37,7 @@ Install-Module -Name GuestConfiguration
 Get-Command -Module 'GuestConfiguration'
 ```
 
-### 4.3. Running the local validation
+### 4.3. Running the validation
 
 Copy the build generated artifacts ZIP package OSConfig_Proto_Policy.zip to a new folder or invoke it directly from the build location.
 
@@ -59,7 +59,7 @@ In addition to the MC traces written to the the PowerShell console, you can also
 
 Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. Specify the desired Azure subscription, resource group and OS (Linux) for the device. Copy and run the generated instructions in the local shell on the device to be onboarded.
 
-## 5.1. Uploading the ZIP artifacts package
+## 6. Uploading the ZIP artifacts package
 
 The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be uploaded to Azure.
 
@@ -73,13 +73,13 @@ Once uploaded, generate a SAS token for the package. Two strings will be generat
 
 Validate that the URL is correct by pasting that URL string into a Web browser and see if the ZIP package gets downloaded.
 
-## 5.2. Creating a new or changing an existing Azure Policy
+## 7. Creating a new or changing an existing Azure Policy
 
-### 5.2.1. [If the policy does not already exist] Generating the policy definition
+### 7.1. [If the policy does not already exist] Generating the policy definition
 
 Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition#create-an-azure-policy-definition).
 
-#### 5.2.1.1. Generating the policy definition
+#### 7.1.1. Generating the policy definition
 
 Customize the following commands script with the new package URL. Names in the example below are for the NRP prototype which is configuring the host name of the device:
 
@@ -109,7 +109,7 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 
 Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
-#### 5.2.1.2. Creating the new policy
+#### 7.1.2. Creating the new policy
 
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
 
@@ -121,19 +121,19 @@ Next, go to Azure Portal | Policy | Definitions, select the subscription, then c
 
 Then save.
 
-#### 5.2.1.3. Asigning the new policy
+#### 7.1.3. Asigning the new policy
 
 Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the 'only show parameters' box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
-#### 5.2.1.4. Creating a remediation task
+#### 7.1.4. Creating a remediation task
 
 One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
 
-#### 5.2.1.5. Deleting a policy
+#### 7.1.5. Deleting a policy
 
 To delete a policy, delete it first from Azure Portal | Policy | Assignments, then from Azure Portal | Policy | Definitions.
 
-### 5.2.2. [If the policy already exists] Editing the existing policy definition
+### 7.2. [If the policy already exists] Editing the existing policy definition
 
 If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the package URL and the file hash of the package. 
 
@@ -148,7 +148,7 @@ Keep the existing policy assignment and change its definition. Go to the Azure P
 
 If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
 
-### 5.2.3. Monitoring the policy activity from the device side
+### 7.3. Monitoring the policy activity from the device side
 
 On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`. 
 
@@ -172,7 +172,7 @@ We can also copy the full GC logs to a separate folder and view them from there 
 mkdir $HOME/GuestConfig
 sudo cp /var/lib/GuestConfig $HOME -r
 ```
-## 6. Registering the Arc device with a different name
+## 8. Registering the Arc device with a different name
 
 Disconnect the device from Azure and restart:
 
