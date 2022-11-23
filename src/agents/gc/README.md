@@ -37,7 +37,7 @@ Install-Module -Name GuestConfiguration
 Get-Command -Module 'GuestConfiguration'
 ```
 
-### Running the validation
+### Running the local validation
 
 Copy the build generated artifacts ZIP package OSConfig_Proto_Policy.zip to a new folder or invoke it directly from the build location.
 
@@ -55,15 +55,11 @@ $x.resources[0].properties
 ```
 In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_gc_nrp.log`.
 
-## Use the MC module to create an Azure Policy definition
-
-Read about [creating custom machine configuration policy definitions](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition).
-
-### Onboard a device to Arc
+## Onboarding a device to Arc
 
 Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. Specify the desired Azure subscription, resource group and OS (Linux) for the device. Copy and run the generated instructions in the local shell on the device to be onboarded.
 
-### Upload the ZIP artifacts package to Azure
+## Uploading the ZIP artifacts package
 
 The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be uploaded to Azure.
 
@@ -77,7 +73,11 @@ Once uploaded, generate a SAS token for the package. Two strings will be generat
 
 Validate that the URL is correct by pasting that URL string into a Web browser and see if the ZIP package gets downloaded.
 
-### [If the policy does not already exist] Generate the policy definition
+## Creating a new or changing an existing Azure Policy
+
+Read about [creating custom machine configuration policy definitions](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition).
+
+### `If the policy does not already exist` Generating the policy definition and creating the policy from scratch
 
 Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition#create-an-azure-policy-definition).
 
@@ -125,18 +125,7 @@ To delete a policy, delete it first from Azure Portal | Policy | Assignments, th
 
 One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
 
-On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`.
-
-View last with:
-
-```bash
-sudo cd /var/lib/GuestConfig/arc_policy_logs\
-tail gc_agent.log -f
-```
-
-After some time the policy engine will execute this policy.
-
-### [If the policy already exists] Edit the policy definition
+### `If the policy already exists` Editing the existing policy definition
 
 If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the package URL and the file hash of the package. 
 
@@ -151,28 +140,39 @@ Keep the existing policy assignment and change its definition. Go to the Azure P
 
 If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
 
+### Monitoring the policy activity from the device side
+
+On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`.
+
+View last with:
+
+```bash
+sudo cd /var/lib/GuestConfig/arc_policy_logs\
+tail gc_agent.log -f
+```
+
 ## Registering the Arc device with a different name
 
-### Disconnect the device from Azure 
+### Disconnecting the device from Azure 
 
 ```bash
 sudo azcmagent disconnect
 ```
 
-### Cleanup the device
+### Cleaning up the device
 
 ```bash
 sudo service gcad stop
 sudo rm -rf /var/lib/GuestConfig/
 ```
 
-### Restart the GC Agent
+### Restarting the agent
 
 ```bash
 sudo service gcad start
 ```
 
-### Register the device into Azure with a different name
+### Re-registering the device into Azure with a different name
 
 Execute following export commands copied from the Arc onboarding script and register the device with the new name: 
 
