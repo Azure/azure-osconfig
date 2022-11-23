@@ -77,7 +77,7 @@ Validate that the URL is correct by pasting that URL string into a Web browser a
 
 Read about [creating custom machine configuration policy definitions](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition).
 
-### `If the policy does not already exist` Generating the policy definition and creating the policy from scratch
+### [If the policy does not already exist] Generating the policy definition and creating the policy from scratch
 
 Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-definition#create-an-azure-policy-definition).
 
@@ -125,7 +125,7 @@ To delete a policy, delete it first from Azure Portal | Policy | Assignments, th
 
 One more step is necessary for so called brownfield devices, which are created (onboarded to Arc) before the policy is created (greenfield devices are created after the policy). For these brownfield devices, go to Azure Portal | Policy | Compliance, select the policy and then create a remediation task.
 
-### `If the policy already exists` Editing the existing policy definition
+### [If the policy already exists] Editing the existing policy definition
 
 If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the package URL and the file hash of the package. 
 
