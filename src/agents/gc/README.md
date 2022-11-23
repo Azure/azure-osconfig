@@ -123,7 +123,7 @@ Then save.
 
 #### 7.1.3. Asigning the new policy
 
-Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the 'only show parameters' box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
+Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
 #### 7.1.4. Creating a remediation task
 
