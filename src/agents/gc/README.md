@@ -116,7 +116,7 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
 > **Important** 
-> Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (for a new artifacts ZIP package, for example).
+> Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (because of a new artifacts ZIP package, for example).
 
 #### 7.1.2. Creating the new policy
 
@@ -149,7 +149,7 @@ To delete a policy, delete it first from Azure Portal | Policy | Assignments, th
 
 ### 7.2. [If the policy already exists] Editing the existing policy definition
 
-If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the package URL and the file hash of the package. 
+If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the existing policy definition, the new package URL and the new file hash of the package. 
 
 On the device, obtain the hash with:
 
@@ -158,7 +158,7 @@ sudo pwsh
 get-filehash <local path to package>.zip
 ```
 
-Keep the existing policy assignment and change its definition: 
+Then, keeping as-is the existing policy assignment, change the policy definition as following: 
 1. Go to the Azure Portal | Policy | Definitions, select the policy and edit. 
 1. Use the policy definition JSON that was used to generate the policy with or if that is no longer available, copy the current policy definition JSON from the Azure Portal.
 1. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. Carefully replace all with the new token URL and hash. 
