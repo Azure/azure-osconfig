@@ -37,6 +37,7 @@ parameters:
         performCoverage: false
         ignoreTestFailures: false
         publishArtifact: true
+
       - variantName: ubuntu18.04
         friendlyVariantName: ubuntu1804
         architecture: amd64
@@ -61,6 +62,7 @@ parameters:
         performCoverage: false
         ignoreTestFailures: false
         publishArtifact: true
+
       - variantName: debian9
         friendlyVariantName: debian9
         architecture: amd64
@@ -81,6 +83,56 @@ parameters:
         friendlyVariantName: debian9
         architecture: arm64
         containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:$(CONTAINER_TAG)
+        platform: linux/arm64/v8
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+
+      - variantName: debian10
+        friendlyVariantName: debian10
+        architecture: amd64
+        containerPath: $(CONTAINER_REGISTRY)/debian10-dev-amd64:$(CONTAINER_TAG)
+        platform: linux/amd64
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian10
+        friendlyVariantName: debian10
+        architecture: arm
+        containerPath: $(CONTAINER_REGISTRY)/debian10-dev-arm:$(CONTAINER_TAG)
+        platform: linux/arm/v7
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian10
+        friendlyVariantName: debian10
+        architecture: arm64
+        containerPath: $(CONTAINER_REGISTRY)/debian10-dev-arm64:$(CONTAINER_TAG)
+        platform: linux/arm64/v8
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+
+      - variantName: debian11
+        friendlyVariantName: debian11
+        architecture: amd64
+        containerPath: $(CONTAINER_REGISTRY)/debian11-dev-amd64:$(CONTAINER_TAG)
+        platform: linux/amd64
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian11
+        friendlyVariantName: debian11
+        architecture: arm
+        containerPath: $(CONTAINER_REGISTRY)/debian11-dev-arm:$(CONTAINER_TAG)
+        platform: linux/arm/v7
+        performCoverage: false
+        ignoreTestFailures: false
+        publishArtifact: true
+      - variantName: debian11
+        friendlyVariantName: debian11
+        architecture: arm64
+        containerPath: $(CONTAINER_REGISTRY)/debian11-dev-arm64:$(CONTAINER_TAG)
         platform: linux/arm64/v8
         performCoverage: false
         ignoreTestFailures: false

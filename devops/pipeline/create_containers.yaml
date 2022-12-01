@@ -14,6 +14,7 @@ parameters:
   displayName: 'Ubuntu 20.04 ARM64 Dev Container'
   type: boolean
   default: false
+
 - name: BUILD_UBUNTU1804_AMD64
   displayName: 'Ubuntu 18.04 AMD64 Dev Container'
   type: boolean
@@ -26,6 +27,7 @@ parameters:
   displayName: 'Ubuntu 18.04 ARM64 Dev Container'
   type: boolean
   default: false
+
 - name: BUILD_DEBIAN9_AMD64
   displayName: 'Debian 9 AMD64 Dev Container'
   type: boolean
@@ -36,6 +38,32 @@ parameters:
   default: false
 - name: BUILD_DEBIAN9_ARM64
   displayName: 'Debian 9 ARM64 Dev Container'
+  type: boolean
+  default: false
+
+- name: BUILD_DEBIAN10_AMD64
+  displayName: 'Debian 10 AMD64 Dev Container'
+  type: boolean
+  default: false
+- name: BUILD_DEBIAN10_ARM
+  displayName: 'Debian 10 ARM Dev Container'
+  type: boolean
+  default: false
+- name: BUILD_DEBIAN10_ARM64
+  displayName: 'Debian 10 ARM64 Dev Container'
+  type: boolean
+  default: false
+
+- name: BUILD_DEBIAN11_AMD64
+  displayName: 'Debian 11 AMD64 Dev Container'
+  type: boolean
+  default: false
+- name: BUILD_DEBIAN11_ARM
+  displayName: 'Debian 11 ARM Dev Container'
+  type: boolean
+  default: false
+- name: BUILD_DEBIAN11_ARM64
+  displayName: 'Debian 11 ARM64 Dev Container'
   type: boolean
   default: false
 
@@ -51,6 +79,12 @@ variables:
   BUILD_DEBIAN9_AMD64: ${{ parameters.BUILD_DEBIAN9_AMD64 }}
   BUILD_DEBIAN9_ARM: ${{ parameters.BUILD_DEBIAN9_ARM }}
   BUILD_DEBIAN9_ARM64: ${{ parameters.BUILD_DEBIAN9_ARM64 }}
+  BUILD_DEBIAN10_AMD64: ${{ parameters.BUILD_DEBIAN10_AMD64 }}
+  BUILD_DEBIAN10_ARM: ${{ parameters.BUILD_DEBIAN10_ARM }}
+  BUILD_DEBIAN10_ARM64: ${{ parameters.BUILD_DEBIAN10_ARM64 }}
+  BUILD_DEBIAN11_AMD64: ${{ parameters.BUILD_DEBIAN11_AMD64 }}
+  BUILD_DEBIAN11_ARM: ${{ parameters.BUILD_DEBIAN11_ARM }}
+  BUILD_DEBIAN11_ARM64: ${{ parameters.BUILD_DEBIAN11_ARM64 }}
 
 jobs:
 - job: Build
@@ -95,6 +129,30 @@ jobs:
       Container-debian9-arm64:
         dockerFilePath: devops/docker/debian9-arm64/Dockerfile
         acrRepo: debian9-dev-arm64
+        enabled: $(BUILD_DEBIAN9_ARM64)
+      Container-debian10-amd64:
+        dockerFilePath: devops/docker/debian10-amd64/Dockerfile
+        acrRepo: debian10-dev-amd64
+        enabled: $(BUILD_DEBIAN9_AMD64)
+      Container-debian10-arm:
+        dockerFilePath: devops/docker/debian10-arm/Dockerfile
+        acrRepo: debian10-dev-arm
+        enabled: $(BUILD_DEBIAN9_ARM)
+      Container-debian10-arm64:
+        dockerFilePath: devops/docker/debian10-arm64/Dockerfile
+        acrRepo: debian10-dev-arm64
+        enabled: $(BUILD_DEBIAN9_ARM64)
+      Container-debian11-amd64:
+        dockerFilePath: devops/docker/debian11-amd64/Dockerfile
+        acrRepo: debian11-dev-amd64
+        enabled: $(BUILD_DEBIAN9_AMD64)
+      Container-debian11-arm:
+        dockerFilePath: devops/docker/debian11-arm/Dockerfile
+        acrRepo: debian11-dev-arm
+        enabled: $(BUILD_DEBIAN9_ARM)
+      Container-debian11-arm64:
+        dockerFilePath: devops/docker/debian11-arm64/Dockerfile
+        acrRepo: debian11-dev-arm64
         enabled: $(BUILD_DEBIAN9_ARM64)
 
   steps:
