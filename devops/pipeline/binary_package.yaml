@@ -141,7 +141,7 @@ parameters:
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
   CONTAINER_REGISTRY: osconfig.azurecr.io
-  CONTAINER_TAG: 289651
+  CONTAINER_TAG: latest
 
 trigger:
   branches:
