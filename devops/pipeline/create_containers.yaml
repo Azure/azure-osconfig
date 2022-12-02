@@ -88,7 +88,7 @@ variables:
 
 jobs:
 - job: Build
-  timeoutInMinutes: 240
+  timeoutInMinutes: 360
   pool:
     vmImage: 'ubuntu-20.04'
 
@@ -133,27 +133,27 @@ jobs:
       Container-debian10-amd64:
         dockerFilePath: devops/docker/debian10-amd64/Dockerfile
         acrRepo: debian10-dev-amd64
-        enabled: $(BUILD_DEBIAN9_AMD64)
+        enabled: $(BUILD_DEBIAN10_AMD64)
       Container-debian10-arm:
         dockerFilePath: devops/docker/debian10-arm/Dockerfile
         acrRepo: debian10-dev-arm
-        enabled: $(BUILD_DEBIAN9_ARM)
+        enabled: $(BUILD_DEBIAN10_ARM)
       Container-debian10-arm64:
         dockerFilePath: devops/docker/debian10-arm64/Dockerfile
         acrRepo: debian10-dev-arm64
-        enabled: $(BUILD_DEBIAN9_ARM64)
+        enabled: $(BUILD_DEBIAN10_ARM64)
       Container-debian11-amd64:
         dockerFilePath: devops/docker/debian11-amd64/Dockerfile
         acrRepo: debian11-dev-amd64
-        enabled: $(BUILD_DEBIAN9_AMD64)
+        enabled: $(BUILD_DEBIAN11_AMD64)
       Container-debian11-arm:
         dockerFilePath: devops/docker/debian11-arm/Dockerfile
         acrRepo: debian11-dev-arm
-        enabled: $(BUILD_DEBIAN9_ARM)
+        enabled: $(BUILD_DEBIAN11_ARM)
       Container-debian11-arm64:
         dockerFilePath: devops/docker/debian11-arm64/Dockerfile
         acrRepo: debian11-dev-arm64
-        enabled: $(BUILD_DEBIAN9_ARM64)
+        enabled: $(BUILD_DEBIAN11_ARM64)
 
   steps:
   - script: |
