@@ -6,6 +6,8 @@
 #  - (Required) platform [string]: the platform string to be used, this is necessary for targetting foreign architectures (see https://docs.docker.com/desktop/multi-arch/)
 
 parameters:
+- name: displayName
+  type: string
 - name: prefix
   type: string
   default: binary
@@ -22,12 +24,12 @@ parameters:
   type: string
 
 stages:
-- stage: ${{ parameters.prefix }}_${{ parameters.os }}_${{ parameters.architecture }}
+- stage: ${{ parameters.prefix }}_${{ parameters.displayName }}
   displayName: Binary ${{ parameters.os }} ${{ parameters.architecture }}
   dependsOn: []
 
   jobs:
-  - job: ${{ parameters.prefix }}_${{ parameters.os }}_${{ parameters.architecture }}
+  - job: ${{ parameters.prefix }}_${{ parameters.displayName }}
 
     pool:
       vmImage: 'ubuntu-20.04'
