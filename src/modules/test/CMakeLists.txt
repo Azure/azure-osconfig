@@ -1,42 +1,25 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(modulestest)
+project(moduletest)
 
-set(CMAKE_CXX_STANDARD 17)
-add_library(testfactorylib MimParser.cpp TestRecipeParser.cpp ManagementModule.cpp RecipeModuleSessionLoader.cpp RecipeInvoker.cpp)
+add_library(testlib Module.c)
 
-target_link_libraries(testfactorylib
+target_link_libraries(testlib
     ${CMAKE_DL_LIBS}
     commonutils
     logging
     pthread
     parsonlib)
 
-target_include_directories(testfactorylib PUBLIC
-    ${MODULES_INC_DIR})
+target_include_directories(testlib PUBLIC ${MODULES_INC_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(modulestest main.cpp)
-target_link_libraries(modulestest gtest gtest_main pthread testfactorylib)
+add_executable(moduletest main.c)
 
-find_program(JQ_EXEC jq)
-if(JQ_EXEC)
-    add_custom_target(modulerecipeconfiguration
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../../../devops/scripts/generate_moduletest_metadata.sh ${CMAKE_CURRENT_BINARY_DIR}/testplate.json ${CMAKE_CURRENT_BINARY_DIR}/..
-        COMMENT "Generating module recipe configuration"
-    )
-    add_dependencies(modulestest modulerecipeconfiguration)
-endif()
+target_link_libraries(moduletest testlib)
+target_include_directories(moduletest PRIVATE ${MODULES_INC_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8)
-    target_link_libraries(modulestest stdc++fs)
-endif()
-
-add_custom_command(TARGET modulestest POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:modulestest> ${CMAKE_BINARY_DIR}/modulestest
-    DEPENDS $<TARGET_FILE:modulestest>
+add_custom_command(TARGET moduletest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:moduletest> ${CMAKE_BINARY_DIR}/moduletest
+    DEPENDS $<TARGET_FILE:moduletest>
 )
-
-if (BUILD_TESTS)
-    add_subdirectory(unit-tests)
-endif()
