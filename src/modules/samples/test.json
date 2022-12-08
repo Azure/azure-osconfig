@@ -1,0 +1,110 @@
+{
+    "modules": [
+        "sample"
+    ],
+    "steps": [
+        {
+            "type": "reported",
+            "component": "SampleComponent",
+            "object": "reportedStringObject"
+        },
+        {
+            "type": "reported",
+            "component": "SampleComponent",
+            "object": "reportedIntegerObject"
+        },
+        {
+            "type": "reported",
+            "component": "SampleComponent",
+            "object": "reportedBooleanObject"
+        },
+        {
+            "type": "reported",
+            "component": "SampleComponent",
+            "object": "reportedObject"
+        },
+        {
+            "type": "reported",
+            "component": "SampleComponent",
+            "object": "reportedArrayObject"
+        },
+        {
+            "type": "desired",
+            "component": "SampleComponent",
+            "object": "desiredStringObject",
+            "payload": "string"
+        },
+        {
+            "type": "desired",
+            "component": "SampleComponent",
+            "object": "desiredIntegerObject",
+            "payload": 123
+        },
+        {
+            "type": "desired",
+            "component": "SampleComponent",
+            "object": "desiredBooleanObject",
+            "payload": true
+        },
+        {
+            "type": "desired",
+            "component": "SampleComponent",
+            "object": "desiredObject",
+            "payload": {
+                "stringSetting": "string",
+                "booleanSetting": true,
+                "integerSetting": 123,
+                "integerEnumerationSetting": 0,
+                "stringEnumerationSetting": "value1",
+                "stringsArraySetting": [
+                    "string1",
+                    "string2"
+                ],
+                "integerArraySetting": [
+                    1,
+                    2,
+                    3
+                ],
+                "stringMapSetting": {
+                    "key1": "value1",
+                    "key2": "value2"
+                },
+                "integerMapSetting": {
+                    "key1": 1,
+                    "key2": 2
+                }
+            }
+        },
+        {
+            "type": "desired",
+            "component": "SampleComponent",
+            "object": "desiredArrayObject",
+            "payload": [
+                {
+                    "stringSetting": "string",
+                    "booleanSetting": true,
+                    "integerSetting": 123,
+                    "integerEnumerationSetting": 0,
+                    "stringEnumerationSetting": "value1",
+                    "stringsArraySetting": [
+                        "string1",
+                        "string2"
+                    ],
+                    "integerArraySetting": [
+                        1,
+                        2,
+                        3
+                    ],
+                    "stringMapSetting": {
+                        "key1": "value1",
+                        "key2": "value2"
+                    },
+                    "integerMapSetting": {
+                        "key1": 1,
+                        "key2": 2
+                    }
+                }
+            ]
+        }
+    ]
+}
