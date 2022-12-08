@@ -1,0 +1,104 @@
+{
+    "modules": [
+        "deviceinfo"
+    ],
+    "steps": [
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "osName"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "osVersion"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "cpuType"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "cpuVendorId"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "cpuModel"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "totalMemory"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "freeMemory"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "kernelName"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "kernelRelease"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "kernelVersion"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "productVendor"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "productName"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "productVersion"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "systemCapabilities"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "systemConfiguration"
+        },
+        {
+            "type": "reported",
+            "component": "DeviceInfo",
+            "object": "osConfigVersion"
+        },
+        {
+            "type": "reported",
+            "component": "OsInfo",
+            "object": "osName",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "desired",
+            "component": "DeviceInfo",
+            "object": "osName",
+            "payload": "type",
+            "expect": {
+                "status": 1
+            }
+        }
+    ]
+}

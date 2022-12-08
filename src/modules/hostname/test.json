@@ -1,0 +1,77 @@
+{
+    "modules": [
+        "hostname"
+    ],
+    "setup": "hostname > /tmp/hostname",
+    "teardown": [
+        "hostname `cat /tmp/hostname`",
+        "rm /tmp/hostname"
+    ],
+    "steps": [
+        {
+            "type": "reported",
+            "component": "HostName",
+            "object": "name"
+        },
+        {
+            "type": "reported",
+            "component": "HostName",
+            "object": "hosts"
+        },
+        {
+            "type": "reported",
+            "component": "invalid",
+            "object": "name",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "name",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "HostName",
+            "object": "invalid",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "HostName",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "desired",
+            "component": "HostName",
+            "object": "desiredName",
+            "payload": "test"
+        },
+        {
+            "type": "reported",
+            "component": "HostName",
+            "object": "name",
+            "expect": {
+                "status": 0,
+                "payload": "test"
+            }
+        }
+    ]
+}

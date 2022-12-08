@@ -1,0 +1,69 @@
+{
+    "modules": [
+        "pmc"
+    ],
+    "steps": [
+        {
+            "type": "reported",
+            "component": "PackageManagerConfiguration",
+            "object": "state"
+        },
+        {
+            "type": "reported",
+            "component": "PackageManagerConfiguration",
+            "object": "invalid",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "PackageManagerConfiguration",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "invalid",
+            "object": "state",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "PackageManagerConfiguration",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "state",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "desired",
+            "component": "PackageManagerConfiguration",
+            "object": "desiredState",
+            "payload": -1,
+            "expect": {
+                "status": 22
+            }
+        }
+    ]
+}

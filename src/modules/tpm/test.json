@@ -1,0 +1,62 @@
+{
+    "modules": [
+        "tpm"
+    ],
+    "steps": [
+        {
+            "type": "reported",
+            "component": "Tpm",
+            "object": "tpmStatus"
+        },
+        {
+            "type": "reported",
+            "component": "Tpm",
+            "object": "tpmVersion"
+        },
+        {
+            "type": "reported",
+            "component": "Tpm",
+            "object": "tpmManufacturer"
+        },
+        {
+            "type": "reported",
+            "component": "Tpm",
+            "object": "invalid",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "invalid",
+            "object": "tpmStatus",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "Tpm",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "tpmStatus",
+            "expect": {
+                "status": 22
+            }
+        },
+        {
+            "type": "reported",
+            "component": "",
+            "object": "",
+            "expect": {
+                "status": 22
+            }
+        }
+    ]
+}

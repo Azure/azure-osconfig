@@ -1,0 +1,51 @@
+{
+  "modules": [
+    "adhs"
+  ],
+  "setup": [
+    "mkdir -p /etc/azure-device-health-services/",
+    "touch /etc/azure-device-health-services/config.toml",
+    "cp /etc/azure-device-health-services/config.toml config.toml"
+  ],
+  "teardown": [
+    "cp config.toml /etc/azure-device-health-services/config.toml",
+    "rm -f config.toml"
+  ],
+  "steps": [
+    {
+      "type": "reported",
+      "component": "Adhs",
+      "object": "invalid",
+      "expect": {
+        "status": 22
+      }
+    },
+    {
+      "type": "desired",
+      "component": "Adhs",
+      "object": "desiredOptIn",
+      "payload": 1
+    },
+    {
+      "run": "grep -q 'Permission = \"Required\"' /etc/azure-device-health-services/config.toml"
+    },
+    {
+      "type": "desired",
+      "component": "Adhs",
+      "object": "desiredOptIn",
+      "payload": -1,
+      "expect": {
+        "status": 22
+      }
+    },
+    {
+      "type": "desired",
+      "component": "Adhs",
+      "object": "desiredOptIn",
+      "payload": 3,
+      "expect": {
+        "status": 22
+      }
+    }
+  ]
+}

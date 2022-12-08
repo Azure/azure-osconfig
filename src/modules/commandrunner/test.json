@@ -1,0 +1,175 @@
+{
+  "modules": [
+    "commandrunner"
+  ],
+  "setup": [
+    "if [ -f /etc/osconfig/osconfig_commandrunner.cache ]; then cp /etc/osconfig/osconfig_commandrunner.cache /tmp/commandrunner-cache.cache.bak && rm -f /etc/osconfig/osconfig_commandrunner.cache; fi"
+  ],
+  "teardown": [
+    "rm -rf /etc/osconfig/osconfig_commandrunner.cache 2> /dev/null || true",
+    "cp -r /tmp/osconfig_commandrunner.cache /etc/osconfig/osconfig_commandrunner.cache 2> /dev/null || true"
+  ],
+  "steps": [
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "",
+          "resultCode": 0,
+          "textResult": "",
+          "currentState": 0
+        }
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "payload": {
+        "commandId": "test_1",
+        "arguments": "echo -n test",
+        "timeout": 0,
+        "singleLineTextResult": true,
+        "action": 3
+      }
+    },
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "delay": 1,
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "test_1",
+          "resultCode": 0,
+          "textResult": "test",
+          "currentState": 2
+        }
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "payload": {
+        "commandId": "test_2",
+        "arguments": "sleep 10s && echo -n test",
+        "timeout": 0,
+        "singleLineTextResult": true,
+        "action": 3
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "payload": {
+        "commandId": "test_2",
+        "action": 5
+      }
+    },
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "delay": 1,
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "test_2",
+          "resultCode": 125,
+          "textResult": "",
+          "currentState": 5
+        }
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "delay": 2,
+      "payload": {
+        "commandId": "test_3",
+        "arguments": "sleep 100s",
+        "timeout": 1,
+        "singleLineTextResult": true,
+        "action": 3
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "delay": 5,
+      "payload": {
+        "commandId": "test_3",
+        "action": 4
+      }
+    },
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "delay": 1,
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "test_3",
+          "resultCode": 62,
+          "textResult": "",
+          "currentState": 4
+        }
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "payload": {
+        "commandId": "test_2",
+        "action": 4
+      }
+    },
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "test_2",
+          "resultCode": 125,
+          "textResult": "",
+          "currentState": 5
+        }
+      }
+    },
+    {
+      "type": "desired",
+      "component": "CommandRunner",
+      "object": "commandArguments",
+      "payload": {
+        "commandId": "test_1",
+        "action": 4
+      }
+    },
+    {
+      "type": "reported",
+      "component": "CommandRunner",
+      "object": "commandStatus",
+      "expect": {
+        "status": 0,
+        "payload": {
+          "commandId": "test_1",
+          "resultCode": 0,
+          "textResult": "test",
+          "currentState": 2
+        }
+      }
+    }
+  ]
+}
