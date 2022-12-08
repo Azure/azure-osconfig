@@ -43,13 +43,6 @@ function(add_module directory)
     add_custom_target(${MODULE}_so ALL
         DEPENDS ${TARGET_OUTPUT_COPY}
     )
-
-    # Copy the module 'test.json' files to build/modules/bin for convenience when using moduletest
-    set(TEST_JSON ${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}/test.json)
-
-    if (EXISTS ${TEST_JSON})
-        configure_file(${TEST_JSON} ${CMAKE_BINARY_DIR}/test/${MODULE}.json COPYONLY)
-    endif()
 endfunction()
 
 add_module(adhs)

@@ -10,12 +10,12 @@ The `moduletest` command line tool is used to *execute* a test definition.
 
 > For convenience, module binaries and test definitions are collected under the `build/` directory when building `azure-osconfig`:
 > - Shared-object binaries are placed under `build/modules/bin`
-> - Test definitions are placed under and renamed to match their module respective shared-object binary `build/test/<module>.json`
+> - Test definitions are placed under `build/test`
 
 ```bash
 $ moduletest <file>... [--bin <path>] [--verbose] [--help]
 
-# Example
+# Examples
 $ moduletest path/to/module/test.json
 $ moduletest path/to/module/test.json --bin /usr/lib/osconfig
 $ moduletest path/to/module/test1.json path/to/module/test2.json
