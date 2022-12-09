@@ -37,21 +37,21 @@ Test steps are used to set desired properties and get reported properties of a m
 ```json
 [
   {
-    "Type": "Desired",
-    "Component": "WiFi",
+    "ObjectType": "Desired",
+    "ComponentName": "WiFi",
     "Object": "interface",
     "Payload": {
       "name": "my-network-interface",
     },
-    "Status": 0,
+    "ExpectedResult": 0,
     "Delay": 1
   },
   {
-    "Type": "Reported",
-    "Component": "WiFi",
+    "ObjectType": "Reported",
+    "ComponentName": "WiFi",
     "Object": "interface",
     "Json": "{\"name\": \"my-network-interface\"}",
-    "Status": 0,
+    "ExpectedResult": 0,
     "Delay": 1
   }
 ]
@@ -73,7 +73,7 @@ Command steps are used to execute a command as part of the test suite. Success o
   },
   {
     "RunCommand": "exit 123",
-    "Status": 123
+    "ExpectedResult": 123
   }
 ]
 ```

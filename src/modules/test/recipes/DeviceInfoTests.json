@@ -4,97 +4,97 @@
     "Module": "deviceinfo.so"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "osName"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "osVersion"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "cpuType"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "cpuVendorId"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "cpuModel"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "totalMemory"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "freeMemory"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "kernelName"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "kernelRelease"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "kernelVersion"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "productVendor"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "productName"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "productVersion"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "systemCapabilities"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "systemConfiguration"
   },
   {
-    "Type": "Reported",
-    "Component": "DeviceInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "DeviceInfo",
     "Object": "osConfigVersion"
   },
   {
-    "Type": "Reported",
-    "Component": "OsInfo",
+    "ObjectType": "Reported",
+    "ComponentName": "OsInfo",
     "Object": "osName",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "DeviceInfo",
+    "ObjectType": "Desired",
+    "ComponentName": "DeviceInfo",
     "Object": "osName",
     "Payload": "type",
-    "Status": 1
+    "ExpectedResult": 1
   },
   {
     "Action": "UnloadModule"

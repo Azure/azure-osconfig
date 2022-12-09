@@ -7,174 +7,174 @@
     "Module": "configuration.so"
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "notImplemented",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "notImplemented",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredRefreshInterval",
     "Payload": 5
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "refreshInterval",
     "Payload": 5
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredRefreshInterval",
     "Payload": 30
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "refreshInterval",
     "Payload": 30
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredLocalManagementEnabled",
     "Payload": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredLocalManagementEnabled",
     "Payload": true
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "localManagementEnabled",
     "Payload": true
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredLocalManagementEnabled",
     "Payload": false
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "localManagementEnabled",
     "Payload": false
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredFullLoggingEnabled",
     "Payload": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredFullLoggingEnabled",
     "Payload": true
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "fullLoggingEnabled",
     "Payload": true
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredFullLoggingEnabled",
     "Payload": false
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "fullLoggingEnabled",
     "Payload": false
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredCommandLoggingEnabled",
     "Payload": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredCommandLoggingEnabled",
     "Payload": true
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "commandLoggingEnabled",
     "Payload": true
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredCommandLoggingEnabled",
     "Payload": false
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "commandLoggingEnabled",
     "Payload": false
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredIotHubProtocol",
     "Payload": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredIotHubProtocol",
     "Payload": "auto"
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "iotHubProtocol",
     "Payload": "auto"
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredIotHubProtocol",
     "Payload": "mqtt"
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "iotHubProtocol",
     "Payload": "mqtt"
   },
   {
-    "Type": "Desired",
-    "Component": "Configuration",
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
     "Object": "desiredIotHubProtocol",
     "Payload": "mqttWebSocket"
   },
   {
-    "Type": "Reported",
-    "Component": "Configuration",
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
     "Object": "iotHubProtocol",
     "Payload": "mqttWebSocket"
   },

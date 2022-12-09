@@ -4,51 +4,51 @@
     "Module": "sample.so"
   },
   {
-    "Type": "Reported",
-    "Component": "SampleComponent",
+    "ObjectType": "Reported",
+    "ComponentName": "SampleComponent",
     "Object": "reportedStringObject"
   },
   {
-    "Type": "Reported",
-    "Component": "SampleComponent",
+    "ObjectType": "Reported",
+    "ComponentName": "SampleComponent",
     "Object": "reportedIntegerObject"
   },
   {
-    "Type": "Reported",
-    "Component": "SampleComponent",
+    "ObjectType": "Reported",
+    "ComponentName": "SampleComponent",
     "Object": "reportedBooleanObject"
   },
   {
-    "Type": "Reported",
-    "Component": "SampleComponent",
+    "ObjectType": "Reported",
+    "ComponentName": "SampleComponent",
     "Object": "reportedObject"
   },
   {
-    "Type": "Reported",
-    "Component": "SampleComponent",
+    "ObjectType": "Reported",
+    "ComponentName": "SampleComponent",
     "Object": "reportedArrayObject"
   },
   {
-    "Type": "Desired",
-    "Component": "SampleComponent",
+    "ObjectType": "Desired",
+    "ComponentName": "SampleComponent",
     "Object": "desiredStringObject",
     "Payload": "string"
   },
   {
-    "Type": "Desired",
-    "Component": "SampleComponent",
+    "ObjectType": "Desired",
+    "ComponentName": "SampleComponent",
     "Object": "desiredIntegerObject",
     "Payload": 123
   },
   {
-    "Type": "Desired",
-    "Component": "SampleComponent",
+    "ObjectType": "Desired",
+    "ComponentName": "SampleComponent",
     "Object": "desiredBooleanObject",
     "Payload": true
   },
   {
-    "Type": "Desired",
-    "Component": "SampleComponent",
+    "ObjectType": "Desired",
+    "ComponentName": "SampleComponent",
     "Object": "desiredObject",
     "Payload": {
       "stringSetting": "string",
@@ -76,8 +76,8 @@
     }
   },
   {
-    "Type": "Desired",
-    "Component": "SampleComponent",
+    "ObjectType": "Desired",
+    "ComponentName": "SampleComponent",
     "Object": "desiredArrayObject",
     "Payload": [
       {

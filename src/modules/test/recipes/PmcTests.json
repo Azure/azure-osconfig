@@ -4,52 +4,52 @@
     "Module": "pmc.so"
   },
   {
-    "Type": "Reported",
-    "Component": "PackageManagerConfiguration",
+    "ObjectType": "Reported",
+    "ComponentName": "PackageManagerConfiguration",
     "Object": "state"
   },
   {
-    "Type": "Reported",
-    "Component": "PackageManagerConfiguration",
+    "ObjectType": "Reported",
+    "ComponentName": "PackageManagerConfiguration",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "PackageManagerConfiguration",
+    "ObjectType": "Reported",
+    "ComponentName": "PackageManagerConfiguration",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "invalid",
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "Object": "state",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "PackageManagerConfiguration",
+    "ObjectType": "Reported",
+    "ComponentName": "PackageManagerConfiguration",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "state",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "PackageManagerConfiguration",
+    "ObjectType": "Desired",
+    "ComponentName": "PackageManagerConfiguration",
     "Object": "desiredState",
     "Payload": -1,
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
     "Action": "UnloadModule"

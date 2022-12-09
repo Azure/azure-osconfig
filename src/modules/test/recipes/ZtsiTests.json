@@ -4,49 +4,49 @@
     "Module": "ztsi.so"
   },
   {
-    "Type": "Reported",
-    "Component": "Ztsi",
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
     "Object": "maxScheduledAttestationsPerDay"
   },
   {
-    "Type": "Reported",
-    "Component": "Ztsi",
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
     "Object": "maxManualAttestationsPerDay"
   },
   {
-    "Type": "Reported",
-    "Component": "Ztsi",
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
     "Object": "enabled"
   },
   {
-    "Type": "Reported",
-    "Component": "Ztsi",
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "invalid",
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "Object": "enabled",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "Ztsi",
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "enabled",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
     "Action": "UnloadModule"

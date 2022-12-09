@@ -4,56 +4,56 @@
     "Module": "hostname.so"
   },
   {
-    "Type": "Reported",
-    "Component": "HostName",
+    "ObjectType": "Reported",
+    "ComponentName": "HostName",
     "Object": "name"
   },
   {
-    "Type": "Reported",
-    "Component": "HostName",
+    "ObjectType": "Reported",
+    "ComponentName": "HostName",
     "Object": "hosts"
   },
   {
-    "Type": "Reported",
-    "Component": "invalid",
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "Object": "name",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "name",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "HostName",
+    "ObjectType": "Reported",
+    "ComponentName": "HostName",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "HostName",
+    "ObjectType": "Reported",
+    "ComponentName": "HostName",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "HostName",
+    "ObjectType": "Desired",
+    "ComponentName": "HostName",
     "Object": "desiredName",
     "Payload": "test"
   },
   {
-    "Type": "Reported",
-    "Component": "HostName",
+    "ObjectType": "Reported",
+    "ComponentName": "HostName",
     "Object": "name",
-    "Status": 0,
+    "ExpectedResult": 0,
     "Payload": "test"
   },
   {

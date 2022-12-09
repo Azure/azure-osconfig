@@ -1,47 +1,47 @@
 [
   {
-    "Type": "Reported",
-    "Component": "Tpm",
+    "ObjectType": "Reported",
+    "ComponentName": "Tpm",
     "Object": "tpmStatus"
   },
   {
-    "Type": "Reported",
-    "Component": "Tpm",
+    "ObjectType": "Reported",
+    "ComponentName": "Tpm",
     "Object": "tpmVersion"
   },
   {
-    "Type": "Reported",
-    "Component": "Tpm",
+    "ObjectType": "Reported",
+    "ComponentName": "Tpm",
     "Object": "tpmManufacturer"
   },
   {
-    "Type": "Reported",
-    "Component": "Tpm",
+    "ObjectType": "Reported",
+    "ComponentName": "Tpm",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "invalid",
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "Object": "tpmStatus",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "Tpm",
+    "ObjectType": "Reported",
+    "ComponentName": "Tpm",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "tpmStatus",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   }
 ]

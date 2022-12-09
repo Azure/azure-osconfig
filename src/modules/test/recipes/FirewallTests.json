@@ -4,45 +4,45 @@
         "Module": "firewall.so"
     },
     {
-        "Type": "Reported",
-        "Component": "invalid",
+        "ObjectType": "Reported",
+        "ComponentName": "invalid",
         "Object": "state",
-        "Status": 22
+        "ExpectedResult": 22
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "invalid",
-        "Status": 22
+        "ExpectedResult": 22
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "state"
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "fingerprint"
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "defaultPolicies"
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "configurationStatus"
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "configurationStatusDetail"
     },
     {
-        "Type": "Desired",
-        "Component": "Firewall",
+        "ObjectType": "Desired",
+        "ComponentName": "Firewall",
         "Object": "desiredDefaultPolicies",
         "Payload": [
             {
@@ -56,8 +56,8 @@
         ]
     },
     {
-        "Type": "Desired",
-        "Component": "Firewall",
+        "ObjectType": "Desired",
+        "ComponentName": "Firewall",
         "Object": "desiredDefaultPolicies",
         "Payload": [
             {
@@ -65,11 +65,11 @@
                 "direction": "invalid"
             }
         ],
-        "Status": 22
+        "ExpectedResult": 22
     },
     {
-        "Type": "Desired",
-        "Component": "Firewall",
+        "ObjectType": "Desired",
+        "ComponentName": "Firewall",
         "Object": "desiredRules",
         "Payload": [
             {
@@ -83,11 +83,11 @@
         ]
     },
     {
-        "Type": "Reported",
-        "Component": "Firewall",
+        "ObjectType": "Reported",
+        "ComponentName": "Firewall",
         "Object": "configurationStatus",
         "Payload": "success",
-        "Status": 0
+        "ExpectedResult": 0
     },
     {
         "Action": "UnloadModule"

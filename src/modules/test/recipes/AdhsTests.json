@@ -13,14 +13,14 @@
     "Module": "adhs.so"
   },
   {
-    "Type": "Reported",
-    "Component": "Adhs",
+    "ObjectType": "Reported",
+    "ComponentName": "Adhs",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Adhs",
+    "ObjectType": "Desired",
+    "ComponentName": "Adhs",
     "Object": "desiredOptIn",
     "Payload": 1
   },
@@ -28,18 +28,18 @@
     "RunCommand": "grep -q 'Permission = \"Required\"' /etc/azure-device-health-services/config.toml"
   },
   {
-    "Type": "Desired",
-    "Component": "Adhs",
+    "ObjectType": "Desired",
+    "ComponentName": "Adhs",
     "Object": "desiredOptIn",
     "Payload": -1,
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "Adhs",
+    "ObjectType": "Desired",
+    "ComponentName": "Adhs",
     "Object": "desiredOptIn",
     "Payload": 3,
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
     "RunCommand": "cp config.toml /etc/azure-device-health-services/config.toml"

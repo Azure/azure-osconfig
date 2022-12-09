@@ -14,14 +14,14 @@
 #define RECIPE_UNLOAD_MODULE "UnloadModule"
 #define RECIPE_MODULE "Module"
 
-#define RECIPE_TYPE "Type"
+#define RECIPE_TYPE "ObjectType"
 #define RECIPE_REPORTED "Reported"
 #define RECIPE_DESIRED "Desired"
-#define RECIPE_COMPONENT "Component"
+#define RECIPE_COMPONENT "ComponentName"
 #define RECIPE_OBJECT "Object"
 #define RECIPE_PAYLOAD "Payload"
 #define RECIPE_JSON "Json"
-#define RECIPE_STATUS "Status"
+#define RECIPE_STATUS "ExpectedResult"
 #define RECIPE_DELAY "Delay"
 
 #define RECIPE_RUN_COMMAND "RunCommand"
@@ -189,7 +189,7 @@ bool ParseCommandStep(const JSON_Object* object, COMMAND_STEP* command)
         parseError = true;
     }
 
-    command->status = json_object_get_number(object, "Status");
+    command->status = json_object_get_number(object, "ExpectedResult");
 
     return !parseError;
 }
@@ -403,7 +403,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->status != mmiStatus)
         {
-            LOG_ERROR("Assertion failed, expected status '%d', actual '%d'", test->status, mmiStatus);
+            LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
             result = -1;
         }
     }
@@ -419,7 +419,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->status != mmiStatus)
         {
-            LOG_ERROR("Assertion failed, expected status '%d', actual '%d'", test->status, mmiStatus);
+            LOG_ERROR("Assertion failed, expected result '%d', actual '%d'", test->status, mmiStatus);
             result = -1;
         }
     }

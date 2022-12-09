@@ -7,34 +7,34 @@
     "Module": "deliveryoptimization.so"
   },
   {
-    "Type": "Reported",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
     "Object": "cacheHost"
   },
   {
-    "Type": "Reported",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
     "Object": "cacheHostSource"
   },
   {
-    "Type": "Reported",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
     "Object": "cacheHostFallback"
   },
   {
-    "Type": "Reported",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
     "Object": "percentageDownloadThrottle"
   },
   {
-    "Type": "Reported",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Reported",
+    "ComponentName": "DeliveryOptimization",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
     "Object": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "cacheHost": "10.0.0.0:80,host.com:8080",
@@ -59,22 +59,22 @@
     "RunCommand": "grep -q '\"DOPercentageDownloadThrottle\": 3' /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "Type": "Desired",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
     "Object": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "cacheHostSource": -1
     },
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Desired",
-    "Component": "DeliveryOptimization",
+    "ObjectType": "Desired",
+    "ComponentName": "DeliveryOptimization",
     "Object": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "percentageDownloadThrottle": -1
     },
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
     "Action": "UnloadModule",

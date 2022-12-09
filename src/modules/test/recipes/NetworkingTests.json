@@ -4,39 +4,39 @@
     "Module": "networking.so"
   },
   {
-    "Type": "Reported",
-    "Component": "Networking",
+    "ObjectType": "Reported",
+    "ComponentName": "Networking",
     "Object": "networkConfiguration"
   },
   {
-    "Type": "Reported",
-    "Component": "Networking",
+    "ObjectType": "Reported",
+    "ComponentName": "Networking",
     "Object": "invalid",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "invalid",
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "Object": "networkConfiguration",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "Networking",
+    "ObjectType": "Reported",
+    "ComponentName": "Networking",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "networkConfiguration",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
-    "Type": "Reported",
-    "Component": "",
+    "ObjectType": "Reported",
+    "ComponentName": "",
     "Object": "",
-    "Status": 22
+    "ExpectedResult": 22
   },
   {
     "Action": "UnloadModule"
