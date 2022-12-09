@@ -112,6 +112,8 @@ bool ParseTestStep(const JSON_Object* object, TEST_STEP* test)
 {
     bool parseError = false;
     const char* type = NULL;
+    const char* componentName = NULL;
+    const char* objectName = NULL;
     JSON_Value* payload = NULL;
     const char* json = NULL;
 
@@ -135,15 +137,25 @@ bool ParseTestStep(const JSON_Object* object, TEST_STEP* test)
             parseError = true;
         }
 
-        if (NULL == (test->component = strdup(json_object_get_string(object, RECIPE_COMPONENT))))
+        if (NULL == (componentName = json_object_get_string(object, RECIPE_COMPONENT)))
         {
             LOG_ERROR("'%s' is required for '%s' test step", RECIPE_COMPONENT, type);
             parseError = true;
         }
-
-        if (NULL == (test->object = strdup(json_object_get_string(object, RECIPE_OBJECT))))
+        else if (NULL == (test->component = strdup(componentName)))
         {
-            LOG_ERROR("'%s' is required for '%s' test", RECIPE_OBJECT, type);
+            LOG_ERROR("Failed to copy '%s' for '%s' test step", RECIPE_COMPONENT, type);
+            parseError = true;
+        }
+
+        if (NULL == (objectName = json_object_get_string(object, RECIPE_OBJECT)))
+        {
+            LOG_ERROR("'%s' is required for '%s' test step", RECIPE_OBJECT, type);
+            parseError = true;
+        }
+        else if (NULL == (test->object = strdup(objectName)))
+        {
+            LOG_ERROR("Failed to copy '%s' for '%s' test step", RECIPE_OBJECT, type);
             parseError = true;
         }
 
@@ -198,6 +210,7 @@ bool ParseModuleStep(const JSON_Object* object, MODULE_STEP* module)
 {
     bool parseError = false;
     const char* action = NULL;
+    const char* name = NULL;
 
     if (NULL == (action = json_object_get_string(object, RECIPE_ACTION)))
     {
@@ -223,9 +236,14 @@ bool ParseModuleStep(const JSON_Object* object, MODULE_STEP* module)
 
     if ((!parseError) && (module->action == LOAD))
     {
-        if (NULL == (module->name = strdup(json_object_get_string(object, RECIPE_MODULE))))
+        if (NULL == (name = json_object_get_string(object, RECIPE_MODULE)))
         {
-            LOG_ERROR("'%s' is required to load a module", RECIPE_MODULE);
+            LOG_ERROR("Missing '%s' from module step", RECIPE_MODULE);
+            parseError = true;
+        }
+        else if (NULL == (module->name = strdup(name)))
+        {
+            LOG_ERROR("Failed to copy '%s' from module step", RECIPE_MODULE);
             parseError = true;
         }
     }
