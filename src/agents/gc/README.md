@@ -70,7 +70,7 @@ The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be upload
 
 Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OSConfig_Proto_Policy.zip.
 
-> **Warning** 
+> **Important** 
 > After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
@@ -115,6 +115,9 @@ The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this
 
 Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
+> **Important** 
+> Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (because of a new artifacts ZIP package, for example).
+
 #### 7.1.2. Creating the new policy
 
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
@@ -131,8 +134,8 @@ Then save.
 
 Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy: 
 1. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). 
-2. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
-3. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
+1. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
+1. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
 
 #### 7.1.4. Creating a remediation task
 
@@ -146,7 +149,7 @@ To delete a policy, delete it first from Azure Portal | Policy | Assignments, th
 
 ### 7.2. [If the policy already exists] Editing the existing policy definition
 
-If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the package URL and the file hash of the package. 
+If there is a new artifacts ZIP package, the policy definition can be manually updated for it. We need the existing policy definition, the new package URL and the new file hash of the package. 
 
 On the device, obtain the hash with:
 
@@ -155,11 +158,13 @@ sudo pwsh
 get-filehash <local path to package>.zip
 ```
 
-Keep the existing policy assignment and change its definition: 
+Then, keeping as-is the existing policy assignment, change the policy definition as following: 
 1. Go to the Azure Portal | Policy | Definitions, select the policy and edit. 
-2. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. 
-3. Carefully replace all with the new token URL and hash. Paste in the new  policy definition contents and save.
-4. If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
+1. Use the policy definition JSON that was used to generate the policy with or if that is no longer available, copy the current policy definition JSON from the Azure Portal.
+1. There will be several instances of the URL (`"contentUri":`) and the hash (`"contentHash":`) in the policy defition JSON. Carefully replace all with the new token URL and hash. 
+1. If the policy definition JSON was obtained from current policy definition in Azure Portal, manually remove the instances of `"createdBy":`, `"createdOn":`, `"updatedBy":`, `"updatedOn":`, plus the root instances of `"type":`, `"name":` and the whole block of `"systemData":`.
+1. Once the policy definition JSON is updated, copy its contents and paste that as the new  policy definition in Azure Portal, and save.
+1. If necessary, create a new remediation task. Then wait for the updated policy to be applied to all Arc devices in the designated group.
 
 ### 7.3. Monitoring the policy activity from the device side
 

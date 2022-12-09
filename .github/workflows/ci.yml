@@ -1,18 +1,15 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - src/**
   pull_request:
     paths:
       - src/**
+      - .github/workflows/ci.yml
 
 env:
   BUILD_TYPE: Release
   MOUNT: /azure-osconfig
+  REGISTRY: ghcr.io
 
 jobs:
   unit-test:
@@ -21,10 +18,15 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
-        variant: [{arch: arm, platform: linux/arm/v7}, {arch: arm64, platform: linux/arm64/v8}, {arch: amd64, platform: linux/amd64}]
+        variant:
+          [
+            { arch: arm, platform: linux/arm/v7 },
+            { arch: arm64, platform: linux/arm64/v8 },
+            { arch: amd64, platform: linux/amd64 },
+          ]
         exclude:
           - os: ubuntu20.04
-            variant: {arch: arm, platform: linux/arm/v7}
+            variant: { arch: arm, platform: linux/arm/v7 }
 
     steps:
       - uses: actions/checkout@v3
@@ -32,17 +34,21 @@ jobs:
           submodules: recursive
           clean: true
 
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       - name: Run container
         id: container
         uses: ./.github/actions/container-run
         with:
-          username: ${{ secrets.ACR_CLIENT_ID }}
-          password: ${{ secrets.ACR_CLIENT_SECRET }}
-          os: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
+          registry: ${{ env.REGISTRY }}
+          container: azure/azure-osconfig/${{ matrix.os }}-${{ matrix.variant.arch }}
           platform: ${{ matrix.variant.platform }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          tag: "289651"
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -98,10 +104,7 @@ jobs:
     name: Code coverage
     runs-on: ubuntu-latest
     container:
-      image: osconfig.azurecr.io/ubuntu20.04-dev-amd64:289651
-      credentials:
-        username: ${{ secrets.ACR_CLIENT_ID }}
-        password: ${{ secrets.ACR_CLIENT_SECRET }}
+      image: ghcr.io/azure/azure-osconfig/ubuntu20.04-amd64:latest
     steps:
       - uses: actions/checkout@v3
 
@@ -109,7 +112,6 @@ jobs:
         run: |
           cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
           cmake --build ./build --config Debug
-
       - name: Run ctest
         working-directory: ./build
         run: ctest
@@ -127,7 +129,7 @@ jobs:
           hide_complexity: true
           output: both
           badge: true
-          thresholds: '60 80'
+          thresholds: "60 80"
 
       - name: Create coverage report
         uses: ./.github/actions/check-run
