@@ -6,44 +6,44 @@
     {
         "ObjectType": "Reported",
         "ComponentName": "invalid",
-        "Object": "state",
+        "ObjectName": "state",
         "ExpectedResult": 22
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "invalid",
+        "ObjectName": "invalid",
         "ExpectedResult": 22
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "state"
+        "ObjectName": "state"
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "fingerprint"
+        "ObjectName": "fingerprint"
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "defaultPolicies"
+        "ObjectName": "defaultPolicies"
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "configurationStatus"
+        "ObjectName": "configurationStatus"
     },
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "configurationStatusDetail"
+        "ObjectName": "configurationStatusDetail"
     },
     {
         "ObjectType": "Desired",
         "ComponentName": "Firewall",
-        "Object": "desiredDefaultPolicies",
+        "ObjectName": "desiredDefaultPolicies",
         "Payload": [
             {
                 "action": "accept",
@@ -58,7 +58,7 @@
     {
         "ObjectType": "Desired",
         "ComponentName": "Firewall",
-        "Object": "desiredDefaultPolicies",
+        "ObjectName": "desiredDefaultPolicies",
         "Payload": [
             {
                 "action": "invalid",
@@ -70,7 +70,7 @@
     {
         "ObjectType": "Desired",
         "ComponentName": "Firewall",
-        "Object": "desiredRules",
+        "ObjectName": "desiredRules",
         "Payload": [
             {
                 "desiredState": "present",
@@ -85,7 +85,7 @@
     {
         "ObjectType": "Reported",
         "ComponentName": "Firewall",
-        "Object": "configurationStatus",
+        "ObjectName": "configurationStatus",
         "Payload": "success",
         "ExpectedResult": 0
     },

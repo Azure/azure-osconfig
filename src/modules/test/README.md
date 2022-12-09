@@ -39,7 +39,7 @@ Test steps are used to set desired properties and get reported properties of a m
   {
     "ObjectType": "Desired",
     "ComponentName": "WiFi",
-    "Object": "interface",
+    "ObjectName": "interface",
     "Payload": {
       "name": "my-network-interface",
     },
@@ -49,7 +49,7 @@ Test steps are used to set desired properties and get reported properties of a m
   {
     "ObjectType": "Reported",
     "ComponentName": "WiFi",
-    "Object": "interface",
+    "ObjectName": "interface",
     "Json": "{\"name\": \"my-network-interface\"}",
     "ExpectedResult": 0,
     "Delay": 1

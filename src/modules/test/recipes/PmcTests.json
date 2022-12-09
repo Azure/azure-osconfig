@@ -6,48 +6,48 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "Object": "state"
+    "ObjectName": "state"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "invalid",
-    "Object": "state",
+    "ObjectName": "state",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "state",
+    "ObjectName": "state",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "PackageManagerConfiguration",
-    "Object": "desiredState",
+    "ObjectName": "desiredState",
     "Payload": -1,
     "ExpectedResult": 22
   },

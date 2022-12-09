@@ -9,7 +9,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "",
@@ -21,7 +21,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Payload": {
       "commandId": "test_1",
       "arguments": "echo -n test",
@@ -33,7 +33,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "Delay": 1,
     "ExpectedResult": 0,
     "Payload": {
@@ -46,7 +46,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Payload": {
       "commandId": "test_2",
       "arguments": "sleep 10s && echo -n test",
@@ -58,7 +58,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Payload": {
       "commandId": "test_2",
       "action": 5
@@ -67,7 +67,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "Delay": 1,
     "ExpectedResult": 0,
     "Payload": {
@@ -80,7 +80,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Delay": 2,
     "Payload": {
       "commandId": "test_3",
@@ -93,7 +93,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Delay": 5,
     "Payload": {
       "commandId": "test_3",
@@ -103,7 +103,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "Delay": 1,
     "ExpectedResult": 0,
     "Payload": {
@@ -116,7 +116,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Payload": {
       "commandId": "test_2",
       "action": 4
@@ -125,7 +125,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "test_2",
@@ -137,7 +137,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
-    "Object": "commandArguments",
+    "ObjectName": "commandArguments",
     "Payload": {
       "commandId": "test_1",
       "action": 4
@@ -146,7 +146,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
-    "Object": "commandStatus",
+    "ObjectName": "commandStatus",
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "test_1",

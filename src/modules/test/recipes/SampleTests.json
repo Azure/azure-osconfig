@@ -6,50 +6,50 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "Object": "reportedStringObject"
+    "ObjectName": "reportedStringObject"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "Object": "reportedIntegerObject"
+    "ObjectName": "reportedIntegerObject"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "Object": "reportedBooleanObject"
+    "ObjectName": "reportedBooleanObject"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "Object": "reportedObject"
+    "ObjectName": "reportedObject"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "Object": "reportedArrayObject"
+    "ObjectName": "reportedArrayObject"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
-    "Object": "desiredStringObject",
+    "ObjectName": "desiredStringObject",
     "Payload": "string"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
-    "Object": "desiredIntegerObject",
+    "ObjectName": "desiredIntegerObject",
     "Payload": 123
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
-    "Object": "desiredBooleanObject",
+    "ObjectName": "desiredBooleanObject",
     "Payload": true
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
-    "Object": "desiredObject",
+    "ObjectName": "desiredObject",
     "Payload": {
       "stringSetting": "string",
       "booleanSetting": true,
@@ -78,7 +78,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
-    "Object": "desiredArrayObject",
+    "ObjectName": "desiredArrayObject",
     "Payload": [
       {
         "stringSetting": "string",

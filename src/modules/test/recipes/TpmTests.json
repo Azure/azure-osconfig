@@ -2,46 +2,46 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "Tpm",
-    "Object": "tpmStatus"
+    "ObjectName": "tpmStatus"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Tpm",
-    "Object": "tpmVersion"
+    "ObjectName": "tpmVersion"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Tpm",
-    "Object": "tpmManufacturer"
+    "ObjectName": "tpmManufacturer"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Tpm",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "invalid",
-    "Object": "tpmStatus",
+    "ObjectName": "tpmStatus",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Tpm",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "tpmStatus",
+    "ObjectName": "tpmStatus",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   }
 ]

@@ -6,93 +6,93 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "osName"
+    "ObjectName": "osName"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "osVersion"
+    "ObjectName": "osVersion"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "cpuType"
+    "ObjectName": "cpuType"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "cpuVendorId"
+    "ObjectName": "cpuVendorId"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "cpuModel"
+    "ObjectName": "cpuModel"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "totalMemory"
+    "ObjectName": "totalMemory"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "freeMemory"
+    "ObjectName": "freeMemory"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "kernelName"
+    "ObjectName": "kernelName"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "kernelRelease"
+    "ObjectName": "kernelRelease"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "kernelVersion"
+    "ObjectName": "kernelVersion"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "productVendor"
+    "ObjectName": "productVendor"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "productName"
+    "ObjectName": "productName"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "productVersion"
+    "ObjectName": "productVersion"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "systemCapabilities"
+    "ObjectName": "systemCapabilities"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "systemConfiguration"
+    "ObjectName": "systemConfiguration"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "Object": "osConfigVersion"
+    "ObjectName": "osConfigVersion"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "OsInfo",
-    "Object": "osName",
+    "ObjectName": "osName",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "DeviceInfo",
-    "Object": "osName",
+    "ObjectName": "osName",
     "Payload": "type",
     "ExpectedResult": 1
   },

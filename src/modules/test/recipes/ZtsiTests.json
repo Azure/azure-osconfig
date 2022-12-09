@@ -6,46 +6,46 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "Object": "maxScheduledAttestationsPerDay"
+    "ObjectName": "maxScheduledAttestationsPerDay"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "Object": "maxManualAttestationsPerDay"
+    "ObjectName": "maxManualAttestationsPerDay"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "Object": "enabled"
+    "ObjectName": "enabled"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "invalid",
-    "Object": "enabled",
+    "ObjectName": "enabled",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "enabled",
+    "ObjectName": "enabled",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {

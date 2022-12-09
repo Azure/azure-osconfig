@@ -6,36 +6,36 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "Networking",
-    "Object": "networkConfiguration"
+    "ObjectName": "networkConfiguration"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Networking",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "invalid",
-    "Object": "networkConfiguration",
+    "ObjectName": "networkConfiguration",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "Networking",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "networkConfiguration",
+    "ObjectName": "networkConfiguration",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {

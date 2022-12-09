@@ -6,53 +6,53 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "HostName",
-    "Object": "name"
+    "ObjectName": "name"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "HostName",
-    "Object": "hosts"
+    "ObjectName": "hosts"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "invalid",
-    "Object": "name",
+    "ObjectName": "name",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "name",
+    "ObjectName": "name",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "HostName",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "HostName",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "",
-    "Object": "",
+    "ObjectName": "",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "HostName",
-    "Object": "desiredName",
+    "ObjectName": "desiredName",
     "Payload": "test"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "HostName",
-    "Object": "name",
+    "ObjectName": "name",
     "ExpectedResult": 0,
     "Payload": "test"
   },

@@ -18,7 +18,7 @@
 #define RECIPE_REPORTED "Reported"
 #define RECIPE_DESIRED "Desired"
 #define RECIPE_COMPONENT "ComponentName"
-#define RECIPE_OBJECT "Object"
+#define RECIPE_OBJECT "ObjectName"
 #define RECIPE_PAYLOAD "Payload"
 #define RECIPE_JSON "Json"
 #define RECIPE_STATUS "ExpectedResult"

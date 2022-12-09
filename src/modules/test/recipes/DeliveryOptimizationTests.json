@@ -9,33 +9,33 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "Object": "cacheHost"
+    "ObjectName": "cacheHost"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "Object": "cacheHostSource"
+    "ObjectName": "cacheHostSource"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "Object": "cacheHostFallback"
+    "ObjectName": "cacheHostFallback"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "Object": "percentageDownloadThrottle"
+    "ObjectName": "percentageDownloadThrottle"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "Object": "invalid",
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
-    "Object": "desiredDeliveryOptimizationPolicies",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "cacheHost": "10.0.0.0:80,host.com:8080",
       "cacheHostSource": 1,
@@ -61,7 +61,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
-    "Object": "desiredDeliveryOptimizationPolicies",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "cacheHostSource": -1
     },
@@ -70,7 +70,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
-    "Object": "desiredDeliveryOptimizationPolicies",
+    "ObjectName": "desiredDeliveryOptimizationPolicies",
     "Payload": {
       "percentageDownloadThrottle": -1
     },
