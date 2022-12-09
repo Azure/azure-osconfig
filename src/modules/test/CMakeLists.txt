@@ -23,11 +23,3 @@ add_custom_command(TARGET moduletest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:moduletest> ${CMAKE_BINARY_DIR}/moduletest
     DEPENDS $<TARGET_FILE:moduletest>
 )
-
-# Copy all the json files under `definitions` to build/test for convenience when using moduletest
-file(GLOB_RECURSE JSON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/definitions/*.json)
-
-foreach(JSON_FILE ${JSON_FILES})
-    message(${JSON_FILE})
-    file(COPY ${JSON_FILE} DESTINATION ${CMAKE_BINARY_DIR}/tests)
-endforeach()

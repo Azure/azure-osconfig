@@ -31,6 +31,11 @@
 
 void FreeModuleInfo(MODULE_INFO* info)
 {
+    if (NULL == info)
+    {
+        return;
+    }
+
     FREE_MEMORY(info->name);
     FREE_MEMORY(info->description);
     FREE_MEMORY(info->manufacturer);
@@ -52,22 +57,6 @@ void FreeModuleInfo(MODULE_INFO* info)
     }
 
     free(info);
-
-}
-
-void FreeModule(MANAGEMENT_MODULE* module)
-{
-    if (NULL != module)
-    {
-        FREE_MEMORY(module->name);
-
-        if (NULL != module->info)
-        {
-            FreeModuleInfo(module->info);
-        }
-
-        free(module);
-    }
 }
 
 int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
@@ -238,10 +227,11 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
     return status;
 }
 
-int LoadModule(const char* client, const char* bin, const char* name, MANAGEMENT_MODULE* module)
+MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* name)
 {
     int status = 0;
     char* path = NULL;
+    MANAGEMENT_MODULE* module = NULL;
     MODULE_INFO* info = NULL;
     size_t pathLength = 0;
     JSON_Value* value = NULL;
@@ -263,24 +253,29 @@ int LoadModule(const char* client, const char* bin, const char* name, MANAGEMENT
         LOG_ERROR("Invalid (null) name");
         status = EINVAL;
     }
+    else if (NULL == (module = (MANAGEMENT_MODULE*)calloc(1, sizeof(MANAGEMENT_MODULE))))
+    {
+        LOG_ERROR("Failed to allocate memory for module");
+        status = ENOMEM;
+    }
     else if (0 == (pathLength = strlen(bin) + strlen(name) + 5))
     {
         LOG_ERROR("Failed to calculate path length");
         status = EINVAL;
-    }
-    else if (NULL == (module->name = strdup(name)))
-    {
-        LOG_ERROR("Failed to allocate memory for module name");
-        status = ENOMEM;
     }
     else if (NULL == (path = (char*)calloc(pathLength, sizeof(char))))
     {
         LOG_ERROR("Failed to allocate memory for module path");
         status = ENOMEM;
     }
+    else if (NULL == (module->name = strdup(name)))
+    {
+        LOG_ERROR("Failed to allocate memory for module name");
+        status = ENOMEM;
+    }
     else
     {
-        snprintf(path, pathLength, "%s/%s.so", bin, name);
+        snprintf(path, pathLength, "%s/%s", bin, name);
 
         LOG_INFO("Loading module %s", path);
 
@@ -359,32 +354,39 @@ int LoadModule(const char* client, const char* bin, const char* name, MANAGEMENT
         }
     }
 
-    return status;
+    if ((status != 0) && (module != NULL))
+    {
+        UnloadModule(module);
+        module = NULL;
+    }
+
+    return module;
 }
 
 void UnloadModule(MANAGEMENT_MODULE* module)
 {
-    if (NULL != module)
+    if (NULL == module)
     {
-        LOG_INFO("Closing module session: %s", module->name);
-        module->close(module->session);
-        module->session = NULL;
-
-        module->getinfo = NULL;
-        module->open = NULL;
-        module->close = NULL;
-        module->get = NULL;
-        module->set = NULL;
-        module->free = NULL;
-
-
-        if (NULL != module->handle)
-        {
-            LOG_INFO("Unloading module: %s", module->name);
-            dlclose(module->handle);
-            module->handle = NULL;
-        }
-
-        FreeModule(module);
+        return;
     }
+
+    module->close(module->session);
+    module->session = NULL;
+
+    module->getinfo = NULL;
+    module->open = NULL;
+    module->close = NULL;
+    module->get = NULL;
+    module->set = NULL;
+    module->free = NULL;
+
+    if (NULL != module->handle)
+    {
+        dlclose(module->handle);
+        module->handle = NULL;
+    }
+
+    FREE_MEMORY(module->name);
+
+    FreeModuleInfo(module->info);
 }

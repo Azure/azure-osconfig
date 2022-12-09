@@ -1,0 +1,112 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "sample.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "SampleComponent",
+    "Object": "reportedStringObject"
+  },
+  {
+    "Type": "Reported",
+    "Component": "SampleComponent",
+    "Object": "reportedIntegerObject"
+  },
+  {
+    "Type": "Reported",
+    "Component": "SampleComponent",
+    "Object": "reportedBooleanObject"
+  },
+  {
+    "Type": "Reported",
+    "Component": "SampleComponent",
+    "Object": "reportedObject"
+  },
+  {
+    "Type": "Reported",
+    "Component": "SampleComponent",
+    "Object": "reportedArrayObject"
+  },
+  {
+    "Type": "Desired",
+    "Component": "SampleComponent",
+    "Object": "desiredStringObject",
+    "Payload": "string"
+  },
+  {
+    "Type": "Desired",
+    "Component": "SampleComponent",
+    "Object": "desiredIntegerObject",
+    "Payload": 123
+  },
+  {
+    "Type": "Desired",
+    "Component": "SampleComponent",
+    "Object": "desiredBooleanObject",
+    "Payload": true
+  },
+  {
+    "Type": "Desired",
+    "Component": "SampleComponent",
+    "Object": "desiredObject",
+    "Payload": {
+      "stringSetting": "string",
+      "booleanSetting": true,
+      "integerSetting": 123,
+      "integerEnumerationSetting": 0,
+      "stringEnumerationSetting": "value1",
+      "stringsArraySetting": [
+        "string1",
+        "string2"
+      ],
+      "integerArraySetting": [
+        1,
+        2,
+        3
+      ],
+      "stringMapSetting": {
+        "key1": "value1",
+        "key2": "value2"
+      },
+      "integerMapSetting": {
+        "key1": 1,
+        "key2": 2
+      }
+    }
+  },
+  {
+    "Type": "Desired",
+    "Component": "SampleComponent",
+    "Object": "desiredArrayObject",
+    "Payload": [
+      {
+        "stringSetting": "string",
+        "booleanSetting": true,
+        "integerSetting": 123,
+        "integerEnumerationSetting": 0,
+        "stringEnumerationSetting": "value1",
+        "stringsArraySetting": [
+          "string1",
+          "string2"
+        ],
+        "integerArraySetting": [
+          1,
+          2,
+          3
+        ],
+        "stringMapSetting": {
+          "key1": "value1",
+          "key2": "value2"
+        },
+        "integerMapSetting": {
+          "key1": 1,
+          "key2": 2
+        }
+      }
+    ]
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

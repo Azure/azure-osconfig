@@ -1,0 +1,47 @@
+[
+  {
+    "Type": "Reported",
+    "Component": "Tpm",
+    "Object": "tpmStatus"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Tpm",
+    "Object": "tpmVersion"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Tpm",
+    "Object": "tpmManufacturer"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Tpm",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "invalid",
+    "Object": "tpmStatus",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "Tpm",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "tpmStatus",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "",
+    "Status": 22
+  }
+]

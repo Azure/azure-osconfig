@@ -1,0 +1,57 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "pmc.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "PackageManagerConfiguration",
+    "Object": "state"
+  },
+  {
+    "Type": "Reported",
+    "Component": "PackageManagerConfiguration",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "PackageManagerConfiguration",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "invalid",
+    "Object": "state",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "PackageManagerConfiguration",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "state",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Desired",
+    "Component": "PackageManagerConfiguration",
+    "Object": "desiredState",
+    "Payload": -1,
+    "Status": 22
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

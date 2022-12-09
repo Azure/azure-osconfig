@@ -1,0 +1,44 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "networking.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Networking",
+    "Object": "networkConfiguration"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Networking",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "invalid",
+    "Object": "networkConfiguration",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "Networking",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "networkConfiguration",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

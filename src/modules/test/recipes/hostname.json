@@ -1,0 +1,62 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "hostname.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "HostName",
+    "Object": "name"
+  },
+  {
+    "Type": "Reported",
+    "Component": "HostName",
+    "Object": "hosts"
+  },
+  {
+    "Type": "Reported",
+    "Component": "invalid",
+    "Object": "name",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "name",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "HostName",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "HostName",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Desired",
+    "Component": "HostName",
+    "Object": "desiredName",
+    "Payload": "test"
+  },
+  {
+    "Type": "Reported",
+    "Component": "HostName",
+    "Object": "name",
+    "Status": 0,
+    "Payload": "test"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "ztsi.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Ztsi",
+    "Object": "maxScheduledAttestationsPerDay"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Ztsi",
+    "Object": "maxManualAttestationsPerDay"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Ztsi",
+    "Object": "enabled"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Ztsi",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "invalid",
+    "Object": "enabled",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "Ztsi",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "enabled",
+    "Status": 22
+  },
+  {
+    "Type": "Reported",
+    "Component": "",
+    "Object": "",
+    "Status": 22
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

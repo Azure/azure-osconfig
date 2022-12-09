@@ -58,7 +58,7 @@ typedef struct MANAGEMENT_MODULE
     MMI_FREE free;
 } MANAGEMENT_MODULE;
 
-int LoadModule(const char* client, const char* path, const char* name, MANAGEMENT_MODULE* module);
+MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* name);
 void UnloadModule(MANAGEMENT_MODULE* module);
 
 #endif // MANAGEMENTMODULE_H

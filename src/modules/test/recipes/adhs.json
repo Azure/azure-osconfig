@@ -1,0 +1,53 @@
+[
+  {
+    "RunCommand": "mkdir -p /etc/azure-device-health-services/"
+  },
+  {
+    "RunCommand": "touch /etc/azure-device-health-services/config.toml"
+  },
+  {
+    "RunCommand": "cp /etc/azure-device-health-services/config.toml config.toml"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "adhs.so"
+  },
+  {
+    "Type": "Reported",
+    "Component": "Adhs",
+    "Object": "invalid",
+    "Status": 22
+  },
+  {
+    "Type": "Desired",
+    "Component": "Adhs",
+    "Object": "desiredOptIn",
+    "Payload": 1
+  },
+  {
+    "RunCommand": "grep -q 'Permission = \"Required\"' /etc/azure-device-health-services/config.toml"
+  },
+  {
+    "Type": "Desired",
+    "Component": "Adhs",
+    "Object": "desiredOptIn",
+    "Payload": -1,
+    "Status": 22
+  },
+  {
+    "Type": "Desired",
+    "Component": "Adhs",
+    "Object": "desiredOptIn",
+    "Payload": 3,
+    "Status": 22
+  },
+  {
+    "RunCommand": "cp config.toml /etc/azure-device-health-services/config.toml"
+  },
+  {
+    "RunCommand": "rm -f config.toml"
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]

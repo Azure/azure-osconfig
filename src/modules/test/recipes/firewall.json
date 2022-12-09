@@ -1,0 +1,95 @@
+[
+    {
+        "Action": "LoadModule",
+        "Module": "firewall.so"
+    },
+    {
+        "Type": "Reported",
+        "Component": "invalid",
+        "Object": "state",
+        "Status": 22
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "invalid",
+        "Status": 22
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "state"
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "fingerprint"
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "defaultPolicies"
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "configurationStatus"
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "configurationStatusDetail"
+    },
+    {
+        "Type": "Desired",
+        "Component": "Firewall",
+        "Object": "desiredDefaultPolicies",
+        "Payload": [
+            {
+                "action": "accept",
+                "direction": "in"
+            },
+            {
+                "action": "accept",
+                "direction": "out"
+            }
+        ]
+    },
+    {
+        "Type": "Desired",
+        "Component": "Firewall",
+        "Object": "desiredDefaultPolicies",
+        "Payload": [
+            {
+                "action": "invalid",
+                "direction": "invalid"
+            }
+        ],
+        "Status": 22
+    },
+    {
+        "Type": "Desired",
+        "Component": "Firewall",
+        "Object": "desiredRules",
+        "Payload": [
+            {
+                "desiredState": "present",
+                "action": "accept",
+                "direction": "in",
+                "protocol": "tcp",
+                "sourcePort": 80,
+                "sourceAddress": "0.0.0.0"
+            }
+        ]
+    },
+    {
+        "Type": "Reported",
+        "Component": "Firewall",
+        "Object": "configurationStatus",
+        "Payload": "success",
+        "Status": 0
+    },
+    {
+        "Action": "UnloadModule"
+    }
+]
