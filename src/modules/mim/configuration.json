@@ -1,6 +1,6 @@
 {
   "name": "OsConfigConfigurationModel",
-  "type": "MimModel",
+  "type": "mimModel",
   "contents": [
     {
       "name": "Configuration",
@@ -38,11 +38,11 @@
             "type": "enum",
             "valueSchema": "string",
             "enumValues": [
-              { 
+              {
                 "name": "auto",
                 "enumValue": "auto"
               },
-              { 
+              {
                 "name": "mqtt",
                 "enumValue": "mqtt"
               },
@@ -91,11 +91,11 @@
             "type": "enum",
             "valueSchema": "string",
             "enumValues": [
-              { 
+              {
                 "name": "auto",
                 "enumValue": "auto"
               },
-              { 
+              {
                 "name": "mqtt",
                 "enumValue": "mqtt"
               },
