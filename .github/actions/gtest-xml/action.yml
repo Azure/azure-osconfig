@@ -46,7 +46,7 @@ runs:
             time += float(test_suites.attrib['time'])
 
             for test_suite in test_suites:
-                suites[test_suite.attrib['name']].append(test_suite.getchildren())
+                suites[test_suite.attrib['name']].append(list(test_suite))
 
         new_root = ET.Element('testsuites')
         new_root.attrib['failures'] = '%s' % failures
