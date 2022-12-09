@@ -1,67 +1,54 @@
 [
   {
-    "ModuleBinary": "ztsi.so",
-    "MimFile": "ztsi.json",
-    "ModelName": "ZtsiModel"
+    "Action": "LoadModule",
+    "Module": "ztsi.so"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "ObjectName": "maxScheduledAttestationsPerDay",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "maxScheduledAttestationsPerDay"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "Ztsi",
-    "ObjectName": "maxManualAttestationsPerDay",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "maxManualAttestationsPerDay"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "Ztsi",
+    "ObjectName": "enabled"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Ztsi",
+    "ObjectName": "invalid",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
     "ObjectName": "enabled",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
-    "ComponentName": "Ztsi",
-    "ObjectName": "invalidObjectName",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
-  },
-  {
-    "ComponentName": "invalidComponentName",
-    "ObjectName": "enabled",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
-  },
-  {
+    "ObjectType": "Reported",
     "ComponentName": "Ztsi",
     "ObjectName": "",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "",
     "ObjectName": "enabled",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "",
     "ObjectName": "",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
-    "Action": "Teardown",
-    "ModuleBinary": "ztsi.so"
-  },
-  ]
+    "Action": "UnloadModule"
+  }
+]

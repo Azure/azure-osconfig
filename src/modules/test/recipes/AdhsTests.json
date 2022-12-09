@@ -1,72 +1,53 @@
 [
   {
-    "ModuleBinary": "adhs.so",
-    "MimFile": "adhs.json",
-    "ModelName": "AdhsConfigurationModel"
+    "RunCommand": "mkdir -p /etc/azure-device-health-services/"
   },
   {
+    "RunCommand": "touch /etc/azure-device-health-services/config.toml"
+  },
+  {
+    "RunCommand": "cp /etc/azure-device-health-services/config.toml config.toml"
+  },
+  {
+    "Action": "LoadModule",
+    "Module": "adhs.so"
+  },
+  {
+    "ObjectType": "Reported",
     "ComponentName": "Adhs",
-    "ObjectName": "optIn",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "invalid",
+    "ExpectedResult": 22
   },
   {
-    "ComponentName": "Adhs",
-    "ObjectName": "invalidObjectName",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
-  },
-  {
-    "RunCommand": "{\"commandId\":\"adhsSaveConfig\",\"arguments\":\"mkdir -p /etc/azure-device-health-services/ && touch /etc/azure-device-health-services/config.toml && cp /etc/azure-device-health-services/config.toml config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "RunCommand": "{\"commandId\":\"adhsSaveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
-    "ExpectedResult": 0
-  },
-  {
+    "ObjectType": "Desired",
     "ComponentName": "Adhs",
     "ObjectName": "desiredOptIn",
-    "Desired": true,
-    "Payload": "1",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": 1
   },
   {
-    "RunCommand": "{\"commandId\":\"validateOptIn\",\"arguments\":\"cat /etc/azure-device-health-services/config.toml | grep 'Permission = \\\"Required\\\"'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "RunCommand": "grep -q 'Permission = \"Required\"' /etc/azure-device-health-services/config.toml"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateOptIn\",\"resultCode\":0,\"textResult\":\"Permission =  Required  \",\"currentState\":2}",
-    "ExpectedResult": 0
-  },
-  {
+    "ObjectType": "Desired",
     "ComponentName": "Adhs",
     "ObjectName": "desiredOptIn",
-    "Desired": true,
-    "Payload": "-1",
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "Payload": -1,
+    "ExpectedResult": 22
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "Adhs",
     "ObjectName": "desiredOptIn",
-    "Desired": true,
-    "Payload": "3",
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "Payload": 3,
+    "ExpectedResult": 22
   },
   {
-    "RunCommand": "{\"commandId\":\"adhsRestoreConfig\",\"arguments\":\"cp config.toml /etc/azure-device-health-services/config.toml && rm -f config.toml\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "RunCommand": "cp config.toml /etc/azure-device-health-services/config.toml"
   },
   {
-    "RunCommand": "{\"commandId\":\"adhsRestoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
-    "ExpectedResult": 0
+    "RunCommand": "rm -f config.toml"
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]

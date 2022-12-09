@@ -3,23 +3,14 @@ description: Run a docker container
 
 inputs:
   registry:
-    description: Server address ofthe  Docker registry.
+    description: Container registry.
     required: false
-    default: osconfig.azurecr.io
-  username:
-    description: Username used to login to the Docker registry.
-    required: true
-  password:
-    description: Password or personal access token used to login to the Docker registry.
-    required: true
-  os:
-    description: The container OS.
-    required: true
-  arch:
-    description: The container architecture.
+    default: ""
+  container:
+    description: The name of the container.
     required: true
   platform:
-    description: The multiarch platform.
+    description: The container architecture.
     required: true
   mount:
     description: The volume to mount.
@@ -27,7 +18,7 @@ inputs:
   tag:
     description: The container tag.
     required: false
-    default: "289651"
+    default: latest
 
 outputs:
   id:
@@ -37,17 +28,27 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Login to container registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ inputs.registry }}
-        username: ${{ inputs.username }}
-        password: ${{ inputs.password }}
-
     - name: Setup QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@v2
 
     - name: Setup container
+      id: setup
+      run: |
+        if [ -n "${{ inputs.registry }}" ]; then
+          image=${{ inputs.registry }}/${{ inputs.container }}
+        else
+          image=${{ inputs.container }}
+        fi
+
+        echo container=$image >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Run container
       id: container
-      run: echo "id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ inputs.registry }}/${{ inputs.os }}-dev-${{ inputs.arch }}:${{ inputs.tag }})" >> $GITHUB_OUTPUT
+      run: |
+        echo Running container ${{ steps.setup.outputs.container }}:${{ inputs.tag }}...
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
+
+        echo Container ID: $id
+        echo id=$id >> $GITHUB_OUTPUT
       shell: bash
