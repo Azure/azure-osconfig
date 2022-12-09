@@ -3,63 +3,64 @@
 
 add_compile_options("$<$<COMPILE_LANGUAGE:C>:-Wall;-Wextra;-Wunused;-Werror;-Wformat;-Wformat-security;-Wno-nonnull;-Wno-unused-result;-Wunused-const-variable=2;-Wunused-macros>")
 
-add_subdirectory(test)
+set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
+set(MODULES_BUILD_BIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE FILEPATH "Directory used to collect module binaries for testing")
 
-find_program(JQ_EXEC jq)
+file(MAKE_DIRECTORY ${MODULES_BUILD_BIN_DIR})
+
+set(MIM_SCHEMA ${CMAKE_CURRENT_SOURCE_DIR}/schema/mim.schema.json)
 find_program(JSONSCHEMA_EXEC jsonschema)
 
-# Function add_module/add_module_custom_target is used to add a module to the build and add
-# the appropriate dependencies in order for module testrecipe configuration to be generated.
-function(add_module_custom_target moduleDir targetName mimName recipeName)
-    message(STATUS "Adding module '${moduleDir}' to the build.")
-    string(TOLOWER ${moduleDir} _moduleDir)
-    string(TOLOWER ${mimName} _mimName)
-    string(TOLOWER ${targetName} _targetName)
-    # Check for MIM
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/mim/${_mimName}.json)
-        # Validate MIM
+function(add_module directory)
+    get_filename_component(MODULE ${directory} NAME)
+
+    set(MODULE_INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/mim/${MODULE}.json)
+
+    if (EXISTS ${MODULE_INTERFACE})
         if(JSONSCHEMA_EXEC)
             execute_process(
-                COMMAND ${JSONSCHEMA_EXEC} --instance ${CMAKE_CURRENT_SOURCE_DIR}/mim/${_mimName}.json ${CMAKE_CURRENT_SOURCE_DIR}/schema/mim.schema.json
-                ERROR_VARIABLE JSONSCHEMA_EXEC_ERROR
+                COMMAND ${JSONSCHEMA_EXEC} -i ${MODULE_INTERFACE} ${MIM_SCHEMA}
+                ERROR_VARIABLE SCHEMA_ERROR
             )
-            if(JSONSCHEMA_EXEC_ERROR)
-                message(WARNING "MIM '${_mimName}' is not valid: \n${JSONSCHEMA_EXEC_ERROR}")
+            if(SCHEMA_ERROR)
+                message(WARNING "${MODULE_INTERFACE} does not match schema: ${SCHEMA_ERROR}")
             endif()
         endif()
-        # Check for Recipe
-        if(NOT(JQ_EXEC))
-            add_subdirectory(${_moduleDir})
-        elseif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/recipes/${recipeName}Tests.json)
-            add_subdirectory(${_moduleDir})
-            add_dependencies(modulerecipeconfiguration ${_targetName})
-        endif()
-    else()
-        message(FATAL_ERROR "Module ${moduleDir} must have a MIM file at: ${CMAKE_CURRENT_SOURCE_DIR}/mim/${_mimName}.json.")
     endif()
-endfunction()
-function(add_module moduleDir)
-    add_module_custom_target(${moduleDir} ${moduleDir} ${moduleDir} ${moduleDir})
-endfunction()
-function(add_module_custom_name moduleDir targetName mimName recipeName)
-    add_module_custom_target(${moduleDir} ${targetName} ${mimName} ${recipeName})
+
+    add_subdirectory(${directory})
+
+    # Copy the module shared-object to build/modules/bin for convenience when using moduletest
+    set(TARGET_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${directory}/src/so/${MODULE}.so)
+    set(TARGET_OUTPUT_COPY ${MODULES_BUILD_BIN_DIR}/${MODULE}.so)
+
+    add_custom_command(
+        OUTPUT ${TARGET_OUTPUT_COPY}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${MODULE}> ${TARGET_OUTPUT_COPY}
+        DEPENDS ${MODULE}
+    )
+
+    add_custom_target(${MODULE}_so ALL
+        DEPENDS ${TARGET_OUTPUT_COPY}
+    )
 endfunction()
 
-set(MODULES_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
-set(MODULES_INSTALL_DIR "/usr/lib/osconfig" CACHE FILEPATH "Directory used for installing modules")
+add_module(adhs)
+add_module(commandrunner)
+add_module(configuration)
+add_module(deliveryoptimization)
+add_module(deviceinfo)
+add_module(firewall)
+add_module(hostname)
+add_module(networking)
+add_module(pmc)
+add_module(tpm)
+add_module(ztsi)
 
-add_module(Adhs)
-add_module(CommandRunner)
-add_module(Configuration)
-add_module(DeliveryOptimization)
-add_module(DeviceInfo)
-add_module(Firewall)
-add_module(HostName)
-add_module(Networking)
-add_module(Pmc)
-add_module(Tpm)
-add_module(Ztsi)
+if (BUILD_TESTS)
+    add_subdirectory(test)
+endif()
 
 if (BUILD_SAMPLES)
-    add_module_custom_target(Samples cppsample Sample Sample)
+    add_subdirectory(samples/cpp)
 endif()

@@ -1,82 +1,112 @@
 [
   {
-    "ModuleBinary": "sample.so",
-    "MimFile": "sample.json",
-    "ModelName": "SampleModel"
+    "Action": "LoadModule",
+    "Module": "sample.so"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "ObjectName": "reportedStringObject",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "reportedStringObject"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "ObjectName": "reportedIntegerObject",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "reportedIntegerObject"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "ObjectName": "reportedBooleanObject",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "reportedBooleanObject"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "ObjectName": "reportedObject",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "reportedObject"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "SampleComponent",
-    "ObjectName": "reportedArrayObject",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "reportedArrayObject"
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
     "ObjectName": "desiredStringObject",
-    "Desired": true,
-    "Payload": "\"string\"",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": "string"
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
     "ObjectName": "desiredIntegerObject",
-    "Desired": true,
-    "Payload": "123",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": 123
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
     "ObjectName": "desiredBooleanObject",
-    "Desired": true,
-    "Payload": "true",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": true
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
     "ObjectName": "desiredObject",
-    "Desired": true,
-    "Payload": "{\"stringSetting\":\"string\", \"booleanSetting\":true, \"integerSetting\":123, \"integerEnumerationSetting\":0, \"stringEnumerationSetting\":\"value1\", \"stringsArraySetting\":[\"string1\",\"string2\"], \"integerArraySetting\":[1,2,3], \"stringMapSetting\":{\"key1\":\"value1\", \"key2\":\"value2\"},\"integerMapSetting\":{\"key1\":1,\"key2\":2}}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": {
+      "stringSetting": "string",
+      "booleanSetting": true,
+      "integerSetting": 123,
+      "integerEnumerationSetting": 0,
+      "stringEnumerationSetting": "value1",
+      "stringsArraySetting": [
+        "string1",
+        "string2"
+      ],
+      "integerArraySetting": [
+        1,
+        2,
+        3
+      ],
+      "stringMapSetting": {
+        "key1": "value1",
+        "key2": "value2"
+      },
+      "integerMapSetting": {
+        "key1": 1,
+        "key2": 2
+      }
+    }
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "SampleComponent",
     "ObjectName": "desiredArrayObject",
-    "Desired": true,
-    "Payload": "[\"value1\",\"value2\"]",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": [
+      {
+        "stringSetting": "string",
+        "booleanSetting": true,
+        "integerSetting": 123,
+        "integerEnumerationSetting": 0,
+        "stringEnumerationSetting": "value1",
+        "stringsArraySetting": [
+          "string1",
+          "string2"
+        ],
+        "integerArraySetting": [
+          1,
+          2,
+          3
+        ],
+        "stringMapSetting": {
+          "key1": "value1",
+          "key2": "value2"
+        },
+        "integerMapSetting": {
+          "key1": 1,
+          "key2": 2
+        }
+      }
+    ]
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]

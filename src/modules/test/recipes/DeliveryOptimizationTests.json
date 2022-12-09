@@ -1,120 +1,86 @@
 [
   {
-    "ModuleBinary": "deliveryoptimization.so",
-    "MimFile": "deliveryoptimization.json",
-    "ModelName": "DeliveryOptimizationModel"
+    "RunCommand": "[ -f /etc/deliveryoptimization-agent/admin-config.json ] && cp /etc/deliveryoptimization-agent/admin-config.json /tmp/admin-config.json.bak"
   },
   {
+    "Action": "LoadModule",
+    "Module": "deliveryoptimization.so"
+  },
+  {
+    "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "ObjectName": "cacheHost",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cacheHost"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "ObjectName": "cacheHostSource",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cacheHostSource"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "ObjectName": "cacheHostFallback",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cacheHostFallback"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "ObjectName": "percentageDownloadThrottle",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "percentageDownloadThrottle"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeliveryOptimization",
-    "ObjectName": "invalidObjectName",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ObjectName": "invalid",
+    "ExpectedResult": 22
   },
   {
-    "RunCommand": "{\"commandId\":\"deliveryOptimizationSaveConfig\",\"arguments\":\"mkdir -p /etc/deliveryoptimization-agent/ && touch /etc/deliveryoptimization-agent/admin-config.json && cp /etc/deliveryoptimization-agent/admin-config.json admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "RunCommand": "{\"commandId\":\"deliveryOptimizationSaveConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
-    "ExpectedResult": 0
-  },
-  {
+    "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
     "ObjectName": "desiredDeliveryOptimizationPolicies",
-    "Desired": true,
-    "Payload": "{\"cacheHost\":\"10.0.0.0:80,host.com:8080\",\"cacheHostSource\":1,\"cacheHostFallback\":2,\"percentageDownloadThrottle\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Payload": {
+      "cacheHost": "10.0.0.0:80,host.com:8080",
+      "cacheHostSource": 1,
+      "cacheHostFallback": 2,
+      "percentageDownloadThrottle": 3
+    }
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHost\",\"arguments\":\"cat /etc/deliveryoptimization-agent/admin-config.json | jq -r '.DOCacheHost'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "RunCommand": "cat /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHost\",\"resultCode\":0,\"textResult\":\"10.0.0.0:80,host.com:8080 \",\"currentState\":2}",
-    "ExpectedResult": 0
+    "RunCommand": "grep -q '\"DOCacheHost\": \"10.0.0.0:80,host.com:8080\"' /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHostSource\",\"arguments\":\"cat /etc/deliveryoptimization-agent/admin-config.json | jq -r '.DOCacheHostSource'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "RunCommand": "grep -q '\"DOCacheHostSource\": 1' /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHostSource\",\"resultCode\":0,\"textResult\":\"1 \",\"currentState\":2}",
-    "ExpectedResult": 0
+    "RunCommand": "grep -q '\"DOCacheHostFallback\": 2' /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHostFallback\",\"arguments\":\"cat /etc/deliveryoptimization-agent/admin-config.json | jq -r '.DOCacheHostFallback'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "RunCommand": "grep -q '\"DOPercentageDownloadThrottle\": 3' /etc/deliveryoptimization-agent/admin-config.json"
   },
   {
-    "RunCommand": "{\"commandId\":\"validateDesiredCacheHostFallback\",\"resultCode\":0,\"textResult\":\"2 \",\"currentState\":2}",
-    "ExpectedResult": 0
-  },
-  {
-    "RunCommand": "{\"commandId\":\"validatePercentageDownloadThrottle\",\"arguments\":\"cat /etc/deliveryoptimization-agent/admin-config.json | jq -r '.DOPercentageDownloadThrottle'\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
-  },
-  {
-    "RunCommand": "{\"commandId\":\"validatePercentageDownloadThrottle\",\"resultCode\":0,\"textResult\":\"3 \",\"currentState\":2}",
-    "ExpectedResult": 0
-  },
-  {
+    "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
     "ObjectName": "desiredDeliveryOptimizationPolicies",
-    "Desired": true,
-    "Payload": "{\"cacheHostSource\":-1}",
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "Payload": {
+      "cacheHostSource": -1
+    },
+    "ExpectedResult": 22
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "DeliveryOptimization",
     "ObjectName": "desiredDeliveryOptimizationPolicies",
-    "Desired": true,
-    "Payload": "{\"percentageDownloadThrottle\":-1}",
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "Payload": {
+      "percentageDownloadThrottle": -1
+    },
+    "ExpectedResult": 22
   },
   {
-    "RunCommand": "{\"commandId\":\"deliveryOptimizationRestoreConfig\",\"arguments\":\"cp admin-config.json /etc/deliveryoptimization-agent/admin-config.json && rm -f admin-config.json\",\"timeout\":0,\"singleLineTextResult\":true,\"action\":3}",
-    "ExpectedResult": 0,
-    "WaitSeconds": 1
+    "Action": "UnloadModule",
+    "Module": "deliveryoptimization.so"
   },
   {
-    "RunCommand": "{\"commandId\":\"deliveryOptimizationRestoreConfig\",\"resultCode\":0,\"textResult\":\"\",\"currentState\":2}",
-    "ExpectedResult": 0
+    "RunCommand": "[ -f /tmp/admin-config.json.bak ] && cp /tmp/admin-config.json.bak /etc/deliveryoptimization-agent/admin-config.json"
   }
 ]

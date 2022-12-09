@@ -1,60 +1,96 @@
-# ModulesTest
-ModulesTest (binary name: modulestest) is OSConfig's functional module test utility, it allows module authors to write Test Recipes which in turn, drive testing of the module functionality and conformity (against the published MIM) of the Management Module.
+# `moduletest`
 
-`modulestest` uses the [Google Test](https://github.com/google/googletest/) framework and registers tests dynamically based on the given test recipes provided. As a result, there are many flags exposed to customize `modulestest` functionality. See [Usage](#usage) for usage examples.
+`moduletest` is a functional testing tool that allows developers to easily validate the functionality of a module using a test recipe to specifiy a series of steps. These steps con be used to validate the input/output of a module and validate that the returned payloads and status codes are as expected.
 
-Every module that includes a [test recipe](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) and [MIM](https://github.com/Azure/azure-osconfig/tree/main/src/modules/mim) is automatically included in the test configuration (testplate.json).
-# Prerequisites
-Although `modulestest` does not require any runtime dependencies, generating the Test Recipe configuration (testplate.json) does require the [jq](https://github.com/stedolan/jq) application to be installed when building OSConfig.
+## Usage
 
-# Test Naming Composition
-Authored test recipes use the following test naming composition when registering with the Google Test framework. This is useful diagnostics as the name is used in test reports. `ModulesTest` is the test suite name and is further composed with the `ModuleName` (defined by the directory/file name), `ComponentName` and `ObjectName` (`<null>` is used if either are empty strings).
+The `moduletest` command line tool is used to *execute* a test recipe.
 
-## Example - Test Naming Convention
-For example, the following test recipe (sample Tpm recipe) will create the following test names:
- * `ModulesTest.tpm.Tpm.tpmStatus`
- * `ModulesTest.tpm.<null>.tpmStatus`
- * `ModulesTest.tpm.<null>.<null>`
+> By default, modules are loaded from `/usr/lib/osconfig`. Modules can be loaded from a different directory using the `--bin` flag.
+
+> For convenience, module binaries are collected under the `build/modules/bin` directory when building `azure-osconfig`.
+
+```bash
+$ moduletest <file>... [--bin <path>] [--verbose] [--help]
+
+# Examples
+$ moduletest path/to/module/TestRecipe.json
+$ moduletest path/to/module/TestRecipe.json --bin /usr/lib/osconfig
+$ moduletest path/to/module/TestRecipe1.json path/to/module/TestRecipe2.json
 ```
+
+## Test recipe
+
+A test recipe describes the tests to be executed and provides additional context for the test suite.
+
+Test steps are used to set desired properties and get reported properties of a module and validate the results. These steps are executed in the order they are specified.
+
+  - `Type` ***(required)*** - The type of action to preform (e.g. `Repored` | `Desired`).
+  - `Component` ***(required)*** - The component to execute the action against (e.g. `HostName`).
+  - `Object` ***(required)*** - The object to execute the action against (e.g. `name`).
+  - The payload used for this test step. If the test type is `reported`, the payload is compared against the reported value. If the test type is `Desired`, the payload is used to set the desired value.
+    - `Payload` - A JSON object that will be serialized and sent to the module.
+    - `Json` - A "*raw*" serialized JSON string that will be sent to the module. This can be useful for testing specific payload formats.
+  - `Delay` - The number of seconds to wait before executing the current step. This can be used to allow the module to process the previous step. *(default: `0`)*
+  - `Status` - The expected status code (number) of the action. (default: `0`)
+
+```json
 [
   {
-    "ComponentName": "Tpm",
-    "ObjectName": "tpmStatus",
-    "Desired": false,
+    "ObjectType": "Desired",
+    "ComponentName": "WiFi",
+    "ObjectName": "interface",
+    "Payload": {
+      "name": "my-network-interface",
+    },
     "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "Delay": 1
   },
   {
-    "ComponentName": "",
-    "ObjectName": "tpmStatus",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ObjectType": "Reported",
+    "ComponentName": "WiFi",
+    "ObjectName": "interface",
+    "Json": "{\"name\": \"my-network-interface\"}",
+    "ExpectedResult": 0,
+    "Delay": 1
+  }
+]
+
+```
+
+### Command steps
+
+Command steps are used to execute a command as part of the test suite. Success or failure of the command is determined by the exit code of the command. By default, an exit code of `0` is considered a success, however a `Status` can be provided to override this behavior.
+
+> Command steps are useful for verifying the state of a device before/after a desired property is changed and adding information to the test logs. (e.g. `grep` the contents of a file to verify that a desired property was set correctly.)
+
+> A `Delay` can also be added to a command step to allow for processing from the previous step.
+
+```json
+[
+  {
+    "RunCommand": "grep -q 'my-network-interface' /etc/wpa_supplicant/wpa_supplicant.conf"
   },
   {
-    "ComponentName": "",
-    "ObjectName": "",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "RunCommand": "exit 123",
+    "ExpectedResult": 123
   }
 ]
 ```
 
-See [Googletest Primer - Simple Tests](https://google.github.io/googletest/primer.html#simple-tests) for more details on test suites and test naming.
+### Module steps
 
-# Usage
-1. `modulestest` or `modulestest testplate.json` (equivalent) tests all modules which have [test recipe](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) and [MIM](https://github.com/Azure/azure-osconfig/tree/main/src/modules/mim) defined.
-2. `moduletest <module name>` Example: `modulestest tpm` will perform the [test recipe](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) defined for the _tpm_ module.
-3. `moduletest <module.so>` Example: `modulestest /azure-osconfig/build/modules/tpm/src/so/tpm.so` performs a basic test on the module only, this ensures the MMI interface is properly defined. No payloads are sent to modules, we simply load the module, ensure _MMIGetInfo_ returns correctly.
-4. `moduletest <module.so> <mim.json> <recipe.json>` Example: `modulestest "/azure-osconfig/build/modules/tpm/src/so/tpm.so" "/azure-osconfig/src/modules/mim/tpm.json" "/azure-osconfig/src/modules/test/recipes/TpmTests.json"` Equivalent to #2
+Module steps are used to load and unload a module as part of the test suite. This can be useful for testing the behavior of a module when it is loaded/unloaded and gives the opportunity to verify the state of the device before/after the module is loaded/unloaded.
 
-Supports any of the `-gtest_*` flags. See `--help` for additional usage details.
- * `--gtest_list_tests`
- * `--gtest_filter=POSTIVE_PATTERNS[-NEGATIVE_PATTERNS]`
-
-# Authoring Test Recipes
-See *Testing* in [docs/modules.md](https://github.com/Azure/azure-osconfig/blob/main/docs/modules.md#13-testing) for more information on authoring Test Recipes (see [src/modules/test/recipes/](https://github.com/Azure/azure-osconfig/tree/main/src/modules/test/recipes) for current recipes).
-
-# Known limitations
-  - Each object payload in a Test Recipe is currently executed in its own module session (MmiGetInfo and MmiOpen are executed before this payload and MmiClose after it). This is a temporary limitation that will be removed in the future (so that all objects payloads in a recipe will be executed into one module session).
+```json
+[
+  {
+    "Action": "LoadModule",
+    "Module": "my-module.so"
+  },
+  // ...
+  {
+    "Action": "UnloadModule"
+  }
+]
+```

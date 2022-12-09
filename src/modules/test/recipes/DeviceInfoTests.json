@@ -1,141 +1,102 @@
 [
   {
-    "ModuleBinary": "deviceinfo.so",
-    "MimFile": "deviceinfo.json",
-    "ModelName": "DeviceInfoModel"
+    "Action": "LoadModule",
+    "Module": "deviceinfo.so"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "osName",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "osName"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "osVersion",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "osVersion"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "cpuType",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cpuType"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "cpuVendorId",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cpuVendorId"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "cpuModel",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "cpuModel"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "totalMemory",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "totalMemory"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "freeMemory",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "freeMemory"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "kernelName",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "kernelName"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "kernelRelease",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "kernelRelease"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "kernelVersion",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "kernelVersion"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "productVendor",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "productVendor"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "productName",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "productName"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "productVersion",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "productVersion"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "systemCapabilities",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "systemCapabilities"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "systemConfiguration",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "systemConfiguration"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "DeviceInfo",
-    "ObjectName": "osConfigVersion",
-    "Desired": false,
-    "ExpectedResult": 0,
-    "WaitSeconds": 0
+    "ObjectName": "osConfigVersion"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "OsInfo",
     "ObjectName": "osName",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
+    "ExpectedResult": 22
   },
   {
-    "ComponentName": "DeviceInfo",
-    "ObjectName": "notImplemented",
-    "Desired": false,
-    "ExpectedResult": 22,
-    "WaitSeconds": 0
-  },
-  {
+    "ObjectType": "Desired",
     "ComponentName": "DeviceInfo",
     "ObjectName": "osName",
-    "Desired": true,
-    "ExpectedResult": 1,
-    "Payload": "\"Test\"",
-    "WaitSeconds": 0
+    "Payload": "type",
+    "ExpectedResult": 1
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]

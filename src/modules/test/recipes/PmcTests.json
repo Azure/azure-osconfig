@@ -1,50 +1,57 @@
 [
   {
-    "ModuleBinary": "pmc.so",
-    "MimFile": "pmc.json",
-    "ModelName": "PackageManagerConfigurationModel"
+    "Action": "LoadModule",
+    "Module": "pmc.so"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "ObjectName": "state",
-    "Desired": false,
-    "ExpectedResult": 0
+    "ObjectName": "state"
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
-    "ObjectName": "invalidObjectName",
-    "Desired": false,
+    "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
-    "ComponentName": "invalidComponentName",
-    "ObjectName": "state",
-    "Desired": false,
-    "ExpectedResult": 22
-  },
-  {
+    "ObjectType": "Reported",
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "",
-    "Desired": false,
     "ExpectedResult": 22
   },
   {
+    "ObjectType": "Reported",
+    "ComponentName": "invalid",
+    "ObjectName": "state",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "PackageManagerConfiguration",
+    "ObjectName": "",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
     "ComponentName": "",
     "ObjectName": "state",
-    "Desired": false,
     "ExpectedResult": 22
   },
   {
+    "ObjectType": "Reported",
     "ComponentName": "",
     "ObjectName": "",
-    "Desired": false,
     "ExpectedResult": 22
   },
   {
+    "ObjectType": "Desired",
     "ComponentName": "PackageManagerConfiguration",
     "ObjectName": "desiredState",
-    "Desired": true,
-    "Payload": "{}",
+    "Payload": -1,
     "ExpectedResult": 22
+  },
+  {
+    "Action": "UnloadModule"
   }
 ]
