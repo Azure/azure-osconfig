@@ -82,8 +82,6 @@ Command steps are used to execute a command as part of the test suite. Success o
 
 Module steps are used to load and unload a module as part of the test suite. This can be useful for testing the behavior of a module when it is loaded/unloaded and gives the opportunity to verify the state of the device before/after the module is loaded/unloaded.
 
-> If the unload step is omitted, the module will be unloaded after the test suite is complete.
-
 ```json
 [
   {

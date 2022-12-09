@@ -102,8 +102,9 @@ void FreeStep(STEP* step)
             free(step->data.test.component);
             free(step->data.test.object);
             json_value_free(step->data.test.payload);
-        default:
             break;
+        default:
+            LOG_ERROR("Unknown step type: %d", step->type);
     }
 }
 
@@ -559,7 +560,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
 
             if (module != NULL)
             {
-                LOG_INFO("Module is still loaded, unloading...");
+                LOG_INFO("Warning: module is still loaded, unloading...");
                 UnloadModule(module);
                 module = NULL;
             }
