@@ -82,7 +82,7 @@ static bool g_verbose = false;
 
 void FreeStep(STEP* step)
 {
-    if (step == NULL)
+    if (step)
     {
         return;
     }
@@ -99,6 +99,7 @@ void FreeStep(STEP* step)
             free(step->data.test.component);
             free(step->data.test.object);
             json_value_free(step->data.test.payload);
+        default:
             break;
     }
 }
@@ -115,42 +116,44 @@ int ParseTestStep(const JSON_Object* object, TEST_STEP* test)
         LOG_ERROR("Missing '%s' from test step", RECIPE_TYPE);
         status = EINVAL;
     }
-
-    if (strcmp(type, RECIPE_REPORTED) == 0)
-    {
-        test->type = REPORTED;
-    }
-    else if (strcmp(type, RECIPE_DESIRED) == 0)
-    {
-        test->type = DESIRED;
-    }
     else
     {
-        status = EINVAL;
-    }
-
-    if (NULL == (test->component = strdup(json_object_get_string(object, RECIPE_COMPONENT))))
-    {
-        LOG_ERROR("'%s' is required for '%s' test step", RECIPE_COMPONENT, type);
-        status = EINVAL;
-    }
-
-    if (NULL == (test->object = strdup(json_object_get_string(object, RECIPE_OBJECT))))
-    {
-        LOG_ERROR("'%s' is required for '%s' test", RECIPE_OBJECT, type);
-        status = EINVAL;
-    }
-
-    if (NULL == (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
-    {
-        if (NULL != (json = json_object_get_string(object, RECIPE_JSON)))
+        if (strcmp(type, RECIPE_REPORTED) == 0)
         {
-            payload = json_parse_string(json);
+            test->type = REPORTED;
         }
-    }
+        else if (strcmp(type, RECIPE_DESIRED) == 0)
+        {
+            test->type = DESIRED;
+        }
+        else
+        {
+            status = EINVAL;
+        }
 
-    test->payload = payload ? json_value_deep_copy(payload) : NULL;
-    test->status = json_object_get_number(object, RECIPE_STATUS);
+        if (NULL == (test->component = strdup(json_object_get_string(object, RECIPE_COMPONENT))))
+        {
+            LOG_ERROR("'%s' is required for '%s' test step", RECIPE_COMPONENT, type);
+            status = EINVAL;
+        }
+
+        if (NULL == (test->object = strdup(json_object_get_string(object, RECIPE_OBJECT))))
+        {
+            LOG_ERROR("'%s' is required for '%s' test", RECIPE_OBJECT, type);
+            status = EINVAL;
+        }
+
+        if (NULL == (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
+        {
+            if (NULL != (json = json_object_get_string(object, RECIPE_JSON)))
+            {
+                payload = json_parse_string(json);
+            }
+        }
+
+        test->payload = payload ? json_value_deep_copy(payload) : NULL;
+        test->status = json_object_get_number(object, RECIPE_STATUS);
+    }
 
     return status;
 }
@@ -201,37 +204,39 @@ int ParseModuleStep(const JSON_Object* object, MODULE_STEP* module)
     if (module == NULL)
     {
         LOG_ERROR("Invalid (null) module");
-        return EINVAL;
-    }
-
-    if (NULL == (action = json_object_get_string(object, RECIPE_ACTION)))
-    {
-        LOG_ERROR("Missing '%s' from module step", RECIPE_ACTION);
         status = EINVAL;
     }
     else
     {
-        if (strcmp(action, RECIPE_LOAD_MODULE) == 0)
+        if (NULL == (action = json_object_get_string(object, RECIPE_ACTION)))
         {
-            module->action = LOAD;
-        }
-        else if (strcmp(action, RECIPE_UNLOAD_MODULE) == 0)
-        {
-            module->action = UNLOAD;
+            LOG_ERROR("Missing '%s' from module step", RECIPE_ACTION);
+            status = EINVAL;
         }
         else
         {
-            LOG_ERROR("Invalid action '%s'", action);
-            status = EINVAL;
+            if (strcmp(action, RECIPE_LOAD_MODULE) == 0)
+            {
+                module->action = LOAD;
+            }
+            else if (strcmp(action, RECIPE_UNLOAD_MODULE) == 0)
+            {
+                module->action = UNLOAD;
+            }
+            else
+            {
+                LOG_ERROR("Invalid action '%s'", action);
+                status = EINVAL;
+            }
         }
-    }
 
-    if ((status == 0) && (module->action == LOAD))
-    {
-        if (NULL == (module->name = strdup(json_object_get_string(object, RECIPE_MODULE))))
+        if ((status == 0) && (module->action == LOAD))
         {
-            LOG_ERROR("'%s' is required for '%s' module step", RECIPE_MODULE, action);
-            status = EINVAL;
+            if (NULL == (module->name = strdup(json_object_get_string(object, RECIPE_MODULE))))
+            {
+                LOG_ERROR("'%s' is required to load a module", RECIPE_MODULE);
+                status = EINVAL;
+            }
         }
     }
 
