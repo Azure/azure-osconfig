@@ -14,9 +14,9 @@ The `moduletest` command line tool is used to *execute* a test recipe.
 $ moduletest <file>... [--bin <path>] [--verbose] [--help]
 
 # Examples
-$ moduletest path/to/module/test.json
-$ moduletest path/to/module/test.json --bin /usr/lib/osconfig
-$ moduletest path/to/module/test1.json path/to/module/test2.json
+$ moduletest path/to/module/TestRecipe.json
+$ moduletest path/to/module/TestRecipe.json --bin /usr/lib/osconfig
+$ moduletest path/to/module/TestRecipe1.json path/to/module/TestRecipe2.json
 ```
 
 ## Test recipe
