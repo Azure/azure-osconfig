@@ -216,7 +216,8 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             {
                 *moduleInfo = info;
             }
-            else {
+            else
+            {
                 FreeModuleInfo(info);
                 info = NULL;
             }
@@ -227,13 +228,11 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
     return status;
 }
 
-MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* name)
+MANAGEMENT_MODULE* LoadModule(const char* client, const char* path)
 {
     int status = 0;
-    char* path = NULL;
     MANAGEMENT_MODULE* module = NULL;
     MODULE_INFO* info = NULL;
-    size_t pathLength = 0;
     JSON_Value* value = NULL;
     MMI_JSON_STRING payload = NULL;
     int payloadSize = 0;
@@ -243,14 +242,9 @@ MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* n
         LOG_ERROR("Invalid (null) client");
         status = EINVAL;
     }
-    else if (NULL == bin)
+    else if (NULL == path)
     {
-        LOG_ERROR("Invalid (null) bin");
-        status = EINVAL;
-    }
-    else if (NULL == name)
-    {
-        LOG_ERROR("Invalid (null) name");
+        LOG_ERROR("Invalid (null) path");
         status = EINVAL;
     }
     else if (NULL == (module = (MANAGEMENT_MODULE*)calloc(1, sizeof(MANAGEMENT_MODULE))))
@@ -258,90 +252,78 @@ MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* n
         LOG_ERROR("Failed to allocate memory for module");
         status = ENOMEM;
     }
-    else if (0 == (pathLength = strlen(bin) + strlen(name) + 5))
-    {
-        LOG_ERROR("Failed to calculate path length");
-        status = EINVAL;
-    }
-    else if (NULL == (path = (char*)calloc(pathLength, sizeof(char))))
-    {
-        LOG_ERROR("Failed to allocate memory for module path");
-        status = ENOMEM;
-    }
-    else if (NULL == (module->name = strdup(name)))
+    else if (NULL == (module->name = strdup(path)))
     {
         LOG_ERROR("Failed to allocate memory for module name");
         status = ENOMEM;
     }
     else
     {
-        snprintf(path, pathLength, "%s/%s", bin, name);
-
         LOG_INFO("Loading module %s", path);
 
         if (NULL == (module->handle = dlopen(path, RTLD_NOW)))
         {
-            LOG_ERROR("Failed to load module %s: %s", name, dlerror());
+            LOG_ERROR("Failed to load module %s: ", dlerror());
             status = ENOENT;
         }
         else
         {
-            if (NULL == (module->getinfo = (MMI_GETINFO)dlsym(module->handle, MMI_GETINFO_FUNCTION)))
+            if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, MMI_GETINFO_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_GETINFO_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_GETINFO_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, MMI_OPEN_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_OPEN_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_OPEN_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, MMI_CLOSE_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_CLOSE_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_CLOSE_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->get = (MMI_GET)dlsym(module->handle, MMI_GET_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_GET_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_GET_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->set = (MMI_SET)dlsym(module->handle, MMI_SET_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_SET_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_SET_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, MMI_FREE_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI for %s: %s.so", MMI_FREE_FUNCTION, name, dlerror());
+                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_FREE_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (0 == status)
             {
-                if (MMI_OK != (module->getinfo(client, &payload, &payloadSize)))
+                if (MMI_OK != (module->getInfo(client, &payload, &payloadSize)))
                 {
-                    LOG_ERROR("Failed to get module info for %s", name);
+                    LOG_ERROR("Failed to get module info: %s", path);
                     status = ENOENT;
                 }
                 else if (NULL == (value = json_parse_string(payload)))
                 {
-                    LOG_ERROR("Failed to parse module info for %s", name);
+                    LOG_ERROR("Failed to parse module info: %s", path);
                     status = ENOENT;
                 }
                 else if (0 != (status = ParseModuleInfo(value, &info)))
                 {
-                    LOG_ERROR("Failed to parse module info for %s", name);
+                    LOG_ERROR("Failed to parse module info: %s", path);
                     status = ENOENT;
                 }
                 else if (NULL == (module->session = module->open(client, DEFAULT_MAX_PAYLOAD_SIZE)))
                 {
-                    LOG_ERROR("Failed to open module %s", name);
+                    LOG_ERROR("Failed to open module session (%s): %s", client, path);
                     status = ENOENT;
                 }
                 else
@@ -373,7 +355,7 @@ void UnloadModule(MANAGEMENT_MODULE* module)
     module->close(module->session);
     module->session = NULL;
 
-    module->getinfo = NULL;
+    module->getInfo = NULL;
     module->open = NULL;
     module->close = NULL;
     module->get = NULL;

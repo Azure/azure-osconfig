@@ -26,6 +26,9 @@
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
+#define LINE_SEPARATOR "--------------------------------------------------------------------------------"
+#define LINE_SEPARATOR_THICK "================================================================================"
+
 typedef enum STEP_TYPE
 {
     MODULE = 0,
@@ -104,9 +107,9 @@ void FreeStep(STEP* step)
     }
 }
 
-int ParseTestStep(const JSON_Object* object, TEST_STEP* test)
+bool ParseTestStep(const JSON_Object* object, TEST_STEP* test)
 {
-    int status = 0;
+    bool parseError = false;
     const char* type = NULL;
     JSON_Value* payload = NULL;
     const char* json = NULL;
@@ -114,7 +117,7 @@ int ParseTestStep(const JSON_Object* object, TEST_STEP* test)
     if (NULL == (type = json_object_get_string(object, RECIPE_TYPE)))
     {
         LOG_ERROR("Missing '%s' from test step", RECIPE_TYPE);
-        status = EINVAL;
+        parseError = true;
     }
     else
     {
@@ -128,19 +131,19 @@ int ParseTestStep(const JSON_Object* object, TEST_STEP* test)
         }
         else
         {
-            status = EINVAL;
+            parseError = true;
         }
 
         if (NULL == (test->component = strdup(json_object_get_string(object, RECIPE_COMPONENT))))
         {
             LOG_ERROR("'%s' is required for '%s' test step", RECIPE_COMPONENT, type);
-            status = EINVAL;
+            parseError = true;
         }
 
         if (NULL == (test->object = strdup(json_object_get_string(object, RECIPE_OBJECT))))
         {
             LOG_ERROR("'%s' is required for '%s' test", RECIPE_OBJECT, type);
-            status = EINVAL;
+            parseError = true;
         }
 
         if (NULL == (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
@@ -155,95 +158,81 @@ int ParseTestStep(const JSON_Object* object, TEST_STEP* test)
         test->status = json_object_get_number(object, RECIPE_STATUS);
     }
 
-    return status;
+    return !parseError;
 }
 
-int ParseCommandStep(const JSON_Object* object, COMMAND_STEP* command)
+bool ParseCommandStep(const JSON_Object* object, COMMAND_STEP* command)
 {
-    int status = 0;
+    bool parseError = false;
     JSON_Value* value = NULL;
     const char* arguments = NULL;
-
-    if (command == NULL)
-    {
-        LOG_ERROR("Invalid (null) command");
-        return EINVAL;
-    }
 
     if (NULL == (value = json_object_get_value(object, RECIPE_RUN_COMMAND)))
     {
         LOG_ERROR("Missing '%s' from command step", RECIPE_RUN_COMMAND);
-        status = EINVAL;
+        parseError = true;
     }
     else if (JSONString != json_value_get_type(value))
     {
         LOG_ERROR("'%s' must be a string", RECIPE_RUN_COMMAND);
-        status = EINVAL;
+        parseError = true;
     }
     else if (NULL == (arguments = json_value_get_string(value)))
     {
         LOG_ERROR("Failed to serialize '%s' from command step", RECIPE_RUN_COMMAND);
-        status = EINVAL;
+        parseError = true;
     }
     else if (NULL == (command->arguments = strdup(arguments)))
     {
         LOG_ERROR("Failed to copy '%s' from command step", RECIPE_RUN_COMMAND);
-        status = ENOMEM;
+        parseError = true;
     }
 
     command->status = json_object_get_number(object, "Status");
 
-    return status;
+    return !parseError;
 }
 
-int ParseModuleStep(const JSON_Object* object, MODULE_STEP* module)
+bool ParseModuleStep(const JSON_Object* object, MODULE_STEP* module)
 {
-    int status = 0;
+    bool parseError = false;
     const char* action = NULL;
 
-    if (module == NULL)
+    if (NULL == (action = json_object_get_string(object, RECIPE_ACTION)))
     {
-        LOG_ERROR("Invalid (null) module");
-        status = EINVAL;
+        LOG_ERROR("Missing '%s' from module step", RECIPE_ACTION);
+        parseError = true;
     }
     else
     {
-        if (NULL == (action = json_object_get_string(object, RECIPE_ACTION)))
+        if (strcmp(action, RECIPE_LOAD_MODULE) == 0)
         {
-            LOG_ERROR("Missing '%s' from module step", RECIPE_ACTION);
-            status = EINVAL;
+            module->action = LOAD;
+        }
+        else if (strcmp(action, RECIPE_UNLOAD_MODULE) == 0)
+        {
+            module->action = UNLOAD;
         }
         else
         {
-            if (strcmp(action, RECIPE_LOAD_MODULE) == 0)
-            {
-                module->action = LOAD;
-            }
-            else if (strcmp(action, RECIPE_UNLOAD_MODULE) == 0)
-            {
-                module->action = UNLOAD;
-            }
-            else
-            {
-                LOG_ERROR("Invalid action '%s'", action);
-                status = EINVAL;
-            }
-        }
-
-        if ((status == 0) && (module->action == LOAD))
-        {
-            if (NULL == (module->name = strdup(json_object_get_string(object, RECIPE_MODULE))))
-            {
-                LOG_ERROR("'%s' is required to load a module", RECIPE_MODULE);
-                status = EINVAL;
-            }
+            LOG_ERROR("Invalid action '%s'", action);
+            parseError = true;
         }
     }
 
-    return status;
+    if ((!parseError) && (module->action == LOAD))
+    {
+        if (NULL == (module->name = strdup(json_object_get_string(object, RECIPE_MODULE))))
+        {
+            LOG_ERROR("'%s' is required to load a module", RECIPE_MODULE);
+            parseError = true;
+        }
+    }
+
+    return !parseError;
 }
 
-int ParseStep(const JSON_Object* object, STEP* step)
+bool ParseStep(const JSON_Object* object, STEP* step)
 {
     int status = 0;
     JSON_Value* value = NULL;
@@ -253,25 +242,28 @@ int ParseStep(const JSON_Object* object, STEP* step)
     if (NULL != (value = json_object_get_value(object, RECIPE_RUN_COMMAND)))
     {
         step->type = COMMAND;
-        if (0 != (status = ParseCommandStep(object, &step->data.command)))
+        if (!ParseCommandStep(object, &step->data.command))
         {
             LOG_ERROR("Failed to parse command step: %s", json_serialize_to_string(value));
+            status = EINVAL;
         }
     }
     else if (NULL != (value = json_object_get_value(object, RECIPE_TYPE)))
     {
         step->type = TEST;
-        if (0 != (status = ParseTestStep(object, &step->data.test)))
+        if (!ParseTestStep(object, &step->data.test))
         {
             LOG_ERROR("Failed to parse test step: %s", json_serialize_to_string(value));
+            status = EINVAL;
         }
     }
     else if (NULL != (value = json_object_get_value(object, RECIPE_ACTION)))
     {
         step->type = MODULE;
-        if (0 != (status = ParseModuleStep(object, &step->data.module)))
+        if (!ParseModuleStep(object, &step->data.module))
         {
             LOG_ERROR("Failed to parse module step: %s", json_serialize_to_string(value));
+            status = EINVAL;
         }
     }
     else
@@ -335,16 +327,14 @@ int RunCommand(const COMMAND_STEP* command)
 
     if (command != NULL)
     {
-        printf("$ %s\n", command->arguments);
-
         if (command->status != ExecuteCommand(NULL, command->arguments, false, false, 0, 0, &textResult, NULL, NULL))
         {
-            printf("Command exited with status: %d (expected %d): %s\n", status, command->status, textResult);
+            LOG_ERROR("Command exited with status: %d (expected %d): %s", status, command->status, textResult);
             status = -1;
         }
         else if (textResult != NULL)
         {
-            printf("%s\n", textResult);
+            LOG_INFO("%s", textResult);
         }
 
         FREE_MEMORY(textResult);
@@ -387,7 +377,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
                 memcpy(payloadString, payload, payloadSize);
                 if (NULL == (value = json_parse_string(payloadString)))
                 {
-                    printf("[FAILURE] Failed to parse JSON payload: %s\n", payloadString);
+                    LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
                 }
             }
@@ -399,20 +389,20 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             {
                 if (!json_value_equals(test->payload, value))
                 {
-                    printf("[FAILURE]\n\texpected:\n\t\t%s\n\tactual:\n\t\t%s\n", json_serialize_to_string(test->payload), json_serialize_to_string(value));
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(test->payload), json_serialize_to_string(value));
                     result = -1;
                 }
             }
             else
             {
-                printf("[FAILURE]\n\texpected:\n\t\t%s\n\tactual:\n\t\tnull\n", json_serialize_to_string(test->payload));
+                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", json_serialize_to_string(test->payload));
                 result = -1;
             }
         }
 
         if (test->status != mmiStatus)
         {
-            printf("[FAILURE] expected status '%d', actual '%d'\n", test->status, mmiStatus);
+            LOG_ERROR("Assertion failed, expected status '%d', actual '%d'", test->status, mmiStatus);
             result = -1;
         }
     }
@@ -428,13 +418,13 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->status != mmiStatus)
         {
-            printf("[FAILURE] expected status '%d', actual '%d'\n", test->status, mmiStatus);
+            LOG_ERROR("Assertion failed, expected status '%d', actual '%d'", test->status, mmiStatus);
             result = -1;
         }
     }
     else
     {
-        printf("[FAILURE] Invalid test step type: %d\n", test->type);
+        LOG_ERROR("Invalid test step type: %d", test->type);
         result = EINVAL;
     }
 
@@ -457,25 +447,24 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
     int total = 0;
     long long start = 0;
     long long end = 0;
+    char* modulePath = NULL;
     MANAGEMENT_MODULE* module = NULL;
     STEP* steps = NULL;
 
-    printf("\n");
-    printf("test recipe: %s\n", path);
-    printf("\n");
+    LOG_INFO("Test recipe: %s", path);
 
     if ((0 == (status = ParseRecipe(path, &steps, &total))))
     {
-        printf("client: '%s'\n", client);
-        printf("bin: %s\n", bin);
-        printf("\n");
+        LOG_INFO("Client: '%s'", client);
+        LOG_INFO("Bin: %s", bin);
+        LOG_TRACE(LINE_SEPARATOR_THICK);
 
         start = CurrentMilliseconds();
 
         if (status == 0)
         {
-            printf("running %d steps...\n", total);
-            printf("\n");
+            LOG_INFO("Running %d steps...", total);
+            LOG_TRACE(LINE_SEPARATOR);
 
             for (int i = 0; i < total; i++)
             {
@@ -486,18 +475,17 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                     sleep(step->delay);
                 }
 
-                printf("%d/%d ", i + 1, total);
+                LOG_INFO("Step %d of %d", i + 1, total);
 
                 switch (step->type)
                 {
                     case COMMAND:
-                        printf("[COMMAND]\n");
+                        LOG_INFO("Executing command '%s'", step->data.command.arguments);
                         failures += (0 == RunCommand(&step->data.command)) ? 0 : 1;
                         break;
 
                     case TEST:
-                        printf("[TEST] %s %s.%s\n", step->data.test.type == REPORTED ? "reported" : "desired", step->data.test.component, step->data.test.object);
-
+                        LOG_INFO("Running %s test '%s.%s'", step->data.test.type == REPORTED ? "reported" : "desired", step->data.test.component, step->data.test.object);
                         if (module == NULL)
                         {
                             LOG_ERROR("No module loaded, skipping test step: %d", i);
@@ -510,16 +498,28 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                         break;
 
                     case MODULE:
-                        printf("[MODULE] %s %s\n", step->data.module.action == LOAD ? "load" : "unload", (step->data.module.name == NULL ? "" : step->data.module.name));
+                        LOG_INFO("%s module...", step->data.module.action == LOAD ? "Loading" : "Unloading");
 
                         if (module == NULL)
                         {
                             if (step->data.module.action == LOAD)
                             {
-                                if (NULL == (module = LoadModule(client, bin, step->data.module.name)))
+                                if (NULL == (modulePath = calloc(strlen(bin) + strlen(step->data.module.name) + 2, sizeof(char))))
                                 {
-                                    LOG_ERROR("Failed to load module '%s'", step->data.module.name);
+                                    LOG_ERROR("Failed to allocate memory for module path");
                                     failures++;
+                                }
+                                else
+                                {
+                                    sprintf(modulePath, "%s/%s", bin, step->data.module.name);
+
+                                    if (NULL == (module = LoadModule(client, modulePath)))
+                                    {
+                                        LOG_ERROR("Failed to load module '%s'", step->data.module.name);
+                                        failures++;
+                                    }
+
+                                    FREE_MEMORY(modulePath);
                                 }
                             }
                             else
@@ -549,7 +549,10 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                         break;
                 }
 
-                printf("\n");
+                if (i < total - 1)
+                {
+                    LOG_TRACE(LINE_SEPARATOR);
+                }
             }
 
             end = CurrentMilliseconds();
@@ -561,12 +564,13 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                 module = NULL;
             }
 
-            printf("summary: %s\n", failures == 0 ? "PASSED" : "FAILURE");
-            printf("  passed: %d\n", total - failures);
-            printf("  skipped: %d\n", skipped);
-            printf("  failed: %d\n", failures);
-            printf("  total: %d (%d ms)\n", total, (int)(end - start));
-            printf("\n");
+            LOG_TRACE(LINE_SEPARATOR_THICK);
+            LOG_TRACE("summary: %s", failures == 0 ? "PASSED" : "FAILED");
+            LOG_TRACE("  passed: %d", total - failures);
+            LOG_TRACE("  skipped: %d", skipped);
+            LOG_TRACE("  failed: %d", failures);
+            LOG_TRACE("  total: %d (%d ms)", total, (int)(end - start));
+            LOG_TRACE(LINE_SEPARATOR_THICK);
         }
     }
 

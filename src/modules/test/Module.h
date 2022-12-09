@@ -52,13 +52,13 @@ typedef struct MANAGEMENT_MODULE
 
     MMI_OPEN open;
     MMI_CLOSE close;
-    MMI_GETINFO getinfo;
+    MMI_GETINFO getInfo;
     MMI_SET set;
     MMI_GET get;
     MMI_FREE free;
 } MANAGEMENT_MODULE;
 
-MANAGEMENT_MODULE* LoadModule(const char* client, const char* bin, const char* name);
+MANAGEMENT_MODULE* LoadModule(const char* client, const char* path);
 void UnloadModule(MANAGEMENT_MODULE* module);
 
 #endif // MANAGEMENTMODULE_H
