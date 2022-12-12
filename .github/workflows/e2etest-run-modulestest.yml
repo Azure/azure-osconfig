@@ -76,7 +76,6 @@ jobs:
             end=`date -d "+${{inputs.repeatForXMins}} mins" +%s`
             while [[ $(date +%s) -lt $end ]]; do
               echo Performing test run $((++runNumber))
-              # run moduletest with all of the files under ./src/modules/test/recipies as arrguments
               ./moduletest $recipes --bin $bin > ${{ matrix.distroName }}.log
               checkResult $?
             done
