@@ -315,9 +315,7 @@ A new kind of OSConfig Management Module can be added: an Orchestrator Module lo
 
 The OSConfig Native Resource Provider is an univeral NRP that links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
 
-Using MC and this NRP, we can create Azure Policies that will automatically target for compliance audit or remediation all Arc devices in a particular Azure subscription or Azure resource group. 
-
-Using thie NRP, each Azure Policy can audit/remediate one read-write pair of MIM settings and multiple Policies can audit/remediate multiple read-write pairs of MIM settings, aka whole device configuration.
+Using MC and this NRP, we can create Azure Policies that will automatically target for compliance audit or remediation all Arc devices in a particular Azure subscription or Azure resource group. Each Azure Policy can audit/remediate one read-write pair of MIM settings and multiple Policies can audit/remediate multiple read-write pairs of MIM settings, aka whole device configuration.
 
 The NRP can have resource class parameters such as:
 
