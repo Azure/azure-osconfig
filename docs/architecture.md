@@ -305,13 +305,13 @@ For more information about the MIM see the [OSConfig Management Modules](modules
 
 The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/). This module can support multiple MIM components and PnP interfaces that are read-only (all reported, no desired configuration) and leverage OSQuery to retrieve the respective configuration from the device. To be decided.
 
-## 5.4. Orchestrator Module
+## 5.5. Orchestrator Module
 
 In general, we can adappt OSConfig Management Modules to MC and Azure Policy by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
 
 A new kind of OSConfig Management Module can be added: an Orchestrator Module loads other modules and execute combination of standard OSConfig module scenarios, without dealing itself with any direct OS configuration. There can be one or multiple Orchestrator Modules, each one of them using a different combination of standard modules, and/or using same modules but in different ways. The power of Orchestrator Modules is that they can wrap more complex scenarios in simple MIM models and thus work better with Azure Policy. 
 
-# 5. OSConfig Native Resource Provider (NRP)
+# 6. OSConfig Native Resource Provider (NRP)
 
 The OSConfig Native Resource Provider is an univeral NRP that links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
 
@@ -330,4 +330,3 @@ The NRP can have resource class parameters such as:
 Last two are not used by Azure Policy, can be omitted from the resource class parameters and only used internally for auditing.
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
-
