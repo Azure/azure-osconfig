@@ -1057,7 +1057,7 @@ Name | Type| Required? | Description
 -----|-----|-----|-----
 ComponentName | String | Required | Name of the MIM component.
 ObjectName | String | Required | Name of the MIM object.
-Desired | Boolean | Required | True means desired object and false means reported object.
+ObjectType | String | Required | Can be either "Desired" or "Reported".
 Payload | String  | Optional | The JSON payload as escaped JSON. Desired indicates what this payload is: desired payload for MmiSet or expected reported payload for MmiGet. If omitted for a reported object, the ModulesTest automatically validates the the setting name and types against the MIM. 
 PayloadSizeBytes |Integer | Optional | The size of the desired or expected reported payload, in bytes. If omitted, ModuleTest automatically calculates the correct size of the payload. 
 ExpectedResult | Integer | Required | The expected result (such as: 0 for MMI_OK).
