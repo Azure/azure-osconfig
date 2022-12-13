@@ -135,7 +135,11 @@ namespace OSConfig::Platform::Tests
         "DNS Servers: 172.29.64.1\n"
         "DNS Domain: mshome.net\n";
 
-    std::vector<std::string> g_returnValues = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+    std::string g_systemdResolvedServiceName = "systemd-resolved.service";
+    std::string g_errorMessageFromServiceStartup = "Error text for test";
+    std::string g_emptyString = "";
+
+    std::vector<std::string> g_returnValues = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways,  g_systemdResolvedServiceName, g_testCommandOutputDnsServers};
 
     TEST(NetworkingTests, Get_Success)
     {
@@ -256,7 +260,7 @@ namespace OSConfig::Platform::Tests
             "GENERAL.STATE:                          100 (connected)\n"
             "GENERAL.CONNECTION:                     Wired connection 1\n";
 
-        std::vector<std::string> returnValuesDataMissing = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, "", g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+        std::vector<std::string> returnValuesDataMissing = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, g_emptyString, g_testIpData, g_testCommandOutputDefaultGateways, g_systemdResolvedServiceName, g_testCommandOutputDnsServers};
 
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
@@ -272,7 +276,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_NE(payload, nullptr);
         delete payload;
 
-        std::vector<std::string> returnValuesNetworkManagerEnabled = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+        std::vector<std::string> returnValuesNetworkManagerEnabled = {g_testCommandOutputNames, g_testCommandOutputInterfaceTypesNmcli, g_testIpData, g_testCommandOutputDefaultGateways, g_systemdResolvedServiceName, g_testCommandOutputDnsServers};
         testModule.runCommandCount = 0;
         testModule.returnValues = returnValuesNetworkManagerEnabled;
         result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
@@ -285,7 +289,7 @@ namespace OSConfig::Platform::Tests
         EXPECT_NE(payload, nullptr);
         delete payload;
 
-        std::vector<std::string> returnValuesSystemdNetworkdEnabled = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, g_testCommandOutputInterfaceTypesNetworkctl, g_testIpData, g_testCommandOutputDefaultGateways, g_testCommandOutputDnsServers};
+        std::vector<std::string> returnValuesSystemdNetworkdEnabled = {g_testCommandOutputNames, testCommandOutputInterfaceTypesNmcliDataMissing, g_testCommandOutputInterfaceTypesNetworkctl, g_testIpData, g_testCommandOutputDefaultGateways, g_systemdResolvedServiceName, g_testCommandOutputDnsServers};
         testModule.runCommandCount = 0;
         testModule.returnValues = returnValuesSystemdNetworkdEnabled;
         result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
@@ -531,14 +535,12 @@ namespace OSConfig::Platform::Tests
             "2.2.2.2 3.3.3.3\n"
             "DNS Domain: mshome.net\n";
 
-
-
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
         testModule.returnValues = g_returnValues;
         testModule.returnValues[0] = testCommandOutputInterfaceNames;
-        testModule.returnValues[4] = testCommandOutputDnsServers;
+        testModule.returnValues[5] = testCommandOutputDnsServers;
 
         int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
@@ -551,7 +553,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
 
         testModule.runCommandCount = 0;
-        testModule.returnValues[4] = testCommandOutputGlobalDnsServers;
+        testModule.returnValues[5] = testCommandOutputGlobalDnsServers;
 
         result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
@@ -564,7 +566,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
 
         testModule.runCommandCount = 0;
-        testModule.returnValues[4] = testCommandOutputOnlyGlobalDnsServers;
+        testModule.returnValues[5] = testCommandOutputOnlyGlobalDnsServers;
 
         result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
@@ -577,7 +579,7 @@ namespace OSConfig::Platform::Tests
         delete payload;
 
         testModule.runCommandCount = 0;
-        testModule.returnValues[4] = testCommandOutputMultipleDnsServersPerLine;
+        testModule.returnValues[5] = testCommandOutputMultipleDnsServersPerLine;
 
         result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
 
@@ -585,6 +587,71 @@ namespace OSConfig::Platform::Tests
 
         resultString = std::string(payload, payloadSizeBytes);
         EXPECT_STREQ(resultString.c_str(), payloadExpectedMultipleDnsServersPerLine);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+    }
+
+    TEST(NetworkingTests, GetDnsServers_SystemdResolved_Disabled)
+    {
+        const char* payloadExpected =
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"docker0=8.8.8.8,172.29.64.1;eth0=172.29.64.1\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
+
+        MMI_JSON_STRING payload;
+        int payloadSizeBytes;
+        NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
+
+        testModule.returnValues = g_returnValues;
+        testModule.returnValues[4] = g_emptyString;
+        testModule.returnValues[5] = g_emptyString;
+        testModule.returnValues.emplace_back(g_testCommandOutputDnsServers);
+
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        std::string resultString(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpected);
+
+        EXPECT_NE(payload, nullptr);
+        delete payload;
+    }
+
+    TEST(NetworkingTests, GetDnsServers_SystemdResolved_Unavailable)
+    {
+        const char* payloadExpected =
+            "{\"interfaceTypes\":\"docker0=bridge;eth0=ethernet\","
+            "\"macAddresses\":\"docker0=0a:25:3g:6v:2f:89;eth0=00:15:5d:26:cf:89\","
+            "\"ipAddresses\":\"docker0=172.32.233.234,::1;eth0=172.27.181.213,10.1.1.2,fe80::5e42:4bf7:dddd:9b0f\","
+            "\"subnetMasks\":\"docker0=/8,/128;eth0=/20,/16,/64\","
+            "\"defaultGateways\":\"docker0=172.17.128.1;eth0=172.13.145.1\","
+            "\"dnsServers\":\"\","
+            "\"dhcpEnabled\":\"docker0=true;eth0=false\","
+            "\"enabled\":\"docker0=true;eth0=false\","
+            "\"connected\":\"docker0=true;eth0=false\"}";
+
+        MMI_JSON_STRING payload;
+        int payloadSizeBytes;
+        NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
+
+        testModule.returnValues = g_returnValues;
+        testModule.returnValues[4] = g_emptyString;
+        testModule.returnValues[5] = g_errorMessageFromServiceStartup;
+
+        int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
+
+        EXPECT_EQ(result, MMI_OK);
+
+        std::string resultString(payload, payloadSizeBytes);
+        EXPECT_STREQ(resultString.c_str(), payloadExpected);
 
         EXPECT_NE(payload, nullptr);
         delete payload;
@@ -667,9 +734,8 @@ namespace OSConfig::Platform::Tests
             "\"enabled\":\"\","
             "\"connected\":\"\"}";
 
-        std::string testCommandOutputNamesEmpty = "";
         NetworkingObjectTest testModule(g_maxPayloadSizeBytes);
-        testModule.returnValues = {testCommandOutputNamesEmpty};
+        testModule.returnValues = {g_emptyString};
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
         int result = testModule.Get(NETWORKING, NETWORK_CONFIGURATION, &payload, &payloadSizeBytes);
@@ -743,7 +809,7 @@ namespace OSConfig::Platform::Tests
         testModule.returnValues[1] = testInterfaceTypesDataEth0Empty; 
         testModule.returnValues[2] = testIpDataEth0Empty;
         testModule.returnValues[3] = testCommandOutputDefaultGatewaysEth0Empty;
-        testModule.returnValues[4] = testCommandOutputDnsServersEth0Empty;
+        testModule.returnValues[5] = testCommandOutputDnsServersEth0Empty;
 
         MMI_JSON_STRING payload;
         int payloadSizeBytes;
