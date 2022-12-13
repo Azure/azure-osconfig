@@ -65,7 +65,7 @@ The Management Platform runs in its own process, separate of the PnP Agent. OSCo
 
 <img src="assets/4_platform.png" alt="Copper" width=70%/>
   
-# 5. Isolated Modules - the current North Star (codename Zinc)
+# 5. Isolated Modules - the current North Star (codename Gallium)
 
 Main target scenario: OSConfig Management Modules run isolated in their own processes, Azure Policy and GitHub
 
