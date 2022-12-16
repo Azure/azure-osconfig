@@ -31,6 +31,8 @@ const char* g_getIpAddressDetails = "ip addr";
 const char* g_getDefaultGateways = "ip route";
 const char* g_getDnsServers = "systemd-resolve --status";
 
+const char* g_systemdResolvedServiceName = "systemd-resolved.service";
+
 const char* g_macAddressesPrefix = "link/";
 const char* g_ipAddressesPrefix = "inet";
 const char* g_subnetMasksPrefix = "inet";
@@ -657,6 +659,12 @@ void NetworkingObjectBase::GetGlobalDnsServers(std::string dnsServersData, std::
 void NetworkingObjectBase::GenerateDnsServersMap()
 {
     this->m_dnsServersMap.clear();
+    if (true != EnableAndStartDaemon(g_systemdResolvedServiceName, NetworkingLog::Get()))
+    {
+        OsConfigLogError(NetworkingLog::Get(), "Unable to start service %s. DnsServers data will be empty.", g_systemdResolvedServiceName);
+        return;
+    }
+
     std::string dnsServersData = RunCommand(g_getDnsServers);
 
     std::vector<std::string> globalDnsServers;
