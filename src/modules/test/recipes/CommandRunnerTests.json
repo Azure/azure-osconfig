@@ -34,7 +34,7 @@
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
-    "Delay": 1,
+    "WaitSeconds": 1,
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "test_1",
@@ -68,7 +68,7 @@
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
-    "Delay": 1,
+    "WaitSeconds": 1,
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "test_2",
@@ -81,7 +81,7 @@
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
-    "Delay": 2,
+    "WaitSeconds": 2,
     "Payload": {
       "commandId": "test_3",
       "arguments": "sleep 100s",
@@ -94,7 +94,7 @@
     "ObjectType": "Desired",
     "ComponentName": "CommandRunner",
     "ObjectName": "commandArguments",
-    "Delay": 5,
+    "WaitSeconds": 5,
     "Payload": {
       "commandId": "test_3",
       "action": 4
@@ -104,7 +104,7 @@
     "ObjectType": "Reported",
     "ComponentName": "CommandRunner",
     "ObjectName": "commandStatus",
-    "Delay": 1,
+    "WaitSeconds": 1,
     "ExpectedResult": 0,
     "Payload": {
       "commandId": "test_3",

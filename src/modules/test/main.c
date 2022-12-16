@@ -20,9 +20,10 @@
 #define RECIPE_COMPONENT "ComponentName"
 #define RECIPE_OBJECT "ObjectName"
 #define RECIPE_PAYLOAD "Payload"
+#define RECIPE_PAYLOAD_SIZE_BYTES "PayloadSizeBytes"
 #define RECIPE_JSON "Json"
 #define RECIPE_STATUS "ExpectedResult"
-#define RECIPE_DELAY "Delay"
+#define RECIPE_WAIT_SECONDS "WaitSeconds"
 
 #define RECIPE_RUN_COMMAND "RunCommand"
 
@@ -47,7 +48,8 @@ typedef struct TEST_STEP
     PAYLOAD_TYPE type;
     char* component;
     char* object;
-    JSON_Value* payload;
+    char* payload;
+    int payloadSize;
     int status;
 } TEST_STEP;
 
@@ -101,7 +103,7 @@ void FreeStep(STEP* step)
         case TEST:
             free(step->data.test.component);
             free(step->data.test.object);
-            json_value_free(step->data.test.payload);
+            free(step->data.test.payload);
             break;
         default:
             LOG_ERROR("Unknown step type: %d", step->type);
@@ -159,15 +161,24 @@ bool ParseTestStep(const JSON_Object* object, TEST_STEP* test)
             parseError = true;
         }
 
-        if (NULL == (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
+        if (NULL != (payload = json_object_get_value(object, RECIPE_PAYLOAD)))
         {
-            if (NULL != (json = json_object_get_string(object, RECIPE_JSON)))
-            {
-                payload = json_parse_string(json);
-            }
+            test->payload = json_serialize_to_string(payload);
+        }
+        else if (NULL != (json = json_object_get_string(object, RECIPE_JSON)))
+        {
+            test->payload = strdup(json);
         }
 
-        test->payload = payload ? json_value_deep_copy(payload) : NULL;
+        if (NULL != json_object_get_value(object, RECIPE_PAYLOAD_SIZE_BYTES))
+        {
+            test->payloadSize = json_object_get_number(object, RECIPE_PAYLOAD_SIZE_BYTES);
+        }
+        else
+        {
+            test->payloadSize = test->payload ? (strlen(test->payload)) : 0;
+        }
+
         test->status = json_object_get_number(object, RECIPE_STATUS);
     }
 
@@ -256,7 +267,7 @@ bool ParseStep(const JSON_Object* object, STEP* step)
     int status = 0;
     JSON_Value* value = NULL;
 
-    step->delay = json_object_get_number(object, RECIPE_DELAY);
+    step->delay = json_object_get_number(object, RECIPE_WAIT_SECONDS);
 
     if (NULL != (value = json_object_get_value(object, RECIPE_RUN_COMMAND)))
     {
@@ -365,7 +376,8 @@ int RunCommand(const COMMAND_STEP* command)
 int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 {
     int result = 0;
-    JSON_Value* value = NULL;
+    JSON_Value* actual = NULL;
+    JSON_Value* expected = NULL;
     MMI_JSON_STRING payload = NULL;
     char* payloadString = NULL;
     int payloadSize = 0;
@@ -394,7 +406,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             else
             {
                 memcpy(payloadString, payload, payloadSize);
-                if (NULL == (value = json_parse_string(payloadString)))
+                if (NULL == (actual = json_parse_string(payloadString)))
                 {
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
@@ -404,17 +416,22 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->payload != NULL)
         {
-            if (value != NULL)
+            if (actual != NULL)
             {
-                if (!json_value_equals(test->payload, value))
+                if (NULL == (expected = json_parse_string(test->payload)))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(test->payload), json_serialize_to_string(value));
+                    LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
+                    result = EINVAL;
+                }
+                else if (!json_value_equals(expected, actual))
+                {
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(expected), json_serialize_to_string(actual));
                     result = -1;
                 }
             }
             else
             {
-                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", json_serialize_to_string(test->payload));
+                LOG_ERROR("Assertion failed, expected: '%s', actual: (null)", test->payload);
                 result = -1;
             }
         }
@@ -427,13 +444,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
     }
     else if (test->type == DESIRED)
     {
-        if (test->payload != NULL)
-        {
-            payloadString = json_serialize_to_string(test->payload);
-            payloadSize = (int)strlen(payloadString);
-        }
-
-        mmiStatus = module->set(module->session, test->component, test->object, payloadString, payloadSize);
+        mmiStatus = module->set(module->session, test->component, test->object, test->payload, test->payloadSize);
 
         if (test->status != mmiStatus)
         {
