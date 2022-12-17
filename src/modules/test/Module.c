@@ -352,18 +352,18 @@ void UnloadModule(MANAGEMENT_MODULE* module)
         return;
     }
 
-    module->close(module->session);
-    module->session = NULL;
-
-    module->getInfo = NULL;
-    module->open = NULL;
-    module->close = NULL;
-    module->get = NULL;
-    module->set = NULL;
-    module->free = NULL;
-
     if (NULL != module->handle)
     {
+        module->close(module->session);
+        module->session = NULL;
+
+        module->getInfo = NULL;
+        module->open = NULL;
+        module->close = NULL;
+        module->get = NULL;
+        module->set = NULL;
+        module->free = NULL;
+
         dlclose(module->handle);
         module->handle = NULL;
     }

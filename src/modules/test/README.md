@@ -31,6 +31,7 @@ Test steps are used to set desired properties and get reported properties of a m
   - The payload used for this test step. If the test type is `reported`, the payload is compared against the reported value. If the test type is `Desired`, the payload is used to set the desired value.
     - `Payload` - A JSON object that will be serialized and sent to the module.
     - `Json` - A "*raw*" serialized JSON string that will be sent to the module. This can be useful for testing specific payload formats.
+  - `PayloadSizeBytes` - The size of the payload in bytes. If the test type is `reported`, the payload size is compared against the reported value. If the test type is `Desired`, the payload size is used to set the desired value. *(default: string length of `Payload` | `Json` or `0` if no payload is specified)*
   - `Delay` - The number of seconds to wait before executing the current step. This can be used to allow the module to process the previous step. *(default: `0`)*
   - `Status` - The expected status code (number) of the action. (default: `0`)
 
@@ -44,15 +45,16 @@ Test steps are used to set desired properties and get reported properties of a m
       "name": "my-network-interface",
     },
     "ExpectedResult": 0,
-    "Delay": 1
+    "WaitSeconds": 1
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "WiFi",
     "ObjectName": "interface",
     "Json": "{\"name\": \"my-network-interface\"}",
+    "PayloadSizeBytes": 25,
     "ExpectedResult": 0,
-    "Delay": 1
+    "WaitSeconds": 1
   }
 ]
 
