@@ -376,8 +376,8 @@ int RunCommand(const COMMAND_STEP* command)
 int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 {
     int result = 0;
-    JSON_Value* actual = NULL;
-    JSON_Value* expected = NULL;
+    JSON_Value* actualJsonValue = NULL;
+    JSON_Value* expectedJsonValue = NULL;
     MMI_JSON_STRING payload = NULL;
     char* payloadString = NULL;
     int payloadSize = 0;
@@ -406,7 +406,7 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
             else
             {
                 memcpy(payloadString, payload, payloadSize);
-                if (NULL == (actual = json_parse_string(payloadString)))
+                if (NULL == (actualJsonValue = json_parse_string(payloadString)))
                 {
                     LOG_ERROR("Failed to parse JSON payload: %s", payloadString);
                     result = EINVAL;
@@ -416,16 +416,16 @@ int RunTestStep(const TEST_STEP* test, const MANAGEMENT_MODULE* module)
 
         if (test->payload != NULL)
         {
-            if (actual != NULL)
+            if (actualJsonValue != NULL)
             {
-                if (NULL == (expected = json_parse_string(test->payload)))
+                if (NULL == (expectedJsonValue = json_parse_string(test->payload)))
                 {
                     LOG_ERROR("Failed to parse expected JSON payload: %s", test->payload);
                     result = EINVAL;
                 }
-                else if (!json_value_equals(expected, actual))
+                else if (!json_value_equals(expectedJsonValue, actualJsonValue))
                 {
-                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(expected), json_serialize_to_string(actual));
+                    LOG_ERROR("Assertion failed, expected: '%s', actual: '%s'", json_serialize_to_string(expectedJsonValue), json_serialize_to_string(actualJsonValue));
                     result = -1;
                 }
             }
