@@ -59,7 +59,7 @@ jobs:
       - name: Run modulestest
         if: success()
         run: |
-          recipes=$(ls -d ../src/modules/test/recipes/*.json | grep -v SampleTests.json)
+          recipes=$(ls -d ./src/modules/test/recipes/*.json | grep -v SampleTests.json)
           bin="./modules/bin/"
           runNumber=1
 
