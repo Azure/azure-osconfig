@@ -1,0 +1,95 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:osconfig:service;1",
+  "@type": "Interface",
+  "displayName": "Services",
+  "description": "Provides functionality to observe and configure services",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "desiredServices",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "name",
+              "schema": "string"
+            },{
+              "name": "state",
+              "schema": {
+                "@type": "Enum",
+                "valueSchema": "integer",
+                "enumValues": [
+                  {
+                    "name": "started",
+                    "enumValue": 0
+                  },
+                  {
+                    "name": "stopped",
+                    "enumValue": 1
+                  },
+                  {
+                    "name": "restarted",
+                    "enumValue": 2
+                  },
+                  {
+                    "name": "reloaded",
+                    "enumValue": 3
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "rcctl",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "systemd",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "sysvs",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "upstart",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "src",
+      "schema": {
+        "@type": "Array",
+        "elementSchema": "string"
+      },
+      "writable": false
+    }
+  ]
+}
