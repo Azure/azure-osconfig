@@ -7,17 +7,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define ADHS_DIRECTORY "/etc/azure-device-health-services/"
-#define ADHS_CONFIG_FILE ADHS_DIRECTORY "config.toml"
-
 void __attribute__((constructor)) InitModule(void)
 {
-    struct stat st = {0};
-    if (-1 == stat(ADHS_DIRECTORY, &st))
-    {
-        mkdir(ADHS_DIRECTORY, 0700);
-    }
-    ServiceInitialize(ADHS_CONFIG_FILE);
+    ServiceInitialize();
 }
 
 void __attribute__((destructor)) DestroyModule(void)

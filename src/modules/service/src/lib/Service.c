@@ -27,20 +27,9 @@ static const char* g_serviceComponentName = "Service";
 static const char* g_objectNames[] = {"rcctl", "systemd", "sysv", "upstart", "src"};
 static const int g_objectNamesCount = ARRAY_SIZE(g_objectNames);
 
-// static const char* g_reportedOptInObjectName = "optIn";
-// static const char* g_desiredOptInObjectName = "desiredOptIn";
-
-// static const char* g_serviceConfigFileFormat = "Permission = \"%s\"\n";
-// static const char* g_permissionConfigPattern = "\\bPermission\\s*=\\s*([\\\"'])([A-Za-z0-9]*)\\1";
-// static const char* g_permissionConfigName = "Permission";
-// static const char* g_permissionConfigMapKeys[] = {"None", "Required", "Optional"};
-// static const char* g_permissionConfigMapValues[] = {"0", "1", "2"};
-// static const unsigned int g_permissionConfigMapCount = ARRAY_SIZE(g_permissionConfigMapKeys);
-
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
-static const char* g_serviceConfigFile = NULL;
 static const char* g_serviceLogFile = "/var/log/osconfig_service.log";
 static const char* g_serviceRolledLogFile = "/var/log/osconfig_service.bak";
 
@@ -51,10 +40,18 @@ static OSCONFIG_LOG_HANDLE ServiceGetLog()
     return g_log;
 }
 
-void ServiceInitialize(const char* configFile)
+void ServiceInitialize()
 {
-    g_serviceConfigFile = configFile;
     g_log = OpenLog(g_serviceLogFile, g_serviceRolledLogFile);
+
+    /*
+     * Install ansible-core on the system, preferably in an isolated environment (e.g., venv).
+     * 
+     * curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+     * python3 get-pip.py --user
+     * python3 -m pip install --user ansible-core
+     * 
+     */ 
         
     OsConfigLogInfo(ServiceGetLog(), "%s initialized", g_serviceModuleName);
 }
@@ -63,7 +60,6 @@ void ServiceShutdown(void)
 {
     OsConfigLogInfo(ServiceGetLog(), "%s shutting down", g_serviceModuleName);
 
-    g_serviceConfigFile = NULL;
     CloseLog(&g_log);
 }
 
