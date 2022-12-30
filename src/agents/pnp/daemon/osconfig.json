@@ -1,182 +1,30 @@
 {
   "CommandLogging": 0,
-  "FullLogging": 0,
+  "FullLogging": 1,
   "LocalManagement": 0,
   "ModelVersion": 16,
   "IotHubProtocol": 2,
   "Reported": [
     {
-      "ComponentName": "Adhs",
-      "ObjectName": "optIn"
+      "ComponentName": "Service",
+      "ObjectName": "rcctl"
     },
     {
-      "ComponentName": "CommandRunner",
-      "ObjectName": "commandStatus"
+      "ComponentName": "Service",
+      "ObjectName": "systemd"
     },
     {
-      "ComponentName": "Configuration",
-      "ObjectName": "commandLoggingEnabled"
+      "ComponentName": "Service",
+      "ObjectName": "sysv"
     },
     {
-      "ComponentName": "Configuration",
-      "ObjectName": "fullLoggingEnabled"
+      "ComponentName": "Service",
+      "ObjectName": "upstart"
     },
     {
-      "ComponentName": "Configuration",
-      "ObjectName": "iotHubProtocol"
-    },
-    {
-      "ComponentName": "Configuration",
-      "ObjectName": "localManagementEnabled"
-    },
-    {
-      "ComponentName": "Configuration",
-      "ObjectName": "modelVersion"
-    },
-    {
-      "ComponentName": "Configuration",
-      "ObjectName": "refreshInterval"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "percentageDownloadThrottle"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHostSource"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHost"
-    },
-    {
-      "ComponentName": "DeliveryOptimization",
-      "ObjectName": "cacheHostFallback"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "osName"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "osVersion"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "cpuType"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "cpuVendorId"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "cpuModel"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "totalMemory"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "freeMemory"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "kernelName"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "kernelRelease"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "kernelVersion"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "productVendor"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "productName"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "productVersion"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "systemCapabilities"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "systemConfiguration"
-    },
-    {
-      "ComponentName": "DeviceInfo",
-      "ObjectName": "osConfigVersion"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "configurationStatus"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "configurationStatusDetail"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "defaultPolicies"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "state"
-    },
-    {
-      "ComponentName": "Firewall",
-      "ObjectName": "fingerprint"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "name"
-    },
-    {
-      "ComponentName": "HostName",
-      "ObjectName": "hosts"
-    },
-    {
-      "ComponentName": "Networking",
-      "ObjectName": "networkConfiguration"
-    },
-    {
-      "ComponentName": "PackageManagerConfiguration",
-      "ObjectName": "state"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmStatus"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmVersion"
-    },
-    {
-      "ComponentName": "Tpm",
-      "ObjectName": "tpmManufacturer"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "enabled"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "maxScheduledAttestationsPerDay"
-    },
-    {
-      "ComponentName": "Ztsi",
-      "ObjectName": "maxManualAttestationsPerDay"
+      "ComponentName": "Service",
+      "ObjectName": "src"
     }
   ],
-  "ReportingIntervalSeconds": 30
+  "ReportingIntervalSeconds": 5
 }

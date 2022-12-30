@@ -1,0 +1,96 @@
+{
+  "name": "ServiceConfigurationModel",
+  "type": "mimModel",
+  "contents": [
+    {
+      "name": "ServiceConfiguration",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "desiredServices",
+          "type": "mimObject",
+          "desired": true,
+          "schema": {
+            "type": "object",
+            "fields": [
+              {
+                "name": "name",
+                "schema": "string"
+              },
+              {
+                "name": "state",
+                "schema": {
+                  "type": "enum",
+                  "valueSchema": "integer",
+                  "enumValues": [
+                    {
+                      "name": "started",
+                      "enumValue": 0
+                    },
+                    {
+                      "name": "stopped",
+                      "enumValue": 1
+                    },
+                    {
+                      "name": "restarted",
+                      "enumValue": 2
+                    },
+                    {
+                      "name": "reloaded",
+                      "enumValue": 3
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "rcctl",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": "string"
+          }
+        },
+        {
+          "name": "systemd",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": "string"
+          }
+        },
+        {
+          "name": "sysvs",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": "string"
+          }
+        },
+        {
+          "name": "upstart",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": "string"
+          }
+        },
+        {
+          "name": "src",
+          "type": "mimObject",
+          "desired": false,
+          "schema": {
+            "type": "array",
+            "elementSchema": "string"
+          }
+        }
+      ]
+    }
+  ]
+}
