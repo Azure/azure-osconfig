@@ -125,6 +125,13 @@ int GetLocalManagementFromJsonConfig(const char* jsonString, void* log);
 int GetIotHubProtocolFromJsonConfig(const char* jsonString, void* log);
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, void* log);
 
+int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
+const char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log);
+const char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
+const char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log);
+const char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log);
+const char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log);
+
 #ifdef __cplusplus
 }
 #endif

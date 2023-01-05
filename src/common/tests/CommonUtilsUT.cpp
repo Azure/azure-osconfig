@@ -1080,6 +1080,12 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
         "{"
           "\"CommandLogging\": 0,"
           "\"FullLogging\": 1,"
+          "\GitManagement\": 1",
+          "\GitRepository\" : \"https://github.com/Azure/azure-osconfig\"",
+          "\GitBranch\" : \"MariusNi/OsConfigGitOps_Jan05_2023\"",
+          "\GitDcFilePath\" : \"src\agents\pnp\daemon\osconfig_desired.json\"",
+          "\GitUsername\" : \"\"",
+          "\GitPassword\" : \"\"",
           "\"LocalManagement\": 3,"
           "\"ModelVersion\": 11,"
           "\"IotHubProtocol\": 2,"
@@ -1112,5 +1118,13 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_STREQ("osName", reportedProperties[0].propertyName);
     EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
     EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
+
+    EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ("https://github.com/Azure/azure-osconfig", GetGitRepositoryFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ("MariusNi/OsConfigGitOps_Jan05_2023", GetGitBranchFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ("src\agents\pnp\daemon\osconfig_desired.json", GetGitDcFilePathFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ(nullptr, GetGitUsernameFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ(nullptr, GetGitPasswordFromJsonConfig(configuration, nullptr));
+
     FREE_MEMORY(reportedProperties);
 }

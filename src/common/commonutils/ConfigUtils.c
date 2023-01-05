@@ -21,6 +21,13 @@
 
 #define PROTOCOL "IotHubProtocol"
 
+#define GIT_MANAGEMENT "GitManagement"
+#define GIT_REPOSITORY "GitRepository"
+#define GIT_BRANCH "GitBranch"
+#define GIT_DC_FILE_PATH "GitDcFilePath"
+#define GIT_USERNAME "GitUsername"
+#define GIT_PASSWORD "GitPassword"
+
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
@@ -255,4 +262,87 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     }
 
     return numReportedProperties;
+}
+
+static const char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, void* log)
+{
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    const char* valueToReturn = NULL;
+
+    if (NULL == valueName)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetStringFromJsonConfig: no value name");
+        }
+        return valueToReturn;
+    }
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                valueToReturn = json_object_get_string(rootObject, valueName);
+                if (NULL == valueToReturn)
+                {
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
+                    }
+                }
+                else if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogInfo(log, "GetStringFromJsonConfig: %s: %s", valueName, valueToReturn);
+                }
+            }
+            else if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(log, "GetStringFromJsonConfig: json_value_get_object(root) failed for %s", valueName);
+            }
+            json_value_free(rootValue);
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetStringFromJsonConfig: json_parse_string failed for %s", valueName);
+        }
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogError(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
+    }
+
+    return valueToReturn;
+}
+
+int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
+}
+
+const char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_REPOSITORY, jsonString, log);
+}
+
+const char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
+}
+
+const char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_DC_FILE_PATH, jsonString, log);
+}
+
+const char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_USERNAME, jsonString, log);
+}
+
+const char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_PASSWORD, jsonString, log);
 }
