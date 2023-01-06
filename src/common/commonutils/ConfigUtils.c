@@ -24,7 +24,6 @@
 #define GIT_MANAGEMENT "GitManagement"
 #define GIT_REPOSITORY_URL "GitRepositoryUrl"
 #define GIT_BRANCH "GitBranch"
-#define GIT_DC_FILE_PATH "GitDcFilePath"
 
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999

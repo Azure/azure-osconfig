@@ -237,7 +237,7 @@ static void RefreshConnection()
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if ((!g_localManagement) && (!g_gitManagament))
+            else if ((!g_localManagement) && (!g_gitManagement))
             {
                 g_exitState = IotHubInitializationFailure;
                 SignalInterrupt(SIGQUIT);

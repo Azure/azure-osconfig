@@ -1120,7 +1120,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
 
-    EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig\", value = GetGitRepositoryFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
     FREE_MEMORY(value);
 
     EXPECT_STREQ("main", value = GetGitBranchFromJsonConfig(configuration, nullptr));
