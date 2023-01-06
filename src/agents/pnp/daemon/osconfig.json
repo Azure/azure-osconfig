@@ -4,7 +4,7 @@
   "GitManagement": 0,
   "GitRepository": "https://github.com/Azure/azure-osconfig",
   "GitBranch": "MariusNi/OsConfigGitOps_Jan05_2023",
-  "GitDcFilePath": "src\agents\pnp\daemon\osconfig_desired.json",
+  "GitDcFilePath": "src/agents/pnp/daemon/osconfig_desired.json",
   "GitUsername": "",
   "GitPassword": "",
   "LocalManagement": 0,
