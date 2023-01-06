@@ -507,9 +507,9 @@ static void LoadDesiredConfigurationFromFile(const char* fileName)
 
 static int RefreshDcGitRepositoryClone(void)
 {
+    const char pullCommand[] = "git pull";    
     char* cloneCommand = FormatAllocateString("git clone -q %s %s", g_gitRepositoryUrl, GIT_DC_CLONE);
     char* checkoutCommand = FormatAllocateString("git checkout -q %s", g_gitBranch);
-    bool cloneExists = FileExists(GIT_DC_FILE);
     char* currentDirectory = getcwd(NULL, 0);
     int error = 0;
 
@@ -546,7 +546,6 @@ static int RefreshDcGitRepositoryClone(void)
 
     FREE_MEMORY(cloneCommand);
     FREE_MEMORY(checkoutCommand);
-    FREE_MEMORY(cdCommand);
     FREE_MEMORY(currentDirectory);
 
     if (0 == error)
@@ -697,7 +696,7 @@ int main(int argc, char *argv[])
         FREE_MEMORY(jsonConfiguration);
     }
 
-    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone())
+    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone()))
     {
         OsConfigLogError(GetLog(), "Failed cloning from the configured Git repository");
     }
