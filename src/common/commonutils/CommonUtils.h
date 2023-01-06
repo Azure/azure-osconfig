@@ -58,8 +58,6 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
-char* FormatAllocateString(const char* format, ...);
-
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);

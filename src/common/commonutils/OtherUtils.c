@@ -3,31 +3,6 @@
 
 #include "Internal.h"
 
-#define MAX_FORMAT_ALLOCATE_STRING 512
-char* FormatAllocateString(const char* format, ...)
-{
-    char buffer[MAX_FORMAT_ALLOCATE_STRING] = {0};
-    int formatResult = 0;
-    char* stringToReturn = NULL;
-
-    if (NULL == format)
-    {
-        return stringToReturn;
-    }
-
-    va_list arguments;
-    va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING, format, arguments);
-    va_end(arguments);
-
-    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING))
-    {
-        mallocAndStrcpy_s(&stringToReturn, buffer);
-    }
-
-    return stringToReturn;
-}
-
 char* DuplicateString(const char* source)
 {
     int length = 0;
