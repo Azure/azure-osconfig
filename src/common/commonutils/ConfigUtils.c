@@ -264,11 +264,13 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     return numReportedProperties;
 }
 
-static const char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, void* log)
+static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, void* log)
 {
     JSON_Value* rootValue = NULL;
     JSON_Object* rootObject = NULL;
-    const char* valueToReturn = NULL;
+    char* value = NULL;
+    char* buffer = NULL;
+    size_t valueLength = 0;
 
     if (NULL == valueName)
     {
@@ -276,7 +278,7 @@ static const char* GetStringFromJsonConfig(const char* valueName, const char* js
         {
             OsConfigLogError(log, "GetStringFromJsonConfig: no value name");
         }
-        return valueToReturn;
+        return value;
     }
 
     if (NULL != jsonString)
@@ -285,17 +287,35 @@ static const char* GetStringFromJsonConfig(const char* valueName, const char* js
         {
             if (NULL != (rootObject = json_value_get_object(rootValue)))
             {
-                valueToReturn = json_object_get_string(rootObject, valueName);
-                if (NULL == valueToReturn)
+                value = (char*)json_object_get_string(rootObject, valueName);
+                if (NULL == value)
                 {
                     if (IsFullLoggingEnabled())
                     {
                         OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
                     }
                 }
-                else if (IsFullLoggingEnabled())
+                else 
                 {
-                    OsConfigLogInfo(log, "GetStringFromJsonConfig: %s: %s", valueName, valueToReturn);
+                    valueLength = strlen(value);
+                    if (valueLength > 0)
+                    {
+                        buffer = (char*)malloc(valueLength + 1);
+                        if (NULL != buffer)
+                        {
+                            memcpy(buffer, value, valueLength);
+                            buffer[valueLength] = 0;
+                        }
+                        else if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
+                        }
+                    } 
+                    else if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(log, "GetStringFromJsonConfig: bad value %s for %s", value, valueName);
+                    }
+
                 }
             }
             else if (IsFullLoggingEnabled())
@@ -314,7 +334,12 @@ static const char* GetStringFromJsonConfig(const char* valueName, const char* js
         OsConfigLogError(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
     }
 
-    return valueToReturn;
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "GetStringFromJsonConfig(%s): %s", valueName, buffer);
+    }
+
+    return buffer;
 }
 
 int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
@@ -322,27 +347,27 @@ int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
     return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-const char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log)
+char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_REPOSITORY, jsonString, log);
 }
 
-const char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
+char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
 }
 
-const char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log)
+char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_DC_FILE_PATH, jsonString, log);
 }
 
-const char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log)
+char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_USERNAME, jsonString, log);
 }
 
-const char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log)
+char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_PASSWORD, jsonString, log);
 }
