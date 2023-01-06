@@ -1128,3 +1128,17 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     FREE_MEMORY(reportedProperties);
 }
+
+TEST_F(CommonUtilsTest, FormatAllocateString)
+{
+    char* testString = nullptr;
+    
+    EXPECT_STREQ("String abc", testString = FormatAllocateString("String %s", "abc"));
+    FREE_MEMORY(testString);
+
+    EXPECT_STREQ("Integer 1", testString = FormatAllocateString("Integer %d", 1));
+    FREE_MEMORY(testString);
+    
+    EXPECT_STREQ("https://username:password3@github.com/Azure/azure-osconfig", testString = FormatAllocateString("https://%s:%s%d@github.com/Azure/azure-osconfig", "username", "password", 3));
+    FREE_MEMORY(testString);
+}
