@@ -105,39 +105,6 @@ const char* g_connectionStringSasGatewayHostModuleTemplate = "HostName=%s;Device
 const char* g_connectionStringX509GatewayHostDeviceTemplate = "HostName=%s;DeviceId=%s;x509=true;GatewayHostName=%s";
 const char* g_connectionStringX509GatewayHostModuleTemplate = "HostName=%s;DeviceId=%s;ModuleId=%s;x509=true;GatewayHostName=%s";
 
-#define MAX_FORMAT_ALLOCATE_STRING 512
-static char* FormatAllocateString(const char* format, ...)
-{
-    char buffer[MAX_FORMAT_ALLOCATE_STRING] = {0};
-    int formatResult = 0;
-    char* stringToReturn = NULL;
-
-    if (NULL == format)
-    {
-        OsConfigLogError(GetLog(), "FormatAllocateString: invalid argument");
-        return stringToReturn;
-    }
-
-    va_list arguments;
-    va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING, format, arguments);
-    va_end(arguments);
-
-    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING))
-    {
-        if (0 != mallocAndStrcpy_s(&stringToReturn, buffer))
-        {
-            OsConfigLogError(GetLog(), "FormatAllocateString: out of memory");
-        }
-    }
-    else
-    {
-        OsConfigLogError(GetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)", formatResult, MAX_FORMAT_ALLOCATE_STRING);
-    }
-
-    return stringToReturn;
-}
-
 static void HttpErrorCallback(void* callback, HTTP_CALLBACK_REASON reason)
 {
     AIS_HTTP_CONTEXT* context = (AIS_HTTP_CONTEXT*)callback;

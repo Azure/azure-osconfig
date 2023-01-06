@@ -58,6 +58,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
+char* FormatAllocateString(const char* format, ...);
+
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
@@ -126,11 +128,8 @@ int GetIotHubProtocolFromJsonConfig(const char* jsonString, void* log);
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, void* log);
 
 int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
-char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log);
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
-char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log);
-char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log);
-char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log);
 
 #ifdef __cplusplus
 }

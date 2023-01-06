@@ -22,11 +22,9 @@
 #define PROTOCOL "IotHubProtocol"
 
 #define GIT_MANAGEMENT "GitManagement"
-#define GIT_REPOSITORY "GitRepository"
+#define GIT_REPOSITORY_URL "GitRepositoryUrl"
 #define GIT_BRANCH "GitBranch"
 #define GIT_DC_FILE_PATH "GitDcFilePath"
-#define GIT_USERNAME "GitUsername"
-#define GIT_PASSWORD "GitPassword"
 
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
@@ -347,27 +345,12 @@ int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
     return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
 }
 
-char* GetGitRepositoryFromJsonConfig(const char* jsonString, void* log)
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log)
 {
-    return GetStringFromJsonConfig(GIT_REPOSITORY, jsonString, log);
+    return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log);
 }
 
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
 {
     return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
-}
-
-char* GetGitDcFilePathJsonConfig(const char* jsonString, void* log)
-{
-    return GetStringFromJsonConfig(GIT_DC_FILE_PATH, jsonString, log);
-}
-
-char* GetGitUsernameFromJsonConfig(const char* jsonString, void* log)
-{
-    return GetStringFromJsonConfig(GIT_USERNAME, jsonString, log);
-}
-
-char* GetGitPasswordFromJsonConfig(const char* jsonString, void* log)
-{
-    return GetStringFromJsonConfig(GIT_PASSWORD, jsonString, log);
 }

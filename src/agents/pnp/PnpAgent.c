@@ -17,6 +17,10 @@
 #define DC_FILE "/etc/osconfig/osconfig_desired.json"
 #define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
+// The local clone for Git Desired Configuration (DC) 
+#define GIT_DC_CLONE "/etc/osconfig/gitops/"
+#define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
+
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
@@ -111,6 +115,10 @@ static size_t g_reportedHash = 0;
 static size_t g_desiredHash = 0;
 
 static int g_localManagement = 0;
+
+static int g_gitManagement = 0;
+static char* g_gitRepositoryUrl = NULL;
+static char* g_gitBranch = NULL;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -229,7 +237,7 @@ static void RefreshConnection()
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if (!g_localManagement)
+            else if ((!g_localManagement) && (!g_gitManagament))
             {
                 g_exitState = IotHubInitializationFailure;
                 SignalInterrupt(SIGQUIT);
@@ -377,7 +385,7 @@ static bool InitializeAgent(void)
                 // We will try to get a new connnection string from AIS and try to connect with that
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if (!g_localManagement)
+            else if ((!g_localManagement) && (!g_gitManagement))
             {
                 g_exitState = IotHubInitializationFailure;
                 status = false;
@@ -404,18 +412,21 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
+    FREE_MEMORY(g_gitRepositoryUrl);
+    FREE_MEMORY(g_gitBranch);
 
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
 
-static void SaveReportedConfigurationToFile()
+static void SaveReportedConfigurationToFile(const char *fileName)
 {
     char* payload = NULL;
     int payloadSizeBytes = 0;
     size_t payloadHash = 0;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
-    if (g_localManagement)
+    
+    if (fileName && g_localManagement)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -431,7 +442,7 @@ static void SaveReportedConfigurationToFile()
             {
                 if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
                 {
-                    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
+                    RestrictFileAccessToCurrentAccountOnly(fileName);
                     g_reportedHash = payloadHash;
                 }
             }
@@ -458,7 +469,7 @@ static void ReportProperties()
     }
 }
 
-static void LoadDesiredConfigurationFromFile()
+static void LoadDesiredConfigurationFromFile(const char* fileName)
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
@@ -466,29 +477,84 @@ static void LoadDesiredConfigurationFromFile()
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-
-    payload = LoadStringFromFile(DC_FILE, false, GetLog());
-    if (payload && (0 != (payloadSizeBytes = strlen(payload))))
+    if (fileName)
     {
-        // Do not call MpiSetDesired unless this desired configuration is different from previous
-        if (g_desiredHash != (payloadHash = HashString(payload)))
+        RestrictFileAccessToCurrentAccountOnly(fileName);
+
+        payload = LoadStringFromFile(fileName, false, GetLog());
+        if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
-            OsConfigLogInfo(GetLog(), "Processing DC payload from %s", DC_FILE);
-            
-            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
-            if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+            // Do not call MpiSetDesired unless this desired configuration is different from previous
+            if (g_desiredHash != (payloadHash = HashString(payload)))
             {
+                OsConfigLogInfo(GetLog(), "Processing DC payload from %s", fileName);
+            
                 mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
-            }
+                if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
+                {
+                    mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
+                }
             
-            if (MPI_OK == mpiResult)
-            {
-                g_desiredHash = payloadHash;
+                if (MPI_OK == mpiResult)
+                {
+                    g_desiredHash = payloadHash;
+                }
             }
         }
+        FREE_MEMORY(payload);
     }
-    FREE_MEMORY(payload);
+}
+
+static int RefreshDcGitRepositoryClone(void)
+{
+    char* cloneCommand = FormatAllocateString("git clone -q %s %s", g_gitRepositoryUrl, GIT_DC_CLONE);
+    char* checkoutCommand = FormatAllocateString("git checkout -q %s", g_gitBranch);
+    bool cloneExists = FileExists(GIT_DC_FILE);
+    char* currentDirectory = get_current_dir_name();
+    int error = 0;
+
+    // Do not log g_gitRepositoryUrl as it may contain Git account credentials
+
+    if (false == FileExists(GIT_DC_FILE))
+    {
+        if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+        {
+            OsConfigLogError(GetLog(), "Failed cloning Git repository to %s (%d)", GIT_DC_CLONE, error);
+        }
+    }
+    else if (0 != (error = chdir(GIT_DC_CLONE)))
+    {
+        OsConfigLogError(GetLog(), "Failed changing current directory %s (%d)", GIT_DC_CLONE, error);
+    }
+    else if (0 != (error = ExecuteCommand(NULL, checkoutCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    {
+        OsConfigLogError(GetLog(), "Failed checking out Git branch %s (%d)", g_gitBranch, error);
+    }
+    else if (0 == (error = ExecuteCommand(NULL, pullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    {
+        OsConfigLogError(GetLog(), "Failed Git pull from branch %s to local clone %s (%d)", g_gitBranch, GIT_DC_CLONE, error);
+    }
+    else if (!FileExists(GIT_DC_FILE))
+    {
+        OsConfigLogError(GetLog(), "Bad Git clone, DC file %s not found", GIT_DC_FILE);
+    }
+
+    if (0 != (error = chdir(currentDirectory)))
+    {
+        OsConfigLogError(GetLog(), "Failed restoring current directory to %s (%d)", currentDirectory, error);
+    }
+
+    FREE_MEMORY(cloneCommand);
+    FREE_MEMORY(checkoutCommand);
+    FREE_MEMORY(cdCommand);
+    FREE_MEMORY(currentDirectory);
+
+    if (0 == error)
+    {
+        OsConfigLogInfo(GetLog(), "Successfully refreshed Git clone for branch %s and DC file %s", g_gitBranch, GIT_DC_CLONE);
+    }
+
+    return error;
 }
 
 static void AgentDoWork(void)
@@ -526,14 +592,25 @@ static void AgentDoWork(void)
             }
         }
 
-        // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1) and reported updates to the RC file
+        // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1)
         if (g_localManagement)
         {
-            LoadDesiredConfigurationFromFile();
-            SaveReportedConfigurationToFile();
+            LoadDesiredConfigurationFromFile(DC_FILE);
         }
 
-        // If connected to the IoT Hub, process reported updates
+        // Process desired updates from the Git cloned DC file:
+        if (g_gitManagement && (0 == RefreshDcGitRepositoryClone()))
+        {
+            LoadDesiredConfigurationFromFile(GIT_DC_FILE);
+        }
+
+        // Process reported updates to the RC file
+        if (g_localManagement)
+        {
+            SaveReportedConfigurationToFile(RC_FILE);
+        }
+
+        // Process reported updates to the IoT Hub
         if (g_moduleHandle)
         {
             ReportProperties();
@@ -614,12 +691,21 @@ int main(int argc, char *argv[])
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
         g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
+        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, GetLog());
+        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, GetLog());
+        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, GetLog());
         FREE_MEMORY(jsonConfiguration);
+    }
+
+    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone())
+    {
+        OsConfigLogError(GetLog(), "Failed cloning from the configured Git repository");
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
 
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
@@ -726,7 +812,7 @@ int main(int argc, char *argv[])
             {
                 OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
 
-                if (!g_localManagement)
+                if ((!g_localManagement) && (!g_gitManagement))
                 {
                     g_exitState = NoConnectionString;
                     goto done;
@@ -756,8 +842,17 @@ int main(int argc, char *argv[])
 
     if (g_localManagement)
     {
-        LoadDesiredConfigurationFromFile();
-        SaveReportedConfigurationToFile();
+        LoadDesiredConfigurationFromFile(DC_FILE);
+    }
+
+    if (g_gitManagement)
+    {
+        LoadDesiredConfigurationFromFile(GIT_DC_FILE);
+    }
+
+    if (g_localManagement)
+    {
+        SaveReportedConfigurationToFile(RC_FILE);
     }
     
     if (!InitializeAgent())
