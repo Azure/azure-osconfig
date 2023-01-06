@@ -510,7 +510,7 @@ static int RefreshDcGitRepositoryClone(void)
     char* cloneCommand = FormatAllocateString("git clone -q %s %s", g_gitRepositoryUrl, GIT_DC_CLONE);
     char* checkoutCommand = FormatAllocateString("git checkout -q %s", g_gitBranch);
     bool cloneExists = FileExists(GIT_DC_FILE);
-    char* currentDirectory = get_current_dir_name();
+    char* currentDirectory = getcwd(NULL, 0);
     int error = 0;
 
     // Do not log g_gitRepositoryUrl as it may contain Git account credentials
