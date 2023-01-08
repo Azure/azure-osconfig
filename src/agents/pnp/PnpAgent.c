@@ -119,6 +119,7 @@ static int g_localManagement = 0;
 static int g_gitManagement = 0;
 static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
+static size_t g_gitDesiredHash = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -469,7 +470,7 @@ static void ReportProperties()
     }
 }
 
-static void LoadDesiredConfigurationFromFile(const char* fileName)
+static void LoadDesiredConfigurationFromFile(const char* fileName, size_t* hash)
 {
     size_t payloadHash = 0;
     int payloadSizeBytes = 0;
@@ -477,7 +478,7 @@ static void LoadDesiredConfigurationFromFile(const char* fileName)
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    if (fileName)
+    if (fileName && hash)
     {
         RestrictFileAccessToCurrentAccountOnly(fileName);
 
@@ -485,7 +486,7 @@ static void LoadDesiredConfigurationFromFile(const char* fileName)
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
             // Do not call MpiSetDesired unless this desired configuration is different from previous
-            if (g_desiredHash != (payloadHash = HashString(payload)))
+            if (*hash != (payloadHash = HashString(payload)))
             {
                 OsConfigLogInfo(GetLog(), "Processing DC payload from %s", fileName);
             
@@ -497,7 +498,7 @@ static void LoadDesiredConfigurationFromFile(const char* fileName)
             
                 if (MPI_OK == mpiResult)
                 {
-                    g_desiredHash = payloadHash;
+                    *hash = payloadHash;
                 }
             }
         }
@@ -594,13 +595,13 @@ static void AgentDoWork(void)
         // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1)
         if (g_localManagement)
         {
-            LoadDesiredConfigurationFromFile(DC_FILE);
+            LoadDesiredConfigurationFromFile(DC_FILE, &g_desiredHash);
         }
 
         // Process desired updates from the Git cloned DC file:
         if (g_gitManagement && (0 == RefreshDcGitRepositoryClone()))
         {
-            LoadDesiredConfigurationFromFile(GIT_DC_FILE);
+            LoadDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash);
         }
 
         // Process reported updates to the RC file
@@ -841,12 +842,12 @@ int main(int argc, char *argv[])
 
     if (g_localManagement)
     {
-        LoadDesiredConfigurationFromFile(DC_FILE);
+        LoadDesiredConfigurationFromFile(DC_FILE, &g_desiredHash);
     }
 
     if (g_gitManagement)
     {
-        LoadDesiredConfigurationFromFile(GIT_DC_FILE);
+        LoadDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash);
     }
 
     if (g_localManagement)
