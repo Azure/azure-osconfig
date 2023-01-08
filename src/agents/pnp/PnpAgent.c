@@ -419,7 +419,7 @@ void CloseAgent(void)
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
 
-static void SaveReportedConfigurationToFile(const char *fileName)
+static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
     int payloadSizeBytes = 0;
@@ -427,7 +427,7 @@ static void SaveReportedConfigurationToFile(const char *fileName)
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
-    if (fileName && g_localManagement)
+    if (fileName && hash)
     {
         mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
         if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
@@ -439,12 +439,12 @@ static void SaveReportedConfigurationToFile(const char *fileName)
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
-            if (g_reportedHash != (payloadHash = HashString(payload)))
+            if (*hash != (payloadHash = HashString(payload)))
             {
-                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
+                if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(fileName);
-                    g_reportedHash = payloadHash;
+                    *hash = payloadHash;
                 }
             }
         }
@@ -607,7 +607,7 @@ static void AgentDoWork(void)
         // Process reported updates to the RC file
         if (g_localManagement)
         {
-            SaveReportedConfigurationToFile(RC_FILE);
+            SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
         }
 
         // Process reported updates to the IoT Hub
@@ -852,7 +852,7 @@ int main(int argc, char *argv[])
 
     if (g_localManagement)
     {
-        SaveReportedConfigurationToFile(RC_FILE);
+        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
     }
     
     if (!InitializeAgent())
