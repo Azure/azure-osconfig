@@ -113,7 +113,7 @@ static int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char*
         OsConfigLogError(log, "RefreshDcGitRepositoryClone: FormatAllocateString for the clone command failed");
         error = EFAULT;
     }
-    else if (NULL == (checkoutCommand = FormatAllocateString("git checkout -q %s", gitBranch)))
+    else if (NULL == (checkoutCommand = FormatAllocateString("git checkout %s", gitBranch)))
     {
         OsConfigLogError(log, "RefreshDcGitRepositoryClone: FormatAllocateString for the checkout command failed");
         error = EFAULT;
@@ -125,6 +125,13 @@ static int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char*
     }
     else if (false == FileExists(gitClonedDcFile))
     {
+        /*
+        fatal: detected dubious ownership in repository at '/etc/osconfig/gitops'
+        To add an exception for this directory, call:
+        git config --global --add safe.directory /etc/osconfig/gitops <<<<<<<<<<<<<< add this before git checkout
+        */
+        
+        OsConfigLogInfo(log, "########### %s (%s)", cloneCommand, checkoutCommand); //////////////////////////////////////
         if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
         {
             OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed cloning Git repository to %s (%d)", gitClonePath, error);
@@ -138,7 +145,7 @@ static int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char*
     {
         OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed checking out Git branch %s (%d)", gitBranch, error);
     }
-    else if (0 == (error = ExecuteCommand(NULL, pullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, pullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
         OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
@@ -195,7 +202,7 @@ void WatcherDoWork(void* log)
         ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
     }
 
-    if (g_gitManagement && (0 == RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+    //if (g_gitManagement && (0 == RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
     {
         ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
     }
