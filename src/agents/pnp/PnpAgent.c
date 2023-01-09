@@ -14,14 +14,6 @@
 #define LOG_FILE "/var/log/osconfig_pnp_agent.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_pnp_agent.bak"
 
-// The local Desired Configuration (DC) and Reported Configuration (RC) files
-#define DC_FILE "/etc/osconfig/osconfig_desired.json"
-#define RC_FILE "/etc/osconfig/osconfig_reported.json"
-
-// The local clone for Git Desired Configuration (DC) 
-#define GIT_DC_CLONE "/etc/osconfig/gitops/"
-#define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
-
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
@@ -111,16 +103,6 @@ static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
-
-static size_t g_reportedHash = 0;
-static size_t g_desiredHash = 0;
-
-static int g_localManagement = 0;
-
-static int g_gitManagement = 0;
-static char* g_gitRepositoryUrl = NULL;
-static char* g_gitBranch = NULL;
-static size_t g_gitDesiredHash = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -239,7 +221,7 @@ static void RefreshConnection()
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if ((!g_localManagement) && (!g_gitManagement))
+            else if (!IsWatcherActive())
             {
                 g_exitState = IotHubInitializationFailure;
                 SignalInterrupt(SIGQUIT);
@@ -387,7 +369,7 @@ static bool InitializeAgent(void)
                 // We will try to get a new connnection string from AIS and try to connect with that
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if ((!g_localManagement) && (!g_gitManagement))
+            else if (!IsWatcherActive())
             {
                 g_exitState = IotHubInitializationFailure;
                 status = false;
@@ -414,9 +396,9 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-    FREE_MEMORY(g_gitRepositoryUrl);
-    FREE_MEMORY(g_gitBranch);
-
+    
+    WatcherCleanup();
+    
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
 
@@ -472,23 +454,8 @@ static void AgentDoWork(void)
             }
         }
 
-        // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1)
-        if (g_localManagement)
-        {
-            ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash);
-        }
-
-        // Process desired updates from the Git cloned DC file:
-        if (g_gitManagement && (0 == RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE)))
-        {
-            ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash);
-        }
-
-        // Process reported updates to the RC file
-        if (g_localManagement)
-        {
-            SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
-        }
+        // Process RCD/DC and/or Git clones DC files (for Iot Hub this is signaled to be done with SIGUSR1)
+        WatcherDoWork(GetLog());
 
         // Process reported updates to the IoT Hub
         if (g_moduleHandle)
@@ -569,24 +536,16 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
-        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, GetLog());
-        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, GetLog());
-        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, GetLog());
+
+        // Call the Watcher to initialize itself
+        InitializeWatcher(jsonConfiguration, GetLog());
+
         FREE_MEMORY(jsonConfiguration);
     }
 
-    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE)))
-    {
-        OsConfigLogError(GetLog(), "Failed cloning from the configured Git repository");
-    }
-
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
-    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-    RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
-
+    
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
@@ -692,7 +651,7 @@ int main(int argc, char *argv[])
             {
                 OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
 
-                if ((!g_localManagement) && (!g_gitManagement))
+                if (!IsWatcherActive())
                 {
                     g_exitState = NoConnectionString;
                     goto done;
@@ -720,20 +679,7 @@ int main(int argc, char *argv[])
         goto done;
     }
 
-    if (g_localManagement)
-    {
-        ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash);
-    }
-
-    if (g_gitManagement)
-    {
-        ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash);
-    }
-
-    if (g_localManagement)
-    {
-        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
-    }
+    WatcherDoWork(GetLog());
     
     if (!InitializeAgent())
     {
