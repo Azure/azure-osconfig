@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 #include "inc/AgentCommon.h"
+#include "inc/PnpAgent.h"
+#include "inc/AisUtils.h"
 
 void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
@@ -111,7 +113,7 @@ int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBra
             OsConfigLogError(GetLog(), "Failed cloning Git repository to %s (%d)", gitClonePath, error);
         }
     }
-    else if (0 != (error = chdir(GIT_DC_CLONE)))
+    else if (0 != (error = chdir(gitClonePath)))
     {
         OsConfigLogError(GetLog(), "Failed changing current directory %s (%d)", gitClonePath, error);
     }
@@ -123,7 +125,7 @@ int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBra
     {
         OsConfigLogError(GetLog(), "Failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
-    else if (!FileExists(GIT_DC_FILE))
+    else if (!FileExists(gitClonedDcFile))
     {
         OsConfigLogError(GetLog(), "Bad Git clone, DC file %s not found", gitClonedDcFile);
     }
