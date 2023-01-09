@@ -14,7 +14,8 @@ project(osconfig)
 set(osconfig_files
     ./AisUtils.c
     ./PnpAgent.c
-    ./PnpUtils.c)
+    ./PnpUtils.c
+    ./Watcher.c)
 
 set(target_name osconfig)
 
