@@ -1,0 +1,44 @@
+{
+	"CommandRunner": {
+		"commandArguments": {
+			"commandId": "Local command Jun 7 2022 at 2 18 PM PST",
+			"arguments": "date",
+			"timeout": 60,
+			"singleLineTextResult": true,
+			"action": 3
+		}
+	},
+	"HostName": {
+		"desiredName": "MARIUSNI-LOCAL88"
+	},
+	"Ztsi": {
+		"desiredServiceUrl": "https://ztsi.com/local",
+		"desiredEnabled": true
+	},
+	"PackageManagerConfiguration": {
+		"desiredState": {
+			"gpgKeys": {
+				"pkgs-msft_key": "https://packages.microsoft.com/keys/microsoft.asc"
+			},
+			"sources": {
+				"pkgs-msft_insiders-slow": "deb [arch=amd64,armhf,arm64 signed-by=pkgs-msft_key] https://packages.microsoft.com/ubuntu/20.04/prod insiders-slow main"
+			},
+			"packages": [
+				"cowsay",
+				"procdump"
+			]
+		}
+	},
+	"Firewall": {
+      "desiredDefaultPolicies": [
+      {
+        "direction": "in",
+        "action": "accept"
+      },
+      {
+        "direction": "out",
+        "action": "accept"
+      }
+    ]
+  }
+}
