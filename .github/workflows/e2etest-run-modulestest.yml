@@ -76,11 +76,11 @@ jobs:
             end=`date -d "+${{inputs.repeatForXMins}} mins" +%s`
             while [[ $(date +%s) -lt $end ]]; do
               echo Performing test run $((++runNumber))
-              ./moduletest $recipes --bin $bin > ${{ matrix.distroName }}.log
+              echo $recipes | xargs -I {} ./moduletest "{}" --bin $bin > ${{ matrix.distroName }}.log
               checkResult $?
             done
           else
-            ./moduletest $recipes --bin $bin > ${{ matrix.distroName }}.log
+            echo $recipes | xargs -I {} ./moduletest "{}" --bin $bin > ${{ matrix.distroName }}.log
             checkResult $?
           fi
 
