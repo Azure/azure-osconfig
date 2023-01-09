@@ -22,7 +22,7 @@ static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
 static size_t g_gitDesiredHash = 0;
 
-static SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
+static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
     int payloadSizeBytes = 0;
@@ -178,7 +178,7 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
     }
 
-    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE)))
+    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
     {
         OsConfigLogError(log, "Watcher failed cloning from the configured Git repository");
     }
@@ -206,11 +206,8 @@ void WatcherDoWork(void* log)
     }
 }
 
-void ShutdownWatcher(void)
+void WatcherCleanup(void)
 {
-    g_localManagement = false;
-    g_gitManageremt = false;
-
     FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
 }
