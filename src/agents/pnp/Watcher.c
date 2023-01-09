@@ -22,40 +22,6 @@ static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
 static size_t g_gitDesiredHash = 0;
 
-void InitializeWatcher(const char* jsonConfiguration, void* log)
-{
-    if (NULL != jsonConfiguration)
-    {
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, log);
-        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, log);
-        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, log);
-        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
-    }
-
-    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE)))
-    {
-        OsConfigLogError(log, "Watcher failed cloning from the configured Git repository");
-    }
-
-    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-    RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
-}
-
-void ShutdownWatcher(void)
-{
-    g_localManagement = false;
-    g_gitManageremt = false;
-
-    FREE_MEMORY(g_gitRepositoryUrl);
-    FREE_MEMORY(g_gitBranch);
-}
-
-bool IsWatcherActive(void)
-{
-    return (g_localManagement || g_gitManagement) ? true : false;
-}
-
 static SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
@@ -202,6 +168,26 @@ static int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char*
     return error;
 }
 
+void InitializeWatcher(const char* jsonConfiguration, void* log)
+{
+    if (NULL != jsonConfiguration)
+    {
+        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, log);
+        g_gitManagement = GetGitManagementFromJsonConfig(jsonConfiguration, log);
+        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, log);
+        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
+    }
+
+    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE)))
+    {
+        OsConfigLogError(log, "Watcher failed cloning from the configured Git repository");
+    }
+
+    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
+    RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
+}
+
 void WatcherDoWork(void* log)
 {
     if (g_localManagement)
@@ -218,4 +204,18 @@ void WatcherDoWork(void* log)
     {
         SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
     }
+}
+
+void ShutdownWatcher(void)
+{
+    g_localManagement = false;
+    g_gitManageremt = false;
+
+    FREE_MEMORY(g_gitRepositoryUrl);
+    FREE_MEMORY(g_gitBranch);
+}
+
+bool IsWatcherActive(void)
+{
+    return (g_localManagement || g_gitManagement) ? true : false;
 }
