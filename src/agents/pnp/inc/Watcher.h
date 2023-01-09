@@ -12,7 +12,7 @@ extern "C"
 void SaveReportedConfigurationToFile(const char* fileName, size_t* hash);
 void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash);
 
-int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const chat* gitClonedDcFile);
+int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile);
 
 #ifdef __cplusplus
 }

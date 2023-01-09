@@ -73,7 +73,7 @@ void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash)
     }
 }
 
-int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const chat* gitClonedDcFile)
+int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile)
 {
     const char pullCommand[] = "git pull";    
     char* cloneCommand = NULL;
