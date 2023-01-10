@@ -20,7 +20,7 @@ static const char* g_localManagementEnabledObject = "localManagementEnabled";
 static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
-static const char* g_gitManagamentEnabledObject = "gitManagementEnabled";
+static const char* g_gitManagementEnabledObject = "gitManagementEnabled";
 static const char* g_gitRepositoryUrlObject = "gitRepositoryUrl";
 static const char* g_gitBranchObject = "gitBranch";
 
