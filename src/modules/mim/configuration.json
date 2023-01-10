@@ -9,31 +9,31 @@
         {
           "name": "desiredRefreshInterval",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": "integer"
         },
         {
           "name": "desiredLocalManagementEnabled",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": "boolean"
         },
         {
           "name": "desiredFullLoggingEnabled",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": "boolean"
         },
         {
           "name": "desiredCommandLoggingEnabled",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": "boolean"
         },
         {
           "name": "desiredIotHubProtocol",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
           "schema": {
             "type": "enum",
             "valueSchema": "string",
@@ -52,6 +52,24 @@
               }
             ]
           }
+        },
+        {
+          "name": "desiredGitManagementEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "boolean"
+        },
+        {
+          "name": "desiredGitRepositoryUrl",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "desiredGitBranch",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
         },
         {
           "name": "modelVersion",
@@ -105,6 +123,24 @@
               }
             ]
           }
+        },
+        {
+          "name": "gitManagementEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "boolean"
+        },
+        {
+          "name": "gitRepositoryUrl",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "gitBranch",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
         }
       ]
     }

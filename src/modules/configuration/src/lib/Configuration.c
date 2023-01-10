@@ -20,12 +20,18 @@ static const char* g_localManagementEnabledObject = "localManagementEnabled";
 static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
+static const char* g_gitManagamentEnabledObject = "gitManagementEnabled";
+static const char* g_gitRepositoryUrlObject = "gitRepositoryUrl";
+static const char* g_gitBranchObject = "gitBranch";
 
 static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
 static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
 static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
+static const char* g_desiredGitManagamentEnabledObject = "desiredGitManagementEnabled";
+static const char* g_desiredGitRepositoryUrlObject = "desiredGitRepositoryUrl";
+static const char* g_desiredGitBranchObject = "desiredGitBranch";
 
 const char* g_auto = "\"auto\"";
 const char* g_mqtt = "\"mqtt\"";
@@ -43,7 +49,7 @@ static const char* g_configurationModuleInfo = "{\"Name\": \"Configuration\","
     "\"Description\": \"Provides functionality to manage OSConfig configuration on device\","
     "\"Manufacturer\": \"Microsoft\","
     "\"VersionMajor\": 1,"
-    "\"VersionMinor\": 0,"
+    "\"VersionMinor\": 3,"
     "\"VersionInfo\": \"Zinc\","
     "\"Components\": [\"Configuration\"],"
     "\"Lifetime\": 2,"
@@ -57,6 +63,9 @@ static bool g_localManagementEnabled = false;
 static bool g_fullLoggingEnabled = false;
 static bool g_commandLoggingEnabled = false;
 static int g_iotHubProtocol = 0;
+static bool g_gitManagementEnabled = false;
+static char* g_gitRepositorytUrl = NULL;
+static char* g_gitBranch = NULL;
 
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
@@ -79,6 +88,9 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_fullLoggingEnabled = IsFullLoggingEnabledInJsonConfig(jsonConfiguration);
         g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
+        g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
     {
@@ -107,18 +119,24 @@ void ConfigurationInitialize(const char* configurationFile)
 void ConfigurationShutdown(void)
 {
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
+
+    FREE_MEMORY(g_gitRepositorytUrl);
+    FREE_MEMORY(g_gitBranch);
     
     CloseLog(&g_log);
 }
 
 static int UpdateConfiguration(void)
 {
-    const char* g_commandLoggingEnabledName = "CommandLogging";
-    const char* g_fullLoggingEnabledName = "FullLogging";
-    const char* g_localManagementEnabledName = "LocalManagement";
-    const char* g_modelVersionName = "ModelVersion";
-    const char* g_iotHubProtocolName = "IotHubProtocol";
-    const char* g_refreshIntervalName = "ReportingIntervalSeconds";
+    const char* commandLoggingEnabledName = "commandLoggingEnabled";
+    const char* fullLoggingEnabledName = "fullLoggingEnabled";
+    const char* localManagementEnabledName = "localManagementEnabled";
+    const char* modelVersionName = "modelVersion";
+    const char* iotHubProtocolName = "iotHubProtocol";
+    const char* refreshIntervalName = "refreshInterval";
+    const char* gitManagamentEnabledName = "gitManagementEnabled";
+    const char* gitRepositoryUrlName = "gitRepositoryUrl";
+    const char* gitBranchName = "gitBranch";
     
     int status = MMI_OK;
 
@@ -131,6 +149,9 @@ static int UpdateConfiguration(void)
     bool fullLoggingEnabled = g_fullLoggingEnabled;
     bool commandLoggingEnabled = g_commandLoggingEnabled;
     int iotHubProtocol = g_iotHubProtocol;
+    bool gitManagementEnabled = g_gitManagementEnabled;
+    char* gitRepositoryUrl = DuplicateString(g_gitRepositoryUrl);
+    char* gitBranch = DuplicateString(g_gitBranch);
 
     char* existingConfiguration = LoadConfigurationFromFile(g_configurationFile);
     char* newConfiguration = NULL;
@@ -142,7 +163,8 @@ static int UpdateConfiguration(void)
     }
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
-        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol))
+        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
+        (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitRepositoryUrl, g_gitRepositoryUrl) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
@@ -157,7 +179,7 @@ static int UpdateConfiguration(void)
 
         if (MMI_OK == status)
         {
-            if (JSONSuccess == json_object_set_number(jsonObject, g_modelVersionName, (double)modelVersion))
+            if (JSONSuccess == json_object_set_number(jsonObject, modelVersionName, (double)modelVersion))
             {
                 g_modelVersion = modelVersion;
             }
@@ -166,7 +188,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_refreshIntervalName, (double)refreshInterval))
+            if (JSONSuccess == json_object_set_number(jsonObject, refreshIntervalName, (double)refreshInterval))
             {
                 g_refreshInterval = refreshInterval;
             }
@@ -175,7 +197,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
             {
                 g_localManagementEnabled = localManagementEnabled;
             }
@@ -184,7 +206,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_fullLoggingEnabledName, (double)(fullLoggingEnabled ? 1: 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, fullLoggingEnabledName, (double)(fullLoggingEnabled ? 1: 0)))
             {
                 g_fullLoggingEnabled = fullLoggingEnabled;
             }
@@ -193,7 +215,7 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
             }
 
-            if (JSONSuccess == json_object_set_number(jsonObject, g_commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0)))
+            if (JSONSuccess == json_object_set_number(jsonObject, commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0)))
             {
                 g_commandLoggingEnabled = commandLoggingEnabled;
             }
@@ -202,13 +224,42 @@ static int UpdateConfiguration(void)
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
             }
             
-            if (JSONSuccess == json_object_set_number(jsonObject, g_iotHubProtocolName, (double)iotHubProtocol))
+            if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
             {
                 g_iotHubProtocol = iotHubProtocol;
             }
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_number(%s, %d) failed", g_iotHubProtocolObject, iotHubProtocol);
+            }
+
+            if (JSONSuccess == json_object_set_number(jsonObject, gitManagementEnabledName, (double)(gitManagementEnabled ? 1 : 0)))
+            {
+                g_gitManagementEnabled = gitManagementEnabled;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
+            }
+
+            if (JSONSuccess == json_object_set_string(jsonObject, gitRepositoryUrlName, gitRepositoryUrl))
+            {
+                FREE_MEMORY(g_gitRepositoryUrl);
+                g_gitRepositoryUrl = DuplicateString(gitRepositoryUrl);
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_string(%s, %s) failed", g_gitRepositoryUrlObject, gitRepositoryUrl);
+            }
+
+            if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
+            {
+                FREE_MEMORY(g_gitBranch);
+                g_gitBranch = DuplicateString(gitBranch);
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "json_object_set_string(%s, %s) failed", g_gitBranchObject, gitBranch);
             }
         }
 
@@ -238,7 +289,7 @@ static int UpdateConfiguration(void)
     {
         OsConfigLogError(ConfigurationGetLog(), "Failed to apply new configuration: %s", IsFullLoggingEnabled() ? newConfiguration : "-");
     }
-        
+    
     if (jsonValue)
     {
         json_value_free(jsonValue);
@@ -248,7 +299,9 @@ static int UpdateConfiguration(void)
     {
         json_free_serialized_string(newConfiguration);
     }
-    
+
+    FREE_MEMORY(gitRepositoryUrl);
+    FREE_MEMORY(gitBranch);
     FREE_MEMORY(existingConfiguration);
 
     return status;
@@ -386,6 +439,18 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
                     snprintf(buffer, sizeof(buffer), "%s", g_auto);
 
             }
+        }
+        else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
+        {
+            snprintf(buffer, sizeof(buffer), "%s", g_gitManagementEnabled ? "true" : "false");
+        }
+        else if (0 == strcmp(objectName, g_gitRepositoryUrl))
+        {
+            snprintf(buffer, sizeof(buffer), "%s", g_gitRepositoryUrl);
+        }
+        else if (0 == strcmp(objectName, g_gitBranch))
+        {
+            snprintf(buffer, sizeof(buffer), "%s", g_gitBranch);
         }
         else
         {
@@ -542,6 +607,32 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_desiredIotHubProtocolObject, payloadString);
                 status = EINVAL;
             }
+        }
+        else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
+        {
+            if (0 == strcmp(stringTrue, payloadString))
+            {
+                g_gitManagementEnabled = true;
+            }
+            else if (0 == strcmp(stringFalse, payloadString))
+            {
+                g_gitManagementEnabled = false;
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_gitManagementEnabledObject, payloadString);
+                status = EINVAL;
+            }
+        }
+        else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
+        {
+            MEMORY_FREE(g_gitRepositoryUrl);
+            g_gitRepositoryUrl = DuplicateString(payloadString);
+        }
+        else if (0 == strcmp(objectName, g_desiredGitBranchObject))
+        {
+            MEMORY_FREE(g_gitBranch);
+            g_gitBranch = DuplicateString(payloadString);
         }
         else
         {
