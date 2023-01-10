@@ -446,11 +446,11 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_gitRepositoryUrl))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_gitRepositoryUrl);
+            snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitRepositoryUrl);
         }
         else if (0 == strcmp(objectName, g_gitBranch))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_gitBranch);
+            snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitBranch);
         }
         else
         {
