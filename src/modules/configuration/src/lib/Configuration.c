@@ -120,7 +120,7 @@ void ConfigurationShutdown(void)
 {
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
 
-    FREE_MEMORY(g_gitRepositorytUrl);
+    FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
     
     CloseLog(&g_log);
@@ -134,7 +134,7 @@ static int UpdateConfiguration(void)
     const char* modelVersionName = "modelVersion";
     const char* iotHubProtocolName = "iotHubProtocol";
     const char* refreshIntervalName = "refreshInterval";
-    const char* gitManagamentEnabledName = "gitManagementEnabled";
+    const char* gitManagementEnabledName = "gitManagementEnabled";
     const char* gitRepositoryUrlName = "gitRepositoryUrl";
     const char* gitBranchName = "gitBranch";
     
