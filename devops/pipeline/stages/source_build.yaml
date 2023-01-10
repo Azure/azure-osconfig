@@ -1,20 +1,15 @@
 # Source build stage definition
 # Parameters:
-#  - (Required) containerPath [string]: the full path to the container to be used for the build environmentr (Example. osconfig.azurecr.io/ubuntu20.04-dev-amd64:latest)
+#  - (Required) container [string]: the full path to the container to be used for the build environmentr (Example. osconfig.azurecr.io/ubuntu20.04-dev-amd64:latest)
 #  - (Optional) prefix [string]: the prefix for the stage/job to be used - default: source
-#  - (Optional) publishArtifact [boolean]: publishes the built artifacts (packages) as pipeline artifacts - default: true
 
 parameters:
   - name: prefix
     type: string
     default: source
 
-  - name: containerPath
+  - name: container
     type: string
-
-  - name: publishArtifact
-    type: boolean
-    default: false
 
 stages:
 - stage: source_build
@@ -40,7 +35,7 @@ stages:
         containerRegistry: $(SERVICE_CONNECTION)
 
     - script: |
-        CONTAINER_ID=`docker run -di -v $(Build.SourcesDirectory):/AzOsConfig ${{ parameters.containerPath }}`
+        CONTAINER_ID=`docker run -di -v $(Build.SourcesDirectory):/AzOsConfig ${{ parameters.container }}`
         echo CONTAINER_ID=$CONTAINER_ID
         echo "##vso[task.setvariable variable=CONTAINER_ID]$CONTAINER_ID"
         # Extract TWEAK version from full version string
@@ -61,4 +56,3 @@ stages:
     - publish: $(Build.SourcesDirectory)/build/staging
       displayName: Publishing source package
       artifact: OSConfig_$(Build.BuildNumber)_SOURCES
-      condition: eq(${{ parameters.publishArtifact }}, true)

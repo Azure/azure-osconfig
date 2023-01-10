@@ -8,119 +8,116 @@ name: $(MajorVersion).$(MinorVersion).$(PatchVersion).$(Date:yyyyMMdd)$(Rev:rr)
 parameters:
   - name: performSigning
     type: boolean
-    displayName: 'Perform code signing'
+    displayName: "Perform code signing"
     default: true
   - name: build_targets
     type: object
     default:
-      - variantName: ubuntu20.04
-        friendlyVariantName: ubuntu2004
+      - os: ubuntu20.04
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:$(CONTAINER_TAG)
         platform: linux/amd64
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: ubuntu20.04
-        friendlyVariantName: ubuntu2004
+        displayName: ubuntu2004_amd64
+
+      - os: ubuntu20.04
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm:$(CONTAINER_TAG)
         platform: linux/arm/v7
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: ubuntu20.04
-        friendlyVariantName: ubuntu2004
+        displayName: ubuntu2004_arm
+
+      - os: ubuntu20.04
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-arm64:$(CONTAINER_TAG)
         platform: linux/arm64/v8
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: ubuntu18.04
-        friendlyVariantName: ubuntu1804
+        displayName: ubuntu2004_arm64
+
+      - os: ubuntu18.04
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-amd64:$(CONTAINER_TAG)
         platform: linux/amd64
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: ubuntu18.04
-        friendlyVariantName: ubuntu1804
+        displayName: ubuntu1804_amd64
+
+      - os: ubuntu18.04
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm:$(CONTAINER_TAG)
         platform: linux/arm/v7
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: ubuntu18.04
-        friendlyVariantName: ubuntu1804
+        displayName: ubuntu1804_arm
+
+      - os: ubuntu18.04
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/ubuntu18.04-dev-arm64:$(CONTAINER_TAG)
         platform: linux/arm64/v8
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: debian9
-        friendlyVariantName: debian9
+        displayName: ubuntu1804_arm64
+
+      - os: debian9
         architecture: amd64
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-amd64:$(CONTAINER_TAG)
         platform: linux/amd64
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: debian9
-        friendlyVariantName: debian9
+        displayName: debian9_amd64
+
+      - os: debian9
         architecture: arm
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm:$(CONTAINER_TAG)
         platform: linux/arm/v7
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
-      - variantName: debian9
-        friendlyVariantName: debian9
+        displayName: debian9_arm
+
+      - os: debian9
         architecture: arm64
-        containerPath: $(CONTAINER_REGISTRY)/debian9-dev-arm64:$(CONTAINER_TAG)
         platform: linux/arm64/v8
-        performCoverage: false
-        ignoreTestFailures: false
-        publishArtifact: true
+        displayName: debian9_arm64
+
+      - os: debian10
+        architecture: amd64
+        platform: linux/amd64
+        displayName: debian10_amd64
+
+      - os: debian10
+        architecture: arm
+        platform: linux/arm/v7
+        displayName: debian10_arm
+
+      - os: debian10
+        architecture: arm64
+        platform: linux/arm64/v8
+        displayName: debian10_arm64
+
+      - os: debian11
+        architecture: amd64
+        platform: linux/amd64
+        displayName: debian11_amd64
+
+      - os: debian11
+        architecture: arm
+        platform: linux/arm/v7
+        displayName: debian11_arm
+
+      - os: debian11
+        architecture: arm64
+        platform: linux/arm64/v8
+        displayName: debian11_arm64
 
 variables:
   SERVICE_CONNECTION: OSConfig-ACR
   CONTAINER_REGISTRY: osconfig.azurecr.io
-  CONTAINER_TAG: 289651
+  CONTAINER_TAG: latest
 
 trigger:
   branches:
     include:
-    - main
+      - main
 pr: none
 
 stages:
-- template: stages/source_build.yaml
-  parameters:
-    containerPath: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
-    publishArtifact: true
-
-- ${{ each target in parameters.build_targets }}:
-  - template: stages/binary_build.yaml
+  - template: stages/source_build.yaml
     parameters:
-      variantName: ${{ target.variantName }}
-      friendlyVariantName: ${{ target.friendlyVariantName }}
-      architecture: ${{ target.architecture }}
-      containerPath: ${{ target.containerPath }}
-      platform: ${{ target.platform }}
-      performCoverage: ${{ target.performCoverage }}
-      ignoreTestFailures: ${{ target.ignoreTestFailures }}
-      publishArtifact: ${{ target.publishArtifact }}
+      container: $(CONTAINER_REGISTRY)/ubuntu20.04-dev-amd64:latest
 
-- template: stages/binary_signing.yaml
-  parameters:
-    dependsOn:
-    - ${{ each target in parameters.build_targets }}:
-      - binary_${{ target.friendlyVariantName }}_${{ target.architecture }}
-    performSigning: ${{ parameters.performSigning }}
-    vaultName: $(VaultName)
-    aadCertificateName: $(AADCertificateName)
-    esrpCertificateName: $(ESRPCertificateName)
+  - ${{ each target in parameters.build_targets }}:
+      - template: stages/binary_build.yaml
+        parameters:
+          displayName: ${{ target.displayName }}
+          os: ${{ target.os }}
+          architecture: ${{ target.architecture }}
+          container: ${{ target.os }}-dev-${{ target.architecture }}:$(CONTAINER_TAG)
+          platform: ${{ target.platform }}
+
+  - template: stages/binary_signing.yaml
+    parameters:
+      dependsOn:
+        - ${{ each target in parameters.build_targets }}:
+            - binary_${{ target.displayName }}
+      vaultName: $(VaultName)
+      aadCertificateName: $(AADCertificateName)
+      esrpCertificateName: $(ESRPCertificateName)

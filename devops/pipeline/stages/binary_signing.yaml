@@ -1,7 +1,6 @@
 # Binary signing stage (OSConfigCore internal)
 # Parameters:
 #  - (Optional) prefix [string]: the prefix for the stage/job to be used - default: binary
-#  - (Optional) performSigning [boolean]: runs the "Code Signing" stage - default: false
 #  - (Optional) vaultName [string]: the Key Vault name for the signing certificates - default: my-vault-name
 #  - (Optional) aadCertificateName [string]: the name for the AAD Certificate - default: my-aadCertificate-name
 #  - (Optional) esrpCertificateName [string]: the name for the ESRP Signing Request Certificate - default: my-esrpCertificate-name
@@ -11,10 +10,6 @@ parameters:
   - name: prefix
     type: string
     default: binary
-
-  - name: performSigning
-    type: boolean
-    default: false
 
   - name: vaultName
     type: string
@@ -37,11 +32,9 @@ stages:
   dependsOn:
   - ${{ each stage in parameters.dependsOn }}:
     - ${{ stage }}
-  condition: eq(${{ parameters.performSigning }}, true)
   displayName: Code Signing
   jobs:
   - job: main
-    
     pool:
       vmImage: 'windows-latest'
 
@@ -75,6 +68,12 @@ stages:
           **/*stretch_x86_64.deb
           **/*stretch_armv7l.deb
           **/*stretch_aarch64.deb
+          **/*buster_x86_64.deb
+          **/*buster_armv7l.deb
+          **/*buster_aarch64.deb
+          **/*bullseye_x86_64.deb
+          **/*bullseye_armv7l.deb
+          **/*bullseye_aarch64.deb
         path: $(Agent.TempDirectory)/osconfig_bin/
 
     - powershell: |
@@ -92,7 +91,7 @@ stages:
         inlineScript: |
           az keyvault secret download --file certAAD.pfx --encoding base64 --name ${{ parameters.aadCertificateName }} --vault-name ${{ parameters.vaultName }}
           az keyvault secret download --file certESRP.pfx --encoding base64 --name ${{ parameters.esrpCertificateName }} --vault-name ${{ parameters.vaultName }}
-    
+
     - task: AzurePowerShell@5
       displayName: Import certificates
       inputs:
