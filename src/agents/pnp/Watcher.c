@@ -178,10 +178,9 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     FREE_MEMORY(checkoutCommand);
     FREE_MEMORY(currentDirectory);
 
-    if (0 == error)
+    if ((0 == error) && (IsFullLoggingEnabled()))
     {
-        OsConfigLogInfo(log, "Watcher: successfully refreshed the Git clone at %s for branch %s and DC file %s", 
-            gitClonePath, gitBranch, gitClonedDcFile);
+        OsConfigLogInfo(log, "Watcher: successfully refreshed the Git clone at %s for branch %s", gitClonePath, gitBranch);
     }
 
     return error;
