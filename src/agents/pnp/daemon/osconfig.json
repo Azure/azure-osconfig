@@ -5,7 +5,7 @@
   "GitRepositoryUrl": "https://github.com/Azure/azure-osconfig/",
   "GitBranch": "MariusNi/OsConfigGitOps_Jan05_2023",
   "LocalManagement": 0,
-  "ModelVersion": 16,
+  "ModelVersion": 17,
   "IotHubProtocol": 2,
   "Reported": [
     {
