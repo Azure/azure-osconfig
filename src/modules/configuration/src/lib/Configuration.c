@@ -447,10 +447,12 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         else if (0 == strcmp(objectName, g_gitRepositoryUrl))
         {
             snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitRepositoryUrl);
+            OsConfigLogInfo(ConfigurationGetLog(), "Reported gitRepositoryUrl value: '%s' (buffer: '%s')", g_gitRepositoryUrl, buffer); ///////////////////////
         }
         else if (0 == strcmp(objectName, g_gitBranch))
         {
             snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitBranch);
+            OsConfigLogInfo(ConfigurationGetLog(), "Reported gitBranch value: '%s' (buffer: '%s')", g_gitBranch, buffer); ///////////////////////
         }
         else
         {
@@ -626,11 +628,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
         {
+            OsConfigLogInfo(ConfigurationGetLog(), "desiredGitRepositoryUrl value of '%s' changed to value '%s'", g_gitRepositoryUrl, payloadString); ///////////////////////
             FREE_MEMORY(g_gitRepositoryUrl);
             g_gitRepositoryUrl = DuplicateString(payloadString);
         }
         else if (0 == strcmp(objectName, g_desiredGitBranchObject))
         {
+            OsConfigLogInfo(ConfigurationGetLog(), "desiredGitBranch value of '%s' changed to value '%s'", g_gitBranch, payloadString); //////////////////////////////////////
             FREE_MEMORY(g_gitBranch);
             g_gitBranch = DuplicateString(payloadString);
         }
