@@ -94,6 +94,10 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
 
 static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClonePath, void* log)
 {
+    const char* g_gitCloneCleanUpTemplate "rm -r %s";
+    const char* g_gitCloneTemplate "git clone -q %s %s";
+    const char* g_gitConfigTemplate "git config --global --add safe.directory %s";
+    
     char* cleanUpCommand = NULL;
     char* configCommand = NULL;
     char* cloneCommand = NULL;
@@ -107,9 +111,9 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClone
 
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
-    cleanUpCommand = FormatAllocateString("rm -r %s", gitClonePath);
-    cloneCommand = FormatAllocateString("git clone -q %s %s", gitRepositoryUrl, gitClonePath);
-    configCommand = FormatAllocateString("git config --global --add safe.directory %s", gitClonePath);
+    cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
+    cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitRepositoryUrl, gitClonePath);
+    configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
     
     ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
 
@@ -136,7 +140,9 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClone
 
 static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
 {
-    const char pullCommand[] = "git pull";    
+    const char* g_gitCheckoutTemplate "git checkout %s";
+    const char* g_gitPullCommand "git pull";
+    
     char* checkoutCommand = NULL;
     char* currentDirectory = NULL;
     int error = 0;
@@ -147,7 +153,7 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
         return EINVAL;
     }
 
-    checkoutCommand = FormatAllocateString("git checkout %s", gitBranch);
+    checkoutCommand = FormatAllocateString(g_gitCheckoutTemplate, gitBranch);
     currentDirectory = getcwd(NULL, 0);
 
     if (0 != (error = chdir(gitClonePath)))
@@ -158,7 +164,7 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     {
         OsConfigLogError(log, "Watcher: failed checking out Git branch %s (%d)", gitBranch, error);
     }
-    else if (0 != (error = ExecuteCommand(NULL, pullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    else if (0 != (error = ExecuteCommand(NULL, g_gitPullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
         OsConfigLogError(log, "Watcher: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
