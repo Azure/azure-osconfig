@@ -128,15 +128,15 @@ void ConfigurationShutdown(void)
 
 static int UpdateConfiguration(void)
 {
-    const char* commandLoggingEnabledName = "commandLoggingEnabled";
-    const char* fullLoggingEnabledName = "fullLoggingEnabled";
-    const char* localManagementEnabledName = "localManagementEnabled";
-    const char* modelVersionName = "modelVersion";
-    const char* iotHubProtocolName = "iotHubProtocol";
-    const char* refreshIntervalName = "refreshInterval";
-    const char* gitManagementEnabledName = "gitManagementEnabled";
-    const char* gitRepositoryUrlName = "gitRepositoryUrl";
-    const char* gitBranchName = "gitBranch";
+    const char* commandLoggingEnabledName = "CommandLoggingEnabled";
+    const char* fullLoggingEnabledName = "FullLoggingEnabled";
+    const char* localManagementEnabledName = "LocalManagementEnabled";
+    const char* modelVersionName = "ModelVersion";
+    const char* iotHubProtocolName = "IotHubProtocol";
+    const char* refreshIntervalName = "RefreshInterval";
+    const char* gitManagementEnabledName = "GitManagementEnabled";
+    const char* gitRepositoryUrlName = "GitRepositoryUrl";
+    const char* gitBranchName = "GitBranch";
     
     int status = MMI_OK;
 
