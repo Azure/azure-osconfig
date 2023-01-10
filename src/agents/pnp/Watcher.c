@@ -92,84 +92,96 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int RefreshDcGitRepositoryClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClonePath, void* log)
 {
-    const char pullCommand[] = "git pull";    
+    char* cleanUpCommand = NULL;
+    char* configCommand = NULL;
     char* cloneCommand = NULL;
-    char* checkoutCommand = NULL;
-    char* currentDirectory = NULL;
     int error = 0;
 
-    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile))
+    if ((NULL == gitRepositoryUrl) || (NULL == gitClonePath))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: invalid arguments");
+        OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
     }
 
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
-    if (NULL == (cloneCommand = FormatAllocateString("git clone -q %s %s", gitRepositoryUrl, gitClonePath)))
+    cleanUpCommand = FormatAllocateString("rm -r %s", gitClonePath);
+    cloneCommand = FormatAllocateString("git clone -q %s %s", gitRepositoryUrl, gitClonePath);
+    configCommand = FormatAllocateString("git config --global --add safe.directory %s", gitClonePath);
+    
+    ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
+
+    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: FormatAllocateString for the clone command failed");
-        error = EFAULT;
+        OsConfigLogError(log, "Watcher: failed making a new Git clone at %s (%d)", gitClonePath, error);
     }
-    else if (NULL == (checkoutCommand = FormatAllocateString("git checkout %s", gitBranch)))
+    else if (0 != (error = ExecuteCommand(NULL, configCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: FormatAllocateString for the checkout command failed");
-        error = EFAULT;
+        OsConfigLogError(log, "Watcher: failed configuring the new Git clone at %s (%d)", gitClonePath, error);
     }
-    else if (NULL == (currentDirectory = getcwd(NULL, 0)))
+
+    FREE_MEMORY(cleanUpCommand);
+    FREE_MEMORY(cloneCommand);
+    FREE_MEMORY(configCommand);
+
+    if (0 == error)
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: getcwd failed");
-        error = EFAULT;
+        OsConfigLogInfo(log, "Watcher: successfully initialized Git clone at %s", gitClonePath);
     }
-    else if (false == FileExists(gitClonedDcFile))
+
+    return error;
+}
+
+static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
+{
+    const char pullCommand[] = "git pull";    
+    char* checkoutCommand = NULL;
+    char* currentDirectory = NULL;
+    int error = 0;
+
+    if ((NULL == gitClonePath) || (NULL == gitClonedDcFile) || (NULL == gitBranch))
     {
-        /*
-        fatal: detected dubious ownership in repository at '/etc/osconfig/gitops'
-        To add an exception for this directory, call:
-        git config --global --add safe.directory /etc/osconfig/gitops <<<<<<<<<<<<<< add this before git checkout
-        */
-        
-        OsConfigLogInfo(log, "########### %s (%s)", cloneCommand, checkoutCommand); //////////////////////////////////////
-        if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
-        {
-            OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed cloning Git repository to %s (%d)", gitClonePath, error);
-        }
+        OsConfigLogError(log, "RefreshGitClone: invalid arguments");
+        return EINVAL;
     }
-    else if (0 != (error = chdir(gitClonePath)))
+
+    checkoutCommand = FormatAllocateString("git checkout %s", gitBranch);
+    currentDirectory = getcwd(NULL, 0);
+
+    if (0 != (error = chdir(gitClonePath)))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed changing current directory %s (%d)", gitClonePath, error);
+        OsConfigLogError(log, "Watcher: failed changing current directory to %s (%d)", gitClonePath, error);
     }
     else if (0 != (error = ExecuteCommand(NULL, checkoutCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed checking out Git branch %s (%d)", gitBranch, error);
+        OsConfigLogError(log, "Watcher: failed checking out Git branch %s (%d)", gitBranch, error);
     }
     else if (0 != (error = ExecuteCommand(NULL, pullCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
+        OsConfigLogError(log, "Watcher: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
     else if (!FileExists(gitClonedDcFile))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: bad Git clone, DC file %s not found", gitClonedDcFile);
+        OsConfigLogError(log, "Watcher: bad Git clone, DC file %s not found", gitClonedDcFile);
     }
     else if (0 != (error = chdir(currentDirectory)))
     {
-        OsConfigLogError(log, "RefreshDcGitRepositoryClone: failed restoring current directory to %s (%d)", currentDirectory, error);
+        OsConfigLogError(log, "Watcher: failed restoring current directory to %s (%d)", currentDirectory, error);
     }
-
-    if (FileExists(gitClonedDcFile))
+    else
     {
         RestrictFileAccessToCurrentAccountOnly(gitClonedDcFile);
     }
 
-    FREE_MEMORY(cloneCommand);
     FREE_MEMORY(checkoutCommand);
     FREE_MEMORY(currentDirectory);
 
     if (0 == error)
     {
-        OsConfigLogInfo(log, "Watcher: successfully refreshed Git clone for branch %s and DC file %s", gitBranch, gitClonePath);
+        OsConfigLogInfo(log, "Watcher: successfully refreshed the Git clone at %s for branch %s and DC file %s", 
+            gitClonePath, gitBranch, gitClonedDcFile);
     }
 
     return error;
@@ -185,9 +197,9 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
     }
 
-    if (g_gitManagement && (0 != RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+    if (g_gitManagement)
     {
-        OsConfigLogError(log, "Watcher failed cloning from the configured Git repository");
+        InitializeGitClone(g_gitRepositoryUrl, GIT_DC_CLONE, log);
     }
 
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
@@ -202,7 +214,7 @@ void WatcherDoWork(void* log)
         ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
     }
 
-    //if (g_gitManagement && (0 == RefreshDcGitRepositoryClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+    if (g_gitManagement && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
     {
         ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
     }
