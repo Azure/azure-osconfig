@@ -1,9 +1,9 @@
 {
   "CommandLogging": 0,
   "FullLogging": 0,
-  "GitManagement": 1,
-  "GitRepositoryUrl": "https://github.com/Azure/azure-osconfig/",
-  "GitBranch": "MariusNi/OsConfigGitOps_Jan05_2023",
+  "GitManagement": 0,
+  "GitRepositoryUrl": "",
+  "GitBranch": "",
   "LocalManagement": 0,
   "ModelVersion": 17,
   "IotHubProtocol": 2,
@@ -27,6 +27,18 @@
     {
       "ComponentName": "Configuration",
       "ObjectName": "iotHubProtocol"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "gitBranch"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "gitManagementEnabled"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "gitRepositoryUrl"
     },
     {
       "ComponentName": "Configuration",
