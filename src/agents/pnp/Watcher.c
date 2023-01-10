@@ -94,9 +94,9 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
 
 static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClonePath, void* log)
 {
-    const char* g_gitCloneCleanUpTemplate "rm -r %s";
-    const char* g_gitCloneTemplate "git clone -q %s %s";
-    const char* g_gitConfigTemplate "git config --global --add safe.directory %s";
+    const char* g_gitCloneCleanUpTemplate = "rm -r %s";
+    const char* g_gitCloneTemplate = "git clone -q %s %s";
+    const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
     
     char* cleanUpCommand = NULL;
     char* configCommand = NULL;
@@ -140,8 +140,8 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClone
 
 static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
 {
-    const char* g_gitCheckoutTemplate "git checkout %s";
-    const char* g_gitPullCommand "git pull";
+    const char* g_gitCheckoutTemplate = "git checkout %s";
+    const char* g_gitPullCommand = "git pull";
     
     char* checkoutCommand = NULL;
     char* currentDirectory = NULL;
