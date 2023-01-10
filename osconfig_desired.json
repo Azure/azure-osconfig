@@ -1,7 +1,7 @@
 {
   "CommandRunner": {
 	"commandArguments": {
-      "commandId": "GitOps command 3",
+      "commandId": "GitOps command 4",
       "arguments": "date",
       "timeout": 60,
       "singleLineTextResult": true,
@@ -9,7 +9,7 @@
 	}
   },
   "HostName": {
-	  "desiredName": "TEST-GITOPS"
+	  "desiredName": "GITOPSTEST"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
