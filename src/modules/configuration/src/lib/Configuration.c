@@ -29,7 +29,7 @@ static const char* g_desiredLocalManagementEnabledObject = "desiredLocalManageme
 static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
-static const char* g_desiredGitManagamentEnabledObject = "desiredGitManagementEnabled";
+static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
 static const char* g_desiredGitRepositoryUrlObject = "desiredGitRepositoryUrl";
 static const char* g_desiredGitBranchObject = "desiredGitBranch";
 
@@ -64,7 +64,7 @@ static bool g_fullLoggingEnabled = false;
 static bool g_commandLoggingEnabled = false;
 static int g_iotHubProtocol = 0;
 static bool g_gitManagementEnabled = false;
-static char* g_gitRepositorytUrl = NULL;
+static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
 
 static atomic_int g_referenceCount = 0;
@@ -626,12 +626,12 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
         {
-            MEMORY_FREE(g_gitRepositoryUrl);
+            FREE_MEMORY(g_gitRepositoryUrl);
             g_gitRepositoryUrl = DuplicateString(payloadString);
         }
         else if (0 == strcmp(objectName, g_desiredGitBranchObject))
         {
-            MEMORY_FREE(g_gitBranch);
+            FREE_MEMORY(g_gitBranch);
             g_gitBranch = DuplicateString(payloadString);
         }
         else
