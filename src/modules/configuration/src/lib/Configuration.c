@@ -11,6 +11,8 @@
 
 #include "Configuration.h"
 
+#define MAX_SUPPORTED_GIT_NAME_LENGTH 1024
+
 static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "Configuration";
 
@@ -126,7 +128,7 @@ void ConfigurationShutdown(void)
     CloseLog(&g_log);
 }
 
-static int UpdateConfiguration(void)
+static int UpdateConfigurationFile(void)
 {
     const char* commandLoggingEnabledName = "CommandLogging";
     const char* fullLoggingEnabledName = "FullLogging";
@@ -168,12 +170,12 @@ static int UpdateConfiguration(void)
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfiguration failed", existingConfiguration);
+            OsConfigLogError(ConfigurationGetLog(), "json_parse_string(%s) failed, UpdateConfigurationFile failed", existingConfiguration);
             status = EINVAL;
         }
         else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
         {
-            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfiguration failed", existingConfiguration);
+            OsConfigLogError(ConfigurationGetLog(), "json_value_get_object(%s) failed, UpdateConfigurationFile failed", existingConfiguration);
             status = EINVAL;
         }
 
@@ -371,8 +373,11 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char buffer[1024] = {0}; ///////////////// FIX THIS //////////////////////////
+    char* buffer = NULL;
     char* configuration = NULL;
+    size_t repositoryUrlLength = 0;
+    size_t branchLength = 0;
+    size_t maximumLength = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -383,6 +388,19 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     *payload = NULL;
     *payloadSizeBytes = 0;
+
+    repositoryUrlLength = g_gitRepositoryUrl ? strlen(g_gitRepositoryUrl) : 0;
+    branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
+    maximumLength = ((repositoryUrlLength > g_gitBranch) ? repositoryUrlLength : g_gitBranch) + 1;
+
+    if (NULL == (buffer = malloc(maximumLength)))
+    {
+        OsConfigLogError(ConfigurationGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
+        status = ENOMEM;
+        return status;
+    }
+
+    memset(buffer, 0, maximumLength);
 
     if (!IsValidSession(clientSession))
     {
@@ -490,6 +508,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     }
 
     FREE_MEMORY(configuration);
+    FREE_MEMORY(buffer);
 
     return status;
 }
@@ -626,13 +645,11 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
         {
-            OsConfigLogInfo(ConfigurationGetLog(), "desiredGitRepositoryUrl value of '%s' changed to value '%s'", g_gitRepositoryUrl, payloadString); ///////////////////////
             FREE_MEMORY(g_gitRepositoryUrl);
             g_gitRepositoryUrl = DuplicateString(payloadString);
         }
         else if (0 == strcmp(objectName, g_desiredGitBranchObject))
         {
-            OsConfigLogInfo(ConfigurationGetLog(), "desiredGitBranch value of '%s' changed to value '%s'", g_gitBranch, payloadString); //////////////////////////////////////
             FREE_MEMORY(g_gitBranch);
             g_gitBranch = DuplicateString(payloadString);
         }
@@ -645,7 +662,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     if (MMI_OK == status)
     {
-        status = UpdateConfiguration();
+        status = UpdateConfigurationFile();
     }
 
     FREE_MEMORY(payloadString);
