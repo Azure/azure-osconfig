@@ -11,6 +11,24 @@
 
 #include "Service.h"
 
+typedef struct MIM_ANSIBLE_DATA_MAPPING {
+    const char mimComponentName[64];
+    const char mimObjectName[64];
+    const bool mimDesired;
+
+    const char ansibleModuleName[64];
+    const char ansibleDataTransformation[512];
+} MIM_ANSIBLE_DATA_MAPPING;
+
+static const MIM_ANSIBLE_DATA_MAPPING g_dataMappings[] = {
+    {"Service", "rcctl", false, "ansible.builtin.service_facts", ".ansible_facts.services | map(select(.source==\"rcctl\" and .state==\"running\").name)"},
+    {"Service", "systemd", false, "ansible.builtin.service_facts", ".ansible_facts.services | map(select(.source==\"systemd\" and .state==\"running\").name)"},
+    {"Service", "sysv", false, "ansible.builtin.service_facts", ".ansible_facts.services | map(select(.source==\"sysv\" and .state==\"running\").name)"},
+    {"Service", "upstart", false, "ansible.builtin.service_facts", ".ansible_facts.services | map(select(.source==\"upstart\" and .state==\"running\").name)"},
+    {"Service", "src", false, "ansible.builtin.service_facts", ".ansible_facts.services | map(select(.source==\"src\" and .state==\"running\").name)"},
+    {"Service", "desiredServices", true, "ansible.builtin.service", ".[] | \"name=\\(.name) state=\\(.state)\""}};
+static const int g_dataMappingsCount = ARRAY_SIZE(g_dataMappings);
+
 static const char* g_serviceModuleInfo = "{\"Name\": \"Service\","
     "\"Description\": \"Provides functionality to observe and configure services\","
     "\"Manufacturer\": \"Microsoft\","
@@ -23,9 +41,6 @@ static const char* g_serviceModuleInfo = "{\"Name\": \"Service\","
 
 static const char* g_serviceModuleName = "Service module";
 static const char* g_serviceComponentName = "Service";
-
-static const char* g_objectNames[] = {"rcctl", "systemd", "sysv", "upstart", "src"};
-static const int g_objectNamesCount = ARRAY_SIZE(g_objectNames);
 
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
@@ -50,6 +65,8 @@ void ServiceInitialize()
      * curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
      * python3 get-pip.py --user
      * python3 -m pip install --user ansible-core
+     * 
+     * sudo apt install jq
      * 
      */ 
         
@@ -125,23 +142,13 @@ int ServiceMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, int* pay
 
 int ServiceMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
-    const char* command = "/root/.local/bin/ansible localhost -m ansible.builtin.service_facts -o 2> /dev/null | grep -o '{.*'";
+    const char* commandFormat = "%s localhost -m %s -o 2> /dev/null | grep -o '{.*' | jq -c '%s' | tr '\n' ' '";
 
     int status = MMI_OK;
     char* result = NULL;
 
-    JSON_Value* rootValue = NULL; 
-    JSON_Object* rootObject = NULL;
-    JSON_Object* servicesObject = NULL;
-    JSON_Value* serviceValue = NULL;
-    JSON_Object* serviceObject = NULL;
-    JSON_Value* resultValue = NULL;
-    JSON_Array* resultArray = NULL;
-
-    const char* name = NULL;
-    const char* source = NULL;
-    const char* state = NULL;
-    int count = 0;
+    char* commandBuffer = NULL;
+    int commandBufferSizeBytes = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -163,145 +170,76 @@ int ServiceMmiGet(MMI_HANDLE clientSession, const char* componentName, const cha
         OsConfigLogError(ServiceGetLog(), "MmiGet called for an unsupported component name '%s'", componentName);
         status = EINVAL;
     }
-    else
-    {
-        status = EINVAL;
-
-        for (int i = 0; i < g_objectNamesCount; i++)
-        {
-            if (0 == strcmp(objectName, g_objectNames[i]))
-            {
-                status = MMI_OK;
-                break;
-            }
-        }
-
-        if (MMI_OK != status)
-        {
-            OsConfigLogError(ServiceGetLog(), "MmiGet called for an unsupported object name '%s'", objectName);
-        }
-    }
 
     if (MMI_OK == status)
     {
-        resultValue = json_value_init_array();
-        resultArray = json_value_get_array(resultValue);
-
-        if ((0 == ExecuteCommand(NULL, command, false, false, 0, 0, &result, NULL, ServiceGetLog())))
+        for (int i = 0; i < g_dataMappingsCount; i++)
         {
-            rootValue = json_parse_string(result);
-
-            if (json_value_get_type(rootValue) == JSONObject)
+            if ((0 == strcmp(g_dataMappings[i].mimComponentName, componentName)) && 
+                (0 == strcmp(g_dataMappings[i].mimObjectName, objectName)) &&
+                (!g_dataMappings[i].mimDesired))
             {
-                rootObject = json_value_get_object(rootValue);
+                commandBufferSizeBytes = snprintf(NULL, 0, commandFormat, "/root/.local/bin/ansible", g_dataMappings[i].ansibleModuleName, g_dataMappings[i].ansibleDataTransformation);
+                commandBuffer = malloc(commandBufferSizeBytes + 1);
 
-                if (json_object_dothas_value_of_type(rootObject, "ansible_facts.services", JSONObject))
+                if (NULL != commandBuffer)
                 {
-                    servicesObject = json_object_dotget_object(rootObject, "ansible_facts.services");
-                    count = json_object_get_count(servicesObject);
+                    memset(commandBuffer, 0, commandBufferSizeBytes + 1);
+                    snprintf(commandBuffer, commandBufferSizeBytes + 1, commandFormat, "/root/.local/bin/ansible", g_dataMappings[i].ansibleModuleName, g_dataMappings[i].ansibleDataTransformation);
 
-                    for (int i = 0; i < count; i++)
+                    if ((0 != ExecuteCommand(NULL, commandBuffer, false, false, 0, 0, &result, NULL, ServiceGetLog())))
                     {
-                        name = json_object_get_name(servicesObject, i);
-
-                        if (json_object_has_value_of_type(servicesObject, name, JSONObject))
+                        if (IsFullLoggingEnabled())
                         {
-                            serviceValue = json_object_get_value(servicesObject, name);
-
-                            if (json_value_get_type(serviceValue) == JSONObject)
-                            {
-                                serviceObject = json_value_get_object(serviceValue);
-
-                                if ((json_object_has_value_of_type(serviceObject, "source", JSONString)) &&
-                                    (json_object_has_value_of_type(serviceObject, "state", JSONString)))
-                                {
-                                    source = json_object_get_string(serviceObject, "source");
-                                    state = json_object_get_string(serviceObject, "state");
-
-                                    if ((source != NULL) && (0 == strcmp(source, objectName)) && 
-                                        (state != NULL) && (0 == strcmp(state, "running")))
-                                    {
-                                        json_array_append_string(resultArray, name);
-                                    }
-                                }
-                            }
+                            OsConfigLogError(ServiceGetLog(), "MmiGet failed to execute command '%s'", commandBuffer);
                         }
+                        status = EINVAL;
                     }
                 }
                 else 
                 {
-                    if (IsFullLoggingEnabled())
-                    {
-                        OsConfigLogError(ServiceGetLog(), "MmiGet failed to find JSON property '%s'", "ansible_facts.services");
-                    }
-                    status = EINVAL;
+                    ServiceGetLog(ServiceGetLog(), "MmiGet: failed to allocate %d bytes", commandBufferSizeBytes + 1);
+                    status = ENOMEM;
                 }
+
+                break;
             }
-            else 
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogError(ServiceGetLog(), "MmiGet failed to parse JSON string '%s'", result);
-                }
-                status = EINVAL;
-            }
+        }
+    }
+
+    if ((MMI_OK == status) && (NULL != result))
+    {
+        *payloadSizeBytes = strlen(result);
+        if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+        {
+            OsConfigLogError(ServiceGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+            *payloadSizeBytes = g_maxPayloadSizeBytes;
+        }
+
+        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
+        if (NULL != *payload)
+        {
+            memset(*payload, 0, *payloadSizeBytes);
+            memcpy(*payload, result, *payloadSizeBytes);
         }
         else 
         {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(ServiceGetLog(), "MmiGet failed to execute command '%s'", command);
-            }
-            status = EINVAL;
-        }
-
-        FREE_MEMORY(result);
-
-        result = json_serialize_to_string(resultValue);
-
-        if (NULL != result)
-        {
-            *payloadSizeBytes = strlen(result);
-            if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
-            {
-                OsConfigLogError(ServiceGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported value will be truncated", componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-                *payloadSizeBytes = g_maxPayloadSizeBytes;
-            }
-
-            *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
-            if (NULL != *payload)
-            {
-                memset(*payload, 0, *payloadSizeBytes);
-                memcpy(*payload, result, *payloadSizeBytes);
-            }
-            else 
-            {
-                OsConfigLogError(ServiceGetLog(), "MmiGet failed to allocate %d bytes", *payloadSizeBytes + 1);
-                *payloadSizeBytes = 0;
-                status = ENOMEM;
-            }
-
-            json_free_serialized_string(result);
-        }
-        else 
-        {
-            if (IsFullLoggingEnabled())
-            {
-                OsConfigLogError(ServiceGetLog(), "MmiGet failed to serialize JSON array");
-            }
-            status = EINVAL;
+            OsConfigLogError(ServiceGetLog(), "MmiGet failed to allocate %d bytes", *payloadSizeBytes + 1);
+            *payloadSizeBytes = 0;
+            status = ENOMEM;
         }
     }
-
-    if (NULL != rootValue)
+    else 
     {
-        json_value_free(rootValue);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(ServiceGetLog(), "MmiGet failed to serialize JSON array");
+        }
+        status = EINVAL;
     }
 
-    if (NULL != resultValue)
-    {
-        json_value_free(resultValue);
-    }
+    FREE_MEMORY(commandBuffer);
+    FREE_MEMORY(result);
 
     if (IsFullLoggingEnabled())
     {
@@ -313,19 +251,10 @@ int ServiceMmiGet(MMI_HANDLE clientSession, const char* componentName, const cha
 
 int ServiceMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    const char* command = "/root/.local/bin/ansible localhost -m ansible.builtin.service -a 'name=%s state=%s' -o 2> /dev/null | grep -o '{.*'";
+    const char* commandFormat = "echo '%s' | jq -c '%s' | xargs -L1 %s localhost -m %s -a";
 
     int status = MMI_OK;
     char* buffer = NULL;
-
-    JSON_Value* rootValue = NULL;
-    JSON_Array* rootArray = NULL;
-    JSON_Value* serviceValue = NULL;
-    JSON_Object* serviceObject = NULL;
-
-    int count = 0;
-    const char* name = NULL;
-    const char* state = NULL;
 
     char* commandBuffer = NULL;
     int commandBufferSizeBytes = 0;
@@ -350,7 +279,7 @@ int ServiceMmiSet(MMI_HANDLE clientSession, const char* componentName, const cha
         OsConfigLogError(ServiceGetLog(), "MmiSet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
-    else 
+    else
     {
         // Copy payload to local buffer with null terminator for json_parse_string.
         buffer = malloc(payloadSizeBytes + 1);
@@ -360,83 +289,38 @@ int ServiceMmiSet(MMI_HANDLE clientSession, const char* componentName, const cha
             memset(buffer, 0, payloadSizeBytes + 1);
             memcpy(buffer, payload, payloadSizeBytes);
 
-            rootValue = json_parse_string(buffer);
-            if (json_value_get_type(rootValue) == JSONArray)
+            for (int i = 0; i < g_dataMappingsCount; i++)
             {
-                rootArray = json_value_get_array(rootValue);
-                count = json_array_get_count(rootArray);
-
-                for (int i = 0; i < count; i++)
+                if ((0 == strcmp(g_dataMappings[i].mimComponentName, componentName)) && 
+                    (0 == strcmp(g_dataMappings[i].mimObjectName, objectName)) &&
+                    (g_dataMappings[i].mimDesired))
                 {
-                    serviceValue = json_array_get_value(rootArray, i);
+                    commandBufferSizeBytes = snprintf(NULL, 0, commandFormat, buffer, g_dataMappings[i].ansibleDataTransformation, "/root/.local/bin/ansible", g_dataMappings[i].ansibleModuleName);
+                    commandBuffer = malloc(commandBufferSizeBytes + 1);
 
-                    if (json_value_get_type(serviceValue) == JSONObject)
+                    if (NULL != commandBuffer)
                     {
-                        serviceObject = json_value_get_object(serviceValue);
+                        memset(commandBuffer, 0, commandBufferSizeBytes + 1);
+                        snprintf(commandBuffer, commandBufferSizeBytes + 1, commandFormat, buffer, g_dataMappings[i].ansibleDataTransformation, "/root/.local/bin/ansible", g_dataMappings[i].ansibleModuleName);
 
-                        name = NULL;
-                        state = "started";
-
-                        if (json_object_has_value_of_type(serviceObject, "name", JSONString))
+                        if ((0 != ExecuteCommand(NULL, commandBuffer, false, false, 0, 0, NULL, NULL, ServiceGetLog())))
                         {
-                            name = json_object_get_string(serviceObject, "name");
-                        }
-                        
-                        if (json_object_has_value_of_type(serviceObject, "state", JSONString))
-                        {
-                            state = json_object_get_string(serviceObject, "state");
-                        }
-
-                        if ((NULL != name) && (NULL != state))
-                        {
-                            commandBufferSizeBytes = snprintf(NULL, 0, command, name, state);
-                            commandBuffer = malloc(commandBufferSizeBytes + 1);
-
-                            if (NULL != commandBuffer)
+                            if (IsFullLoggingEnabled())
                             {
-                                memset(commandBuffer, 0, commandBufferSizeBytes + 1);
-                                snprintf(commandBuffer, commandBufferSizeBytes + 1, command, name, state);
-
-                                if ((0 == ExecuteCommand(NULL, commandBuffer, false, false, 0, 0, NULL, NULL, ServiceGetLog())))
-                                {
-                                    // Ignored.
-                                }
-                                else 
-                                {
-                                    if (IsFullLoggingEnabled())
-                                    {
-                                        OsConfigLogError(ServiceGetLog(), "MmiSet failed to execute command '%s'", command);
-                                    }
-                                    status = EINVAL;
-                                }
-
-                                FREE_MEMORY(commandBuffer);
+                                OsConfigLogError(ServiceGetLog(), "MmiSet failed to execute command '%s'", commandBuffer);
                             }
-                            else 
-                            {
-                                ServiceGetLog(ServiceGetLog(), "MmiSet: failed to allocate %d bytes", commandBufferSizeBytes + 1);
-                                status = ENOMEM;
-                            }
+                            status = EINVAL;
                         }
                     }
                     else 
                     {
-                        // Ignore malformed object.
-
-                        if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogError(ServiceGetLog(), "MmiSet failed to process mailformed JSON object");
-                        }
+                        ServiceGetLog(ServiceGetLog(), "MmiSet: failed to allocate %d bytes", commandBufferSizeBytes + 1);
+                        status = ENOMEM;
                     }
+
+                    break;
                 }
             }
-            else
-            {
-                OsConfigLogError(ServiceGetLog(), "MmiSet failed to parse JSON '%.*s'", payloadSizeBytes, payload);
-                status = EINVAL;
-            }
-
-            json_value_free(rootValue);
         }
         else 
         {
