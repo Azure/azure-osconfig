@@ -679,8 +679,6 @@ int main(int argc, char *argv[])
         goto done;
     }
 
-    WatcherDoWork(GetLog());
-    
     if (!InitializeAgent())
     {
         OsConfigLogError(GetLog(), "Failed to initialize the OSConfig PnP Agent");
