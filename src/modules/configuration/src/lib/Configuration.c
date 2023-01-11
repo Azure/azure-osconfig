@@ -444,12 +444,12 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         {
             snprintf(buffer, sizeof(buffer), "%s", g_gitManagementEnabled ? "true" : "false");
         }
-        else if (0 == strcmp(objectName, g_gitRepositoryUrl))
+        else if (0 == strcmp(objectName, g_gitRepositoryUrlObject))
         {
             snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitRepositoryUrl);
             OsConfigLogInfo(ConfigurationGetLog(), "Reported gitRepositoryUrl value: '%s' (buffer: '%s')", g_gitRepositoryUrl, buffer); ///////////////////////
         }
-        else if (0 == strcmp(objectName, g_gitBranch))
+        else if (0 == strcmp(objectName, g_gitBranchObject))
         {
             snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitBranch);
             OsConfigLogInfo(ConfigurationGetLog(), "Reported gitBranch value: '%s' (buffer: '%s')", g_gitBranch, buffer); ///////////////////////
