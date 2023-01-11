@@ -295,24 +295,16 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 else 
                 {
                     valueLength = strlen(value);
-                    if (valueLength >= 0)
+                    buffer = (char*)malloc(valueLength + 1);
+                    if (NULL != buffer)
                     {
-                        buffer = (char*)malloc(valueLength + 1);
-                        if (NULL != buffer)
-                        {
-                            memcpy(buffer, value, valueLength);
-                            buffer[valueLength] = 0;
-                        }
-                        else if (IsFullLoggingEnabled())
-                        {
-                            OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
-                        }
-                    } 
+                        memcpy(buffer, value, valueLength);
+                        buffer[valueLength] = 0;
+                    }
                     else if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogError(log, "GetStringFromJsonConfig: bad value %s for %s", value, valueName);
+                        OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
                     }
-
                 }
             }
             else if (IsFullLoggingEnabled())
