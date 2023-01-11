@@ -22,6 +22,8 @@ static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
 static size_t g_gitDesiredHash = 0;
 
+static bool g_gitCloneInitialized = false;
+
 static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
@@ -202,10 +204,7 @@ void InitializeWatcher(const char* jsonConfiguration, void* log)
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, log);
     }
 
-    if (g_gitManagement)
-    {
-        InitializeGitClone(g_gitRepositoryUrl, GIT_DC_CLONE, log);
-    }
+    g_gitCloneInitialized = false;
 
     RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     RestrictFileAccessToCurrentAccountOnly(RC_FILE);
@@ -219,9 +218,17 @@ void WatcherDoWork(void* log)
         ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
     }
 
-    if (g_gitManagement && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
+    if (g_gitManagement)
     {
-        ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
+        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, GIT_DC_CLONE, log)))
+        {
+            g_gitCloneInitialized = true;
+        }
+
+        if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log))
+        {
+            ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
+        }
     }
 
     if (g_localManagement)
