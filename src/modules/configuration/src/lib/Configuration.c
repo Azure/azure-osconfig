@@ -11,8 +11,6 @@
 
 #include "Configuration.h"
 
-#define MAX_SUPPORTED_GIT_NAME_LENGTH 1024
-
 static const char* g_configurationModuleName = "OSConfig Configuration module";
 static const char* g_configurationComponentName = "Configuration";
 
