@@ -295,7 +295,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                 else 
                 {
                     valueLength = strlen(value);
-                    if (valueLength > 0)
+                    if (valueLength >= 0)
                     {
                         buffer = (char*)malloc(valueLength + 1);
                         if (NULL != buffer)
