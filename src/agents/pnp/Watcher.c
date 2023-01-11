@@ -225,7 +225,7 @@ void WatcherDoWork(void* log)
             g_gitCloneInitialized = true;
         }
 
-        if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log))
+        if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
         {
             ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
         }
