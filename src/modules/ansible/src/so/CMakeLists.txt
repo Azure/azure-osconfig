@@ -1,23 +1,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(service)
+project(ansible)
 
-add_library(service SHARED ServiceModule.c)
-target_link_libraries(service
+add_library(ansible SHARED AnsibleModule.c)
+target_link_libraries(ansible
     PRIVATE
         commonutils
         logging
     PUBLIC
-        servicelib
+        ansiblelib
 )
-target_include_directories(service
+target_include_directories(ansible
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(service
+set_target_properties(ansible
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
-install(TARGETS service DESTINATION ${MODULES_INSTALL_DIR})
+install(TARGETS ansible DESTINATION ${MODULES_INSTALL_DIR})
