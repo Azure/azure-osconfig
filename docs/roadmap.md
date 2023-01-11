@@ -65,13 +65,15 @@ The Management Platform runs in its own process, separate of the PnP Agent. OSCo
 
 <img src="assets/4_platform.png" alt="Copper" width=70%/>
   
-# 5. Isolated Modules - the current North Star (codename Zinc)
+# 5. Isolated Modules - the current North Star (codename Gallium)
 
-Main target scenario: OSConfig Management Modules run isolated in their own processes.
+Main target scenario: OSConfig Management Modules run isolated in their own processes, Azure Policy and GitHub
 
 - The IPC REST API over UDS for Management Modules Interface (MMI) is introduced.
 - The Module Host is introduced. The Modules Manager instead of loading in-proc the module libraries, it forks a Module Host process to load each module library out-of-proc of the platform.
 - Modules continue to work unchanged, same as in previous releases, as Dynamically Loaded Shared Object libraries exporting the MMI C API. The Module Host provides the MMI REST API on top.
+- A new OSConfig NRP is added for MC and Azure Policy.
+- The local management RC/DC are complemented with a remote Git DC.
 - New Storage and Downloader utility libraries are introduced for Platform and Modules to use.
 - Other new Management Modules appear (not shown in diagram).
 
