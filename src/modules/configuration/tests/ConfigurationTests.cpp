@@ -31,12 +31,18 @@ class ConfigurationTest : public ::testing::Test
         const char* m_fullLoggingEnabledObject = "fullLoggingEnabled";
         const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
-        
+        const char* m_gitManagementEnabledObject = "gitManagementEnabled";
+        const char* m_gitRepositoryUrlObject = "gitRepositoryUrl";
+        const char* m_gitBranchObject = "gitBranch";
+                
         const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
         const char* m_desiredLocalManagementEnabledObject = "desiredLocalManagementEnabled";
         const char* m_desiredFullLoggingEnabledObject = "desiredFullLoggingEnabled";
         const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
         const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
+        const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
+        const char* m_desiredGitRepositoryUrlObject = "desiredGitRepositoryUrl";
+        const char* m_desiredGitBranchObject = "desiredGitBranch";
 
         const char* m_testConfiguration = 
             "{"
@@ -45,7 +51,10 @@ class ConfigurationTest : public ::testing::Test
                 "\"LocalManagement\" : 0,"
                 "\"ModelVersion\" : 15,"
                 "\"IotHubProtocol\" : 2,"
-                "\"ReportingIntervalSeconds\": 30"
+                "\"ReportingIntervalSeconds\": 30,"
+                "\"GitManagement\" : 1,"
+                "\"GitRepositoryUrl\" : \"https://github.com/Azure/azure-osconfig\","
+                "\"GitBranch\" : \"MariusNi/OsConfigGitOps_Jan05_2023\""
             "}";
         
         const char* m_testConfigurationFile = "~testConfiguration.json";
@@ -123,7 +132,10 @@ TEST_F(ConfigurationTest, MmiGet)
         m_localManagementEnabledObject,
         m_fullLoggingEnabledObject,
         m_commandLoggingEnabledObject,
-        m_iotHubProtocolObject
+        m_iotHubProtocolObject,
+        m_gitManagementEnabledObject,
+        m_gitRepositoryUrlObject,
+        m_gitBranchObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -157,7 +169,10 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         m_localManagementEnabledObject,
         m_fullLoggingEnabledObject,
         m_commandLoggingEnabledObject,
-        m_iotHubProtocolObject
+        m_iotHubProtocolObject,
+        m_gitManagementEnabledObject,
+        m_gitRepositoryUrlObject,
+        m_gitBranchObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -256,7 +271,13 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredIotHubProtocolObject, "\"auto\"", 0, m_iotHubProtocolObject, "\"auto\"" },
         { m_desiredIotHubProtocolObject, "\"mqtt\"", 0, m_iotHubProtocolObject, "\"mqtt\"" },
         { m_desiredIotHubProtocolObject, "\"mqttWebSocket\"", 0, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
-        { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" }
+        { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
+        { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
+        { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
+        { m_desiredGitRepositoryUrlObject, "TestABC123", 0, m_gitRepositoryUrlObject, "TestABC123" },
+        //{ m_desiredGitRepositoryUrlObject, "Test\\ABC\123", 0, m_gitRepositoryUrlObject, "Test\\ABC\123" },
+        //{ m_desiredGitRepositoryUrlObject, "Test/ABC//123", 0, m_gitRepositoryUrlObject, "Test/ABC//123" },
+        { m_desiredGitBranchObject, "TestABC123", 0, m_gitBranchObject, "TestABC123" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
