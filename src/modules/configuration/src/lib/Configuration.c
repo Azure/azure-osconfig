@@ -391,7 +391,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
 
     repositoryUrlLength = g_gitRepositoryUrl ? strlen(g_gitRepositoryUrl) : 0;
     branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
-    maximumLength = ((repositoryUrlLength > g_gitBranch) ? repositoryUrlLength : g_gitBranch) + 1;
+    maximumLength = ((repositoryUrlLength > branchLength) ? repositoryUrlLength : branchLength) + 1;
 
     if (NULL == (buffer = malloc(maximumLength)))
     {
