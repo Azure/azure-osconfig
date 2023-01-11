@@ -34,7 +34,7 @@ static const char* g_ansibleModuleInfo = "{\"Name\": \"Ansible\","
     "\"VersionMajor\": 1,"
     "\"VersionMinor\": 0,"
     "\"VersionInfo\": \"Copper\","
-    "\"Components\": [\"Service\", \"Docker\"],"
+    "\"Components\": [\"Service\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
