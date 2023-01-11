@@ -67,7 +67,9 @@ The pair of DC and RC files are written in MIM JSON format. The RC/DC files act 
 
 To protect against unauthorized access, the DC and RC files are restricted to root user read and write access only.
 
-The  DC and RC files by default reside under /etc/osconfig/ as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file) but can be moved to a configurable location which could be a local Git clone, for example.
+The  DC and RC files by default reside under /etc/osconfig/ as `/etc/osconfig/osconfig_desired.json` (the DC file) and `/etc/osconfig/osconfig_reported.json` (the RC file).
+
+The Watcher can also monitor a Git DC file from a configured Git repository and branch in a similar fashion with the local DC file. 
 
 ## 3.5. MPI Client
 
@@ -99,7 +101,7 @@ The platform includes the following main components:
 - Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
 - MMI Client: makes MMI REST API calls to Module Hosts over HTTP and UDS. 
 
-The platform also includes several utility libraruies which are shared with all OSConfig components, including agent and modules:
+The platform also includes several utility libraries which are shared with all OSConfig components, including agent and modules:
 
 - Logging: file and console circular logging library.
 - CommonUtils: various utility APIs useful for accesing and working with the Linux OS.
