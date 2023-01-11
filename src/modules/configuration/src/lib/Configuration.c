@@ -421,54 +421,54 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     {
         if (0 == strcmp(objectName, g_modelVersionObject))
         {
-            snprintf(buffer, sizeof(buffer), "%u", g_modelVersion);
+            snprintf(buffer, maximumLength, "%u", g_modelVersion);
         }
         else if (0 == strcmp(objectName, g_refreshIntervalObject))
         {
-            snprintf(buffer, sizeof(buffer), "%u", g_refreshInterval);
+            snprintf(buffer, maximumLength, "%u", g_refreshInterval);
         }
         else if (0 == strcmp(objectName, g_localManagementEnabledObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_localManagementEnabled ? "true" : "false");
+            snprintf(buffer, maximumLength, "%s", g_localManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_fullLoggingEnabled ? "true" : "false");
+            snprintf(buffer, maximumLength, "%s", g_fullLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_commandLoggingEnabled ? "true" : "false");
+            snprintf(buffer, maximumLength, "%s", g_commandLoggingEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_iotHubProtocolObject))
         {
-            snprintf(buffer, sizeof(buffer), "%u", g_iotHubProtocol);
+            snprintf(buffer, maximumLength, "%u", g_iotHubProtocol);
             switch (g_iotHubProtocol)
             {
                 case 1:
-                    snprintf(buffer, sizeof(buffer), "%s", g_mqtt);
+                    snprintf(buffer, maximumLength, "%s", g_mqtt);
                     break;
 
                 case 2:
-                    snprintf(buffer, sizeof(buffer), "%s", g_mqttWebSocket);
+                    snprintf(buffer, maximumLength, "%s", g_mqttWebSocket);
                     break;
 
                 case 0:
                 default:
-                    snprintf(buffer, sizeof(buffer), "%s", g_auto);
+                    snprintf(buffer, maximumLength, "%s", g_auto);
 
             }
         }
         else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_gitManagementEnabled ? "true" : "false");
+            snprintf(buffer, maximumLength, "%s", g_gitManagementEnabled ? "true" : "false");
         }
         else if (0 == strcmp(objectName, g_gitRepositoryUrlObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_gitRepositoryUrl);
+            snprintf(buffer, maximumLength, "%s", g_gitRepositoryUrl);
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            snprintf(buffer, sizeof(buffer), "%s", g_gitBranch);
+            snprintf(buffer, maximumLength, "%s", g_gitBranch);
         }
         else
         {
