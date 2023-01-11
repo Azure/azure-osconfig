@@ -89,7 +89,7 @@ In the opposite direction, OSConfig agent periodically updates the Reported Twin
 
 The OSConfig Management Platform runs in its own daemon process. The platform communicates with the upper agents layer (such as: the OSConfig Agent, Azure Device Update Agent, a TBD OOBE Agent -a concept of OOBE components calling the OSConfig platform, etc.) over the Management Platform Interface (MPI) REST API. 
 
-The platform communicates to the OSConfig Managewment Modules over the Management Modules Interface (MMI) REST API.
+The platform communicates to the OSConfig Management Modules over the Management Modules Interface (MMI) REST API.
 
 <img src="assets/platform.png" alt="OSConfig Management Platform" width=60%/>
  
@@ -309,7 +309,7 @@ The OSQuery Module implements an adapter for [OSQuery](https://www.osquery.io/).
 
 ## 5.5. Orchestrator Module
 
-In general, we can adappt OSConfig Management Modules to MC and Azure Policy by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
+In general, we can adapt OSConfig Management Modules to MC and Azure Policy by flattening their MIMs (all simple objects, one simple type setting per object) and matching desired with reported.
 
 A new kind of OSConfig Management Module can be added: an Orchestrator Module loads other modules and execute combination of standard OSConfig module scenarios, without dealing itself with any direct OS configuration. There can be one or multiple Orchestrator Modules, each one of them using a different combination of standard modules, and/or using same modules but in different ways. The power of Orchestrator Modules is that they can wrap more complex scenarios in simple MIM models and thus work better with Azure Policy. 
 
