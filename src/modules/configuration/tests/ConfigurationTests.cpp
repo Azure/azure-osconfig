@@ -137,7 +137,7 @@ TEST_F(ConfigurationTest, MmiGet)
         m_gitRepositoryUrlObject,
         m_gitBranchObject
     };
-
+    
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
     EXPECT_NE(nullptr, handle = ConfigurationMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
@@ -274,10 +274,13 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
         { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
-        { m_desiredGitRepositoryUrlObject, "TestABC123", 0, m_gitRepositoryUrlObject, "TestABC123" },
-        //{ m_desiredGitRepositoryUrlObject, "Test\\ABC\123", 0, m_gitRepositoryUrlObject, "Test\\ABC\123" },
-        //{ m_desiredGitRepositoryUrlObject, "Test/ABC//123", 0, m_gitRepositoryUrlObject, "Test/ABC//123" },
-        { m_desiredGitBranchObject, "TestABC123", 0, m_gitBranchObject, "TestABC123" }
+        { m_desiredGitRepositoryUrlObject, "\"TestABC123\"", 0, m_gitRepositoryUrlObject, "\"TestABC123\"" },
+        { m_desiredGitRepositoryUrlObject, "\"Test\\ABC\\\\123\"", 0, m_gitRepositoryUrlObject, "\"Test\\ABC\\\\123\"" },
+        { m_desiredGitRepositoryUrlObject, "\"Test/ABC//123\"", 0, m_gitRepositoryUrlObject, "\"Test/ABC//123\"" },
+        { m_desiredGitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"", 0, m_gitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"" },
+        { m_desiredGitBranchObject, "\"TestABC123\"", 0, m_gitBranchObject, "\"TestABC123\"" },
+        { m_desiredGitBranchObject, "\"Test\\ABC/123\"", 0, m_gitBranchObject, "\"Test\\ABC/123\"" },
+        { m_desiredGitBranchObject, "\"MariusNi/OsConfigGitOps_Jan05_2023\"", 0, m_gitBranchObject, "\"MariusNi/OsConfigGitOps_Jan05_2023\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);

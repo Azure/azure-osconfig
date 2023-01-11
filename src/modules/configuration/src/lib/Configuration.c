@@ -371,7 +371,7 @@ int ConfigurationMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload, in
 int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char buffer[20] = {0};
+    char buffer[1024] = {0}; ///////////////// FIX THIS //////////////////////////
     char* configuration = NULL;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -446,13 +446,11 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_gitRepositoryUrlObject))
         {
-            snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitRepositoryUrl);
-            OsConfigLogInfo(ConfigurationGetLog(), "Reported gitRepositoryUrl value: '%s' (buffer: '%s')", g_gitRepositoryUrl, buffer); ///////////////////////
+            snprintf(buffer, sizeof(buffer), "%s", g_gitRepositoryUrl);
         }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
-            snprintf(buffer, sizeof(buffer), "\"%s\"", g_gitBranch);
-            OsConfigLogInfo(ConfigurationGetLog(), "Reported gitBranch value: '%s' (buffer: '%s')", g_gitBranch, buffer); ///////////////////////
+            snprintf(buffer, sizeof(buffer), "%s", g_gitBranch);
         }
         else
         {
