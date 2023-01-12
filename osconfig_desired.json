@@ -1,7 +1,7 @@
 {
   "CommandRunner": {
 	"commandArguments": {
-      "commandId": "GitOps command 6",
+      "commandId": "GitOps command 7",
       "arguments": "date",
       "timeout": 60,
       "singleLineTextResult": true,
@@ -9,7 +9,7 @@
 	}
   },
   "HostName": {
-	  "desiredName": "GitTest6"
+	  "desiredName": "GitTest7"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
