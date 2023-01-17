@@ -1,25 +1,25 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps command 12",
+    "commandId": "GitOps command 13",
     "arguments": "date",
     "timeout": 60,
     "singleLineTextResult": true,
     "action": 3
-  }
-},
+    }
+  },
   "HostName": {
-    "desiredName": "GIT-TEST-12"
+    "desiredName": "GIT-TEST-13"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
-    {
-      "direction": "in",
-      "action": "accept"
-    },
-    {
-      "direction": "out",
-      "action": "accept"
+      {
+        "direction": "in",
+        "action": "accept"
+      },
+      {
+        "direction": "out",
+        "action": "accept"
       }
     ]
   }
