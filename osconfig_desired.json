@@ -1,7 +1,7 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps demo 14",
+    "commandId": "GitOps demo 15",
     "arguments": "date",
     "timeout": 60,
     "singleLineTextResult": true,
@@ -9,7 +9,7 @@
     }
   },
   "HostName": {
-    "desiredName": "GIT-TEST-14"
+    "desiredName": "GIT-TEST-15"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
