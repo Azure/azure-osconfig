@@ -1,15 +1,15 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps demo 15",
-    "arguments": "date",
+    "commandId": "GitOps demo 16",
+    "arguments": "cat /etc/osconfig/gitops/osconfig_desired.json",
     "timeout": 60,
     "singleLineTextResult": true,
     "action": 3
     }
   },
   "HostName": {
-    "desiredName": "GIT-TEST-15"
+    "desiredName": "GIT-TEST-16"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
