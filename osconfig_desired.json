@@ -1,15 +1,15 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps demo 18",
-    "arguments": "lscpu | grep "Model name:",
+    "commandId": "GitOps demo 19",
+    "arguments": "date",
     "timeout": 60,
     "singleLineTextResult": false,
     "action": 3
     }
   },
   "HostName": {
-    "desiredName": "GIT-TEST-18"
+    "desiredName": "GIT-TEST-19"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
