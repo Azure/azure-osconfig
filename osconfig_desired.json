@@ -1,15 +1,15 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps demo 20",
-    "arguments": "date",
+    "commandId": "GitOps Big Demo",
+    "arguments": "ls",
     "timeout": 60,
     "singleLineTextResult": true,
     "action": 3
     }
   },
   "HostName": {
-    "desiredName": "GIT-TEST-20"
+    "desiredName": "GIT-TEST-21"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
