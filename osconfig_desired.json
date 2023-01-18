@@ -1,15 +1,15 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "GitOps demo 17",
-    "arguments": "cat /etc/osconfig/gitops/osconfig_desired.json",
+    "commandId": "GitOps demo 18",
+    "arguments": "lscpu | grep "Model name:",
     "timeout": 60,
     "singleLineTextResult": false,
     "action": 3
     }
   },
   "HostName": {
-    "desiredName": "GIT-TEST-17"
+    "desiredName": "GIT-TEST-18"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
