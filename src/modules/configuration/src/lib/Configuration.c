@@ -373,6 +373,7 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     int status = MMI_OK;
     char* buffer = NULL;
     char* configuration = NULL;
+    const size_t minimumLength = 20;
     size_t repositoryUrlLength = 0;
     size_t branchLength = 0;
     size_t maximumLength = 0;
@@ -390,6 +391,11 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     repositoryUrlLength = g_gitRepositoryUrl ? strlen(g_gitRepositoryUrl) : 0;
     branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
     maximumLength = ((repositoryUrlLength > branchLength) ? repositoryUrlLength : branchLength) + 1;
+
+    if (maximumLength < minimumLength)
+    {
+        maximumLength = minimumLength;
+    }
 
     if (NULL == (buffer = malloc(maximumLength)))
     {
