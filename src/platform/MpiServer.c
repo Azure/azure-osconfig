@@ -595,7 +595,7 @@ void MpiServerInitialize(void)
         // S_IRUSR (0x00400): Read permission, owner
         // S_IWUSR (0x00200): Write permission, owner
         // S_IXUSR (0x00100): Execute/search permission, owner
-        if (0 != mkdir(g_socketPrefix, /*S_IRUSR | S_IWUSR | S_IXUSR*/S_IRWXU))
+        if (0 != mkdir(g_socketPrefix, /*S_IRUSR | S_IWUSR | S_IXUSR*/S_IRWXO)) /////////////////////////////////////
         {
             OsConfigLogError(GetPlatformLog(), "Failed to create socket '%s'", g_socketPrefix);
         }
@@ -613,7 +613,8 @@ void MpiServerInitialize(void)
 
         if (0 == bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen))
         {
-            RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
+            //RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
+            chmod(g_mpiSocket, S_IRWXO); /////////////////////////////////////////////////////
 
             if (0 == listen(g_socketfd, MAX_QUEUED_CONNECTIONS))
             {
