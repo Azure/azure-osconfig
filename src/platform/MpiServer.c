@@ -579,23 +579,13 @@ static void* MpiServerWorker(void* arguments)
 
 void MpiServerInitialize(void)
 {
-    /*
-    S_IRWXU This is equivalent to ‘(S_IRUSR | S_IWUSR | S_IXUSR)’.
-
-    S_IROTH     Read permission bit for other users. Usually 04.
-    S_IWOTH     Write permission bit for other users. Usually 02.
-    S_IXOTH     Execute or search permission bit for other users. Usually 01.
-    S_IRWXO     This is equivalent to ‘(S_IROTH | S_IWOTH | S_IXOTH)’.
-
-    */
-    
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
     {
         // S_IRUSR (0x00400): Read permission, owner
         // S_IWUSR (0x00200): Write permission, owner
         // S_IXUSR (0x00100): Execute/search permission, owner
-        if (0 != mkdir(g_socketPrefix, /*S_IRUSR | S_IWUSR | S_IXUSR*/S_IRWXO)) /////////////////////////////////////
+        if (0 != mkdir(g_socketPrefix, S_IRUSR | S_IWUSR | S_IXUSR))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to create socket '%s'", g_socketPrefix);
         }
@@ -613,8 +603,7 @@ void MpiServerInitialize(void)
 
         if (0 == bind(g_socketfd, (struct sockaddr*)&g_socketaddr, g_socketlen))
         {
-            //RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
-            chmod(g_mpiSocket, S_IRWXO); /////////////////////////////////////////////////////
+            RestrictFileAccessToCurrentAccountOnly(g_mpiSocket);
 
             if (0 == listen(g_socketfd, MAX_QUEUED_CONNECTIONS))
             {

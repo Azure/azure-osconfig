@@ -179,6 +179,54 @@
     "Payload": "mqttWebSocket"
   },
   {
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredGitManagementEnabled",
+    "Payload": true
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
+    "ObjectName": "gitManagementEnabled",
+    "Payload": true
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredGitRepositoryUrl",
+    "Payload": "https://github.com/Azure/azure-osconfig/"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
+    "ObjectName": "gitRepositoryUrl",
+    "Payload": "https://github.com/Azure/azure-osconfig/"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredGitBranch",
+    "Payload": "foo/test"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
+    "ObjectName": "gitBranch",
+    "Payload": "foo/test"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "Configuration",
+    "ObjectName": "desiredGitManagementEnabled",
+    "Payload": false
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Configuration",
+    "ObjectName": "gitManagementEnabled",
+    "Payload": false
+  },
+  {
     "Action": "UnloadModule"
   },
   {
