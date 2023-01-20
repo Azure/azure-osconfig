@@ -275,7 +275,7 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
         { m_desiredGitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"", 0, m_gitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"" },
-        { m_desiredGitBranchObject, "\"MariusNi/OsConfigGitOps_Jan05_2023\"", 0, m_gitBranchObject, "\"MariusNi/OsConfigGitOps_Jan05_2023\"" }
+        { m_desiredGitBranchObject, "\"Foo/Test\"", 0, m_gitBranchObject, "\"Foo/Test\"" }
     };
     
     int numTestCombinations = ARRAY_SIZE(testCombinations);
