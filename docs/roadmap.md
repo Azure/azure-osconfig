@@ -45,7 +45,7 @@ The modules become detached Shared Object (.so) libraries, partners can develop 
 OSConfig continues to run as a monolithic process and can accept requests from agentless management authorities like OOBE. More module scenarios are enabled (TPM, etc.)
 
 - The Watcher is introduced. OSConfig can accept requests from Local Management Authorities (like OOBE). 
-- The Orchestrator is introduced to orchestrate input from multiple Agents/Authorities.
+- The Orchestrator is introduced to orchestrate input from multiple authorities.
 - Modules continue to work unchanged, same as in previous release, as Dynamically Loaded Shared Object libraries exporting the MMI C API. 
 - The Modules Manager is introduced and loads the module libraries in-proc.
 - Tpm and other new Management Modules can appear (not shown in diagram).

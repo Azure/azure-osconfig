@@ -87,7 +87,7 @@ In the opposite direction, OSConfig agent periodically updates the Reported Twin
 
 ## 4.1. Introduction
 
-The OSConfig Management Platform runs in its own daemon process. The platform communicates with the upper agents layer (such as: the OSConfig Agent, Azure Device Update Agent, a TBD OOBE Agent -a concept of OOBE components calling the OSConfig platform, etc.) over the Management Platform Interface (MPI) REST API. 
+The OSConfig Management Platform runs in its own daemon process. The platform communicates with the management authority adapters (such as: the OSConfig Agent, Azure Device Update Agent, a TBD OOBE Agent -a concept of OOBE components calling the OSConfig platform, etc.) over the Management Platform Interface (MPI) REST API. 
 
 The platform communicates to the OSConfig Management Modules over the Management Modules Interface (MMI) REST API.
 
@@ -95,9 +95,9 @@ The platform communicates to the OSConfig Management Modules over the Management
  
 The platform includes the following main components:
 
-- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is one of the entry points into the platform for management authorities/agents including OSConfig's own.
+- Management Platform Interface (MPI): MPI as an IPC REST API over HTTP and UDS. This is one of the entry points into the platform for adapters including OSConfig's own.
 - Watcher: monitors for desired configuration file for updates. This is the other entry point into the platform, from both agentless and agent management authorities.
-- Orchestrator: receives, orchestrates, serializes requests for modules into the Modules Manager. The management authorities and their agents can make their own MPI requests. The Orchestrator's role is to orchestrate between local and remote management authorities and also help orchestrate for each authority following the Module Interface Model (MIM) contracts and for PnP without modifying passing-through requests in either direction. 
+- Orchestrator: receives, orchestrates, serializes requests for modules into the Modules Manager. The management authorities and their adapters can make their own MPI requests. The Orchestrator's role is to orchestrate between local and remote management authorities and also help orchestrate for each authority following the Module Interface Model (MIM) contracts and for PnP without modifying passing-through requests in either direction. 
 - Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
 - MMI Client: makes MMI REST API calls to Module Hosts over HTTP and UDS. 
 
@@ -110,11 +110,11 @@ The platform is completely decoupled from the agent and the modules. The platfor
 
 ## 4.2. Management Platform Interface (MPI)
 
-The Management Platform Interface (MPI) provides a way for the OSConfig Management Platform to be invoked by management authorities/agents. 
+The Management Platform Interface (MPI) provides a way for the OSConfig Management Platform to be invoked by management authority adapters. 
 
 The MPI has two different implementations:
 
-- REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) with the agents.
+- REST API over Unix Domain Sockets (UDS) for inter-process communication (IPC) with the adapters.
 - C API for internal in-process communication between the Orchestrator and the Modules Manager.
 
 The MPI REST API is implemented as a Linux Static Library (.a), either alone or combined with the Orchestrator, linked into the platform's main binary, and exporting the REST API over Unix Domain Sockets (UDS). The agent clients make such MPI REST API calls over HTTP.
@@ -150,7 +150,7 @@ This format is following the MIM JSON payload schema described in the [OSConfig 
 
 ## 4.3. Orchestrator
 
-The Orchestrator receives management requests from agents over the Management Platform Interface (MPI) IPC REST API. The Orchestrator combines the requests in a serial sequence that it feeds into the Module Manager to dispatch the requests to the respective Management Modules.
+The Orchestrator receives management requests from adapters over the Management Platform Interface (MPI) IPC REST API. The Orchestrator combines the requests in a serial sequence that it feeds into the Module Manager to dispatch the requests to the respective Management Modules.
 
 The Orchestrator can be implemented as a Linux Static Library (.a) either alone or combined with the MPI and linked into the platform's main binary.
 
@@ -162,7 +162,7 @@ What the Orchestrator does:
 - Combines requests into one serial sequence. 
 - Skips duplicate requests. For example, a duplicate request to set DeviceHealthTelemetry to Optional.
 - Applies a certain order for requests simultaneously arriving from separate authorities per a list of priorities to be created as part of the configuration at /etc/osconfig/osconfig.json. For example, if a request to set DeviceHealthTelemetry to Optional arrives at the same time with a CommandArguments.Action.Shutdown to pipe them in this order. Or: NetworkConnections.DesiredConnectionConfiguration.Action=ChangeIpv4Address results in network connection loss to automatically invoke RollbackConnectionConfiguration.
-- Return over the MPI to the agents the module responses from the Modules Manager.
+- Return over the MPI to the adapters the module responses from the Modules Manager.
  
 What the Orchestrator does not do:
 

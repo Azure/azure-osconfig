@@ -52,14 +52,14 @@ The following OSConfig files are binplaced at build time:
 
 Source | Destination | Description
 -----|-----|-----
-[src/agents/pnp/](src/agents/pnp/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
+[src/adapters/pnp/](src/adapters/pnp/) | /usr/bin/osconfig | The OSConfig Agent and the main control binary for OSConfig
 [src/platform/](src/platform/) | /usr/bin/osconfig-platform | The OSConfig Platform binary
-[src/agents/pnp/daemon/osconfig.conn](src/agents/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
-[src/agents/pnp/daemon/osconfig.json](src/agents/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
+[src/adapters/pnp/daemon/osconfig.conn](src/adapters/pnp/daemon/osconfig.conn) | /etc/osconfig/osconfig.conn | Holds manual IoT Hub device connection id string (optional)
+[src/adapters/pnp/daemon/osconfig.json](src/adapters/pnp/daemon/osconfig.json) | /etc/osconfig/osconfig.json | The main configuration file for OSConfig
 [src/modules/commandrunner/assets/osconfig_commandrunner.cache](src/modules/commandrunner/assets/osconfig_commandrunner.cache) | /etc/osconfig/osconfig_commandrunner.cache | Persistent cache for the CommandRunner module
-[src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
+[src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
-[src/agents/pnp/daemon/osconfig.toml](src/agents/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
+[src/adapters/pnp/daemon/osconfig.toml](src/adapters/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
 [src/modules/adhs/](src/modules/adhs/) | /usr/lib/osconfig/adhs.so | The Azure Device Health Services (ADHS) module binary
 [src/modules/deliveryoptimization/](src/modules/deliveryoptimization/) | /usr/lib/osconfig/deliveryoptimization.so | The Delivery Optimization (DO) module binary
 [src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The Device info module binary
@@ -225,7 +225,7 @@ sudo -E su
 export http_proxy=http://user:password@wwww.foo.org:100//
 ```
 
-The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/agents/pnp/daemon/osconfig.service](src/agents/pnp/daemon/osconfig.service):
+The environment variable can also be set in the OSConfig service unit file by uncommenting and editing the following line in [src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service):
 
 ```
 # Uncomment and edit next line to configure OSConfig with a proxy to connect to the IoT Hub
