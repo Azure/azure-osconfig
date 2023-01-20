@@ -1,7 +1,7 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "Test command BGI",
+    "commandId": "Test command ABC",
     "arguments": "date",
     "timeout": 60,
     "singleLineTextResult": true,
@@ -9,7 +9,7 @@
     }
   },
   "HostName": {
-    "desiredName": "GIT-BGI"
+    "desiredName": "GIT-ABC"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
