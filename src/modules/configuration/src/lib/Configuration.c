@@ -515,8 +515,10 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 {
     const char* stringTrue = "true";
     const char* stringFalse = "false";
-
+    JSON_Value* jsonValue = NULL;
+    const char* jsonString = NULL;
     char* payloadString = NULL;
+
     int status = MMI_OK;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes))
@@ -643,13 +645,47 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         }
         else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
         {
-            FREE_MEMORY(g_gitRepositoryUrl);
-            g_gitRepositoryUrl = DuplicateString(payloadString);
+            if (NULL != (jsonValue = json_parse_string(payloadString)))
+            {
+                jsonString = json_value_get_string(jsonValue);
+                if (jsonString)
+                {
+                    FREE_MEMORY(g_gitRepositoryUrl);
+                    g_gitRepositoryUrl = DuplicateString(payloadString);
+                }
+                else
+                {
+                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitRepositoryUrlObject);
+                    status = EINVAL;
+                }
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitRepositoryUrlObject);
+                status = EINVAL;
+            }
         }
         else if (0 == strcmp(objectName, g_desiredGitBranchObject))
         {
-            FREE_MEMORY(g_gitBranch);
-            g_gitBranch = DuplicateString(payloadString);
+            if (NULL != (jsonValue = json_parse_string(payloadString)))
+            {
+                jsonString = json_value_get_string(jsonValue);
+                if (jsonString)
+                {
+                    FREE_MEMORY(g_gitBranch);
+                    g_gitBranch = DuplicateString(payloadString);
+                }
+                else
+                {
+                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitRepositoryUrlObject);
+                    status = EINVAL;
+                }
+            }
+            else
+            {
+                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitRepositoryUrlObject);
+                status = EINVAL;
+            }
         }
         else
         {
@@ -665,7 +701,14 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
 
     FREE_MEMORY(payloadString);
 
-    OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
+    }
+    else
+    {
+        OsConfigLogInfo(ConfigurationGetLog(), "MmiSet(%p, %s, %s) returning %d", clientSession, componentName, objectName, status);
+    }
 
     return status;
 }
