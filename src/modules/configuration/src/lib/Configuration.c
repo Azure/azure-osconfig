@@ -653,7 +653,7 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
         {
             if (NULL != (jsonValue = json_parse_string(payloadString)))
             {
-                jsonString = json_value_get_string(jsonValue);
+                jsonString = json_value_get_string(jsonValue); //this can still return "/\" instead of "/" (and "/\/\" instead of "//", etc) TODO fix this (bad JSON coming from Twin)
                 if (jsonString)
                 {
                     FREE_MEMORY(g_gitRepositoryUrl);
