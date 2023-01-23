@@ -3,14 +3,13 @@ name: Build Containers
 on:
   pull_request:
     paths:
-      - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
   push:
     branches:
       - main
     paths:
-      - .github/workflows/build-containers.yml
       - devops/docker/**/Dockerfile
+  workflow_dispatch:
 
 env:
   BUILD_TYPE: Release
