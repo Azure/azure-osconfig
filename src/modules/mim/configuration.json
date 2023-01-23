@@ -60,12 +60,6 @@
           "schema": "boolean"
         },
         {
-          "name": "desiredGitRepositoryUrl",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
           "name": "desiredGitBranch",
           "type": "mimObject",
           "desired": true,
@@ -129,12 +123,6 @@
           "type": "mimObject",
           "desired": false,
           "schema": "boolean"
-        },
-        {
-          "name": "gitRepositoryUrl",
-          "type": "mimObject",
-          "desired": false,
-          "schema": "string"
         },
         {
           "name": "gitBranch",

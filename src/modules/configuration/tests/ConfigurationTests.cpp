@@ -53,8 +53,7 @@ class ConfigurationTest : public ::testing::Test
                 "\"IotHubProtocol\" : 2,"
                 "\"ReportingIntervalSeconds\": 30,"
                 "\"GitManagement\" : 1,"
-                "\"GitRepositoryUrl\" : \"https://github.com/Azure/azure-osconfig\","
-                "\"GitBranch\" : \"MariusNi/OsConfigGitOps_Jan05_2023\""
+                "\"GitBranch\" : \"Test/Foo\""
             "}";
         
         const char* m_testConfigurationFile = "~testConfiguration.json";
@@ -274,7 +273,6 @@ TEST_F(ConfigurationTest, MmiSet)
         { m_desiredIotHubProtocolObject, "\"notImplemented\"", 22, m_iotHubProtocolObject, "\"mqttWebSocket\"" },
         { m_desiredGitManagementEnabledObject, "true", 0, m_gitManagementEnabledObject, "true" },
         { m_desiredGitManagementEnabledObject, "false", 0, m_gitManagementEnabledObject, "false" },
-        { m_desiredGitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"", 0, m_gitRepositoryUrlObject, "\"https://github.com/Azure/azure-osconfig\"" },
         { m_desiredGitBranchObject, "\"Foo/Test\"", 0, m_gitBranchObject, "\"Foo/Test\"" }
     };
     

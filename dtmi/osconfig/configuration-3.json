@@ -60,12 +60,6 @@
     },
     {
       "@type": "Property",
-      "name": "desiredGitRepositoryUrl",
-      "schema": "string",
-      "writable": true
-    },
-    {
-      "@type": "Property",
       "name": "desiredGitBranch",
       "schema": "string",
       "writable": true
@@ -127,12 +121,6 @@
       "@type": "Property",
       "name": "gitManagementEnabled",
       "schema": "boolean",
-      "writable": false
-    },
-    {
-      "@type": "Property",
-      "name": "gitRepositoryUrl",
-      "schema": "string",
       "writable": false
     },
     {

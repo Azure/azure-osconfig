@@ -38,10 +38,6 @@
     },
     {
       "ComponentName": "Configuration",
-      "ObjectName": "gitRepositoryUrl"
-    },
-    {
-      "ComponentName": "Configuration",
       "ObjectName": "localManagementEnabled"
     },
     {

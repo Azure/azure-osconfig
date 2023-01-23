@@ -21,7 +21,6 @@ static const char* g_fullLoggingEnabledObject = "fullLoggingEnabled";
 static const char* g_commandLoggingEnabledObject = "commandLoggingEnabled";
 static const char* g_iotHubProtocolObject = "iotHubProtocol";
 static const char* g_gitManagementEnabledObject = "gitManagementEnabled";
-static const char* g_gitRepositoryUrlObject = "gitRepositoryUrl";
 static const char* g_gitBranchObject = "gitBranch";
 
 static const char* g_desiredRefreshIntervalObject = "desiredRefreshInterval";
@@ -30,7 +29,6 @@ static const char* g_desiredFullLoggingEnabledObject = "desiredFullLoggingEnable
 static const char* g_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
 static const char* g_desiredIotHubProtocolObject = "desiredIotHubProtocol";
 static const char* g_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
-static const char* g_desiredGitRepositoryUrlObject = "desiredGitRepositoryUrl";
 static const char* g_desiredGitBranchObject = "desiredGitBranch";
 
 const char* g_auto = "\"auto\"";
@@ -240,16 +238,6 @@ static int UpdateConfigurationFile(void)
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
-            }
-
-            if (JSONSuccess == json_object_set_string(jsonObject, gitRepositoryUrlName, gitRepositoryUrl))
-            {
-                FREE_MEMORY(g_gitRepositoryUrl);
-                g_gitRepositoryUrl = DuplicateString(gitRepositoryUrl);
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "json_object_set_string(%s, %s) failed", g_gitRepositoryUrlObject, gitRepositoryUrl);
             }
 
             if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
@@ -466,10 +454,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
         {
             snprintf(buffer, maximumLength, "%s", g_gitManagementEnabled ? "true" : "false");
         }
-        else if (0 == strcmp(objectName, g_gitRepositoryUrlObject))
-        {
-            snprintf(buffer, maximumLength, "%s", g_gitRepositoryUrl);
-        }
         else if (0 == strcmp(objectName, g_gitBranchObject))
         {
             snprintf(buffer, maximumLength, "%s", g_gitBranch);
@@ -646,28 +630,6 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
             else
             {
                 OsConfigLogError(ConfigurationGetLog(), "Unsupported %s value: %s", g_gitManagementEnabledObject, payloadString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredGitRepositoryUrlObject))
-        {
-            if (NULL != (jsonValue = json_parse_string(payloadString)))
-            {
-                jsonString = json_value_get_string(jsonValue); //this can still return "/\" instead of "/" (and "/\/\" instead of "//", etc) TODO fix this (bad JSON coming from Twin); add UnescapeJsonString(const char) etc
-                if (jsonString)
-                {
-                    FREE_MEMORY(g_gitRepositoryUrl);
-                    g_gitRepositoryUrl = DuplicateString(payloadString);
-                }
-                else
-                {
-                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitRepositoryUrlObject);
-                    status = EINVAL;
-                }
-            }
-            else
-            {
-                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitRepositoryUrlObject);
                 status = EINVAL;
             }
         }
