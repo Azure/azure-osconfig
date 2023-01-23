@@ -32,7 +32,6 @@ class ConfigurationTest : public ::testing::Test
         const char* m_commandLoggingEnabledObject = "commandLoggingEnabled";
         const char* m_iotHubProtocolObject = "iotHubProtocol";
         const char* m_gitManagementEnabledObject = "gitManagementEnabled";
-        const char* m_gitRepositoryUrlObject = "gitRepositoryUrl";
         const char* m_gitBranchObject = "gitBranch";
                 
         const char* m_desiredRefreshIntervalObject = "desiredRefreshInterval";
@@ -41,7 +40,6 @@ class ConfigurationTest : public ::testing::Test
         const char* m_desiredCommandLoggingEnabledObject = "desiredCommandLoggingEnabled";
         const char* m_desiredIotHubProtocolObject = "desiredIotHubProtocol";
         const char* m_desiredGitManagementEnabledObject = "desiredGitManagementEnabled";
-        const char* m_desiredGitRepositoryUrlObject = "desiredGitRepositoryUrl";
         const char* m_desiredGitBranchObject = "desiredGitBranch";
 
         const char* m_testConfiguration = 
@@ -133,7 +131,6 @@ TEST_F(ConfigurationTest, MmiGet)
         m_commandLoggingEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
-        m_gitRepositoryUrlObject,
         m_gitBranchObject
     };
     
@@ -170,7 +167,6 @@ TEST_F(ConfigurationTest, MmiGetTruncatedPayload)
         m_commandLoggingEnabledObject,
         m_iotHubProtocolObject,
         m_gitManagementEnabledObject,
-        m_gitRepositoryUrlObject,
         m_gitBranchObject
     };
 
