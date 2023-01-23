@@ -62,7 +62,6 @@ static bool g_fullLoggingEnabled = false;
 static bool g_commandLoggingEnabled = false;
 static int g_iotHubProtocol = 0;
 static bool g_gitManagementEnabled = false;
-static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
 
 static atomic_int g_referenceCount = 0;
@@ -87,7 +86,6 @@ static char* LoadConfigurationFromFile(const char* fileName)
         g_commandLoggingEnabled = IsCommandLoggingEnabledInJsonConfig(jsonConfiguration);
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitManagementEnabled = GetGitManagementFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
-        g_gitRepositoryUrl = GetGitRepositoryUrlFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
         g_gitBranch = GetGitBranchFromJsonConfig(jsonConfiguration, ConfigurationGetLog());
     }
     else
@@ -118,7 +116,6 @@ void ConfigurationShutdown(void)
 {
     OsConfigLogInfo(ConfigurationGetLog(), "%s shutting down", g_configurationModuleName);
 
-    FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
     
     CloseLog(&g_log);
@@ -133,7 +130,6 @@ static int UpdateConfigurationFile(void)
     const char* iotHubProtocolName = "IotHubProtocol";
     const char* refreshIntervalName = "ReportingIntervalSeconds";
     const char* gitManagementEnabledName = "GitManagement";
-    const char* gitRepositoryUrlName = "GitRepositoryUrl";
     const char* gitBranchName = "GitBranch";
     
     int status = MMI_OK;
@@ -148,7 +144,6 @@ static int UpdateConfigurationFile(void)
     bool commandLoggingEnabled = g_commandLoggingEnabled;
     int iotHubProtocol = g_iotHubProtocol;
     bool gitManagementEnabled = g_gitManagementEnabled;
-    char* gitRepositoryUrl = DuplicateString(g_gitRepositoryUrl);
     char* gitBranch = DuplicateString(g_gitBranch);
 
     char* existingConfiguration = LoadConfigurationFromFile(g_configurationFile);
@@ -162,7 +157,7 @@ static int UpdateConfigurationFile(void)
 
     if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
         (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
-        (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitRepositoryUrl, g_gitRepositoryUrl) || strcmp(gitBranch, g_gitBranch))
+        (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
     {
         if (NULL == (jsonValue = json_parse_string(existingConfiguration)))
         {
@@ -288,7 +283,6 @@ static int UpdateConfigurationFile(void)
         json_free_serialized_string(newConfiguration);
     }
 
-    FREE_MEMORY(gitRepositoryUrl);
     FREE_MEMORY(gitBranch);
     FREE_MEMORY(existingConfiguration);
 
@@ -362,7 +356,6 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     char* buffer = NULL;
     char* configuration = NULL;
     const size_t minimumLength = 20;
-    size_t repositoryUrlLength = 0;
     size_t branchLength = 0;
     size_t maximumLength = 0;
 
@@ -376,9 +369,8 @@ int ConfigurationMmiGet(MMI_HANDLE clientSession, const char* componentName, con
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    repositoryUrlLength = g_gitRepositoryUrl ? strlen(g_gitRepositoryUrl) : 0;
     branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
-    maximumLength = ((repositoryUrlLength > branchLength) ? repositoryUrlLength : branchLength) + 1;
+    maximumLength = branchLength + 1;
 
     if (maximumLength < minimumLength)
     {
@@ -645,13 +637,13 @@ int ConfigurationMmiSet(MMI_HANDLE clientSession, const char* componentName, con
                 }
                 else
                 {
-                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitRepositoryUrlObject);
+                    OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
                     status = EINVAL;
                 }
             }
             else
             {
-                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitRepositoryUrlObject);
+                OsConfigLogError(ConfigurationGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitBranchObject);
                 status = EINVAL;
             }
         }
