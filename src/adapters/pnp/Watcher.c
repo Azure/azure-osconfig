@@ -94,10 +94,10 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClonePath, void* log)
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, void* log)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
-    const char* g_gitCloneTemplate = "git clone -q %s %s";
+    const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
     
     char* cleanUpCommand = NULL;
@@ -105,7 +105,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClone
     char* cloneCommand = NULL;
     int error = 0;
 
-    if ((NULL == gitRepositoryUrl) || (NULL == gitClonePath))
+    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath))
     {
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
@@ -114,7 +114,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitClone
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
     cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
-    cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitRepositoryUrl, gitClonePath);
+    cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
     
     ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
@@ -220,7 +220,7 @@ void WatcherDoWork(void* log)
 
     if (g_gitManagement)
     {
-        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, GIT_DC_CLONE, log)))
+        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, log)))
         {
             g_gitCloneInitialized = true;
         }

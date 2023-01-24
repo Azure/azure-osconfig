@@ -1,0 +1,26 @@
+{
+  "CommandRunner": {
+    "commandArguments": {
+    "commandId": "Test command 102",
+    "arguments": "date",
+    "timeout": 60,
+    "singleLineTextResult": true,
+    "action": 3
+    }
+  },
+  "HostName": {
+    "desiredName": "GIT-102"
+  },
+  "Firewall": {
+    "desiredDefaultPolicies": [
+      {
+        "direction": "in",
+        "action": "accept"
+      },
+      {
+        "direction": "out",
+        "action": "accept"
+      }
+    ]
+  }
+}
