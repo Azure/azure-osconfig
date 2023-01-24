@@ -947,7 +947,7 @@ Modules may also need to retry failed OS configuration operations or wait. Persi
 
 # 7. Orchestration
 
-The OSConfig Platform will orchestrate the requests received from the various agents (including the OSConfig PnP Agent) and management authorities into an ordered sequences of MMI calls that will be communicated to each module to execute.
+The OSConfig Platform will orchestrate the requests received from the various adapters (including the OSConfig PnP Agent) and management authorities into an ordered sequences of MMI calls that will be communicated to each module to execute.
 
 # 8. Versioning
 

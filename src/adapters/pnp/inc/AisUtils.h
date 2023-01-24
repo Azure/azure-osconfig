@@ -13,6 +13,8 @@ extern "C"
 
 char* RequestConnectionStringFromAis(char** x509Certificate, char** x509PrivateKeyHandle);
 
+char* FormatAllocateString(const char* format, ...);
+
 #ifdef __cplusplus
 }
 #endif

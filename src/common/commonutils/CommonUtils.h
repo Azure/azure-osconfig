@@ -125,6 +125,10 @@ int GetLocalManagementFromJsonConfig(const char* jsonString, void* log);
 int GetIotHubProtocolFromJsonConfig(const char* jsonString, void* log);
 int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** reportedProperties, void* log);
 
+int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
+char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
+
 #ifdef __cplusplus
 }
 #endif

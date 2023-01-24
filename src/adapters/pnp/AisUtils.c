@@ -106,7 +106,7 @@ const char* g_connectionStringX509GatewayHostDeviceTemplate = "HostName=%s;Devic
 const char* g_connectionStringX509GatewayHostModuleTemplate = "HostName=%s;DeviceId=%s;ModuleId=%s;x509=true;GatewayHostName=%s";
 
 #define MAX_FORMAT_ALLOCATE_STRING 512
-static char* FormatAllocateString(const char* format, ...)
+char* FormatAllocateString(const char* format, ...)
 {
     char buffer[MAX_FORMAT_ALLOCATE_STRING] = {0};
     int formatResult = 0;

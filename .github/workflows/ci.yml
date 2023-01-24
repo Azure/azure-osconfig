@@ -56,7 +56,7 @@ jobs:
           container: ${{ steps.container.outputs.id }}
           cmd: |
             mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_AGENTS=ON -G Ninja
+            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
@@ -110,7 +110,7 @@ jobs:
 
       - name: Build azure-osconfig
         run: |
-          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_AGENTS=OFF -DCOVERAGE=ON -G Ninja
+          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=OFF -DCOVERAGE=ON -G Ninja
           cmake --build ./build --config Debug
       - name: Run ctest
         working-directory: ./build
@@ -118,7 +118,7 @@ jobs:
 
       - name: Run gcovr
         working-directory: ./build
-        run: gcovr -r ../src . -e ../src/agents/pnp/ --xml coverage.xml
+        run: gcovr -r ../src . -e ../src/adapters/pnp/ --xml coverage.xml
 
       - name: Generate markdown report
         uses: irongut/CodeCoverageSummary@v1.2.0

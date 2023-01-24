@@ -1080,6 +1080,9 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
         "{"
           "\"CommandLogging\": 0,"
           "\"FullLogging\": 1,"
+          "\"GitManagement\": 1,"
+          "\"GitRepositoryUrl\": \"https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig\","
+          "\"GitBranch\": \"main\","
           "\"LocalManagement\": 3,"
           "\"ModelVersion\": 11,"
           "\"IotHubProtocol\": 2,"
@@ -1097,6 +1100,8 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
         "}";
 
     REPORTED_PROPERTY* reportedProperties = nullptr;
+
+    char* value = nullptr;
     
     EXPECT_FALSE(IsCommandLoggingEnabledInJsonConfig(configuration));
     EXPECT_TRUE(IsFullLoggingEnabledInJsonConfig(configuration));
@@ -1112,5 +1117,14 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_STREQ("osName", reportedProperties[0].propertyName);
     EXPECT_STREQ("TestABC", reportedProperties[1].componentName);
     EXPECT_STREQ("TestVa12lue", reportedProperties[1].propertyName);
+
+    EXPECT_EQ(1, GetGitManagementFromJsonConfig(configuration, nullptr));
+
+    EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("main", value = GetGitBranchFromJsonConfig(configuration, nullptr));
+    FREE_MEMORY(value);
+
     FREE_MEMORY(reportedProperties);
 }

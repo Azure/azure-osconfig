@@ -50,7 +50,7 @@ jobs:
       - name: Generate build
         run: |
           mkdir build && cd build
-          cmake ../src -DCMAKE_build-type=${{ inputs.buildType }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_AGENTS=ON -G Ninja
+          cmake ../src -DCMAKE_build-type=${{ inputs.buildType }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build and install azure-osconfig
         run: |

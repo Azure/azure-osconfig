@@ -12,7 +12,7 @@ set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
 set(PATCH_VERSION "4" CACHE STRING "Patch version")
 
-option(BUILD_AGENTS "Build OSConfig PnP Agent" ON)
+option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
 option(BUILD_PLATFORM "Build OSConfig Platform" ON)
 option(BUILD_TESTS "Build test collateral" ON)
@@ -85,7 +85,7 @@ if (COVERAGE)
     message(STATUS "Code coverage: Enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./agents/pnp/")
+    set(CTEST_CUSTOM_COVERAGE_EXCLUDE "./adapters/pnp/")
 else ()
     message(STATUS "Code coverage: Disabled")
 endif()
@@ -99,8 +99,8 @@ if (BUILD_TESTS)
 endif()
 
 add_subdirectory(common)
-if (BUILD_AGENTS)
-    add_subdirectory(agents)
+if (BUILD_ADAPTERS)
+    add_subdirectory(adapters)
 endif()
 if (BUILD_PLATFORM)
     add_subdirectory(platform)
@@ -124,7 +124,7 @@ set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
 set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
 
 set(CPACK_EXCLUDES
-    "${CMAKE_SOURCE_DIR}/agents/pnp/azure-iot-sdk-c/"
+    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
     "${CMAKE_SOURCE_DIR}/reference/"
     "${CMAKE_SOURCE_DIR}/build/"
 )

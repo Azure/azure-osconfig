@@ -1,8 +1,11 @@
 {
   "CommandLogging": 0,
   "FullLogging": 0,
+  "GitManagement": 0,
+  "GitRepositoryUrl": "",
+  "GitBranch": "",
   "LocalManagement": 0,
-  "ModelVersion": 16,
+  "ModelVersion": 17,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -24,6 +27,14 @@
     {
       "ComponentName": "Configuration",
       "ObjectName": "iotHubProtocol"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "gitBranch"
+    },
+    {
+      "ComponentName": "Configuration",
+      "ObjectName": "gitManagementEnabled"
     },
     {
       "ComponentName": "Configuration",

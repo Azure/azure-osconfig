@@ -21,6 +21,10 @@
 
 #define PROTOCOL "IotHubProtocol"
 
+#define GIT_MANAGEMENT "GitManagement"
+#define GIT_REPOSITORY_URL "GitRepositoryUrl"
+#define GIT_BRANCH "GitBranch"
+
 #define MIN_DEVICE_MODEL_ID 7
 #define MAX_DEVICE_MODEL_ID 999
 
@@ -255,4 +259,89 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
     }
 
     return numReportedProperties;
+}
+
+static char* GetStringFromJsonConfig(const char* valueName, const char* jsonString, void* log)
+{
+    JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    char* value = NULL;
+    char* buffer = NULL;
+    size_t valueLength = 0;
+
+    if (NULL == valueName)
+    {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetStringFromJsonConfig: no value name");
+        }
+        return value;
+    }
+
+    if (NULL != jsonString)
+    {
+        if (NULL != (rootValue = json_parse_string(jsonString)))
+        {
+            if (NULL != (rootObject = json_value_get_object(rootValue)))
+            {
+                value = (char*)json_object_get_string(rootObject, valueName);
+                if (NULL == value)
+                {
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogInfo(log, "GetStringFromJsonConfig: %s value not found or empty", valueName);
+                    }
+                }
+                else 
+                {
+                    valueLength = strlen(value);
+                    buffer = (char*)malloc(valueLength + 1);
+                    if (NULL != buffer)
+                    {
+                        memcpy(buffer, value, valueLength);
+                        buffer[valueLength] = 0;
+                    }
+                    else if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogError(log, "GetStringFromJsonConfig: failed to allocate %d bytes for %s", (int)(valueLength + 1), valueName);
+                    }
+                }
+            }
+            else if (IsFullLoggingEnabled())
+            {
+                OsConfigLogError(log, "GetStringFromJsonConfig: json_value_get_object(root) failed for %s", valueName);
+            }
+            json_value_free(rootValue);
+        }
+        else if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "GetStringFromJsonConfig: json_parse_string failed for %s", valueName);
+        }
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogError(log, "GetStringFromJsonConfig: no configuration data for %s", valueName);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "GetStringFromJsonConfig(%s): %s", valueName, buffer);
+    }
+
+    return buffer;
+}
+
+int GetGitManagementFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetIntegerFromJsonConfig(GIT_MANAGEMENT, jsonString, 0, 0, 1, log);
+}
+
+char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_REPOSITORY_URL, jsonString, log);
+}
+
+char* GetGitBranchFromJsonConfig(const char* jsonString, void* log)
+{
+    return GetStringFromJsonConfig(GIT_BRANCH, jsonString, log);
 }

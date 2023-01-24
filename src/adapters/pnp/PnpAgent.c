@@ -5,6 +5,7 @@
 #include "inc/PnpUtils.h"
 #include "inc/PnpAgent.h"
 #include "inc/AisUtils.h"
+#include "inc/Watcher.h"
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
@@ -12,10 +13,6 @@
 // The log file for the agent
 #define LOG_FILE "/var/log/osconfig_pnp_agent.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_pnp_agent.bak"
-
-// The local Desired Configuration (DC) and Reported Configuration (RC) files
-#define DC_FILE "/etc/osconfig/osconfig_desired.json"
-#define RC_FILE "/etc/osconfig/osconfig_reported.json"
 
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
@@ -106,11 +103,6 @@ static const char g_productInfoTemplate[] = "Azure OSConfig %d;%s "
     "\"kernel_name\"=\"%s\"&\"kernel_release\"=\"%s\"&\"kernel_version\"=\"%s\"&"
     "\"product_vendor\"=\"%s\"&\"product_name\"=\"%s\")";
 static char g_productInfo[DEVICE_PRODUCT_INFO_SIZE] = {0};
-
-static size_t g_reportedHash = 0;
-static size_t g_desiredHash = 0;
-
-static int g_localManagement = 0;
 
 OSCONFIG_LOG_HANDLE GetLog()
 {
@@ -229,7 +221,7 @@ static void RefreshConnection()
             {
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if (!g_localManagement)
+            else if (!IsWatcherActive())
             {
                 g_exitState = IotHubInitializationFailure;
                 SignalInterrupt(SIGQUIT);
@@ -377,7 +369,7 @@ static bool InitializeAgent(void)
                 // We will try to get a new connnection string from AIS and try to connect with that
                 FREE_MEMORY(g_iotHubConnectionString);
             }
-            else if (!g_localManagement)
+            else if (!IsWatcherActive())
             {
                 g_exitState = IotHubInitializationFailure;
                 status = false;
@@ -404,41 +396,10 @@ void CloseAgent(void)
     }
 
     FREE_MEMORY(g_reportedProperties);
-
+    
+    WatcherCleanup();
+    
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
-}
-
-static void SaveReportedConfigurationToFile()
-{
-    char* payload = NULL;
-    int payloadSizeBytes = 0;
-    size_t payloadHash = 0;
-    bool platformAlreadyRunning = true;
-    int mpiResult = MPI_OK;
-    if (g_localManagement)
-    {
-        mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
-        if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
-        {
-            CallMpiFree(payload);
-
-            mpiResult = CallMpiGetReported((MPI_JSON_STRING*)&payload, &payloadSizeBytes, GetLog());
-        }
-        
-        if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
-        {
-            if (g_reportedHash != (payloadHash = HashString(payload)))
-            {
-                if (SavePayloadToFile(RC_FILE, payload, payloadSizeBytes, GetLog()))
-                {
-                    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-                    g_reportedHash = payloadHash;
-                }
-            }
-        }
-        
-        CallMpiFree(payload);
-    }
 }
 
 static void ReportProperties()
@@ -456,39 +417,6 @@ static void ReportProperties()
             ReportPropertyToIotHub(g_reportedProperties[i].componentName, g_reportedProperties[i].propertyName, &(g_reportedProperties[i].lastPayloadHash));
         }
     }
-}
-
-static void LoadDesiredConfigurationFromFile()
-{
-    size_t payloadHash = 0;
-    int payloadSizeBytes = 0;
-    char* payload = NULL; 
-    bool platformAlreadyRunning = true;
-    int mpiResult = MPI_OK;
-
-    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-
-    payload = LoadStringFromFile(DC_FILE, false, GetLog());
-    if (payload && (0 != (payloadSizeBytes = strlen(payload))))
-    {
-        // Do not call MpiSetDesired unless this desired configuration is different from previous
-        if (g_desiredHash != (payloadHash = HashString(payload)))
-        {
-            OsConfigLogInfo(GetLog(), "Processing DC payload from %s", DC_FILE);
-            
-            mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
-            if ((MPI_OK != mpiResult) && RefreshMpiClientSession(&platformAlreadyRunning) && (false == platformAlreadyRunning))
-            {
-                mpiResult = CallMpiSetDesired((MPI_JSON_STRING)payload, payloadSizeBytes, GetLog());
-            }
-            
-            if (MPI_OK == mpiResult)
-            {
-                g_desiredHash = payloadHash;
-            }
-        }
-    }
-    FREE_MEMORY(payload);
 }
 
 static void AgentDoWork(void)
@@ -526,14 +454,10 @@ static void AgentDoWork(void)
             }
         }
 
-        // Process desired updates from the local DC file (for Iot Hub this is signaled to be done with SIGUSR1) and reported updates to the RC file
-        if (g_localManagement)
-        {
-            LoadDesiredConfigurationFromFile();
-            SaveReportedConfigurationToFile();
-        }
+        // Process RCD/DC and/or Git clones DC files (for Iot Hub this is signaled to be done with SIGUSR1)
+        WatcherDoWork(GetLog());
 
-        // If connected to the IoT Hub, process reported updates
+        // Process reported updates to the IoT Hub
         if (g_moduleHandle)
         {
             ReportProperties();
@@ -612,15 +536,16 @@ int main(int argc, char *argv[])
         g_modelVersion = GetModelVersionFromJsonConfig(jsonConfiguration, GetLog());
         g_numReportedProperties = LoadReportedFromJsonConfig(jsonConfiguration, &g_reportedProperties, GetLog());
         g_reportingInterval = GetReportingIntervalFromJsonConfig(jsonConfiguration, GetLog());
-        g_localManagement = GetLocalManagementFromJsonConfig(jsonConfiguration, GetLog());
         g_iotHubProtocol = GetIotHubProtocolFromJsonConfig(jsonConfiguration, GetLog());
+
+        // Call the Watcher to initialize itself
+        InitializeWatcher(jsonConfiguration, GetLog());
+
         FREE_MEMORY(jsonConfiguration);
     }
 
     RestrictFileAccessToCurrentAccountOnly(CONFIG_FILE);
-    RestrictFileAccessToCurrentAccountOnly(DC_FILE);
-    RestrictFileAccessToCurrentAccountOnly(RC_FILE);
-
+    
     snprintf(g_modelId, sizeof(g_modelId), g_modelIdTemplate, g_modelVersion);
     OsConfigLogInfo(GetLog(), "Model id: %s", g_modelId);
 
@@ -726,7 +651,7 @@ int main(int argc, char *argv[])
             {
                 OsConfigLogError(GetLog(), "Failed to load a connection string from %s", argv[1]);
 
-                if (!g_localManagement)
+                if (!IsWatcherActive())
                 {
                     g_exitState = NoConnectionString;
                     goto done;
@@ -754,12 +679,6 @@ int main(int argc, char *argv[])
         goto done;
     }
 
-    if (g_localManagement)
-    {
-        LoadDesiredConfigurationFromFile();
-        SaveReportedConfigurationToFile();
-    }
-    
     if (!InitializeAgent())
     {
         OsConfigLogError(GetLog(), "Failed to initialize the OSConfig PnP Agent");
