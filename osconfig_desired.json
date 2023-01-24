@@ -1,7 +1,7 @@
 {
   "CommandRunner": {
     "commandArguments": {
-    "commandId": "Test command 105",
+    "commandId": "Test command 106",
     "arguments": "date",
     "timeout": 60,
     "singleLineTextResult": true,
@@ -9,7 +9,7 @@
     }
   },
   "HostName": {
-    "desiredName": "GIT-105"
+    "desiredName": "GIT-106"
   },
   "Firewall": {
     "desiredDefaultPolicies": [
