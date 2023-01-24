@@ -43,7 +43,7 @@ This diagram shows the current North Star architecture of OSConfig. In this diag
 
 The OSConfig Agent handles communication with IoT Hub and Reported Configuration/Desired Configuration (RC/DC) files. The agent is a thin client running as a daemon (Linux background service) using the IoT Client APIs from the [Azure IoT PnP C SDK](https://github.com/Azure/azure-iot-sdk-c) to connect to the IoT Hub that receives Desired Twin updates from and makes Reported Twin updates to the IoT Hub and the RC/DC files. 
 
-The agent relies on the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) to obtain a module identity that allows it to connect to the IoT Hub alongside other locally present agents. 
+The agent relies on the [Azure Identity Services (AIS)](https://azure.github.io/iot-identity-service/) to obtain a module identity that allows it to connect to the IoT Hub alongside other locally present PnP agents. 
 
 The agent communicates with the OSConfig Management Platform over the Management Platform Interface (MPI) IPC REST API.
 
@@ -101,7 +101,7 @@ The platform includes the following main components:
 - Modules Manager: receives serialized requests over the MPI C API, dispatches the requests to Module Hosts over the MMI REST API.
 - MMI Client: makes MMI REST API calls to Module Hosts over HTTP and UDS. 
 
-The platform also includes several utility libraries which are shared with all OSConfig components, including agent and modules:
+The platform also includes several utility libraries which are shared with all OSConfig components, including adapters and modules:
 
 - Logging: file and console circular logging library.
 - CommonUtils: various utility APIs useful for accesing and working with the Linux OS.
@@ -158,7 +158,7 @@ The Orchestrator can be implemented as a Linux Static Library (.a) either alone 
 
 What the Orchestrator does:
 
-- Receive management requests from one or multiple agent/management authority clients.
+- Receive management requests from one or multiple management authority adapters.
 - Combines requests into one serial sequence. 
 - Skips duplicate requests. For example, a duplicate request to set DeviceHealthTelemetry to Optional.
 - Applies a certain order for requests simultaneously arriving from separate authorities per a list of priorities to be created as part of the configuration at /etc/osconfig/osconfig.json. For example, if a request to set DeviceHealthTelemetry to Optional arrives at the same time with a CommandArguments.Action.Shutdown to pipe them in this order. Or: NetworkConnections.DesiredConnectionConfiguration.Action=ChangeIpv4Address results in network connection loss to automatically invoke RollbackConnectionConfiguration.
