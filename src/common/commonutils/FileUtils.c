@@ -108,7 +108,7 @@ mode_t GetFileAccess(const char* fileName)
 
 int SetFileAccess(const char* fileName, mode_t mode)
 {
-    return chmod(mode);
+    return chmod(fileName, mode);
 }
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
