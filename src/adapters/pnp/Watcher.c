@@ -264,7 +264,7 @@ void WatcherDoWork(void* log)
 
     if (g_gitManagement)
     {
-        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, log)))
+        if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
         {
             g_gitCloneInitialized = true;
         }
