@@ -48,8 +48,8 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
             {
                 if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
-                    *hash = payloadHash;
                     RestrictFileAccessToCurrentAccountOnly(fileName);
+                    *hash = payloadHash;
                 }
             }
         }
@@ -66,10 +66,10 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
-    RestrictFileAccessToCurrentAccountOnly(fileName);
-
     if (fileName && hash)
     {
+        RestrictFileAccessToCurrentAccountOnly(fileName);
+
         payload = LoadStringFromFile(fileName, false, GetLog());
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
