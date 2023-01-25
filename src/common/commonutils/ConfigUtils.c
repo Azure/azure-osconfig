@@ -268,7 +268,6 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
     char* value = NULL;
     char* buffer = NULL;
     size_t valueLength = 0;
-    //size_t i = 0, j = 0;
 
     if (NULL == valueName)
     {
