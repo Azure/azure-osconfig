@@ -24,8 +24,6 @@ static size_t g_gitDesiredHash = 0;
 
 static bool g_gitCloneInitialized = false;
 
-static mode_t g_gitDcFileMode = 0;
-
 static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
@@ -51,6 +49,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
                 if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
                     *hash = payloadHash;
+                    RestrictFileAccessToCurrentAccountOnly(fileName);
                 }
             }
         }
@@ -66,6 +65,8 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     char* payload = NULL; 
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
+
+    RestrictFileAccessToCurrentAccountOnly(fileName);
 
     if (fileName && hash)
     {
@@ -112,7 +113,29 @@ static int DeleteGitClone(const char* gitClonePath, void* log)
     return result;
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, void* log)
+static int ProtectDcFile(const char* gitClonedDcFile, void* log)
+{
+    int error = 0;
+
+    if (NULL == gitClonedDcFile)
+    {
+        OsConfigLogError(log, "ProtectDcFile: invalid argument");
+        error = EINVAL;
+    }
+    else if (false == FileExists(gitClonedDcFile))
+    {
+        OsConfigLogError(log, "Watcher: bad Git clone, DC file %s not found", gitClonedDcFile);
+        error = EACCESS;
+    }
+    else if (0 != (error = RestrictFileAccessToCurrentAccountOnly(gitClonedDcFile)))
+    {
+        OsConfigLogError(log, "Watcher: failed protecting Git DC file %s", gitClonedDcFile);
+    }
+
+    return error;
+}
+
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, const char* gitClonedDcFile, void* log)
 {
     const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
@@ -121,7 +144,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     char* cloneCommand = NULL;
     int error = 0;
 
-    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath))
+    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile))
     {
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
@@ -142,6 +165,10 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     {
         OsConfigLogError(log, "Watcher: failed configuring the new Git clone at %s (%d)", gitClonePath, error);
     }
+    else if (0 != (error = ProtectDcFile(gitClonedDcFile, log)))
+    {
+        OsConfigLogError(log, "Watcher: failed initializing Git clone at %s (%d)", gitClonePath, error);
+    }
 
     FREE_MEMORY(cloneCommand);
     FREE_MEMORY(configCommand);
@@ -160,9 +187,9 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     const char* g_gitPullCommand = "git pull";
     
     char* checkoutBranchCommand = NULL;
+    char* checkoutFileCommand = NULL;
     char* currentDirectory = NULL;
     int error = 0;
-
 
     if ((NULL == gitClonePath) || (NULL == gitClonedDcFile) || (NULL == gitBranch))
     {
@@ -171,11 +198,16 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     }
 
     checkoutBranchCommand = FormatAllocateString(g_gitCheckoutTemplate, gitBranch);
+    checkoutFileCommand = FormatAllocateString(g_gitCheckoutTemplate, gitClonedDcFile);
     currentDirectory = getcwd(NULL, 0);
 
     if (0 != (error = chdir(gitClonePath)))
     {
         OsConfigLogError(log, "Watcher: failed changing current directory to %s (%d)", gitClonePath, error);
+    }
+    else if (0 != (error = ExecuteCommand(NULL, checkoutFileCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    {
+        OsConfigLogError(log, "Watcher: failed checking out Git file %s (%d)", gitBranch, error);
     }
     else if (0 != (error = ExecuteCommand(NULL, checkoutBranchCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
@@ -185,16 +217,17 @@ static int RefreshGitClone(const char* gitBranch, const char* gitClonePath, cons
     {
         OsConfigLogError(log, "Watcher: failed Git pull from branch %s to local clone %s (%d)", gitBranch, gitClonePath, error);
     }
-    else if (!FileExists(gitClonedDcFile))
-    {
-        OsConfigLogError(log, "Watcher: bad Git clone, DC file %s not found", gitClonedDcFile);
-    }
     else if (0 != (error = chdir(currentDirectory)))
     {
         OsConfigLogError(log, "Watcher: failed restoring current directory to %s (%d)", currentDirectory, error);
     }
+    else if (0 != (error = ProtectDcFile(gitClonedDcFile, log)))
+    {
+        OsConfigLogError(log, "Watcher: failed refreshing Git clone at %s (%d)", gitClonePath, error);
+    }
 
     FREE_MEMORY(checkoutBranchCommand);
+    FREE_MEMORY(checkoutFileCommand);
     FREE_MEMORY(currentDirectory);
 
     if ((0 == error) && (IsFullLoggingEnabled()))
@@ -227,30 +260,24 @@ void WatcherDoWork(void* log)
     if (g_localManagement)
     {
         ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
-        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
 
     if (g_gitManagement)
     {
         if ((false == g_gitCloneInitialized) && (0 == InitializeGitClone(g_gitRepositoryUrl, g_gitBranch, GIT_DC_CLONE, log)))
         {
-            g_gitDcFileMode = GetFileAccess(GIT_DC_FILE);
-            RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
             g_gitCloneInitialized = true;
         }
 
         if ((true == g_gitCloneInitialized) && (0 == RefreshGitClone(g_gitBranch, GIT_DC_CLONE, GIT_DC_FILE, log)))
         {
-            SetFileAccess(GIT_DC_FILE, g_gitDcFileMode);
             ProcessDesiredConfigurationFromFile(GIT_DC_FILE, &g_gitDesiredHash, log);
-            RestrictFileAccessToCurrentAccountOnly(GIT_DC_FILE);
         }
     }
 
     if (g_localManagement)
     {
         SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
-        RestrictFileAccessToCurrentAccountOnly(RC_FILE);
     }
 }
 

@@ -474,21 +474,6 @@ TEST_F(CommonUtilsTest, HashString)
     EXPECT_EQ(dataHash, sameDataHash);
 }
 
-
-TEST_F(CommonUtilsTest, GetAndRestoreFileAccess)
-{
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    
-    mode_t mode = GetFileAccess(m_path);
-
-    EXPECT_EQ(0, RestrictFileAccessToCurrentAccountOnly(m_path));
-    EXPECT_EQ(0, SetFileAccess(m_path, mode));
-    EXPECT_NE(0, SetFileAccess(nullptr, mode));
-    EXPECT_NE(0, SetFileAccess("", mode));
-    
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
 TEST_F(CommonUtilsTest, RestrictFileAccess)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
