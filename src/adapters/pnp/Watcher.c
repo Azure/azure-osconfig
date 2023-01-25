@@ -68,8 +68,6 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
 
     if (fileName && hash)
     {
-        //RestrictFileAccessToCurrentAccountOnly(fileName);
-
         payload = LoadStringFromFile(fileName, false, GetLog());
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
@@ -94,13 +92,30 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, void* log)
+static int DeleteGitClone(const char* gitClonePath)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
+    char* cleanUpCommand = NULL;
+    int result = 0;
+
+    if (NULL == gitClonePath)
+    {
+        OsConfigLogError(log, "DeleteGitClone: invalid argument");
+        return EINVAL;
+    }
+
+    cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
+    result = ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log);
+    FREE_MEMORY(cleanUpCommand);
+
+    return result;
+}
+
+static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranch, const char* gitClonePath, void* log)
+{
     const char* g_gitCloneTemplate = "git clone -q --branch %s --single-branch %s %s";
     const char* g_gitConfigTemplate = "git config --global --add safe.directory %s";
     
-    char* cleanUpCommand = NULL;
     char* configCommand = NULL;
     char* cloneCommand = NULL;
     int error = 0;
@@ -113,15 +128,12 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
 
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
-    cleanUpCommand = FormatAllocateString(g_gitCloneCleanUpTemplate, gitClonePath);
     cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
     
-    if (0 != (error = ExecuteCommand(NULL, cleanUpCommand, false, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogError(log, "Watcher: failed cleaning-up previous Git clone at %s (%d)", gitClonePath, error);
-    } 
-    else if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
+    DeleteGitClone(gitClonePath);
+
+    if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
         OsConfigLogError(log, "Watcher: failed making a new Git clone at %s (%d)", gitClonePath, error);
     }
@@ -130,7 +142,6 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
         OsConfigLogError(log, "Watcher: failed configuring the new Git clone at %s (%d)", gitClonePath, error);
     }
 
-    FREE_MEMORY(cleanUpCommand);
     FREE_MEMORY(cloneCommand);
     FREE_MEMORY(configCommand);
 
@@ -225,6 +236,7 @@ void WatcherDoWork(void* log)
     if (g_localManagement)
     {
         ProcessDesiredConfigurationFromFile(DC_FILE, &g_desiredHash, log);
+        RestrictFileAccessToCurrentAccountOnly(DC_FILE);
     }
 
     if (g_gitManagement)
@@ -248,6 +260,8 @@ void WatcherDoWork(void* log)
 
 void WatcherCleanup(void)
 {
+    DeleteGitClone(GIT_DC_CLONE);
+
     FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
 }

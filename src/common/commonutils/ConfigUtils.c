@@ -300,19 +300,6 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                     if (NULL != buffer)
                     {
                         memcpy(buffer, value, valueLength);
-                        // Unescape slash characters
-                        /*for (i = 0; i <= valueLength; i++)
-                        {
-                            if ('\\' == value[i])
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                buffer[j] = value[i];
-                                j++;
-                            }
-                        }*/
                         buffer[valueLength] = 0;
                     }
                     else if (IsFullLoggingEnabled())
