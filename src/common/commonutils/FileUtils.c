@@ -92,6 +92,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     // S_IWGRP (0x00020): Write permission, group.
     // S_IXUSR (0x00100): Execute/search permission, owner
     // S_IXGRP (0x00010): Execute/search permission, group
+    
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
