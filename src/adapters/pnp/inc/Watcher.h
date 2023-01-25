@@ -11,7 +11,7 @@ extern "C"
 
 void InitializeWatcher(const char* jsonConfiguration, void* log);
 void WatcherDoWork(void* log);
-void WatcherCleanup(void);
+void WatcherCleanup(void* log);
 bool IsWatcherActive(void);
 
 #ifdef __cplusplus

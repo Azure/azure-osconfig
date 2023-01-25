@@ -1082,7 +1082,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
           "\"FullLogging\": 1,"
           "\"GitManagement\": 1,"
           "\"GitRepositoryUrl\": \"https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig\","
-          "\"GitBranch\": \"main\","
+          "\"GitBranch\": \"foo/test\","
           "\"LocalManagement\": 3,"
           "\"ModelVersion\": 11,"
           "\"IotHubProtocol\": 2,"
@@ -1123,7 +1123,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     EXPECT_STREQ("https://USERNAME:PASSWORD@github.com/Azure/azure-osconfig", value = GetGitRepositoryUrlFromJsonConfig(configuration, nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("main", value = GetGitBranchFromJsonConfig(configuration, nullptr));
+    EXPECT_STREQ("foo/test", value = GetGitBranchFromJsonConfig(configuration, nullptr));
     FREE_MEMORY(value);
 
     FREE_MEMORY(reportedProperties);
