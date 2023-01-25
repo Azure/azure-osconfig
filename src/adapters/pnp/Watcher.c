@@ -92,7 +92,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
     }
 }
 
-static int DeleteGitClone(const char* gitClonePath)
+static int DeleteGitClone(const char* gitClonePath, void* log)
 {
     const char* g_gitCloneCleanUpTemplate = "rm -r %s";
     char* cleanUpCommand = NULL;
@@ -131,7 +131,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);
     
-    DeleteGitClone(gitClonePath);
+    DeleteGitClone(gitClonePath, log);
 
     if (0 != (error = ExecuteCommand(NULL, cloneCommand, false, false, 0, 0, NULL, NULL, GetLog())))
     {
@@ -260,7 +260,7 @@ void WatcherDoWork(void* log)
 
 void WatcherCleanup(void)
 {
-    DeleteGitClone(GIT_DC_CLONE);
+    DeleteGitClone(GIT_DC_CLONE, NULL);
 
     FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
