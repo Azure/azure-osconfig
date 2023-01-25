@@ -125,7 +125,7 @@ static int ProtectDcFile(const char* gitClonedDcFile, void* log)
     else if (false == FileExists(gitClonedDcFile))
     {
         OsConfigLogError(log, "Watcher: bad Git clone, DC file %s not found", gitClonedDcFile);
-        error = EACCESS;
+        error = EACCES;
     }
     else if (0 != (error = RestrictFileAccessToCurrentAccountOnly(gitClonedDcFile)))
     {
