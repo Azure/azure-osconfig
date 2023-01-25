@@ -1,9 +1,9 @@
 {
   "CommandLogging": 0,
   "FullLogging": 0,
-  "GitManagement": 0,
-  "GitRepositoryUrl": "",
-  "GitBranch": "",
+  "GitManagement": 1,
+  "GitRepositoryUrl": "https://github.com/Azure/azure-osconfig",
+  "GitBranch": "MariusNi/OsConfig_GitOps_Cont_Jan24_2023",
   "LocalManagement": 0,
   "ModelVersion": 17,
   "IotHubProtocol": 2,
@@ -189,5 +189,5 @@
       "ObjectName": "maxManualAttestationsPerDay"
     }
   ],
-  "ReportingIntervalSeconds": 30
+  "ReportingIntervalSeconds": 3
 }

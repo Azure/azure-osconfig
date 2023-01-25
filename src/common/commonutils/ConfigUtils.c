@@ -268,7 +268,7 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
     char* value = NULL;
     char* buffer = NULL;
     size_t valueLength = 0;
-    size_t i = 0, j = 0;
+    //size_t i = 0, j = 0;
 
     if (NULL == valueName)
     {
@@ -299,11 +299,11 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                     buffer = (char*)malloc(valueLength + 1);
                     if (NULL != buffer)
                     {
-                        //memcpy(buffer, value, valueLength);
+                        memcpy(buffer, value, valueLength);
                         // Unescape slash characters
-                        for (i = 0, j = 0; i < valueLength; i++)
+                        /*for (i = 0; i <= valueLength; i++)
                         {
-                            if ('\' == value[i])
+                            if ('\\' == value[i])
                             {
                                 continue;
                             }
@@ -312,8 +312,8 @@ static char* GetStringFromJsonConfig(const char* valueName, const char* jsonStri
                                 buffer[j] = value[i];
                                 j++;
                             }
-                        }
-                        buffer[j + 1] = 0;
+                        }*/
+                        buffer[valueLength] = 0;
                     }
                     else if (IsFullLoggingEnabled())
                     {
