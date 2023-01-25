@@ -3,6 +3,16 @@
 
 #include "Internal.h"
 
+// S_ISUID (0x04000): Set user ID on execution
+// S_ISGID (0x02000): Set group ID on execution
+// S_IRUSR (0x00400): Read permission, owner
+// S_IWUSR (0x00200): Write permission, owner
+// S_IRGRP (0x00040): Read permission, group
+// S_IWGRP (0x00020): Write permission, group.
+// S_IXUSR (0x00100): Execute/search permission, owner
+// S_IXGRP (0x00010): Execute/search permission, group
+static const mode_t g_modeCurrentAccountOnly = S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP;
+
 char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
 {
     FILE* file = NULL;
@@ -82,18 +92,28 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
     return result;
 }
 
+mode_t GetFileAccess(const char* fileName)
+{
+    const int mask = 0x777;
+    struct stat statBuffer = { 0 };
+    mode_t mode = g_modeCurrentAccountOnly;
+
+    if (0 == stat(fileName, &statBuffer))
+    {
+        mode = statBuffer.st_mode & mask;
+    }
+
+    return mode;
+}
+
+int SetFileAccess(const char* fileName, mode_t mode)
+{
+    return chmod(mode);
+}
+
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
-    // S_ISUID (0x04000): Set user ID on execution
-    // S_ISGID (0x02000): Set group ID on execution
-    // S_IRUSR (0x00400): Read permission, owner
-    // S_IWUSR (0x00200): Write permission, owner
-    // S_IRGRP (0x00040): Read permission, group
-    // S_IWGRP (0x00020): Write permission, group.
-    // S_IXUSR (0x00100): Execute/search permission, owner
-    // S_IXGRP (0x00010): Execute/search permission, group
-
-    return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
+    return SetFileAccess(fileName, g_modeCurrentAccountOnly);
 }
 
 bool FileExists(const char* name)

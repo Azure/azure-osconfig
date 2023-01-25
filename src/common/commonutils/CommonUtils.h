@@ -54,6 +54,8 @@ typedef int(*CommandCallback)(void* context);
 // If called from the main process thread the timeoutSeconds and callback arguments are ignored
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log);
 
+mode_t GetFileAccess(const char* fileName);
+int SetFileAccess(const char* fileName, mode_t mode);
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);

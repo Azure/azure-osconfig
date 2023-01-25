@@ -397,7 +397,7 @@ void CloseAgent(void)
 
     FREE_MEMORY(g_reportedProperties);
     
-    WatcherCleanup();
+    WatcherCleanup(GetLog());
     
     OsConfigLogInfo(GetLog(), "OSConfig PnP Agent terminated");
 }
