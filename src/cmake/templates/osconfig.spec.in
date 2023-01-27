@@ -101,7 +101,7 @@ rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 - Documentation updates
 - Moduletest fixes and refactoring
 - Pipeline bug fixes and updates
-- Debian 10 and  11 support
+- Debian 10 and 11 support
 - Drop tracelogging
 - Expanded CommonUtils
 - Misc. module bug fixes
