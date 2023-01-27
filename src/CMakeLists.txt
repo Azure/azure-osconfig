@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.2)
 
 set(MAJOR_VERSION "1" CACHE STRING "Major version")
 set(MINOR_VERSION "0" CACHE STRING "Minor version")
-set(PATCH_VERSION "4" CACHE STRING "Patch version")
+set(PATCH_VERSION "5" CACHE STRING "Patch version")
 
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
 option(BUILD_MODULES "Build OSConfig Modules" ON)
