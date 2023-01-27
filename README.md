@@ -210,7 +210,7 @@ For HTTPS cloning of a private Git repository, add necessary credentials to the 
 
 ```json
 {
-    "GitBranch": "foo/test"
+    "GitBranch": "name/branch"
 }
 ```
 
