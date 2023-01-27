@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 
-Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux IoT Edge device that facilitates remote device management over Azure as well from local management authorities.
+Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux Edge device that facilitates remote device management over Azure as well from local management authorities.
 
-OSConfig contains an Agent, a Management Platform (Modules Manager) and several Management Modules.
+OSConfig contains an Agent, a Management Platform and several Management Modules. The Agent contains two management authority adapters, including a PnP Agent for IoT Hub and DigitalTwins and a Watcher for local RC/DC and GitOps DC. The Agent runs in one daemon process. The Platform and Modules run in another daemon process.
 
 For more information on OSConfig see [OSConfig North Star Architecture](docs/architecture.md), [OSConfig Roadmap](docs/roadmap.md) and [OSConfig Management Modules](docs/modules.md).
 
@@ -60,14 +60,15 @@ Source | Destination | Description
 [src/adapters/pnp/daemon/osconfig.service](src/adapters/pnp/daemon/osconfig.service) | /etc/systemd/system/osconfig.service | The service unit for the OSConfig Agent
 [src/platform/daemon/osconfig-platform.service](src/platform/daemon/osconfig-platform.service) | /etc/systemd/system/osconfig-platform.service | The service unit for the OSConfig Platform
 [src/adapters/pnp/daemon/osconfig.toml](src/adapters/pnp/daemon/osconfig.toml) | /etc/aziot/identityd/config.d/osconfig.toml | The OSConfig Module configuration for AIS
-[src/modules/adhs/](src/modules/adhs/) | /usr/lib/osconfig/adhs.so | The Azure Device Health Services (ADHS) module binary
-[src/modules/deliveryoptimization/](src/modules/deliveryoptimization/) | /usr/lib/osconfig/deliveryoptimization.so | The Delivery Optimization (DO) module binary
-[src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The Device info module binary
+[src/modules/deviceinfo/](src/modules/deviceinfo/) | /usr/lib/osconfig/deviceinfo.so | The DeviceInfo module binary
+[src/modules/configuration/](src/modules/configuration/) | /usr/lib/osconfig/configuration.so | The Configuration module binary
 [src/modules/commandrunner/](src/modules/commandrunner/) | /usr/lib/osconfig/commandrunner.so | The CommandRunner module binary
 [src/modules/firewall/](src/modules/firewall/) | /usr/lib/osconfig/firewall.so | The Firewall module binary
+[src/modules/adhs/](src/modules/adhs/) | /usr/lib/osconfig/adhs.so | The Azure Device Health Services (ADHS) module binary
+[src/modules/deliveryoptimization/](src/modules/deliveryoptimization/) | /usr/lib/osconfig/deliveryoptimization.so | The Delivery Optimization (DO) module binary
+[src/modules/hostname/](src/modules/hostname/) | /usr/lib/osconfig/hostname.so | The HostName module binary
 [src/modules/networking/](src/modules/networking/) | /usr/lib/osconfig/networking.so | The Networking module binary
 [src/modules/tpm/](src/modules/tpm/) | /usr/lib/osconfig/tpm.so | The TPM module binary
-[src/modules/hostname/](src/modules/hostname/) | /usr/lib/osconfig/hostname.so | The HostName module binary
 
 ### Enable and start OSConfig for the first time
 
@@ -114,17 +115,11 @@ When OSConfig exists prematurely (crashes) the Agent's log (osconfig_pnp_agent.l
 ```
 [ERROR] OSConfig crash due to segmentation fault (SIGSEGV) during MpiGet to Firewall.FirewallRules
 ```
-## Local Management
-
-OSConfig uses two local files as local digital twins in MIM JSON format:
-
-`/etc/osconfig/osconfig_desired.json` contains desired configuration (to be applied to the device)
-
-`/etc/osconfig/osconfig_reported.json` contains reported configuration (to be reported from the device)
+Only the root user can view these log files.
 
 ## Configuration
 
-OSConfig has a general configuration file at `/etc/osconfig/osconfig.json` that can be used to configure how it runs. After changing this configuration file, restart OSConfig to make it apply the change.
+OSConfig can be configured via `/etc/osconfig/osconfig.json`. After changing this configuration file, restart OSConfig to apply the configuration changes. Only the root user can view or edit this configuration file.
 
 ### Adjusting the reporting interval
 
@@ -136,13 +131,15 @@ OSConfig periodically reports device data at a default time period of 30 seconds
 }
 ```
 
+This same interval is also used for RC/DC and GitOps DC processing.
+
 ### Enabling logging of system commands executed by OSConfig for debugging purposes
 
-Command logging means that OSConfig will log all input and output from internally executed system commands.
+Command logging means that OSConfig will log all input and output from system commands executed by Agent, Platform and Modules.
 
 Generally it is not recommended to run OSConfig with command logging enabled.
 
-To enable command logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "CommandLogging" to a non zero value:
+To enable command logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "CommandLogging" to a non-zero value:
 
 ```json
 {
@@ -154,11 +151,11 @@ To disable command logging, set "CommandLogging" to 0.
 
 ### Enabling full logging for debugging purposes
 
-Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS and local configuration.
+Full logging means that OSConfig will log all input and output from and to IoT Hub, AIS, RC/DC, GitOps DC, etc.
 
 Generally it is not recommended to run OSConfig with full logging enabled.
 
-To enable full logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "FullLogging" to a non zero value:
+To enable full logging for debugging purposes, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "FullLogging" to a non-zero value:
 
 ```json
 {
@@ -168,11 +165,21 @@ To enable full logging for debugging purposes, edit the OSConfig general configu
 
 To disable full logging, set "FullLogging" to 0.
 
-### Enabling local management
+## Local Management over RC/DC
 
-By default the reported configuration is not saved locally to `/etc/osconfig/osconfig_reported.json` (local reporting is disabled) and desired configuration is not picked-up from `/etc/osconfig/osconfig_desired.json`.
+OSConfig uses two local files as local digital twins in MIM JSON payload format:
 
-To enable local management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) a integer value named "LocalManagement" to a non zero value:
+`/etc/osconfig/osconfig_desired.json` contains desired configuration (to be applied to the device)
+
+`/etc/osconfig/osconfig_reported.json` contains reported configuration (to be reported from the device)
+
+This pair of files are called Reported Configuration (RC) and Desired Configuration (DC) or RC/DC.
+
+Once created, only the root user can view these files or change the DC file.
+
+By default, the reported configuration is not saved locally to the DC file at `/etc/osconfig/osconfig_reported.json` (local reporting is disabled) and desired configuration is not picked-up from the DC file at `/etc/osconfig/osconfig_desired.json`.
+
+To enable local management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and set there (or add if needed) an integer value named "LocalManagement" to a non-zero value:
 
 ```json
 {
@@ -180,6 +187,43 @@ To enable local management, edit the OSConfig general configuration file `/etc/o
 }
 ```
 To disable local management, set "LocalManagement" to 0.
+
+### Desired Configuration (DC) management over GitOps
+
+OSConfig can apply to the device desired configuration in MIM JSON payload format (same as for RC/DC) read from a Git repository and branch. The DC file must be named `osconfig_desired.json` and be placed in the root of the repository.
+
+By default, desired configuration (DC) over GitOps is disabled and there are no configured Git repository or branch. 
+
+To enable GitOps DC management, edit the OSConfig general configuration file `/etc/osconfig/osconfig.json` and there: 
+
+1. Set (or add if needed) a string value named "GitRepositoryUrl" to a string value containing the string that can be used to clone a Git repository, for example (this example uses OSConfig's own repository but can be anything):
+
+```json
+{
+    "GitRepositoryUrl": "https://github.com/Azure/azure-osconfig"
+}
+```
+
+For HTTPS cloning of a private Git repository, add necessary credentials to the "GitRepositoryUrl" such as, for example: `https://<username>:<password>@github.com/path/to/repo`. For SSH cloning, configure authetication separately on the device so OSConfig can use it.
+
+2. Set (or add if needed) a string value named "GitBranch" to a string value containing the Git branch name where the DC file is located, for example:
+
+```json
+{
+    "GitBranch": "name/branch"
+}
+```
+
+Set (or add if needed) an integer value named "GitManagement" to a non-zero value to enable GitOps DC management:
+
+```json
+{
+    "GitManagement": 1
+}
+```
+To disable GitOps DC management, set "GitManagement" to 0.
+
+OSConfig clones locally the configured Git DC file and branch to `/etc/osconfig/gitops/osconfig_desired.json`. This Git clone is automatically deleted when the OSConfig Agent (Watcher) terminates. While active, the cloned DC file is protected for root user access only.
 
 ### Changing the protocol OSConfig uses to connect to the IoT Hub
 
