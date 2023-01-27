@@ -97,6 +97,14 @@ rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 /usr/lib/osconfig/ztsi.so
 
 % changelog
+* Fri Jan 27 2023 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.5.20230127
+- Documentation updates
+- Moduletest fixes and refactoring
+- Pipeline bug fixes and updates
+- Debian 10 and  11 support
+- Drop tracelogging
+- Expanded CommonUtils
+- Misc. module bug fixes
 * Fri Sept 30 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.4.20220930
 - DTMI model moved to this repo
 - Support for MIM enumerations of strings
