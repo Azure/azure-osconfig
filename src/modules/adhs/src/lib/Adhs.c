@@ -174,7 +174,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
     }
     else if (0 != strcmp(objectName, g_reportedOptInObjectName))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", componentName);
+        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
     else
