@@ -174,7 +174,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
     }
     else if (0 != strcmp(objectName, g_reportedOptInObjectName))
     {
-        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", componentName);
+        OsConfigLogError(AdhsGetLog(), "MmiGet called for an unsupported object name '%s'", objectName);
         status = EINVAL;
     }
     else
@@ -185,7 +185,7 @@ int AdhsMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* 
             fileContentSizeBytes = strlen(fileContent);
             if (0 == regcomp(&permissionRegex, g_permissionConfigPattern, REG_EXTENDED))
             {
-                if (0 == regexec(&permissionRegex, fileContent, 3, matchGroups, 0))
+                if (0 == regexec(&permissionRegex, fileContent, ARRAY_SIZE(matchGroups), matchGroups, 0))
                 {
                     // Property value is located in the third match group.
                     if ((IsValidMatchOffsets(matchGroups[0], fileContentSizeBytes)) && 
