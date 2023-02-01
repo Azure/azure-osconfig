@@ -93,13 +93,6 @@ jobs:
             ${{ steps.test.outputs.log }}
             ${{ steps.test.outputs.xml }}
 
-      - name: Publish test report
-        uses: dorny/test-reporter@v1
-        with:
-          name: Test report (${{ matrix.os }}-${{ matrix.variant.arch }})
-          path: ${{ steps.test.outputs.xml }}
-          reporter: java-junit
-
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
