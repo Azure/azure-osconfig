@@ -40,11 +40,9 @@ typedef struct _LinuxOsConfigResource /* extends OMI_BaseResource */
     /*KEY*/ MI_ConstStringField LinuxOsConfigClassKey;
     MI_ConstStringField ComponentName;
     MI_ConstStringField ReportedObjectName;
-    MI_ConstStringField ReportedSettingName;
-    MI_ConstStringField ReportedSettingValue;
+    MI_ConstStringField ReportedObjectValue;
     MI_ConstStringField DesiredObjectName;
-    MI_ConstStringField DesiredSettingName;
-    MI_ConstStringField DesiredSettingValue;
+    MI_ConstStringField DesiredObjectValue;
     MI_ConstUint32Field ReportedMpiResult;
 }
 LinuxOsConfigResource;
@@ -465,7 +463,7 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_ReportedObjectName(
         9);
 }
 
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_ReportedSettingName(
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_ReportedObjectValue(
     _Inout_ LinuxOsConfigResource* self,
     _In_z_ const MI_Char* str)
 {
@@ -477,7 +475,7 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_ReportedSettingName(
         0);
 }
 
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_ReportedSettingName(
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_ReportedObjectValue(
     _Inout_ LinuxOsConfigResource* self,
     _In_z_ const MI_Char* str)
 {
@@ -489,44 +487,12 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_ReportedSettingName(
         MI_FLAG_BORROW);
 }
 
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_ReportedSettingName(
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_ReportedObjectValue(
     _Inout_ LinuxOsConfigResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
         10);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_ReportedSettingValue(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        11,
-        (MI_Value*)&str,
-        MI_STRING,
-        0);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_ReportedSettingValue(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        11,
-        (MI_Value*)&str,
-        MI_STRING,
-        MI_FLAG_BORROW);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_ReportedSettingValue(
-    _Inout_ LinuxOsConfigResource* self)
-{
-    return self->__instance.ft->ClearElementAt(
-        (MI_Instance*)&self->__instance,
-        11);
 }
 
 MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_DesiredObjectName(
@@ -535,7 +501,7 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_DesiredObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        12,
+        11,
         (MI_Value*)&str,
         MI_STRING,
         0);
@@ -547,7 +513,7 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_DesiredObjectName(
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
-        12,
+        11,
         (MI_Value*)&str,
         MI_STRING,
         MI_FLAG_BORROW);
@@ -558,71 +524,39 @@ MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_DesiredObjectName(
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
+        11);
+}
+
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_DesiredObjectValue(
+    _Inout_ LinuxOsConfigResource* self,
+    _In_z_ const MI_Char* str)
+{
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        12,
+        (MI_Value*)&str,
+        MI_STRING,
+        0);
+}
+
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_DesiredObjectValue(
+    _Inout_ LinuxOsConfigResource* self,
+    _In_z_ const MI_Char* str)
+{
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        12,
+        (MI_Value*)&str,
+        MI_STRING,
+        MI_FLAG_BORROW);
+}
+
+MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_DesiredObjectValue(
+    _Inout_ LinuxOsConfigResource* self)
+{
+    return self->__instance.ft->ClearElementAt(
+        (MI_Instance*)&self->__instance,
         12);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_DesiredSettingName(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        13,
-        (MI_Value*)&str,
-        MI_STRING,
-        0);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_DesiredSettingName(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        13,
-        (MI_Value*)&str,
-        MI_STRING,
-        MI_FLAG_BORROW);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_DesiredSettingName(
-    _Inout_ LinuxOsConfigResource* self)
-{
-    return self->__instance.ft->ClearElementAt(
-        (MI_Instance*)&self->__instance,
-        13);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_DesiredSettingValue(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        14,
-        (MI_Value*)&str,
-        MI_STRING,
-        0);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_SetPtr_DesiredSettingValue(
-    _Inout_ LinuxOsConfigResource* self,
-    _In_z_ const MI_Char* str)
-{
-    return self->__instance.ft->SetElementAt(
-        (MI_Instance*)&self->__instance,
-        14,
-        (MI_Value*)&str,
-        MI_STRING,
-        MI_FLAG_BORROW);
-}
-
-MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Clear_DesiredSettingValue(
-    _Inout_ LinuxOsConfigResource* self)
-{
-    return self->__instance.ft->ClearElementAt(
-        (MI_Instance*)&self->__instance,
-        14);
 }
 
 MI_INLINE MI_Result MI_CALL LinuxOsConfigResource_Set_ReportedMpiResult(

@@ -1552,87 +1552,44 @@ static MI_CONST MI_PropertyDecl LinuxOsConfigResource_ReportedObjectName_prop =
     NULL,
 };
 
-static MI_CONST MI_Boolean LinuxOsConfigResource_ReportedSettingName_Write_qual_value = 1;
+static MI_CONST MI_Boolean LinuxOsConfigResource_ReportedObjectValue_Read_qual_value = 1;
 
-static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedSettingName_Write_qual =
-{
-    MI_T("Write"),
-    MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
-    &LinuxOsConfigResource_ReportedSettingName_Write_qual_value
-};
-
-static MI_CONST MI_Char* LinuxOsConfigResource_ReportedSettingName_Description_qual_value = MI_T("14");
-
-static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedSettingName_Description_qual =
-{
-    MI_T("Description"),
-    MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
-    &LinuxOsConfigResource_ReportedSettingName_Description_qual_value
-};
-
-static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_ReportedSettingName_quals[] =
-{
-    &LinuxOsConfigResource_ReportedSettingName_Write_qual,
-    &LinuxOsConfigResource_ReportedSettingName_Description_qual,
-};
-
-/* property LinuxOsConfigResource.ReportedSettingName */
-static MI_CONST MI_PropertyDecl LinuxOsConfigResource_ReportedSettingName_prop =
-{
-    MI_FLAG_PROPERTY, /* flags */
-    0x00726513, /* code */
-    MI_T("ReportedSettingName"), /* name */
-    LinuxOsConfigResource_ReportedSettingName_quals, /* qualifiers */
-    MI_COUNT(LinuxOsConfigResource_ReportedSettingName_quals), /* numQualifiers */
-    MI_STRING, /* type */
-    NULL, /* className */
-    0, /* subscript */
-    offsetof(LinuxOsConfigResource, ReportedSettingName), /* offset */
-    MI_T("LinuxOsConfigResource"), /* origin */
-    MI_T("LinuxOsConfigResource"), /* propagator */
-    NULL,
-};
-
-static MI_CONST MI_Boolean LinuxOsConfigResource_ReportedSettingValue_Read_qual_value = 1;
-
-static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedSettingValue_Read_qual =
+static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedObjectValue_Read_qual =
 {
     MI_T("Read"),
     MI_BOOLEAN,
     MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
-    &LinuxOsConfigResource_ReportedSettingValue_Read_qual_value
+    &LinuxOsConfigResource_ReportedObjectValue_Read_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_ReportedSettingValue_Description_qual_value = MI_T("15");
+static MI_CONST MI_Char* LinuxOsConfigResource_ReportedObjectValue_Description_qual_value = MI_T("14");
 
-static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedSettingValue_Description_qual =
+static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedObjectValue_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
     MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
-    &LinuxOsConfigResource_ReportedSettingValue_Description_qual_value
+    &LinuxOsConfigResource_ReportedObjectValue_Description_qual_value
 };
 
-static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_ReportedSettingValue_quals[] =
+static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_ReportedObjectValue_quals[] =
 {
-    &LinuxOsConfigResource_ReportedSettingValue_Read_qual,
-    &LinuxOsConfigResource_ReportedSettingValue_Description_qual,
+    &LinuxOsConfigResource_ReportedObjectValue_Read_qual,
+    &LinuxOsConfigResource_ReportedObjectValue_Description_qual,
 };
 
-/* property LinuxOsConfigResource.ReportedSettingValue */
-static MI_CONST MI_PropertyDecl LinuxOsConfigResource_ReportedSettingValue_prop =
+/* property LinuxOsConfigResource.ReportedObjectValue */
+static MI_CONST MI_PropertyDecl LinuxOsConfigResource_ReportedObjectValue_prop =
 {
     MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
-    0x00726514, /* code */
-    MI_T("ReportedSettingValue"), /* name */
-    LinuxOsConfigResource_ReportedSettingValue_quals, /* qualifiers */
-    MI_COUNT(LinuxOsConfigResource_ReportedSettingValue_quals), /* numQualifiers */
+    0x00726513, /* code */
+    MI_T("ReportedObjectValue"), /* name */
+    LinuxOsConfigResource_ReportedObjectValue_quals, /* qualifiers */
+    MI_COUNT(LinuxOsConfigResource_ReportedObjectValue_quals), /* numQualifiers */
     MI_STRING, /* type */
     NULL, /* className */
     0, /* subscript */
-    offsetof(LinuxOsConfigResource, ReportedSettingValue), /* offset */
+    offsetof(LinuxOsConfigResource, ReportedObjectValue), /* offset */
     MI_T("LinuxOsConfigResource"), /* origin */
     MI_T("LinuxOsConfigResource"), /* propagator */
     NULL,
@@ -1648,7 +1605,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredObjectName_Write_qual 
     &LinuxOsConfigResource_DesiredObjectName_Write_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_DesiredObjectName_Description_qual_value = MI_T("16");
+static MI_CONST MI_Char* LinuxOsConfigResource_DesiredObjectName_Description_qual_value = MI_T("15");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredObjectName_Description_qual =
 {
@@ -1681,87 +1638,44 @@ static MI_CONST MI_PropertyDecl LinuxOsConfigResource_DesiredObjectName_prop =
     NULL,
 };
 
-static MI_CONST MI_Boolean LinuxOsConfigResource_DesiredSettingName_Write_qual_value = 1;
+static MI_CONST MI_Boolean LinuxOsConfigResource_DesiredObjectValue_Write_qual_value = 1;
 
-static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredSettingName_Write_qual =
+static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredObjectValue_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
     MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
-    &LinuxOsConfigResource_DesiredSettingName_Write_qual_value
+    &LinuxOsConfigResource_DesiredObjectValue_Write_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_DesiredSettingName_Description_qual_value = MI_T("17");
+static MI_CONST MI_Char* LinuxOsConfigResource_DesiredObjectValue_Description_qual_value = MI_T("16");
 
-static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredSettingName_Description_qual =
+static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredObjectValue_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
     MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
-    &LinuxOsConfigResource_DesiredSettingName_Description_qual_value
+    &LinuxOsConfigResource_DesiredObjectValue_Description_qual_value
 };
 
-static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_DesiredSettingName_quals[] =
+static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_DesiredObjectValue_quals[] =
 {
-    &LinuxOsConfigResource_DesiredSettingName_Write_qual,
-    &LinuxOsConfigResource_DesiredSettingName_Description_qual,
+    &LinuxOsConfigResource_DesiredObjectValue_Write_qual,
+    &LinuxOsConfigResource_DesiredObjectValue_Description_qual,
 };
 
-/* property LinuxOsConfigResource.DesiredSettingName */
-static MI_CONST MI_PropertyDecl LinuxOsConfigResource_DesiredSettingName_prop =
+/* property LinuxOsConfigResource.DesiredObjectValue */
+static MI_CONST MI_PropertyDecl LinuxOsConfigResource_DesiredObjectValue_prop =
 {
     MI_FLAG_PROPERTY, /* flags */
     0x00646512, /* code */
-    MI_T("DesiredSettingName"), /* name */
-    LinuxOsConfigResource_DesiredSettingName_quals, /* qualifiers */
-    MI_COUNT(LinuxOsConfigResource_DesiredSettingName_quals), /* numQualifiers */
+    MI_T("DesiredObjectValue"), /* name */
+    LinuxOsConfigResource_DesiredObjectValue_quals, /* qualifiers */
+    MI_COUNT(LinuxOsConfigResource_DesiredObjectValue_quals), /* numQualifiers */
     MI_STRING, /* type */
     NULL, /* className */
     0, /* subscript */
-    offsetof(LinuxOsConfigResource, DesiredSettingName), /* offset */
-    MI_T("LinuxOsConfigResource"), /* origin */
-    MI_T("LinuxOsConfigResource"), /* propagator */
-    NULL,
-};
-
-static MI_CONST MI_Boolean LinuxOsConfigResource_DesiredSettingValue_Write_qual_value = 1;
-
-static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredSettingValue_Write_qual =
-{
-    MI_T("Write"),
-    MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
-    &LinuxOsConfigResource_DesiredSettingValue_Write_qual_value
-};
-
-static MI_CONST MI_Char* LinuxOsConfigResource_DesiredSettingValue_Description_qual_value = MI_T("18");
-
-static MI_CONST MI_Qualifier LinuxOsConfigResource_DesiredSettingValue_Description_qual =
-{
-    MI_T("Description"),
-    MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
-    &LinuxOsConfigResource_DesiredSettingValue_Description_qual_value
-};
-
-static MI_Qualifier MI_CONST* MI_CONST LinuxOsConfigResource_DesiredSettingValue_quals[] =
-{
-    &LinuxOsConfigResource_DesiredSettingValue_Write_qual,
-    &LinuxOsConfigResource_DesiredSettingValue_Description_qual,
-};
-
-/* property LinuxOsConfigResource.DesiredSettingValue */
-static MI_CONST MI_PropertyDecl LinuxOsConfigResource_DesiredSettingValue_prop =
-{
-    MI_FLAG_PROPERTY, /* flags */
-    0x00646513, /* code */
-    MI_T("DesiredSettingValue"), /* name */
-    LinuxOsConfigResource_DesiredSettingValue_quals, /* qualifiers */
-    MI_COUNT(LinuxOsConfigResource_DesiredSettingValue_quals), /* numQualifiers */
-    MI_STRING, /* type */
-    NULL, /* className */
-    0, /* subscript */
-    offsetof(LinuxOsConfigResource, DesiredSettingValue), /* offset */
+    offsetof(LinuxOsConfigResource, DesiredObjectValue), /* offset */
     MI_T("LinuxOsConfigResource"), /* origin */
     MI_T("LinuxOsConfigResource"), /* propagator */
     NULL,
@@ -1777,7 +1691,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedMpiResult_Read_qual =
     &LinuxOsConfigResource_ReportedMpiResult_Read_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_ReportedMpiResult_Description_qual_value = MI_T("19");
+static MI_CONST MI_Char* LinuxOsConfigResource_ReportedMpiResult_Description_qual_value = MI_T("17");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_ReportedMpiResult_Description_qual =
 {
@@ -1822,11 +1736,9 @@ static MI_PropertyDecl MI_CONST* MI_CONST LinuxOsConfigResource_props[] =
     &LinuxOsConfigResource_LinuxOsConfigClassKey_prop,
     &LinuxOsConfigResource_ComponentName_prop,
     &LinuxOsConfigResource_ReportedObjectName_prop,
-    &LinuxOsConfigResource_ReportedSettingName_prop,
-    &LinuxOsConfigResource_ReportedSettingValue_prop,
+    &LinuxOsConfigResource_ReportedObjectValue_prop,
     &LinuxOsConfigResource_DesiredObjectName_prop,
-    &LinuxOsConfigResource_DesiredSettingName_prop,
-    &LinuxOsConfigResource_DesiredSettingValue_prop,
+    &LinuxOsConfigResource_DesiredObjectValue_prop,
     &LinuxOsConfigResource_ReportedMpiResult_prop,
 };
 
@@ -1840,7 +1752,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_Static_qual
     &LinuxOsConfigResource_GetTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_Description_qual_value = MI_T("20");
+static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_Description_qual_value = MI_T("18");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_Description_qual =
 {
@@ -1876,7 +1788,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_InputResour
     &LinuxOsConfigResource_GetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_InputResource_Description_qual_value = MI_T("21");
+static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_InputResource_Description_qual_value = MI_T("19");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_InputResource_Description_qual =
 {
@@ -1917,7 +1829,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_Flags_In_qu
     &LinuxOsConfigResource_GetTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_Flags_Description_qual_value = MI_T("22");
+static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_Flags_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_Flags_Description_qual =
 {
@@ -1967,7 +1879,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_OutputResou
     &LinuxOsConfigResource_GetTargetResource_OutputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_OutputResource_Description_qual_value = MI_T("23");
+static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_OutputResource_Description_qual_value = MI_T("21");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_OutputResource_Description_qual =
 {
@@ -2008,7 +1920,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_MIReturn_St
     &LinuxOsConfigResource_GetTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_MIReturn_Description_qual_value = MI_T("20");
+static MI_CONST MI_Char* LinuxOsConfigResource_GetTargetResource_MIReturn_Description_qual_value = MI_T("18");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_GetTargetResource_MIReturn_Description_qual =
 {
@@ -2074,7 +1986,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Static_qua
     &LinuxOsConfigResource_TestTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Description_qual_value = MI_T("24");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Description_qual_value = MI_T("22");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Description_qual =
 {
@@ -2110,7 +2022,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_InputResou
     &LinuxOsConfigResource_TestTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_InputResource_Description_qual_value = MI_T("21");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_InputResource_Description_qual_value = MI_T("19");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_InputResource_Description_qual =
 {
@@ -2151,7 +2063,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Flags_In_q
     &LinuxOsConfigResource_TestTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Flags_Description_qual_value = MI_T("22");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Flags_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Flags_Description_qual =
 {
@@ -2191,7 +2103,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Result_Out
     &LinuxOsConfigResource_TestTargetResource_Result_Out_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Result_Description_qual_value = MI_T("25");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_Result_Description_qual_value = MI_T("23");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_Result_Description_qual =
 {
@@ -2231,7 +2143,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_ProviderCo
     &LinuxOsConfigResource_TestTargetResource_ProviderContext_Out_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_ProviderContext_Description_qual_value = MI_T("26");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_ProviderContext_Description_qual_value = MI_T("24");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_ProviderContext_Description_qual =
 {
@@ -2271,7 +2183,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_MIReturn_S
     &LinuxOsConfigResource_TestTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_MIReturn_Description_qual_value = MI_T("24");
+static MI_CONST MI_Char* LinuxOsConfigResource_TestTargetResource_MIReturn_Description_qual_value = MI_T("22");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_TestTargetResource_MIReturn_Description_qual =
 {
@@ -2338,7 +2250,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_Static_qual
     &LinuxOsConfigResource_SetTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_Description_qual_value = MI_T("27");
+static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_Description_qual_value = MI_T("25");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_Description_qual =
 {
@@ -2374,7 +2286,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_InputResour
     &LinuxOsConfigResource_SetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_InputResource_Description_qual_value = MI_T("21");
+static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_InputResource_Description_qual_value = MI_T("19");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_InputResource_Description_qual =
 {
@@ -2415,7 +2327,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_ProviderCon
     &LinuxOsConfigResource_SetTargetResource_ProviderContext_In_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_ProviderContext_Description_qual_value = MI_T("26");
+static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_ProviderContext_Description_qual_value = MI_T("24");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_ProviderContext_Description_qual =
 {
@@ -2455,7 +2367,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_Flags_In_qu
     &LinuxOsConfigResource_SetTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_Flags_Description_qual_value = MI_T("22");
+static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_Flags_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_Flags_Description_qual =
 {
@@ -2495,7 +2407,7 @@ static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_MIReturn_St
     &LinuxOsConfigResource_SetTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_MIReturn_Description_qual_value = MI_T("27");
+static MI_CONST MI_Char* LinuxOsConfigResource_SetTargetResource_MIReturn_Description_qual_value = MI_T("25");
 
 static MI_CONST MI_Qualifier LinuxOsConfigResource_SetTargetResource_MIReturn_Description_qual =
 {

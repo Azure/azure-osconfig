@@ -15,25 +15,19 @@ class LinuxOsConfigResource : OMI_BaseResource
   [write, Description ("Reported MIM Object (for audit)" )]
   string ReportedObjectName;
 
-  [write, Description ("Reported MIM Setting (for audit)" )]
-  string ReportedSettingName;
-
   [read, Description ("Reported MIM Setting value (for audit)" )]
-  string ReportedSettingValue;
+  string ReportedObjectValue;
 
   [write, Description ("Desired MIM Object (for remediation)" )]
   string DesiredObjectName;
 
-  [write, Description ("Desired MIM Setting (for remediation)" )]
-  string DesiredSettingName;
-  
   [write, Description ("Desired MIM Setting value (for remediation)" )]
-  string DesiredSettingValue;
+  string DesiredObjectValue;
 
   [read, Description ("Reported MPI result (for audit and remediation)" )]
   uint32 ReportedMpiResult;
 
-  [static, Description ("Get resource state (ReportedSettingValue, ReportedMpiResult) based on input configuration (DesiredComponentName, DesiredObjectName, DesiredSettingValue)." )]
+  [static, Description ("Get resource state based on input configuration." )]
   uint32 GetTargetResource(
     [in, EmbeddedInstance ("LinuxOsConfigResource"), Description ("Desired configuration to be applied.")]
     string InputResource,
@@ -43,7 +37,7 @@ class LinuxOsConfigResource : OMI_BaseResource
     string OutputResource
   );
     
-  [static, Description ("Test resource state (ReportedSettingValue, ReportedMpiResult) based on input configuration (DesiredComponentName, DesiredObjectName, DesiredSettingValue)." )]
+  [static, Description ("Test resource state based on input configuration." )]
   uint32 TestTargetResource(
     [in, EmbeddedInstance("LinuxOsConfigResource"), Description ("Desired configuration to be applied." )]
     string InputResource,
@@ -55,7 +49,7 @@ class LinuxOsConfigResource : OMI_BaseResource
     uint64 ProviderContext
   );
 
-  [static, Description ("Set resource states based on input configuration document." )]
+  [static, Description ("Set desired configuration based on input configuration." )]
   uint32 SetTargetResource(
     [in, EmbeddedInstance ("LinuxOsConfigResource"), Description ("Desired configuration to be applied." )]
     string InputResource,
