@@ -3,3 +3,4 @@
 
 add_subdirectory(pnp)
 add_subdirectory(gc)
+add_subdirectory(mc)

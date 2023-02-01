@@ -1,0 +1,23 @@
+instance of LinuxOsConfigResource as $LinuxOsConfigResource0ref
+{
+    ResourceID = "[LinuxOsConfigResource]Ensure the configured policy is audited and remediated on the Linux device";
+    PrototypeClassKey = "LinuxOsConfigClassKey";
+    ComponentName = "";
+    ReportedSettingName = "";
+    DesiredObjectName = "";
+    DesiredSettingName = "";
+    DesiredSettingValue = "";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "LinuxOsConfig";
+    SourceInfo = "::4::5::LinuxOsConfigResource";
+};
+
+instance of OMI_ConfigurationDocument
+{
+    Version="2.0.0";
+    CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+    Author="Microsoft";
+    GenerationDate="2/1/2023 14:00:00";
+    Name="LinuxOsConfigResource";
+};
