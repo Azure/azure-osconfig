@@ -634,14 +634,14 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
             is_compliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] DesiredString value '%s' matches the current local value",
-                in->InputResource.value->DesiredString.value);
+            LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] DesiredObjectValue value '%s' matches the current local value",
+                in->InputResource.value->DesiredObjectValue.value);
         }
         else
         {
             is_compliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DesiredString value '%s' does not match the current local value '%s'",
-                in->InputResource.value->DesiredString.value, g_reportedString);
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value '%s'",
+                in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
         }
     }
     else
@@ -691,7 +691,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     _In_opt_ const LinuxOsConfigResource_SetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
-    MI_UNREFERENCED_PARAMETER(resourceClass);
+    MI_UNREFERENCED_PARAMETER(instanceName);
 
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
