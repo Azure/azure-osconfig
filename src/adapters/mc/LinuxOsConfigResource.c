@@ -50,7 +50,7 @@ static char* g_desiredObjectValue = NULL;
 
 //Reported (read)
 static char* g_reportedObjectValue = NULL;
-static uint32 g_reportedMpiResult = 0;
+static unsigned int g_reportedMpiResult = 0;
 
 MPI_HANDLE g_mpiHandle = NULL;
 
@@ -182,7 +182,7 @@ void MI_CALL LinuxOsConfigResource_GetInstance(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
     MI_UNREFERENCED_PARAMETER(className);
-    MI_UNREFERENCED_PARAMETER(resourceClass);
+    MI_UNREFERENCED_PARAMETER(instanceName);
     MI_UNREFERENCED_PARAMETER(propertySet);
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource] GetInstance");
@@ -236,7 +236,7 @@ void MI_CALL LinuxOsConfigResource_DeleteInstance(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
     MI_UNREFERENCED_PARAMETER(className);
-    MI_UNREFERENCED_PARAMETER(resourceClass);
+    MI_UNREFERENCED_PARAMETER(instanceName);
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource] DeleteInstance");
 
@@ -320,7 +320,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                     LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, objectValueLength + 1);
                 }
 
-                LogInfo(context, GetLog(), "[%s] ReportedString value: '%s'", who, g_reportedString);
+                LogInfo(context, GetLog(), "[%s] ReportedObjectValue value: '%s'", who, g_reportedObjectValue);
                 CallMpiFree(objectValue);
             }
         }
@@ -351,7 +351,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
     _In_opt_ const LinuxOsConfigResource_GetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
-    MI_UNREFERENCED_PARAMETER(resourceClass);
+    MI_UNREFERENCED_PARAMETER(instanceName);
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Instance *resultResourceObject = NULL;
@@ -360,7 +360,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResource = {0};
 
     // Reported values
-    struct LinuxOsConfigResource_Parameters allParameters[] = {
+    struct LinuxOsConfigResourceParameters allParameters[] = {
         { "LinuxOsConfigClassKey", MI_STRING, in->InputResource.value->LinuxOsConfigClassKey.value, 0 },
         { "ComponentName", MI_STRING, g_componentName, 0 },
         { "ReportedObjectName", MI_STRING, g_reportedObjectName, 0 },
@@ -548,9 +548,9 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
     _In_opt_ const LinuxOsConfigResource_TestTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
-    MI_UNREFERENCED_PARAMETER(resourceClass);
+    MI_UNREFERENCED_PARAMETER(instanceName);
 
-    LinuxOsConfigPrototypeResource_TestTargetResource test_result_object;
+    LinuxOsConfigResource_TestTargetResource test_result_object;
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Boolean is_compliant = MI_FALSE;
@@ -558,12 +558,12 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
     MI_Value miValueResult;
     memset(&miValueResult, 0, sizeof(MI_Value));
 
-    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Starting Test");
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] Starting Test");
 
     if ((in == NULL) || (in->InputResource.exists == MI_FALSE) || (in->InputResource.value == NULL))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Invalid Test argument");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] Invalid Test argument");
         goto Exit;
     }
 
@@ -634,49 +634,49 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
             is_compliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] DesiredString value '%s' matches the current local value",
+            LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] DesiredString value '%s' matches the current local value",
                 in->InputResource.value->DesiredString.value);
         }
         else
         {
             is_compliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] DesiredString value '%s' does not match the current local value '%s'",
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DesiredString value '%s' does not match the current local value '%s'",
                 in->InputResource.value->DesiredString.value, g_reportedString);
         }
     }
     else
     {
         is_compliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] No DesiredString value, assuming compliance");
+        LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] No DesiredString value, assuming compliance");
     }
 
-    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Construct(&test_result_object, context)))
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigResource_TestTargetResource_Construct(&test_result_object, context)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] TestTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Set_MIReturn(&test_result_object, 0)))
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigResource_TestTargetResource_Set_MIReturn(&test_result_object, 0)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] TestTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
-    LinuxOsConfigPrototypeResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
+    LinuxOsConfigResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
     MI_Context_PostInstance(context, &(test_result_object.__instance));
 
 Exit:
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] MI_Instance_Delete failed");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] MI_Instance_Delete failed");
     }
 
-    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Destruct(&test_result_object)))
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigResource_TestTargetResource_Destruct(&test_result_object)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] TestTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Test complete with miResult %d", miResult);
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] Test complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
 
 }
@@ -700,33 +700,33 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     char* payloadString = NULL;
     int payloadSize = 0;
 
-   LinuxOsConfigPrototypeResource_SetTargetResource set_result_object;
+   LinuxOsConfigResource_SetTargetResource set_result_object;
 
-    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Starting Set");
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Starting Set");
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Invalid argument");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Invalid argument");
         goto Exit;
     }
 
     if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
     {
         miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] No PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No PrototypeClassKey");
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Construct(&set_result_object, context)))
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigResource_SetTargetResource_Construct(&set_result_object, context)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Construct failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] SetTargetResource_Construct failed with %d", miResult);
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Set_MIReturn failed with %d", miResult);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] SetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
     }
 
@@ -814,7 +814,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
         {
             miResult = MI_RESULT_FAILED;
             mpiResult = ESRCH;
-            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed starting the MPI server (%d)", mpiResult);
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Failed starting the MPI server (%d)", mpiResult);
         }
     }
 
@@ -828,13 +828,13 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
             if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog())))
             {
-                LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes",
+                LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes",
                     g_desiredString, payloadSize, payloadString, payloadSize);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d",
+                LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d",
                     g_desiredString, payloadSize, payloadString, payloadSize, miResult);
             }
 
@@ -844,7 +844,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
         {
             miResult = MI_RESULT_FAILED;
             mpiResult = ENOMEM;
-            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed to allocate %d bytes", payloadSize);
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Failed to allocate %d bytes", payloadSize);
         }
 
         if ((MPI_OK != mpiResult) && (0 == g_reportedMpiResult) || (0 == strcmp(g_reportedStringResult, "PASS")))
@@ -864,12 +864,12 @@ Exit:
         g_reportedMpiResult = miResult;
     }
 
-    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Destruct(&set_result_object)))
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigResource_SetTargetResource_Destruct(&set_result_object)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Destruct failed");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] SetTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Set complete with miResult %d", miResult);
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Set complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
 }
 
