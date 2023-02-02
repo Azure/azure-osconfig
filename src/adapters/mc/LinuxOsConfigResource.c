@@ -39,8 +39,10 @@
     LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
+static const char* g_defaultValue = "<default>";
+
 // Desired (write; also reported together with read group)
-static char* g_prototypeClassKey = NULL;
+static char* g_classKey = NULL;
 static char* g_componentName = NULL;
 static char* g_reportedObjectName = NULL;
 static char* g_desiredObjectName = NULL;
@@ -92,6 +94,12 @@ void __attribute__((constructor)) Initialize()
 
     RefreshMpiClientSession();
 
+    g_classKey = DuplicateString(g_defaultValue);
+    g_componentName = DuplicateString(g_defaultValue);
+    g_reportedObjectName = DuplicateString(g_defaultValue);
+    g_desiredObjectName = DuplicateString(g_defaultValue);
+    g_desiredObjectValue = DuplicateString(g_defaultValue);
+
     OsConfigLogInfo(GetLog(), "[LinuxOsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
 
@@ -107,7 +115,7 @@ void __attribute__((destructor)) Destroy()
 
     CloseLog(&g_log);
 
-    FREE_MEMORY(g_prototypeClassKey);
+    FREE_MEMORY(g_classKey);
     FREE_MEMORY(g_componentName);
     FREE_MEMORY(g_reportedObjectName);
     FREE_MEMORY(g_desiredObjectName);
@@ -235,7 +243,7 @@ void MI_CALL LinuxOsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-static MI_Result GetCurrentParameterValuesFromDevice(const char* who, const char* componentName, const char* objectName, MI_Context* context)
+static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* context)
 {
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
@@ -257,14 +265,14 @@ static MI_Result GetCurrentParameterValuesFromDevice(const char* who, const char
 
     if (g_mpiHandle)
     {
-        if (MPI_OK == (mpiResult = CallMpiGet(componentName, objectName, &objectValue, &objectValueLength, GetLog())))
+        if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
         {
             if (NULL == objectValue)
             {
                 mpiResult = ENODATA;
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", 
-                    who, componentName, objectName, objectValue, objectValueLength, mpiResult);
+                    who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
             }
             else
             {
@@ -364,16 +372,6 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
 
     int allParametersSize = ARRAY_SIZE(allParameters);
 
-    /*
-    string LinuxOsConfigClassKey;
-    string ComponentName;
-    string ReportedObjectName;
-    string ReportedObjectValue;
-    string DesiredObjectName;
-    string DesiredObjectValue;
-    uint32 ReportedMpiResult;
-    */
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     LinuxOsConfigResource_GetTargetResource get_result_object;
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Starting Get");
@@ -385,18 +383,61 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
+    // Read the class key from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] No PrototypeClassKey");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] No LinuxOsConfigClassKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    if (strncmp(g_prototypeClassKey, in->InputResource.value->PrototypeClassKey.value, ARRAY_SIZE(g_prototypeClassKey) - 1))
+    FREE_MEMORY(g_classKey);
+
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->LinuxOsConfigClassKey.value)))
     {
-        // Refresh our stored key
-        memset(g_prototypeClassKey, 0, sizeof(g_prototypeClassKey));
-        strncpy(g_prototypeClassKey, in->InputResource.value->PrototypeClassKey.value, ARRAY_SIZE(g_prototypeClassKey) - 1);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->LinuxOsConfigClassKey.value);
+        g_classKey = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM component name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] No ComponentName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_componentName);
+
+    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+        g_componentName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM reported object name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] No ReportedObjectName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_reportedObjectName);
+
+    if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
+        g_reportedObjectName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
     }
 
     if (MI_RESULT_OK != (miResult = LinuxOsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
@@ -417,7 +458,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult = GetCurrentParameterValuesFromDevice("LinuxOsConfigResource.Get", context)))
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("LinuxOsConfigResource.Get", context)))
     {
         goto Exit;
     }
@@ -441,13 +482,6 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
                     LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Get] No string value for '%s'", allParameters[i].name);
                     miResult = MI_RESULT_FAILED;
                 }
-                break;
-
-            case MI_BOOLEAN:
-                miValue.boolean = (MI_Boolean)(allParameters[i].booleanValue);
-                miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_BOOLEAN, 0);
-                LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] MI_Instance_SetElement('%s') to boolean value '%s' complete with miResult %d", 
-                    allParameters[i].name, miValue.boolean ? "true" : "false", miResult);
                 break;
 
             case MI_UINT32:
@@ -502,7 +536,6 @@ Exit:
     // Post MI result back to MI to finish
     LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Get complete with miResult %d", miResult);
     MI_Context_PostResult(context, miResult);
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
@@ -515,13 +548,137 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
     _In_opt_ const LinuxOsConfigResource_TestTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
-    MI_UNREFERENCED_PARAMETER(nameSpace);
-    MI_UNREFERENCED_PARAMETER(className);
-    MI_UNREFERENCED_PARAMETER(methodName);
-    MI_UNREFERENCED_PARAMETER(instanceName);
-    MI_UNREFERENCED_PARAMETER(in);
+    MI_UNREFERENCED_PARAMETER(resourceClass);
 
-    MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
+    LinuxOsConfigPrototypeResource_TestTargetResource test_result_object;
+
+    MI_Result miResult = MI_RESULT_OK;
+    MI_Boolean is_compliant = MI_FALSE;
+
+    MI_Value miValueResult;
+    memset(&miValueResult, 0, sizeof(MI_Value));
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Starting Test");
+
+    if ((in == NULL) || (in->InputResource.exists == MI_FALSE) || (in->InputResource.value == NULL))
+    {
+        miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Invalid Test argument");
+        goto Exit;
+    }
+
+    // Read the class key from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No LinuxOsConfigClassKey");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_classKey);
+
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->LinuxOsConfigClassKey.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->LinuxOsConfigClassKey.value);
+        g_classKey = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM component name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No ComponentName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_componentName);
+
+    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+        g_componentName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM reported object name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No ReportedObjectName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_reportedObjectName);
+
+    if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
+        g_reportedObjectName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("LinuxOsConfigResource.Test", context)))
+    {
+        goto Exit;
+    }
+
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        {
+            is_compliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] DesiredString value '%s' matches the current local value",
+                in->InputResource.value->DesiredString.value);
+        }
+        else
+        {
+            is_compliant = MI_FALSE;
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] DesiredString value '%s' does not match the current local value '%s'",
+                in->InputResource.value->DesiredString.value, g_reportedString);
+        }
+    }
+    else
+    {
+        is_compliant = MI_TRUE;
+        LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] No DesiredString value, assuming compliance");
+    }
+
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Construct(&test_result_object, context)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Construct failed with %d", miResult);
+        goto Exit;
+    }
+
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Set_MIReturn(&test_result_object, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Set_MIReturn failed with %d", miResult);
+        goto Exit;
+    }
+
+    LinuxOsConfigPrototypeResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
+    MI_Context_PostInstance(context, &(test_result_object.__instance));
+
+Exit:
+    if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] MI_Instance_Delete failed");
+    }
+
+    if (MI_RESULT_OK != (miResult = LinuxOsConfigPrototypeResource_TestTargetResource_Destruct(&test_result_object)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Test] TestTargetResource_Destruct failed");
+    }
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Test] Test complete with miResult %d", miResult);
+    MI_Context_PostResult(context, miResult);
+
 }
 
 void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
@@ -534,12 +691,185 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     _In_opt_ const LinuxOsConfigResource_SetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
-    MI_UNREFERENCED_PARAMETER(nameSpace);
-    MI_UNREFERENCED_PARAMETER(className);
-    MI_UNREFERENCED_PARAMETER(methodName);
-    MI_UNREFERENCED_PARAMETER(instanceName);
-    MI_UNREFERENCED_PARAMETER(in);
+    MI_UNREFERENCED_PARAMETER(resourceClass);
 
-    MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
+    MI_Result miResult = MI_RESULT_OK;
+    int mpiResult = MPI_OK;
+
+    const char payloadTemplate[] = "\"%s\"";
+    char* payloadString = NULL;
+    int payloadSize = 0;
+
+   LinuxOsConfigPrototypeResource_SetTargetResource set_result_object;
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Starting Set");
+
+    if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
+    {
+        miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Invalid argument");
+        goto Exit;
+    }
+
+    if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
+    {
+        miResult = MI_RESULT_FAILED;
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] No PrototypeClassKey");
+        goto Exit;
+    }
+
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Construct(&set_result_object, context)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Construct failed with %d", miResult);
+        goto Exit;
+    }
+
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Set_MIReturn failed with %d", miResult);
+        goto Exit;
+    }
+
+    MI_Context_PostInstance(context, &(set_result_object.__instance));
+
+    // Read the class key from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No LinuxOsConfigClassKey");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_classKey);
+
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->LinuxOsConfigClassKey.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->LinuxOsConfigClassKey.value);
+        g_classKey = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM component name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No ComponentName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_componentName);
+
+    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+        g_componentName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM desired object name from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No DesiredObjectName");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_desiredObjectName);
+
+    if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
+        g_desiredObjectName = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    // Read the MIM desired object value from the input resource values
+
+    if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No DesiredObjectValue");
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    FREE_MEMORY(g_desiredObjectValue);
+
+    if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+        g_desiredObjectValue = DuplicateString(g_defaultValue);
+        miResult = MI_RESULT_FAILED;
+        goto Exit;
+    }
+
+    if (NULL == g_mpiHandle)
+    {
+        if (!RefreshMpiClientSession())
+        {
+            miResult = MI_RESULT_FAILED;
+            mpiResult = ESRCH;
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed starting the MPI server (%d)", mpiResult);
+        }
+    }
+
+    if (g_mpiHandle)
+    {
+        payloadSize = (int)strlen(g_desiredObjectValue) + 2;
+        if (NULL != (payloadString = malloc(payloadSize + 1)))
+        {
+            memset(payloadString, 0, payloadSize + 1);
+            snprintf(payloadString, payloadSize + 1, payloadTemplate, g_desiredObjectValue);
+
+            if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog())))
+            {
+                LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes",
+                    g_desiredString, payloadSize, payloadString, payloadSize);
+            }
+            else
+            {
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d",
+                    g_desiredString, payloadSize, payloadString, payloadSize, miResult);
+            }
+
+            FREE_MEMORY(payloadString);
+        }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            mpiResult = ENOMEM;
+            LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Failed to allocate %d bytes", payloadSize);
+        }
+
+        if ((MPI_OK != mpiResult) && (0 == g_reportedMpiResult) || (0 == strcmp(g_reportedStringResult, "PASS")))
+        {
+            g_reportedMpiResult = mpiResult;
+            memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));
+            strncpy(g_reportedStringResult, "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
+        }
+    }
+
+    // Set results to report back
+    g_reportedMpiResult = 0;
+
+Exit:
+    if (MI_RESULT_OK != miResult)
+    {
+        g_reportedMpiResult = miResult;
+    }
+
+    if (MI_RESULT_OK != (miResult =LinuxOsConfigPrototypeResource_SetTargetResource_Destruct(&set_result_object)))
+    {
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigPrototypeResource.Set] SetTargetResource_Destruct failed");
+    }
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigPrototypeResource.Set] Set complete with miResult %d", miResult);
+    MI_Context_PostResult(context, miResult);
 }
 
