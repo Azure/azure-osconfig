@@ -700,7 +700,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     char* payloadString = NULL;
     int payloadSize = 0;
 
-   LinuxOsConfigResource_SetTargetResource set_result_object;
+    LinuxOsConfigResource_SetTargetResource set_result_object;
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Starting Set");
 
@@ -708,13 +708,6 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     {
         miResult = MI_RESULT_FAILED;
         LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Invalid argument");
-        goto Exit;
-    }
-
-    if ((MI_FALSE == in->InputResource.value->PrototypeClassKey.exists) && (NULL != in->InputResource.value->PrototypeClassKey.value))
-    {
-        miResult = MI_RESULT_FAILED;
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No PrototypeClassKey");
         goto Exit;
     }
 
