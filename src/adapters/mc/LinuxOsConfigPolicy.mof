@@ -1,6 +1,6 @@
 instance of LinuxOsConfigResource as $LinuxOsConfigResource0ref
 {
-    ResourceID = "[LinuxOsConfigResource]Ensure the configured policy is audited and remediated on the Linux device";
+    ResourceID = "[LinuxOsConfigResource]Ensure that the configured OSConfig policy is audited/remediated on the Linux device";
     PrototypeClassKey = "LinuxOsConfigClassKey";
     ComponentName = "";
     ReportedSettingName = "";

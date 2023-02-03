@@ -372,7 +372,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
 
     int allParametersSize = ARRAY_SIZE(allParameters);
 
-    LinuxOsConfigResource_GetTargetResource get_result_object;
+    LinuxOsConfigResource_GetTargetResource get_result_object = {0};
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Starting Get");
 
@@ -383,7 +383,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read and refresh the class key from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
     {
@@ -550,7 +550,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    LinuxOsConfigResource_TestTargetResource test_result_object;
+    LinuxOsConfigResource_TestTargetResource test_result_object = {0};
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Boolean is_compliant = MI_FALSE;
@@ -567,7 +567,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    // Read the class key from the input resource values
+    // Read and refresh the class key from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
     {
@@ -700,7 +700,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
     char* payloadString = NULL;
     int payloadSize = 0;
 
-    LinuxOsConfigResource_SetTargetResource set_result_object;
+    LinuxOsConfigResource_SetTargetResource set_result_object = {0};
 
     LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Starting Set");
 
@@ -725,7 +725,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     MI_Context_PostInstance(context, &(set_result_object.__instance));
 
-    // Read the class key from the input resource values
+    // Read and refresh the class key from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
     {
