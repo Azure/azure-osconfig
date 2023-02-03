@@ -819,16 +819,16 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
             memset(payloadString, 0, payloadSize + 1);
             snprintf(payloadString, payloadSize + 1, payloadTemplate, g_desiredObjectValue);
 
-            if (MPI_OK == (mpiResult = CallMpiSet(componentName, objectName, payloadString, payloadSize, GetLog())))
+            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
             {
                 LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes",
-                    g_desiredString, payloadSize, payloadString, payloadSize);
+                    g_desiredObjectValue, payloadSize, payloadString, payloadSize);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d",
-                    g_desiredString, payloadSize, payloadString, payloadSize, miResult);
+                    g_desiredObjectValue, payloadSize, payloadString, payloadSize, miResult);
             }
 
             FREE_MEMORY(payloadString);
@@ -840,11 +840,9 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
             LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] Failed to allocate %d bytes", payloadSize);
         }
 
-        if ((MPI_OK != mpiResult) && (0 == g_reportedMpiResult) || (0 == strcmp(g_reportedStringResult, "PASS")))
+        if (MPI_OK != mpiResult)
         {
             g_reportedMpiResult = mpiResult;
-            memset(g_reportedStringResult, 0, sizeof(g_reportedStringResult));
-            strncpy(g_reportedStringResult, "FAIL", ARRAY_SIZE(g_reportedStringResult) - 1);
         }
     }
 
