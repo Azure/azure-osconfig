@@ -1,4 +1,4 @@
-# Prototype of an OSConfig Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC) 
+# OSConfig Universal Native Resource Provider (NRP) for Azure Automanage Machine Configuration (MC) 
 
 ## 1. About Machine Configuration
 
@@ -11,11 +11,11 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
  > **Warning** 
  > Regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
-## 3. Building the prototype NRP
+## 3. Building the Universal NRP
 
-The prototype NRP binary (libOSConfig_PrototypeResource.so) is built with rest of OSConfig.
+The Universal NRP binary (libLinuxOsConfigResource.so) is built with rest of OSConfig.
 
-## 4. Validating the prototype NRP locally with PowerShell and the MC Agent
+## 4. Validating the Universal NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
 
@@ -42,21 +42,21 @@ Get-Command -Module 'GuestConfiguration'
 
 ### 4.3. Running the validation
 
-Copy the build generated artifacts ZIP package OSConfig_Proto_Policy.zip to a new folder or invoke it directly from the build location.
+Copy the build generated artifacts ZIP package LinuxOsConfigPolicy.zip to a new folder or invoke it directly from the build location.
 
 ```bash
 sudo pwsh
-Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
-Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
+Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
+Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
 ```
 To view the resource class parameters returned by the Get function:
 
 ```bash
 sudo pwsh
-$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OSConfig_Proto_Policy.zip -Verbose
+$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
 $x.resources[0].properties
 ```
-In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_gc_nrp.log`.
+In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_mc_nrp.log`.
 
 ## 5. Onboarding a device to Arc
 
@@ -66,16 +66,16 @@ In addition to the MC traces written to the the PowerShell console, you can also
 
 ## 6. Uploading the ZIP artifacts package
 
-The generated artifacts ZIP package OSConfig_Proto_Policy.zip needs to be uploaded to Azure.
+The generated artifacts ZIP package LinuxOsConfigPolicy.zip needs to be uploaded to Azure.
 
-Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OSConfig_Proto_Policy.zip.
+Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package LinuxOsConfigPolicy.zip.
 
 > **Important** 
 > After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
 
-`https://<storage account>.blob.core.windows.net/<container name>/OSConfig_Proto_Policy.zip...`
+`https://<storage account>.blob.core.windows.net/<container name>/LinuxOsConfigPolicy.zip...`
 
 Validate that the URL is correct by pasting that URL string into a Web browser and see if the ZIP package gets downloaded.
 
@@ -93,19 +93,19 @@ Customize the following commands script with the new package URL. Names in the e
 sudo pwsh
 $PolicyParameterInfo = @(
     @{
-        Name = 'HostName'                                               # Policy parameter name (mandatory)
-        DisplayName = 'Host Name.'                                      # Policy parameter display name (mandatory)
-        Description = "Host Name."                                      # Policy parameter description (optional)
-        ResourceType = "OSConfig_PrototypeResource"                     # dsc configuration resource type (mandatory)
-        ResourceId = 'Ensure the host name of the device is configured' # dsc configuration resource property name (mandatory)
-        ResourcePropertyName = "DesiredString"                          # dsc configuration resource property name (mandatory)
-        DefaultValue = 'GCPOCAZ'                                        # Policy parameter default value (optional)
+        Name = 'ComponentName'                                                                              # Policy parameter name (mandatory)
+        DisplayName = 'ComponentName'                                                                       # Policy parameter display name (mandatory)
+        Description = "Name of the MIM component"                                                           # Policy parameter description (optional)
+        ResourceType = "LinuxOsConfigResource"                                                              # dsc configuration resource type (mandatory)
+        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device' # dsc configuration resource property name (mandatory)
+        ResourcePropertyName = "ComponentName"                                                              # dsc configuration resource property name (mandatory)
+        DefaultValue = 'SecurityBaseline'                                                                   # Policy parameter default value (optional)
     }
 )
 
 New-GuestConfigurationPolicy `<insert here the SAS token URL>' `
-    -DisplayName 'Guest Configuration policy to change host name.' `
-    -Description 'Guest Configuration policy to change host name.' `
+    -DisplayName 'Machine Configuration policy to check for Linux Security Baseline.' `
+    -Description 'Machine Configuration policy to check for Linux Security Baseline.' `
     -Path .\policies\ `
     -Platform Linux `
     -Verbose -PolicyId '<GUID for this policy>' -PolicyVersion 1.0.0.0 -Parameter $PolicyParameterInfo -Mode ApplyAndAutoCorrect
@@ -123,7 +123,7 @@ Run these script commands on the Arc device in PowerShell. This will produce a J
 Next, go to Azure Portal | Policy | Definitions, select the subscription, then create a new Policy Definition and fill out:  
 
 - Definition location: select here the Azure subscription.
-- Name: enter the name for the policy (e.g. for the prototype this can be "Ensure the device host name is configured")
+- Name: enter the name for the policy
 - Description: enter here the description for the policy
 - Category: Select `Use Existing` and `Guest Configuration`
 - Policy rule: paste the contents of the JSON file containing the policy definition
@@ -135,7 +135,7 @@ Then save.
 Next, the new policy needs to be asigned. Go to Azure Portal | Policy | Definitions and asign the policy: 
 1. Select the subscription and resource group where the policy will be targeted at (to all Arc devices in that group). 
 1. Select `Include Arc connected machines` and uncheck the uncheck the `Only show parameters` box. 
-1. Enter the desired value for the policy parameter, in this case `DesiredString`, containing the desired host name for the device.
+1. Enter the desired values for the policy parameters: `ComponentName`, `ReportedObjectName`, `DesiredObjectName`, `DesiredObjectValue`, etc. 
 
 #### 7.1.4. Creating a remediation task
 
@@ -168,7 +168,7 @@ Then, keeping as-is the existing policy assignment, change the policy definition
 
 ### 7.3. Monitoring the policy activity from the device side
 
-On the device, the GC Agent will check on the policy every 15 minutes. The GC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`. 
+On the device, the MC Agent will check on the policy every 15 minutes. The MC Agent logs will record this activity. The logs are at `/var/lib/GuestConfig`. 
 
 ```bash
 sudo su
@@ -179,12 +179,12 @@ View last with:
 ```bash
 tail gc_agent.log -f
 ```
-View the full last GC Agent log with:
+View the full last MC Agent log with:
 
 ```bash
 cat gc_agent.log
 ```
-We can also copy the full GC logs to a separate folder and view them from there in full. For example:
+We can also copy the full MC logs to a separate folder and view them from there in full. For example:
 
 ```bash
 mkdir $HOME/GuestConfig
