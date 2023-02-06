@@ -87,19 +87,37 @@ Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-
 
 #### 7.1.1. Generating the policy definition
 
-Customize the following commands script with the new package URL. Names in the example below are for the NRP prototype which is configuring the host name of the device:
+Customize the following commands script with the package URL:
 
 ```bash
 sudo pwsh
 $PolicyParameterInfo = @(
     @{
-        Name = 'ComponentName'                                                                              # Policy parameter name (mandatory)
-        DisplayName = 'ComponentName'                                                                       # Policy parameter display name (mandatory)
-        Description = "Name of the MIM component"                                                           # Policy parameter description (optional)
-        ResourceType = "LinuxOsConfigResource"                                                              # dsc configuration resource type (mandatory)
-        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device' # dsc configuration resource property name (mandatory)
-        ResourcePropertyName = "ComponentName"                                                              # dsc configuration resource property name (mandatory)
-        DefaultValue = 'SecurityBaseline'                                                                   # Policy parameter default value (optional)
+        Name = 'ComponentName' 
+        DisplayName = 'ComponentName'
+        Description = "Name of the MIM component"
+        ResourceType = "LinuxOsConfigResource"
+        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
+        ResourcePropertyName = "ComponentName"
+        DefaultValue = 'SecurityBaseline'
+    },
+    {
+        Name = 'DesiredObjectName' 
+        DisplayName = 'DesiredObjectName'
+        Description = "Name of the desired MIM object"
+        ResourceType = "LinuxOsConfigResource"
+        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
+        ResourcePropertyName = "DesiredObjectName"
+        DefaultValue = 'RemediateSecurityBaseline'
+    },
+    {
+        Name = 'DesiredObjectValue' 
+        DisplayName = 'DesiredObjectValue'
+        Description = "Value of the desired MIM object"
+        ResourceType = "LinuxOsConfigResource"
+        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
+        ResourcePropertyName = "DesiredObjectValue"
+        DefaultValue = 'true'
     }
 )
 
