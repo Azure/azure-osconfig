@@ -173,6 +173,7 @@
       "title": "MIM object schema",
       "description": "A schema describing the JSON object schema of a MIM object",
       "required": [
+        "type",
         "fields"
       ],
       "properties": {
