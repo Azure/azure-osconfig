@@ -76,13 +76,13 @@ bool RefreshMpiClientSession(void)
 
         if (NULL == (g_mpiHandle = CallMpiOpen("MC OSConfig NRP", MAX_PAYLOAD_LENGTH, GetLog())))
         {
-            LogError(GetLog(), "[LinuxOsConfigResource] MpiOpen failed");
+            OsConfigLogError(GetLog(), "[LinuxOsConfigResource] MpiOpen failed");
             status = false;
         }
     }
     else
     {
-        LogError(GetLog(), "[LinuxOsConfigResource] MPI server could not be started");
+        OsConfigLogError(GetLog(), "[LinuxOsConfigResource] MPI server could not be started");
     }
 
     return status;
@@ -100,12 +100,12 @@ void __attribute__((constructor)) Initialize()
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_defaultValue);
 
-    LogInfo(GetLog(), "[LinuxOsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[LinuxOsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
 
 void __attribute__((destructor)) Destroy()
 {
-    LogInfo(GetLog(), "[LinuxOsConfigResource] Terminated (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[LinuxOsConfigResource] Terminated (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
     
     if (NULL != g_mpiHandle)
     {
