@@ -5,6 +5,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource0ref
     ComponentName = "HostName";
     DesiredObjectName = "desiredName";
     DesiredSettingValue = "TEST123";
+    ReportedObjectName = "name";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxOsConfig";

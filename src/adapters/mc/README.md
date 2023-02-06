@@ -118,6 +118,15 @@ $PolicyParameterInfo = @(
         ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
         ResourcePropertyName = "DesiredObjectValue"
         DefaultValue = 'true'
+    },
+    {
+        Name = 'ReportedObjectName' 
+        DisplayName = 'ReportedObjectName'
+        Description = "Value of the reported MIM object"
+        ResourceType = "LinuxOsConfigResource"
+        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
+        ResourcePropertyName = "ReportedObjectName"
+        DefaultValue = 'AuditSecurityBaseline'
     }
 )
 
