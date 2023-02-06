@@ -11,6 +11,7 @@
           "type": "mimObject",
           "desired": false,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "requestId",
@@ -43,6 +44,7 @@
           "type": "mimObject",
           "desired": false,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "requestId",
@@ -54,7 +56,7 @@
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
-                    { 
+                    {
                       "name": "unknown",
                       "enumValue": 0
                     },

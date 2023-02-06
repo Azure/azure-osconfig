@@ -11,6 +11,7 @@
           "type": "mimObject",
           "desired": true,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "percentageDownloadThrottle",
