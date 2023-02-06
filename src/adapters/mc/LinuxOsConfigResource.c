@@ -39,6 +39,7 @@
     LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
+static const char* g_mpiClientName = "OSConfig Universal NRP for MC";
 static const char* g_defaultValue = "<default>";
 
 // Desired (write; also reported together with read group)
@@ -74,7 +75,7 @@ bool RefreshMpiClientSession(void)
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen("MC OSConfig NRP", MAX_PAYLOAD_LENGTH, GetLog())))
+        if (NULL == (g_mpiHandle = CallMpiOpen(g_mpiClientName, MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "[LinuxOsConfigResource] MpiOpen failed");
             status = false;
