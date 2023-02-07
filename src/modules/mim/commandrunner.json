@@ -11,6 +11,7 @@
           "type": "mimObject",
           "desired": false,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "commandId",
@@ -30,7 +31,7 @@
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
-                    { 
+                    {
                       "name": "unknown",
                       "enumValue": 0
                     },
@@ -65,6 +66,7 @@
           "type": "mimObject",
           "desired": true,
           "schema": {
+            "type": "object",
             "fields": [
               {
                 "name": "commandId",
@@ -88,7 +90,7 @@
                   "type": "enum",
                   "valueSchema": "integer",
                   "enumValues": [
-                    { 
+                    {
                       "name": "none",
                       "enumValue": 0
                     },
