@@ -95,44 +95,45 @@ $PolicyParameterInfo = @(
     @{
         Name = 'ComponentName' 
         DisplayName = 'ComponentName'
-        Description = "Name of the MIM component"
-        ResourceType = "LinuxOsConfigResource"
-        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
-        ResourcePropertyName = "ComponentName"
+        Description = 'Name of the MIM component'
+        ResourceType = 'LinuxOsConfigResource'
+        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device.'
+        ResourcePropertyName = 'ComponentName'
         DefaultValue = 'SecurityBaseline'
     },
-    {
+    @{
         Name = 'DesiredObjectName' 
         DisplayName = 'DesiredObjectName'
-        Description = "Name of the desired MIM object"
-        ResourceType = "LinuxOsConfigResource"
-        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
-        ResourcePropertyName = "DesiredObjectName"
+        Description = 'Name of the desired MIM object'
+        ResourceType = 'LinuxOsConfigResource'
+        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device.'
+        ResourcePropertyName = 'DesiredObjectName'
         DefaultValue = 'RemediateSecurityBaseline'
     },
-    {
+    @{
         Name = 'DesiredObjectValue' 
         DisplayName = 'DesiredObjectValue'
-        Description = "Value of the desired MIM object"
-        ResourceType = "LinuxOsConfigResource"
-        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
-        ResourcePropertyName = "DesiredObjectValue"
+        Description = 'Value of the desired MIM object'
+        ResourceType = 'LinuxOsConfigResource'
+        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device.'
+        ResourcePropertyName = 'DesiredObjectValue'
         DefaultValue = 'true'
     },
-    {
+    @{
         Name = 'ReportedObjectName' 
         DisplayName = 'ReportedObjectName'
-        Description = "Value of the reported MIM object"
-        ResourceType = "LinuxOsConfigResource"
-        ResourceId = 'Ensure that the configured OSConfig policy is audited/remediated on the Linux device'
-        ResourcePropertyName = "ReportedObjectName"
+        Description = 'Value of the reported MIM object'
+        ResourceType = 'LinuxOsConfigResource'
+        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device.'
+        ResourcePropertyName = 'ReportedObjectName'
         DefaultValue = 'AuditSecurityBaseline'
     }
 )
 
-New-GuestConfigurationPolicy `<insert here the SAS token URL>' `
-    -DisplayName 'Machine Configuration policy to check for Linux Security Baseline.' `
-    -Description 'Machine Configuration policy to check for Linux Security Baseline.' `
+New-GuestConfigurationPolicy `
+    -ContentUri `<insert here the SAS token URL>' `
+    -DisplayName 'Ensure that the configured OSConfig policy is applied on the Linux device.' `
+    -Description 'Ensure that the configured OSConfig policy is applied on the Linux device.' `
     -Path .\policies\ `
     -Platform Linux `
     -Verbose -PolicyId '<GUID for this policy>' -PolicyVersion 1.0.0.0 -Parameter $PolicyParameterInfo -Mode ApplyAndAutoCorrect
