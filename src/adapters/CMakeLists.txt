@@ -2,4 +2,4 @@
 # Licensed under the MIT License.
 
 add_subdirectory(pnp)
-add_subdirectory(gc)
+add_subdirectory(mc)

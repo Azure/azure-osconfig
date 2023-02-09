@@ -24,7 +24,6 @@
 #include "MI.h"
 #include "MSFT_Credential.h"
 #include "OMI_BaseResource.h"
-#include "ObjectResult.h"
-#include "OSConfig_PrototypeResource.h"
+#include "LinuxOsConfigResource.h"
 
 #endif

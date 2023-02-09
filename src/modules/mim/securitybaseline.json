@@ -1,0 +1,72 @@
+{
+  "name": "SecurityBaselineModel",
+  "type": "mimModel",
+  "contents": [
+    {
+      "name": "SecurityBaseline",
+      "type": "mimComponent",
+      "contents": [
+        {
+          "name": "RemediateSecurityBaseline",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "AuditSecurityBaseline",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "RemediateEnsurePermissionsOnEtcIssue",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "AuditEnsurePermissionsOnEtcIssue",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "RemediateEnsurePermissionsOnEtcIssueNet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "AuditEnsurePermissionsOnEtcIssueNet",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "RemediateEnsurePermissionsOnEtcHostsAllow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "AuditEnsurePermissionsOnEtcHostsAllow",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "RemediateEnsurePermissionsOnEtcHostsDeny",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "AuditEnsurePermissionsOnEtcHostsDeny",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        }
+      ]
+    }
+  ]
+}
