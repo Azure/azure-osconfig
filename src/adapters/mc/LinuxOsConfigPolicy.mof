@@ -2,10 +2,10 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource0ref
 {
     ResourceID = "[LinuxOsConfigResource]Ensure that the configured OSConfig policy is applied on the Linux device";
     LinuxOsConfigClassKey = "LinuxOsConfigClassKey";
-    ComponentName = "HostName";
-    DesiredObjectName = "desiredName";
-    DesiredObjectValue = "TEST123";
-    ReportedObjectName = "name";
+    ComponentName = "";
+    DesiredObjectName = "";
+    DesiredObjectValue = "";
+    ReportedObjectName = "";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "LinuxOsConfig";
