@@ -62,7 +62,25 @@ In addition to the MC traces written to the the PowerShell console, you can also
 
 1. Go to Azure Portal | Azure Arc | Add your infrastructure for free | Add your existing server | Generate script. 
 2. Specify the desired Azure subscription, resource group and OS (Linux) for the device. 
-3. Copy and run the generated instructions in the local shell on the device to be onboarded.
+3. Copy and run the generated instructions in the local shell on the device to be onboarded:
+
+```bash
+export subscriptionId="...";
+export resourceGroup="...";
+export tenantId="...";
+export location="...";
+export authType="...";
+export correlationId="...";
+export cloud="AzureCloud";
+
+output=$(wget https://aka.ms/azcmagent -O ~/install_linux_azcmagent.sh 2>&1);
+if [ $? != 0 ]; then wget -qO- --method=PUT --body-data="{\"subscriptionId\":\"$subscriptionId\",\"resourceGroup\":\"$resourceGroup\",\"tenantId\":\"$tenantId\",\"location\":\"$location\",\"correlationId\":\"$correlationId\",\"authType\":\"$authType\",\"messageType\":\"DownloadScriptFailed\",\"message\":\"$output\"}" "https://gbl.his.arc.azure.com/log" &> /dev/null || true; fi;
+echo "$output";
+
+bash ~/install_linux_azcmagent.sh;
+
+sudo azcmagent connect --resource-group "$resourceGroup" --tenant-id "$tenantId" --location "$location" --subscription-id "$subscriptionId" --cloud "$cloud" --correlation-id "$correlationId";
+```
 
 ## 6. Uploading the ZIP artifacts package
 
@@ -218,6 +236,13 @@ We can also copy the full MC logs to a separate folder and view them from there 
 mkdir $HOME/GuestConfig
 sudo cp /var/lib/GuestConfig $HOME -r
 ```
+
+View the current status of the MC Agent via the the Azure Arc-enabled Servers Agent with:
+
+```bash
+sudo azcmagent show
+```
+
 ## 8. Registering the Arc device with a different name
 
 Disconnect the device from Azure and restart:
