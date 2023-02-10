@@ -95,6 +95,77 @@ void SecurityBaselineShutdown(void)
     CloseLog(&g_log);
 }
 
+static int AuditEnsurePermissionsOnFile(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t expectedFileMode)
+{
+    struct statStruct = {0};
+    int result = ENOENT;
+
+    if (fileName && FileExists(fileName))
+    {
+        if (0 == (result = stat(fileName, &statStruct)))
+        {
+            if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid) && (expectedFileMode == statStruct.st_mode))
+            {
+                result = 0;
+            }
+        }
+    }
+
+    return result;
+}
+
+static int AuditEnsurePermissionsOnEtcIssue(void)
+{
+    return AuditEnsurePermissionsOnFile("/etc/issue", 0, 0, 644);
+};
+
+static int AuditEnsurePermissionsOnEtcIssueNet(void)
+{
+    return AuditEnsurePermissionsOnFile("/etc/issue.net", 0, 0, 644);
+};
+
+static int AuditEnsurePermissionsOnEtcHostsAllow(void)
+{
+    return AuditEnsurePermissionsOnFile("/etc/hosts.allow", 0, 0, 644);
+};
+
+static int AuditEnsurePermissionsOnEtcHostsDeny(void)
+{
+    return AuditEnsurePermissionsOnFile("/etc/hosts.deny", 0, 0, 644);
+};
+
+int AuditSecurityBaseline(void)
+{
+    return ((0 == AuditEnsurePermissionsOnEtcIssue()) && (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
+        (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && (0 == AuditEnsurePermissionsOnEtcHostsDeny())) ? 0 : ENOENT;
+}
+
+int RemediateEnsurePermissionsOnEtcIssue(void)
+{
+
+};
+
+int RemediateEnsurePermissionsOnEtcIssueNet(void)
+{
+
+};
+
+int RemediateEnsurePermissionsOnEtcHostsAllow(void)
+{
+
+}
+
+int RemediateEnsurePermissionsOnEtcHostsDeny(void)
+{
+
+};
+
+int RemediateSecurityBaseline(void)
+{
+
+};
+
+
 static int UpdateSecurityBaselineFile(void)
 {
     const char* commandLoggingEnabledName = "CommandLogging";
