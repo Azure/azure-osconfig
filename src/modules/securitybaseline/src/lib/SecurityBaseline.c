@@ -381,7 +381,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
 
-    FREE_MEMORY(securityBaseline);
     FREE_MEMORY(buffer);
 
     return status;
@@ -389,8 +388,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
 int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    JSON_Value* jsonValue = NULL;
-    const char* jsonString = NULL;
     char* payloadString = NULL;
 
     int status = MMI_OK;
