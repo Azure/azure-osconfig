@@ -285,7 +285,7 @@ TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }
 
-TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
+TEST_F(SecurityBaselineTest, SetAndCheckFileAccess)
 {
     for (int i = 0; i < 7777; i++)
     {
