@@ -94,31 +94,27 @@ void SecurityBaselineShutdown(void)
 
 static mode_t GetFileAccessFlags(mode_t mode)
 {
-    /*
-    S_IFMT     0170000   bitmask for the file type bitfields
-    S_IFSOCK   0140000   socket
-    S_IFLNK    0120000   symbolic link
-    S_IFREG    0100000   regular file
-    S_IFBLK    0060000   block device
-    S_IFDIR    0040000   directory
-    S_IFCHR    0020000   character device
-    S_IFIFO    0010000   FIFO
-    S_ISUID    0004000   set UID bit
-    S_ISGID    0002000   set - group - ID bit(see below)
-    S_ISVTX    0001000   sticky bit(see below)
-    S_IRWXU    00700     mask for file owner permissions
-    S_IRUSR    00400     owner has read permission
-    S_IWUSR    00200     owner has write permission
-    S_IXUSR    00100     owner has execute permission
-    S_IRWXG    00070     mask for group permissions
-    S_IRGRP    00040     group has read permission
-    S_IWGRP    00020     group has write permission
-    S_IXGRP    00010     group has execute permission
-    S_IRWXO    00007     mask for permissions for others(not in group)
-    S_IROTH    00004     others have read permission
-    S_IWOTH    00002     others have write permission
-    S_IXOTH    00001     others have execute permission
-    */
+    // From: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
+    // ------------------------------------------------------------
+    // Name       Value    Description
+    // ------------------------------------------------------------
+    // S_IRWXU    0700     Read, write, execute/search by owner.
+    // S_IRUSR    0400     Read permission, owner.
+    // S_IWUSR    0200     Write permission, owner.
+    // S_IXUSR    0100     Execute/search permission, owner.
+    // S_IRWXG     070     Read, write, execute/search by group.
+    // S_IRGRP     040     Read permission, group.
+    // S_IWGRP     020     Write permission, group.
+    // S_IXGRP     010     Execute/search permission, group.
+    // S_IRWXO      07     Read, write, execute/search by others.
+    // S_IROTH      04     Read permission, others.
+    // S_IWOTH      02     Write permission, others.
+    // S_IXOTH      01     Execute/search permission, others.
+    // S_ISUID   04000     Set-user-ID on execution.
+    // S_ISGID   02000     Set-group-ID on execution.
+    // S_ISVTX   01000     On directories, restricted deletion flag.
+    //------------------------------------------------------------
+
     mode_t flags = 0;
 
     if (mode & S_IRWXU)
@@ -181,6 +177,21 @@ static mode_t GetFileAccessFlags(mode_t mode)
         flags |= S_IXOTH;
     }
 
+    if (mode & S_ISUID)
+    {
+        flags |= S_ISUID;
+    }
+
+    if (mode & S_ISGID)
+    {
+        flags |= S_ISGID;
+    }
+
+    if (mode & S_ISVTX)
+    {
+        flags |= S_ISVTX;
+    }
+
     return flags;
 }
 
@@ -202,9 +213,9 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
 
                 OsConfigLogInfo(SecurityBaselineGetLog(), "### %s current %d, desired %d", fileName, currentMode, desiredMode);
 
-                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (currentMode & S_IRWXU))) &&
-                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (currentMode & S_IRWXG))) &&
-                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (currentMode & S_IRWXO))))
+                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
+                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
+                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
                     OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
                         fileName, statStruct.st_uid, statStruct.st_gid, currentMode, expectedUserId, expectedGroupId, maxPermissions);
