@@ -104,12 +104,50 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
         {
             if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid))
             {
-                // Used as masks to compare actual versus expected access values considering smaller value means less access:
-                // S_IRWXU (00700) owner has read, write, and execute permission
-                // S_IRWXG (00070) group has read, write, and execute permission
-                // S_IRWXO (00007) others (not in group) have read, write, and execute permission
-                // stat.mode contains both file type and access permissions, we'll extract the later via S_IR masks:
-                currentMode = statStruct.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
+                if (statStruct.st_mode & S_IRUSR)
+                {
+                    currentMode |= S_IRUSR;
+                }
+
+                if (statStruct.st_mode & S_IWUSR)
+                {
+                    currentMode |= S_IWUSR;
+                }
+
+                if (statStruct.st_mode & S_IXUSR)
+                {
+                    currentMode |= S_IXUSR;
+                }
+
+                if (statStruct.st_mode & S_IRGRP)
+                {
+                    currentMode |= S_IRGRP;
+                }
+
+                if (statStruct.st_mode & S_IWGRP)
+                {
+                    currentMode |= S_IWGRP;
+                }
+
+                if (statStruct.st_mode & S_IXGRP)
+                {
+                    currentMode |= S_IXGRP;
+                }
+
+                if (statStruct.st_mode & S_IROTH)
+                {
+                    currentMode |= S_IROTH;
+                }
+
+                if (statStruct.st_mode & S_IWOTH)
+                {
+                    currentMode |= S_IWOTH;
+                }
+
+                if (statStruct.st_mode & S_IXOTH)
+                {
+                    currentMode |= S_IXOTH;
+                }
 
                 OsConfigLogInfo(SecurityBaselineGetLog(), "### %s actual %d, desired %d)", fileName, currentMode, maxPermissions);
 
