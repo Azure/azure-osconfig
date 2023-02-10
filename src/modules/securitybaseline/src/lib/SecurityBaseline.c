@@ -110,18 +110,17 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                 // stat.mode contains both file type and access permissions, we'll extract the later:
                 currentMode = statStruct.st_mode & 777;
 
-                if (((maxPermissions & S_IRWXU) >= (statStruct.st_mode & S_IRWXU)) && 
-                    ((maxPermissions & S_IRWXG) >= (statStruct.st_mode & S_IRWXG)) && 
-                    ((maxPermissions & S_IRWXO) >= (statStruct.st_mode & S_IRWXO)))
+                if (((maxPermissions & S_IRWXU) >= (currentMode & S_IRWXU)) &&
+                    ((maxPermissions & S_IRWXG) >= (currentMode & S_IRWXG)) &&
+                    ((maxPermissions & S_IRWXO) >= (currentMode & S_IRWXO)))
                 {
                     OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
-                        fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, expectedUserId, expectedGroupId, maxPermissions);
+                        fileName, statStruct.st_uid, statStruct.st_gid, currentMode, expectedUserId, expectedGroupId, maxPermissions);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d) versus expected (%d)", 
-                        fileName, statStruct.st_mode, maxPermissions);
+                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d) versus expected (%d)", fileName, currentMode, maxPermissions);
                 }
             }
             else
