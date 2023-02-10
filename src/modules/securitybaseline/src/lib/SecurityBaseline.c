@@ -107,8 +107,10 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                 // S_IRWXU (00700) owner has read, write, and execute permission
                 // S_IRWXG (00070) group has read, write, and execute permission
                 // S_IRWXO (00007) others (not in group) have read, write, and execute permission
-                // stat.mode contains both file type and access permissions, we'll extract the later:
-                currentMode = statStruct.st_mode & 777;
+                // stat.mode contains both file type and access permissions, we'll extract the later via S_IR masks:
+                currentMode = statStruct.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
+
+                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s actual %d, desired %d)", fileName, currentMode, maxPermissions);
 
                 if (((maxPermissions & S_IRWXU) >= (currentMode & S_IRWXU)) &&
                     ((maxPermissions & S_IRWXG) >= (currentMode & S_IRWXG)) &&
