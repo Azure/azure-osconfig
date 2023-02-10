@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <stdatomic.h>
+#include <sys/stat.h>
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
@@ -42,9 +43,6 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
 
-static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
-static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
-
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
 static char* g_auditSecurityBaseline = NULL;
@@ -78,8 +76,6 @@ void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
 
-    FREE_MEMORY(g_gitBranch);
-
     FREE_MEMORY(g_auditSecurityBaseline);
     FREE_MEMORY(g_auditEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_auditEnsurePermissionsOnEtcIssueNet);
@@ -97,8 +93,7 @@ void SecurityBaselineShutdown(void)
 
 static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
 {
-    struct statStruct = {0};
-    char fileMode[10] = {0};
+    struct stat statStruct = {0};
     int result = ENOENT;
 
     if (fileName && FileExists(fileName))
