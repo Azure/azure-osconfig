@@ -121,62 +121,68 @@ static mode_t GetFileAccessFlags(mode_t mode)
     {
         flags |= S_IRWXU;
     }
+    else
+    {
+        if (mode & S_IRUSR)
+        {
+            flags |= S_IRUSR;
+        }
+
+        if (mode & S_IWUSR)
+        {
+            flags |= S_IWUSR;
+        }
+
+        if (mode & S_IXUSR)
+        {
+            flags |= S_IXUSR;
+        }
+    }
     
     if (mode & S_IRWXG)
     {
         flags |= S_IRWXG;
+    }
+    else
+    {
+        if (mode & S_IRGRP)
+        {
+            flags |= S_IRGRP;
+        }
+
+        if (mode & S_IWGRP)
+        {
+            flags |= S_IWGRP;
+        }
+
+        if (mode & S_IXGRP)
+        {
+            flags |= S_IXGRP;
+        }
     }
     
     if (mode & S_IRWXO)
     {
         flags |= S_IRWXO;
     }
+    else
+    {
+        if (mode & S_IROTH)
+        {
+            flags |= S_IROTH;
+        }
+
+        if (mode & S_IWOTH)
+        {
+            flags |= S_IWOTH;
+        }
+
+        if (mode & S_IXOTH)
+        {
+            flags |= S_IXOTH;
+        }
+    }
     
-    if (mode & S_IRUSR)
-    {
-        flags |= S_IRUSR;
-    }
-
-    if (mode & S_IWUSR)
-    {
-        flags |= S_IWUSR;
-    }
-
-    if (mode & S_IXUSR)
-    {
-        flags |= S_IXUSR;
-    }
-
-    if (mode & S_IRGRP)
-    {
-        flags |= S_IRGRP;
-    }
-
-    if (mode & S_IWGRP)
-    {
-        flags |= S_IWGRP;
-    }
-
-    if (mode & S_IXGRP)
-    {
-        flags |= S_IXGRP;
-    }
-
-    if (mode & S_IROTH)
-    {
-        flags |= S_IROTH;
-    }
-
-    if (mode & S_IWOTH)
-    {
-        flags |= S_IWOTH;
-    }
-
-    if (mode & S_IXOTH)
-    {
-        flags |= S_IXOTH;
-    }
-
     if (mode & S_ISUID)
     {
         flags |= S_ISUID;
@@ -195,7 +201,7 @@ static mode_t GetFileAccessFlags(mode_t mode)
     return flags;
 }
 
-static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
+static int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0; 
@@ -206,30 +212,31 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
     {
         if (0 == (result = stat(fileName, &statStruct)))
         {
-            if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid))
+            if ((desiredUserId == statStruct.st_uid) && (desiredGroupId == statStruct.st_gid))
             {
                 currentMode = GetFileAccessFlags(statStruct.st_mode);
-                desiredMode = GetFileAccessFlags(maxPermissions);
-
-                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s current %d, desired %d", fileName, currentMode, desiredMode);
+                desiredMode = GetFileAccessFlags(desiredFileAccess);
 
                 if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
                     (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
                     (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
-                        fileName, statStruct.st_uid, statStruct.st_gid, currentMode, expectedUserId, expectedGroupId, maxPermissions);
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)", 
+                        fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode, 
+                        desiredUserId, desiredGroupId, desiredFileAccess, desiredMode);
+                    
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d) versus expected (%d)", fileName, currentMode, maxPermissions);
+                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d-%d) versus expected (%d-%d)", 
+                        fileName, statStruct.st_mode, currentMode, desiredFileAccess, desiredMode);
                 }
             }
             else
             {
                 OsConfigLogError(SecurityBaselineGetLog(), "No matching ownership for %s (user: %d, group: %d) versus expected (user: %d, group: %d)", 
-                    fileName, statStruct.st_uid, statStruct.st_gid, expectedUserId, expectedGroupId);
+                    fileName, statStruct.st_uid, statStruct.st_gid, desiredUserId, desiredGroupId);
             }
         }
         else
@@ -245,37 +252,37 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
     return result;
 }
 
-static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
+static int SetFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
 {
     int result = ENOENT;
 
     if (fileName && FileExists(fileName))
     {
-        if (0 == (result = CheckFileAccess(fileName, expectedUserId, expectedGroupId, maxPermissions)))
+        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess)))
         {
             OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access %d) already set",
-                fileName, expectedUserId, expectedGroupId, maxPermissions);
+                fileName, desiredUserId, desiredGroupId, desiredFileAccess);
             result = 0;
         }
         else
         {
-            if (0 == (result = chown(fileName, expectedUserId, expectedGroupId)))
+            if (0 == (result = chown(fileName, desiredUserId, desiredGroupId)))
             {
-                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d", fileName, expectedUserId, expectedGroupId);
+                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d", fileName, desiredUserId, desiredGroupId);
 
-                if (0 == (result = chmod(fileName, maxPermissions)))
+                if (0 == (result = chmod(fileName, desiredFileAccess)))
                 {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s access to %d", fileName, maxPermissions);
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s access to %d", fileName, desiredFileAccess);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, maxPermissions, errno);
+                    OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, desiredFileAccess, errno);
                 }
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "chown(%s, %d, %d) failed with %d", fileName, expectedUserId, expectedGroupId, errno);
+                OsConfigLogError(SecurityBaselineGetLog(), "chown(%s, %d, %d) failed with %d", fileName, desiredUserId, desiredGroupId, errno);
             }
 
         }
