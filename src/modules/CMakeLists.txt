@@ -54,6 +54,7 @@ add_module(firewall)
 add_module(hostname)
 add_module(networking)
 add_module(pmc)
+add_module(securitybaseline)
 add_module(tpm)
 add_module(ztsi)
 

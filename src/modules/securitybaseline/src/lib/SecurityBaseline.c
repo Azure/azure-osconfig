@@ -29,8 +29,8 @@ static const char* g_remediateEnsurePermissionsOnEtcHostsDenyObject = "Remediate
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
 
-static const char* g_compliant = "Compliant";
-static const char* g_incompliant = "Incompliant";
+static const char* g_pass = "PASS";
+static const char* g_fail = "FAIL";
 
 static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline\","
     "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
@@ -95,20 +95,84 @@ void SecurityBaselineShutdown(void)
     CloseLog(&g_log);
 }
 
-static int AuditEnsurePermissionsOnFile(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t expectedFileMode)
+static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
 {
     struct statStruct = {0};
+    char fileMode[10] = {0};
     int result = ENOENT;
 
     if (fileName && FileExists(fileName))
     {
         if (0 == (result = stat(fileName, &statStruct)))
         {
-            if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid) && (expectedFileMode == statStruct.st_mode))
+            if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid))
             {
-                result = 0;
+                // Used as masks to compare actual versus expected access values considering smaller value means less access:
+                // S_IRWXU (00700) owner has read, write, and execute permission
+                // S_IRWXG (00070) group has read, write, and execute permission
+                // S_IRWXO (00007) others (not in group) have read, write, and execute permission
+                if (((maxPermissions & S_IRWXU) >= (statStruct.st_mode & S_IRWXU)) && 
+                    ((maxPermissions & S_IRWXG) >= (statStruct.st_mode & S_IRWXG)) && 
+                    ((maxPermissions & S_IRWXO) >= (statStruct.st_mode & S_IRWXO)))
+                {
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, 0x%X) matches expected (%d, %d, 0x%X)", 
+                        fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, expectedUserId, expectedGroupId, maxPermissions);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for file %s (0x%X) versus expected (0x%X)", 
+                        fileName, statStruct.st_mode, maxPermissions);
+                }
+            }
+            else
+            {
+                OsConfigLogError(SecurityBaselineGetLog(), "No matching ownership for file %s (user: %d, group: %d) versus expected (user: %d, group: %d)", 
+                    fileName, statStruct.st_uid, statStruct.st_gid, expectedUserId, expectedGroupId);
             }
         }
+        else
+        {
+            OsConfigLogError(SecurityBaselineGetLog(), "stat(%s) failed with %d", fileName, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "CheckFileAccess called with an invalid file name argument (%s)", fileName);
+    }
+
+    return result;
+}
+
+static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
+{
+    int result = ENOENT;
+
+    if (fileName && FileExists(fileName))
+    {
+        if (0 != (result = CheckFileAccess(fileName, expectedUserId, expectedGroupId, maxPermissions)))
+        {
+            if (0 == (result = chmod(fileName, maxPermissions)))
+            {
+                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set file ownership to user %d, group %d with access 0x%X", 
+                    fileName, expectedUserId, expectedGroupId, maxPermissions);
+                result = 0;
+            }
+            else
+            {
+                OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, 0x%X) failed with %d", fileName, maxPermissions, errno);
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired file ownership (user %d, group %d with access 0x%X) already set",
+                fileName, expectedUserId, expectedGroupId, maxPermissions);
+            result = 0;
+        }
+    }
+    else
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "SetFileAccess called with an invalid file name argument (%s)", fileName);
     }
 
     return result;
@@ -116,22 +180,22 @@ static int AuditEnsurePermissionsOnFile(const char* fileName, uid_t expectedUser
 
 static int AuditEnsurePermissionsOnEtcIssue(void)
 {
-    return AuditEnsurePermissionsOnFile("/etc/issue", 0, 0, 644);
+    return CheckFileAccess("/etc/issue", 0, 0, 644);
 };
 
 static int AuditEnsurePermissionsOnEtcIssueNet(void)
 {
-    return AuditEnsurePermissionsOnFile("/etc/issue.net", 0, 0, 644);
+    return CheckFileAccess("/etc/issue.net", 0, 0, 644);
 };
 
 static int AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return AuditEnsurePermissionsOnFile("/etc/hosts.allow", 0, 0, 644);
+    return CheckFileAccess("/etc/hosts.allow", 0, 0, 644);
 };
 
 static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return AuditEnsurePermissionsOnFile("/etc/hosts.deny", 0, 0, 644);
+    return CheckFileAccess("/etc/hosts.deny", 0, 0, 644);
 };
 
 int AuditSecurityBaseline(void)
@@ -140,198 +204,30 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && (0 == AuditEnsurePermissionsOnEtcHostsDeny())) ? 0 : ENOENT;
 }
 
-int RemediateEnsurePermissionsOnEtcIssue(void)
+static int RemediateEnsurePermissionsOnEtcIssue(void)
 {
-
+    return SetFileAccess("/etc/issue", 0, 0, 644);
 };
 
-int RemediateEnsurePermissionsOnEtcIssueNet(void)
+static int RemediateEnsurePermissionsOnEtcIssueNet(void)
 {
-
+    return SetFileAccess("/etc/issue.net", 0, 0, 644);
 };
 
-int RemediateEnsurePermissionsOnEtcHostsAllow(void)
+static int RemediateEnsurePermissionsOnEtcHostsAllow(void)
 {
+    return SetFileAccess("/etc/hosts.allow", 0, 0, 644);
+};
 
-}
-
-int RemediateEnsurePermissionsOnEtcHostsDeny(void)
+static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 {
-
+    return SetFileAccess("/etc/hosts.deny", 0, 0, 644);
 };
 
 int RemediateSecurityBaseline(void)
 {
-
-};
-
-
-static int UpdateSecurityBaselineFile(void)
-{
-    const char* commandLoggingEnabledName = "CommandLogging";
-    const char* fullLoggingEnabledName = "FullLogging";
-    const char* localManagementEnabledName = "LocalManagement";
-    const char* modelVersionName = "ModelVersion";
-    const char* iotHubProtocolName = "IotHubProtocol";
-    const char* refreshIntervalName = "ReportingIntervalSeconds";
-    const char* gitManagementEnabledName = "GitManagement";
-    const char* gitBranchName = "GitBranch";
-    
-    int status = MMI_OK;
-
-    JSON_Value* jsonValue = NULL;
-    JSON_Object* jsonObject = NULL;
-
-    int modelVersion = g_modelVersion;
-    int refreshInterval = g_refreshInterval;
-    bool localManagementEnabled = g_localManagementEnabled;
-    bool fullLoggingEnabled = g_fullLoggingEnabled;
-    bool commandLoggingEnabled = g_commandLoggingEnabled;
-    int iotHubProtocol = g_iotHubProtocol;
-    bool gitManagementEnabled = g_gitManagementEnabled;
-    char* gitBranch = DuplicateString(g_gitBranch);
-
-    char* existingSecurityBaseline = LoadSecurityBaselineFromFile(g_securityBaselineFile);
-    char* newSecurityBaseline = NULL;
-
-    if (!existingSecurityBaseline)
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "No securityBaseline file, cannot update securityBaseline");
-        return ENOENT;
-    }
-
-    if ((modelVersion != g_modelVersion) || (refreshInterval != g_refreshInterval) || (localManagementEnabled != g_localManagementEnabled) || 
-        (fullLoggingEnabled != g_fullLoggingEnabled) || (commandLoggingEnabled != g_commandLoggingEnabled) || (iotHubProtocol != g_iotHubProtocol) ||
-        (gitManagementEnabled != g_gitManagementEnabled) || strcmp(gitBranch, g_gitBranch))
-    {
-        if (NULL == (jsonValue = json_parse_string(existingSecurityBaseline)))
-        {
-            OsConfigLogError(SecurityBaselineGetLog(), "json_parse_string(%s) failed, UpdateSecurityBaselineFile failed", existingSecurityBaseline);
-            status = EINVAL;
-        }
-        else if (NULL == (jsonObject = json_value_get_object(jsonValue)))
-        {
-            OsConfigLogError(SecurityBaselineGetLog(), "json_value_get_object(%s) failed, UpdateSecurityBaselineFile failed", existingSecurityBaseline);
-            status = EINVAL;
-        }
-
-        if (MMI_OK == status)
-        {
-            if (JSONSuccess == json_object_set_number(jsonObject, modelVersionName, (double)modelVersion))
-            {
-                g_modelVersion = modelVersion;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_number(%s, %d) failed", g_modelVersionObject, modelVersion);
-            }
-            
-            if (JSONSuccess == json_object_set_number(jsonObject, refreshIntervalName, (double)refreshInterval))
-            {
-                g_refreshInterval = refreshInterval;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_number(%s, %d) failed", g_refreshIntervalObject, refreshInterval);
-            }
-            
-            if (JSONSuccess == json_object_set_number(jsonObject, localManagementEnabledName, (double)(localManagementEnabled ? 1 : 0)))
-            {
-                g_localManagementEnabled = localManagementEnabled;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_boolean(%s, %s) failed", g_localManagementEnabledObject, localManagementEnabled ? "true" : "false");
-            }
-            
-            if (JSONSuccess == json_object_set_number(jsonObject, fullLoggingEnabledName, (double)(fullLoggingEnabled ? 1: 0)))
-            {
-                g_fullLoggingEnabled = fullLoggingEnabled;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_boolean(%s, %s) failed", g_fullLoggingEnabledObject, fullLoggingEnabled ? "true" : "false");
-            }
-
-            if (JSONSuccess == json_object_set_number(jsonObject, commandLoggingEnabledName, (double)(commandLoggingEnabled ? 1 : 0)))
-            {
-                g_commandLoggingEnabled = commandLoggingEnabled;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_boolean(%s, %s) failed", g_commandLoggingEnabledObject, commandLoggingEnabled ? "true" : "false");
-            }
-            
-            if (JSONSuccess == json_object_set_number(jsonObject, iotHubProtocolName, (double)iotHubProtocol))
-            {
-                g_iotHubProtocol = iotHubProtocol;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_number(%s, %d) failed", g_iotHubProtocolObject, iotHubProtocol);
-            }
-
-            if (JSONSuccess == json_object_set_number(jsonObject, gitManagementEnabledName, (double)(gitManagementEnabled ? 1 : 0)))
-            {
-                g_gitManagementEnabled = gitManagementEnabled;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_boolean(%s, %s) failed", g_gitManagementEnabledObject, gitManagementEnabled ? "true" : "false");
-            }
-
-            if (JSONSuccess == json_object_set_string(jsonObject, gitBranchName, gitBranch))
-            {
-                FREE_MEMORY(g_gitBranch);
-                g_gitBranch = DuplicateString(gitBranch);
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_object_set_string(%s, %s) failed", g_gitBranchObject, gitBranch);
-            }
-        }
-
-        if (MMI_OK == status)
-        {
-            if (NULL != (newSecurityBaseline = json_serialize_to_string_pretty(jsonValue)))
-            {
-                if (false == SavePayloadToFile(g_securityBaselineFile, newSecurityBaseline, strlen(newSecurityBaseline), SecurityBaselineGetLog()))
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "Failed saving securityBaseline to %s", g_osConfigSecurityBaselineFile);
-                    status = ENOENT;
-                }
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "json_serialize_to_string_pretty failed");
-                status = EIO;
-            }
-        }
-    }
-
-    if (MMI_OK == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "New securityBaseline successfully applied: %s", IsFullLoggingEnabled() ? newSecurityBaseline : "-");
-    }
-    else
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "Failed to apply new securityBaseline: %s", IsFullLoggingEnabled() ? newSecurityBaseline : "-");
-    }
-    
-    if (jsonValue)
-    {
-        json_value_free(jsonValue);
-    }
-
-    if (newSecurityBaseline)
-    {
-        json_free_serialized_string(newSecurityBaseline);
-    }
-
-    FREE_MEMORY(gitBranch);
-    FREE_MEMORY(existingSecurityBaseline);
-
-    return status;
+    return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && (0 == RemediateEnsurePermissionsOnEtcIssueNet()) &&
+        (0 == RemediateEnsurePermissionsOnEtcHostsAllow()) && (0 == RemediateEnsurePermissionsOnEtcHostsDeny())) ? 0 : ENOENT;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -398,11 +294,9 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
+    char* result = NULL;
     char* buffer = NULL;
-    char* securityBaseline = NULL;
-    const size_t minimumLength = 20;
-    size_t branchLength = 0;
-    size_t maximumLength = 0;
+    const size_t length = strlen(g_pass) + 1;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -414,22 +308,14 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     *payload = NULL;
     *payloadSizeBytes = 0;
 
-    branchLength = g_gitBranch ? strlen(g_gitBranch) : 0;
-    maximumLength = branchLength + 1;
-
-    if (maximumLength < minimumLength)
-    {
-        maximumLength = minimumLength;
-    }
-
-    if (NULL == (buffer = malloc(maximumLength)))
+    if (NULL == (buffer = malloc(length)))
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
         status = ENOMEM;
         return status;
     }
 
-    memset(buffer, 0, maximumLength);
+    memset(buffer, 0, length);
 
     if (!IsValidSession(clientSession))
     {
@@ -441,59 +327,27 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         OsConfigLogError(SecurityBaselineGetLog(), "MmiGet called for an unsupported component name (%s)", componentName);
         status = EINVAL;
     }
-    else if (NULL == (securityBaseline = LoadSecurityBaselineFromFile(g_securityBaselineFile)))
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "Cannot load securityBaseline from %s, MmiGet failed", g_securityBaselineFile);
-        status = ENOENT;
-    }
     else
     {
-        if (0 == strcmp(objectName, g_modelVersionObject))
+        if (0 == strcmp(objectName, g_auditSecurityBaselineObject))
         {
-            snprintf(buffer, maximumLength, "%u", g_modelVersion);
+            result = AuditSecurityBaseline() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_refreshIntervalObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
-            snprintf(buffer, maximumLength, "%u", g_refreshInterval);
+            result = AuditEnsurePermissionsOnEtcIssue() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_localManagementEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueNetObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_localManagementEnabled ? "true" : "false");
+            result = AuditEnsurePermissionsOnEtcIssueNet() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_fullLoggingEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsAllowObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_fullLoggingEnabled ? "true" : "false");
+            result = AuditEnsurePermissionsOnEtcHostsAllow() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_commandLoggingEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsDenyObject))
         {
-            snprintf(buffer, maximumLength, "%s", g_commandLoggingEnabled ? "true" : "false");
-        }
-        else if (0 == strcmp(objectName, g_iotHubProtocolObject))
-        {
-            snprintf(buffer, maximumLength, "%u", g_iotHubProtocol);
-            switch (g_iotHubProtocol)
-            {
-                case 1:
-                    snprintf(buffer, maximumLength, "%s", g_mqtt);
-                    break;
-
-                case 2:
-                    snprintf(buffer, maximumLength, "%s", g_mqttWebSocket);
-                    break;
-
-                case 0:
-                default:
-                    snprintf(buffer, maximumLength, "%s", g_auto);
-
-            }
-        }
-        else if (0 == strcmp(objectName, g_gitManagementEnabledObject))
-        {
-            snprintf(buffer, maximumLength, "%s", g_gitManagementEnabled ? "true" : "false");
-        }
-        else if (0 == strcmp(objectName, g_gitBranchObject))
-        {
-            snprintf(buffer, maximumLength, "%s", g_gitBranch);
+            result = AudittEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
         }
         else
         {
@@ -504,7 +358,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = strlen(buffer);
+        *payloadSizeBytes = strlen(result);
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
@@ -517,7 +371,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
         if (*payload)
         {
-            memcpy(*payload, buffer, *payloadSizeBytes);
+            memcpy(*payload, result, *payloadSizeBytes);
         }
         else
         {
@@ -540,8 +394,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
 int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
-    const char* stringTrue = "true";
-    const char* stringFalse = "false";
     JSON_Value* jsonValue = NULL;
     const char* jsonString = NULL;
     char* payloadString = NULL;
@@ -582,126 +434,31 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
     
     if (MMI_OK == status)
     {
-        if (0 == strcmp(objectName, g_desiredRefreshIntervalObject))
+        if (0 == strcmp(objectName, g_remediateSecurityBaselineObject))
         {
-            g_refreshInterval = atoi(payloadString);
+            status = RemediateSecurityBaseline();
         }
-        else if (0 == strcmp(objectName, g_desiredLocalManagementEnabledObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueObject))
         {
-            if (0 == strcmp(stringTrue, payloadString))
-            {
-                g_localManagementEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, payloadString))
-            {
-                g_localManagementEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Unsupported %s value: %s", g_desiredLocalManagementEnabledObject, payloadString);
-                status = EINVAL;
-            }
+            status = RemediateEnsurePermissionsOnEtcIssue();
         }
-        else if (0 == strcmp(objectName, g_desiredFullLoggingEnabledObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcIssueNetObject))
         {
-            if (0 == strcmp(stringTrue, payloadString))
-            {
-                g_fullLoggingEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, payloadString))
-            {
-                g_fullLoggingEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Unsupported %s value: %s", g_desiredFullLoggingEnabledObject, payloadString);
-                status = EINVAL;
-            }
+            status = RemediateEnsurePermissionsOnEtcIssueNet();
         }
-        else if (0 == strcmp(objectName, g_desiredCommandLoggingEnabledObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcHostsAllowObject))
         {
-            if (0 == strcmp(stringTrue, payloadString))
-            {
-                g_commandLoggingEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, payloadString))
-            {
-                g_commandLoggingEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Unsupported %s value: %s", g_desiredCommandLoggingEnabledObject, payloadString);
-                status = EINVAL;
-            }
+            status = RemediateEnsurePermissionsOnEtcHostsAllow();
         }
-        else if (0 == strcmp(objectName, g_desiredIotHubProtocolObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcHostsDenyObject))
         {
-            if (0 == strcmp(g_auto, payloadString))
-            {
-                g_iotHubProtocol = 0;
-            }
-            else if (0 == strcmp(g_mqtt, payloadString))
-            {
-                g_iotHubProtocol = 1;
-            }
-            else if (0 == strcmp(g_mqttWebSocket, payloadString))
-            {
-                g_iotHubProtocol = 2;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Unsupported %s value: %s", g_desiredIotHubProtocolObject, payloadString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredGitManagementEnabledObject))
-        {
-            if (0 == strcmp(stringTrue, payloadString))
-            {
-                g_gitManagementEnabled = true;
-            }
-            else if (0 == strcmp(stringFalse, payloadString))
-            {
-                g_gitManagementEnabled = false;
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Unsupported %s value: %s", g_gitManagementEnabledObject, payloadString);
-                status = EINVAL;
-            }
-        }
-        else if (0 == strcmp(objectName, g_desiredGitBranchObject))
-        {
-            if (NULL != (jsonValue = json_parse_string(payloadString)))
-            {
-                jsonString = json_value_get_string(jsonValue);
-                if (jsonString)
-                {
-                    FREE_MEMORY(g_gitBranch);
-                    g_gitBranch = DuplicateString(payloadString);
-                }
-                else
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "Bad string value for %s (json_value_get_string failed)", g_desiredGitBranchObject);
-                    status = EINVAL;
-                }
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "Bad string value for %s (json_parse_string failed)", g_desiredGitBranchObject);
-                status = EINVAL;
-            }
+            status = RemediateEnsurePermissionsOnEtcHostsDeny();
         }
         else
         {
             OsConfigLogError(SecurityBaselineGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
             status = EINVAL;
         }
-    }
-
-    if (MMI_OK == status)
-    {
-        status = UpdateSecurityBaselineFile();
     }
 
     FREE_MEMORY(payloadString);
