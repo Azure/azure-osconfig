@@ -289,8 +289,8 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char* result = NULL;
     char* buffer = NULL;
+    const char* result = NULL;
     const size_t length = strlen(g_pass) + 1;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
@@ -342,7 +342,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsDenyObject))
         {
-            result = AudittEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
         }
         else
         {
