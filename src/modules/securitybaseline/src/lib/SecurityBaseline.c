@@ -116,13 +116,13 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                 }
                 else
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for file %s (0x%X) versus expected (0x%X)", 
+                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (0x%X) versus expected (0x%X)", 
                         fileName, statStruct.st_mode, maxPermissions);
                 }
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "No matching ownership for file %s (user: %d, group: %d) versus expected (user: %d, group: %d)", 
+                OsConfigLogError(SecurityBaselineGetLog(), "No matching ownership for %s (user: %d, group: %d) versus expected (user: %d, group: %d)", 
                     fileName, statStruct.st_uid, statStruct.st_gid, expectedUserId, expectedGroupId);
             }
         }
@@ -149,7 +149,7 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
         {
             if (0 == (result = chmod(fileName, maxPermissions)))
             {
-                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set file ownership to user %d, group %d with access 0x%X", 
+                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d with access 0x%X", 
                     fileName, expectedUserId, expectedGroupId, maxPermissions);
                 result = 0;
             }
@@ -160,7 +160,7 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
         }
         else
         {
-            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired file ownership (user %d, group %d with access 0x%X) already set",
+            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access 0x%X) already set",
                 fileName, expectedUserId, expectedGroupId, maxPermissions);
             result = 0;
         }
