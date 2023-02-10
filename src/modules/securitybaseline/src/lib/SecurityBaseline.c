@@ -201,7 +201,7 @@ static mode_t GetFileAccessFlags(mode_t mode)
     return flags;
 }
 
-static int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
+int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0; 
@@ -252,7 +252,7 @@ static int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desi
     return result;
 }
 
-static int SetFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
+int SetFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
 {
     int result = ENOENT;
 

@@ -9,6 +9,9 @@ extern "C"
 {
 #endif
 
+int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess);
+int SetFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess);
+
 void SecurityBaselineInitialize(void);
 void SecurityBaselineShutdown(void);
 

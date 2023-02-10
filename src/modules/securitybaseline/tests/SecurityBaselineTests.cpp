@@ -39,17 +39,22 @@ class SecurityBaselineTest : public ::testing::Test
 
         const char* m_clientName = "Test";
 
+        const char* m_testFile = "~test.json";
+        const char* m_testContent = "Test";
+
         int m_normalMaxPayloadSizeBytes = 1024;
         int m_truncatedMaxPayloadSizeBytes = 1;
 
         void SetUp()
         {
+            EXPECT_TRUE(SavePayloadToFile(m_testFile, m_testContent, strlen(m_testContent), nullptr));
             SecurityBaselineInitialize();
         }
 
         void TearDown()
         {
             SecurityBaselineShutdown();
+            EXPECT_EQ(0, remove(m_testFile));
         }
 };
 
@@ -276,4 +281,13 @@ TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
     EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+}
+
+TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
+{
+    for (int i = 0; i < 7777; i++)
+    {
+        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i);
+        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i);
+    }
 }
