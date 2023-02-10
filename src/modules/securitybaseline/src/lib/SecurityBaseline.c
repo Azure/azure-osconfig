@@ -112,9 +112,9 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
 
                 OsConfigLogInfo(SecurityBaselineGetLog(), "### %s actual %d, desired %d)", fileName, currentMode, maxPermissions);
 
-                if (((maxPermissions & S_IRWXU) >= (currentMode & S_IRWXU)) &&
-                    ((maxPermissions & S_IRWXG) >= (currentMode & S_IRWXG)) &&
-                    ((maxPermissions & S_IRWXO) >= (currentMode & S_IRWXO)))
+                if ((((maxPermissions & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (currentMode & S_IRWXU))) &&
+                    (((maxPermissions & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (currentMode & S_IRWXG))) &&
+                    (((maxPermissions & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (currentMode & S_IRWXO))))
                 {
                     OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
                         fileName, statStruct.st_uid, statStruct.st_gid, currentMode, expectedUserId, expectedGroupId, maxPermissions);
@@ -158,16 +158,25 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
         }
         else
         {
-            if (0 == (result = chmod(fileName, maxPermissions)))
+            if (0 == (result = chown(fileName, expectedUserId, expectedGroupId)))
             {
-                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d with access %d", 
-                    fileName, expectedUserId, expectedGroupId, maxPermissions);
-                result = 0;
+                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d", fileName, expectedUserId, expectedGroupId);
+
+                if (0 == (result = chmod(fileName, maxPermissions)))
+                {
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s access to %d", fileName, maxPermissions);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, maxPermissions, errno);
+                }
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, maxPermissions, errno);
+                OsConfigLogError(SecurityBaselineGetLog(), "chown(%s, %d, %d) failed with %d", fileName, expectedUserId, expectedGroupId, errno);
             }
+
         }
     }
     else
