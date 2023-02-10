@@ -94,6 +94,7 @@ void SecurityBaselineShutdown(void)
 static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
 {
     struct stat statStruct = {0};
+    mode_t currentMode = 0; 
     int result = ENOENT;
 
     if (fileName && FileExists(fileName))
@@ -106,6 +107,9 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                 // S_IRWXU (00700) owner has read, write, and execute permission
                 // S_IRWXG (00070) group has read, write, and execute permission
                 // S_IRWXO (00007) others (not in group) have read, write, and execute permission
+                // stat.mode contains both file type and access permissions, we'll extract the later:
+                currentMode = statStruct.st_mode & 777;
+
                 if (((maxPermissions & S_IRWXU) >= (statStruct.st_mode & S_IRWXU)) && 
                     ((maxPermissions & S_IRWXG) >= (statStruct.st_mode & S_IRWXG)) && 
                     ((maxPermissions & S_IRWXO) >= (statStruct.st_mode & S_IRWXO)))
@@ -145,7 +149,13 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
 
     if (fileName && FileExists(fileName))
     {
-        if (0 != (result = CheckFileAccess(fileName, expectedUserId, expectedGroupId, maxPermissions)))
+        if (0 == (result = CheckFileAccess(fileName, expectedUserId, expectedGroupId, maxPermissions)))
+        {
+            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access %d) already set",
+                fileName, expectedUserId, expectedGroupId, maxPermissions);
+            result = 0;
+        }
+        else
         {
             if (0 == (result = chmod(fileName, maxPermissions)))
             {
@@ -157,12 +167,6 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
             {
                 OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, maxPermissions, errno);
             }
-        }
-        else
-        {
-            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access %d) already set",
-                fileName, expectedUserId, expectedGroupId, maxPermissions);
-            result = 0;
         }
     }
     else
