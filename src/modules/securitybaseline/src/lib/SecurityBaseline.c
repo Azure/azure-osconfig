@@ -110,13 +110,13 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                     ((maxPermissions & S_IRWXG) >= (statStruct.st_mode & S_IRWXG)) && 
                     ((maxPermissions & S_IRWXO) >= (statStruct.st_mode & S_IRWXO)))
                 {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, 0x%X) matches expected (%d, %d, 0x%X)", 
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
                         fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, expectedUserId, expectedGroupId, maxPermissions);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (0x%X) versus expected (0x%X)", 
+                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d) versus expected (%d)", 
                         fileName, statStruct.st_mode, maxPermissions);
                 }
             }
@@ -149,18 +149,18 @@ static int SetFileAccess(const char* fileName, uid_t expectedUserId, gid_t expec
         {
             if (0 == (result = chmod(fileName, maxPermissions)))
             {
-                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d with access 0x%X", 
+                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d with access %d", 
                     fileName, expectedUserId, expectedGroupId, maxPermissions);
                 result = 0;
             }
             else
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, 0x%X) failed with %d", fileName, maxPermissions, errno);
+                OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, maxPermissions, errno);
             }
         }
         else
         {
-            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access 0x%X) already set",
+            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access %d) already set",
                 fileName, expectedUserId, expectedGroupId, maxPermissions);
             result = 0;
         }
