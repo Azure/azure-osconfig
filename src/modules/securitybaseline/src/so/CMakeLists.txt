@@ -1,23 +1,23 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-project(configuration)
+project(securitybaseline)
 
-add_library(configuration SHARED ConfigurationModule.c)
-target_link_libraries(configuration
+add_library(securitybaseline SHARED SecurityBaselineModule.c)
+target_link_libraries(securitybaseline
     PRIVATE
         commonutils
         logging
     PUBLIC
-        configurationlib
+        securitybaselinelib
 )
-target_include_directories(configuration
+target_include_directories(securitybaseline
     PUBLIC
         ${MODULES_INC_DIR}
 )
-set_target_properties(configuration
+set_target_properties(securitybaseline
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
-install(TARGETS configuration DESTINATION ${MODULES_INSTALL_DIR})
+install(TARGETS securitybaseline DESTINATION ${MODULES_INSTALL_DIR})
