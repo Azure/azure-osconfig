@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdatomic.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
