@@ -12,7 +12,7 @@ using namespace std;
 class SecurityBaselineTest : public ::testing::Test
 {
     protected:
-        static const char* m_expectedMmiInfo = "{\"Name\": \"SecurityBaseline\","
+        const char* m_expectedMmiInfo = "{\"Name\": \"SecurityBaseline\","
             "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
             "\"Manufacturer\": \"Microsoft\","
             "\"VersionMajor\": 1,"
@@ -170,7 +170,7 @@ TEST_F(SecurityBaselineTest, MmiGetInvalidComponent)
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, "Test123", m_modelVersionObject, &payload, &payloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, "Test123", m_securityBaselineComponentName, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
     
