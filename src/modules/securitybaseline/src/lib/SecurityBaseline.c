@@ -92,10 +92,88 @@ void SecurityBaselineShutdown(void)
     CloseLog(&g_log);
 }
 
+static mode_t GetFileAccessFlags(mode_t mode)
+{
+    /*
+    S_IFMT     0170000   bitmask for the file type bitfields
+    S_IFSOCK   0140000   socket
+    S_IFLNK    0120000   symbolic link
+    S_IFREG    0100000   regular file
+    S_IFBLK    0060000   block device
+    S_IFDIR    0040000   directory
+    S_IFCHR    0020000   character device
+    S_IFIFO    0010000   FIFO
+    S_ISUID    0004000   set UID bit
+    S_ISGID    0002000   set - group - ID bit(see below)
+    S_ISVTX    0001000   sticky bit(see below)
+    S_IRWXU    00700     mask for file owner permissions
+    S_IRUSR    00400     owner has read permission
+    S_IWUSR    00200     owner has write permission
+    S_IXUSR    00100     owner has execute permission
+    S_IRWXG    00070     mask for group permissions
+    S_IRGRP    00040     group has read permission
+    S_IWGRP    00020     group has write permission
+    S_IXGRP    00010     group has execute permission
+    S_IRWXO    00007     mask for permissions for others(not in group)
+    S_IROTH    00004     others have read permission
+    S_IWOTH    00002     others have write permission
+    S_IXOTH    00001     others have execute permission
+    */
+    mode_t flags = 0;
+
+    if (mode & S_IRUSR)
+    {
+        flags |= S_IRUSR;
+    }
+
+    if (mode & S_IWUSR)
+    {
+        flags |= S_IWUSR;
+    }
+
+    if (mode & S_IXUSR)
+    {
+        flags |= S_IXUSR;
+    }
+
+    if (mode & S_IRGRP)
+    {
+        flags |= S_IRGRP;
+    }
+
+    if (mode & S_IWGRP)
+    {
+        flags |= S_IWGRP;
+    }
+
+    if (mode & S_IXGRP)
+    {
+        flags |= S_IXGRP;
+    }
+
+    if (mode & S_IROTH)
+    {
+        flags |= S_IROTH;
+    }
+
+    if (mode & S_IWOTH)
+    {
+        flags |= S_IWOTH;
+    }
+
+    if (mode & S_IXOTH)
+    {
+        flags |= S_IXOTH;
+    }
+
+    return flags;
+}
+
 static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t expectedGroupId, mode_t maxPermissions)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0; 
+    mode_t desiredMode = 0;
     int result = ENOENT;
 
     if (fileName && FileExists(fileName))
@@ -104,56 +182,14 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
         {
             if ((expectedUserId == statStruct.st_uid) && (expectedGroupId == statStruct.st_gid))
             {
-                if (statStruct.st_mode & S_IRUSR)
-                {
-                    currentMode |= S_IRUSR;
-                }
+                currentMode = GetFileAccessFlags(statStruct.st_mode);
+                desiredMode = GetFileAccessFlags(maxPermissions);
 
-                if (statStruct.st_mode & S_IWUSR)
-                {
-                    currentMode |= S_IWUSR;
-                }
+                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s current %d, desired %d)", fileName, currentMode, desiredMode);
 
-                if (statStruct.st_mode & S_IXUSR)
-                {
-                    currentMode |= S_IXUSR;
-                }
-
-                if (statStruct.st_mode & S_IRGRP)
-                {
-                    currentMode |= S_IRGRP;
-                }
-
-                if (statStruct.st_mode & S_IWGRP)
-                {
-                    currentMode |= S_IWGRP;
-                }
-
-                if (statStruct.st_mode & S_IXGRP)
-                {
-                    currentMode |= S_IXGRP;
-                }
-
-                if (statStruct.st_mode & S_IROTH)
-                {
-                    currentMode |= S_IROTH;
-                }
-
-                if (statStruct.st_mode & S_IWOTH)
-                {
-                    currentMode |= S_IWOTH;
-                }
-
-                if (statStruct.st_mode & S_IXOTH)
-                {
-                    currentMode |= S_IXOTH;
-                }
-
-                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s actual %d, desired %d)", fileName, currentMode, maxPermissions);
-
-                if ((((maxPermissions & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (currentMode & S_IRWXU))) &&
-                    (((maxPermissions & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (currentMode & S_IRWXG))) &&
-                    (((maxPermissions & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (currentMode & S_IRWXO))))
+                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (currentMode & S_IRWXU))) &&
+                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (currentMode & S_IRWXG))) &&
+                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (currentMode & S_IRWXO))))
                 {
                     OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d) matches expected (%d, %d, %d)", 
                         fileName, statStruct.st_uid, statStruct.st_gid, currentMode, expectedUserId, expectedGroupId, maxPermissions);
