@@ -289,7 +289,7 @@ TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
 {
     for (int i = 0; i < 7777; i++)
     {
-        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i);
-        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i);
+        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i));
+        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i));
     }
 }
