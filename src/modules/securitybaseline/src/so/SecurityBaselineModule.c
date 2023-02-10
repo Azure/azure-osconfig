@@ -6,7 +6,7 @@
 
 void __attribute__((constructor)) InitModule(void)
 {
-    SecurityBaselineInitialize(g_osConfigSecurityBaselineFile);
+    SecurityBaselineInitialize();
 }
 
 void __attribute__((destructor)) DestroyModule(void)
