@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 #include <version.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <Mmi.h>
 #include <CommonUtils.h>
 #include <SecurityBaseline.h>
