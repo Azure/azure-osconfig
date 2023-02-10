@@ -121,6 +121,21 @@ static mode_t GetFileAccessFlags(mode_t mode)
     */
     mode_t flags = 0;
 
+    if (mode & S_IRWXU)
+    {
+        flags |= S_IRWXU;
+    }
+    
+    if (mode & S_IRWXG)
+    {
+        flags |= S_IRWXG;
+    }
+    
+    if (mode & S_IRWXO)
+    {
+        flags |= S_IRWXO;
+    }
+    
     if (mode & S_IRUSR)
     {
         flags |= S_IRUSR;
@@ -185,7 +200,7 @@ static int CheckFileAccess(const char* fileName, uid_t expectedUserId, gid_t exp
                 currentMode = GetFileAccessFlags(statStruct.st_mode);
                 desiredMode = GetFileAccessFlags(maxPermissions);
 
-                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s current %d, desired %d)", fileName, currentMode, desiredMode);
+                OsConfigLogInfo(SecurityBaselineGetLog(), "### %s current %d, desired %d", fileName, currentMode, desiredMode);
 
                 if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (currentMode & S_IRWXU))) &&
                     (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (currentMode & S_IRWXG))) &&
