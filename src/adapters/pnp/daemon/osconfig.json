@@ -5,7 +5,7 @@
   "GitRepositoryUrl": "",
   "GitBranch": "",
   "LocalManagement": 0,
-  "ModelVersion": 17,
+  "ModelVersion": 18,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -163,6 +163,26 @@
     {
       "ComponentName": "PackageManagerConfiguration",
       "ObjectName": "state"
+    },
+    {
+      "ComponentName": "SecurityConfiguration",
+      "ObjectName": "AuditEnsurePermissionsOnEtcHostsAllow"
+    },
+    {
+      "ComponentName": "SecurityConfiguration",
+      "ObjectName": "AuditEnsurePermissionsOnEtcHostsDeny"
+    },
+    {
+      "ComponentName": "SecurityConfiguration",
+      "ObjectName": "AuditEnsurePermissionsOnEtcIssue"
+    },
+    {
+      "ComponentName": "SecurityConfiguration",
+      "ObjectName": "AuditEnsurePermissionsOnEtcIssueNet"
+    },
+    {
+      "ComponentName": "SecurityConfiguration",
+      "ObjectName": "AuditSecurityBaseline"
     },
     {
       "ComponentName": "Tpm",

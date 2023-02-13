@@ -1,0 +1,69 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:osconfig:securitybaseline;1",
+  "@type": "Interface",
+  "displayName": "Linux Security Baseline",
+  "description": "Provides functionality to audit and remediate the Linux Security Baseline",
+  "contents": [
+    {
+        "@type": "Property",
+        "name": "RemediateSecurityBaseline",
+        "schema": "string",
+        "writable": true
+    },
+    {
+        "@type": "Property",
+        "name": "AuditSecurityBaseline",
+        "schema": "string",
+        "writable": false
+    },
+    {
+        "@type": "Property",
+        "name": "RemediateEnsurePermissionsOnEtcIssue",
+        "schema": "string",
+        "writable": true
+    },
+    {
+        "@type": "Property",
+        "name": "AuditEnsurePermissionsOnEtcIssue",
+        "schema": "string",
+        "writable": false
+    },
+    {
+        "@type": "Property",
+        "name": "RemediateEnsurePermissionsOnEtcIssueNet",
+        "schema": "string",
+        "writable": true
+    },
+    {
+        "@type": "Property",
+        "name": "AuditEnsurePermissionsOnEtcIssueNet",
+        "schema": "string",
+        "writable": false
+    },
+    {
+        "@type": "Property",
+        "name": "RemediateEnsurePermissionsOnEtcHostsAllow",
+        "schema": "string",
+        "writable": true
+    },
+    {
+        "@type": "Property",
+        "name": "AuditEnsurePermissionsOnEtcHostsAllow",
+        "schema": "string",
+        "writable": false
+    },
+    {
+        "@type": "Property",
+        "name": "RemediateEnsurePermissionsOnEtcHostsDeny",
+        "schema": "string",
+        "writable": true
+    },
+    {
+        "@type": "Property",
+        "name": "AuditEnsurePermissionsOnEtcHostsDeny",
+        "schema": "string",
+        "writable": false
+    }
+  ]
+}
