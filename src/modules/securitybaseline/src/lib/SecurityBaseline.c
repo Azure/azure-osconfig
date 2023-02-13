@@ -92,227 +92,24 @@ void SecurityBaselineShutdown(void)
     CloseLog(&g_log);
 }
 
-static mode_t GetFileAccessFlags(mode_t mode)
-{
-    // From: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html
-    // ------------------------------------------------------------
-    // Name       Value    Description
-    // ------------------------------------------------------------
-    // S_IRWXU    0700     Read, write, execute/search by owner.
-    // S_IRUSR    0400     Read permission, owner.
-    // S_IWUSR    0200     Write permission, owner.
-    // S_IXUSR    0100     Execute/search permission, owner.
-    // S_IRWXG     070     Read, write, execute/search by group.
-    // S_IRGRP     040     Read permission, group.
-    // S_IWGRP     020     Write permission, group.
-    // S_IXGRP     010     Execute/search permission, group.
-    // S_IRWXO      07     Read, write, execute/search by others.
-    // S_IROTH      04     Read permission, others.
-    // S_IWOTH      02     Write permission, others.
-    // S_IXOTH      01     Execute/search permission, others.
-    // S_ISUID   04000     Set-user-ID on execution.
-    // S_ISGID   02000     Set-group-ID on execution.
-    // S_ISVTX   01000     On directories, restricted deletion flag.
-    //------------------------------------------------------------
-
-    mode_t flags = 0;
-
-    if (mode & S_IRWXU)
-    {
-        flags |= S_IRWXU;
-    }
-    else
-    {
-        if (mode & S_IRUSR)
-        {
-            flags |= S_IRUSR;
-        }
-
-        if (mode & S_IWUSR)
-        {
-            flags |= S_IWUSR;
-        }
-
-        if (mode & S_IXUSR)
-        {
-            flags |= S_IXUSR;
-        }
-    }
-    
-    if (mode & S_IRWXG)
-    {
-        flags |= S_IRWXG;
-    }
-    else
-    {
-        if (mode & S_IRGRP)
-        {
-            flags |= S_IRGRP;
-        }
-
-        if (mode & S_IWGRP)
-        {
-            flags |= S_IWGRP;
-        }
-
-        if (mode & S_IXGRP)
-        {
-            flags |= S_IXGRP;
-        }
-    }
-    
-    if (mode & S_IRWXO)
-    {
-        flags |= S_IRWXO;
-    }
-    else
-    {
-        if (mode & S_IROTH)
-        {
-            flags |= S_IROTH;
-        }
-
-        if (mode & S_IWOTH)
-        {
-            flags |= S_IWOTH;
-        }
-
-        if (mode & S_IXOTH)
-        {
-            flags |= S_IXOTH;
-        }
-    }
-    
-    if (mode & S_ISUID)
-    {
-        flags |= S_ISUID;
-    }
-
-    if (mode & S_ISGID)
-    {
-        flags |= S_ISGID;
-    }
-
-    if (mode & S_ISVTX)
-    {
-        flags |= S_ISVTX;
-    }
-
-    return flags;
-}
-
-int CheckFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
-{
-    struct stat statStruct = {0};
-    mode_t currentMode = 0; 
-    mode_t desiredMode = 0;
-    int result = ENOENT;
-
-    if (fileName && FileExists(fileName))
-    {
-        if (0 == (result = stat(fileName, &statStruct)))
-        {
-            if ((desiredUserId == statStruct.st_uid) && (desiredGroupId == statStruct.st_gid))
-            {
-                currentMode = GetFileAccessFlags(statStruct.st_mode);
-                desiredMode = GetFileAccessFlags(desiredFileAccess);
-
-                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
-                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
-                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
-                {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "File %s (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)", 
-                        fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode, 
-                        desiredUserId, desiredGroupId, desiredFileAccess, desiredMode);
-                    
-                    result = 0;
-                }
-                else
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "No matching access permissions for %s (%d-%d) versus expected (%d-%d)", 
-                        fileName, statStruct.st_mode, currentMode, desiredFileAccess, desiredMode);
-                }
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "No matching ownership for %s (user: %d, group: %d) versus expected (user: %d, group: %d)", 
-                    fileName, statStruct.st_uid, statStruct.st_gid, desiredUserId, desiredGroupId);
-            }
-        }
-        else
-        {
-            OsConfigLogError(SecurityBaselineGetLog(), "stat(%s) failed with %d", fileName, errno);
-        }
-    }
-    else
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "CheckFileAccess called with an invalid file name argument (%s)", fileName);
-    }
-
-    return result;
-}
-
-int SetFileAccess(const char* fileName, uid_t desiredUserId, gid_t desiredGroupId, mode_t desiredFileAccess)
-{
-    int result = ENOENT;
-
-    if (fileName && FileExists(fileName))
-    {
-        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess)))
-        {
-            OsConfigLogInfo(SecurityBaselineGetLog(), "Desired %s ownership (user %d, group %d with access %d) already set",
-                fileName, desiredUserId, desiredGroupId, desiredFileAccess);
-            result = 0;
-        }
-        else
-        {
-            if (0 == (result = chown(fileName, desiredUserId, desiredGroupId)))
-            {
-                OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s ownership to user %d, group %d", fileName, desiredUserId, desiredGroupId);
-
-                if (0 == (result = chmod(fileName, desiredFileAccess)))
-                {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "Successfully set %s access to %d", fileName, desiredFileAccess);
-                    result = 0;
-                }
-                else
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "chmod(%s, %d) failed with %d", fileName, desiredFileAccess, errno);
-                }
-            }
-            else
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "chown(%s, %d, %d) failed with %d", fileName, desiredUserId, desiredGroupId, errno);
-            }
-
-        }
-    }
-    else
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "SetFileAccess called with an invalid file name argument (%s)", fileName);
-    }
-
-    return result;
-}
-
 static int AuditEnsurePermissionsOnEtcIssue(void)
 {
-    return CheckFileAccess("/etc/issue", 0, 0, 644);
+    return CheckFileAccess("/etc/issue", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcIssueNet(void)
 {
-    return CheckFileAccess("/etc/issue.net", 0, 0, 644);
+    return CheckFileAccess("/etc/issue.net", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return CheckFileAccess("/etc/hosts.allow", 0, 0, 644);
+    return CheckFileAccess("/etc/hosts.allow", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return CheckFileAccess("/etc/hosts.deny", 0, 0, 644);
+    return CheckFileAccess("/etc/hosts.deny", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 int AuditSecurityBaseline(void)
@@ -323,22 +120,22 @@ int AuditSecurityBaseline(void)
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
 {
-    return SetFileAccess("/etc/issue", 0, 0, 644);
+    return SetFileAccess("/etc/issue", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(void)
 {
-    return SetFileAccess("/etc/issue.net", 0, 0, 644);
+    return SetFileAccess("/etc/issue.net", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return SetFileAccess("/etc/hosts.allow", 0, 0, 644);
+    return SetFileAccess("/etc/hosts.allow", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return SetFileAccess("/etc/hosts.deny", 0, 0, 644);
+    return SetFileAccess("/etc/hosts.deny", 0, 0, 644, SecurityBaselineGetLog());
 };
 
 int RemediateSecurityBaseline(void)

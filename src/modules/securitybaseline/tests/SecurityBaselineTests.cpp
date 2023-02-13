@@ -3,8 +3,6 @@
 
 #include <gtest/gtest.h>
 #include <version.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <Mmi.h>
 #include <CommonUtils.h>
 #include <SecurityBaseline.h>
@@ -283,13 +281,4 @@ TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
     SecurityBaselineMmiClose(handle);
     EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-}
-
-TEST_F(SecurityBaselineTest, SetAndCheckFileAccess)
-{
-    for (int i = 0; i < 7777; i++)
-    {
-        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i));
-        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i));
-    }
 }

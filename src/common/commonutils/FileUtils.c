@@ -139,3 +139,201 @@ bool UnlockFile(FILE* file, void* log)
 {
     return LockUnlockFile(file, false, log);
 }
+
+static unsigned int GetFileAccessFlags(unsigned int mode)
+{
+    // S_IRWXU (00700): Read, write, execute/search by owner
+    // S_IRUSR (00400): Read permission, owner
+    // S_IWUSR (00200): Write permission, owner
+    // S_IXUSR (00100): Execute/search permission, owner
+    // S_IRWXG (00070): Read, write, execute/search by group
+    // S_IRGRP (00040): Read permission, group
+    // S_IWGRP (00020): Write permission, group
+    // S_IXGRP (00010): Execute/search permission, group
+    // S_IRWXO (00007): Read, write, execute/search by others
+    // S_IROTH (00004): Read permission, others
+    // S_IWOTH (00002): Write permission, others
+    // S_IXOTH (00001): Execute/search permission, others
+    // S_ISUID (04000): Set-user-ID on execution
+    // S_ISGID (02000): Set-group-ID on execution
+    // S_ISVTX (01000): On directories, restricted deletion flag
+
+    mode_t flags = 0;
+
+    if (mode & S_IRWXU)
+    {
+        flags |= S_IRWXU;
+    }
+    else
+    {
+        if (mode & S_IRUSR)
+        {
+            flags |= S_IRUSR;
+        }
+
+        if (mode & S_IWUSR)
+        {
+            flags |= S_IWUSR;
+        }
+
+        if (mode & S_IXUSR)
+        {
+            flags |= S_IXUSR;
+        }
+    }
+
+    if (mode & S_IRWXG)
+    {
+        flags |= S_IRWXG;
+    }
+    else
+    {
+        if (mode & S_IRGRP)
+        {
+            flags |= S_IRGRP;
+        }
+
+        if (mode & S_IWGRP)
+        {
+            flags |= S_IWGRP;
+        }
+
+        if (mode & S_IXGRP)
+        {
+            flags |= S_IXGRP;
+        }
+    }
+
+    if (mode & S_IRWXO)
+    {
+        flags |= S_IRWXO;
+    }
+    else
+    {
+        if (mode & S_IROTH)
+        {
+            flags |= S_IROTH;
+        }
+
+        if (mode & S_IWOTH)
+        {
+            flags |= S_IWOTH;
+        }
+
+        if (mode & S_IXOTH)
+        {
+            flags |= S_IXOTH;
+        }
+    }
+
+    if (mode & S_ISUID)
+    {
+        flags |= S_ISUID;
+    }
+
+    if (mode & S_ISGID)
+    {
+        flags |= S_ISGID;
+    }
+
+    if (mode & S_ISVTX)
+    {
+        flags |= S_ISVTX;
+    }
+
+    return flags;
+}
+
+int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+{
+    struct stat statStruct = {0};
+    mode_t currentMode = 0;
+    mode_t desiredMode = 0;
+    int result = ENOENT;
+
+    if (fileName && FileExists(fileName))
+    {
+        if (0 == (result = stat(fileName, &statStruct)))
+        {
+            if (((uid_t)desiredUserId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid))
+            {
+                currentMode = GetFileAccessFlags(statStruct.st_mode);
+                desiredMode = GetFileAccessFlags(desiredFileAccess);
+
+                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
+                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
+                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
+                {
+                    OsConfigLogInfo(log, "File %s (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
+                        fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
+                        desiredUserId, desiredGroupId, desiredFileAccess, desiredMode);
+
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(log, "No matching access permissions for %s (%u-%u) versus expected (%u-%u)",
+                        fileName, statStruct.st_mode, currentMode, desiredFileAccess, desiredMode);
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "No matching ownership for %s (user: %u, group: %u) versus expected (user: %u, group: %u)",
+                    fileName, statStruct.st_uid, statStruct.st_gid, desiredUserId, desiredGroupId);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "stat(%s) failed with %d", fileName, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckFileAccess called with an invalid file name argument (%s)", fileName);
+    }
+
+    return result;
+}
+
+int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+{
+    int result = ENOENT;
+
+    if (fileName && FileExists(fileName))
+    {
+        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess)))
+        {
+            OsConfigLogInfo(log, "Desired %s ownership (user %u, group %u with access %u) already set",
+                fileName, desiredUserId, desiredGroupId, desiredFileAccess);
+            result = 0;
+        }
+        else
+        {
+            if (0 == (result = chown(fileName, (uid_t)desiredUserId, (gid_t)desiredGroupId)))
+            {
+                OsConfigLogInfo(log, "Successfully set %s ownership to user %u, group %u", fileName, desiredUserId, desiredGroupId);
+
+                if (0 == (result = chmod(fileName, desiredFileAccess)))
+                {
+                    OsConfigLogInfo(log, "Successfully set %s access to %u", fileName, desiredFileAccess);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(log, "chmod(%s, %d) failed with %d", fileName, desiredFileAccess, errno);
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "chown(%s, %d, %d) failed with %d", fileName, desiredUserId, desiredGroupId, errno);
+            }
+
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "SetFileAccess called with an invalid file name argument (%s)", fileName);
+    }
+
+    return result;
+}

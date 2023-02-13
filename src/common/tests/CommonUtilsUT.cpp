@@ -1128,3 +1128,12 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     FREE_MEMORY(reportedProperties);
 }
+
+TEST_F(SecurityBaselineTest, SetAndCheckFileAccess)
+{
+    for (int i = 0; i < 7777; i++)
+    {
+        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i, nullptr));
+        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i, nullptr));
+    }
+}
