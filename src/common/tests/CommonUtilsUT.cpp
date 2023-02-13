@@ -1131,9 +1131,11 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
     for (int i = 0; i < 7777; i++)
     {
-        EXPECT_EQ(0, SetFileAccess(m_testFile, 0, 0, i, nullptr));
-        EXPECT_EQ(0, CheckFileAccess(m_testFile, 0, 0, i, nullptr));
+        EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, i, nullptr));
+        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, i, nullptr));
     }
+    EXPECT_TRUE(Cleanup(m_path));
 }

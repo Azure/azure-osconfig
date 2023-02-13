@@ -39,9 +39,6 @@ class SecurityBaselineTest : public ::testing::Test
 
         const char* m_clientName = "Test";
 
-        const char* m_testFile = "~test.json";
-        const char* m_testContent = "Test";
-
         int m_normalMaxPayloadSizeBytes = 1024;
         int m_truncatedMaxPayloadSizeBytes = 1;
 
