@@ -31,8 +31,8 @@ static const char* g_remediateEnsurePermissionsOnEtcHostsDenyObject = "remediate
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
 
-static const char* g_pass = "PASS";
-static const char* g_fail = "FAIL";
+static const char* g_pass = "\"PASS\"";
+static const char* g_fail = "\"FAIL\"";
 
 static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline\","
     "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
