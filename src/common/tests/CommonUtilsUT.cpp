@@ -1129,7 +1129,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
     FREE_MEMORY(reportedProperties);
 }
 
-TEST_F(SecurityBaselineTest, SetAndCheckFileAccess)
+TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
     for (int i = 0; i < 7777; i++)
     {
