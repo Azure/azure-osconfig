@@ -165,23 +165,23 @@
       "ObjectName": "state"
     },
     {
-      "ComponentName": "SecurityConfiguration",
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "AuditEnsurePermissionsOnEtcHostsAllow"
     },
     {
-      "ComponentName": "SecurityConfiguration",
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "AuditEnsurePermissionsOnEtcHostsDeny"
     },
     {
-      "ComponentName": "SecurityConfiguration",
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "AuditEnsurePermissionsOnEtcIssue"
     },
     {
-      "ComponentName": "SecurityConfiguration",
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "AuditEnsurePermissionsOnEtcIssueNet"
     },
     {
-      "ComponentName": "SecurityConfiguration",
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "AuditSecurityBaseline"
     },
     {
