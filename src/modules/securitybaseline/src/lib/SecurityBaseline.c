@@ -31,9 +31,6 @@ static const char* g_remediateEnsurePermissionsOnEtcHostsDenyObject = "remediate
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
 
-static const char* g_pass = "\"PASS\"";
-static const char* g_fail = "\"FAIL\"";
-
 static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline\","
     "\"Description\": \"Provides functionality to audit and remediate Security Baseline policies on device\","
     "\"Manufacturer\": \"Microsoft\","
@@ -43,6 +40,14 @@ static const char* g_securityBaselineModuleInfo = "{\"Name\": \"SecurityBaseline
     "\"Components\": [\"SecurityBaseline\"],"
     "\"Lifetime\": 2,"
     "\"UserAccount\": 0}";
+
+static const char* g_etcIssue = "/etc/issue";
+static const char* g_etcIssueNet = "/etc/issue.net";
+static const char* g_etcHostsAllow = "/etc/hosts.allow";
+static const char* g_etcHostsDeny = "/etc/hosts.deny";
+
+static const char* g_pass = "\"PASS\"";
+static const char* g_fail = "\"FAIL\"";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
@@ -94,22 +99,22 @@ void SecurityBaselineShutdown(void)
 
 static int AuditEnsurePermissionsOnEtcIssue(void)
 {
-    return CheckFileAccess("/etc/issue", 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcIssue, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcIssueNet(void)
 {
-    return CheckFileAccess("/etc/issue.net", 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcIssueNet, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return CheckFileAccess("/etc/hosts.allow", 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcHostsAllow, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return CheckFileAccess("/etc/hosts.deny", 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 int AuditSecurityBaseline(void)
@@ -120,22 +125,22 @@ int AuditSecurityBaseline(void)
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
 {
-    return SetFileAccess("/etc/issue", 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcIssue, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcIssueNet(void)
 {
-    return SetFileAccess("/etc/issue.net", 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcIssueNet, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return SetFileAccess("/etc/hosts.allow", 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcHostsAllow, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return SetFileAccess("/etc/hosts.deny", 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 int RemediateSecurityBaseline(void)
@@ -295,10 +300,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
     }    
 
-    //if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
-    }
+    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     FREE_MEMORY(buffer);
 
@@ -374,14 +376,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
     FREE_MEMORY(payloadString);
 
-    //if (IsFullLoggingEnabled())
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
-    }
-    //else
-    //{
-    //    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s) returning %d", clientSession, componentName, objectName, status);
-    //}
+    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
 
     return status;
 }
