@@ -25,17 +25,17 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_securityBaselineModuleName = "OSConfig SecurityBaseline module";
         const char* m_securityBaselineComponentName = "SecurityBaseline";
 
-        const char* m_auditSecurityBaselineObject = "AuditSecurityBaseline";
-        const char* m_auditEnsurePermissionsOnEtcIssueObject = "AuditEnsurePermissionsOnEtcIssue";
-        const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "AuditEnsurePermissionsOnEtcIssueNet";
-        const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "AuditEnsurePermissionsOnEtcHostsAllow";
-        const char* m_auditEnsurePermissionsOnEtcHostsDenyObject = "AuditEnsurePermissionsOnEtcHostsDeny";
+        const char* m_auditSecurityBaselineObject = "auditSecurityBaseline";
+        const char* m_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermissionsOnEtcIssue";
+        const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
+        const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
+        const char* m_auditEnsurePermissionsOnEtcHostsDenyObject = "auditEnsurePermissionsOnEtcHostsDeny";
 
-        const char* m_remediateSecurityBaselineObject = "RemediateSecurityBaseline";
-        const char* m_remediateEnsurePermissionsOnEtcIssueObject = "RemediateEnsurePermissionsOnEtcIssue";
-        const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "RemediateEnsurePermissionsOnEtcIssueNet";
-        const char* m_remediateEnsurePermissionsOnEtcHostsAllowObject = "RemediateEnsurePermissionsOnEtcHostsAllow";
-        const char* m_remediateEnsurePermissionsOnEtcHostsDenyObject = "RemediateEnsurePermissionsOnEtcHostsDeny";
+        const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
+        const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
+        const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
+        const char* m_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
+        const char* m_remediateEnsurePermissionsOnEtcHostsDenyObject = "remediateEnsurePermissionsOnEtcHostsDeny";
 
         const char* m_clientName = "SecurityBaselineTest";
 

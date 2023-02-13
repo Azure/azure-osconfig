@@ -166,23 +166,23 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "AuditEnsurePermissionsOnEtcHostsAllow"
+      "ObjectName": "auditEnsurePermissionsOnEtcHostsAllow"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "AuditEnsurePermissionsOnEtcHostsDeny"
+      "ObjectName": "auditEnsurePermissionsOnEtcHostsDeny"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "AuditEnsurePermissionsOnEtcIssue"
+      "ObjectName": "auditEnsurePermissionsOnEtcIssue"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "AuditEnsurePermissionsOnEtcIssueNet"
+      "ObjectName": "auditEnsurePermissionsOnEtcIssueNet"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "AuditSecurityBaseline"
+      "ObjectName": "auditSecurityBaseline"
     },
     {
       "ComponentName": "Tpm",

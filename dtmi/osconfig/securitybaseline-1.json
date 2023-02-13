@@ -7,61 +7,61 @@
   "contents": [
     {
         "@type": "Property",
-        "name": "RemediateSecurityBaseline",
+        "name": "remediateSecurityBaseline",
         "schema": "string",
         "writable": true
     },
     {
         "@type": "Property",
-        "name": "AuditSecurityBaseline",
+        "name": "auditSecurityBaseline",
         "schema": "string",
         "writable": false
     },
     {
         "@type": "Property",
-        "name": "RemediateEnsurePermissionsOnEtcIssue",
+        "name": "remediateEnsurePermissionsOnEtcIssue",
         "schema": "string",
         "writable": true
     },
     {
         "@type": "Property",
-        "name": "AuditEnsurePermissionsOnEtcIssue",
+        "name": "auditEnsurePermissionsOnEtcIssue",
         "schema": "string",
         "writable": false
     },
     {
         "@type": "Property",
-        "name": "RemediateEnsurePermissionsOnEtcIssueNet",
+        "name": "remediateEnsurePermissionsOnEtcIssueNet",
         "schema": "string",
         "writable": true
     },
     {
         "@type": "Property",
-        "name": "AuditEnsurePermissionsOnEtcIssueNet",
+        "name": "auditEnsurePermissionsOnEtcIssueNet",
         "schema": "string",
         "writable": false
     },
     {
         "@type": "Property",
-        "name": "RemediateEnsurePermissionsOnEtcHostsAllow",
+        "name": "remediateEnsurePermissionsOnEtcHostsAllow",
         "schema": "string",
         "writable": true
     },
     {
         "@type": "Property",
-        "name": "AuditEnsurePermissionsOnEtcHostsAllow",
+        "name": "auditEnsurePermissionsOnEtcHostsAllow",
         "schema": "string",
         "writable": false
     },
     {
         "@type": "Property",
-        "name": "RemediateEnsurePermissionsOnEtcHostsDeny",
+        "name": "remediateEnsurePermissionsOnEtcHostsDeny",
         "schema": "string",
         "writable": true
     },
     {
         "@type": "Property",
-        "name": "AuditEnsurePermissionsOnEtcHostsDeny",
+        "name": "auditEnsurePermissionsOnEtcHostsDeny",
         "schema": "string",
         "writable": false
     }
