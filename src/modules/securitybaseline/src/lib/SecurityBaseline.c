@@ -295,7 +295,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
     }    
 
-    if (IsFullLoggingEnabled())
+    //if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
     }
@@ -374,14 +374,14 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
     FREE_MEMORY(payloadString);
 
-    if (IsFullLoggingEnabled())
+    //if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
     }
-    else
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s) returning %d", clientSession, componentName, objectName, status);
-    }
+    //else
+    //{
+    //    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s) returning %d", clientSession, componentName, objectName, status);
+    //}
 
     return status;
 }
