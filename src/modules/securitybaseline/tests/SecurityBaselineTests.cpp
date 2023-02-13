@@ -37,21 +37,19 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcHostsAllowObject = "RemediateEnsurePermissionsOnEtcHostsAllow";
         const char* m_remediateEnsurePermissionsOnEtcHostsDenyObject = "RemediateEnsurePermissionsOnEtcHostsDeny";
 
-        const char* m_clientName = "Test";
+        const char* m_clientName = "SecurityBaselineTest";
 
         int m_normalMaxPayloadSizeBytes = 1024;
         int m_truncatedMaxPayloadSizeBytes = 1;
 
         void SetUp()
         {
-            EXPECT_TRUE(SavePayloadToFile(m_testFile, m_testContent, strlen(m_testContent), nullptr));
             SecurityBaselineInitialize();
         }
 
         void TearDown()
         {
             SecurityBaselineShutdown();
-            EXPECT_EQ(0, remove(m_testFile));
         }
 };
 
