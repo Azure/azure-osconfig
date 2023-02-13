@@ -301,7 +301,7 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
 
     if (fileName && FileExists(fileName))
     {
-        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess)))
+        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess, log)))
         {
             OsConfigLogInfo(log, "Desired %s ownership (user %u, group %u with access %u) already set",
                 fileName, desiredUserId, desiredGroupId, desiredFileAccess);
