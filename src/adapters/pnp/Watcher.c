@@ -147,7 +147,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     // Do not log gitRepositoryUrl as it may contain Git account credentials
 
     if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile) || 
-        (0 == strcmp("", gitClonePath) || (0 == strcmp("", gitClonedDcFile)))
+        (0 == strcmp("", gitClonePath)) || (0 == strcmp("", gitClonedDcFile)))
     {
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
