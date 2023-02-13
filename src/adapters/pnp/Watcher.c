@@ -152,7 +152,7 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
     }
-    else if ((0 == strcmp("", gitRepositoryUrl) || (0 == strcmp("", gitBranch)))
+    else if ((0 == strcmp("", gitRepositoryUrl)) || (0 == strcmp("", gitBranch)))
     {
         OsConfigLogError(log, "InitializeGitClone: invoked with no Git repository or branch");
         return ENOENT;
