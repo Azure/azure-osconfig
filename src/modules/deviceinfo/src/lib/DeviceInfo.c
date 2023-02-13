@@ -231,6 +231,10 @@ int DeviceInfoMmiGet(MMI_HANDLE clientSession, const char* componentName, const 
         }
         else if (0 == strcmp(objectName, g_freeMemoryObject))
         {
+            // Refresh this one at every MmiGet
+            FREE_MEMORY(g_freeMemory);
+            g_freeMemory = GetFreeMemory(DeviceInfoGetLog());
+            
             isStringValue = false;
             snprintf(buffer, sizeof(buffer), "%lu", g_freeMemory);
             value = buffer;
