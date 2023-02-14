@@ -75,7 +75,7 @@ static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
 static const char* g_etcHostsDeny = "/etc/hosts.deny";
-static const char* g_etcSshSshdConfig = "/etc/ssh/ssh_config"; //TODO: no /etc/ssh/sshd_config, check if there is a typo in the table
+static const char* g_etcSshSshdConfig = "/etc/ssh/sshd_config"; //TODO: not present on Ubuntu 20.04, check (only /etc/ssh/ssh_config exists)
 static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcShadowDash = "/etc/shadow-";
 static const char* g_etcGShadow = "/etc/gshadow";
@@ -227,7 +227,7 @@ static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
     return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
 };
 
-static int AuditEnsurePermissionsOnEtcShadow(void) //TODO: all etc/shadow* are owned by default by group 42, check this
+static int AuditEnsurePermissionsOnEtcShadow(void)
 {
     return CheckFileAccess(g_etcShadow, 0, 42, 400, SecurityBaselineGetLog());
 };

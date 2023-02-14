@@ -6,64 +6,244 @@
   "description": "Provides functionality to audit and remediate the Linux Security Baseline",
   "contents": [
     {
-        "@type": "Property",
-        "name": "remediateSecurityBaseline",
-        "schema": "string",
-        "writable": true
+      "@type": "Property",
+      "name": "auditSecurityBaseline",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "auditSecurityBaseline",
-        "schema": "string",
-        "writable": false
+      "@type": "Property",
+      "name": "auditEnsurePermissionsOnEtcIssue",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "remediateEnsurePermissionsOnEtcIssue",
-        "schema": "string",
-        "writable": true
+      "@type": "Property",
+      "name": "auditEnsurePermissionsOnEtcIssueNet",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "auditEnsurePermissionsOnEtcIssue",
-        "schema": "string",
-        "writable": false
+      "@type": "Property",
+      "name": "auditEnsurePermissionsOnEtcHostsAllow",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "remediateEnsurePermissionsOnEtcIssueNet",
-        "schema": "string",
-        "writable": true
+      "@type": "Property",
+      "name": "remediateEnsurePermissionsOnEtcHostsDeny",
+      "schema": "string",
+      "writable": true
     },
     {
-        "@type": "Property",
-        "name": "auditEnsurePermissionsOnEtcIssueNet",
-        "schema": "string",
-        "writable": false
+      "@type": "Property",
+      "name": "auditEnsurePermissionsOnEtcHostsDeny",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "remediateEnsurePermissionsOnEtcHostsAllow",
-        "schema": "string",
-        "writable": true
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcSshSshdConfig",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "auditEnsurePermissionsOnEtcHostsAllow",
-        "schema": "string",
-        "writable": false
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcShadow",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "remediateEnsurePermissionsOnEtcHostsDeny",
-        "schema": "string",
-        "writable": true
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcShadowDash",
+      "schema": "string",
+      "writable": false
     },
     {
-        "@type": "Property",
-        "name": "auditEnsurePermissionsOnEtcHostsDeny",
-        "schema": "string",
-        "writable": false
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcGShadow",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcGShadowDash",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcPasswd",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcPasswdDash",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcGroupDash",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcAnaCronTab",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcCronD",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcCronDaily",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcCronHourly",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcCronMonthly",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "AuditEnsurePermissionsOnEtcCronWeekly",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "remediateSecurityBaseline",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePermissionsOnEtcIssue",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePermissionsOnEtcIssueNet",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePermissionsOnEtcHostsAllow",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcSshSshdConfig",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcShadow",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcShadowDash",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcGShadow",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcGShadowDash",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcPasswd",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcPasswdDash",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcGroup",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcGroupDash",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcAnaCronTab",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcCronD",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcCronDaily",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcCronHourly",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcCronMonthly",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "RemediateEnsurePermissionsOnEtcCronWeekly",
+      "schema": "string",
+      "writable": true
     }
   ]
 }
