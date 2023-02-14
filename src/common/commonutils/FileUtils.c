@@ -293,8 +293,6 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
         OsConfigLogError(log, "CheckFileAccess called with an invalid file name argument or the file does not exist (file: %s)", fileName);
     }
 
-    OsConfigLogInfo(log, "CheckFileAccess(file %s, user %u, group %u, access %u) result: %d", fileName, desiredUserId, desiredGroupId, desiredFileAccess, result);
-
     return result;
 }
 
@@ -337,8 +335,6 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
     {
         OsConfigLogError(log, "SetFileAccess called with an invalid file name argument or the file does not exist (file: %s)", fileName);
     }
-
-    OsConfigLogInfo(log, "SetFileAccess(file %s, user %u, group %u, access %u) result: %d", fileName, desiredUserId, desiredGroupId, desiredFileAccess, result);
 
     return result;
 }
