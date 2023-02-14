@@ -267,19 +267,20 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
                     OsConfigLogInfo(log, "File %s (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
                         fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
                         desiredUserId, desiredGroupId, desiredFileAccess, desiredMode);
-
                     result = 0;
                 }
                 else
                 {
                     OsConfigLogError(log, "No matching access permissions for %s (%u-%u) versus expected (%u-%u)",
                         fileName, statStruct.st_mode, currentMode, desiredFileAccess, desiredMode);
+                    result = ENOENT;
                 }
             }
             else
             {
                 OsConfigLogError(log, "No matching ownership for %s (user: %u, group: %u) versus expected (user: %u, group: %u)",
                     fileName, statStruct.st_uid, statStruct.st_gid, desiredUserId, desiredGroupId);
+                result = ENOENT;
             }
         }
         else
