@@ -716,63 +716,63 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsurePermissionsOnEtcHostsDeny();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject))
         {
             status = RemediateEnsurePermissionsOnEtcSshSshdConfig();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcShadowObject))
         {
             status = RemediateEnsurePermissionsOnEtcShadow();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDashObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcShadowDashObject))
         {
             status = RemediateEnsurePermissionsOnEtcShadowDash();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGShadowObject))
         {
             status = RemediateEnsurePermissionsOnEtcGShadow();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDashObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGShadowDashObject))
         {
             status = RemediateEnsurePermissionsOnEtcGShadowDash();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcPasswdObject))
         {
             status = RemediateEnsurePermissionsOnEtcPasswd();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDashObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcPasswdDashObject))
         {
             status = RemediateEnsurePermissionsOnEtcPasswdDash();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGroupObject))
         {
             status = RemediateEnsurePermissionsOnEtcGroup();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDashObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcGroupDashObject))
         {
             status = RemediateEnsurePermissionsOnEtcGroupDash();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTabObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcAnaCronTabObject))
         {
             status = RemediateEnsurePermissionsOnEtcAnaCronTab();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronDObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronD();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDailyObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronDailyObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronDaily();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourlyObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronHourlyObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronHourly();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthlyObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronMonthlyObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronMonthly();
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeeklyObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronWeeklyObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronWeekly();
         }
