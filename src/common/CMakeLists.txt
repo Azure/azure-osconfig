@@ -8,6 +8,7 @@ if (BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+add_subdirectory(ansibleutils)
 add_subdirectory(logging)
 add_subdirectory(commonutils)
 add_subdirectory(mpiclient)
