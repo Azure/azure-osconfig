@@ -224,77 +224,77 @@ static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 
 static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcShadow(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcShadow, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcShadowDash(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcGShadow(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGShadow, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcGShadowDash(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcPasswd(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcPasswd, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcPasswd, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcPasswdDash(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcGroup(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGroup, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGroup, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcGroupDash(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcAnaCronTab(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronD(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronD, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronD, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronDaily(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronHourly(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronMonthly(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronWeekly(void)
 {
-    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 int AuditSecurityBaseline(void)
@@ -342,77 +342,77 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadow(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcShadow, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcGShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGShadow, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcPasswd, 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcPasswd, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswdDash(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGroup(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcGroup, 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGroup, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGroupDash(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcAnaCronTab(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronD, 0, 0, 700, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcCronD, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronDaily(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronHourly(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronMonthly(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronWeekly(void)
 {
-    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
 int RemediateSecurityBaseline(void)
