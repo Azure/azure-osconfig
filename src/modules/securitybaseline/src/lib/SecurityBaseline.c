@@ -347,22 +347,22 @@ static int RemediateEnsurePermissionsOnEtcSshSshdConfig(void)
 
 static int RemediateEnsurePermissionsOnEtcShadow(void)
 {
-    return SetFileAccess(g_etcShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcShadow, 0, 42, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadowDash(void)
 {
-    return SetFileAccess(g_etcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcShadowDash, 0, 42, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadow(void)
 {
-    return SetFileAccess(g_etcGShadow, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGShadow, 0, 42, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcGShadowDash(void)
 {
-    return SetFileAccess(g_etcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcGShadowDash, 0, 42, 400, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcPasswd(void)
