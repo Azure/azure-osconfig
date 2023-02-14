@@ -21,12 +21,42 @@ static const char* g_auditEnsurePermissionsOnEtcIssueObject = "auditEnsurePermis
 static const char* g_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
 static const char* g_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
 static const char* g_auditEnsurePermissionsOnEtcHostsDenyObject = "auditEnsurePermissionsOnEtcHostsDeny";
+static const char* g_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_auditEnsurePermissionsOnEtcShadowObject = "auditEnsurePermissionsOnEtcShadow";
+static const char* g_auditEnsurePermissionsOnEtcShadowDashObject = "auditEnsurePermissionsOnEtcShadowDash";
+static const char* g_auditEnsurePermissionsOnEtcGShadowObject = "auditEnsurePermissionsOnEtcGShadow";
+static const char* g_auditEnsurePermissionsOnEtcGShadowDashObject = "auditEnsurePermissionsOnEtcGShadowDash";
+static const char* g_auditEnsurePermissionsOnEtcPasswdObject = "auditEnsurePermissionsOnEtcPasswd";
+static const char* g_auditEnsurePermissionsOnEtcPasswdDashObject = "auditEnsurePermissionsOnEtcPasswdDash";
+static const char* g_auditEnsurePermissionsOnEtcGroupObject = "auditEnsurePermissionsOnEtcGroup";
+static const char* g_auditEnsurePermissionsOnEtcGroupDashObject = "auditEnsurePermissionsOnEtcGroupDash";
+static const char* g_auditEnsurePermissionsOnEtcAnaCronTabObject = "auditEnsurePermissionsOnEtcAnaCronTab";
+static const char* g_auditEnsurePermissionsOnEtcCronDObject = "auditEnsurePermissionsOnEtcCronD";
+static const char* g_auditEnsurePermissionsOnEtcCronDailyObject = "auditEnsurePermissionsOnEtcCronDaily";
+static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
+static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
+static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
 static const char* g_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
 static const char* g_remediateEnsurePermissionsOnEtcHostsDenyObject = "remediateEnsurePermissionsOnEtcHostsDeny";
+static const char* g_remediateEnsurePermissionsOnEtcSshSshdConfigObject = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_remediateEnsurePermissionsOnEtcShadowObject = "remediateEnsurePermissionsOnEtcShadow";
+static const char* g_remediateEnsurePermissionsOnEtcShadowDashObject = "remediateEnsurePermissionsOnEtcShadowDash";
+static const char* g_remediateEnsurePermissionsOnEtcGShadowObject = "remediateEnsurePermissionsOnEtcGShadow";
+static const char* g_remediateEnsurePermissionsOnEtcGShadowDashObject = "remediateEnsurePermissionsOnEtcGShadowDash";
+static const char* g_remediateEnsurePermissionsOnEtcPasswdObject = "remediateEnsurePermissionsOnEtcPasswd";
+static const char* g_remediateEnsurePermissionsOnEtcPasswdDashObject = "remediateEnsurePermissionsOnEtcPasswdDash";
+static const char* g_remediateEnsurePermissionsOnEtcGroupObject = "remediateEnsurePermissionsOnEtcGroup";
+static const char* g_remediateEnsurePermissionsOnEtcGroupDashObject = "remediateEnsurePermissionsOnEtcGroupDash";
+static const char* g_remediateEnsurePermissionsOnEtcAnaCronTabObject = "remediateEnsurePermissionsOnEtcAnaCronTab";
+static const char* g_remediateEnsurePermissionsOnEtcCronDObject = "remediateEnsurePermissionsOnEtcCronD";
+static const char* g_remediateEnsurePermissionsOnEtcCronDailyObject = "remediateEnsurePermissionsOnEtcCronDaily";
+static const char* g_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
+static const char* g_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
+static const char* g_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -45,6 +75,21 @@ static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
 static const char* g_etcHostsDeny = "/etc/hosts.deny";
+static const char* g_etcSshSshdConfig = "/etc/ssh/sshd_config";
+static const char* g_etcShadow = "/etc/shadow";
+static const char* g_etcShadowDash = "/etc/shadow-";
+static const char* g_etcGShadow = "/etc/gshadow";
+static const char* g_etcGShadowDash = "/etc/gshadow-";
+static const char* g_etcPasswd = "/etc/passwd";
+static const char* g_etcPasswdDash = "/etc/passwd-";
+static const char* g_etcGroup = "/etc/group";
+static const char* g_etcGroupDash = "/etc/group-";
+static const char* g_etcAnaCronTab = "/etc/anacrontab";
+static const char* g_etcCronD = "/etc/cron.d";
+static const char* g_etcCronDaily = "/etc/cron.daily";
+static const char* g_etcCronHourly = "/etc/cron.hourly";
+static const char* g_etcCronMonthly = "/etc/cron.monthly";
+static const char* g_etcCronWeekly = "/etc/cron.weekly";
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -56,12 +101,42 @@ static char* g_auditEnsurePermissionsOnEtcIssue = NULL;
 static char* g_auditEnsurePermissionsOnEtcIssueNet = NULL;
 static char* g_auditEnsurePermissionsOnEtcHostsAllow = NULL;
 static char* g_auditEnsurePermissionsOnEtcHostsDeny = NULL;
+static char* g_auditEnsurePermissionsOnEtcSshSshdConfig = NULL;
+static char* g_auditEnsurePermissionsOnEtcShadow = NULL;
+static char* g_auditEnsurePermissionsOnEtcShadowDash = NULL;
+static char* g_auditEnsurePermissionsOnEtcGShadow = NULL;
+static char* g_auditEnsurePermissionsOnEtcGShadowDash = NULL;
+static char* g_auditEnsurePermissionsOnEtcPasswd = NULL;
+static char* g_auditEnsurePermissionsOnEtcPasswdDash = NULL;
+static char* g_auditEnsurePermissionsOnEtcGroup = NULL;
+static char* g_auditEnsurePermissionsOnEtcGroupDash = NULL;
+static char* g_auditEnsurePermissionsOnEtcAnaCronTab = NULL;
+static char* g_auditEnsurePermissionsOnEtcCronD = NULL;
+static char* g_auditEnsurePermissionsOnEtcCronDaily = NULL;
+static char* g_auditEnsurePermissionsOnEtcCronHourly = NULL;
+static char* g_auditEnsurePermissionsOnEtcCronMonthly = NULL;
+static char* g_auditEnsurePermissionsOnEtcCronWeekly = NULL;
 
 static char* g_remediateSecurityBaseline = NULL;
 static char* g_remediateEnsurePermissionsOnEtcIssue = NULL;
 static char* g_remediateEnsurePermissionsOnEtcIssueNet = NULL;
 static char* g_remediateEnsurePermissionsOnEtcHostsAllow = NULL;
 static char* g_remediateEnsurePermissionsOnEtcHostsDeny = NULL;
+static char* g_remediateEnsurePermissionsOnEtcSshSshdConfig = NULL;
+static char* g_remediateEnsurePermissionsOnEtcShadow = NULL;
+static char* g_remediateEnsurePermissionsOnEtcShadowDash = NULL;
+static char* g_remediateEnsurePermissionsOnEtcGShadow = NULL;
+static char* g_remediateEnsurePermissionsOnEtcGShadowDash = NULL;
+static char* g_remediateEnsurePermissionsOnEtcPasswd = NULL;
+static char* g_remediateEnsurePermissionsOnEtcPasswdDash = NULL;
+static char* g_remediateEnsurePermissionsOnEtcGroup = NULL;
+static char* g_remediateEnsurePermissionsOnEtcGroupDash = NULL;
+static char* g_remediateEnsurePermissionsOnEtcAnaCronTab = NULL;
+static char* g_remediateEnsurePermissionsOnEtcCronD = NULL;
+static char* g_remediateEnsurePermissionsOnEtcCronDaily = NULL;
+static char* g_remediateEnsurePermissionsOnEtcCronHourly = NULL;
+static char* g_remediateEnsurePermissionsOnEtcCronMonthly = NULL;
+static char* g_remediateEnsurePermissionsOnEtcCronWeekly = NULL;
 
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
@@ -87,12 +162,42 @@ void SecurityBaselineShutdown(void)
     FREE_MEMORY(g_auditEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_auditEnsurePermissionsOnEtcHostsAllow);
     FREE_MEMORY(g_auditEnsurePermissionsOnEtcHostsDeny);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcSshSshdConfig);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcShadow);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcShadowDash);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGShadow);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGShadowDash);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcPasswd);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcPasswdDash);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGroup);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGroupDash);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcAnaCronTab);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronD);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronDaily);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronHourly);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronMonthly);
+    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronWeekly);
 
     FREE_MEMORY(g_remediateSecurityBaseline);
     FREE_MEMORY(g_remediateEnsurePermissionsOnEtcIssue);
     FREE_MEMORY(g_remediateEnsurePermissionsOnEtcIssueNet);
     FREE_MEMORY(g_remediateEnsurePermissionsOnEtcHostsAllow);
     FREE_MEMORY(g_remediateEnsurePermissionsOnEtcHostsDeny);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcSshSshdConfig);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcShadow);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcShadowDash);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGShadow);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGShadowDash);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcPasswd);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcPasswdDash);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGroup);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGroupDash);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcAnaCronTab);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronD);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronDaily);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronHourly);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronMonthly);
+    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronWeekly);
     
     CloseLog(&g_log);
 }
@@ -117,10 +222,102 @@ static int AuditEnsurePermissionsOnEtcHostsDeny(void)
     return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog());
 };
 
+static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcShadow(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcShadow, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcShadowDash(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcGShadow(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGShadow, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcGShadowDash(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcPasswd(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcPasswd, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcPasswdDash(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcGroup(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGroup, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcGroupDash(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcAnaCronTab(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcCronD(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronD, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcCronDaily(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcCronHourly(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcCronMonthly(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int AuditEnsurePermissionsOnEtcCronWeekly(void)
+{
+    return CheckFileAccess(g_auditEnsurePermissionsOnEtcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
 int AuditSecurityBaseline(void)
 {
-    return ((0 == AuditEnsurePermissionsOnEtcIssue()) && (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
-        (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && (0 == AuditEnsurePermissionsOnEtcHostsDeny())) ? 0 : ENOENT;
+    return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
+        (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
+        (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && 
+        (0 == AuditEnsurePermissionsOnEtcHostsDeny()) &&
+        (0 == AuditEnsurePermissionsOnEtcSshSshdConfig()) &&
+        (0 == AuditEnsurePermissionsOnEtcShadow()) &&
+        (0 == AuditEnsurePermissionsOnEtcShadowDash()) &&
+        (0 == AuditEnsurePermissionsOnEtcGShadow()) &&
+        (0 == AuditEnsurePermissionsOnEtcGShadowDash()) &&
+        (0 == AuditEnsurePermissionsOnEtcPasswd()) &&
+        (0 == AuditEnsurePermissionsOnEtcPasswdDash()) &&
+        (0 == AuditEnsurePermissionsOnEtcGroup()) &&
+        (0 == AuditEnsurePermissionsOnEtcGroupDash()) &&
+        (0 == AuditEnsurePermissionsOnEtcAnaCronTab()) &&
+        (0 == AuditEnsurePermissionsOnEtcCronD()) &&
+        (0 == AuditEnsurePermissionsOnEtcCronDaily()) &&
+        (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
+        (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
+        (0 == AuditEnsurePermissionsOnEtcCronWeekly())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -143,10 +340,102 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
     return SetFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog());
 };
 
+static int RemediateEnsurePermissionsOnEtcSshSshdConfig(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcShadow(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcShadow, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcShadowDash(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcGShadow(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcGShadow, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcGShadowDash(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcGShadowDash, 0, 0, 400, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcPasswd(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcPasswd, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcPasswdDash(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcGroup(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcGroup, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcGroupDash(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcAnaCronTab(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcCronD(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronD, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcCronDaily(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcCronHourly(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcCronMonthly(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
+static int RemediateEnsurePermissionsOnEtcCronWeekly(void)
+{
+    return SetFileAccess(g_auditEnsurePermissionsOnEtcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
+};
+
 int RemediateSecurityBaseline(void)
 {
-    return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && (0 == RemediateEnsurePermissionsOnEtcIssueNet()) &&
-        (0 == RemediateEnsurePermissionsOnEtcHostsAllow()) && (0 == RemediateEnsurePermissionsOnEtcHostsDeny())) ? 0 : ENOENT;
+    return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
+        (0 == RemediateEnsurePermissionsOnEtcIssueNet()) &&
+        (0 == RemediateEnsurePermissionsOnEtcHostsAllow()) && 
+        (0 == RemediateEnsurePermissionsOnEtcHostsDeny()) &&
+        (0 == RemediateEnsurePermissionsOnEtcSshSshdConfig()) &&
+        (0 == RemediateEnsurePermissionsOnEtcShadow()) &&
+        (0 == RemediateEnsurePermissionsOnEtcShadowDash()) &&
+        (0 == RemediateEnsurePermissionsOnEtcGShadow()) &&
+        (0 == RemediateEnsurePermissionsOnEtcGShadowDash()) &&
+        (0 == RemediateEnsurePermissionsOnEtcPasswd()) &&
+        (0 == RemediateEnsurePermissionsOnEtcPasswdDash()) &&
+        (0 == RemediateEnsurePermissionsOnEtcGroup()) &&
+        (0 == RemediateEnsurePermissionsOnEtcGroupDash()) &&
+        (0 == RemediateEnsurePermissionsOnEtcAnaCronTab()) &&
+        (0 == RemediateEnsurePermissionsOnEtcCronD()) &&
+        (0 == RemediateEnsurePermissionsOnEtcCronDaily()) &&
+        (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
+        (0 == RemediateEnsurePermissionsOnEtcCronMonthly()) &&
+        (0 == RemediateEnsurePermissionsOnEtcCronWeekly())) ? 0 : ENOENT;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -268,6 +557,66 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
         }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfig))
+        {
+            result = AuditEnsurePermissionsOnEtcSshSshdConfig() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadow))
+        {
+            result = AuditEnsurePermissionsOnEtcShadow() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDash))
+        {
+            result = AuditEnsurePermissionsOnEtcShadowDash() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadow))
+        {
+            result = AuditEnsurePermissionsOnEtcGShadow() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDash))
+        {
+            result = AuditEnsurePermissionsOnEtcGShadowDash() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswd))
+        {
+            result = AuditEnsurePermissionsOnEtcPasswd() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDash))
+        {
+            result = AuditEnsurePermissionsOnEtcPasswdDash() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroup))
+        {
+            result = AuditEnsurePermissionsOnEtcGroup() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDash))
+        {
+            result = AuditEnsurePermissionsOnEtcGroupDash() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTab))
+        {
+            result = AuditEnsurePermissionsOnEtcAnaCronTab() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronD))
+        {
+            result = AuditEnsurePermissionsOnEtcCronD() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDaily))
+        {
+            result = AuditEnsurePermissionsOnEtcCronDaily() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourly))
+        {
+            result = AuditEnsurePermissionsOnEtcCronHourly() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthly))
+        {
+            result = AuditEnsurePermissionsOnEtcCronMonthly() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeekly))
+        {
+            result = AuditEnsurePermissionsOnEtcCronWeekly() ? g_fail : g_pass;
+        }
         else
         {
             OsConfigLogError(SecurityBaselineGetLog(), "MmiGet called for an unsupported object (%s)", objectName);
@@ -366,6 +715,66 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcHostsDenyObject))
         {
             status = RemediateEnsurePermissionsOnEtcHostsDeny();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfig))
+        {
+            status = RemediateEnsurePermissionsOnEtcSshSshdConfig();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadow))
+        {
+            status = RemediateEnsurePermissionsOnEtcShadow();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDash))
+        {
+            status = RemediateEnsurePermissionsOnEtcShadowDash();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadow))
+        {
+            status = RemediateEnsurePermissionsOnEtcGShadow();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDash))
+        {
+            status = RemediateEnsurePermissionsOnEtcGShadowDash();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswd))
+        {
+            status = RemediateEnsurePermissionsOnEtcPasswd();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDash))
+        {
+            status = RemediateEnsurePermissionsOnEtcPasswdDash();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroup))
+        {
+            status = RemediateEnsurePermissionsOnEtcGroup();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDash))
+        {
+            status = RemediateEnsurePermissionsOnEtcGroupDash();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTab))
+        {
+            status = RemediateEnsurePermissionsOnEtcAnaCronTab();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronD))
+        {
+            status = RemediateEnsurePermissionsOnEtcCronD();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDaily))
+        {
+            status = RemediateEnsurePermissionsOnEtcCronDaily();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourly))
+        {
+            status = RemediateEnsurePermissionsOnEtcCronHourly();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthly))
+        {
+            status = RemediateEnsurePermissionsOnEtcCronMonthly();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeekly))
+        {
+            status = RemediateEnsurePermissionsOnEtcCronWeekly();
         }
         else
         {

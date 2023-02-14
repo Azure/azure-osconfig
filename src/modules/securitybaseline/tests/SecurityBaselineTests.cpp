@@ -30,12 +30,42 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcIssueNetObject = "auditEnsurePermissionsOnEtcIssueNet";
         const char* m_auditEnsurePermissionsOnEtcHostsAllowObject = "auditEnsurePermissionsOnEtcHostsAllow";
         const char* m_auditEnsurePermissionsOnEtcHostsDenyObject = "auditEnsurePermissionsOnEtcHostsDeny";
+        const char* m_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
+        const char* m_auditEnsurePermissionsOnEtcShadowObject = "auditEnsurePermissionsOnEtcShadow";
+        const char* m_auditEnsurePermissionsOnEtcShadowDashObject = "auditEnsurePermissionsOnEtcShadowDash";
+        const char* m_auditEnsurePermissionsOnEtcGShadowObject = "auditEnsurePermissionsOnEtcGShadow";
+        const char* m_auditEnsurePermissionsOnEtcGShadowDashObject = "auditEnsurePermissionsOnEtcGShadowDash";
+        const char* m_auditEnsurePermissionsOnEtcPasswdObject = "auditEnsurePermissionsOnEtcPasswd";
+        const char* m_auditEnsurePermissionsOnEtcPasswdDashObject = "auditEnsurePermissionsOnEtcPasswdDash";
+        const char* m_auditEnsurePermissionsOnEtcGroupObject = "auditEnsurePermissionsOnEtcGroup";
+        const char* m_auditEnsurePermissionsOnEtcGroupDashObject = "auditEnsurePermissionsOnEtcGroupDash";
+        const char* m_auditEnsurePermissionsOnEtcAnaCronTabObject = "auditEnsurePermissionsOnEtcAnaCronTab";
+        const char* m_auditEnsurePermissionsOnEtcCronDObject = "auditEnsurePermissionsOnEtcCronD";
+        const char* m_auditEnsurePermissionsOnEtcCronDailyObject = "auditEnsurePermissionsOnEtcCronDaily";
+        const char* m_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
+        const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
+        const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
         const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
         const char* m_remediateEnsurePermissionsOnEtcHostsAllowObject = "remediateEnsurePermissionsOnEtcHostsAllow";
         const char* m_remediateEnsurePermissionsOnEtcHostsDenyObject = "remediateEnsurePermissionsOnEtcHostsDeny";
+        const char* m_remediateEnsurePermissionsOnEtcSshSshdConfigObject = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+        const char* m_remediateEnsurePermissionsOnEtcShadowObject = "remediateEnsurePermissionsOnEtcShadow";
+        const char* m_remediateEnsurePermissionsOnEtcShadowDashObject = "remediateEnsurePermissionsOnEtcShadowDash";
+        const char* m_remediateEnsurePermissionsOnEtcGShadowObject = "remediateEnsurePermissionsOnEtcGShadow";
+        const char* m_remediateEnsurePermissionsOnEtcGShadowDashObject = "remediateEnsurePermissionsOnEtcGShadowDash";
+        const char* m_remediateEnsurePermissionsOnEtcPasswdObject = "remediateEnsurePermissionsOnEtcPasswd";
+        const char* m_remediateEnsurePermissionsOnEtcPasswdDashObject = "remediateEnsurePermissionsOnEtcPasswdDash";
+        const char* m_remediateEnsurePermissionsOnEtcGroupObject = "remediateEnsurePermissionsOnEtcGroup";
+        const char* m_remediateEnsurePermissionsOnEtcGroupDashObject = "remediateEnsurePermissionsOnEtcGroupDash";
+        const char* m_remediateEnsurePermissionsOnEtcAnaCronTabObject = "remediateEnsurePermissionsOnEtcAnaCronTab";
+        const char* m_remediateEnsurePermissionsOnEtcCronDObject = "remediateEnsurePermissionsOnEtcCronD";
+        const char* m_remediateEnsurePermissionsOnEtcCronDailyObject = "remediateEnsurePermissionsOnEtcCronDaily";
+        const char* m_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
+        const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
+        const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
 
         const char* m_clientName = "SecurityBaselineTest";
 
@@ -107,7 +137,22 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
-        m_auditEnsurePermissionsOnEtcHostsDenyObject
+        m_auditEnsurePermissionsOnEtcHostsDenyObject,
+        m_auditEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_auditEnsurePermissionsOnEtcShadowObject,
+        m_auditEnsurePermissionsOnEtcShadowDashObject,
+        m_auditEnsurePermissionsOnEtcGShadowObject,
+        m_auditEnsurePermissionsOnEtcGShadowDashObject,
+        m_auditEnsurePermissionsOnEtcPasswdObject,
+        m_auditEnsurePermissionsOnEtcPasswdDashObject,
+        m_auditEnsurePermissionsOnEtcGroupObject,
+        m_auditEnsurePermissionsOnEtcGroupDashObject,
+        m_auditEnsurePermissionsOnEtcAnaCronTabObject,
+        m_auditEnsurePermissionsOnEtcCronDObject,
+        m_auditEnsurePermissionsOnEtcCronDailyObject,
+        m_auditEnsurePermissionsOnEtcCronHourlyObject,
+        m_auditEnsurePermissionsOnEtcCronMonthlyObject,
+        m_auditEnsurePermissionsOnEtcCronWeeklyObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -140,7 +185,22 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
-        m_auditEnsurePermissionsOnEtcHostsDenyObject
+        m_auditEnsurePermissionsOnEtcHostsDenyObject,
+        m_auditEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_auditEnsurePermissionsOnEtcShadowObject,
+        m_auditEnsurePermissionsOnEtcShadowDashObject,
+        m_auditEnsurePermissionsOnEtcGShadowObject,
+        m_auditEnsurePermissionsOnEtcGShadowDashObject,
+        m_auditEnsurePermissionsOnEtcPasswdObject,
+        m_auditEnsurePermissionsOnEtcPasswdDashObject,
+        m_auditEnsurePermissionsOnEtcGroupObject,
+        m_auditEnsurePermissionsOnEtcGroupDashObject,
+        m_auditEnsurePermissionsOnEtcAnaCronTabObject,
+        m_auditEnsurePermissionsOnEtcCronDObject,
+        m_auditEnsurePermissionsOnEtcCronDailyObject,
+        m_auditEnsurePermissionsOnEtcCronHourlyObject,
+        m_auditEnsurePermissionsOnEtcCronMonthlyObject,
+        m_auditEnsurePermissionsOnEtcCronWeeklyObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -228,7 +288,22 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
         m_remediateEnsurePermissionsOnEtcHostsAllowObject,
-        m_remediateEnsurePermissionsOnEtcHostsDenyObject
+        m_remediateEnsurePermissionsOnEtcHostsDenyObject,
+        m_remediateEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_remediateEnsurePermissionsOnEtcShadowObject,
+        m_remediateEnsurePermissionsOnEtcShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcGShadowObject,
+        m_remediateEnsurePermissionsOnEtcGShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcPasswdObject,
+        m_remediateEnsurePermissionsOnEtcPasswdDashObject,
+        m_remediateEnsurePermissionsOnEtcGroupObject,
+        m_remediateEnsurePermissionsOnEtcGroupDashObject,
+        m_remediateEnsurePermissionsOnEtcAnaCronTabObject,
+        m_remediateEnsurePermissionsOnEtcCronDObject,
+        m_remediateEnsurePermissionsOnEtcCronDailyObject,
+        m_remediateEnsurePermissionsOnEtcCronHourlyObject,
+        m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
+        m_remediateEnsurePermissionsOnEtcCronWeeklyObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
