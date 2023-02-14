@@ -557,63 +557,63 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfig))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
         {
             result = AuditEnsurePermissionsOnEtcSshSshdConfig() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadow))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowObject))
         {
             result = AuditEnsurePermissionsOnEtcShadow() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDash))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDashObject))
         {
             result = AuditEnsurePermissionsOnEtcShadowDash() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadow))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowObject))
         {
             result = AuditEnsurePermissionsOnEtcGShadow() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDash))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDashObject))
         {
             result = AuditEnsurePermissionsOnEtcGShadowDash() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswd))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdObject))
         {
             result = AuditEnsurePermissionsOnEtcPasswd() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDash))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDashObject))
         {
             result = AuditEnsurePermissionsOnEtcPasswdDash() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroup))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupObject))
         {
             result = AuditEnsurePermissionsOnEtcGroup() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDash))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDashObject))
         {
             result = AuditEnsurePermissionsOnEtcGroupDash() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTab))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTabObject))
         {
             result = AuditEnsurePermissionsOnEtcAnaCronTab() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronD))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
         {
             result = AuditEnsurePermissionsOnEtcCronD() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDaily))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDailyObject))
         {
             result = AuditEnsurePermissionsOnEtcCronDaily() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourly))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourlyObject))
         {
             result = AuditEnsurePermissionsOnEtcCronHourly() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthly))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthlyObject))
         {
             result = AuditEnsurePermissionsOnEtcCronMonthly() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeekly))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeeklyObject))
         {
             result = AuditEnsurePermissionsOnEtcCronWeekly() ? g_fail : g_pass;
         }
