@@ -73,7 +73,6 @@ jobs:
 
       - name: Run ctest
         uses: ./.github/actions/container-exec
-        continue-on-error: true
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
@@ -81,6 +80,7 @@ jobs:
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
+        if: always()
         with:
           path: ./build/gtest-output
           output: ${{ steps.test.outputs.xml }}
@@ -92,49 +92,3 @@ jobs:
           path: |
             ${{ steps.test.outputs.log }}
             ${{ steps.test.outputs.xml }}
-
-  coverage:
-    name: Code coverage
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/azure/azure-osconfig/ubuntu20.04-amd64:latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build azure-osconfig
-        run: |
-          cmake -S ./src -B ./build -DCMAKE_build-type=Debug -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=OFF -DCOVERAGE=ON -G Ninja
-          cmake --build ./build --config Debug
-      - name: Run ctest
-        working-directory: ./build
-        run: ctest
-
-      - name: Run gcovr
-        working-directory: ./build
-        run: gcovr -r ../src . -e ../src/adapters/pnp/ --xml coverage.xml
-
-      - name: Generate markdown report
-        uses: irongut/CodeCoverageSummary@v1.2.0
-        with:
-          filename: ./build/coverage.xml
-          fail_below_min: true
-          format: markdown
-          hide_complexity: true
-          output: both
-          badge: true
-          thresholds: "60 80"
-
-      - name: Create coverage report
-        uses: ./.github/actions/check-run
-        with:
-          name: Coverage report
-          title: Code coverage
-          markdown: ./code-coverage-results.md
-
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: code-coverage
-          path: |
-            ./build/coverage.xml
-            ./code-coverage-results.md
