@@ -189,7 +189,7 @@ static int AuditEnsurePermissionsOnEtcGroupDash(void)
 static int AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
     // Debian and other distros may not have anacron installed by default:
-    return IsFilePresent(g_etcAnacronTab) ? CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return FileExists(g_etcAnacronTab) ? CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int AuditEnsurePermissionsOnEtcCronD(void)
@@ -311,7 +311,7 @@ static int RemediateEnsurePermissionsOnEtcGroupDash(void)
 static int RemediateEnsurePermissionsOnEtcAnacronTab(void)
 {
     // Debian and other distros may not have anacron installed by default:
-    return IsFilePresent(g_etcAnacronTab) ? SetFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return FileExists(g_etcAnacronTab) ? SetFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(void)
