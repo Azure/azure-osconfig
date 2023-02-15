@@ -75,7 +75,7 @@ static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
 static const char* g_etcHostsDeny = "/etc/hosts.deny";
-static const char* g_etcSshSshdConfig = "/etc/ssh/sshd_config"; //TODO: not present on Ubuntu 20.04, check (only /etc/ssh/ssh_config exists)
+static const char* g_etcSshSshdConfig = "/etc/ssh/sshd_config";
 static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcShadowDash = "/etc/shadow-";
 static const char* g_etcGShadow = "/etc/gshadow";
@@ -224,7 +224,10 @@ static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 
 static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    // The Security Baseline asks for /etc/ssh/sshd_config. 
+    // On Ubuntu /etc/ssh/sshd_config is not present unless the openssh-server package is installed. 
+    // etc/ssh/sshd_config is installed with the ssh client and is inbox in the basic Ubuntu distro.
+    return FileExists(g_etcSshSshdConfig) ? CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int AuditEnsurePermissionsOnEtcShadow(void)
@@ -342,7 +345,10 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    // The Security Baseline asks for /etc/ssh/sshd_config. 
+    // On Ubuntu /etc/ssh/sshd_config is not present unless the openssh-server package is installed. 
+    // etc/ssh/sshd_config is installed with the ssh client and is inbox in the basic Ubuntu distro.
+    return FileExists(g_etcSshSshdConfig) ? SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int RemediateEnsurePermissionsOnEtcShadow(void)

@@ -84,15 +84,15 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
 {
-    // S_ISUID (0x04000): Set user ID on execution
-    // S_ISGID (0x02000): Set group ID on execution
-    // S_IRUSR (0x00400): Read permission, owner
-    // S_IWUSR (0x00200): Write permission, owner
-    // S_IRGRP (0x00040): Read permission, group
-    // S_IWGRP (0x00020): Write permission, group.
-    // S_IXUSR (0x00100): Execute/search permission, owner
-    // S_IXGRP (0x00010): Execute/search permission, group
-    
+    // S_ISUID (4000): Set user ID on execution
+    // S_ISGID (2000): Set group ID on execution
+    // S_IRUSR (0400): Read permission, owner
+    // S_IWUSR (0200): Write permission, owner
+    // S_IRGRP (0040): Read permission, group
+    // S_IWGRP (0020): Write permission, group.
+    // S_IXUSR (0100): Execute/search permission, owner
+    // S_IXGRP (0010): Execute/search permission, group
+
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
@@ -140,7 +140,7 @@ bool UnlockFile(FILE* file, void* log)
     return LockUnlockFile(file, false, log);
 }
 
-static unsigned int GetFileAccessFlags(unsigned int mode)
+static unsigned int FilterFileAccessFlags(unsigned int mode)
 {
     // S_IRWXU (00700): Read, write, execute/search by owner
     // S_IRUSR (00400): Read permission, owner
@@ -251,14 +251,20 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
     mode_t desiredMode = 0;
     int result = ENOENT;
 
-    if (fileName && FileExists(fileName))
+    if (NULL == fileName)
+    {
+        OsConfigLogError(log, "CheckFileAccess called with an invalid file name argument");
+        return EINVAL;
+    }
+
+    if (FileExists(fileName))
     {
         if (0 == (result = stat(fileName, &statStruct)))
         {
             if (((uid_t)desiredUserId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid))
             {
-                currentMode = GetFileAccessFlags(statStruct.st_mode);
-                desiredMode = GetFileAccessFlags(desiredFileAccess);
+                currentMode = FilterFileAccessFlags(statStruct.st_mode);
+                desiredMode = FilterFileAccessFlags(desiredFileAccess);
 
                 if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
                     (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
@@ -290,7 +296,7 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
     }
     else
     {
-        OsConfigLogError(log, "CheckFileAccess called with an invalid file name argument or the file does not exist (file: %s)", fileName);
+        OsConfigLogError(log, "CheckFileAccess called for a file %s that cannot be found", fileName);
     }
 
     return result;
@@ -300,7 +306,13 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
 {
     int result = ENOENT;
 
-    if (fileName && FileExists(fileName))
+    if (NULL == fileName)
+    {
+        OsConfigLogError(log, "SetFileAccess called with an invalid file name argument");
+        return EINVAL;
+    }
+
+    if (FileExists(fileName))
     {
         if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess, log)))
         {
@@ -333,7 +345,7 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
     }
     else
     {
-        OsConfigLogError(log, "SetFileAccess called with an invalid file name argument or the file does not exist (file: %s)", fileName);
+        OsConfigLogError(log, "SetFileAccess called for a file %s that cannot be found", fileName);
     }
 
     return result;

@@ -1138,4 +1138,10 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
         EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, i, nullptr));
     }
     EXPECT_TRUE(Cleanup(m_path));
+    
+    EXPECT_EQ(ENOENT, SetFileAccess(m_path, 0, 0, 777, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileAccess(m_path, 0, 0, 777, nullptr));
+    
+    EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
 }
