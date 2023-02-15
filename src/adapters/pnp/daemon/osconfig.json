@@ -166,7 +166,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsurePermissionsOnEtcAnaCronTab"
+      "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab"
     },
     {
       "ComponentName": "SecurityBaseline",

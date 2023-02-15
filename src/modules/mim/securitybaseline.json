@@ -97,7 +97,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsurePermissionsOnEtcAnaCronTab",
+          "name": "auditEnsurePermissionsOnEtcAnacronTab",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -211,7 +211,7 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsurePermissionsOnEtcAnaCronTab",
+          "name": "remediateEnsurePermissionsOnEtcAnacronTab",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

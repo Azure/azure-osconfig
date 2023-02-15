@@ -30,7 +30,7 @@ static const char* g_auditEnsurePermissionsOnEtcPasswdObject = "auditEnsurePermi
 static const char* g_auditEnsurePermissionsOnEtcPasswdDashObject = "auditEnsurePermissionsOnEtcPasswdDash";
 static const char* g_auditEnsurePermissionsOnEtcGroupObject = "auditEnsurePermissionsOnEtcGroup";
 static const char* g_auditEnsurePermissionsOnEtcGroupDashObject = "auditEnsurePermissionsOnEtcGroupDash";
-static const char* g_auditEnsurePermissionsOnEtcAnaCronTabObject = "auditEnsurePermissionsOnEtcAnaCronTab";
+static const char* g_auditEnsurePermissionsOnEtcAnacronTabObject = "auditEnsurePermissionsOnEtcAnacronTab";
 static const char* g_auditEnsurePermissionsOnEtcCronDObject = "auditEnsurePermissionsOnEtcCronD";
 static const char* g_auditEnsurePermissionsOnEtcCronDailyObject = "auditEnsurePermissionsOnEtcCronDaily";
 static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
@@ -51,7 +51,7 @@ static const char* g_remediateEnsurePermissionsOnEtcPasswdObject = "remediateEns
 static const char* g_remediateEnsurePermissionsOnEtcPasswdDashObject = "remediateEnsurePermissionsOnEtcPasswdDash";
 static const char* g_remediateEnsurePermissionsOnEtcGroupObject = "remediateEnsurePermissionsOnEtcGroup";
 static const char* g_remediateEnsurePermissionsOnEtcGroupDashObject = "remediateEnsurePermissionsOnEtcGroupDash";
-static const char* g_remediateEnsurePermissionsOnEtcAnaCronTabObject = "remediateEnsurePermissionsOnEtcAnaCronTab";
+static const char* g_remediateEnsurePermissionsOnEtcAnacronTabObject = "remediateEnsurePermissionsOnEtcAnacronTab";
 static const char* g_remediateEnsurePermissionsOnEtcCronDObject = "remediateEnsurePermissionsOnEtcCronD";
 static const char* g_remediateEnsurePermissionsOnEtcCronDailyObject = "remediateEnsurePermissionsOnEtcCronDaily";
 static const char* g_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
@@ -84,7 +84,7 @@ static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
 static const char* g_etcGroup = "/etc/group";
 static const char* g_etcGroupDash = "/etc/group-";
-static const char* g_etcAnaCronTab = "/etc/anacrontab";
+static const char* g_etcAnacronTab = "/etc/anacrontab";
 static const char* g_etcCronD = "/etc/cron.d";
 static const char* g_etcCronDaily = "/etc/cron.daily";
 static const char* g_etcCronHourly = "/etc/cron.hourly";
@@ -186,9 +186,10 @@ static int AuditEnsurePermissionsOnEtcGroupDash(void)
     return CheckFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
 };
 
-static int AuditEnsurePermissionsOnEtcAnaCronTab(void)
+static int AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
-    return CheckFileAccess(g_etcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+    // Debian and other distros may not have anacron installed by default:
+    return IsFilePresent(g_etcAnacronTab) ? CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int AuditEnsurePermissionsOnEtcCronD(void)
@@ -231,7 +232,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePermissionsOnEtcPasswdDash()) &&
         (0 == AuditEnsurePermissionsOnEtcGroup()) &&
         (0 == AuditEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcAnaCronTab()) &&
+        (0 == AuditEnsurePermissionsOnEtcAnacronTab()) &&
         (0 == AuditEnsurePermissionsOnEtcCronD()) &&
         (0 == AuditEnsurePermissionsOnEtcCronDaily()) &&
         (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
@@ -307,9 +308,10 @@ static int RemediateEnsurePermissionsOnEtcGroupDash(void)
     return SetFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
 };
 
-static int RemediateEnsurePermissionsOnEtcAnaCronTab(void)
+static int RemediateEnsurePermissionsOnEtcAnacronTab(void)
 {
-    return SetFileAccess(g_etcAnaCronTab, 0, 0, 600, SecurityBaselineGetLog());
+    // Debian and other distros may not have anacron installed by default:
+    return IsFilePresent(g_etcAnacronTab) ? SetFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(void)
@@ -352,7 +354,7 @@ int RemediateSecurityBaseline(void)
         (0 == RemediateEnsurePermissionsOnEtcPasswdDash()) &&
         (0 == RemediateEnsurePermissionsOnEtcGroup()) &&
         (0 == RemediateEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcAnaCronTab()) &&
+        (0 == RemediateEnsurePermissionsOnEtcAnacronTab()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronD()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronDaily()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
@@ -515,9 +517,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsurePermissionsOnEtcGroupDash() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnaCronTabObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnacronTabObject))
         {
-            result = AuditEnsurePermissionsOnEtcAnaCronTab() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcAnacronTab() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
         {
@@ -675,9 +677,9 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsurePermissionsOnEtcGroupDash();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcAnaCronTabObject))
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcAnacronTabObject))
         {
-            status = RemediateEnsurePermissionsOnEtcAnaCronTab();
+            status = RemediateEnsurePermissionsOnEtcAnacronTab();
         }
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronDObject))
         {

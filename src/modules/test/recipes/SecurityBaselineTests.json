@@ -76,7 +76,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcAnaCronTab"
+    "ObjectName": "remediateEnsurePermissionsOnEtcAnacronTab"
   },
   {
     "ObjectType": "Desired",
@@ -190,7 +190,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcAnaCronTab",
+    "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab",
     "Payload": "PASS"
   },
   {

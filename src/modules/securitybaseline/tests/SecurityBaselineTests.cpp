@@ -39,7 +39,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcPasswdDashObject = "auditEnsurePermissionsOnEtcPasswdDash";
         const char* m_auditEnsurePermissionsOnEtcGroupObject = "auditEnsurePermissionsOnEtcGroup";
         const char* m_auditEnsurePermissionsOnEtcGroupDashObject = "auditEnsurePermissionsOnEtcGroupDash";
-        const char* m_auditEnsurePermissionsOnEtcAnaCronTabObject = "auditEnsurePermissionsOnEtcAnaCronTab";
+        const char* m_auditEnsurePermissionsOnEtcAnacronTabObject = "auditEnsurePermissionsOnEtcAnacronTab";
         const char* m_auditEnsurePermissionsOnEtcCronDObject = "auditEnsurePermissionsOnEtcCronD";
         const char* m_auditEnsurePermissionsOnEtcCronDailyObject = "auditEnsurePermissionsOnEtcCronDaily";
         const char* m_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
@@ -60,7 +60,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcPasswdDashObject = "remediateEnsurePermissionsOnEtcPasswdDash";
         const char* m_remediateEnsurePermissionsOnEtcGroupObject = "remediateEnsurePermissionsOnEtcGroup";
         const char* m_remediateEnsurePermissionsOnEtcGroupDashObject = "remediateEnsurePermissionsOnEtcGroupDash";
-        const char* m_remediateEnsurePermissionsOnEtcAnaCronTabObject = "remediateEnsurePermissionsOnEtcAnaCronTab";
+        const char* m_remediateEnsurePermissionsOnEtcAnacronTabObject = "remediateEnsurePermissionsOnEtcAnacronTab";
         const char* m_remediateEnsurePermissionsOnEtcCronDObject = "remediateEnsurePermissionsOnEtcCronD";
         const char* m_remediateEnsurePermissionsOnEtcCronDailyObject = "remediateEnsurePermissionsOnEtcCronDaily";
         const char* m_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
@@ -147,7 +147,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcPasswdDashObject,
         m_auditEnsurePermissionsOnEtcGroupObject,
         m_auditEnsurePermissionsOnEtcGroupDashObject,
-        m_auditEnsurePermissionsOnEtcAnaCronTabObject,
+        m_auditEnsurePermissionsOnEtcAnacronTabObject,
         m_auditEnsurePermissionsOnEtcCronDObject,
         m_auditEnsurePermissionsOnEtcCronDailyObject,
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
@@ -195,7 +195,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcPasswdDashObject,
         m_auditEnsurePermissionsOnEtcGroupObject,
         m_auditEnsurePermissionsOnEtcGroupDashObject,
-        m_auditEnsurePermissionsOnEtcAnaCronTabObject,
+        m_auditEnsurePermissionsOnEtcAnacronTabObject,
         m_auditEnsurePermissionsOnEtcCronDObject,
         m_auditEnsurePermissionsOnEtcCronDailyObject,
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
@@ -298,7 +298,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePermissionsOnEtcPasswdDashObject,
         m_remediateEnsurePermissionsOnEtcGroupObject,
         m_remediateEnsurePermissionsOnEtcGroupDashObject,
-        m_remediateEnsurePermissionsOnEtcAnaCronTabObject,
+        m_remediateEnsurePermissionsOnEtcAnacronTabObject,
         m_remediateEnsurePermissionsOnEtcCronDObject,
         m_remediateEnsurePermissionsOnEtcCronDailyObject,
         m_remediateEnsurePermissionsOnEtcCronHourlyObject,
