@@ -687,7 +687,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         status = EINVAL;
     }
 
-    if ((MMI_OK == status) && (NULL != payload) || (0 < payloadSizeBytes))
+    if ((MMI_OK == status) && (NULL != payload) && (0 < payloadSizeBytes))
     {
         if (NULL != (payloadString = malloc(payloadSizeBytes + 1)))
         {
