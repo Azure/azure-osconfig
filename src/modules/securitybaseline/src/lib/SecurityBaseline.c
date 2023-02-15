@@ -668,7 +668,8 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
 
     int status = MMI_OK;
 
-    if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (0 >= payloadSizeBytes))
+    // No payload is accepted for now, this may change once the complete Security Baseline is implemented
+    if ((NULL == componentName) || (NULL == objectName))
     {
         OsConfigLogError(SecurityBaselineGetLog(), "MmiSet(%s, %s, %s, %d) called with invalid arguments", componentName, objectName, payload, payloadSizeBytes);
         status = EINVAL;
@@ -686,7 +687,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         status = EINVAL;
     }
 
-    if (MMI_OK == status)
+    if ((MMI_OK == status) && (NULL != payload) || (0 < payloadSizeBytes))
     {
         if (NULL != (payloadString = malloc(payloadSizeBytes + 1)))
         {
