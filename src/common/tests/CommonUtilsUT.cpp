@@ -1128,3 +1128,20 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
     FREE_MEMORY(reportedProperties);
 }
+
+TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    for (int i = 0; i < 7777; i++)
+    {
+        EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, i, nullptr));
+        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, i, nullptr));
+    }
+    EXPECT_TRUE(Cleanup(m_path));
+    
+    EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, 777, nullptr));
+    EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, 777, nullptr));
+    
+    EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
+}

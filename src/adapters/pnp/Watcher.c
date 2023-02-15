@@ -144,13 +144,19 @@ static int InitializeGitClone(const char* gitRepositoryUrl, const char* gitBranc
     char* cloneCommand = NULL;
     int error = 0;
 
-    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile))
+    // Do not log gitRepositoryUrl as it may contain Git account credentials
+
+    if ((NULL == gitRepositoryUrl) || (NULL == gitBranch) || (NULL == gitClonePath) || (NULL == gitClonedDcFile) || 
+        (0 == strcmp("", gitClonePath)) || (0 == strcmp("", gitClonedDcFile)))
     {
         OsConfigLogError(log, "InitializeGitClone: invalid arguments");
         return EINVAL;
     }
-
-    // Do not log gitRepositoryUrl as it may contain Git account credentials
+    else if ((0 == strcmp("", gitRepositoryUrl)) || (0 == strcmp("", gitBranch)))
+    {
+        OsConfigLogError(log, "InitializeGitClone: invoked with no Git repository or branch");
+        return ENOENT;
+    }
 
     cloneCommand = FormatAllocateString(g_gitCloneTemplate, gitBranch, gitRepositoryUrl, gitClonePath);
     configCommand = FormatAllocateString(g_gitConfigTemplate, gitClonePath);

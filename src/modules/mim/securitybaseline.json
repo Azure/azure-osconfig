@@ -7,63 +7,243 @@
       "type": "mimComponent",
       "contents": [
         {
-          "name": "RemediateSecurityBaseline",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
-          "name": "AuditSecurityBaseline",
+          "name": "auditSecurityBaseline",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "RemediateEnsurePermissionsOnEtcIssue",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
-          "name": "AuditEnsurePermissionsOnEtcIssue",
+          "name": "auditEnsurePermissionsOnEtcIssue",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "RemediateEnsurePermissionsOnEtcIssueNet",
+          "name": "remediateEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "AuditEnsurePermissionsOnEtcIssueNet",
+          "name": "auditEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "RemediateEnsurePermissionsOnEtcHostsAllow",
+          "name": "auditEnsurePermissionsOnEtcHostsAllow",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcHostsDeny",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcSshSshdConfig",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcShadow",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcShadowDash",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcGShadow",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcGShadowDash",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcPasswd",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcPasswdDash",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcGroup",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcGroupDash",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcAnacronTab",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcCronD",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcCronDaily",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcCronHourly",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcCronMonthly",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePermissionsOnEtcCronWeekly",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "AuditEnsurePermissionsOnEtcHostsAllow",
-          "type": "mimObject",
-          "desired": false,
-          "schema": "string"
-        },
-        {
-          "name": "RemediateEnsurePermissionsOnEtcHostsDeny",
+          "name": "remediateEnsurePermissionsOnEtcIssue",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "AuditEnsurePermissionsOnEtcHostsDeny",
+          "name": "remediateEnsurePermissionsOnEtcHostsAllow",
           "type": "mimObject",
-          "desired": false,
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcHostsDeny",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcSshSshdConfig",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcShadow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcShadowDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcGShadow",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcGShadowDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcPasswd",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcPasswdDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcGroup",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcGroupDash",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcAnacronTab",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcCronD",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcCronDaily",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcCronHourly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcCronMonthly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcCronWeekly",
+          "type": "mimObject",
+          "desired": true,
           "schema": "string"
         }
       ]

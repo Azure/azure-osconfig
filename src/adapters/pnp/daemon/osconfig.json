@@ -5,7 +5,7 @@
   "GitRepositoryUrl": "",
   "GitBranch": "",
   "LocalManagement": 0,
-  "ModelVersion": 17,
+  "ModelVersion": 18,
   "IotHubProtocol": 2,
   "Reported": [
     {
@@ -163,6 +163,86 @@
     {
       "ComponentName": "PackageManagerConfiguration",
       "ObjectName": "state"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcCronD"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcCronDaily"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcCronHourly"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcCronMonthly"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcGShadow"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcGShadowDash"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcGroup"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcGroupDash"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcHostsAllow"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcHostsDeny"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcIssue"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcIssueNet"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcSshSshdConfig"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcShadow"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcShadowDash"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcPasswd"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcPasswdDash"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditSecurityBaseline"
     },
     {
       "ComponentName": "Tpm",

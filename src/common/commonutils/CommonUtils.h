@@ -58,6 +58,9 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
+int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
+int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
+                                                                                                                                
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
