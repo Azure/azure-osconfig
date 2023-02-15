@@ -96,48 +96,6 @@ static const char* g_fail = "\"FAIL\"";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static char* g_auditSecurityBaseline = NULL;
-static char* g_auditEnsurePermissionsOnEtcIssue = NULL;
-static char* g_auditEnsurePermissionsOnEtcIssueNet = NULL;
-static char* g_auditEnsurePermissionsOnEtcHostsAllow = NULL;
-static char* g_auditEnsurePermissionsOnEtcHostsDeny = NULL;
-static char* g_auditEnsurePermissionsOnEtcSshSshdConfig = NULL;
-static char* g_auditEnsurePermissionsOnEtcShadow = NULL;
-static char* g_auditEnsurePermissionsOnEtcShadowDash = NULL;
-static char* g_auditEnsurePermissionsOnEtcGShadow = NULL;
-static char* g_auditEnsurePermissionsOnEtcGShadowDash = NULL;
-static char* g_auditEnsurePermissionsOnEtcPasswd = NULL;
-static char* g_auditEnsurePermissionsOnEtcPasswdDash = NULL;
-static char* g_auditEnsurePermissionsOnEtcGroup = NULL;
-static char* g_auditEnsurePermissionsOnEtcGroupDash = NULL;
-static char* g_auditEnsurePermissionsOnEtcAnaCronTab = NULL;
-static char* g_auditEnsurePermissionsOnEtcCronD = NULL;
-static char* g_auditEnsurePermissionsOnEtcCronDaily = NULL;
-static char* g_auditEnsurePermissionsOnEtcCronHourly = NULL;
-static char* g_auditEnsurePermissionsOnEtcCronMonthly = NULL;
-static char* g_auditEnsurePermissionsOnEtcCronWeekly = NULL;
-
-static char* g_remediateSecurityBaseline = NULL;
-static char* g_remediateEnsurePermissionsOnEtcIssue = NULL;
-static char* g_remediateEnsurePermissionsOnEtcIssueNet = NULL;
-static char* g_remediateEnsurePermissionsOnEtcHostsAllow = NULL;
-static char* g_remediateEnsurePermissionsOnEtcHostsDeny = NULL;
-static char* g_remediateEnsurePermissionsOnEtcSshSshdConfig = NULL;
-static char* g_remediateEnsurePermissionsOnEtcShadow = NULL;
-static char* g_remediateEnsurePermissionsOnEtcShadowDash = NULL;
-static char* g_remediateEnsurePermissionsOnEtcGShadow = NULL;
-static char* g_remediateEnsurePermissionsOnEtcGShadowDash = NULL;
-static char* g_remediateEnsurePermissionsOnEtcPasswd = NULL;
-static char* g_remediateEnsurePermissionsOnEtcPasswdDash = NULL;
-static char* g_remediateEnsurePermissionsOnEtcGroup = NULL;
-static char* g_remediateEnsurePermissionsOnEtcGroupDash = NULL;
-static char* g_remediateEnsurePermissionsOnEtcAnaCronTab = NULL;
-static char* g_remediateEnsurePermissionsOnEtcCronD = NULL;
-static char* g_remediateEnsurePermissionsOnEtcCronDaily = NULL;
-static char* g_remediateEnsurePermissionsOnEtcCronHourly = NULL;
-static char* g_remediateEnsurePermissionsOnEtcCronMonthly = NULL;
-static char* g_remediateEnsurePermissionsOnEtcCronWeekly = NULL;
-
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
@@ -156,48 +114,6 @@ void SecurityBaselineInitialize(void)
 void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
-
-    FREE_MEMORY(g_auditSecurityBaseline);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcIssue);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcIssueNet);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcHostsAllow);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcHostsDeny);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcSshSshdConfig);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcShadow);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcShadowDash);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGShadow);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGShadowDash);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcPasswd);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcPasswdDash);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGroup);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcGroupDash);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcAnaCronTab);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronD);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronDaily);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronHourly);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronMonthly);
-    FREE_MEMORY(g_auditEnsurePermissionsOnEtcCronWeekly);
-
-    FREE_MEMORY(g_remediateSecurityBaseline);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcIssue);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcIssueNet);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcHostsAllow);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcHostsDeny);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcSshSshdConfig);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcShadow);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcShadowDash);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGShadow);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGShadowDash);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcPasswd);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcPasswdDash);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGroup);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcGroupDash);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcAnaCronTab);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronD);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronDaily);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronHourly);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronMonthly);
-    FREE_MEMORY(g_remediateEnsurePermissionsOnEtcCronWeekly);
     
     CloseLog(&g_log);
 }
