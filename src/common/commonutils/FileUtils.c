@@ -296,7 +296,8 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
     }
     else
     {
-        OsConfigLogError(log, "CheckFileAccess called for a file %s that cannot be found", fileName);
+        OsConfigLogInfo(log, "%s not found, nothing to check", fileName);
+        result = 0;
     }
 
     return result;
@@ -345,7 +346,8 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
     }
     else
     {
-        OsConfigLogError(log, "SetFileAccess called for a file %s that cannot be found", fileName);
+        OsConfigLogInfo(log, "%s not found, nothing to set", fileName);
+        result = 0;
     }
 
     return result;

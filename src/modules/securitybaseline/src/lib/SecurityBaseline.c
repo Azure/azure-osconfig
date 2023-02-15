@@ -140,10 +140,7 @@ static int AuditEnsurePermissionsOnEtcHostsDeny(void)
 
 static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    // The Security Baseline asks for /etc/ssh/sshd_config. 
-    // On Ubuntu /etc/ssh/sshd_config is not present unless the openssh-server package is installed. 
-    // etc/ssh/sshd_config is installed with the ssh client and is inbox in the basic Ubuntu distro.
-    return FileExists(g_etcSshSshdConfig) ? CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcShadow(void)
@@ -188,8 +185,7 @@ static int AuditEnsurePermissionsOnEtcGroupDash(void)
 
 static int AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
-    // Debian and other distros may not have anacron installed by default:
-    return FileExists(g_etcAnacronTab) ? CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int AuditEnsurePermissionsOnEtcCronD(void)
@@ -262,10 +258,7 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(void)
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    // The Security Baseline asks for /etc/ssh/sshd_config. 
-    // On Ubuntu /etc/ssh/sshd_config is not present unless the openssh-server package is installed. 
-    // etc/ssh/sshd_config is installed with the ssh client and is inbox in the basic Ubuntu distro.
-    return FileExists(g_etcSshSshdConfig) ? SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadow(void)
@@ -310,8 +303,7 @@ static int RemediateEnsurePermissionsOnEtcGroupDash(void)
 
 static int RemediateEnsurePermissionsOnEtcAnacronTab(void)
 {
-    // Debian and other distros may not have anacron installed by default:
-    return FileExists(g_etcAnacronTab) ? SetFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) : 0;
+    return SetFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcCronD(void)
