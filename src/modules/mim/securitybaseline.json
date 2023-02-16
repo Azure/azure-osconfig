@@ -135,7 +135,7 @@
         {
           "name": "auditEnsurePermissionsOnEtcMotd",
           "type": "mimObject",
-          "desired": true,
+          "desired": false,
           "schema": "string"
         },
         {
