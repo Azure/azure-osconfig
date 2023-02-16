@@ -92,7 +92,7 @@ static const char* g_etcCronDaily = "/etc/cron.daily";
 static const char* g_etcCronHourly = "/etc/cron.hourly";
 static const char* g_etcCronMonthly = "/etc/cron.monthly";
 static const char* g_etcCronWeekly = "/etc/cron.weekly";
-static const char* g_etcMotd = "/etc/Motd";
+static const char* g_etcMotd = "/etc/motd";
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
