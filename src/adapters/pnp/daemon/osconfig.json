@@ -222,6 +222,10 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnEtcMotd"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePermissionsOnEtcSshSshdConfig"
     },
     {

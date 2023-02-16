@@ -133,6 +133,12 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsurePermissionsOnEtcMotd",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
@@ -242,6 +248,12 @@
     {
       "@type": "Property",
       "name": "remediateEnsurePermissionsOnEtcCronWeekly",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePermissionsOnEtcMotd",
       "schema": "string",
       "writable": true
     }

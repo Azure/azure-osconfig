@@ -104,6 +104,11 @@
     "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly"
   },
   {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePermissionsOnEtcMotd"
+  },
+  {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditSecurityBaseline",
@@ -221,6 +226,12 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePermissionsOnEtcMotd",
     "Payload": "PASS"
   },
   {

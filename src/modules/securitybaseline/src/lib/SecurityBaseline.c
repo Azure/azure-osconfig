@@ -36,6 +36,7 @@ static const char* g_auditEnsurePermissionsOnEtcCronDailyObject = "auditEnsurePe
 static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
 static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
 static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
+static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
 
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -57,6 +58,7 @@ static const char* g_remediateEnsurePermissionsOnEtcCronDailyObject = "remediate
 static const char* g_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
 static const char* g_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
 static const char* g_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
+static const char* g_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -90,6 +92,7 @@ static const char* g_etcCronDaily = "/etc/cron.daily";
 static const char* g_etcCronHourly = "/etc/cron.hourly";
 static const char* g_etcCronMonthly = "/etc/cron.monthly";
 static const char* g_etcCronWeekly = "/etc/cron.weekly";
+static const char* g_etcMotd = "/etc/motd";
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -213,6 +216,11 @@ static int AuditEnsurePermissionsOnEtcCronWeekly(void)
     return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
+static int AuditEnsurePermissionsOnEtcMotd(void)
+{
+    return CheckFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog());
+};
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -233,7 +241,8 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePermissionsOnEtcCronDaily()) &&
         (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
         (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronWeekly())) ? 0 : ENOENT;
+        (0 == AuditEnsurePermissionsOnEtcCronWeekly()) &&
+        (0 == AuditEnsurePermissionsOnEtcMotd())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -331,6 +340,11 @@ static int RemediateEnsurePermissionsOnEtcCronWeekly(void)
     return SetFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
 };
 
+static int RemediateEnsurePermissionsOnEtcMotd(void)
+{
+    return SetFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog());
+};
+
 int RemediateSecurityBaseline(void)
 {
     return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
@@ -351,7 +365,8 @@ int RemediateSecurityBaseline(void)
         (0 == RemediateEnsurePermissionsOnEtcCronDaily()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronWeekly())) ? 0 : ENOENT;
+        (0 == RemediateEnsurePermissionsOnEtcCronWeekly()) &&
+        (0 == RemediateEnsurePermissionsOnEtcMotd())) ? 0 : ENOENT;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -533,6 +548,10 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsurePermissionsOnEtcCronWeekly() ? g_fail : g_pass;
         }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcMotdObject))
+        {
+            result = AuditEnsurePermissionsOnEtcMotd() ? g_fail : g_pass;
+        }
         else
         {
             OsConfigLogError(SecurityBaselineGetLog(), "MmiGet called for an unsupported object (%s)", objectName);
@@ -692,6 +711,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcCronWeeklyObject))
         {
             status = RemediateEnsurePermissionsOnEtcCronWeekly();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcMotdObject))
+        {
+            status = RemediateEnsurePermissionsOnEtcMotd();
         }
         else
         {
