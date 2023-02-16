@@ -45,6 +45,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsurePermissionsOnEtcCronHourly";
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
+        const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
 
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -66,6 +67,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediateEnsurePermissionsOnEtcCronHourly";
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
+        const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
 
         const char* m_clientName = "SecurityBaselineTest";
 
@@ -152,7 +154,8 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcCronDailyObject,
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
-        m_auditEnsurePermissionsOnEtcCronWeeklyObject
+        m_auditEnsurePermissionsOnEtcCronWeeklyObject,
+        m_auditEnsurePermissionsOnEtcMotdObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -200,7 +203,8 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcCronDailyObject,
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
-        m_auditEnsurePermissionsOnEtcCronWeeklyObject
+        m_auditEnsurePermissionsOnEtcCronWeeklyObject,
+        m_auditEnsurePermissionsOnEtcMotdObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -303,7 +307,8 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePermissionsOnEtcCronDailyObject,
         m_remediateEnsurePermissionsOnEtcCronHourlyObject,
         m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
-        m_remediateEnsurePermissionsOnEtcCronWeeklyObject
+        m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
+        m_remediateEnsurePermissionsOnEtcMotdObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

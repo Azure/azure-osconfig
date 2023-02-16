@@ -133,6 +133,12 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsurePermissionsOnEtcMotd",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
@@ -242,6 +248,12 @@
         },
         {
           "name": "remediateEnsurePermissionsOnEtcCronWeekly",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcMotd",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
