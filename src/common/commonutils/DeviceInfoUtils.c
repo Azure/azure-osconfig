@@ -267,6 +267,34 @@ char* GetCpuModel(void* log)
     return textResult;
 }
 
+char* GetCpuFlags(void* log)
+{
+    const char* osCpuFlagsCommand = "lscpu | grep \"Flags:\"";
+    char* textResult = GetHardwareProperty(osCpuFlagsCommand, false, log);
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "CPU flags: '%s'", textResult);
+    }
+
+    return textResult;
+}
+
+bool IsCpuFlagSupported(const char* cpuFlag, void* log)
+{
+    bool result = false;
+    char* cpuFlags = GetCpuFlags(log);
+
+    if (NULL != strstr(cpuFlags, cpuFlag))
+    {
+        result = true;
+    }
+
+    FREE_MEMORY(cpuFlags);
+
+    return result;
+}
+
 long GetTotalMemory(void* log)
 {
     const char* osTotalMemoryCommand = "grep MemTotal /proc/meminfo";
