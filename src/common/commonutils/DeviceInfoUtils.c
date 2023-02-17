@@ -285,7 +285,7 @@ bool IsCpuFlagSupported(const char* cpuFlag, void* log)
     bool result = false;
     char* cpuFlags = GetCpuFlags(log);
 
-    if (NULL != strstr(cpuFlags, cpuFlag))
+    if ((NULL != cpuFlag) && (NULL != strstr(cpuFlags, cpuFlag)))
     {
         result = true;
     }
