@@ -37,6 +37,7 @@ static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsureP
 static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
 static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
+static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx"; //audit-only
 
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -221,6 +222,11 @@ static int AuditEnsurePermissionsOnEtcMotd(void)
     return CheckFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog());
 };
 
+static int AuditEnsureKernelSupportForCpuNx(void)
+{
+    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? 1 : 0;
+}
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -242,7 +248,8 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
         (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
         (0 == AuditEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == AuditEnsurePermissionsOnEtcMotd())) ? 0 : ENOENT;
+        (0 == AuditEnsurePermissionsOnEtcMotd()) &&
+        (0 == AuditEnsureKernelSupportForCpuNx())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -551,6 +558,10 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcMotdObject))
         {
             result = AuditEnsurePermissionsOnEtcMotd() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureKernelSupportForCpuNxObject))
+        {
+            result = AuditEnsureKernelSupportForCpuNx() ? g_fail : g_pass;
         }
         else
         {
