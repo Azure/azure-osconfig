@@ -46,6 +46,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
+        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx"; //audit-only
 
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -155,7 +156,8 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
-        m_auditEnsurePermissionsOnEtcMotdObject
+        m_auditEnsurePermissionsOnEtcMotdObject,
+        m_auditEnsureKernelSupportForCpuNxObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -204,7 +206,8 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcCronHourlyObject,
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
-        m_auditEnsurePermissionsOnEtcMotdObject
+        m_auditEnsurePermissionsOnEtcMotdObject,
+        m_auditEnsureKernelSupportForCpuNxObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
