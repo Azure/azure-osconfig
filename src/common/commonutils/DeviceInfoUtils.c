@@ -292,8 +292,6 @@ bool IsCpuFlagSupported(const char* cpuFlag, void* log)
 
     FREE_MEMORY(cpuFlags);
 
-    OsConfigLogInfo(log, "CPU flag '%s' support: %u", cpuFlag, result ? 1 : 0); ///////////
-
     return result;
 }
 

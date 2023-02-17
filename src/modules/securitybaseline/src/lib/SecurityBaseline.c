@@ -224,7 +224,7 @@ static int AuditEnsurePermissionsOnEtcMotd(void)
 
 static int AuditEnsureKernelSupportForCpuNx(void)
 {
-    return (true == IsCpuFlagSupported("nx", SecurityBaselineGetLog())) ? 1 : 0;
+    return (true == IsCpuFlagSupported("nx", SecurityBaselineGetLog())) ? 0 : 1;
 }
 
 int AuditSecurityBaseline(void)
