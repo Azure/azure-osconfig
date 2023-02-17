@@ -166,6 +166,10 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureKernelSupportForCpuNx"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab"
     },
     {

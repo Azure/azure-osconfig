@@ -750,6 +750,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* cpuType = NULL;
     char* cpuVendor = NULL;
     char* cpuModel = NULL;
+    char* cpuFlags = NULL;
     long totalMemory = 0;
     long freeMemory = 0;
     char* kernelName = NULL;
@@ -761,6 +762,10 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, cpuType = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuVendor = GetCpuType(nullptr));
     EXPECT_NE(nullptr, cpuModel = GetCpuType(nullptr));
+    EXPECT_NE(nullptr, cpuFlags = GetCpuFlags(nullptr));
+    EXPECT_EQ(true, IsCpuFlagSupported("fpu", nullptr));
+    EXPECT_EQ(false, IsCpuFlagSupported("test123", nullptr));
+    EXPECT_EQ(false, IsCpuFlagSupported(nullptr, nullptr));
     EXPECT_NE(0, totalMemory = GetTotalMemory(nullptr));
     EXPECT_NE(0, freeMemory = GetTotalMemory(nullptr));
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
@@ -772,6 +777,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(cpuType);
     FREE_MEMORY(cpuVendor);
     FREE_MEMORY(cpuModel);
+    FREE_MEMORY(cpuFlags);
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);

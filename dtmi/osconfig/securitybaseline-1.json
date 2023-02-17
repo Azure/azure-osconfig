@@ -139,6 +139,12 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureKernelSupportForCpuNx",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true

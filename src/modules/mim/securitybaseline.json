@@ -139,6 +139,12 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureKernelSupportForCpuNx",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
