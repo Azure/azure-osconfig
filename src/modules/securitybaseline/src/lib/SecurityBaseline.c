@@ -39,17 +39,17 @@ static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsureP
 static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
 // Audit-only
 static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
-static const char* g_auditEnsureNodevOptionOnHomePartition = "auditEnsureNodevOptionOnHomePartition";
-static const char* g_auditEnsureNodevOptionOnTmpPartition = "auditEnsureNodevOptionOnTmpPartition";
-static const char* g_auditEnsureNodevOptionOnVarTmpPartition = "auditEnsureNodevOptionOnVarTmpPartition";
-static const char* g_auditEnsureNosuidOptionOnTmpPartition = "auditEnsureNosuidOptionOnTmpPartition";
-static const char* g_auditEnsureNosuidOptionOnVarTmpPartition = "auditEnsureNosuidOptionOnVarTmpPartition";
-static const char* g_auditEnsureNoexecOptionOnVarTmpPartition = "auditEnsureNoexecOptionOnVarTmpPartition";
-static const char* g_auditEnsureNoexecOptionOnDevShmPartition = "auditEnsureNoexecOptionOnDevShmPartition";
-static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMedia = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
-static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMedia = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
-static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMedia = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
-static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+static const char* g_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
+static const char* g_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
+static const char* g_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
+static const char* g_auditEnsureNosuidOptionOnTmpPartitionObject = "auditEnsureNosuidOptionOnTmpPartition";
+static const char* g_auditEnsureNosuidOptionOnVarTmpPartitionObject = "auditEnsureNosuidOptionOnVarTmpPartition";
+static const char* g_auditEnsureNoexecOptionOnVarTmpPartitionObject = "auditEnsureNoexecOptionOnVarTmpPartition";
+static const char* g_auditEnsureNoexecOptionOnDevShmPartitionObject = "auditEnsureNoexecOptionOnDevShmPartition";
+static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
 
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -271,7 +271,7 @@ static int AuditEnsureNosuidOptionOnTmpPartition(void)
 
 static int AuditEnsureNosuidOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, nosuid, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoexecOptionOnVarTmpPartition(void)
