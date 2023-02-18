@@ -371,8 +371,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
         while (NULL != (mountStruct = getmntent(mountFileHandle)))
         {
-            // TEMPORARY
-            OsConfigLogInfo(log, "### Struct mntent: mnt_fsname %s, mnt_dir %s, mnt_type %s, mnt_opts %s, mnt_freq %d, mnt_passno %d",
+            OsConfigLogInfo(log, "mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d",
                 mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
 
             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
