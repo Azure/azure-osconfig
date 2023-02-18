@@ -381,12 +381,12 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
                     OsConfigLogInfo(log, "Option %s for directory %s or mount type %s found in file %s", 
-                        desiredOption, mountDirectory ? mountDirectory : , mountType ? mountType : "-", mountFileName);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
                 }
                 else
                 {
                     OsConfigLogError(log, "Option %s for directory %s or mount type %s not found (missing from) in file %s",
-                        desiredOption, mountDirectory ? mountDirectory : , mountType ? mountType : "-", mountFileName);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
                     status = ENOENT;
                 }
             }
@@ -395,7 +395,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         if (status)
         {
             OsConfigLogInfo(log, "Directory %s or mount type %s not found in file %s, nothing to check", 
-                mountDirectory ? mountDirectory : , mountType ? mountType : "-", mountFileName);
+                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
             status = 0;
         }
 
