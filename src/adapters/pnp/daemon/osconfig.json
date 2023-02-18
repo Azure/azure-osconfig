@@ -170,6 +170,50 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNodevOptionOnHomePartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNodevOptionOnTmpPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNodevOptionOnVarTmpPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNosuidOptionOnTmpPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNosuidOptionOnVarTmpPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoexecOptionOnVarTmpPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoexecOptionOnDevShmPartition"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNodevOptionEnabledForAllRemovableMedia"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoexecOptionEnabledForAllRemovableMedia"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNosuidOptionEnabledForAllRemovableMedia"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePermissionsOnEtcAnacronTab"
     },
     {
