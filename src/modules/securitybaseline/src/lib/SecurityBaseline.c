@@ -37,7 +37,19 @@ static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsureP
 static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
 static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx"; //audit-only
+// Audit-only
+static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
+static const char* g_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
+static const char* g_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
+static const char* g_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
+static const char* g_auditEnsureNosuidOptionOnTmpPartitionObject = "auditEnsureNosuidOptionOnTmpPartition";
+static const char* g_auditEnsureNosuidOptionOnVarTmpPartitionObject = "auditEnsureNosuidOptionOnVarTmpPartition";
+static const char* g_auditEnsureNoexecOptionOnVarTmpPartitionObject = "auditEnsureNoexecOptionOnVarTmpPartition";
+static const char* g_auditEnsureNoexecOptionOnDevShmPartitionObject = "auditEnsureNoexecOptionOnDevShmPartition";
+static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
 
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -94,6 +106,16 @@ static const char* g_etcCronHourly = "/etc/cron.hourly";
 static const char* g_etcCronMonthly = "/etc/cron.monthly";
 static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
+static const char* g_etcFstab = "/etc/fstab";
+static const char* g_home = "/home";
+static const char* g_tmp = "/tmp";
+static const char* g_varTmp = "/var/tmp";
+static const char* g_devShm = "/dev/shm";
+static const char* g_media = "/media/";
+static const char* g_nfs = "nfs";
+static const char* g_nodev = "nodev";
+static const char* g_nosuid = "nosuid";
+static const char* g_noexec = "noexec";
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -227,6 +249,62 @@ static int AuditEnsureKernelSupportForCpuNx(void)
     return (true == IsCpuFlagSupported("nx", SecurityBaselineGetLog())) ? 0 : 1;
 }
 
+static int AuditEnsureNodevOptionOnHomePartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_home, NULL, g_nodev, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNodevOptionOnTmpPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNodevOptionOnVarTmpPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNosuidOptionOnTmpPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNosuidOptionOnVarTmpPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoexecOptionOnVarTmpPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoexecOptionOnDevShmPartition(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, g_devShm, NULL, g_noexec, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_nodev, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_noexec, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
+{
+    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_nosuid, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
+{
+    return (CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_noexec, SecurityBaselineGetLog()) &&
+        (CheckFileSystemMountingOption(g_etcFstab, NULL, g_nfs, g_nosuid, SecurityBaselineGetLog())));
+}
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -249,7 +327,18 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
         (0 == AuditEnsurePermissionsOnEtcCronWeekly()) &&
         (0 == AuditEnsurePermissionsOnEtcMotd()) &&
-        (0 == AuditEnsureKernelSupportForCpuNx())) ? 0 : ENOENT;
+        (0 == AuditEnsureKernelSupportForCpuNx()) &&
+        (0 == AuditEnsureNodevOptionOnHomePartition()) &&
+        (0 == AuditEnsureNodevOptionOnTmpPartition()) &&
+        (0 == AuditEnsureNodevOptionOnVarTmpPartition()) &&
+        (0 == AuditEnsureNosuidOptionOnTmpPartition()) &&
+        (0 == AuditEnsureNosuidOptionOnVarTmpPartition()) &&
+        (0 == AuditEnsureNoexecOptionOnVarTmpPartition()) &&
+        (0 == AuditEnsureNoexecOptionOnDevShmPartition()) &&
+        (0 == AuditEnsureNodevOptionEnabledForAllRemovableMedia()) &&
+        (0 == AuditEnsureNoexecOptionEnabledForAllRemovableMedia()) &&
+        (0 == AuditEnsureNosuidOptionEnabledForAllRemovableMedia()) &&
+        (0 == AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -562,6 +651,50 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureKernelSupportForCpuNxObject))
         {
             result = AuditEnsureKernelSupportForCpuNx() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnHomePartitionObject))
+        {
+            result = AuditEnsureNodevOptionOnHomePartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnTmpPartitionObject))
+        {
+            result = AuditEnsureNodevOptionOnTmpPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnVarTmpPartitionObject))
+        {
+            result = AuditEnsureNodevOptionOnVarTmpPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnTmpPartitionObject))
+        {
+            result = AuditEnsureNosuidOptionOnTmpPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnVarTmpPartitionObject))
+        {
+            result = AuditEnsureNosuidOptionOnVarTmpPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnVarTmpPartitionObject))
+        {
+            result = AuditEnsureNoexecOptionOnVarTmpPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnDevShmPartitionObject))
+        {
+            result = AuditEnsureNoexecOptionOnDevShmPartition() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject))
+        {
+            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject))
+        {
+            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject))
+        {
+            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
+        {
+            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts() ? g_fail : g_pass;
         }
         else
         {

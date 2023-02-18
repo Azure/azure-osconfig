@@ -352,3 +352,58 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
 
     return result;
 }
+
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+{
+    FILE* mountFileHandle = NULL;
+    struct mntent* mountStruct = NULL;
+    int status = ENOENT;
+    
+    if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
+    {
+        OsConfigLogError(log, "CheckFileSystemMountingOption called with invalid argument(s)");
+        return EINVAL;
+    }
+
+    if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
+    {
+        status = 0;
+
+        while (NULL != (mountStruct = getmntent(mountFileHandle)))
+        {
+            OsConfigLogInfo(log, "mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d",
+                mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
+
+            if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
+                ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
+            {
+                if (NULL != hasmntopt(mountStruct, desiredOption))
+                {
+                    OsConfigLogInfo(log, "Option %s for directory %s or mount type %s found in file %s", 
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                }
+                else
+                {
+                    OsConfigLogError(log, "Option %s for directory %s or mount type %s not found (missing from) in file %s",
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                    status = ENOENT;
+                }
+            }
+        }
+
+        endmntent(mountFileHandle);
+    }
+    else
+    {
+        status = errno;
+        
+        if (0 == status)
+        {
+            status = ENOENT;
+        }
+        
+        OsConfigLogError(log, "setmntent(%s) failed (%d)", mountFileName, status);
+    }
+
+    return status;
+}

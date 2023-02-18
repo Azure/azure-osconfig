@@ -46,7 +46,19 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx"; //audit-only
+        //audit-only
+        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
+        const char* m_auditEnsureNodevOptionOnHomePartition = "auditEnsureNodevOptionOnHomePartition";
+        const char* m_auditEnsureNodevOptionOnTmpPartition = "auditEnsureNodevOptionOnTmpPartition";
+        const char* m_auditEnsureNodevOptionOnVarTmpPartition = "auditEnsureNodevOptionOnVarTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnTmpPartition = "auditEnsureNosuidOptionOnTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnVarTmpPartition = "auditEnsureNosuidOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnVarTmpPartition = "auditEnsureNoexecOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnDevShmPartition = "auditEnsureNoexecOptionOnDevShmPartition";
+        const char* m_auditEnsureNodevOptionEnabledForAllRemovableMedia = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMedia = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMedia = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
 
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -157,7 +169,18 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
-        m_auditEnsureKernelSupportForCpuNxObject
+        m_auditEnsureKernelSupportForCpuNxObject,
+        m_auditEnsureNodevOptionOnHomePartition,
+        m_auditEnsureNodevOptionOnTmpPartition,
+        m_auditEnsureNodevOptionOnVarTmpPartition,
+        m_auditEnsureNosuidOptionOnTmpPartition,
+        m_auditEnsureNosuidOptionOnVarTmpPartition,
+        m_auditEnsureNoexecOptionOnVarTmpPartition,
+        m_auditEnsureNoexecOptionOnDevShmPartition,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -207,7 +230,18 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcCronMonthlyObject,
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
-        m_auditEnsureKernelSupportForCpuNxObject
+        m_auditEnsureKernelSupportForCpuNxObject,
+        m_auditEnsureNodevOptionOnHomePartition,
+        m_auditEnsureNodevOptionOnTmpPartition,
+        m_auditEnsureNodevOptionOnVarTmpPartition,
+        m_auditEnsureNosuidOptionOnTmpPartition,
+        m_auditEnsureNosuidOptionOnVarTmpPartition,
+        m_auditEnsureNoexecOptionOnVarTmpPartition,
+        m_auditEnsureNoexecOptionOnDevShmPartition,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
