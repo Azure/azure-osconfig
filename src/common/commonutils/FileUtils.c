@@ -391,13 +391,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
             }
         }
 
-        if (status)
-        {
-            OsConfigLogInfo(log, "Directory %s or mount type %s not found in file %s, nothing to check", 
-                mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
-            status = 0;
-        }
-
         endmntent(mountFileHandle);
     }
     else
