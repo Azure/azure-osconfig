@@ -357,7 +357,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
-    int status = ENOENT;
+    int linesFound = 0;
+    int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
     {
@@ -367,11 +368,9 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
     if (NULL != (mountFileHandle = setmntent(mountFileName, "r")))
     {
-        status = 0;
-
         while (NULL != (mountStruct = getmntent(mountFileHandle)))
         {
-            OsConfigLogInfo(log, "mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d",
+            OsConfigLogInfo(log, "%s @%d, mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", mountFileName, linesFound,
                 mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, mountStruct->mnt_freq, mountStruct->mnt_passno);
 
             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
@@ -379,16 +378,19 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
             {
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
-                    OsConfigLogInfo(log, "Option %s for directory %s or mount type %s found in file %s", 
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                    OsConfigLogInfo(log, "Option %s for directory %s or mount type %s found in file %s at line %d", 
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
+                    status = 0;    
                 }
                 else
                 {
-                    OsConfigLogError(log, "Option %s for directory %s or mount type %s not found (missing from) in file %s",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                    OsConfigLogError(log, "Option %s for directory %s or mount type %s not found in (missing from) file %s at line %d",
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
                     status = ENOENT;
-                }
+                }                
             }
+
+            linesFound += 1;
         }
 
         endmntent(mountFileHandle);

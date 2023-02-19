@@ -1151,3 +1151,41 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
     EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
     EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
 }
+
+TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
+{
+    const char* testFstab = 
+        "# /etc/fstab: static file system information.\n"
+        "#\n"
+        "# Use 'blkid' to print the universally unique identifier for a\n"
+        "# device; this may be used with UUID= as a more robust way to name devices\n"
+        "# that works even if disks are added and removed. See fstab(5).\n"
+        "#\n"
+        "# <file system> <mount point>   <type>  <options>       <dump>  <pass>\n"
+        "# / was on /dev/sda1 during installation\n"
+        "Test2 /home/test/home               ext6    123            0                 4\n"
+        "Test1 /test/home               ext6    123            0                 3\n"
+        "UUID=blah /test/root               ext6    123            0       2\n"
+        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       1\n"
+        "/swapfile                                 none            swap    sw              0       0";
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFstab));
+
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(nullptr, "none", "swap", "sw", nullptr));
+
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "@@@", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "@@@", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "@@@", nullptr));
+
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "swap", "sw", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", nullptr, "sw", nullptr));
+
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
