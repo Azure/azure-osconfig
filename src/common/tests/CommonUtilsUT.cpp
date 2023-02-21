@@ -1185,14 +1185,17 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr));
 
+    // The requested option is present in all matching mounting points
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
 
+    // The requested option is missing from one of the matching mounting points
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", "udf", "noauto", nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noauto", nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr));
 
+    // The requested option is present in all matching mounting points
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr));
@@ -1202,8 +1205,10 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
+    // No such lines found, nothing to check
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
-    EXPECT_NE(0, CheckFileSystemMountingOption("/etc", "", "", "", nullptr));
+    // No such file found, nothing to check
+    EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
 }
