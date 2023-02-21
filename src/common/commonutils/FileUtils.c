@@ -244,7 +244,7 @@ static unsigned int FilterFileAccessFlags(unsigned int mode)
     return flags;
 }
 
-int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -261,7 +261,7 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
     {
         if (0 == (result = stat(fileName, &statStruct)))
         {
-            if (((uid_t)desiredUserId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid))
+            if (((uid_t)desiredOwnerId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid))
             {
                 currentMode = FilterFileAccessFlags(statStruct.st_mode);
                 desiredMode = FilterFileAccessFlags(desiredFileAccess);
@@ -270,40 +270,40 @@ int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned i
                     (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
                     (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
-                    OsConfigLogInfo(log, "File %s (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
+                    OsConfigLogInfo(log, "CheckFileAccess: file '%s' (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
                         fileName, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
-                        desiredUserId, desiredGroupId, desiredFileAccess, desiredMode);
+                        desiredOwnerId, desiredGroupId, desiredFileAccess, desiredMode);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "No matching access permissions for %s (%u-%u) versus expected (%u-%u)",
+                    OsConfigLogError(log, "CheckFileAccess: no matching access permissions for file '%s' (%u-%u) versus expected (%u-%u)",
                         fileName, statStruct.st_mode, currentMode, desiredFileAccess, desiredMode);
                     result = ENOENT;
                 }
             }
             else
             {
-                OsConfigLogError(log, "No matching ownership for %s (user: %u, group: %u) versus expected (user: %u, group: %u)",
-                    fileName, statStruct.st_uid, statStruct.st_gid, desiredUserId, desiredGroupId);
+                OsConfigLogError(log, "CheckFileAccess: no matching ownership for file '%s' (owner: %u, group: %u) versus expected (owner: %u, group: %u)",
+                    fileName, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
         }
         else
         {
-            OsConfigLogError(log, "stat(%s) failed with %d", fileName, errno);
+            OsConfigLogError(log, "CheckFileAccess: stat('%s') failed with %d", fileName, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "%s not found, nothing to check", fileName);
+        OsConfigLogInfo(log, "CheckFileAccess: file '%s' not found, nothing to check", fileName);
         result = 0;
     }
 
     return result;
 }
 
-int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
 {
     int result = ENOENT;
 
@@ -315,38 +315,38 @@ int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int
 
     if (FileExists(fileName))
     {
-        if (0 == (result = CheckFileAccess(fileName, desiredUserId, desiredGroupId, desiredFileAccess, log)))
+        if (0 == (result = CheckFileAccess(fileName, desiredOwnerId, desiredGroupId, desiredFileAccess, log)))
         {
-            OsConfigLogInfo(log, "Desired %s ownership (user %u, group %u with access %u) already set",
-                fileName, desiredUserId, desiredGroupId, desiredFileAccess);
+            OsConfigLogInfo(log, "SetFileAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
+                fileName, desiredOwnerId, desiredGroupId, desiredFileAccess);
             result = 0;
         }
         else
         {
-            if (0 == (result = chown(fileName, (uid_t)desiredUserId, (gid_t)desiredGroupId)))
+            if (0 == (result = chown(fileName, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
             {
-                OsConfigLogInfo(log, "Successfully set %s ownership to user %u, group %u", fileName, desiredUserId, desiredGroupId);
+                OsConfigLogInfo(log, "SetFileAccess: successfully set '%s' ownership to owner %u, group %u", fileName, desiredOwnerId, desiredGroupId);
 
                 if (0 == (result = chmod(fileName, desiredFileAccess)))
                 {
-                    OsConfigLogInfo(log, "Successfully set %s access to %u", fileName, desiredFileAccess);
+                    OsConfigLogInfo(log, "SetFileAccess: successfully set '%s' access to %u", fileName, desiredFileAccess);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "chmod(%s, %d) failed with %d", fileName, desiredFileAccess, errno);
+                    OsConfigLogError(log, "SetFileAccess: chmod('%s', %d) failed with %d", fileName, desiredFileAccess, errno);
                 }
             }
             else
             {
-                OsConfigLogError(log, "chown(%s, %d, %d) failed with %d", fileName, desiredUserId, desiredGroupId, errno);
+                OsConfigLogError(log, "SetFileAccess: chown('%s', %d, %d) failed with %d", fileName, desiredOwnerId, desiredGroupId, errno);
             }
 
         }
     }
     else
     {
-        OsConfigLogInfo(log, "%s not found, nothing to set", fileName);
+        OsConfigLogInfo(log, "SetFileAccess: file '%s' not found, nothing to set", fileName);
         result = 0;
     }
 

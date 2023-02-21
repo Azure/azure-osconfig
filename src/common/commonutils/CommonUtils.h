@@ -58,8 +58,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
-int CheckFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
-int SetFileAccess(const char* fileName, unsigned int desiredUserId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
+int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
                                                                                                                                                                                                                                                            
