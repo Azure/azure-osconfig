@@ -1215,12 +1215,23 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckPackageInstalled)
 {
-    int CheckPackageInstalled(const char* packageName, void* log);
+    EXPECT_EQ(EINVAL, CheckThisPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckAnyPackageInstalled(nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
-    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("ftp", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
+    EXPECT_EQ(EINVAL, CheckThisPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, CheckAnyPackageInstalled("", nullptr));
+
+    EXPECT_NE(0, CheckThisPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckAnyPackageInstalled("~package_that_does_not_exist", nullptr));
+    
+    EXPECT_EQ(0, CheckThisPackageInstalled("apt", nullptr));
+    EXPECT_EQ(0, CheckAnyPackageInstalled("apt", nullptr));
+    
+    EXPECT_EQ(0, CheckThisPackageInstalled("ftp", nullptr));
+    EXPECT_EQ(0, CheckAnyPackageInstalled("ftp", nullptr));
+
+    EXPECT_EQ(0, CheckThisPackageInstalled("gcc", nullptr));
+    EXPECT_EQ(0, CheckAnyPackageInstalled("gcc", nullptr));
+
+    EXPECT_EQ(0, CheckAnyPackageInstalled("telnet", nullptr));
 }

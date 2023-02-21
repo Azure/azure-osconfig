@@ -426,14 +426,17 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+static int CheckPackageInstalled(const char* commandTemplate, const char* packageName, void* log)
 {
-    const char* commandTemplate = "dpkg -s %s";
+    return CheckPackageInstalled("dpkg -s %s", packageName, log);
+    
+    // Alternative: apt list --installed | grep %s
+    // const char* commandTemplate = "dpkg -s %s";
     char* command = NULL;
     size_t packageNameLength = 0;
     int status = ENOENT;
 
-    if ((NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
+    if ((NULL == commandTemplate) || (NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
     {
         OsConfigLogError(log, "CheckPackageInstalled called with invalid argument");
         return EINVAL;
@@ -462,4 +465,14 @@ int CheckPackageInstalled(const char* packageName, void* log)
     FREE_MEMORY(command);
 
     return status;
+}
+
+int CheckThisPackageInstalled(const char* packageName, void* log)
+{
+    return CheckPackageInstalled("dpkg -s %s", packageName, log);
+}
+
+int CheckAnyPackageInstalled(const char* packageName, void* log)
+{
+    return CheckPackageInstalled("dpkg-query -l *%s*", packageName, log);
 }
