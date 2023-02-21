@@ -1198,6 +1198,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
