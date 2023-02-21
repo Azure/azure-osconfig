@@ -439,14 +439,16 @@ int CheckPackageInstalled(const char* packageName, void* log)
         return EINVAL;
     }
     
-    if (NULL == (command = (char*)malloc(packageNameLength + 1))
+    packageNameLength += strlen(commandTemplate) + 1;
+
+    if (NULL == (command = (char*)malloc(packageNameLength)))
     {
         OsConfigLogError(log, "CheckPackageInstalled: out of memory");
         return ENOMEM;
     }
 
-    memset(command, 0, packageNameLength + 1);
-    snprintf(command, packageNameLength + 1, commandTemplate, packageName);
+    memset(command, 0, packageNameLength);
+    snprintf(command, packageNameLength, commandTemplate, packageName);
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
     {
