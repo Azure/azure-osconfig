@@ -428,10 +428,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
 static int CheckPackageInstalled(const char* commandTemplate, const char* packageName, void* log)
 {
-    return CheckPackageInstalled("dpkg -s %s", packageName, log);
-    
-    // Alternative: apt list --installed | grep %s
-    // const char* commandTemplate = "dpkg -s %s";
     char* command = NULL;
     size_t packageNameLength = 0;
     int status = ENOENT;
@@ -469,6 +465,7 @@ static int CheckPackageInstalled(const char* commandTemplate, const char* packag
 
 int CheckThisPackageInstalled(const char* packageName, void* log)
 {
+    // Alternative: apt list --installed | grep %s
     return CheckPackageInstalled("dpkg -s %s", packageName, log);
 }
 

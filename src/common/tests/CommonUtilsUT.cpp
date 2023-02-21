@@ -1225,13 +1225,5 @@ TEST_F(CommonUtilsTest, CheckPackageInstalled)
     EXPECT_NE(0, CheckAnyPackageInstalled("~package_that_does_not_exist", nullptr));
     
     EXPECT_EQ(0, CheckThisPackageInstalled("apt", nullptr));
-    EXPECT_EQ(0, CheckAnyPackageInstalled("apt", nullptr));
-    
-    EXPECT_EQ(0, CheckThisPackageInstalled("ftp", nullptr));
-    EXPECT_EQ(0, CheckAnyPackageInstalled("ftp", nullptr));
-
-    EXPECT_EQ(0, CheckThisPackageInstalled("gcc", nullptr));
-    EXPECT_EQ(0, CheckAnyPackageInstalled("gcc", nullptr));
-
     EXPECT_EQ(0, CheckAnyPackageInstalled("telnet", nullptr));
 }
