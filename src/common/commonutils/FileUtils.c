@@ -449,7 +449,7 @@ static int CheckPackageInstalled(const char* commandTemplate, const char* packag
     memset(command, 0, packageNameLength);
     snprintf(command, packageNameLength, commandTemplate, packageName);
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
 
     FREE_MEMORY(command);
 
