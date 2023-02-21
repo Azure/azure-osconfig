@@ -449,14 +449,7 @@ static int CheckPackageInstalled(const char* commandTemplate, const char* packag
     memset(command, 0, packageNameLength);
     snprintf(command, packageNameLength, commandTemplate, packageName);
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-    {
-        OsConfigLogInfo(log, "CheckPackageInstalled: package '%s' is installed", packageName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckPackageInstalled: package '%s' appears not installed (%d)", packageName, status);
-    }
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
 
     FREE_MEMORY(command);
 
@@ -465,11 +458,33 @@ static int CheckPackageInstalled(const char* commandTemplate, const char* packag
 
 int CheckThisPackageInstalled(const char* packageName, void* log)
 {
+    int status = 0;
+
     // Alternative: apt list --installed | grep %s
-    return CheckPackageInstalled("dpkg -s %s", packageName, log);
+    if (0 == (status = CheckPackageInstalled("dpkg -s %s", packageName, log)))
+    {
+        OsConfigLogInfo(log, "CheckThisPackageInstalled: package '%s' is installed", packageName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckThisPackageInstalled: package '%s' appears not installed (%d)", packageName, status);
+    }
+
+    return status;
 }
 
 int CheckAnyPackageInstalled(const char* packageName, void* log)
 {
-    return CheckPackageInstalled("dpkg-query -l *%s*", packageName, log);
+    int status = 0;
+
+    if (0 == (status = CheckPackageInstalled("dpkg-query -l *%s*", packageName, log)))
+    {
+        OsConfigLogInfo(log, "CheckAnyPackageInstalled: one or more '*%s*' packages are installed", packageName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckAnyPackageInstalled: no '*%s*' package appears installed (%d)", packageName, status);
+    }
+
+    return status;
 }
