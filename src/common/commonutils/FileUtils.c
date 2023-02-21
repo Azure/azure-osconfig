@@ -384,7 +384,11 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
                     OsConfigLogError(log, "Option %s for directory %s or mount type %s not found in (missing from) file %s at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
                     status = ENOENT;
-                }                
+                }
+
+                OsConfigLogInfo(log, "Line %d in %s: mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", 
+                    linesFound, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
+                    mountStruct->mnt_freq, mountStruct->mnt_passno);
             }
 
             linesFound += 1;
