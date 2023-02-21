@@ -1163,10 +1163,16 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
         "#\n"
         "# <file system> <mount point>   <type>  <options>       <dump>  <pass>\n"
         "# / was on /dev/sda1 during installation\n"
-        "Test2 /home/test/home               ext6    123            0                 4\n"
-        "Test1 /test/home               ext6    123            0                 3\n"
-        "UUID=blah /test/root               ext6    123            0       2\n"
-        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       1\n"
+        "Test2 /home/test/home               ext6    noauto,123            0                 0\n"
+        "/dev/scd1  /media/dvdrom0  udf,iso9660  user,noauto,noexec,utf8  0  0\n"
+        "UUID=test123 /test/media/home               ext6    123,noexec            0                 0\n"
+        "UUID=blah /test/root               ext6    123            0       0\n"
+        "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
+        "# / was on /dev/sda5 during installation\n"
+        "        UUID = b65913ad - db15 - 4ba0 - 8c8b - d24f6fcb2825 / ext4    errors=remount-ro 0       0\n"
+        "# /boot/efi was on /dev/sda1 during installation\n"
+        "UUID=6BBC-4153/boot/efi       vfat    umask=0077,nosuid      0       1\n"
+        "/dev/scd0  /media/cdrom0  udf,iso9660  user,noauto,noexec,utf8,nosuid  0  0\n"
         "/swapfile                                 none            swap    sw              0       0";
 
     EXPECT_TRUE(CreateTestFile(m_path, testFstab));
@@ -1175,17 +1181,23 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(nullptr, "none", "swap", "sw", nullptr));
 
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "@@@", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "@@@", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "@@@", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr));
 
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "swap", "sw", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", nullptr, "sw", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
 
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr));
 
+    EXPECT_TRUE(Cleanup(m_path));
+
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
