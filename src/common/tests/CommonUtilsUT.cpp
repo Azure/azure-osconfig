@@ -1165,7 +1165,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
         "# / was on /dev/sda1 during installation\n"
         "Test2 /home/test/home               ext6    noauto,123            0                 0\n"
         "/dev/scd1  /media/dvdrom0  udf,iso9660  user,noauto,noexec,utf8  0  0\n"
-        "UUID=test123 /test/media/home               ext6    123,noexec            0                 0\n"
+        "UUID=test123 /test/media/home               ext6,iso9660    123,noexec            0                 0\n"
         "UUID=blah /test/root               ext6    123            0       0\n"
         "UUID=62fd6763-f758-4417-98be-0cf4d82d5c1b /               ext4    errors=remount-ro 0       0\n"
         "# / was on /dev/sda5 during installation\n"
@@ -1191,8 +1191,8 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
 
     // The requested option is missing from one of the matching mounting points
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", "udf", "noauto", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noauto", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", "iso9660", "noauto", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "iso9660", "noauto", nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr));
 
     // The requested option is present in all matching mounting points
