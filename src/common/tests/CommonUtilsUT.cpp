@@ -1212,3 +1212,15 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     // No such file found, nothing to check
     EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
 }
+
+TEST_F(CommonUtilsTest, CheckPackageInstalled)
+{
+    int CheckPackageInstalled(const char* packageName, void* log);
+
+    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("ftp", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("gcc", nullptr));
+}
