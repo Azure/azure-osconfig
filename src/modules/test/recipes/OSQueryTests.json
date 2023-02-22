@@ -1,0 +1,20 @@
+[
+  {
+    "Action": "LoadModule",
+    "Module": "osquery.so"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "OSQuery",
+    "ObjectName": "system_info"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "OSQuery",
+    "ObjectName": "invalid",
+    "ExpectedResult": 22
+  },
+  {
+    "Action": "UnloadModule"
+  }
+]
