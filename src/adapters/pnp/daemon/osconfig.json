@@ -342,10 +342,6 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditSecurityBaseline"
-    },
-    {
-      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureSendmailNotInstalled"
     },
     {
@@ -355,6 +351,10 @@
     {
       "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureXinetdNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditSecurityBaseline"
     },
     {
       "ComponentName": "Tpm",
