@@ -61,7 +61,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
         const char* m_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
         const char* m_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-        const char* m_auditEnsureAllelnetdPackagesUninstalled = "auditEnsureAllelnetdPackagesUninstalled";
+        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
         const char* m_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
         const char* m_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
         const char* m_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
@@ -198,7 +198,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
         m_auditEnsureInetdNotInstalled,
         m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllelnetdPackagesUninstalled,
+        m_auditEnsureAllTelnetdPackagesUninstalled,
         m_auditEnsureRshServerNotInstalled,
         m_auditEnsureNisNotInstalled,
         m_auditEnsureTftpdNotInstalled,
@@ -274,7 +274,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
         m_auditEnsureInetdNotInstalled,
         m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllelnetdPackagesUninstalled,
+        m_auditEnsureAllTelnetdPackagesUninstalled,
         m_auditEnsureRshServerNotInstalled,
         m_auditEnsureNisNotInstalled,
         m_auditEnsureTftpdNotInstalled,
