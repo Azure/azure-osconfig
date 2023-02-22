@@ -29,7 +29,6 @@
     "ObjectName": "remediateEnsurePermissionsOnEtcHostsDeny"
   },
   {
-  
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcSshSshdConfig"
