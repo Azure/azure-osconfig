@@ -59,6 +59,21 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMedia = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMedia = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+        const char* m_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
+        const char* m_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
+        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
+        const char* m_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
+        const char* m_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
+        const char* m_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
+        const char* m_auditEnsureReadaheadFedoraNotInstalled = "auditEnsureReadaheadFedoraNotInstalled";
+        const char* m_auditEnsureBluetoothHiddNotInstalled = "auditEnsureBluetoothHiddNotInstalled";
+        const char* m_auditEnsureIsdnUtilsBaseNotInstalled = "auditEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_auditEnsureIsdnUtilsKdumpToolsNotInstalled = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_auditEnsureIscDhcpdServerNotInstalled = "auditEnsureIscDhcpdServerNotInstalled";
+        const char* m_auditEnsureSendmailNotInstalled = "auditEnsureSendmailNotInstalled";
+        const char* m_auditEnsureSldapdNotInstalled = "auditEnsureSldapdNotInstalled";
+        const char* m_auditEnsureBind9NotInstalled = "auditEnsureBind9NotInstalled";
+        const char* m_auditEnsureDovecotCoreNotInstalled = "auditEnsureDovecotCoreNotInstalled";
 
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
@@ -180,7 +195,22 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
         m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
         m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
+        m_auditEnsureInetdNotInstalled,
+        m_auditEnsureXinetdNotInstalled,
+        m_auditEnsureAllTelnetdPackagesUninstalled,
+        m_auditEnsureRshServerNotInstalled,
+        m_auditEnsureNisNotInstalled,
+        m_auditEnsureTftpdNotInstalled,
+        m_auditEnsureReadaheadFedoraNotInstalled,
+        m_auditEnsureBluetoothHiddNotInstalled,
+        m_auditEnsureIsdnUtilsBaseNotInstalled,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
+        m_auditEnsureIscDhcpdServerNotInstalled,
+        m_auditEnsureSendmailNotInstalled,
+        m_auditEnsureSldapdNotInstalled,
+        m_auditEnsureBind9NotInstalled,
+        m_auditEnsureDovecotCoreNotInstalled
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -241,7 +271,22 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
         m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
         m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
+        m_auditEnsureInetdNotInstalled,
+        m_auditEnsureXinetdNotInstalled,
+        m_auditEnsureAllTelnetdPackagesUninstalled,
+        m_auditEnsureRshServerNotInstalled,
+        m_auditEnsureNisNotInstalled,
+        m_auditEnsureTftpdNotInstalled,
+        m_auditEnsureReadaheadFedoraNotInstalled,
+        m_auditEnsureBluetoothHiddNotInstalled,
+        m_auditEnsureIsdnUtilsBaseNotInstalled,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
+        m_auditEnsureIscDhcpdServerNotInstalled,
+        m_auditEnsureSendmailNotInstalled,
+        m_auditEnsureSldapdNotInstalled,
+        m_auditEnsureBind9NotInstalled,
+        m_auditEnsureDovecotCoreNotInstalled
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

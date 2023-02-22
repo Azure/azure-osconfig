@@ -425,3 +425,41 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
     return status;
 }
+
+int CheckPackageInstalled(const char* packageName, void* log)
+{
+    const char* commandTemplate = "dpkg -l %s | grep ^ii";
+    char* command = NULL;
+    size_t packageNameLength = 0;
+    int status = ENOENT;
+
+    if ((NULL == commandTemplate) || (NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
+    {
+        OsConfigLogError(log, "CheckPackageInstalled called with invalid argument");
+        return EINVAL;
+    }
+    
+    packageNameLength += strlen(commandTemplate) + 1;
+
+    if (NULL == (command = (char*)malloc(packageNameLength)))
+    {
+        OsConfigLogError(log, "CheckPackageInstalled: out of memory");
+        return ENOMEM;
+    }
+
+    memset(command, 0, packageNameLength);
+    snprintf(command, packageNameLength, commandTemplate, packageName);
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
+    }
+
+    FREE_MEMORY(command);
+
+    return status;
+}

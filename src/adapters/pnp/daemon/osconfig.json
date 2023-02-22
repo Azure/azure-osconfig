@@ -166,7 +166,47 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllTelnetdPackagesUninstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureBluetoothHiddNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureBind9NotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDovecotCoreNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureInetdNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTftpdNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIscDhcpdServerNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIsdnUtilsBaseNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIsdnUtilsKdumpToolsNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureKernelSupportForCpuNx"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNisNotInstalled"
     },
     {
       "ComponentName": "SecurityBaseline",
@@ -291,6 +331,26 @@
     {
       "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePermissionsOnEtcPasswdDash"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureReadaheadFedoraNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRshServerNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSendmailNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSldapdNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureXinetdNotInstalled"
     },
     {
       "ComponentName": "SecurityBaseline",

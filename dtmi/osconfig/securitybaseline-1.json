@@ -211,6 +211,96 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureInetdNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureXinetdNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllTelnetdPackagesUninstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRshServerNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNisNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTftpdNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureReadaheadFedoraNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureBluetoothHiddNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIsdnUtilsBaseNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIsdnUtilsKdumpToolsNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIscDhcpdServerNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSendmailNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSldapdNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureBind9NotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDovecotCoreNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
