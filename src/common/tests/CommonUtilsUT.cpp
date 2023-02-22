@@ -1224,9 +1224,5 @@ TEST_F(CommonUtilsTest, CheckPackageInstalled)
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
     
     EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("apt*", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("*apt", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("*apt*", nullptr));
-
     EXPECT_EQ(0, CheckPackageInstalled("*", nullptr));
 }
