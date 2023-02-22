@@ -426,8 +426,9 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int _CheckPackageInstalled(const char* commandTemplate, const char* packageName, void* log)
+static int CheckPackageInstalled(const char* packageName, void* log)
 {
+    const char* commandTemplate = "dpkg -l %s | grep ^ii";
     char* command = NULL;
     size_t packageNameLength = 0;
     int status = ENOENT;
@@ -449,42 +450,16 @@ static int _CheckPackageInstalled(const char* commandTemplate, const char* packa
     memset(command, 0, packageNameLength);
     snprintf(command, packageNameLength, commandTemplate, packageName);
 
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
+    }
 
     FREE_MEMORY(command);
-
-    return status;
-}
-
-int CheckPackageInstalled(const char* packageName, void* log)
-{
-    int status = 0;
-
-    // Alternative: apt list --installed | grep %s
-    if (0 == (status = _CheckPackageInstalled("dpkg -s %s", packageName, log)))
-    {
-        OsConfigLogInfo(log, "CheckThisPackageInstalled: package '%s' is installed", packageName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckThisPackageInstalled: package '%s' appears not installed (%d)", packageName, status);
-    }
-
-    return status;
-}
-
-int CheckAnyPackageInstalled(const char* packageName, void* log)
-{
-    int status = 0;
-
-    if (0 == (status = _CheckPackageInstalled("dpkg-query -W *%s*", packageName, log)))
-    {
-        OsConfigLogInfo(log, "CheckAnyPackageInstalled: one or more '*%s*' packages are installed", packageName);
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckAnyPackageInstalled: no '*%s*' package appears installed (%d)", packageName, status);
-    }
 
     return status;
 }

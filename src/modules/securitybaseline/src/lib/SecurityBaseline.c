@@ -331,7 +331,7 @@ static int AuditEnsureXinetdNotInstalled(void)
 
 static int auditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return !CheckAnyPackageInstalled("telnetd", SecurityBaselineGetLog());
+    return !CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRshServerNotInstalled(void)
