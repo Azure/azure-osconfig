@@ -29,6 +29,7 @@
     "ObjectName": "remediateEnsurePermissionsOnEtcHostsDeny"
   },
   {
+  
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcSshSshdConfig"
@@ -309,67 +310,67 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureInetdNotInstalled",
+    "ObjectName": "auditEnsureInetdNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureXinetdNotInstalled",
+    "ObjectName": "auditEnsureXinetdNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureAllTelnetdPackagesUninstalled",
+    "ObjectName": "auditEnsureAllTelnetdPackagesUninstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureRshServerNotInstalled",
+    "ObjectName": "auditEnsureRshServerNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureNisNotInstalled",
-    "Payload": "PASS""
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureTftpdNotInstalled",
-    "Payload": "PASS""
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureReadaheadFedoraNotInstalled",
+    "ObjectName": "auditEnsureNisNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureBluetoothHiddNotInstalled",
+    "ObjectName": "auditEnsureTftpdNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureIsdnUtilsBaseNotInstalled",
+    "ObjectName": "auditEnsureReadaheadFedoraNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureIsdnUtilsKdumpToolsNotInstalled",
+    "ObjectName": "auditEnsureBluetoothHiddNotInstalled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureIscDhcpdServerNotInstalled",
+    "ObjectName": "auditEnsureIsdnUtilsBaseNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIsdnUtilsKdumpToolsNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIscDhcpdServerNotInstalled",
     "Payload": "PASS",
     "desired": false,
     "schema": "string"
@@ -377,7 +378,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureSendmailNotInstalled",
+    "ObjectName": "auditEnsureSendmailNotInstalled",
     "Payload": "PASS",
     "desired": false,
     "schema": "string"
@@ -385,7 +386,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureSldapdNotInstalled",
+    "ObjectName": "auditEnsureSldapdNotInstalled",
     "Payload": "PASS",
     "desired": false,
     "schema": "string"
@@ -393,7 +394,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureBind9NotInstalled",
+    "ObjectName": "auditEnsureBind9NotInstalled",
     "Payload": "PASS",
     "desired": false,
     "schema": "string"
@@ -401,12 +402,11 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ComponentName": "auditEnsureDovecotCoreNotInstalled",
+    "ObjectName": "auditEnsureDovecotCoreNotInstalled",
     "Payload": "PASS",
     "desired": false,
     "schema": "string"
   },
-  //////////////////////////////////////////////////////
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
