@@ -371,41 +371,31 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureIscDhcpdServerNotInstalled",
-    "Payload": "PASS",
-    "desired": false,
-    "schema": "string"
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureSendmailNotInstalled",
-    "Payload": "PASS",
-    "desired": false,
-    "schema": "string"
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureSldapdNotInstalled",
-    "Payload": "PASS",
-    "desired": false,
-    "schema": "string"
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureBind9NotInstalled",
-    "Payload": "PASS",
-    "desired": false,
-    "schema": "string"
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureDovecotCoreNotInstalled",
-    "Payload": "PASS",
-    "desired": false,
-    "schema": "string"
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
