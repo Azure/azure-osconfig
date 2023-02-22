@@ -50,9 +50,10 @@ static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "
 static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+
 static const char* g_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
 static const char* g_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-static const char* g_auditEnsureAllelnetdPackagesUninstalled = "auditEnsureAllelnetdPackagesUninstalled";
+static const char* g_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
 static const char* g_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
 static const char* g_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
 static const char* g_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
@@ -328,7 +329,7 @@ static int AuditEnsureXinetdNotInstalled(void)
     return !CheckPackageInstalled("xinetd", SecurityBaselineGetLog());
 }
 
-static int AuditEnsureAllelnetdPackagesUninstalled(void)
+static int auditEnsureAllTelnetdPackagesUninstalled(void)
 {
     return !CheckAnyPackageInstalled("telnet", SecurityBaselineGetLog());
 }
@@ -429,7 +430,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts()) &&
         (0 == AuditEnsureInetdNotInstalled()) &&
         (0 == AuditEnsureXinetdNotInstalled()) &&
-        (0 == AuditEnsureAllelnetdPackagesUninstalled()) &&
+        (0 == auditEnsureAllTelnetdPackagesUninstalled()) &&
         (0 == AuditEnsureRshServerNotInstalled()) &&
         (0 == AuditEnsureNisNotInstalled()) &&
         (0 == AuditEnsureTftpdNotInstalled()) &&
@@ -807,9 +808,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureXinetdNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllelnetdPackagesUninstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalled))
         {
-            result = AuditEnsureAllelnetdPackagesUninstalled() ? g_fail : g_pass;
+            result = auditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalled))
         {
