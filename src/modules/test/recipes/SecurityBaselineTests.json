@@ -309,6 +309,107 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureInetdNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureXinetdNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureAllTelnetdPackagesUninstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureRshServerNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureNisNotInstalled",
+    "Payload": "PASS""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureTftpdNotInstalled",
+    "Payload": "PASS""
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureReadaheadFedoraNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureBluetoothHiddNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureIsdnUtilsBaseNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureIsdnUtilsKdumpToolsNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureIscDhcpdServerNotInstalled",
+    "Payload": "PASS",
+    "desired": false,
+    "schema": "string"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureSendmailNotInstalled",
+    "Payload": "PASS",
+    "desired": false,
+    "schema": "string"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureSldapdNotInstalled",
+    "Payload": "PASS",
+    "desired": false,
+    "schema": "string"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureBind9NotInstalled",
+    "Payload": "PASS",
+    "desired": false,
+    "schema": "string"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ComponentName": "auditEnsureDovecotCoreNotInstalled",
+    "Payload": "PASS",
+    "desired": false,
+    "schema": "string"
+  },
+  //////////////////////////////////////////////////////
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "Blah",
     "ExpectedResult": 22
   },

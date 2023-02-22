@@ -426,7 +426,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CheckPackageInstalled(const char* commandTemplate, const char* packageName, void* log)
+static int _CheckPackageInstalled(const char* commandTemplate, const char* packageName, void* log)
 {
     char* command = NULL;
     size_t packageNameLength = 0;
@@ -456,12 +456,12 @@ static int CheckPackageInstalled(const char* commandTemplate, const char* packag
     return status;
 }
 
-int CheckThisPackageInstalled(const char* packageName, void* log)
+int CheckPackageInstalled(const char* packageName, void* log)
 {
     int status = 0;
 
     // Alternative: apt list --installed | grep %s
-    if (0 == (status = CheckPackageInstalled("dpkg -s %s", packageName, log)))
+    if (0 == (status = _CheckPackageInstalled("dpkg -s %s", packageName, log)))
     {
         OsConfigLogInfo(log, "CheckThisPackageInstalled: package '%s' is installed", packageName);
     }
@@ -477,7 +477,7 @@ int CheckAnyPackageInstalled(const char* packageName, void* log)
 {
     int status = 0;
 
-    if (0 == (status = CheckPackageInstalled("dpkg-query -l *%s*", packageName, log)))
+    if (0 == (status = _CheckPackageInstalled("dpkg-query -W *%s*", packageName, log)))
     {
         OsConfigLogInfo(log, "CheckAnyPackageInstalled: one or more '*%s*' packages are installed", packageName);
     }

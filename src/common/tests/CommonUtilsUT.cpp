@@ -1215,15 +1215,16 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
 TEST_F(CommonUtilsTest, CheckPackageInstalled)
 {
-    EXPECT_EQ(EINVAL, CheckThisPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
     EXPECT_EQ(EINVAL, CheckAnyPackageInstalled(nullptr, nullptr));
 
-    EXPECT_EQ(EINVAL, CheckThisPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
     EXPECT_EQ(EINVAL, CheckAnyPackageInstalled("", nullptr));
 
-    EXPECT_NE(0, CheckThisPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
     EXPECT_NE(0, CheckAnyPackageInstalled("~package_that_does_not_exist", nullptr));
     
-    EXPECT_EQ(0, CheckThisPackageInstalled("apt", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
+
     EXPECT_EQ(0, CheckAnyPackageInstalled("telnet", nullptr));
 }

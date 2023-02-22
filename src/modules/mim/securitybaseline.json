@@ -211,6 +211,96 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureInetdNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureXinetdNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAllTelnetdPackagesUninstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureRshServerNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNisNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureTftpdNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureReadaheadFedoraNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureBluetoothHiddNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureIsdnUtilsBaseNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureIsdnUtilsKdumpToolsNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureIscDhcpdServerNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureSendmailNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureSldapdNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureBind9NotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDovecotCoreNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
