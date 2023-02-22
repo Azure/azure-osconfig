@@ -426,7 +426,7 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-static int CheckPackageInstalled(const char* packageName, void* log)
+int CheckPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplate = "dpkg -l %s | grep ^ii";
     char* command = NULL;
