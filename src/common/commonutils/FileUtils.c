@@ -468,7 +468,7 @@ int CheckPackageInstalled(const char* packageName, void* log)
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
     }
-    else
+    else if (EINVAL != status)
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
     }
@@ -503,9 +503,9 @@ int InstallPackage(const char* packageName, void* log)
 int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "apt-get remove -y --purge %s";
-    int status = 0;
+    int status = CheckPackageInstalled(packageName, log);
 
-    if (0 != (status = CheckPackageInstalled(packageName, log)))
+    if ((0 != status) && (EINVAL != status))
     {
         OsConfigLogInfo(log, "UninstallPackage: '%s' is already uninstalled", packageName);
         status = 0;
