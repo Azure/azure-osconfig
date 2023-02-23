@@ -481,11 +481,7 @@ int InstallPackage(const char* packageName, void* log)
     const char* commandTemplate = "apt-get install -y %s";
     int status = 0;
 
-    if (0 == (status = CheckPackageInstalled(packageName, log)))
-    {
-        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
-    }
-    else
+    if (0 != (status = CheckPackageInstalled(packageName, log)))
     {
         if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
         {
@@ -503,14 +499,9 @@ int InstallPackage(const char* packageName, void* log)
 int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "apt-get remove -y --purge %s";
-    int status = CheckPackageInstalled(packageName, log);
+    int status = 0;
 
-    if ((0 != status) && (EINVAL != status))
-    {
-        OsConfigLogInfo(log, "UninstallPackage: '%s' is already uninstalled", packageName);
-        status = 0;
-    }
-    else
+    if (0 == (status = CheckPackageInstalled(packageName, log)))
     {
         if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
         {
@@ -520,6 +511,11 @@ int UninstallPackage(const char* packageName, void* log)
         {
             OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
         }
+    }
+    else if (EINVAL != status)
+    {
+        // Nothing to uninstall
+        status = 0;
     }
 
     return status;
