@@ -427,7 +427,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureSldapdNotInstalledObject,
         m_remediateEnsureBind9NotInstalledObject,
         m_remediateEnsureDovecotCoreNotInstalledObject,
-        m_remediateEnsureAuditdInstalled
+        m_remediateEnsureAuditdInstalledObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
