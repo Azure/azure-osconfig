@@ -423,6 +423,9 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
     }
 
+    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' %found in file '%s'",
+        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", status ? "not " : "", mountFileName);
+
     return status;
 }
 
