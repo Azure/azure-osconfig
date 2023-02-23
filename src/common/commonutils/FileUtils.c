@@ -357,7 +357,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
-    int linesFound = 0;
+    bool matchFound = false;
+    int lineNumber = 0;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
@@ -379,31 +380,33 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                 ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
             {
+                matchFound = true;
+                
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
                 else
                 {
                     status = ENOENT;
 
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
 
                 if (IsFullLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption, line %d in %s: mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", 
-                        linesFound, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
+                        lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
                         mountStruct->mnt_freq, mountStruct->mnt_passno);
                 }
             }
 
-            linesFound += 1;
+            lineNumber += 1;
         }
 
-        if (0 == linesFound)
+        if (false == matchFound)
         {
             OsConfigLogInfo(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s', nothing to check", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
@@ -422,9 +425,6 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
     }
-
-    OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s'%s found in file '%s'",
-        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", status ? " not" : "", mountFileName);
 
     return status;
 }
