@@ -109,6 +109,81 @@
     "ObjectName": "remediateEnsurePermissionsOnEtcMotd"
   },
   {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureInetdNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureXinetdNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureRshServerNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureNisNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureTftpdNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureReadaheadFedoraNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureBluetoothHiddNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureIsdnUtilsBaseNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureIsdnUtilsKdumpToolsNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureIscDhcpdServerNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSendmailNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureSldapdNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureBind9NotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureDovecotCoreNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAuditdInstalled"
+  },
+  {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditSecurityBaseline",
@@ -394,6 +469,12 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureDovecotCoreNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAuditdInstalled",
     "Payload": "PASS"
   },
   {

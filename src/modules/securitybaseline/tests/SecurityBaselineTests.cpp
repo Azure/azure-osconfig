@@ -46,22 +46,9 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-        //audit-only
-        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
-        const char* m_auditEnsureNodevOptionOnHomePartition = "auditEnsureNodevOptionOnHomePartition";
-        const char* m_auditEnsureNodevOptionOnTmpPartition = "auditEnsureNodevOptionOnTmpPartition";
-        const char* m_auditEnsureNodevOptionOnVarTmpPartition = "auditEnsureNodevOptionOnVarTmpPartition";
-        const char* m_auditEnsureNosuidOptionOnTmpPartition = "auditEnsureNosuidOptionOnTmpPartition";
-        const char* m_auditEnsureNosuidOptionOnVarTmpPartition = "auditEnsureNosuidOptionOnVarTmpPartition";
-        const char* m_auditEnsureNoexecOptionOnVarTmpPartition = "auditEnsureNoexecOptionOnVarTmpPartition";
-        const char* m_auditEnsureNoexecOptionOnDevShmPartition = "auditEnsureNoexecOptionOnDevShmPartition";
-        const char* m_auditEnsureNodevOptionEnabledForAllRemovableMedia = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMedia = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMedia = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+
         const char* m_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
         const char* m_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
         const char* m_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
         const char* m_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
         const char* m_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
@@ -74,7 +61,24 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureSldapdNotInstalled = "auditEnsureSldapdNotInstalled";
         const char* m_auditEnsureBind9NotInstalled = "auditEnsureBind9NotInstalled";
         const char* m_auditEnsureDovecotCoreNotInstalled = "auditEnsureDovecotCoreNotInstalled";
+        const char* m_auditEnsureAuditdInstalled = "auditEnsureAuditdInstalled";
 
+        // Audit-only
+        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
+        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
+        const char* m_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
+        const char* m_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
+        const char* m_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnTmpPartitionObject = "auditEnsureNosuidOptionOnTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnVarTmpPartitionObject = "auditEnsureNosuidOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnVarTmpPartitionObject = "auditEnsureNoexecOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnDevShmPartitionObject = "auditEnsureNoexecOptionOnDevShmPartition";
+        const char* m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+
+        // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
         const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -96,6 +100,22 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
+
+        const char* m_remediateEnsureInetdNotInstalled = "remediateEnsureInetdNotInstalled";
+        const char* m_remediateEnsureXinetdNotInstalled = "remediateEnsureXinetdNotInstalled";
+        const char* m_remediateEnsureRshServerNotInstalled = "remediateEnsureRshServerNotInstalled";
+        const char* m_remediateEnsureNisNotInstalled = "remediateEnsureNisNotInstalled";
+        const char* m_remediateEnsureTftpdNotInstalled = "remediateEnsureTftpdNotInstalled";
+        const char* m_remediateEnsureReadaheadFedoraNotInstalled = "remediateEnsureReadaheadFedoraNotInstalled";
+        const char* m_remediateEnsureBluetoothHiddNotInstalled = "remediateEnsureBluetoothHiddNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsBaseNotInstalled = "remediateEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsKdumpToolsNotInstalled = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_remediateEnsureIscDhcpdServerNotInstalled = "remediateEnsureIscDhcpdServerNotInstalled";
+        const char* m_remediateEnsureSendmailNotInstalled = "remediateEnsureSendmailNotInstalled";
+        const char* m_remediateEnsureSldapdNotInstalled = "remediateEnsureSldapdNotInstalled";
+        const char* m_remediateEnsureBind9NotInstalled = "remediateEnsureBind9NotInstalled";
+        const char* m_remediateEnsureDovecotCoreNotInstalled = "remediateEnsureDovecotCoreNotInstalled";
+        const char* m_remediateEnsureAuditdInstalled = "remediateEnsureAuditdInstalled";
 
         const char* m_clientName = "SecurityBaselineTest";
 
@@ -210,7 +230,8 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureSendmailNotInstalled,
         m_auditEnsureSldapdNotInstalled,
         m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled
+        m_auditEnsureDovecotCoreNotInstalled,
+        m_auditEnsureAuditdInstalled
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -286,7 +307,8 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureSendmailNotInstalled,
         m_auditEnsureSldapdNotInstalled,
         m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled
+        m_auditEnsureDovecotCoreNotInstalled,
+        m_auditEnsureAuditdInstalled
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -390,7 +412,22 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePermissionsOnEtcCronHourlyObject,
         m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
         m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
-        m_remediateEnsurePermissionsOnEtcMotdObject
+        m_remediateEnsurePermissionsOnEtcMotdObject,
+        m_remediateEnsureInetdNotInstalled,
+        m_remediateEnsureXinetdNotInstalled,
+        m_remediateEnsureRshServerNotInstalled,
+        m_remediateEnsureNisNotInstalled,
+        m_remediateEnsureTftpdNotInstalled,
+        m_remediateEnsureReadaheadFedoraNotInstalled,
+        m_remediateEnsureBluetoothHiddNotInstalled,
+        m_remediateEnsureIsdnUtilsBaseNotInstalled,
+        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalled,
+        m_remediateEnsureIscDhcpdServerNotInstalled,
+        m_remediateEnsureSendmailNotInstalled,
+        m_remediateEnsureSldapdNotInstalled,
+        m_remediateEnsureBind9NotInstalled,
+        m_remediateEnsureDovecotCoreNotInstalled,
+        m_remediateEnsureAuditdInstalled
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

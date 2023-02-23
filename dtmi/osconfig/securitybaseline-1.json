@@ -301,6 +301,12 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureAuditdInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
@@ -416,6 +422,96 @@
     {
       "@type": "Property",
       "name": "remediateEnsurePermissionsOnEtcMotd",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureInetdNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureXinetdNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureRshServerNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureNisNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureTftpdNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureReadaheadFedoraNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureBluetoothHiddNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureIsdnUtilsBaseNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureIsdnUtilsKdumpToolsNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureIscDhcpdServerNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureSendmailNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureSldapdNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureBind9NotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureDovecotCoreNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureAuditdInstalled",
       "schema": "string",
       "writable": true
     }
