@@ -65,7 +65,7 @@ class SecurityBaselineTest : public ::testing::Test
 
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
-        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
+        const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
         const char* m_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
         const char* m_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
         const char* m_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
@@ -231,7 +231,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureSldapdNotInstalledObject,
         m_auditEnsureBind9NotInstalledObject,
         m_auditEnsureDovecotCoreNotInstalledObject,
-        m_auditEnsureAuditdInstalled
+        m_auditEnsureAuditdInstalledObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
