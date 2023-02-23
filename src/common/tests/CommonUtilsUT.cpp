@@ -1205,7 +1205,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    // No such lines found, nothing to check
+    // No such lines found, nothing to checksrc/adapters/pnp/daemon/osconfig.json
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
@@ -1213,16 +1213,30 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckPackageInstalled)
+TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
+
     EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+    
+    // Nothing to uninstall
+    EXPECT_EQ(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
     
     EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
+
+    EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+    EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
 }

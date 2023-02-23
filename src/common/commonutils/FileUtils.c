@@ -357,7 +357,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
-    int linesFound = 0;
+    bool matchFound = false;
+    int lineNumber = 0;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
@@ -379,31 +380,33 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
             if (((NULL != mountDirectory) && (NULL != mountStruct->mnt_dir) && (NULL != strstr(mountStruct->mnt_dir, mountDirectory))) ||
                 ((NULL != mountType) && (NULL != mountStruct->mnt_type) && (NULL != strstr(mountStruct->mnt_type, mountType))))
             {
+                matchFound = true;
+                
                 if (NULL != hasmntopt(mountStruct, desiredOption))
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' found in file '%s' at line '%d'", 
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
                 else
                 {
                     status = ENOENT;
 
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
-                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, linesFound);
+                        desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
                 }
 
                 if (IsFullLoggingEnabled())
                 {
                     OsConfigLogInfo(log, "CheckFileSystemMountingOption, line %d in %s: mnt_fsname '%s', mnt_dir '%s', mnt_type '%s', mnt_opts '%s', mnt_freq %d, mnt_passno %d", 
-                        linesFound, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
+                        lineNumber, mountFileName, mountStruct->mnt_fsname, mountStruct->mnt_dir, mountStruct->mnt_type, mountStruct->mnt_opts, 
                         mountStruct->mnt_freq, mountStruct->mnt_passno);
                 }
             }
 
-            linesFound += 1;
+            lineNumber += 1;
         }
 
-        if (0 == linesFound)
+        if (false == matchFound)
         {
             OsConfigLogInfo(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s', nothing to check", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
@@ -426,40 +429,94 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+static int CheckOrInstallPackage(const char* commandTemplate, const char* packageName, void* log)
 {
-    const char* commandTemplate = "dpkg -l %s | grep ^ii";
     char* command = NULL;
     size_t packageNameLength = 0;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
     {
-        OsConfigLogError(log, "CheckPackageInstalled called with invalid argument");
+        OsConfigLogError(log, "CheckOrInstallPackage called with invalid arguments");
         return EINVAL;
     }
-    
+
     packageNameLength += strlen(commandTemplate) + 1;
 
     if (NULL == (command = (char*)malloc(packageNameLength)))
     {
-        OsConfigLogError(log, "CheckPackageInstalled: out of memory");
+        OsConfigLogError(log, "CheckOrInstallPackage: out of memory");
         return ENOMEM;
     }
 
     memset(command, 0, packageNameLength);
     snprintf(command, packageNameLength, commandTemplate, packageName);
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+
+    FREE_MEMORY(command);
+
+    return status;
+}
+
+int CheckPackageInstalled(const char* packageName, void* log)
+{
+    const char* commandTemplate = "dpkg -l %s | grep ^ii";
+    int status = ENOENT;
+
+    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
     }
-    else
+    else if (EINVAL != status)
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
     }
 
-    FREE_MEMORY(command);
+    return status;
+}
+
+int InstallPackage(const char* packageName, void* log)
+{
+    const char* commandTemplate = "apt-get install -y %s";
+    int status = 0;
+
+    if (0 != (status = CheckPackageInstalled(packageName, log)))
+    {
+        if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+        {
+            OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+        }
+        else
+        {
+            OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
+        }
+    }
+
+    return status;
+}
+
+int UninstallPackage(const char* packageName, void* log)
+{
+    const char* commandTemplate = "apt-get remove -y --purge %s";
+    int status = 0;
+
+    if (0 == (status = CheckPackageInstalled(packageName, log)))
+    {
+        if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+        {
+            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+        }
+        else
+        {
+            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+        }
+    }
+    else if (EINVAL != status)
+    {
+        // Nothing to uninstall
+        status = 0;
+    }
 
     return status;
 }

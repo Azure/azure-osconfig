@@ -37,8 +37,26 @@ static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsureP
 static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
 static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
+
+static const char* g_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
+static const char* g_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
+static const char* g_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
+static const char* g_auditEnsureNisNotInstalledObject = "auditEnsureNisNotInstalled";
+static const char* g_auditEnsureTftpdNotInstalledObject = "auditEnsureTftpdNotInstalled";
+static const char* g_auditEnsureReadaheadFedoraNotInstalledObject = "auditEnsureReadaheadFedoraNotInstalled";
+static const char* g_auditEnsureBluetoothHiddNotInstalledObject = "auditEnsureBluetoothHiddNotInstalled";
+static const char* g_auditEnsureIsdnUtilsBaseNotInstalledObject = "auditEnsureIsdnUtilsBaseNotInstalled";
+static const char* g_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
+static const char* g_auditEnsureIscDhcpdServerNotInstalledObject = "auditEnsureIscDhcpdServerNotInstalled";
+static const char* g_auditEnsureSendmailNotInstalledObject = "auditEnsureSendmailNotInstalled";
+static const char* g_auditEnsureSldapdNotInstalledObject = "auditEnsureSldapdNotInstalled";
+static const char* g_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
+static const char* g_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
+static const char* g_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
+
 // Audit-only
 static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
+static const char* g_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
 static const char* g_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
 static const char* g_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
 static const char* g_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
@@ -51,22 +69,7 @@ static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = 
 static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
 
-static const char* g_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
-static const char* g_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-static const char* g_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
-static const char* g_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
-static const char* g_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
-static const char* g_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
-static const char* g_auditEnsureReadaheadFedoraNotInstalled = "auditEnsureReadaheadFedoraNotInstalled";
-static const char* g_auditEnsureBluetoothHiddNotInstalled = "auditEnsureBluetoothHiddNotInstalled";
-static const char* g_auditEnsureIsdnUtilsBaseNotInstalled = "auditEnsureIsdnUtilsBaseNotInstalled";
-static const char* g_auditEnsureIsdnUtilsKdumpToolsNotInstalled = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
-static const char* g_auditEnsureIscDhcpdServerNotInstalled = "auditEnsureIscDhcpdServerNotInstalled";
-static const char* g_auditEnsureSendmailNotInstalled = "auditEnsureSendmailNotInstalled";
-static const char* g_auditEnsureSldapdNotInstalled = "auditEnsureSldapdNotInstalled";
-static const char* g_auditEnsureBind9NotInstalled = "auditEnsureBind9NotInstalled";
-static const char* g_auditEnsureDovecotCoreNotInstalled = "auditEnsureDovecotCoreNotInstalled";
-
+// Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
 static const char* g_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
 static const char* g_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -88,6 +91,22 @@ static const char* g_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediat
 static const char* g_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
 static const char* g_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
 static const char* g_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
+
+static const char* g_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
+static const char* g_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
+static const char* g_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
+static const char* g_remediateEnsureNisNotInstalledObject = "remediateEnsureNisNotInstalled";
+static const char* g_remediateEnsureTftpdNotInstalledObject = "remediateEnsureTftpdNotInstalled";
+static const char* g_remediateEnsureReadaheadFedoraNotInstalledObject = "remediateEnsureReadaheadFedoraNotInstalled";
+static const char* g_remediateEnsureBluetoothHiddNotInstalledObject = "remediateEnsureBluetoothHiddNotInstalled";
+static const char* g_remediateEnsureIsdnUtilsBaseNotInstalledObject = "remediateEnsureIsdnUtilsBaseNotInstalled";
+static const char* g_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
+static const char* g_remediateEnsureIscDhcpdServerNotInstalledObject = "remediateEnsureIscDhcpdServerNotInstalled";
+static const char* g_remediateEnsureSendmailNotInstalledObject = "remediateEnsureSendmailNotInstalled";
+static const char* g_remediateEnsureSldapdNotInstalledObject = "remediateEnsureSldapdNotInstalled";
+static const char* g_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
+static const char* g_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
+static const char* g_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -129,6 +148,21 @@ static const char* g_media = "/media/";
 static const char* g_nodev = "nodev";
 static const char* g_nosuid = "nosuid";
 static const char* g_noexec = "noexec";
+static const char* g_inetd = "inetd";
+static const char* g_xinetd = "xinetd";
+static const char* g_rshServer = "rsh-server";
+static const char* g_nis = "nis";
+static const char* g_tftpd = "tftpd";
+static const char* g_readAheadFedora = "readahead-fedora";
+static const char* g_bluetooth = "bluetooth";
+static const char* g_isdnUtilsBase = "isdnutils-base";
+static const char* g_kdumpTools = "kdump-tools";
+static const char* g_dhcpServer = "dhcp-server";
+static const char* g_sendmail = "sendmail";
+static const char* g_slapd = "slapd";
+static const char* g_bind9 = "bind9";
+static const char* g_dovecotCore = "dovecot-core";
+static const char* g_auditd = "auditd";
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -321,12 +355,12 @@ static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 
 static int AuditEnsureInetdNotInstalled(void)
 {
-    return !CheckPackageInstalled("inetd", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_inetd, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureXinetdNotInstalled(void)
 {
-    return !CheckPackageInstalled("xinetd", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog());
 }
 
 static int auditEnsureAllTelnetdPackagesUninstalled(void)
@@ -336,62 +370,67 @@ static int auditEnsureAllTelnetdPackagesUninstalled(void)
 
 static int AuditEnsureRshServerNotInstalled(void)
 {
-    return !CheckPackageInstalled("rsh-server", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNisNotInstalled(void)
 {
-    return !CheckPackageInstalled("nis", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_nis, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTftpdNotInstalled(void)
 {
-    return !CheckPackageInstalled("tftpd", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return !CheckPackageInstalled("readahead-fedora", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return !CheckPackageInstalled("bluetooth", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return !CheckPackageInstalled("isdnutils-base", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return !CheckPackageInstalled("kdump-tools", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return !CheckPackageInstalled("dhcp-server", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_dhcpServer, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSendmailNotInstalled(void)
 {
-    return !CheckPackageInstalled("sendmail", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSldapdNotInstalled(void)
 {
-    return !CheckPackageInstalled("slapd", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_slapd, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureBind9NotInstalled(void)
 {
-    return !CheckPackageInstalled("bind9", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_bind9, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return !CheckPackageInstalled("dovecot-core", SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureAuditdInstalled(void)
+{
+    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog());
 }
 
 int AuditSecurityBaseline(void)
@@ -442,7 +481,8 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureSendmailNotInstalled()) &&
         (0 == AuditEnsureSldapdNotInstalled()) &&
         (0 == AuditEnsureBind9NotInstalled()) &&
-        (0 == AuditEnsureDovecotCoreNotInstalled())) ? 0 : ENOENT;
+        (0 == AuditEnsureDovecotCoreNotInstalled()) &&
+        (0 == AuditEnsureAuditdInstalled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -545,6 +585,81 @@ static int RemediateEnsurePermissionsOnEtcMotd(void)
     return SetFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog());
 };
 
+static int RemediateEnsureInetdNotInstalled(void)
+{
+    return UninstallPackage(g_inetd, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureXinetdNotInstalled(void)
+{
+    return UninstallPackage(g_xinetd, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureRshServerNotInstalled(void)
+{
+    return UninstallPackage(g_rshServer, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureNisNotInstalled(void)
+{
+    return UninstallPackage(g_nis, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureTftpdNotInstalled(void)
+{
+    return UninstallPackage(g_tftpd, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureReadaheadFedoraNotInstalled(void)
+{
+    return UninstallPackage(g_readAheadFedora, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureBluetoothHiddNotInstalled(void)
+{
+    return UninstallPackage(g_bluetooth, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureIsdnUtilsBaseNotInstalled(void)
+{
+    return UninstallPackage(g_isdnUtilsBase, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(void)
+{
+    return UninstallPackage(g_kdumpTools, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureIscDhcpdServerNotInstalled(void)
+{
+    return UninstallPackage(g_dhcpServer, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureSendmailNotInstalled(void)
+{
+    return UninstallPackage(g_sendmail, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureSldapdNotInstalled(void)
+{
+    return UninstallPackage(g_slapd, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureBind9NotInstalled(void)
+{
+    return UninstallPackage(g_bind9, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureDovecotCoreNotInstalled(void)
+{
+    return UninstallPackage(g_dovecotCore, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureAuditdInstalled(void)
+{
+    return InstallPackage(g_auditd, SecurityBaselineGetLog());
+}
+
 int RemediateSecurityBaseline(void)
 {
     return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
@@ -566,7 +681,22 @@ int RemediateSecurityBaseline(void)
         (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronMonthly()) &&
         (0 == RemediateEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcMotd())) ? 0 : ENOENT;
+        (0 == RemediateEnsurePermissionsOnEtcMotd()) &&
+        (0 == RemediateEnsureInetdNotInstalled()) &&
+        (0 == RemediateEnsureXinetdNotInstalled()) &&
+        (0 == RemediateEnsureRshServerNotInstalled()) &&
+        (0 == RemediateEnsureNisNotInstalled()) &&
+        (0 == RemediateEnsureTftpdNotInstalled()) &&
+        (0 == RemediateEnsureReadaheadFedoraNotInstalled()) &&
+        (0 == RemediateEnsureBluetoothHiddNotInstalled()) &&
+        (0 == RemediateEnsureIsdnUtilsBaseNotInstalled()) &&
+        (0 == RemediateEnsureIsdnUtilsKdumpToolsNotInstalled()) &&
+        (0 == RemediateEnsureIscDhcpdServerNotInstalled()) &&
+        (0 == RemediateEnsureSendmailNotInstalled()) &&
+        (0 == RemediateEnsureSldapdNotInstalled()) &&
+        (0 == RemediateEnsureBind9NotInstalled()) &&
+        (0 == RemediateEnsureDovecotCoreNotInstalled()) &&
+        (0 == RemediateEnsureAuditdInstalled())) ? 0 : ENOENT;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -800,65 +930,69 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureInetdNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureInetdNotInstalledObject))
         {
             result = AuditEnsureInetdNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureXinetdNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureXinetdNotInstalledObject))
         {
             result = AuditEnsureXinetdNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
             result = auditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
             result = AuditEnsureRshServerNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNisNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureNisNotInstalledObject))
         {
             result = AuditEnsureNisNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureTftpdNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureTftpdNotInstalledObject))
         {
             result = AuditEnsureTftpdNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureReadaheadFedoraNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureReadaheadFedoraNotInstalledObject))
         {
             result = AuditEnsureReadaheadFedoraNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureBluetoothHiddNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureBluetoothHiddNotInstalledObject))
         {
             result = AuditEnsureBluetoothHiddNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsBaseNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsBaseNotInstalledObject))
         {
             result = AuditEnsureIsdnUtilsBaseNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsKdumpToolsNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject))
         {
             result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIscDhcpdServerNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureIscDhcpdServerNotInstalledObject))
         {
             result = AuditEnsureIscDhcpdServerNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSendmailNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureSendmailNotInstalledObject))
         {
             result = AuditEnsureSendmailNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSldapdNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureSldapdNotInstalledObject))
         {
             result = AuditEnsureSldapdNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureBind9NotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureBind9NotInstalledObject))
         {
             result = AuditEnsureBind9NotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDovecotCoreNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureDovecotCoreNotInstalledObject))
         {
             result = AuditEnsureDovecotCoreNotInstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAuditdInstalledObject))
+        {
+            result = AuditEnsureAuditdInstalled() ? g_fail : g_pass;
         }
         else
         {
@@ -1023,6 +1157,66 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnEtcMotdObject))
         {
             status = RemediateEnsurePermissionsOnEtcMotd();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureInetdNotInstalledObject))
+        {
+            status = RemediateEnsureInetdNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureXinetdNotInstalledObject))
+        {
+            status = RemediateEnsureXinetdNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRshServerNotInstalledObject))
+        {
+            status = RemediateEnsureRshServerNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNisNotInstalledObject))
+        {
+            status = RemediateEnsureNisNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTftpdNotInstalledObject))
+        {
+            status = RemediateEnsureTftpdNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureReadaheadFedoraNotInstalledObject))
+        {
+            status = RemediateEnsureReadaheadFedoraNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureBluetoothHiddNotInstalledObject))
+        {
+            status = RemediateEnsureBluetoothHiddNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIsdnUtilsBaseNotInstalledObject))
+        {
+            status = RemediateEnsureIsdnUtilsBaseNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject))
+        {
+            status = RemediateEnsureIsdnUtilsKdumpToolsNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIscDhcpdServerNotInstalledObject))
+        {
+            status = RemediateEnsureIscDhcpdServerNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSendmailNotInstalledObject))
+        {
+            status = RemediateEnsureSendmailNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSldapdNotInstalledObject))
+        {
+            status = RemediateEnsureSldapdNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureBind9NotInstalledObject))
+        {
+            status = RemediateEnsureBind9NotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDovecotCoreNotInstalledObject))
+        {
+            status = RemediateEnsureDovecotCoreNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAuditdInstalledObject))
+        {
+            status = RemediateEnsureAuditdInstalled();
         }
         else
         {

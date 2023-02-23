@@ -46,35 +46,39 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-        //audit-only
-        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
-        const char* m_auditEnsureNodevOptionOnHomePartition = "auditEnsureNodevOptionOnHomePartition";
-        const char* m_auditEnsureNodevOptionOnTmpPartition = "auditEnsureNodevOptionOnTmpPartition";
-        const char* m_auditEnsureNodevOptionOnVarTmpPartition = "auditEnsureNodevOptionOnVarTmpPartition";
-        const char* m_auditEnsureNosuidOptionOnTmpPartition = "auditEnsureNosuidOptionOnTmpPartition";
-        const char* m_auditEnsureNosuidOptionOnVarTmpPartition = "auditEnsureNosuidOptionOnVarTmpPartition";
-        const char* m_auditEnsureNoexecOptionOnVarTmpPartition = "auditEnsureNoexecOptionOnVarTmpPartition";
-        const char* m_auditEnsureNoexecOptionOnDevShmPartition = "auditEnsureNoexecOptionOnDevShmPartition";
-        const char* m_auditEnsureNodevOptionEnabledForAllRemovableMedia = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMedia = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMedia = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
-        const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
-        const char* m_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
-        const char* m_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-        const char* m_auditEnsureAllTelnetdPackagesUninstalled = "auditEnsureAllTelnetdPackagesUninstalled";
-        const char* m_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
-        const char* m_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
-        const char* m_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
-        const char* m_auditEnsureReadaheadFedoraNotInstalled = "auditEnsureReadaheadFedoraNotInstalled";
-        const char* m_auditEnsureBluetoothHiddNotInstalled = "auditEnsureBluetoothHiddNotInstalled";
-        const char* m_auditEnsureIsdnUtilsBaseNotInstalled = "auditEnsureIsdnUtilsBaseNotInstalled";
-        const char* m_auditEnsureIsdnUtilsKdumpToolsNotInstalled = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
-        const char* m_auditEnsureIscDhcpdServerNotInstalled = "auditEnsureIscDhcpdServerNotInstalled";
-        const char* m_auditEnsureSendmailNotInstalled = "auditEnsureSendmailNotInstalled";
-        const char* m_auditEnsureSldapdNotInstalled = "auditEnsureSldapdNotInstalled";
-        const char* m_auditEnsureBind9NotInstalled = "auditEnsureBind9NotInstalled";
-        const char* m_auditEnsureDovecotCoreNotInstalled = "auditEnsureDovecotCoreNotInstalled";
 
+        const char* m_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
+        const char* m_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
+        const char* m_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
+        const char* m_auditEnsureNisNotInstalledObject = "auditEnsureNisNotInstalled";
+        const char* m_auditEnsureTftpdNotInstalledObject = "auditEnsureTftpdNotInstalled";
+        const char* m_auditEnsureReadaheadFedoraNotInstalledObject = "auditEnsureReadaheadFedoraNotInstalled";
+        const char* m_auditEnsureBluetoothHiddNotInstalledObject = "auditEnsureBluetoothHiddNotInstalled";
+        const char* m_auditEnsureIsdnUtilsBaseNotInstalledObject = "auditEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_auditEnsureIscDhcpdServerNotInstalledObject = "auditEnsureIscDhcpdServerNotInstalled";
+        const char* m_auditEnsureSendmailNotInstalledObject = "auditEnsureSendmailNotInstalled";
+        const char* m_auditEnsureSldapdNotInstalledObject = "auditEnsureSldapdNotInstalled";
+        const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
+        const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
+        const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
+
+        // Audit-only
+        const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
+        const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
+        const char* m_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
+        const char* m_auditEnsureNodevOptionOnTmpPartitionObject = "auditEnsureNodevOptionOnTmpPartition";
+        const char* m_auditEnsureNodevOptionOnVarTmpPartitionObject = "auditEnsureNodevOptionOnVarTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnTmpPartitionObject = "auditEnsureNosuidOptionOnTmpPartition";
+        const char* m_auditEnsureNosuidOptionOnVarTmpPartitionObject = "auditEnsureNosuidOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnVarTmpPartitionObject = "auditEnsureNoexecOptionOnVarTmpPartition";
+        const char* m_auditEnsureNoexecOptionOnDevShmPartitionObject = "auditEnsureNoexecOptionOnDevShmPartition";
+        const char* m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
+        const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+
+        // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
         const char* m_remediateEnsurePermissionsOnEtcIssueObject = "remediateEnsurePermissionsOnEtcIssue";
         const char* m_remediateEnsurePermissionsOnEtcIssueNetObject = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -96,6 +100,24 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
+
+        const char* m_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
+        const char* m_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
+        const char* m_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
+        const char* m_remediateEnsureNisNotInstalledObject = "remediateEnsureNisNotInstalled";
+        const char* m_remediateEnsureTftpdNotInstalledObject = "remediateEnsureTftpdNotInstalled";
+        const char* m_remediateEnsureReadaheadFedoraNotInstalledObject = "remediateEnsureReadaheadFedoraNotInstalled";
+        const char* m_remediateEnsureBluetoothHiddNotInstalledObject = "remediateEnsureBluetoothHiddNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsBaseNotInstalledObject = "remediateEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_remediateEnsureIscDhcpdServerNotInstalledObject = "remediateEnsureIscDhcpdServerNotInstalled";
+        const char* m_remediateEnsureSendmailNotInstalledObject = "remediateEnsureSendmailNotInstalled";
+        const char* m_remediateEnsureSldapdNotInstalledObject = "remediateEnsureSldapdNotInstalled";
+        const char* m_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
+        const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
+        const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
+
+        const char* m_pass = "\"PASS\"";
 
         const char* m_clientName = "SecurityBaselineTest";
 
@@ -155,6 +177,98 @@ TEST_F(SecurityBaselineTest, MmiGetInfo)
     SecurityBaselineMmiFree(payload);
 }
 
+TEST_F(SecurityBaselineTest, MmiSet)
+{
+    MMI_HANDLE handle = nullptr;
+
+    const char* payload = "PASS";
+
+    const char* mimRequiredObjects[] = {
+        m_remediateSecurityBaselineObject,
+        m_remediateEnsurePermissionsOnEtcIssueObject,
+        m_remediateEnsurePermissionsOnEtcIssueNetObject,
+        m_remediateEnsurePermissionsOnEtcHostsAllowObject,
+        m_remediateEnsurePermissionsOnEtcHostsDenyObject,
+        m_remediateEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_remediateEnsurePermissionsOnEtcShadowObject,
+        m_remediateEnsurePermissionsOnEtcShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcGShadowObject,
+        m_remediateEnsurePermissionsOnEtcGShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcPasswdObject,
+        m_remediateEnsurePermissionsOnEtcPasswdDashObject,
+        m_remediateEnsurePermissionsOnEtcGroupObject,
+        m_remediateEnsurePermissionsOnEtcGroupDashObject,
+        m_remediateEnsurePermissionsOnEtcAnacronTabObject,
+        m_remediateEnsurePermissionsOnEtcCronDObject,
+        m_remediateEnsurePermissionsOnEtcCronDailyObject,
+        m_remediateEnsurePermissionsOnEtcCronHourlyObject,
+        m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
+        m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
+        m_remediateEnsurePermissionsOnEtcMotdObject,
+        m_remediateEnsureInetdNotInstalledObject,
+        m_remediateEnsureXinetdNotInstalledObject,
+        m_remediateEnsureRshServerNotInstalledObject,
+        m_remediateEnsureNisNotInstalledObject,
+        m_remediateEnsureTftpdNotInstalledObject,
+        m_remediateEnsureReadaheadFedoraNotInstalledObject,
+        m_remediateEnsureBluetoothHiddNotInstalledObject,
+        m_remediateEnsureIsdnUtilsBaseNotInstalledObject,
+        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_remediateEnsureIscDhcpdServerNotInstalledObject,
+        m_remediateEnsureSendmailNotInstalledObject,
+        m_remediateEnsureSldapdNotInstalledObject,
+        m_remediateEnsureBind9NotInstalledObject,
+        m_remediateEnsureDovecotCoreNotInstalledObject,
+        m_remediateEnsureAuditdInstalledObject
+    };
+
+    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+
+    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    {
+        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
+    }
+
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+}
+
 TEST_F(SecurityBaselineTest, MmiGet)
 {
     MMI_HANDLE handle = NULL;
@@ -185,32 +299,33 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
         m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartition,
-        m_auditEnsureNodevOptionOnTmpPartition,
-        m_auditEnsureNodevOptionOnVarTmpPartition,
-        m_auditEnsureNosuidOptionOnTmpPartition,
-        m_auditEnsureNosuidOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnDevShmPartition,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-        m_auditEnsureInetdNotInstalled,
-        m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllTelnetdPackagesUninstalled,
-        m_auditEnsureRshServerNotInstalled,
-        m_auditEnsureNisNotInstalled,
-        m_auditEnsureTftpdNotInstalled,
-        m_auditEnsureReadaheadFedoraNotInstalled,
-        m_auditEnsureBluetoothHiddNotInstalled,
-        m_auditEnsureIsdnUtilsBaseNotInstalled,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
-        m_auditEnsureIscDhcpdServerNotInstalled,
-        m_auditEnsureSendmailNotInstalled,
-        m_auditEnsureSldapdNotInstalled,
-        m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled
+        m_auditEnsureNodevOptionOnHomePartitionObject,
+        m_auditEnsureNodevOptionOnTmpPartitionObject,
+        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
+        m_auditEnsureInetdNotInstalledObject,
+        m_auditEnsureXinetdNotInstalledObject,
+        m_auditEnsureAllTelnetdPackagesUninstalledObject,
+        m_auditEnsureRshServerNotInstalledObject,
+        m_auditEnsureNisNotInstalledObject,
+        m_auditEnsureTftpdNotInstalledObject,
+        m_auditEnsureReadaheadFedoraNotInstalledObject,
+        m_auditEnsureBluetoothHiddNotInstalledObject,
+        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_auditEnsureIscDhcpdServerNotInstalledObject,
+        m_auditEnsureSendmailNotInstalledObject,
+        m_auditEnsureSldapdNotInstalledObject,
+        m_auditEnsureBind9NotInstalledObject,
+        m_auditEnsureDovecotCoreNotInstalledObject,
+        m_auditEnsureAuditdInstalledObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -224,6 +339,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        EXPECT_STREQ(payloadString, m_pass);
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
@@ -261,32 +377,33 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
         m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartition,
-        m_auditEnsureNodevOptionOnTmpPartition,
-        m_auditEnsureNodevOptionOnVarTmpPartition,
-        m_auditEnsureNosuidOptionOnTmpPartition,
-        m_auditEnsureNosuidOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnDevShmPartition,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-        m_auditEnsureInetdNotInstalled,
-        m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllTelnetdPackagesUninstalled,
-        m_auditEnsureRshServerNotInstalled,
-        m_auditEnsureNisNotInstalled,
-        m_auditEnsureTftpdNotInstalled,
-        m_auditEnsureReadaheadFedoraNotInstalled,
-        m_auditEnsureBluetoothHiddNotInstalled,
-        m_auditEnsureIsdnUtilsBaseNotInstalled,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
-        m_auditEnsureIscDhcpdServerNotInstalled,
-        m_auditEnsureSendmailNotInstalled,
-        m_auditEnsureSldapdNotInstalled,
-        m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled
+        m_auditEnsureNodevOptionOnHomePartitionObject,
+        m_auditEnsureNodevOptionOnTmpPartitionObject,
+        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
+        m_auditEnsureInetdNotInstalledObject,
+        m_auditEnsureXinetdNotInstalledObject,
+        m_auditEnsureAllTelnetdPackagesUninstalledObject,
+        m_auditEnsureRshServerNotInstalledObject,
+        m_auditEnsureNisNotInstalledObject,
+        m_auditEnsureTftpdNotInstalledObject,
+        m_auditEnsureReadaheadFedoraNotInstalledObject,
+        m_auditEnsureBluetoothHiddNotInstalledObject,
+        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_auditEnsureIscDhcpdServerNotInstalledObject,
+        m_auditEnsureSendmailNotInstalledObject,
+        m_auditEnsureSldapdNotInstalledObject,
+        m_auditEnsureBind9NotInstalledObject,
+        m_auditEnsureDovecotCoreNotInstalledObject,
+        m_auditEnsureAuditdInstalledObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -354,88 +471,4 @@ TEST_F(SecurityBaselineTest, MmiGetOutsideSession)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-}
-
-struct SecurityBaselineCombination
-{
-    const char* desiredObject;
-    const char* reportedObject;
-    const char* reportedValue;
-};
-
-TEST_F(SecurityBaselineTest, MmiSet)
-{
-    MMI_HANDLE handle = nullptr;
-
-    const char* payload = "PASS";
-
-    const char* mimRequiredObjects[] = {
-        m_remediateSecurityBaselineObject,
-        m_remediateEnsurePermissionsOnEtcIssueObject,
-        m_remediateEnsurePermissionsOnEtcIssueNetObject,
-        m_remediateEnsurePermissionsOnEtcHostsAllowObject,
-        m_remediateEnsurePermissionsOnEtcHostsDenyObject,
-        m_remediateEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_remediateEnsurePermissionsOnEtcShadowObject,
-        m_remediateEnsurePermissionsOnEtcShadowDashObject,
-        m_remediateEnsurePermissionsOnEtcGShadowObject,
-        m_remediateEnsurePermissionsOnEtcGShadowDashObject,
-        m_remediateEnsurePermissionsOnEtcPasswdObject,
-        m_remediateEnsurePermissionsOnEtcPasswdDashObject,
-        m_remediateEnsurePermissionsOnEtcGroupObject,
-        m_remediateEnsurePermissionsOnEtcGroupDashObject,
-        m_remediateEnsurePermissionsOnEtcAnacronTabObject,
-        m_remediateEnsurePermissionsOnEtcCronDObject,
-        m_remediateEnsurePermissionsOnEtcCronDailyObject,
-        m_remediateEnsurePermissionsOnEtcCronHourlyObject,
-        m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
-        m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
-        m_remediateEnsurePermissionsOnEtcMotdObject
-    };
-
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
-    {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
-    }
-
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }

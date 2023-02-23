@@ -170,6 +170,10 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAuditdInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureBluetoothHiddNotInstalled"
     },
     {

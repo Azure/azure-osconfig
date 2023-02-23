@@ -64,6 +64,8 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
 int CheckPackageInstalled(const char* packageName, void* log);
+int InstallPackage(const char* packageName, void* log);
+int UninstallPackage(const char* packageName, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

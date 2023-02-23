@@ -301,6 +301,12 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureAuditdInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
@@ -416,6 +422,96 @@
         },
         {
           "name": "remediateEnsurePermissionsOnEtcMotd",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureInetdNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureXinetdNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureRshServerNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureNisNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureTftpdNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureReadaheadFedoraNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureBluetoothHiddNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureIsdnUtilsBaseNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureIsdnUtilsKdumpToolsNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureIscDhcpdServerNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureSendmailNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureSldapdNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureBind9NotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureDovecotCoreNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureAuditdInstalled",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
