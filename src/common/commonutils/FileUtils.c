@@ -459,7 +459,6 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
     return status;
 }
 
-
 int CheckPackageInstalled(const char* packageName, void* log)
 {
     const char* commandTemplate = "dpkg -l %s | grep ^ii";

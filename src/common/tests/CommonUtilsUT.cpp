@@ -1234,7 +1234,7 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
 
-    EXPECT_EQ(0, InstallPackage("auditd", nullptr));
-    EXPECT_EQ(0, CheckPackageInstalled("auditd", nullptr));
-    EXPECT_EQ(0, UninstallPackage("auditd", nullptr));
+    EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
+    EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
 }
