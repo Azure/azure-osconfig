@@ -655,7 +655,7 @@ static int RemediateEnsureDovecotCoreNotInstalled(void)
     return UninstallPackage(g_dovecotCore, SecurityBaselineGetLog());
 }
 
-static int RemediateEnsureRemediatedInstalled(void)
+static int RemediateEnsureAuditdInstalled(void)
 {
     return InstallPackage(g_auditd, SecurityBaselineGetLog());
 }
