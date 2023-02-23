@@ -117,6 +117,8 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
         const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
 
+        const char* m_pass = "\"PASS\"";
+
         const char* m_clientName = "SecurityBaselineTest";
 
         int m_normalMaxPayloadSizeBytes = 1024;
@@ -245,6 +247,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+        EXPECT_STREQ(payloadString, m_pass);
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
