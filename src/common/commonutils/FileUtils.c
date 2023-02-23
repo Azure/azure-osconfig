@@ -445,7 +445,7 @@ static int CheckOrInstallPackage(const char* commandTemplate, const char* packag
 
     if (NULL == (command = (char*)malloc(packageNameLength)))
     {
-        OsConfigLogError(log, "CheckOrInstallPackage: out of memory", functionName);
+        OsConfigLogError(log, "CheckOrInstallPackage: out of memory");
         return ENOMEM;
     }
 
