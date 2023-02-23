@@ -508,6 +508,7 @@ int UninstallPackage(const char* packageName, void* log)
     if (0 != (status = CheckPackageInstalled(packageName, log)))
     {
         OsConfigLogInfo(log, "UninstallPackage: '%s' is already uninstalled", packageName);
+        status = 0;
     }
     else
     {
