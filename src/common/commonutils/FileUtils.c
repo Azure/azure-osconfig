@@ -479,15 +479,22 @@ int CheckPackageInstalled(const char* packageName, void* log)
 int InstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "apt-get install %s";
-    int status = ENOENT;
+    int status = 0;
 
-    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+    if (0 == CheckPackageInstalled(packageName, log))
     {
-        OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
     }
     else
     {
-        OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
+        if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+        {
+            OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+        }
+        else
+        {
+            OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
+        }
     }
 
     return status;
@@ -496,15 +503,22 @@ int InstallPackage(const char* packageName, void* log)
 int UninstallPackage(const char* packageName, void* log)
 {
     const char* commandTemplate = "apt-get remove purge %s";
-    int status = ENOENT;
+    int status = 0;
 
-    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+    if (0 != CheckPackageInstalled(packageName, log))
     {
-        OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+        OsConfigLogInfo(log, "UninstallPackage: '%s' is already uninstalled", packageName);
     }
     else
     {
-        OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+        if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+        {
+            OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+        }
+        else
+        {
+            OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+        }
     }
 
     return status;
