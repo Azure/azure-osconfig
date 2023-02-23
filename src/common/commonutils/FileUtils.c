@@ -502,7 +502,7 @@ int InstallPackage(const char* packageName, void* log)
 
 int UninstallPackage(const char* packageName, void* log)
 {
-    const char* commandTemplate = "apt-get remove purge %s";
+    const char* commandTemplate = "apt-get remove --purge %s";
     int status = 0;
 
     if (0 != CheckPackageInstalled(packageName, log))
