@@ -1213,16 +1213,28 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckPackageInstalled)
+TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage(nullptr, nullptr));
+
     EXPECT_EQ(EINVAL, CheckPackageInstalled("", nullptr));
+    EXPECT_EQ(EINVAL, InstallPackage("", nullptr));
+    EXPECT_EQ(EINVAL, UninstallPackage("", nullptr));
 
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, InstallPackage("~package_that_does_not_exist", nullptr));
+    EXPECT_NE(0, UninstallPackage("~package_that_does_not_exist", nullptr));
+
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("~package_that_does_not_exist*", nullptr));
     EXPECT_NE(0, CheckPackageInstalled("*~package_that_does_not_exist*", nullptr));
     
     EXPECT_EQ(0, CheckPackageInstalled("apt", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("ap*", nullptr));
+
+    EXPECT_EQ(0, InstallPackage("auditd", nullptr));
+    EXPECT_EQ(0, CheckPackageInstalled("auditd", nullptr));
+    EXPECT_EQ(0, UninstallPackage("auditd", nullptr));
 }

@@ -429,31 +429,43 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
     return status;
 }
 
-int CheckPackageInstalled(const char* packageName, void* log)
+static int CheckOrInstallPackage(const char* commandTemplate, const char* packageName, void* log)
 {
-    const char* commandTemplate = "dpkg -l %s | grep ^ii";
     char* command = NULL;
     size_t packageNameLength = 0;
     int status = ENOENT;
 
     if ((NULL == commandTemplate) || (NULL == packageName) || ((0 == (packageNameLength = strlen(packageName)))))
     {
-        OsConfigLogError(log, "CheckPackageInstalled called with invalid argument");
+        OsConfigLogError(log, "CheckOrInstallPackage called with invalid arguments");
         return EINVAL;
     }
-    
+
     packageNameLength += strlen(commandTemplate) + 1;
 
     if (NULL == (command = (char*)malloc(packageNameLength)))
     {
-        OsConfigLogError(log, "CheckPackageInstalled: out of memory");
+        OsConfigLogError(log, "CheckOrInstallPackage: out of memory", functionName);
         return ENOMEM;
     }
 
     memset(command, 0, packageNameLength);
     snprintf(command, packageNameLength, commandTemplate, packageName);
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log);
+
+    FREE_MEMORY(command);
+
+    return status;
+}
+
+
+int CheckPackageInstalled(const char* packageName, void* log)
+{
+    const char* commandTemplate = "dpkg -l %s | grep ^ii";
+    int status = ENOENT;
+
+    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
     {
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is installed", packageName);
     }
@@ -462,7 +474,39 @@ int CheckPackageInstalled(const char* packageName, void* log)
         OsConfigLogInfo(log, "CheckPackageInstalled: '%s' is not installed", packageName);
     }
 
-    FREE_MEMORY(command);
+    return status;
+}
+
+int InstallPackage(const char* packageName, void* log)
+{
+    const char* commandTemplate = "apt-get install %s";
+    int status = ENOENT;
+
+    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+    {
+        OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
+    }
+    else
+    {
+        OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
+    }
+
+    return status;
+}
+
+int UninstallPackage(const char* packageName, void* log)
+{
+    const char* commandTemplate = "apt-get uninstall purge %s";
+    int status = ENOENT;
+
+    if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+    {
+        OsConfigLogInfo(log, "UninstallPackage: '%s' was successfully uninstalled", packageName);
+    }
+    else
+    {
+        OsConfigLogError(log, "UninstallPackage: uninstallation of '%s' failed with %d", packageName, status);
+    }
 
     return status;
 }
