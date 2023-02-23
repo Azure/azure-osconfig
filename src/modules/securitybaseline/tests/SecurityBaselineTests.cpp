@@ -47,21 +47,21 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
 
-        const char* m_auditEnsureInetdNotInstalled = "auditEnsureInetdNotInstalled";
-        const char* m_auditEnsureXinetdNotInstalled = "auditEnsureXinetdNotInstalled";
-        const char* m_auditEnsureRshServerNotInstalled = "auditEnsureRshServerNotInstalled";
-        const char* m_auditEnsureNisNotInstalled = "auditEnsureNisNotInstalled";
-        const char* m_auditEnsureTftpdNotInstalled = "auditEnsureTftpdNotInstalled";
-        const char* m_auditEnsureReadaheadFedoraNotInstalled = "auditEnsureReadaheadFedoraNotInstalled";
-        const char* m_auditEnsureBluetoothHiddNotInstalled = "auditEnsureBluetoothHiddNotInstalled";
-        const char* m_auditEnsureIsdnUtilsBaseNotInstalled = "auditEnsureIsdnUtilsBaseNotInstalled";
-        const char* m_auditEnsureIsdnUtilsKdumpToolsNotInstalled = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
-        const char* m_auditEnsureIscDhcpdServerNotInstalled = "auditEnsureIscDhcpdServerNotInstalled";
-        const char* m_auditEnsureSendmailNotInstalled = "auditEnsureSendmailNotInstalled";
-        const char* m_auditEnsureSldapdNotInstalled = "auditEnsureSldapdNotInstalled";
-        const char* m_auditEnsureBind9NotInstalled = "auditEnsureBind9NotInstalled";
-        const char* m_auditEnsureDovecotCoreNotInstalled = "auditEnsureDovecotCoreNotInstalled";
-        const char* m_auditEnsureAuditdInstalled = "auditEnsureAuditdInstalled";
+        const char* m_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
+        const char* m_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
+        const char* m_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
+        const char* m_auditEnsureNisNotInstalledObject = "auditEnsureNisNotInstalled";
+        const char* m_auditEnsureTftpdNotInstalledObject = "auditEnsureTftpdNotInstalled";
+        const char* m_auditEnsureReadaheadFedoraNotInstalledObject = "auditEnsureReadaheadFedoraNotInstalled";
+        const char* m_auditEnsureBluetoothHiddNotInstalledObject = "auditEnsureBluetoothHiddNotInstalled";
+        const char* m_auditEnsureIsdnUtilsBaseNotInstalledObject = "auditEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_auditEnsureIscDhcpdServerNotInstalledObject = "auditEnsureIscDhcpdServerNotInstalled";
+        const char* m_auditEnsureSendmailNotInstalledObject = "auditEnsureSendmailNotInstalled";
+        const char* m_auditEnsureSldapdNotInstalledObject = "auditEnsureSldapdNotInstalled";
+        const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
+        const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
+        const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
 
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
@@ -101,21 +101,21 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
 
-        const char* m_remediateEnsureInetdNotInstalled = "remediateEnsureInetdNotInstalled";
-        const char* m_remediateEnsureXinetdNotInstalled = "remediateEnsureXinetdNotInstalled";
-        const char* m_remediateEnsureRshServerNotInstalled = "remediateEnsureRshServerNotInstalled";
-        const char* m_remediateEnsureNisNotInstalled = "remediateEnsureNisNotInstalled";
-        const char* m_remediateEnsureTftpdNotInstalled = "remediateEnsureTftpdNotInstalled";
-        const char* m_remediateEnsureReadaheadFedoraNotInstalled = "remediateEnsureReadaheadFedoraNotInstalled";
-        const char* m_remediateEnsureBluetoothHiddNotInstalled = "remediateEnsureBluetoothHiddNotInstalled";
-        const char* m_remediateEnsureIsdnUtilsBaseNotInstalled = "remediateEnsureIsdnUtilsBaseNotInstalled";
-        const char* m_remediateEnsureIsdnUtilsKdumpToolsNotInstalled = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
-        const char* m_remediateEnsureIscDhcpdServerNotInstalled = "remediateEnsureIscDhcpdServerNotInstalled";
-        const char* m_remediateEnsureSendmailNotInstalled = "remediateEnsureSendmailNotInstalled";
-        const char* m_remediateEnsureSldapdNotInstalled = "remediateEnsureSldapdNotInstalled";
-        const char* m_remediateEnsureBind9NotInstalled = "remediateEnsureBind9NotInstalled";
-        const char* m_remediateEnsureDovecotCoreNotInstalled = "remediateEnsureDovecotCoreNotInstalled";
-        const char* m_remediateEnsureAuditdInstalled = "remediateEnsureAuditdInstalled";
+        const char* m_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
+        const char* m_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
+        const char* m_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
+        const char* m_remediateEnsureNisNotInstalledObject = "remediateEnsureNisNotInstalled";
+        const char* m_remediateEnsureTftpdNotInstalledObject = "remediateEnsureTftpdNotInstalled";
+        const char* m_remediateEnsureReadaheadFedoraNotInstalledObject = "remediateEnsureReadaheadFedoraNotInstalled";
+        const char* m_remediateEnsureBluetoothHiddNotInstalledObject = "remediateEnsureBluetoothHiddNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsBaseNotInstalledObject = "remediateEnsureIsdnUtilsBaseNotInstalled";
+        const char* m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
+        const char* m_remediateEnsureIscDhcpdServerNotInstalledObject = "remediateEnsureIscDhcpdServerNotInstalled";
+        const char* m_remediateEnsureSendmailNotInstalledObject = "remediateEnsureSendmailNotInstalled";
+        const char* m_remediateEnsureSldapdNotInstalledObject = "remediateEnsureSldapdNotInstalled";
+        const char* m_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
+        const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
+        const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
 
         const char* m_clientName = "SecurityBaselineTest";
 
@@ -205,32 +205,32 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
         m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartition,
-        m_auditEnsureNodevOptionOnTmpPartition,
-        m_auditEnsureNodevOptionOnVarTmpPartition,
-        m_auditEnsureNosuidOptionOnTmpPartition,
-        m_auditEnsureNosuidOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnDevShmPartition,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-        m_auditEnsureInetdNotInstalled,
-        m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllTelnetdPackagesUninstalled,
-        m_auditEnsureRshServerNotInstalled,
-        m_auditEnsureNisNotInstalled,
-        m_auditEnsureTftpdNotInstalled,
-        m_auditEnsureReadaheadFedoraNotInstalled,
-        m_auditEnsureBluetoothHiddNotInstalled,
-        m_auditEnsureIsdnUtilsBaseNotInstalled,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
-        m_auditEnsureIscDhcpdServerNotInstalled,
-        m_auditEnsureSendmailNotInstalled,
-        m_auditEnsureSldapdNotInstalled,
-        m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled,
+        m_auditEnsureNodevOptionOnHomePartitionObject,
+        m_auditEnsureNodevOptionOnTmpPartitionObject,
+        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
+        m_auditEnsureInetdNotInstalledObject,
+        m_auditEnsureXinetdNotInstalledObject,
+        m_auditEnsureAllTelnetdPackagesUninstalledObject,
+        m_auditEnsureRshServerNotInstalledObject,
+        m_auditEnsureNisNotInstalledObject,
+        m_auditEnsureTftpdNotInstalledObject,
+        m_auditEnsureReadaheadFedoraNotInstalledObject,
+        m_auditEnsureBluetoothHiddNotInstalledObject,
+        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_auditEnsureIscDhcpdServerNotInstalledObject,
+        m_auditEnsureSendmailNotInstalledObject,
+        m_auditEnsureSldapdNotInstalledObject,
+        m_auditEnsureBind9NotInstalledObject,
+        m_auditEnsureDovecotCoreNotInstalledObject,
         m_auditEnsureAuditdInstalled
     };
     
@@ -282,33 +282,33 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePermissionsOnEtcCronWeeklyObject,
         m_auditEnsurePermissionsOnEtcMotdObject,
         m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartition,
-        m_auditEnsureNodevOptionOnTmpPartition,
-        m_auditEnsureNodevOptionOnVarTmpPartition,
-        m_auditEnsureNosuidOptionOnTmpPartition,
-        m_auditEnsureNosuidOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnVarTmpPartition,
-        m_auditEnsureNoexecOptionOnDevShmPartition,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMedia,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
-        m_auditEnsureInetdNotInstalled,
-        m_auditEnsureXinetdNotInstalled,
-        m_auditEnsureAllTelnetdPackagesUninstalled,
-        m_auditEnsureRshServerNotInstalled,
-        m_auditEnsureNisNotInstalled,
-        m_auditEnsureTftpdNotInstalled,
-        m_auditEnsureReadaheadFedoraNotInstalled,
-        m_auditEnsureBluetoothHiddNotInstalled,
-        m_auditEnsureIsdnUtilsBaseNotInstalled,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalled,
-        m_auditEnsureIscDhcpdServerNotInstalled,
-        m_auditEnsureSendmailNotInstalled,
-        m_auditEnsureSldapdNotInstalled,
-        m_auditEnsureBind9NotInstalled,
-        m_auditEnsureDovecotCoreNotInstalled,
-        m_auditEnsureAuditdInstalled
+        m_auditEnsureNodevOptionOnHomePartitionObject,
+        m_auditEnsureNodevOptionOnTmpPartitionObject,
+        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnTmpPartitionObject,
+        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
+        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
+        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
+        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
+        m_auditEnsureInetdNotInstalledObject,
+        m_auditEnsureXinetdNotInstalledObject,
+        m_auditEnsureAllTelnetdPackagesUninstalledObject,
+        m_auditEnsureRshServerNotInstalledObject,
+        m_auditEnsureNisNotInstalledObject,
+        m_auditEnsureTftpdNotInstalledObject,
+        m_auditEnsureReadaheadFedoraNotInstalledObject,
+        m_auditEnsureBluetoothHiddNotInstalledObject,
+        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
+        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_auditEnsureIscDhcpdServerNotInstalledObject,
+        m_auditEnsureSendmailNotInstalledObject,
+        m_auditEnsureSldapdNotInstalledObject,
+        m_auditEnsureBind9NotInstalledObject,
+        m_auditEnsureDovecotCoreNotInstalledObject,
+        m_auditEnsureAuditdInstalledObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -413,20 +413,20 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
         m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
         m_remediateEnsurePermissionsOnEtcMotdObject,
-        m_remediateEnsureInetdNotInstalled,
-        m_remediateEnsureXinetdNotInstalled,
-        m_remediateEnsureRshServerNotInstalled,
-        m_remediateEnsureNisNotInstalled,
-        m_remediateEnsureTftpdNotInstalled,
-        m_remediateEnsureReadaheadFedoraNotInstalled,
-        m_remediateEnsureBluetoothHiddNotInstalled,
-        m_remediateEnsureIsdnUtilsBaseNotInstalled,
-        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalled,
-        m_remediateEnsureIscDhcpdServerNotInstalled,
-        m_remediateEnsureSendmailNotInstalled,
-        m_remediateEnsureSldapdNotInstalled,
-        m_remediateEnsureBind9NotInstalled,
-        m_remediateEnsureDovecotCoreNotInstalled,
+        m_remediateEnsureInetdNotInstalledObject,
+        m_remediateEnsureXinetdNotInstalledObject,
+        m_remediateEnsureRshServerNotInstalledObject,
+        m_remediateEnsureNisNotInstalledObject,
+        m_remediateEnsureTftpdNotInstalledObject,
+        m_remediateEnsureReadaheadFedoraNotInstalledObject,
+        m_remediateEnsureBluetoothHiddNotInstalledObject,
+        m_remediateEnsureIsdnUtilsBaseNotInstalledObject,
+        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_remediateEnsureIscDhcpdServerNotInstalledObject,
+        m_remediateEnsureSendmailNotInstalledObject,
+        m_remediateEnsureSldapdNotInstalledObject,
+        m_remediateEnsureBind9NotInstalledObject,
+        m_remediateEnsureDovecotCoreNotInstalledObject,
         m_remediateEnsureAuditdInstalled
     };
 
