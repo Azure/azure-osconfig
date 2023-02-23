@@ -177,6 +177,98 @@ TEST_F(SecurityBaselineTest, MmiGetInfo)
     SecurityBaselineMmiFree(payload);
 }
 
+TEST_F(SecurityBaselineTest, MmiSet)
+{
+    MMI_HANDLE handle = nullptr;
+
+    const char* payload = "PASS";
+
+    const char* mimRequiredObjects[] = {
+        m_remediateSecurityBaselineObject,
+        m_remediateEnsurePermissionsOnEtcIssueObject,
+        m_remediateEnsurePermissionsOnEtcIssueNetObject,
+        m_remediateEnsurePermissionsOnEtcHostsAllowObject,
+        m_remediateEnsurePermissionsOnEtcHostsDenyObject,
+        m_remediateEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_remediateEnsurePermissionsOnEtcShadowObject,
+        m_remediateEnsurePermissionsOnEtcShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcGShadowObject,
+        m_remediateEnsurePermissionsOnEtcGShadowDashObject,
+        m_remediateEnsurePermissionsOnEtcPasswdObject,
+        m_remediateEnsurePermissionsOnEtcPasswdDashObject,
+        m_remediateEnsurePermissionsOnEtcGroupObject,
+        m_remediateEnsurePermissionsOnEtcGroupDashObject,
+        m_remediateEnsurePermissionsOnEtcAnacronTabObject,
+        m_remediateEnsurePermissionsOnEtcCronDObject,
+        m_remediateEnsurePermissionsOnEtcCronDailyObject,
+        m_remediateEnsurePermissionsOnEtcCronHourlyObject,
+        m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
+        m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
+        m_remediateEnsurePermissionsOnEtcMotdObject,
+        m_remediateEnsureInetdNotInstalledObject,
+        m_remediateEnsureXinetdNotInstalledObject,
+        m_remediateEnsureRshServerNotInstalledObject,
+        m_remediateEnsureNisNotInstalledObject,
+        m_remediateEnsureTftpdNotInstalledObject,
+        m_remediateEnsureReadaheadFedoraNotInstalledObject,
+        m_remediateEnsureBluetoothHiddNotInstalledObject,
+        m_remediateEnsureIsdnUtilsBaseNotInstalledObject,
+        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject,
+        m_remediateEnsureIscDhcpdServerNotInstalledObject,
+        m_remediateEnsureSendmailNotInstalledObject,
+        m_remediateEnsureSldapdNotInstalledObject,
+        m_remediateEnsureBind9NotInstalledObject,
+        m_remediateEnsureDovecotCoreNotInstalledObject,
+        m_remediateEnsureAuditdInstalledObject
+    };
+
+    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+
+    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    {
+        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
+    }
+
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+}
+
+TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
+{
+    MMI_HANDLE handle = NULL;
+    const char* payload = "PASS";
+    int payloadSizeBytes = strlen(payload);
+
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+
+    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
+    SecurityBaselineMmiClose(handle);
+    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
+}
+
 TEST_F(SecurityBaselineTest, MmiGet)
 {
     MMI_HANDLE handle = NULL;
@@ -379,103 +471,4 @@ TEST_F(SecurityBaselineTest, MmiGetOutsideSession)
     EXPECT_EQ(EINVAL, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
     EXPECT_EQ(nullptr, payload);
     EXPECT_EQ(0, payloadSizeBytes);
-}
-
-struct SecurityBaselineCombination
-{
-    const char* desiredObject;
-    const char* reportedObject;
-    const char* reportedValue;
-};
-
-TEST_F(SecurityBaselineTest, MmiSet)
-{
-    MMI_HANDLE handle = nullptr;
-
-    const char* payload = "PASS";
-
-    const char* mimRequiredObjects[] = {
-        m_remediateSecurityBaselineObject,
-        m_remediateEnsurePermissionsOnEtcIssueObject,
-        m_remediateEnsurePermissionsOnEtcIssueNetObject,
-        m_remediateEnsurePermissionsOnEtcHostsAllowObject,
-        m_remediateEnsurePermissionsOnEtcHostsDenyObject,
-        m_remediateEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_remediateEnsurePermissionsOnEtcShadowObject,
-        m_remediateEnsurePermissionsOnEtcShadowDashObject,
-        m_remediateEnsurePermissionsOnEtcGShadowObject,
-        m_remediateEnsurePermissionsOnEtcGShadowDashObject,
-        m_remediateEnsurePermissionsOnEtcPasswdObject,
-        m_remediateEnsurePermissionsOnEtcPasswdDashObject,
-        m_remediateEnsurePermissionsOnEtcGroupObject,
-        m_remediateEnsurePermissionsOnEtcGroupDashObject,
-        m_remediateEnsurePermissionsOnEtcAnacronTabObject,
-        m_remediateEnsurePermissionsOnEtcCronDObject,
-        m_remediateEnsurePermissionsOnEtcCronDailyObject,
-        m_remediateEnsurePermissionsOnEtcCronHourlyObject,
-        m_remediateEnsurePermissionsOnEtcCronMonthlyObject,
-        m_remediateEnsurePermissionsOnEtcCronWeeklyObject,
-        m_remediateEnsurePermissionsOnEtcMotdObject,
-        m_remediateEnsureInetdNotInstalledObject,
-        m_remediateEnsureXinetdNotInstalledObject,
-        m_remediateEnsureRshServerNotInstalledObject,
-        m_remediateEnsureNisNotInstalledObject,
-        m_remediateEnsureTftpdNotInstalledObject,
-        m_remediateEnsureReadaheadFedoraNotInstalledObject,
-        m_remediateEnsureBluetoothHiddNotInstalledObject,
-        m_remediateEnsureIsdnUtilsBaseNotInstalledObject,
-        m_remediateEnsureIsdnUtilsKdumpToolsNotInstalledObject,
-        m_remediateEnsureIscDhcpdServerNotInstalledObject,
-        m_remediateEnsureSendmailNotInstalledObject,
-        m_remediateEnsureSldapdNotInstalledObject,
-        m_remediateEnsureBind9NotInstalledObject,
-        m_remediateEnsureDovecotCoreNotInstalledObject,
-        m_remediateEnsureAuditdInstalledObject
-    };
-
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
-    {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
-    }
-
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetInvalidComponent)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, "Test123", m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetInvalidObject)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, "Test123", (MMI_JSON_STRING)payload, payloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-}
-
-TEST_F(SecurityBaselineTest, MmiSetOutsideSession)
-{
-    MMI_HANDLE handle = NULL;
-    const char* payload = "PASS";
-    int payloadSizeBytes = strlen(payload);
-
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
-
-    EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
-    SecurityBaselineMmiClose(handle);
-    EXPECT_EQ(EINVAL, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, m_remediateSecurityBaselineObject, (MMI_JSON_STRING)payload, payloadSizeBytes));
 }
