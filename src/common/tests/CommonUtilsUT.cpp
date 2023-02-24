@@ -1240,3 +1240,10 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
     EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
 }
+
+TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
+{
+    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr, nullptr));
+    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist", nullptr));
+    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd", nullptr), GetNumberOfLinesInFile("/etc/shadow", nullptr));
+}

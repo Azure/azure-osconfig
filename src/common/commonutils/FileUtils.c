@@ -140,6 +140,44 @@ bool UnlockFile(FILE* file, void* log)
     return LockUnlockFile(file, false, log);
 }
 
+unsigned int GetNumberOfLinesInFile(const char* fileName, void* log)
+{
+    unsigned int numberOfLines = 0;
+    FILE* file = NULL;
+    int fileSize = 0;
+    int i = 0;
+    int next = 0;
+
+    if (false == = FileExists(fileName))
+    {
+        OsConfigLogError(log, "GetNumberOfLinesInFile: cannot access file '%s'", fileName);
+        return 0;
+    }
+
+    if (NULL != (file = fopen(fileName, "r")))
+    {
+        fseek(file, 0, SEEK_END);
+        fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        for (i = 0; i < fileSize; i++)
+        {
+            if (EOL == (next = fgetc(file)))
+            {
+                numberOfLines += 1;
+            }
+            else if (EOF == next)
+            {
+                break;
+            }
+        }
+
+        fclose(file);
+    }
+
+    return numberOfLines;
+}
+
 static unsigned int FilterFileAccessFlags(unsigned int mode)
 {
     // S_IRWXU (00700): Read, write, execute/search by owner
