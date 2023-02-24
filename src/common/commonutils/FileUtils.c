@@ -148,7 +148,7 @@ unsigned int GetNumberOfLinesInFile(const char* fileName, void* log)
     int i = 0;
     int next = 0;
 
-    if (false == = FileExists(fileName))
+    if (false == FileExists(fileName))
     {
         OsConfigLogError(log, "GetNumberOfLinesInFile: cannot access file '%s'", fileName);
         return 0;
