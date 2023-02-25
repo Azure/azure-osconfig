@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -58,8 +61,6 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 
-unsigned int GetNumberOfLinesInFile(const char* fileName, void* log);
-
 int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 
@@ -68,6 +69,8 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 int CheckPackageInstalled(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);
 int UninstallPackage(const char* packageName, void* log);
+
+unsigned int GetNumberOfLinesInFile(const char* fileName, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 
@@ -141,6 +144,9 @@ int LoadReportedFromJsonConfig(const char* jsonString, REPORTED_PROPERTY** repor
 int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
+
+int EnumerateUsers(struct passwd** passwd, unsigned int* size, void* log);
+void FreeUsersList(struct passwd** source, unsigned int size);
 
 #ifdef __cplusplus
 }

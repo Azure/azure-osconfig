@@ -1247,3 +1247,15 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
     EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist", nullptr));
     EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd", nullptr), GetNumberOfLinesInFile("/etc/shadow", nullptr));
 }
+
+TEST_F(CommonUtilsTest, EnumerateUsers)
+{
+    struct passwd* list = NULL;
+    unsigned int size = 0;
+
+    EXPECT_EQ(0, EnumerateUsers(&list, &size, nullptr));
+    EXPECT_NE(0, size);
+    EXPECT_NE(nullptr, list);
+    
+    FreeUsersList(&list, size);
+}

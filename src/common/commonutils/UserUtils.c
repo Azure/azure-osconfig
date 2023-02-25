@@ -3,48 +3,161 @@
 
 #include "Internal.h"
 
-// etc/group: each line is in the following format:
-// group_name:password:GID:user1,user2, ....userN
-typedef struct ETC_GROUP_INFO
+//const char* commandTemplate = "sudo cat /etc/users | grep %s";
+
+void FreeUsersList(struct passwd** source, unsigned int size)
 {
-    char* groupName;
-    char* groupPassword;
-    unsigned int groupId;
-    char* groupUsernames[0];
-} ETC_GROUP_INFO;
+    unsigned int i = 0;
 
-static ETC_GROUP_INFO* g_etcGroupInfo = NULL;
-static unsigned int g_numberOfEtcGroupInfos = 0;
+    for (i = 0; i < size; i++)
+    {
+        if (NULL != source[i])
+        {
+            FREE_MEMORY(source[i]->pw_name);
+            FREE_MEMORY(source[i]->pw_passwd);
+            FREE_MEMORY(source[i]->pw_gecos);
+            FREE_MEMORY(source[i]->pw_dir);
+            FREE_MEMORY(source[i]->pw_shell);
+        }
+    }
 
-// etc/passwd: each line is in the following format:
-// username:password:uid:gid:geco1,geco2,..gecoN:home directory:login shell
-typedef struct ETC_PASSWD_INFO
+    FREE_MEMORY(*source);
+}
+
+static int AllocateAndCopyPasswdEntry(struct passwd* destination, struct passwd* source, void* log)
 {
-    char* username;
-    char* password;
-    unsigned int uid;
-    unsigned int gid;
-    char* homeDirectory;
-    char* loginShell;
-} ETC_PASSWD_INFO;
+    int status = 0;
+    size_t length = 0;
+    
+    if ((NULL == destination) || (NULL == source))
+    {
+        OsConfigLogError(log, "AllocateAndCopyPasswdEntry: invalid arguments");
+        return EINVAL;
+    }
 
-static ETC_PASSWD_INFO* g_etcPasswdInfo = NULL;
-static unsigned int g_numberOfEtcPasswdInfos = 0;
+    if (0 < (length = source->pw_name ? strlen(source->pw_name) : 0))
+    {
+        if (NULL == (destination->pw_name = malloc(length + 1)))
+        {
+            OsConfigLogError(log, "AllocateAndCopyPasswdEntry: out of memory copying pw_name '%s'", source->pw_name);
+            status = ENOMEM;
+        }
+        else
+        {
+            memset(destination->pw_name, 0, length + 1);
+            memcopy(destination->pw_name, source->pw_name, length);
+        }
+    }
 
-// etc/shadow: each line is in the following format:
-// login_name:encrypted_password:date_of_last_password_change:minimum_password_age:maximum_password_age:
-// password_warning_period:password_inactivity_period:account_expiration_date:reserved_field
-typedef struct ETC_SHADOW_INFO
+    if (0 < (length = source->pw_passwd ? strlen(source->pw_passwd) : 0))
+    {
+        if (NULL == (destination->pw_passwd = malloc(length + 1)))
+        {
+            OsConfigLogError(log, "AllocateAndCopyPasswdEntry: out of memory copying pw_passwd '%s'", source->pw_passwd);
+            status = ENOMEM;
+        }
+        else
+        {
+            memset(destination->pw_passwd, 0, length + 1);
+            memcopy(destination->pw_passwd, source->pw_passwd, length);
+        }
+    }
+
+    destination->pw_uid = source->pw_uid;
+    destination->pw_gid = source->pw_gid;
+
+    if (0 < (length = source->pw_gecos ? strlen(source->pw_gecos) : 0))
+    {
+        if (NULL == (destination->pw_gecos = malloc(length + 1)))
+        {
+            OsConfigLogError(log, "AllocateAndCopyPasswdEntry: out of memory copying pw_gecos '%s'", source->pw_gecos);
+            status = ENOMEM;
+        }
+        else
+        {
+            memset(destination->pw_gecos, 0, length + 1);
+            memcopy(destination->pw_gecos, source->pw_gecos, length);
+        }
+    }
+
+    if (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0))
+    {
+        if (NULL == (destination->pw_dir = malloc(length + 1)))
+        {
+            OsConfigLogError(log, "AllocateAndCopyPasswdEntry: out of memory copying pw_dir '%s'", source->pw_dir);
+            status = ENOMEM;
+        }
+        else
+        {
+            memset(destination->pw_dir, 0, length + 1);
+            memcopy(destination->pw_dir, source->pw_dir, length);
+        }
+    }
+
+    if (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0))
+    {
+        if (NULL == (destination->pw_shell = malloc(length + 1)))
+        {
+            OsConfigLogError(log, "AllocateAndCopyPasswdEntry: out of memory copying pw_shell '%s'", source->pw_shell);
+            status = ENOMEM;
+
+        }
+        else
+        {
+            memset(destination->pw_shell, 0, length + 1);
+            memcopy(destination->pw_shell, source->pw_shell, length);
+        }
+    }
+
+    return status;
+}
+
+int EnumerateUsers(struct passwd** passwd, unsigned int* size, void* log)
 {
-    char* loginName;
-    char* encryptedPassword; //see crypt(3)
-    unsigned int dateOfLastPasswordChange; //number of days since Jan 1, 1970 00:00 UTC
-    unsigned int minimumPasswordAge; //number of days
-    unsigned int maximumPasswordAge; //number of days
-    unsigned int passwordWarningPeriod; //number of days
-    unsigned int passwordInactivityPeriod; //number of days
-    unsigned int accountExpirationDate; //number of days since Jan 1, 1970 00:00 UTC
-} ETC_SHADOW_INFO;
+    struct passwd* passwdEntry = NULL;
+    unsigned int i = 0;
 
-static ETC_SHADOW_INFO* g_etcShadowInfo = NULL;
-static unsigned int g_numberOfEtcShadowInfos = 0;
+    if ((NULL == passwd) || (NULL == size))
+    {
+        OsConfigLogError(log, "EnumerateUsers: invalid arguments");
+        return EINVAL;
+    }
+
+    if (0 == (*size = GetNumberOfLinesInFile("/etc/passwd", log)))
+    {
+        OsConfigLogError(log, "EnumerateUsers: cannot read /etc/group");
+        return NULL;
+    }
+
+    if (NULL == (*passwd = malloc(*size * sizeof(passwd))))
+    {
+        OsConfigLogError(log, "EnumerateUsers: out of memory");
+        *size = 0;
+        return ENOMEM;
+    }
+
+    setpwent();
+
+    for (i = 0; i < *size; i++)
+    {
+        if (NULL == (passwdEntry = getpwent()))
+        {
+            // End of list
+            break;
+        }
+
+        // Temporary
+        OsConfigLogInfo(log, "[passwd %d] %s:%s:%d:%d:%s:%s:%s", passwdEntry->pw_name, passwdEntry->pw_passwd, passwdEntry->pw_uid, 
+            passwdEntry->pw_gid, passwdEntry->pw_gecos, passwdEntry->pw_dir, passwdEntry->pw_shell);
+
+        if (0 != (status = AllocateAndCopyPasswdEntry(&passwd[i], passwdEntry)))
+        {
+            OsConfigLogError(log, "EnumerateUsers: failed making copy of passwd entry (%d)", status);
+            continue;
+        }
+    }
+
+    endpwent();
+
+    return status;
+}
