@@ -11,6 +11,21 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "OSQuery",
+    "ObjectName": "etc_hosts"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "OSQuery",
+    "ObjectName": "etc_services"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "OSQuery",
+    "ObjectName": "etc_services"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "OSQuery",
     "ObjectName": "invalid",
     "ExpectedResult": 22
   },

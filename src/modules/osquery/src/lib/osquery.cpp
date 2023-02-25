@@ -9,11 +9,11 @@ const char* g_emptyString = "";
 const char* g_dash = "-";
 const char* g_cmd_osquery_exists = "which ~/osquery/osqueryi";
 
-const char* g_cmd_osquery_install_0 = "mkdir -p ~/osquery/osqueryi";
+const char* g_cmd_osquery_install_0 = "mkdir -p ~/osquery";
 const char* g_cmd_osquery_install_1 = "wget --directory-prefix=/tmp https://pkg.osquery.io/linux/osquery-5.7.0_1.linux_x86_64.tar.gz";
 const char* g_cmd_osquery_install_2 = "tar zxfv /tmp/osquery-5.7.0_1.linux_x86_64.tar.gz -C ~/osquery/";
-const char* g_cmd_osquery_install_3 = "cp -f ~/osquery/opt/osquery/share/osquery/osquery.example.conf /etc/osquery/osquery.conf";
-const char* g_cmd_osquery_install_4 = "ln -s ~/osquery/opt/osquery/bin/osqueryd ~/osquery/osqueryi";
+const char *g_cmd_osquery_install_3 = "mkdir -p /etc/osquery; cp -f ~/osquery/opt/osquery/share/osquery/osquery.example.conf /etc/osquery/osquery.conf";
+const char* g_cmd_osquery_install_4 = "ln -fs ~/osquery/opt/osquery/bin/osqueryd ~/osquery/osqueryi";
 
 const std::string OSQuery::m_info = R""""({
     "Name": "OSQuery",
@@ -31,34 +31,57 @@ OSCONFIG_LOG_HANDLE OSQueryLog::m_log = nullptr;
 OSQuery::OSQuery(unsigned int maxPayloadSizeBytes) :
     m_maxPayloadSizeBytes(maxPayloadSizeBytes)
 {
-    // TODO: Add any initialization code here
     int status = MMI_OK;
     std::string payloadString;
     OsConfigLogInfo(OSQueryLog::Get(), "Checking for osquery installation");
     status = RunCommand(g_cmd_osquery_exists, payloadString);
     if (status != MMI_OK)
     {
-        OsConfigLogInfo(OSQueryLog::Get(), "Installing osquery");
+        OsConfigLogInfo(OSQueryLog::Get(), "[1/5] Installing osquery");
         status = RunCommand(g_cmd_osquery_install_0, payloadString);
         if (status == MMI_OK)
         {
-            OsConfigLogInfo(OSQueryLog::Get(), "Downloading osquery");
+            OsConfigLogInfo(OSQueryLog::Get(), "[2/5] Downloading osquery");
             status = RunCommand(g_cmd_osquery_install_1, payloadString);
             if (status == MMI_OK)
             {
-                OsConfigLogInfo(OSQueryLog::Get(), "Extracting osquery");
+                OsConfigLogInfo(OSQueryLog::Get(), "[3/5] Extracting osquery");
                 status = RunCommand(g_cmd_osquery_install_2, payloadString);
                 if (status == MMI_OK)
                 {
-                    OsConfigLogInfo(OSQueryLog::Get(), "Configuring osquery");
+                    OsConfigLogInfo(OSQueryLog::Get(), "[4/5] Configuring osquery");
                     status = RunCommand(g_cmd_osquery_install_3, payloadString);
                     if (status == MMI_OK)
                     {
-                        OsConfigLogInfo(OSQueryLog::Get(), "Creating symlinks");
+                        OsConfigLogInfo(OSQueryLog::Get(), "[5/5] Creating symlinks");
                         status = RunCommand(g_cmd_osquery_install_4, payloadString);
+                        if (status == MMI_OK)
+                        {
+                            OsConfigLogInfo(OSQueryLog::Get(), "osquery installed!");
+                        }
+                        else
+                        {
+                            OsConfigLogError(OSQueryLog::Get(), "Unable to create symlinks. error: %s", payloadString.c_str());
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(OSQueryLog::Get(), "Unable to configure. error: %s", payloadString.c_str());
                     }
                 }
+                else
+                {
+                    OsConfigLogError(OSQueryLog::Get(), "Unable to extract. error: %s", payloadString.c_str());
+                }
             }
+            else
+            {
+                OsConfigLogError(OSQueryLog::Get(), "Unable to download. error: %s", payloadString.c_str());
+            }
+        }
+        else
+        {
+            OsConfigLogError(OSQueryLog::Get(), "Unable to create directory. error: %s", payloadString.c_str());
         }
     }
     else
