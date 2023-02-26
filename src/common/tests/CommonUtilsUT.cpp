@@ -1252,10 +1252,16 @@ TEST_F(CommonUtilsTest, EnumerateUsers)
 {
     struct passwd* list = NULL;
     unsigned int size = 0;
+    unsigned i = 0;
 
     EXPECT_EQ(0, EnumerateUsers(&list, &size, nullptr));
     EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/passwd", nullptr));
     EXPECT_NE(nullptr, list);
+
+    for (i = 0; i < size; i++)
+    {
+        EXPECT_NE(nullptr, list[i].pw_name);    
+    }
     
     FreeUsersList(&list, size);
 }
