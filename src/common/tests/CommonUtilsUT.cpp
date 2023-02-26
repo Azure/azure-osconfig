@@ -1254,7 +1254,7 @@ TEST_F(CommonUtilsTest, EnumerateUsers)
     unsigned int size = 0;
 
     EXPECT_EQ(0, EnumerateUsers(&list, &size, nullptr));
-    EXPECT_NE(0, size);
+    EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/passwd", nullptr));
     EXPECT_NE(nullptr, list);
     
     FreeUsersList(&list, size);

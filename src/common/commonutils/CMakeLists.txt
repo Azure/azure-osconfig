@@ -15,6 +15,7 @@ add_library(commonutils STATIC
     ProxyUtils.c
     SocketUtils.c
     UrlUtils.c
+    UserUtils.c
     CommonUtils.cpp)
 
 target_compile_options(commonutils PRIVATE -Wno-psabi -Wall -Wextra -Wunused -Werror -Wformat -Wformat-security -Wno-nonnull -Wno-unused-result -Wunused-const-variable=2 -Wunused-macros)

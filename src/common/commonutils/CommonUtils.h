@@ -145,7 +145,7 @@ int GetGitManagementFromJsonConfig(const char* jsonString, void* log);
 char* GetGitRepositoryUrlFromJsonConfig(const char* jsonString, void* log);
 char* GetGitBranchFromJsonConfig(const char* jsonString, void* log);
 
-int EnumerateUsers(struct passwd** passwd, unsigned int* size, void* log);
+int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log);
 void FreeUsersList(struct passwd** source, unsigned int size);
 
 #ifdef __cplusplus
