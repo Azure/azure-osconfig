@@ -4,7 +4,7 @@
 #ifndef USERUTILS_H
 #define USERUTILS_H
 
-#include <commonutils.h>
+// Include CommonUtils.h in the target source before including this header
 #include <sys/types.h>
 #include <pwd.h>
 #include <grp.h>
