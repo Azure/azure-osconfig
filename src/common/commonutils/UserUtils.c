@@ -219,10 +219,12 @@ void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size)
     }
 }
 
+#define MAX_GROUPS_USER_CAN_BE_IN 16
+
 int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
-    gid_t* groupIds = NULL;
-    int numberOfGroups = 0;
+    gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN] = {0};
+    int numberOfGroups = ARRAY_SIZE(groupIds);
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
     int i = 0;
@@ -237,29 +239,19 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
     *groupList = NULL;
     *size = 0;
 
-    if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, NULL, &numberOfGroups)))
+    if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, &groupIds[0], &numberOfGroups)))
     {
-        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(1) failed");
-        status = ENOENT;
-    }
-    else if (NULL == (groupIds = malloc(sizeof(gid_t) * numberOfGroups)))
-    {
-        OsConfigLogError(log, "EnumerateUserGroups: out of memory (1)");
-        status = ENOMEM;
-    }
-    else if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, groupIds, &numberOfGroups)))
-    {
-        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(2) failed");
+        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
         status = ENOENT;
     }
     else if (NULL == (*groupList = malloc(sizeof(struct SIMPLIFIED_GROUP) * numberOfGroups)))
     {
-        OsConfigLogError(log, "EnumerateUserGroups: out of memory (2)");
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory");
         status = ENOMEM;
     }
     else
     {
-        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groupIds", user->pw_name, user->pw_gid, numberOfGroups);
+        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->pw_name, user->pw_gid, numberOfGroups);
 
         for (i = 0; i < numberOfGroups; i++)
         {
@@ -273,7 +265,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
             (*groupList)[i].groupId = groupEntry->gr_gid;
             (*groupList)[i].groupName = NULL;
 
-            if (0 < (groupNameLength = groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0))
+            if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
             {
                 if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
                 {
@@ -291,8 +283,6 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
                 }
             }
         }
-
-        FREE_MEMORY(groupIds);
     }
 
     return status;
