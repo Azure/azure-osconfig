@@ -6,6 +6,8 @@
 
 //const char* commandTemplate = "sudo cat /etc/users | grep %s";
 
+static const char* g_passwdFile = "/etc/passwd";
+
 static void EmptyPasswd(struct passwd* target)
 {
     if (NULL != target)
@@ -135,7 +137,6 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
 
 int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
 {
-    const char* passwdFile = "/etc/passwd";
     struct passwd* passwdEntry = NULL;
     unsigned int i = 0;
     size_t listSize = 0;
@@ -150,7 +151,7 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
     *passwdList = NULL;
     *size = 0;
 
-    if (0 != (*size = GetNumberOfLinesInFile(passwdFile, log)))
+    if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile, log)))
     {
         listSize = (*size) * sizeof(struct passwd);
         if (NULL != (*passwdList = malloc(listSize)))
@@ -180,7 +181,7 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
     }
     else
     {
-        OsConfigLogError(log, "EnumerateUsers: cannot read %s", passwdFile);
+        OsConfigLogError(log, "EnumerateUsers: cannot read %s", g_passwdFile);
         status = EPERM;
     }
 
@@ -204,7 +205,7 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
     return status;
 }
 
-void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size)
+void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
 {
     unsigned int i = 0;
 
@@ -221,7 +222,7 @@ void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size)
 
 #define MAX_GROUPS_USER_CAN_BE_IN 16
 
-int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+int EnumerateUserGroups(struct passwd* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
     gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN] = {0};
     int numberOfGroups = ARRAY_SIZE(groupIds);
@@ -244,7 +245,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
         OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
         status = ENOENT;
     }
-    else if (NULL == (*groupList = malloc(sizeof(struct SIMPLIFIED_GROUP) * numberOfGroups)))
+    else if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory");
         status = ENOMEM;
@@ -264,6 +265,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
 
             (*groupList)[i].groupId = groupEntry->gr_gid;
             (*groupList)[i].groupName = NULL;
+            (*groupList)[i].hasUsers = true;
 
             if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
             {
@@ -288,7 +290,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
     return status;
 }
 
-int EnumerateAllGroups(struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
     const char* groupFile = "/etc/group";
     struct group* groupEntry = NULL;
@@ -319,6 +321,7 @@ int EnumerateAllGroups(struct SIMPLIFIED_GROUP** groupList, unsigned int* size, 
             {
                 (*groupList)[i].groupId = groupEntry->gr_gid;
                 (*groupList)[i].groupName = NULL;
+                (*groupList)[i].hasUsers = ((NULL != groupEntry->gr_mem) && (NULL != *(groupEntry->gr_mem)) && (0 != *(groupEntry->gr_mem)[0])) ? true : false;
 
                 if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
                 {
@@ -327,7 +330,8 @@ int EnumerateAllGroups(struct SIMPLIFIED_GROUP** groupList, unsigned int* size, 
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d", i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d, %s", i, 
+                            (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
                     }
                     else
                     {
