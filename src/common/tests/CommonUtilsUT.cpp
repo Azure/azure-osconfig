@@ -1264,4 +1264,5 @@ TEST_F(CommonUtilsTest, EnumerateUsers)
     }
     
     FreeUsersList(&list, size);
+    EXPECT_EQ(nullptr, list);
 }

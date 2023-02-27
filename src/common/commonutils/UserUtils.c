@@ -5,25 +5,33 @@
 
 //const char* commandTemplate = "sudo cat /etc/users | grep %s";
 
+static void EmptyPasswd(struct passwd* target)
+{
+    if (NULL != target)
+    {
+        FREE_MEMORY(target->pw_name);
+        FREE_MEMORY(target->pw_passwd);
+        FREE_MEMORY(target->pw_gecos);
+        FREE_MEMORY(target->pw_dir);
+        FREE_MEMORY(target->pw_shell);
+
+        memset(target, 0, sizeof(struct passwd));
+    }
+}
+
 void FreeUsersList(struct passwd** source, unsigned int size)
 {
     unsigned int i = 0;
 
-    if (NULL == source)
+    if (NULL != source)
     {
-        return;
-    }  
+        for (i = 0; i < size; i++)
+        {
+            EmptyPasswd(&((*source)[i]));
+        }
 
-    for (i = 0; i < size; i++)
-    {
-        FREE_MEMORY((*source)[i].pw_name);
-        FREE_MEMORY((*source)[i].pw_passwd);
-        FREE_MEMORY((*source)[i].pw_gecos);
-        FREE_MEMORY((*source)[i].pw_dir);
-        FREE_MEMORY((*source)[i].pw_shell);
+        FREE_MEMORY(*source);
     }
-
-    FREE_MEMORY(*source);
 }
 
 static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, void* log)
@@ -36,6 +44,8 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
         OsConfigLogError(log, "CopyPasswdEntry: invalid arguments");
         return EINVAL;
     }
+
+    EmptyPasswd(destination);
 
     if (0 < (length = (source->pw_name ? strlen(source->pw_name) : 0)))
     {
@@ -50,12 +60,8 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
             memcpy(destination->pw_name, source->pw_name, length);
         }
     }
-    else
-    {
-        destination->pw_name = NULL;    
-    }
 
-    if (0 < (length = source->pw_passwd ? strlen(source->pw_passwd) : 0))
+    if ((0 == status) && (0 < (length = source->pw_passwd ? strlen(source->pw_passwd) : 0)))
     {
         if (NULL == (destination->pw_passwd = malloc(length + 1)))
         {
@@ -68,15 +74,14 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
             memcpy(destination->pw_passwd, source->pw_passwd, length);
         }
     }
-    else
+
+    if (0 == status)
     {
-        destination->pw_passwd = NULL;    
+        destination->pw_uid = source->pw_uid;
+        destination->pw_gid = source->pw_gid;
     }
 
-    destination->pw_uid = source->pw_uid;
-    destination->pw_gid = source->pw_gid;
-
-    if (0 < (length = source->pw_gecos ? strlen(source->pw_gecos) : 0))
+    if ((0 == status) && (0 < (length = source->pw_gecos ? strlen(source->pw_gecos) : 0)))
     {
         if (NULL == (destination->pw_gecos = malloc(length + 1)))
         {
@@ -89,12 +94,8 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
             memcpy(destination->pw_gecos, source->pw_gecos, length);
         }
     }
-    else
-    {
-        destination->pw_gecos = NULL;    
-    }
 
-    if (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0))
+    if ((0 == status) && (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0)))
     {
         if (NULL == (destination->pw_dir = malloc(length + 1)))
         {
@@ -107,12 +108,8 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
             memcpy(destination->pw_dir, source->pw_dir, length);
         }
     }
-    else
-    {
-        destination->pw_dir = NULL;    
-    }
 
-    if (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0))
+    if ((0 == status) && (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0)))
     {
         if (NULL == (destination->pw_shell = malloc(length + 1)))
         {
@@ -126,9 +123,10 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
             memcpy(destination->pw_shell, source->pw_shell, length);
         }
     }
-    else
+
+    if (0 != status)
     {
-        destination->pw_shell = NULL;    
+        EmptyPasswd(destination);
     }
 
     return status;
@@ -137,7 +135,6 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
 int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
 {
     const char* passwdFile = "/etc/passwd";
- 
     struct passwd* passwdEntry = NULL;
     unsigned int i = 0;
     size_t listSize = 0;
@@ -152,44 +149,46 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
     *passwdList = NULL;
     *size = 0;
 
-    if (0 == (*size = GetNumberOfLinesInFile(passwdFile, log)))
+    if (0 != (*size = GetNumberOfLinesInFile(passwdFile, log)))
+    {
+        listSize = (*size) * sizeof(struct passwd);
+        if (NULL != (*passwdList = malloc(listSize)))
+        {
+            memset(*passwdList, 0, listSize);
+
+            setpwent();
+
+            while ((NULL != (passwdEntry = getpwent())) && (i < *size))
+            {
+                if (0 != (status = CopyPasswdEntry(&((*passwdList)[i]), passwdEntry, log)))
+                {
+                    OsConfigLogError(log, "EnumerateUsers: failed making copy of passwd entry (%d)", status);
+                    break;
+                }
+
+                i += 1;
+            }
+            endpwent();
+        }
+        else
+        {
+            OsConfigLogError(log, "EnumerateUsers: out of memory");
+            *size = 0;
+            status = ENOMEM;
+        }
+    }
+    else
     {
         OsConfigLogError(log, "EnumerateUsers: cannot read %s", passwdFile);
-        return EPERM;
+        status = EPERM;
     }
 
-    listSize = (*size) * sizeof(struct passwd);
-    if (NULL == (*passwdList = malloc(listSize)))
-    {
-        OsConfigLogError(log, "EnumerateUsers: out of memory");
-        *size = 0;
-        return ENOMEM;
-    }
-
-    memset(*passwdList, 0, listSize);
-
-    setpwent();
-
-    while ((NULL != (passwdEntry = getpwent())) && (i < *size))
-    {
-        if (0 != (status = CopyPasswdEntry(&((*passwdList)[i]), passwdEntry, log)))
-        {
-            OsConfigLogError(log, "EnumerateUsers: failed making copy of passwd entry (%d)", status);
-            break;
-        }
-
-        i += 1;
-    }
-
-    endpwent();
     
-    /*
     for (i = 0; i < *size; i++)
     {
-        OsConfigLogInfo(log, "Listed entry %u: %s:%s:%d:%d:%s:%s:%s", i, (*passwdList)[i].pw_name, (*passwdList)[i].pw_passwd, 
-            (*passwdList)[i].pw_uid, (*passwdList)[i].pw_gid, (*passwdList)[i].pw_gecos, (*passwdList)[i].pw_dir, (*passwdList)[i].pw_shell);
+        OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, user info '%s', home dir '%s', shell '%s'", i, 
+            (*passwdList)[i].pw_name, (*passwdList)[i].pw_uid, (*passwdList)[i].pw_gid, (*passwdList)[i].pw_gecos, (*passwdList)[i].pw_dir, (*passwdList)[i].pw_shell);
     }
-    */
     
     return status;
 }
