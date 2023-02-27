@@ -1251,50 +1251,50 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 
 TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
 {
-    struct passwd* list = NULL;
-    unsigned int size = 0;
+    SIMPLIFIED_GROUP* userList = NULL;
+    unsigned int userListSize = 0;
 
     struct SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupSize = 0;
+    unsigned int groupListSize = 0;
 
-    EXPECT_EQ(0, EnumerateUsers(&list, &size, nullptr));
-    EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/passwd", nullptr));
-    EXPECT_NE(nullptr, list);
+    EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
+    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
+    EXPECT_NE(nullptr, userList);
 
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int i = 0; i < userListSize; i++)
     {
-        EXPECT_NE(nullptr, list[i].pw_name);
+        EXPECT_NE(nullptr, userList[i].username);
         
-        EXPECT_EQ(0, EnumerateUserGroups(&list[i], &groupList, &groupSize, nullptr));
+        EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr));
         EXPECT_NE(nullptr, groupList);
         
-        for (unsigned int j = 0; j < groupSize; j++)
+        for (unsigned int j = 0; j < groupListSize; j++)
         {
             EXPECT_NE(nullptr, groupList[j].groupName);
         }
         
-        FreeGroupList(&groupList, groupSize);
+        FreeGroupList(&groupList, groupListSize);
         EXPECT_EQ(nullptr, groupList);
     }
     
-    FreeUsersList(&list, size);
-    EXPECT_EQ(nullptr, list);
+    FreeUsersList(&userList, userListSize);
+    EXPECT_EQ(nullptr, userList);
 }
 
 TEST_F(CommonUtilsTest, EnumerateAllGroups)
 {
-    struct SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupSize = 0;
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
 
-    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupSize, nullptr));
-    EXPECT_EQ(groupSize, GetNumberOfLinesInFile("/etc/group", nullptr));
+    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr));
+    EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group", nullptr));
     EXPECT_NE(nullptr, groupList);
 
-    for (unsigned int i = 0; i < groupSize; i++)
+    for (unsigned int i = 0; i < groupListSize; i++)
     {
         EXPECT_NE(nullptr, groupList[i].groupName);
     }
 
-    FreeGroupList(&groupList, groupSize);
+    FreeGroupList(&groupList, groupListSize);
     EXPECT_EQ(nullptr, groupList);
 }

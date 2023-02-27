@@ -9,9 +9,18 @@
 #include <pwd.h>
 #include <grp.h>
 
+typedef struct SIMPLIFIED_USER
+{
+    char* username;
+    uid_t userId;
+    gid_t groupId;
+    char* home;
+    char* shell;
+} SIMPLIFIED_USER;
+
 typedef struct SIMPLIFIED_GROUP
 {
-    char *groupName;
+    char* groupName;
     gid_t groupId;
     bool hasUsers;
 } SIMPLIFIED_GROUP;
@@ -21,10 +30,10 @@ extern "C"
 {
 #endif
 
-int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log);
-void FreeUsersList(struct passwd** source, unsigned int size);
+int EnumerateUsers(SIMPLIFIED_USER** passwdList, unsigned int* size, void* log);
+void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size);
 
-int EnumerateUserGroups(struct passwd* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
+int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 

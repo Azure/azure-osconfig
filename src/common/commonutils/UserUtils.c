@@ -8,21 +8,19 @@
 
 static const char* g_passwdFile = "/etc/passwd";
 
-static void EmptyPasswd(struct passwd* target)
+static void EmptyUserEntry(SIMPLIFIED_USER* target)
 {
     if (NULL != target)
     {
-        FREE_MEMORY(target->pw_name);
-        FREE_MEMORY(target->pw_passwd);
-        FREE_MEMORY(target->pw_gecos);
-        FREE_MEMORY(target->pw_dir);
-        FREE_MEMORY(target->pw_shell);
+        FREE_MEMORY(target->username);
+        FREE_MEMORY(target->home);
+        FREE_MEMORY(target->shell);
 
-        memset(target, 0, sizeof(struct passwd));
+        memset(target, 0, sizeof(SIMPLIFIED_GROUP));
     }
 }
 
-void FreeUsersList(struct passwd** source, unsigned int size)
+void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size)
 {
     unsigned int i = 0;
 
@@ -30,14 +28,14 @@ void FreeUsersList(struct passwd** source, unsigned int size)
     {
         for (i = 0; i < size; i++)
         {
-            EmptyPasswd(&((*source)[i]));
+            EmptyUserEntry(&((*source)[i]));
         }
 
         FREE_MEMORY(*source);
     }
 }
 
-static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, void* log)
+static int CopyUserEntry(SIMPLIFIED_USER* destination, SIMPLIFIED_USER* source, void* log)
 {
     int status = 0;
     size_t length = 0;
@@ -48,73 +46,45 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
         return EINVAL;
     }
 
-    EmptyPasswd(destination);
+    EmptyUserEntry(destination);
 
     if (0 < (length = (source->pw_name ? strlen(source->pw_name) : 0)))
     {
-        if (NULL == (destination->pw_name = malloc(length + 1)))
+        if (NULL == (destination->username = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_name '%s'", source->pw_name);
             status = ENOMEM;
         }
         else
         {
-            memset(destination->pw_name, 0, length + 1);
-            memcpy(destination->pw_name, source->pw_name, length);
-        }
-    }
-
-    if ((0 == status) && (0 < (length = source->pw_passwd ? strlen(source->pw_passwd) : 0)))
-    {
-        if (NULL == (destination->pw_passwd = malloc(length + 1)))
-        {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_passwd '%s'", source->pw_passwd);
-            status = ENOMEM;
-        }
-        else
-        {
-            memset(destination->pw_passwd, 0, length + 1);
-            memcpy(destination->pw_passwd, source->pw_passwd, length);
+            memset(destination->username, 0, length + 1);
+            memcpy(destination->username, source->pw_name, length);
         }
     }
 
     if (0 == status)
     {
-        destination->pw_uid = source->pw_uid;
-        destination->pw_gid = source->pw_gid;
-    }
-
-    if ((0 == status) && (0 < (length = source->pw_gecos ? strlen(source->pw_gecos) : 0)))
-    {
-        if (NULL == (destination->pw_gecos = malloc(length + 1)))
-        {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_gecos '%s'", source->pw_gecos);
-            status = ENOMEM;
-        }
-        else
-        {
-            memset(destination->pw_gecos, 0, length + 1);
-            memcpy(destination->pw_gecos, source->pw_gecos, length);
-        }
+        destination->userId = source->pw_uid;
+        destination->groupId = source->pw_gid;
     }
 
     if ((0 == status) && (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0)))
     {
-        if (NULL == (destination->pw_dir = malloc(length + 1)))
+        if (NULL == (destination->home = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
         }
         else
         {
-            memset(destination->pw_dir, 0, length + 1);
-            memcpy(destination->pw_dir, source->pw_dir, length);
+            memset(destination->home, 0, length + 1);
+            memcpy(destination->home, source->pw_dir, length);
         }
     }
 
     if ((0 == status) && (0 < (length = source->pw_shell ? strlen(source->pw_shell) : 0)))
     {
-        if (NULL == (destination->pw_shell = malloc(length + 1)))
+        if (NULL == (destination->shell = malloc(length + 1)))
         {
             OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
@@ -122,49 +92,49 @@ static int CopyPasswdEntry(struct passwd* destination, struct passwd* source, vo
         }
         else
         {
-            memset(destination->pw_shell, 0, length + 1);
-            memcpy(destination->pw_shell, source->pw_shell, length);
+            memset(destination->shell, 0, length + 1);
+            memcpy(destination->shell, source->pw_shell, length);
         }
     }
 
     if (0 != status)
     {
-        EmptyPasswd(destination);
+        EmptyUserEntry(destination);
     }
 
     return status;
 }
 
-int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
+int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
 {
-    struct passwd* passwdEntry = NULL;
+    struct passwd* userEntry = NULL;
     unsigned int i = 0;
     size_t listSize = 0;
     int status = 0;
 
-    if ((NULL == passwdList) || (NULL == size))
+    if ((NULL == userList) || (NULL == size))
     {
         OsConfigLogError(log, "EnumerateUsers: invalid arguments");
         return EINVAL;
     }
 
-    *passwdList = NULL;
+    *userList = NULL;
     *size = 0;
 
     if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile, log)))
     {
-        listSize = (*size) * sizeof(struct passwd);
-        if (NULL != (*passwdList = malloc(listSize)))
+        listSize = (*size) * sizeof(SIMPLIFIED_USER);
+        if (NULL != (*userList = malloc(listSize)))
         {
-            memset(*passwdList, 0, listSize);
+            memset(*userList, 0, listSize);
 
             setpwent();
 
-            while ((NULL != (passwdEntry = getpwent())) && (i < *size))
+            while ((NULL != (userEntry = getpwent())) && (i < *size))
             {
-                if (0 != (status = CopyPasswdEntry(&((*passwdList)[i]), passwdEntry, log)))
+                if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
-                    OsConfigLogError(log, "EnumerateUsers: failed making copy of passwd entry (%d)", status);
+                    OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
                     break;
                 }
 
@@ -192,9 +162,8 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
 
         for (i = 0; i < *size; i++)
         {
-            OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, user info '%s', home dir '%s', shell '%s'", 
-                i, (*passwdList)[i].pw_name, (*passwdList)[i].pw_uid, (*passwdList)[i].pw_gid, (*passwdList)[i].pw_gecos, 
-                (*passwdList)[i].pw_dir, (*passwdList)[i].pw_shell);
+            OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i, 
+                (*userList)[i].username, (*userList)[i].userId, (*userList)[i].groupId, (*userList)[i].home, (*userList)[i].shell);
         }
     }    
     else
@@ -222,7 +191,7 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
 
 #define MAX_GROUPS_USER_CAN_BE_IN 16
 
-int EnumerateUserGroups(struct passwd* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
     gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN] = {0};
     int numberOfGroups = ARRAY_SIZE(groupIds);
