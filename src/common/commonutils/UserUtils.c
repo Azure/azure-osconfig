@@ -209,7 +209,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     *groupList = NULL;
     *size = 0;
 
-    if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, &groupIds[0], &numberOfGroups)))
+    if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
         status = ENOENT;
@@ -221,7 +221,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else
     {
-        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->pw_name, user->pw_gid, numberOfGroups);
+        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->username, user->groupId, numberOfGroups);
 
         for (i = 0; i < numberOfGroups; i++)
         {
@@ -244,7 +244,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                     memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
                     OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
-                        user->pw_name, user->pw_gid, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        user->username, user->groupId, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
                 }
                 else
                 {
