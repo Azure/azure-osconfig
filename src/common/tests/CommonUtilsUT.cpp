@@ -1251,7 +1251,7 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 
 TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
 {
-    SIMPLIFIED_GROUP* userList = NULL;
+    SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
 
     struct SIMPLIFIED_GROUP* groupList = NULL;
