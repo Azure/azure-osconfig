@@ -287,3 +287,77 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
 
     return status;
 }
+
+int EnumerateAllGroups(struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+{
+    const char* groupFile = "/etc/group";
+    struct group* groupEntry = NULL;
+    size_t groupNameLength = 0;
+    size_t listSize = 0;
+    unsigned int i = 0;
+    int status = 0;
+
+    if ((NULL == groupList) || (NULL == size))
+    {
+        OsConfigLogError(log, "EnumerateAllGroups: invalid arguments");
+        return EINVAL;
+    }
+
+    *groupList = NULL;
+    *size = 0;
+
+    int status = 0;
+
+    if (0 != (*size = GetNumberOfLinesInFile(groupFile, log)))
+    {
+        listSize = (*size) * sizeof(SIMPLIFIED_GROUP);
+        if (NULL != (*groupList = malloc(listSize)))
+        {
+            memset(*groupList, 0, listSize);
+
+            setgrent();
+
+            while ((NULL != (groupEntry = getgrent())) && (i < *size))
+            {
+                (*groupList)[i].groupId = groupEntry->gr_gid;
+                (*groupList)[i].groupName = NULL;
+
+                if (0 < (groupNameLength = (groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0)))
+                {
+                    if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                    {
+                        memset((*groupList)[i].groupName, 0, groupNameLength + 1);
+                        memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
+
+                        OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d", i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "EnumerateAllGroups: out of memory (2)");
+                        status = ENOMEM;
+                        break;
+                    }
+                }
+             
+                i += 1;
+            }
+
+            endgrent();
+
+            OsConfigLogInfo(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
+            *size = i;
+        }
+        else
+        {
+            OsConfigLogError(log, "EnumerateAllGroups: out of memory (1)");
+            status = ENOMEM;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "EnumerateGroups: cannot read %s", groupFile);
+        status = EPERM;
+    }
+
+    return status;
+}

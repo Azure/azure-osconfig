@@ -1280,3 +1280,21 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
     FreeUsersList(&list, size);
     EXPECT_EQ(nullptr, list);
 }
+
+TEST_F(CommonUtilsTest, EnumerateAllGroups)
+{
+    struct SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupSize = 0;
+
+    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupSize, nullptr));
+    EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/group", nullptr));
+    EXPECT_NE(nullptr, groupList);
+
+    for (unsigned int i = 0; i < size; i++)
+    {
+        EXPECT_NE(nullptr, groupList[i].groupName);
+    }
+
+    FreeGroupList(&groupList, groupSize);
+    EXPECT_EQ(nullptr, groupList);
+}
