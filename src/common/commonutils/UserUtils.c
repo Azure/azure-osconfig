@@ -35,7 +35,7 @@ void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size)
     }
 }
 
-static int CopyUserEntry(SIMPLIFIED_USER* destination, SIMPLIFIED_USER* source, void* log)
+static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, void* log)
 {
     int status = 0;
     size_t length = 0;
