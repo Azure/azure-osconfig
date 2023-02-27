@@ -212,7 +212,7 @@ void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size)
     {
         for (i = 0; i < size; i++)
         {
-            FREE_MEMORY(((*groupList)[i])->groupName);
+            FREE_MEMORY(((*groupList)[i]).groupName);
         }
 
         FREE_MEMORY(*groupList);
@@ -259,7 +259,8 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
     }
     else
     {
-        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groupIds", numberOfGroups);
+        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groupIds", user->pw_name, user->pw_gid, numberOfGroups);
+
         for (i = 0; i < numberOfGroups; i++)
         {
             if (NULL == (groupEntry = getgrgid(groupIds[i])))
@@ -269,7 +270,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
                 break;
             }
 
-            (*groupList)[i].groupId = groupEntry->gr_id;
+            (*groupList)[i].groupId = groupEntry->gr_gid;
             (*groupList)[i].groupName = NULL;
 
             if (0 < (groupNameLength = groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0))
@@ -280,7 +281,7 @@ int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList
                     memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
                     OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
-                        i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        user->pw_name, user->pw_gid, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
                 }
                 else
                 {
