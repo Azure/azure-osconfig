@@ -306,8 +306,6 @@ int EnumerateAllGroups(struct SIMPLIFIED_GROUP** groupList, unsigned int* size, 
     *groupList = NULL;
     *size = 0;
 
-    int status = 0;
-
     if (0 != (*size = GetNumberOfLinesInFile(groupFile, log)))
     {
         listSize = (*size) * sizeof(SIMPLIFIED_GROUP);

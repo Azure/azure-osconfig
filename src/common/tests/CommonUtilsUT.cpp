@@ -1287,10 +1287,10 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     unsigned int groupSize = 0;
 
     EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupSize, nullptr));
-    EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/group", nullptr));
+    EXPECT_EQ(groupSize, GetNumberOfLinesInFile("/etc/group", nullptr));
     EXPECT_NE(nullptr, groupList);
 
-    for (unsigned int i = 0; i < size; i++)
+    for (unsigned int i = 0; i < groupSize; i++)
     {
         EXPECT_NE(nullptr, groupList[i].groupName);
     }
