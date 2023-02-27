@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Internal.h"
+#include "UserUtils.h"
 
 //const char* commandTemplate = "sudo cat /etc/users | grep %s";
 
@@ -184,11 +185,21 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
     }
 
     
-    for (i = 0; i < *size; i++)
+    if (0 == status)
     {
-        OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, user info '%s', home dir '%s', shell '%s'", i, 
-            (*passwdList)[i].pw_name, (*passwdList)[i].pw_uid, (*passwdList)[i].pw_gid, (*passwdList)[i].pw_gecos, (*passwdList)[i].pw_dir, (*passwdList)[i].pw_shell);
+        OsConfigLogInfo(log, "EnumerateUsers: %u users found", *size);
+
+        for (i = 0; i < *size; i++)
+        {
+            OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, user info '%s', home dir '%s', shell '%s'", 
+                i, (*passwdList)[i].pw_name, (*passwdList)[i].pw_uid, (*passwdList)[i].pw_gid, (*passwdList)[i].pw_gecos, 
+                (*passwdList)[i].pw_dir, (*passwdList)[i].pw_shell);
+        }
+    }    
+    else
+    {
+        OsConfigLogError(log, "EnumerateUsers failed with %d", status);
     }
-    
+
     return status;
 }

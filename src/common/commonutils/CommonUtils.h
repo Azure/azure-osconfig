@@ -8,9 +8,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 

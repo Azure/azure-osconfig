@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
+#include <UserUtils.h>
 
 using namespace std;
 
