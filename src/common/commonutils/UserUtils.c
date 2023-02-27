@@ -203,3 +203,96 @@ int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log)
 
     return status;
 }
+
+void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size)
+{
+    unsigned int i = 0;
+
+    if (NULL != groupList)
+    {
+        for (i = 0; i < size; i++)
+        {
+            FREE_MEMORY(((*groupList)[i])->groupName);
+        }
+
+        FREE_MEMORY(*groupList);
+    }
+}
+
+int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
+{
+    gid_t* groupIds = NULL;
+    int numberOfGroups = 0;
+    struct group* groupEntry = NULL;
+    size_t groupNameLength = 0;
+    int i = 0;
+    int status = 0;
+
+    if ((NULL == user) || (NULL == groupList) || (NULL == size))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: invalid arguments");
+        return EINVAL;
+    }
+
+    *groupList = NULL;
+    *size = 0;
+
+    if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, NULL, &numberOfGroups)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(1) failed");
+        status = ENOENT;
+    }
+    else if (NULL == (groupIds = malloc(sizeof(gid_t) * numberOfGroups)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory (1)");
+        status = ENOMEM;
+    }
+    else if (-1 == (numberOfGroups = getgrouplist(user->pw_name, user->pw_gid, groupIds, &numberOfGroups)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(2) failed");
+        status = ENOENT;
+    }
+    else if (NULL == (*groupList = malloc(sizeof(struct SIMPLIFIED_GROUP) * numberOfGroups)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory (2)");
+        status = ENOMEM;
+    }
+    else
+    {
+        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groupIds", numberOfGroups);
+        for (i = 0; i < numberOfGroups; i++)
+        {
+            if (NULL == (groupEntry = getgrgid(groupIds[i])))
+            {
+                OsConfigLogError(log, "EnumerateUserGroups: getgrgid(%u) failed", (unsigned int)groupIds[i]);
+                status = ENOENT;
+                break;
+            }
+
+            (*groupList)[i].groupId = groupEntry->gr_id;
+            (*groupList)[i].groupName = NULL;
+
+            if (0 < (groupNameLength = groupEntry->gr_name ? strlen(groupEntry->gr_name) : 0))
+            {
+                if (NULL != ((*groupList)[i].groupName = malloc(groupNameLength + 1)))
+                {
+                    memset((*groupList)[i].groupName, 0, groupNameLength + 1);
+                    memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
+
+                    OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
+                        i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                }
+                else
+                {
+                    OsConfigLogError(log, "EnumerateUserGroups: out of memory (3)");
+                    status = ENOMEM;
+                    break;
+                }
+            }
+        }
+
+        FREE_MEMORY(groupIds);
+    }
+
+    return status;
+}

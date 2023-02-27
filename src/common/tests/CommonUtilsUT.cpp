@@ -1249,19 +1249,32 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
     EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd", nullptr), GetNumberOfLinesInFile("/etc/shadow", nullptr));
 }
 
-TEST_F(CommonUtilsTest, EnumerateUsers)
+TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
 {
     struct passwd* list = NULL;
     unsigned int size = 0;
-    unsigned i = 0;
+
+    struct SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupsSize = 0;
 
     EXPECT_EQ(0, EnumerateUsers(&list, &size, nullptr));
     EXPECT_EQ(size, GetNumberOfLinesInFile("/etc/passwd", nullptr));
     EXPECT_NE(nullptr, list);
 
-    for (i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
-        EXPECT_NE(nullptr, list[i].pw_name);    
+        EXPECT_NE(nullptr, list[i].pw_name);
+        
+        EXPECT_EQ(0, EnumerateUserGroups(list[i], &groupList, &groupSize, nullptr));
+        EXPECT_NE(nullptr, groupList);
+        
+        for (int j = 0; j < groupsSize; j++)
+        {
+            EXPECT_NE(nullptr, groupList[j].groupName);
+        }
+        
+        FreeGroupList(&groupList, groupSize);
+        EXPECT_EQ(nullptr, groupList);
     }
     
     FreeUsersList(&list, size);

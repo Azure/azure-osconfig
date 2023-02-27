@@ -9,6 +9,12 @@
 #include <pwd.h>
 #include <grp.h>
 
+typedef struct SIMPLIFIED_GROUP
+{
+    char *groupName;
+    gid_t groupId;
+} SIMPLIFIED_GROUP;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -16,6 +22,9 @@ extern "C"
 
 int EnumerateUsers(struct passwd** passwdList, unsigned int* size, void* log);
 void FreeUsersList(struct passwd** source, unsigned int size);
+
+int EnumerateUserGroups(struct passwd* user, struct SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
+void FreeGroupList(struct SIMPLIFIED_GROUP** groupList, unsigned int size);
 
 #ifdef __cplusplus
 }
