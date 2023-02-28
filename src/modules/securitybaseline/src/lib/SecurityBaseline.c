@@ -473,8 +473,12 @@ static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
                 {
                     found = false;
 
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "### -------- group %s (%u) of user %s (%u)", userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+
                     for (k = 0; (k < groupListSize) && (0 == status); k++)
                     {
+                        OsConfigLogInfo(SecurityBaselineGetLog(), "### -------- group %s (%u) ....", groupList[k].groupName, groupList[k].groupId);
+                        
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
                             OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) found in /etc/group",
@@ -493,6 +497,8 @@ static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
                         break;
                     }
                 }
+
+                FreeGroupList(&userGroupList, userGroupListSize);
             }
         }
     }

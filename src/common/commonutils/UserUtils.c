@@ -156,7 +156,11 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
     }
 
     
-    if (0 == status)
+    if (0 != status)
+    {
+        OsConfigLogError(log, "EnumerateUsers failed with %d", status);
+    }
+    else if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "EnumerateUsers: %u users found", *size);
 
@@ -165,10 +169,6 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
             OsConfigLogInfo(log, "EnumerateUsers(user %u): name '%s', uid %d, gid %d, home '%s', shell '%s'", i, 
                 (*userList)[i].username, (*userList)[i].userId, (*userList)[i].groupId, (*userList)[i].home, (*userList)[i].shell);
         }
-    }    
-    else
-    {
-        OsConfigLogError(log, "EnumerateUsers failed with %d", status);
     }
 
     return status;
@@ -221,7 +221,10 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else
     {
-        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->username, user->groupId, numberOfGroups);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->username, user->groupId, numberOfGroups);
+        }
 
         for (i = 0; i < numberOfGroups; i++)
         {
@@ -243,8 +246,11 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                     memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                     memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                    OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
-                        user->username, user->groupId, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                    if (IsFullLoggingEnabled())
+                    {
+                        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
+                           user->username, user->groupId, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                    }
                 }
                 else
                 {
@@ -299,8 +305,11 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d, %s", i, 
-                            (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d, %s", i, 
+                                (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
+                        }
                     }
                     else
                     {
@@ -315,7 +324,11 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
 
             endgrent();
 
-            OsConfigLogInfo(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
+            if (IsFullLoggingEnabled())
+            {
+                OsConfigLogInfo(log, "EnumerateAllGroups: found %u groups (expected %u)", i, *size);
+            }
+
             *size = i;
         }
         else
