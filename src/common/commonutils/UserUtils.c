@@ -375,10 +375,14 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
-        fseek(file, 0, SEEK_SET);
-        
-        while (NULL != (passwdEntry = fgetpwent(file)))
+        while (1)
         {
+            if (NULL == (passwdEntry = fgetpwent(file))
+            {
+                OsConfigLogInfo(log, "fgetpwent returned NULL, errno: %d", errno);
+                break;
+            }
+            
             OsConfigLogInfo(log, "CheckUserHasPassword: enumerating user '%s'", passwdEntry->pw_name);
 
             if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
@@ -405,6 +409,10 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 {
                     continue;
                 }
+            }
+            else
+            {
+                continue;
             }
         }
     }
