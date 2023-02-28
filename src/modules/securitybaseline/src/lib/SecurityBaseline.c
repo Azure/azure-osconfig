@@ -477,6 +477,9 @@ static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
+                            OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) found in /etc/group",
+                                userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+
                             found = true;
                             break;
                         }
