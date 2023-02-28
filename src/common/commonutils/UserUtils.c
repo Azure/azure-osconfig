@@ -140,6 +140,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
 
                 i += 1;
             }
+
             endpwent();
         }
         else
@@ -374,10 +375,12 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
+        setpwent();
+        
         while (NULL != (passwdEntry = fgetpwent(file)))
         {
-            // * means no password can be used to access the account, and !means its locked
-            
+            OsConfigLogInfo(log, "CheckUserHasPassword: enumerating user '%s'", passwdEntry->pw_name);
+
             if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
             {
                 if ('$' == passwdEntry->pw_passwd[0])
@@ -402,6 +405,8 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 }
             }
         }
+
+        endpwent();
     }
 
     if (NULL != file)
