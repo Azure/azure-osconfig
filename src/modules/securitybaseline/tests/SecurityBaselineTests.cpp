@@ -77,6 +77,22 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+        const char* m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
+        const char* m_auditEnsureNoDuplicateUidsExist = "auditEnsureNoDuplicateUidsExist";
+        const char* m_auditEnsureNoDuplicateGidsExist = "auditEnsureNoDuplicateGidsExist";
+        const char* m_auditEnsureNoDuplicateUserNamesExist = "auditEnsureNoDuplicateUserNamesExist";
+        const char* m_auditEnsureNoDuplicateGroupsExist = "auditEnsureNoDuplicateGroupsExist";
+        const char* m_auditEnsureShadowGroupIsEmpty = "auditEnsureShadowGroupIsEmpty";
+        const char* m_auditEnsureRootGroupExists = "auditEnsureRootGroupExists";
+        const char* m_auditEnsureAllAccountsHavePasswords = "auditEnsureAllAccountsHavePasswords";
+        const char* m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcPasswd = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcShadow = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcGroup = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
+        const char* m_auditEnsureDefaultRootAccountGroupIsGidZero = "auditEnsureDefaultRootAccountGroupIsGidZero";
+        const char* m_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
+        const char* m_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
+        const char* m_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -325,7 +341,23 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureSldapdNotInstalledObject,
         m_auditEnsureBind9NotInstalledObject,
         m_auditEnsureDovecotCoreNotInstalledObject,
-        m_auditEnsureAuditdInstalledObject
+        m_auditEnsureAuditdInstalledObject,
+        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup,
+        m_auditEnsureNoDuplicateUidsExist,
+        m_auditEnsureNoDuplicateGidsExist,
+        m_auditEnsureNoDuplicateUserNamesExist,
+        m_auditEnsureNoDuplicateGroupsExist,
+        m_auditEnsureShadowGroupIsEmpty,
+        m_auditEnsureRootGroupExists,
+        m_auditEnsureAllAccountsHavePasswords,
+        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
+        m_auditEnsureNoLegacyPlusEntriesInEtcPasswd,
+        m_auditEnsureNoLegacyPlusEntriesInEtcShadow,
+        m_auditEnsureNoLegacyPlusEntriesInEtcGroup,
+        m_auditEnsureDefaultRootAccountGroupIsGidZero,
+        m_auditEnsureRootIsOnlyUidZeroAccount,
+        m_auditEnsureAllUsersHomeDirectoriesExist,
+        m_auditEnsureUsersOwnTheirHomeDirectories
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -403,7 +435,23 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureSldapdNotInstalledObject,
         m_auditEnsureBind9NotInstalledObject,
         m_auditEnsureDovecotCoreNotInstalledObject,
-        m_auditEnsureAuditdInstalledObject
+        m_auditEnsureAuditdInstalledObject,
+        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup,
+        m_auditEnsureNoDuplicateUidsExist,
+        m_auditEnsureNoDuplicateGidsExist,
+        m_auditEnsureNoDuplicateUserNamesExist,
+        m_auditEnsureNoDuplicateGroupsExist,
+        m_auditEnsureShadowGroupIsEmpty,
+        m_auditEnsureRootGroupExists,
+        m_auditEnsureAllAccountsHavePasswords,
+        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
+        m_auditEnsureNoLegacyPlusEntriesInEtcPasswd,
+        m_auditEnsureNoLegacyPlusEntriesInEtcShadow,
+        m_auditEnsureNoLegacyPlusEntriesInEtcGroup,
+        m_auditEnsureDefaultRootAccountGroupIsGidZero,
+        m_auditEnsureRootIsOnlyUidZeroAccount,
+        m_auditEnsureAllUsersHomeDirectoriesExist,
+        m_auditEnsureUsersOwnTheirHomeDirectories
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

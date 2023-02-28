@@ -358,6 +358,70 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoDuplicateUidsExist"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoDuplicateGidsExist"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoDuplicateUserNamesExist"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoDuplicateGroupsExist"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureShadowGroupIsEmpty"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRootGroupExists"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllAccountsHavePasswords"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoLegacyPlusEntriesInEtcPasswd"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoLegacyPlusEntriesInEtcShadow"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoLegacyPlusEntriesInEtcGroup"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDefaultRootAccountGroupIsGidZero"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRootIsOnlyUidZeroAccount"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllUsersHomeDirectoriesExist"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureUsersOwnTheirHomeDirectories"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditSecurityBaseline"
     },
     {
