@@ -377,7 +377,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     {
         while (1)
         {
-            if (NULL == (passwdEntry = fgetpwent(file))
+            if (NULL == (passwdEntry = fgetpwent(file)))
             {
                 OsConfigLogInfo(log, "fgetpwent returned NULL, errno: %d", errno);
                 break;
