@@ -362,7 +362,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
         status = EINVAL;
     }
-    else if ((false == FileExists(shadowFile)) || (NULL != (file = fopen(shadowFile, "r"))))
+    else if ((false == FileExists(shadowFile)) || (NULL == (file = fopen(shadowFile, "r"))))
     {
         OsConfigLogError(log, "CheckUserHasPassword: cannot access file '%s'", shadowFile);
         status = EACCES;
