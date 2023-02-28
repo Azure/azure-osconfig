@@ -375,7 +375,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
-        setpwent();
+        fseek(file, 0, SEEK_SET);
         
         while (NULL != (passwdEntry = fgetpwent(file)))
         {
@@ -387,26 +387,26 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 {
                     OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
                     check = true;
+                    break;
                 }
                 else if ('!' == passwdEntry->pw_passwd[0])
                 {
                     OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) password is locked (!)", user->username, user->userId);
                     check = true;
+                    break;
                 }
                 else if ('*' == passwdEntry->pw_passwd[0])
                 {
                     OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
                     check = true;
-                }
-
-                if (check)
-                {
                     break;
+                }
+                else
+                {
+                    continue;
                 }
             }
         }
-
-        endpwent();
     }
 
     if (NULL != file)
