@@ -357,7 +357,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     bool check = false;
     int status = 0;
 
-    if ((NULL == user) || (NULL == usern->username))
+    if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
         status = EINVAL;
@@ -376,7 +376,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     {
         while (NULL != (passwdEntry = fgetpwent(file)))
         {
-            if (NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd) && ('$' == passwdEntry->pw_passwd[0]))
+            if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd) && ('$' == passwdEntry->pw_passwd[0]))
             {
                 OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) has password set", user->username, user->userId);
                 check = true;
