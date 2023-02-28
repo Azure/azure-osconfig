@@ -8,6 +8,7 @@
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
+#include <UserUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 
@@ -462,17 +463,17 @@ static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
     int status = 0;
 
     if ((0 == (status = EnumerateUsers(&userList, &userListSize, SecurityBaselineGetLog()))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, , SecurityBaselineGetLog()))))
+        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog()))))
     {
-        for (i = 0; i < userListSize, 0 == status; i++)
+        for (i = 0; (i < userListSize) && (0 == status); i++)
         {
             if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, SecurityBaselineGetLog())))
             {
-                for (j = 0; j < userGroupListSize, 0 == stratus; j++)
+                for (j = 0; (j < userGroupListSize) && (0 == status); j++)
                 {
                     found = false;
 
-                    for (k = 0; k < groupListSize, 0 == status; k++)
+                    for (k = 0; (k < groupListSize) && (0 == status); k++)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
@@ -639,7 +640,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureDefaultRootAccountGroupIsGidZero()) &&
         (0 == AuditEnsureRootIsOnlyUidZeroAccount()) &&
         (0 == AuditEnsureAllUsersHomeDirectoriesExist()) &&
-        (0 == AuditEnsureUsersOwnTheirHomeDirectories()) ? 0 : ENOENT;
+        (0 == AuditEnsureUsersOwnTheirHomeDirectories())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -1197,7 +1198,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroup))
         {
-            result = AudittEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
+            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZero))
         {
@@ -1213,7 +1214,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectories))
         {
-            result = AuditEnsureUsersOwnTheirHomeDirectories)() ? g_fail : g_pass;
+            result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
         }
         else
         {
