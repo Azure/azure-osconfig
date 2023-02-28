@@ -375,6 +375,23 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
+        //////////////////////////////////////////////////////
+        char buffer[bufferLength] = {0};
+        size_t bufferLength = 4096;
+        
+        setpwent();
+        while (1) 
+        {
+            if (0 == (status = fgetpwent_r(file, passwdEntry, buffer, bufferLength, &passwdEntry)))
+            {
+                OsConfigLogInfo(log, "### fgetpwent_r: %s (%d) '%'", pwp->pw_name, pwp->pw_uid, pwp->pw_passwd);
+            }
+        }
+        endpwent();
+
+        return status.
+        /////////////////////////////////////////////////////
+        
         while (1)
         {
             if (NULL == (passwdEntry = fgetpwent(file)))
