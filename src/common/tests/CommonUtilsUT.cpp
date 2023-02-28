@@ -1298,3 +1298,21 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     FreeGroupList(&groupList, groupListSize);
     EXPECT_EQ(nullptr, groupList);
 }
+
+TEST_F(CommonUtilsTest, CheckUserHasPassword)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+
+    EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
+    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
+    EXPECT_NE(nullptr, userList);
+
+    for (unsigned int i = 0; i < userListSize; i++)
+    {
+        EXPECT_NE(nullptr, userList[i].username);
+        EXPECT_EQ(0, CheckUserHasPassword(&userList[i], nullptr));
+    }
+
+    FreeUsersList(&userList, userListSize);
+}

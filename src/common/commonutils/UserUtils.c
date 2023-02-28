@@ -347,3 +347,54 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
 
     return status;
 }
+
+int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
+{
+    const char* shadowFile = "/etc/shadow";
+    const char* noLoginShell = "/usr/sbin/nologin";
+    FILE* file = NULL;
+    struct passwd* passwdEntry = NULL;
+    bool check = false;
+    int status = 0;
+
+    if ((NULL == user) || (NULL == usern->username))
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
+        status = EINVAL;
+    }
+    else if ((false == FileExists(shadowFile)) || (NULL != (file = fopen(shadowFile, "r"))))
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: cannot access file '%s'", shadowFile);
+        status = EACCES;
+    }
+    else if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
+    {
+        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login, nothing else to check", user->username, user->userid);
+        check = true;
+    }
+    else
+    {
+        while (NULL != (passwdEntry = fgetpwent(file)))
+        {
+            if (NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd) && ('$' == passwdEntry->pw_passwd[0]))
+            {
+                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) has password set", user->username, user->userid);
+                check = true;
+                break;
+            }
+        }
+    }
+
+    if (NULL != file)
+    {
+        fclose(file);
+    }
+
+    if ((0 == status) && (false == check))
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set", user->username, user->userid);
+        status = EACCESS;
+    }
+
+    return status;
+} 
