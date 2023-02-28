@@ -369,7 +369,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
     {
-        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login, nothing else to check", user->username, user->userid);
+        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login, nothing else to check", user->username, user->userId);
         check = true;
     }
     else
@@ -378,7 +378,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         {
             if (NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd) && ('$' == passwdEntry->pw_passwd[0]))
             {
-                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) has password set", user->username, user->userid);
+                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) has password set", user->username, user->userId);
                 check = true;
                 break;
             }
@@ -392,8 +392,8 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 
     if ((0 == status) && (false == check))
     {
-        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set", user->username, user->userid);
-        status = EACCESS;
+        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set", user->username, user->userId);
+        status = EACCES;
     }
 
     return status;
