@@ -1307,7 +1307,12 @@ TEST_F(CommonUtilsTest, CheckUserHasPassword)
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
     EXPECT_NE(nullptr, userList);
-    EXPECT_EQ(0, CheckAllUsersHavePasswords(userList, userListSize, nullptr);
+
+    for (unsigned int i = 0; i < userListSize; i++)
+    {
+        EXPECT_NE(nullptr, userList[i].username);
+        EXPECT_EQ(0, CheckUserHasPassword(&userList[i], nullptr));
+    }
 
     FreeUsersList(&userList, userListSize);
 }

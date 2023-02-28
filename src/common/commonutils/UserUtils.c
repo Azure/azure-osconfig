@@ -349,62 +349,83 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
     return status;
 }
 
-int CheckAllUsersHavePasswords(SIMPLIFIED_USER* userList, unsigned int size, void* log)
+int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
+    const char* shadowFile = "/etc/shadow";
     const char* noLoginShell = "/usr/sbin/nologin";
+    FILE* file = NULL;
     struct passwd* passwdEntry = NULL;
     bool check = false;
-    unsigned int i = 0;
     int status = 0;
 
-    if ((NULL == userList) || (0 == size))
+    if ((NULL == user) || (NULL == user->username))
     {
-        OsConfigLogError(log, "CheckUserHasPassword: invalid arguments");
-        retrurn EINVAL;
+        OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
+        status = EINVAL;
+    }
+    else if ((false == FileExists(shadowFile)) || (NULL == (file = fopen(shadowFile, "r"))))
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: cannot access file '%s'", shadowFile);
+        status = EACCES;
+    }
+    else if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
+    {
+        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login, nothing else to check", user->username, user->userId);
+        check = true;
+    }
+    else
+    {
+        while (1)
+        {
+            if (NULL == (passwdEntry = fgetpwent(file)))
+            {
+                OsConfigLogInfo(log, "fgetpwent returned NULL, errno: %d", errno);
+                break;
+            }
+            
+            OsConfigLogInfo(log, "CheckUserHasPassword: enumerating user '%s' with password '%s'", passwdEntry->pw_name, passwdEntry->pw_passwd);
+
+            if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
+            {
+                if ('$' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
+                    check = true;
+                    break;
+                }
+                else if ('!' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) password is locked (!)", user->username, user->userId);
+                    check = true;
+                    break;
+                }
+                else if ('*' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
+                    check = true;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            else
+            {
+                continue;
+            }
+        }
     }
 
-    for (i = 0; i < size; i++)
+    if (NULL != file)
     {
-        if ((NULL == (passwdEntry = getpwnam(userList[i].username))) && (NULL == (passwdEntry = getpwuid(userList[i].userId)))
-        {
-            OsConfigLogInfo(log, "getpwnam(%s) and getpwuid(%u) failed, errno: %d", userList[i].username, userList[i].userId, errno);
-            break;
-        }
+        fclose(file);
+    }
 
-        OsConfigLogInfo(log, "Enumerating user '%s'", passwdEntry->pw_name);
-
-        check = false;
-
-        if (0 == strcmp(userList[i].username, noLoginShell))
-        {
-            OsConfigLogInfo(log, "CheckAllUsersHavePasswords: user '%s' (%d) cannot login", userList[i].username, userList[i].userId);
-            check = true;
-        }
-
-        if ((NULL != passwdEntry->pw_name) && (0 == strcmp(userList[i].username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
-        {
-            if ('$' == passwdEntry->pw_passwd[0])
-            {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswords: user '%s' (%d) appears to have a password set", userList[i].username, userList[i].userId);
-                check = true;
-            }
-            else if ('!' == passwdEntry->pw_passwd[0])
-            {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswords: user '%s' (%d) password is locked (!)", userList[i].username, userList[i].userId);
-                check = true;
-            }
-            else if ('*' == passwdEntry->pw_passwd[0])
-            {
-                OsConfigLogInfo(log, "CheckAllUsersHavePasswords: user '%s' (%d) cannot login with password (*)", userList[i].username, userList[i].userId);
-                check = true;
-            }
-        }
-
-        if (false == check)
-        {
-            OsConfigLogError(log, "CheckAllUsersHavePasswords: user '%s' (%d) not found to have a password set", userList[i].username, userList[i].userId);
-            status = EACCES;
-        }
+    if ((0 == status) && (false == check))
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set", user->username, user->userId);
+        status = EACCES;
     }
 
     return status;

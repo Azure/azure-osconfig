@@ -37,7 +37,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 
-int CheckAllUsersHavePasswords(SIMPLIFIED_USER* userList, unsigned int size, void* log);
+int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log);
 
 #ifdef __cplusplus
 }
