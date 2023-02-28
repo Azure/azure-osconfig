@@ -376,11 +376,30 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     {
         while (NULL != (passwdEntry = fgetpwent(file)))
         {
-            if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd) && ('$' == passwdEntry->pw_passwd[0]))
+            // * means no password can be used to access the account, and !means its locked
+            
+            if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
             {
-                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) has password set", user->username, user->userId);
-                check = true;
-                break;
+                if ('$' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
+                    check = true;
+                }
+                else if ('!' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) password is locked (!)", user->username, user->userId);
+                    check = true;
+                }
+                else if ('*' == passwdEntry->pw_passwd[0])
+                {
+                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
+                    check = true;
+                }
+
+                if (check)
+                {
+                    break;
+                }
             }
         }
     }
