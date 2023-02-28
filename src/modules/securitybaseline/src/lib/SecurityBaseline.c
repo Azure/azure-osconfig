@@ -693,7 +693,7 @@ static int AuditEnsureShadowGroupIsEmpty(void)
             if ((0 == strcmp(groupList[i].groupName, shadow)) && (true == groupList[i].hasUsers))
             {
                 OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureShadowGroupIsEmpty: group shadow (%u) is not empty", groupList[i].groupId);
-                status = ENOATTR;
+                status = ENOENT;
                 break;
             }
         }
@@ -736,7 +736,7 @@ static int AuditEnsureRootGroupExists(void)
     if (false == found)
     {
         OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureRootGroupExists: root group with id 0 not found");
-        status = ENOATTR;
+        status = ENOENT;
     }
 
     return status;
