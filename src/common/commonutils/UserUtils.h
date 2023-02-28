@@ -30,14 +30,14 @@ extern "C"
 {
 #endif
 
-int EnumerateUsers(SIMPLIFIED_USER** passwdList, unsigned int* size, void* log);
+int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log);
 void FreeUsersList(SIMPLIFIED_USER** source, unsigned int size);
 
 int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 
-int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log);
+int CheckAllUsersHavePasswords(SIMPLIFIED_USER* userList, unsigned int size, void* log);
 
 #ifdef __cplusplus
 }
