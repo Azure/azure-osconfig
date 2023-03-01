@@ -915,7 +915,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0, _status = 0;
+    int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
