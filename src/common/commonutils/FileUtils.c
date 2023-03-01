@@ -535,48 +535,13 @@ int UninstallPackage(const char* packageName, void* log)
     return status;
 }
 
-unsigned int GetNumberOfLinesInFile(const char* fileName)
+static unsigned int GetNumberOfCharacterInFile(const char* fileName, char what)
 {
-    unsigned int numberOfLines = 0;
+    unsigned int numberOf = 0;
     FILE* file = NULL;
     int fileSize = 0;
     int i = 0;
     int next = 0;
-
-    if (FileExists(fileName))
-    {
-        if (NULL != (file = fopen(fileName, "r")))
-        {
-            fseek(file, 0, SEEK_END);
-            fileSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            for (i = 0; i < fileSize; i++)
-            {
-                if (EOL == (next = fgetc(file)))
-                {
-                    numberOfLines += 1;
-                }
-                else if (EOF == next)
-                {
-                    break;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    return numberOfLines;
-}
-
-bool CharacterFoundInFile(const char* fileName, char what)
-{
-    FILE* file = NULL;
-    int fileSize = 0;
-    int i = 0;
-    int next = 0;
-    bool found = false;
 
     if (FileExists(fileName))
     {
@@ -590,8 +555,7 @@ bool CharacterFoundInFile(const char* fileName, char what)
             {
                 if (what == (next = fgetc(file)))
                 {
-                    found = true;
-                    break;
+                    numberOf += 1;
                 }
                 else if (EOF == next)
                 {
@@ -602,7 +566,18 @@ bool CharacterFoundInFile(const char* fileName, char what)
             fclose(file);
         }
     }
-    return found;
+
+    return numberOf;
+}
+
+unsigned int GetNumberOfLinesInFile(const char* fileName)
+{
+    return GetNumberOfCharacterInFile(fileName, EOL);
+}
+
+bool CharacterFoundInFile(const char* fileName, char what)
+{
+    return (GetNumberOfCharacterInFile(fileName, what) > 0) ? true : false;
 }
 
 int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, void* log)
