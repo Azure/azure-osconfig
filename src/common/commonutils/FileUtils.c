@@ -605,7 +605,7 @@ bool CharacterFoundInFile(const char* fileName, char what)
     return found;
 }
 
-int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, void* log)
+int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, , void* log)
 {
     struct stat statStruct = {0};
     int status = 0;
@@ -620,10 +620,10 @@ int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, void*
     {
         if (0 == (status = stat(name, &statStruct)))
         {
-            if ((uid_t)desiredOwnerId != statStruct.st_uid)
+            if (((uid_t)desiredOwnerId != statStruct.st_uid) || ((gid_t)desiredGroupId != statStruct.st_gid))
             {
-                OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u instead of expected UID %u", 
-                    name, statStruct.st_uid, desiredOwnerId);
+                OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u, GID %u instead of expected UID %u, GID %u", 
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 status = ENOENT;
             }
         }

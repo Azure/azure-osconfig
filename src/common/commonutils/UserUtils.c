@@ -925,10 +925,10 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             {
                 continue;
             }
-            else if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, log))))
+            else if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))))
             {
-                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%d) does not own their assigned home directory '%s'",
-                    userList[i].username, userList[i].userId, userList[i].home);
+                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (UID %u, GID %u) with shell '%s' does not own their assigned home directory '%s'",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].shell, userList[i].home);
                 status = ENOENT;
             }
         }
