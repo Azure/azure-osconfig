@@ -871,7 +871,7 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
 
     if (0 == status)
     {
-        OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: only the root group has GID 0");
+        OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: only the root group has GID 0");
     }
 
     return status;
