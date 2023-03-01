@@ -579,38 +579,3 @@ bool CharacterFoundInFile(const char* fileName, char what)
 {
     return (GetNumberOfCharacterInFile(fileName, what) > 0) ? true : false;
 }
-
-int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, void* log)
-{
-    struct stat statStruct = {0};
-    int status = 0;
-
-    if (NULL == name)
-    {
-        OsConfigLogError(log, "CheckDirectoryOwnership called with an invalid name argument");
-        return EINVAL;
-    }
-
-    if (DirectoryExists(name))
-    {
-        if (0 == (status = stat(name, &statStruct)))
-        {
-            if (((uid_t)desiredOwnerId != statStruct.st_uid) || ((gid_t)desiredGroupId != statStruct.st_gid))
-            {
-                status = ENOENT;
-                OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u, GID %u instead of expected UID %u, GID %u", 
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-            }
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", name, errno);
-        }
-    }
-    else
-    {
-        OsConfigLogInfo(log, "CheckFileAccess: directory '%s' not found, nothing to check", name);
-    }
-
-    return status;
-}

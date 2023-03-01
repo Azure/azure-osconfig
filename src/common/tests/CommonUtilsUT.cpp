@@ -1336,13 +1336,6 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     FreeUsersList(&userList, userListSize);
 }
 
-TEST_F(CommonUtilsTest, CheckDirectoryOwnership)
-{
-    EXPECT_NE(0, CheckDirectoryOwnership(nullptr, 0, 0, nullptr));
-    EXPECT_EQ(0, CheckDirectoryOwnership("directory that does not exist", 0, 0, nullptr));
-    EXPECT_EQ(0, CheckDirectoryOwnership("etc", 0, 0, nullptr));
-}
-
 TEST_F(CommonUtilsTest, CheckUserAndGroups)
 {
     EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));

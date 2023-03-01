@@ -652,9 +652,12 @@ static bool NoLoginUser(SIMPLIFIED_USER* user)
         (0 == strcmp(user->shell, g_olderNoLoginShell))));
 }
 
+#define USER_ACCOUNT_LOCKED -1
+#define USER_CANNOT_LOGIN -2
+
 #define MAXIMUM_LINE_LENGTH 1024
 
-int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
+static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
     char* commandTemplate = "cat /etc/shadow | grep %s";
 
@@ -675,7 +678,6 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 
     if (false == NoLoginUser(user))
     {
-
         snprintf(command, sizeof(command), commandTemplate, user->username);
         
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log)))
@@ -694,10 +696,12 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 
                     case '!':
                         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked ('!')", user->username, user->userId);
+                        status = USER_ACCOUNT_LOCKED;
                         break;
 
                     case '*':
                         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password ('*')", user->username, user->userId);
+                        status = USER_CANNOT_LOGIN;
                         break;
 
                     case ':':
@@ -734,10 +738,13 @@ int CheckAllUsersHavePasswordsSet(void* log)
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
-        // Parse the full user list to log all who do not have passwords
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 != (_status = CheckUserHasPassword(&userList[i], log))) && (0 == status))
+            if (NoLoginUser(&userList[i]))
+            {
+                continue;
+            }
+            else if ((0 != (_status = CheckUserHasPassword(&userList[i], log))) && (USER_ACCOUNT_LOCKED != _status) && (USER_CANNOT_LOGIN != _status) && (0 == status))
             {
                 status = _status;
             }
@@ -911,6 +918,41 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     return status;
 }
 
+static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
+{
+    struct stat statStruct = {0};
+    int status = 0;
+
+    if ((NULL == user) || (NULL == user->home))
+    {
+        OsConfigLogError(log, "CheckHomeDirectoryOwnership called with an invalid argument");
+        return EINVAL;
+    }
+
+    if (DirectoryExists(user->home))
+    {
+        if (0 == (status = stat(user->home, &statStruct)))
+        {
+            if (((uid_t)user->userId != statStruct.st_uid) || ((gid_t)user->groupId != statStruct.st_gid))
+            {
+                status = ENOENT;
+                OsConfigLogError(log, "CheckHomeDirectoryOwnership: user %u, %u owns the home directory '%s' of user %u %u",
+                    statStruct.st_uid, statStruct.st_gid, user->home, user->userId, user->groupId);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", name, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckDirectoryOwnership: directory '%s' not found, nothing to check", name);
+    }
+
+    return status;
+}
+
 int CheckUsersOwnTheirHomeDirectories(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -927,21 +969,21 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             }
             else if (userList[i].home) 
             {
-                if (0 == CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))
+                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 == CheckDirectoryOwnership(userList[i].home, 0, 0, log)))
+                {
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) cannot login and their assigned home directory '%s' is owned by root",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                }
+                else if (0 == CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 }
-                else if (0 == CheckDirectoryOwnership(userList[i].home, 0, 0, log))
-                {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' is owned by root",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                }
                 else
                 {
-                    status = ENOENT;
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    status = ENOENT;
                 }
             }
         }
