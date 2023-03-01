@@ -787,10 +787,10 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
 
 int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
 {
-    char* command = "cat /etc/passwd | grep + ^ii";
+    char* command = "cat /etc/passwd | grep +";
     int status = 0;
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
     {
         OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/passwd");
     }
@@ -804,10 +804,10 @@ int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
 
 int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
 {
-    char* command = "cat /etc/shadow | grep + ^ii";
+    char* command = "cat /etc/shadow | grep \"+\"";
     int status = 0;
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
     {
         OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/shadow");
     }
@@ -824,7 +824,7 @@ int CheckNoLegacyPlusEntriesInEtcGroup(void* log)
     char* command = "cat /etc/user | grep + ^ii";
     int status = 0;
 
-    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
     {
         OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/user");
     }
