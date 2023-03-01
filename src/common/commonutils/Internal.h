@@ -22,6 +22,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <mntent.h>
+#include <dirent.h>
 #include <parson.h>
 #include <Logging.h>
 #include <CommonUtils.h>
