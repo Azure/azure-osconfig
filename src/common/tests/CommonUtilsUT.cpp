@@ -1254,9 +1254,23 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 
 TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 {
-    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr, nullptr));
-    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist", nullptr));
-    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd", nullptr), GetNumberOfLinesInFile("/etc/shadow", nullptr));
+    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
+    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
+    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
+}
+
+TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
+{
+    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
+    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
+    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
+}
+
+TEST_F(CommonUtilsTest, CharacterFoundInFile)
+{
+    EXPECT_EQ(0, CharacterFoundInFile(nullptr, 0));
+    EXPECT_EQ(0, CharacterFoundInFile("~file_that_does_not_exist", 0));
+    EXPECT_EQ(0, CharacterFoundInFile("/etc/passwd", ':'));
 }
 
 TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)

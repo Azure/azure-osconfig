@@ -124,7 +124,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
     *userList = NULL;
     *size = 0;
 
-    if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile, log)))
+    if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile)))
     {
         listSize = (*size) * sizeof(SIMPLIFIED_USER);
         if (NULL != (*userList = malloc(listSize)))
@@ -289,7 +289,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
     *groupList = NULL;
     *size = 0;
 
-    if (0 != (*size = GetNumberOfLinesInFile(groupFile, log)))
+    if (0 != (*size = GetNumberOfLinesInFile(groupFile)))
     {
         listSize = (*size) * sizeof(SIMPLIFIED_GROUP);
         if (NULL != (*groupList = malloc(listSize)))
@@ -785,55 +785,36 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
     return status;
 }
 
-int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
+static int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log)
 {
-    char* command = "cat /etc/passwd | grep +";
     int status = 0;
 
-    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
+    if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/passwd");
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in %s", fileName, fileName);
+        status = ENOENT;
     }
     else
     {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/passwd");
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no + lines in %s", fileName, fileName);
     }
 
     return status;
+}
+
+int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
+{
+    return CheckNoLegacyPlusEntriesInFile("etc/passwd", log);
 }
 
 int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
 {
-    char* command = "cat /etc/shadow | grep \"+\"";
-    int status = 0;
-
-    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
-    {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/shadow");
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/shadow");
-    }
-
-    return status;
+    return CheckNoLegacyPlusEntriesInFile("etc/shadow", log);
 }
 
 int CheckNoLegacyPlusEntriesInEtcGroup(void* log)
 {
-    char* command = "cat /etc/user | grep + ^ii";
-    int status = 0;
-
-    if (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log))
-    {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/user");
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/user");
-    }
-
-    return status;
+    return CheckNoLegacyPlusEntriesInFile("etc/group", log);
 }
 
 int CheckDefaultRootAccountGroupIsGidZero(void* log)
