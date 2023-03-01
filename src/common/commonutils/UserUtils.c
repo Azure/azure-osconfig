@@ -942,12 +942,12 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", name, errno);
+            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", user->home, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "CheckDirectoryOwnership: directory '%s' not found, nothing to check", name);
+        OsConfigLogInfo(log, "CheckDirectoryOwnership: directory '%s' not found, nothing to check", user->home);
     }
 
     return status;
