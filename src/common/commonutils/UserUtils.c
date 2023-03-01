@@ -9,6 +9,7 @@
 static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
 static const char* g_noLoginShell = "/usr/sbin/nologin";
+static const char* g_otherNoLoginShell = "/sbin/nologin";
 static const char* g_olderNoLoginShell = "/bin/false";
 
 static void EmptyUserEntry(SIMPLIFIED_USER* target)
@@ -645,7 +646,10 @@ int CheckRootGroupExists(void* log)
 
 static bool NoLoginUser(SIMPLIFIED_USER* user)
 {
-    return (user && user->shell && ((0 == strcmp(user->shell, g_noLoginShell)) || (0 == strcmp(user->shell, g_olderNoLoginShell))));
+    return (user && user->shell && 
+        ((0 == strcmp(user->shell, g_noLoginShell)) || 
+        (0 == strcmp(user->shell, g_otherNoLoginShell)) || 
+        (0 == strcmp(user->shell, g_olderNoLoginShell))));
 }
 
 #define MAXIMUM_LINE_LENGTH 1024
@@ -847,7 +851,6 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
     return status;
 }
 
-
 int CheckRootIsOnlyUidZeroAccount(void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
@@ -915,7 +918,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -925,11 +928,19 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             {
                 continue;
             }
-            else if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))))
+            else if (userList[i].home) 
             {
-                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (UID %u, GID %u) with shell '%s' does not own their assigned home directory '%s'",
-                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].shell, userList[i].home);
-                status = ENOENT;
+                if (0 == (_status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log)))
+                {
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (UID %u, GID %u) owns their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (UID %u, GID %u) does not own their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    status = _status;
+                }
             }
         }
     }
