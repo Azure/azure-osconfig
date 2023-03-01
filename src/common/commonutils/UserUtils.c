@@ -9,6 +9,7 @@
 static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
 static const char* g_noLoginShell = "/usr/sbin/nologin";
+static const char* g_olderNoLoginShell = "/bin/false";
 
 static void EmptyUserEntry(SIMPLIFIED_USER* target)
 {
@@ -642,6 +643,11 @@ int CheckRootGroupExists(void* log)
     return status;
 }
 
+static bool NoLoginUser(SIMPLIFIED_USER* user)
+{
+    return (user && user->shell && ((0 == strcmp(user->shell, g_noLoginShell)) || (0 == strcmp(user->shell, g_olderNoLoginShell))));
+}
+
 #define MAXIMUM_LINE_LENGTH 1024
 
 int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
@@ -660,7 +666,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
+    if (NoLoginUser(user))
     {
         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login", user->username, user->userId);
     }
@@ -901,7 +907,7 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].shell && (0 == strcmp(userList[i].shell, g_noLoginShell)))
+            if (NoLoginUser(&userList[i]))
             {
                 continue;
             }
@@ -934,7 +940,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].shell && (0 == strcmp(userList[i].shell, g_noLoginShell)))
+            if (NoLoginUser(&userList[i]))
             {
                 continue;
             }
