@@ -475,7 +475,7 @@ int CheckNoDuplicateGidsExist(void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateGidsExist: UID %u appears more than a single time in /etc/group", groupList[i].groupId);
+                        OsConfigLogError(log, "CheckNoDuplicateGidsExist: GID %u appears more than a single time in /etc/group", groupList[i].groupId);
                         status = EEXIST;
                         break;
                     }
@@ -488,7 +488,7 @@ int CheckNoDuplicateGidsExist(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNoDuplicateGidsExist: no duplicate UIDs exist in /etc/group");
+        OsConfigLogInfo(log, "CheckNoDuplicateGidsExist: no duplicate GIDs exist in /etc/group");
     }
 
     return status;
