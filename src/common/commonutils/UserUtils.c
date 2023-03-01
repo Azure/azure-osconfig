@@ -670,14 +670,11 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if (NoLoginUser(user))
+    // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
+    // appear to have a bug and not always return the shadow entries for all users so instead we do this manually
+
+    if (false == NoLoginUser(user))
     {
-        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login", user->username, user->userId);
-    }
-    else
-    {
-        // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
-        // appear to have a bug and cannot always return the shadow entries for all users so instead we do this:
 
         snprintf(command, sizeof(command), commandTemplate, user->username);
         
