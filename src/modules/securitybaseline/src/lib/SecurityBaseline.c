@@ -490,46 +490,44 @@ static int AuditEnsureAllAccountsHavePasswords(void)
     return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog());
 }
 
-/////////////////////// continue from here
-
 static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
-    return 0;
+    return CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return 0;
+    return CheckNoLegacyPlusEntriesInEtcPasswd(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return 0;
+    return CheckNoLegacyPlusEntriesInEtcShadow(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return 0;
+    return CheckNoLegacyPlusEntriesInEtcGroup(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
-    return 0;
+    return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
-    return 0;
+    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
-    return 0;
+    return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
-    return 0;
+    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
 }
 
 int AuditSecurityBaseline(void)

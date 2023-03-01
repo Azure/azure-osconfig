@@ -37,6 +37,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log);
 void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size);
 
+int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log);
+
 int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log);
 int CheckNoDuplicateUidsExist(void* log);
 int CheckNoDuplicateGidsExist(void* log);
@@ -44,9 +46,15 @@ int CheckNoDuplicateUserNamesExist(void* log);
 int CheckNoDuplicateGroupsExist(void* log);
 int CheckShadowGroupIsEmpty(void* log);
 int CheckRootGroupExists(void* log);
-
-int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log);
 int CheckAllUsersHavePasswordsSet(void* log);
+int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log);
+int CheckNoLegacyPlusEntriesInEtcPasswd(void* log);
+int CheckNoLegacyPlusEntriesInEtcShadow(void* log);
+int CheckNoLegacyPlusEntriesInEtcGroup(void* log);
+int CheckDefaultRootAccountGroupIsGidZero(void* log);
+int CheckRootIsOnlyUidZeroAccount(void* log);
+int CheckAllUsersHomeDirectoriesExist(void* log);
+int CheckUsersOwnTheirHomeDirectories(void* log);
 
 #ifdef __cplusplus
 }

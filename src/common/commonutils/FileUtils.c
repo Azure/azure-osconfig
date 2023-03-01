@@ -101,6 +101,20 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+bool DirectoryExists(const char* name)
+{
+    DIR* directory = NULL;
+    bool result = false;
+
+    if (FileExists(name) && (NULL != (directory = opendir(name))))
+    {
+        closedir(directory);
+        result = true;
+    }
+
+    return result;
+}
+
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
 {
     int fileDescriptor = -1;
@@ -557,4 +571,39 @@ unsigned int GetNumberOfLinesInFile(const char* fileName, void* log)
     }
 
     return numberOfLines;
+}
+
+int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, void* log)
+{
+    struct stat statStruct = {0};
+    int status = 0;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "CheckDirectoryOwnership called with an invalid name argument");
+        return EINVAL;
+    }
+
+    if (DirectoryExists(name))
+    {
+        if (0 == (status = stat(name, &statStruct)))
+        {
+            if ((uid_t)desiredOwnerId != statStruct.st_uid)
+            {
+                OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u instead of expected UID %u", 
+                    name, statStruct.st_uid, desiredOwnerId);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", name, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileAccess: directory '%s' not found, nothing to check", name);
+    }
+
+    return status;
 }

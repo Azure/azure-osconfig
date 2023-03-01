@@ -6,6 +6,7 @@
 
 //const char* commandTemplate = "sudo cat /etc/users | grep %s";
 
+static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
 
 static void EmptyUserEntry(SIMPLIFIED_USER* target)
@@ -610,7 +611,6 @@ int CheckShadowGroupIsEmpty(void* log)
 
 int CheckRootGroupExists(void* log)
 {
-    const char* root = "root";
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
@@ -621,9 +621,9 @@ int CheckRootGroupExists(void* log)
     {
         for (i = 0; i < groupListSize; i++)
         {
-            if ((0 == strcmp(groupList[i].groupName, root)) && (0 == groupList[i].groupId))
+            if ((0 == strcmp(groupList[i].groupName, g_root)) && (0 == groupList[i].groupId))
             {
-                OsConfigLogError(log, "CheckRootGroupExists: root group exists with id 0");
+                OsConfigLogInfo(log, "CheckRootGroupExists: root group exists with GID 0");
                 found = true;
                 break;
             }
@@ -634,7 +634,7 @@ int CheckRootGroupExists(void* log)
 
     if (false == found)
     {
-        OsConfigLogError(log, "CheckRootGroupExists: root group with id 0 not found");
+        OsConfigLogError(log, "CheckRootGroupExists: root group with GID 0 not found");
         status = ENOENT;
     }
 
@@ -651,7 +651,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     char command[MAXIMUM_LINE_LENGTH] = {0};
     char* textResult = NULL;
     size_t offset = 0;
-    char magic = 0;
+    char control = 0;
     int status = 0;
 
     if ((NULL == user) || (NULL == user->username))
@@ -667,8 +667,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     else
     {
         // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
-        // appear to be buggy (cannot return all shadow lines for all user accounts) so instead ww use this raw way.
-        // Create an internal variant of those functions so we can have all passwd struture entries? TBD
+        // appear to have a bug and cannot always return the shadow entries for all users so instead we do this:
 
         snprintf(command, sizeof(command), commandTemplate, user->username);
         
@@ -678,25 +677,25 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 
             if (NULL != textResult)
             {
-                magic = textResult[offset];
+                control = textResult[offset];
                 
-                switch (magic)
+                switch (control)
                 {
                     case '$':
                         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
                         break;
 
                     case '!':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked (!)", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked ('!')", user->username, user->userId);
                         break;
 
                     case '*':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password ('*')", user->username, user->userId);
                         break;
 
                     case ':':
                     default:
-                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set (%c)", user->username, user->userId, magic);
+                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set ('%c')", user->username, user->userId, control);
                         status = ENOENT;
                 }
             }
@@ -747,6 +746,205 @@ int CheckAllUsersHavePasswordsSet(void* log)
     else
     {
         OsConfigLogError(log, "CheckAllUsersHavePasswordsSet: not all users who need passwords appear to have passwords set");
+    }
+
+    return status;
+}
+
+int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (strcmp(userList[i].username, g_root) && userList[i].userId)
+            {
+                OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%d) fails this check", userList[i].username, userList[i].userId);
+                status = EACCES;
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: all users who are not root have UIDs greater than 0");
+    }
+
+    return status;
+}
+
+int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
+{
+    char* command = "cat /etc/passwd | grep +";
+    int status = 0;
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/passwd");
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/passwd");
+    }
+
+    return status;
+}
+
+int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
+{
+    char* command = "cat /etc/shadow | grep +";
+    int status = 0;
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/shadow");
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/shadow");
+    }
+
+    return status;
+}
+
+int CheckNoLegacyPlusEntriesInEtcGroup(void* log)
+{
+    char* command = "cat /etc/user | grep +";
+    int status = 0;
+
+    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+    {
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are no '+' entries in /etc/user");
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInEtcPasswd: there are '+' entries in /etc/user");
+    }
+
+    return status;
+}
+
+int CheckDefaultRootAccountGroupIsGidZero(void* log)
+{
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0;
+    bool found = false;
+    int status = 0;
+
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    {
+        for (i = 0; i < groupListSize; i++)
+        {
+            if ((0 == strcmp(groupList[i].groupName, g_root)) && groupList[i].groupId)
+            {
+                OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
+                status = EACCEES;
+                break;
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckDefaultRootAccountGroupIsGidZero: default root group is GID 0");
+    }
+
+    return status;
+}
+
+
+int CheckRootIsOnlyUidZeroAccount(void* log)
+{
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+    unsigned int i = 0;
+    bool found = false;
+    int status = 0;
+
+    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
+    {
+        for (i = 0; i < groupListSize; i++)
+        {
+            if (strcmp(groupList[i].groupName, g_root) && (0 == groupList[i].groupId))
+            {
+                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: group '%s' has GID 0", groupList[i].groupName);
+                status = EACCES;
+            }
+        }
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: only the root group has GID 0");
+    }
+
+    return status;
+
+}
+
+int CheckAllUsersHomeDirectoriesExist(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
+            {
+                OsConfigLogError(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%d) home directory '%s' not found or is not a directory", 
+                    userList[i].username, userList[i].userId, userList[i].home);
+                status = ENOENT;
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: all users' home directories exist");
+    }
+
+    return status;
+}
+
+int CheckUsersOwnTheirHomeDirectories(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, log))))
+            {
+                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%d) does not own home directory '%s'",
+                    userList[i].username, userList[i].userId, userList[i].home);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: all users own their home directories");
     }
 
     return status;

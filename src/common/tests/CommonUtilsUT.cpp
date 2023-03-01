@@ -493,6 +493,16 @@ TEST_F(CommonUtilsTest, FileExists)
     EXPECT_FALSE(FileExists("This file does not exist"));
 }
 
+TEST_F(CommonUtilsTest, DirectoryExists)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_FALSE(DirectoryExists(m_path));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_FALSE(DirectoryExists(m_path));
+    EXPECT_FALSE(DirectoryExists("This directory does not exist"));
+    EXPECT_TRUE(DirectoryExists("/etc"));
+}
+
 TEST_F(CommonUtilsTest, ValidClientName)
 {
     std::list<std::string> validClientNames = {
@@ -1319,7 +1329,14 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     FreeUsersList(&userList, userListSize);
 }
 
-TEST_F(CommonUtilsTest, CheckUserGroups)
+TEST_F(CommonUtilsTest, CheckDirectoryOwnership)
+{
+    EXPECT_NE(0, CheckDirectoryOwnership(nullptr, 0, nullptr));
+    EXPECT_EQ(0, CheckDirectoryOwnership("directory that does not exist", 0, nullptr));
+    EXPECT_EQ(0, CheckDirectoryOwnership("etc", 0, nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUserAndGroups)
 {
     EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
     EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr));
@@ -1329,4 +1346,12 @@ TEST_F(CommonUtilsTest, CheckUserGroups)
     EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
     EXPECT_EQ(0, CheckRootGroupExists(nullptr));
     EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
+    EXPECT_EQ(0, CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(nullptr));
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcPasswd(nullptr));
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcShadow(nullptr));
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcGroup(nullptr));
+    EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
+    EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+    EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
+    EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
 }
