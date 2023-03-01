@@ -1304,14 +1304,15 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
 
+    EXPECT_EQ(EINVAL, CheckUserHasPassword(nullptr, nullptr));
+
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
     EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
     EXPECT_NE(nullptr, userList);
-
+    
     for (unsigned int i = 0; i < userListSize; i++)
     {
         EXPECT_NE(nullptr, userList[i].username);
-        EXPECT_EQ(EINVAL, CheckUserHasPassword(nullptr, nullptr));
         EXPECT_EQ(0, CheckUserHasPassword(&userList[i], nullptr));
     }
 
