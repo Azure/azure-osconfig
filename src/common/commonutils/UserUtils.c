@@ -761,7 +761,7 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (strcmp(userList[i].username, g_root) && userList[i].userId)
+            if (strcmp(userList[i].username, g_root) && (0 == userList[i].userId))
             {
                 OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%d) fails this check", userList[i].username, userList[i].userId);
                 status = EACCES;
@@ -781,7 +781,7 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
 
 int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
 {
-    char* command = "cat /etc/passwd | grep +";
+    char* command = "cat /etc/passwd | grep + ^ii";
     int status = 0;
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
@@ -798,7 +798,7 @@ int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
 
 int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
 {
-    char* command = "cat /etc/shadow | grep +";
+    char* command = "cat /etc/shadow | grep + ^ii";
     int status = 0;
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
@@ -815,7 +815,7 @@ int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
 
 int CheckNoLegacyPlusEntriesInEtcGroup(void* log)
 {
-    char* command = "cat /etc/user | grep +";
+    char* command = "cat /etc/user | grep + ^ii";
     int status = 0;
 
     if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
