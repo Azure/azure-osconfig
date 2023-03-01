@@ -1259,13 +1259,6 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
     EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
 }
 
-TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
-{
-    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
-    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
-    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
-}
-
 TEST_F(CommonUtilsTest, CharacterFoundInFile)
 {
     EXPECT_EQ(0, CharacterFoundInFile(nullptr, 0));
