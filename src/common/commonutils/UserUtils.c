@@ -349,100 +349,76 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
     return status;
 }
 
+#define MAXIMUM_LINE_LENGTH 1024
+
 int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
-    const char* shadowFile = "/etc/shadow";
+    char* commandTemplate = "cat /etc/shadow | grep %s";
     const char* noLoginShell = "/usr/sbin/nologin";
-    FILE* file = NULL;
-    struct passwd* passwdEntry = NULL;
-    bool check = false;
+
+    char command[MAXIMUM_LINE_LENGTH] = {0};
+    char* textResult = NULL;
+    size_t offset = 0;
+    char magic = 0;
     int status = 0;
 
     if ((NULL == user) || (NULL == user->username))
     {
         OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
-        status = EINVAL;
+        return EINVAL;
     }
-    else if ((false == FileExists(shadowFile)) || (NULL == (file = fopen(shadowFile, "r"))))
+
+    if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
     {
-        OsConfigLogError(log, "CheckUserHasPassword: cannot access file '%s'", shadowFile);
-        status = EACCES;
-    }
-    else if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
-    {
-        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login, nothing else to check", user->username, user->userId);
-        check = true;
+        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login", user->username, user->userId);
     }
     else
     {
-        //////////////////////////////////////////////////////
-        char buffer[bufferLength] = {0};
-        size_t bufferLength = 4096;
-        
-        setpwent();
-        while (1) 
-        {
-            if (0 == (status = fgetpwent_r(file, passwdEntry, buffer, bufferLength, &passwdEntry)))
-            {
-                OsConfigLogInfo(log, "### fgetpwent_r: %s (%d) '%'", pwp->pw_name, pwp->pw_uid, pwp->pw_passwd);
-            }
-        }
-        endpwent();
+        snprintf(command, sizeof(command), commandTemplate, user->username);
 
-        return status.
-        /////////////////////////////////////////////////////
-        
-        while (1)
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log)))
         {
-            if (NULL == (passwdEntry = fgetpwent(file)))
-            {
-                OsConfigLogInfo(log, "fgetpwent returned NULL, errno: %d", errno);
-                break;
-            }
-            
-            OsConfigLogInfo(log, "CheckUserHasPassword: enumerating user '%s' with password '%s'", passwdEntry->pw_name, passwdEntry->pw_passwd);
+            offset = strlen(user->username) + 1;
 
-            if ((NULL != passwdEntry->pw_name) && (0 == strcmp(user->username, passwdEntry->pw_name)) && (NULL != passwdEntry->pw_passwd))
+            if (NULL != textResult)
             {
-                if ('$' == passwdEntry->pw_passwd[0])
+                magic = textResult[offset];
+                
+                switch (magic)
                 {
-                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
-                    check = true;
-                    break;
-                }
-                else if ('!' == passwdEntry->pw_passwd[0])
-                {
-                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) password is locked (!)", user->username, user->userId);
-                    check = true;
-                    break;
-                }
-                else if ('*' == passwdEntry->pw_passwd[0])
-                {
-                    OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
-                    check = true;
-                    break;
-                }
-                else
-                {
-                    continue;
+                    case '$':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
+                        break;
+
+                    case '!':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked (!)", user->username, user->userId);
+                        break;
+
+                    case '*':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password (*)", user->username, user->userId);
+                        break;
+
+                    case ':':
+                    default:
+                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set (%c)", user->username, user->userId, magic);
+                        status = ENOENT;
                 }
             }
             else
             {
-                continue;
-            }
+                OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) returned no data, cannot check if user '%s' (%d) has a password set",
+                    command, user->username, user->userId);
+                status = ENOENT;    
+            } 
+
         }
-    }
+        else
+        {
+            OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) failed with %d, cannot check if user '%s' (%d) has a password set",
+                command, status, user->username, user->userId);
+        }
 
-    if (NULL != file)
-    {
-        fclose(file);
-    }
-
-    if ((0 == status) && (false == check))
-    {
-        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set", user->username, user->userId);
-        status = EACCES;
+        FREE_MEMORY(textResult);
     }
 
     return status;
