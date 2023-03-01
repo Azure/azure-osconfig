@@ -8,6 +8,7 @@
 
 static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
+static const char* g_noLoginShell = "/usr/sbin/nologin";
 
 static void EmptyUserEntry(SIMPLIFIED_USER* target)
 {
@@ -646,7 +647,6 @@ int CheckRootGroupExists(void* log)
 int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
     char* commandTemplate = "cat /etc/shadow | grep %s";
-    const char* noLoginShell = "/usr/sbin/nologin";
 
     char command[MAXIMUM_LINE_LENGTH] = {0};
     char* textResult = NULL;
@@ -660,7 +660,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if ((NULL != user->shell) && (0 == strcmp(user->shell, noLoginShell)))
+    if ((NULL != user->shell) && (0 == strcmp(user->shell, g_noLoginShell)))
     {
         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login", user->username, user->userId);
     }
@@ -930,9 +930,13 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, log))))
+            if (userList[i].shell && strcmp(userList[i].shell, g_noLoginShell))
             {
-                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%d) does not own home directory '%s'",
+                continue;
+            }
+            else if ((NULL != userList[i].home) && (0 == (status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, log))))
+            {
+                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%d) does not own their assigned home directory '%s'",
                     userList[i].username, userList[i].userId, userList[i].home);
             }
         }
@@ -942,7 +946,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: all users own their home directories");
+        OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: all users who can login own their home directories");
     }
 
     return status;
