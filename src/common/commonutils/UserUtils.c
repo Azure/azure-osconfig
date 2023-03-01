@@ -660,7 +660,7 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    if ((NULL != user->shell) && (0 == strcmp(user->shell, g_noLoginShell)))
+    if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
     {
         OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) is set to not login", user->username, user->userId);
     }
@@ -901,7 +901,7 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].shell && strcmp(userList[i].shell, g_noLoginShell))
+            if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
             {
                 continue;
             }
@@ -934,7 +934,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].shell && strcmp(userList[i].shell, g_noLoginShell))
+            if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
             {
                 continue;
             }
