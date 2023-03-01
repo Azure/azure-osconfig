@@ -1282,7 +1282,7 @@ TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
     unsigned int groupListSize = 0;
 
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
-    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
+    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
 
     for (unsigned int i = 0; i < userListSize; i++)
@@ -1311,7 +1311,7 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     unsigned int groupListSize = 0;
 
     EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr));
-    EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group", nullptr));
+    EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group"));
     EXPECT_NE(nullptr, groupList);
 
     for (unsigned int i = 0; i < groupListSize; i++)
@@ -1331,7 +1331,7 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     EXPECT_EQ(EINVAL, CheckUserHasPassword(nullptr, nullptr));
 
     EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
-    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd", nullptr));
+    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
     EXPECT_NE(nullptr, userList);
     
     for (unsigned int i = 0; i < userListSize; i++)
