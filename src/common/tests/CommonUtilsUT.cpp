@@ -1299,7 +1299,7 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     EXPECT_EQ(nullptr, groupList);
 }
 
-TEST_F(CommonUtilsTest, CheckUserHasPassword)
+TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
@@ -1311,8 +1311,21 @@ TEST_F(CommonUtilsTest, CheckUserHasPassword)
     for (unsigned int i = 0; i < userListSize; i++)
     {
         EXPECT_NE(nullptr, userList[i].username);
+        EXPECT_EQ(EINVAL, CheckUserHasPassword(nullptr, nullptr));
         EXPECT_EQ(0, CheckUserHasPassword(&userList[i], nullptr));
     }
 
     FreeUsersList(&userList, userListSize);
+}
+
+TEST_F(CommonUtilsTest, CheckUserGroups)
+{
+    EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGidsExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateUserNamesExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr));
+    EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
+    EXPECT_EQ(0, CheckRootGroupExists(nullptr));
+    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
 }

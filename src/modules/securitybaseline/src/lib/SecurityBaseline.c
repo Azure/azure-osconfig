@@ -452,300 +452,45 @@ static int AuditEnsureAuditdInstalled(void)
 
 static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    struct SIMPLIFIED_GROUP* userGroupList = NULL;
-    unsigned int userGroupListSize = 0;
-    struct SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0, k = 0;
-    bool found = false;
-    int status = 0;
-
-    if ((0 == (status = EnumerateUsers(&userList, &userListSize, SecurityBaselineGetLog()))) &&
-        (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog()))))
-    {
-        for (i = 0; (i < userListSize) && (0 == status); i++)
-        {
-            if (0 == (status = EnumerateUserGroups(&userList[i], &userGroupList, &userGroupListSize, SecurityBaselineGetLog())))
-            {
-                for (j = 0; (j < userGroupListSize) && (0 == status); j++)
-                {
-                    found = false;
-
-                    for (k = 0; (k < groupListSize) && (0 == status); k++)
-                    {
-                        if (userGroupList[j].groupId == groupList[k].groupId)
-                        {
-                            if (IsFullLoggingEnabled())
-                            {
-                                OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) found in /etc/group",
-                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                            }
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (false == found)
-                    {
-                        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) not found in /etc/group", 
-                            userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                        status = ENOENT;
-                        break;
-                    }
-                }
-
-                FreeGroupList(&userGroupList, userGroupListSize);
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureAllEtcPasswdGroupsExistInEtcGroup: all groups in /etc/passwd exist in /etc/group");
-    }
-
-    return status;
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoDuplicateUidsExist(void)
 {
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; (i < userListSize) && (0 == status); i++)
-        {
-            hits = 0;
-
-            for (j = 0; (j < userListSize) && (0 == status); j++)
-            {
-                if (userList[i].userId == userList[j].userId)
-                {
-                    hits += 1;
-
-                    if (hits > 1)
-                    {
-                        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateUidsExist: UID %u appears more than a single time in /etc/passwd", userList[i].userId);
-                        status = EEXIST;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateUidsExist: no duplicate UIDs exist in /etc/passwd");
-    }
-
-    return status;
+    return CheckNoDuplicateUidsExist(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoDuplicateGidsExist(void)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; (i < groupListSize) && (0 == status); i++)
-        {
-            hits = 0;
-
-            for (j = 0; (j < groupListSize) && (0 == status); j++)
-            {
-                if (groupList[i].groupId == groupList[j].groupId)
-                {
-                    hits += 1;
-
-                    if (hits > 1)
-                    {
-                        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateGidsExist: UID %u appears more than a single time in /etc/group", groupList[i].groupId);
-                        status = EEXIST;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateGidsExist: no duplicate UIDs exist in /etc/group");
-    }
-
-    return status;
+    return CheckNoDuplicateGidsExist(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoDuplicateUserNamesExist(void)
 {
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; (i < userListSize) && (0 == status); i++)
-        {
-            hits = 0;
-
-            for (j = 0; (j < userListSize) && (0 == status); j++)
-            {
-                if (0 == strcmp(userList[i].username, userList[j].username))
-                {
-                    hits += 1;
-
-                    if (hits > 1)
-                    {
-                        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateUserNamesExist: username %s appears more than a single time in /etc/passwd", userList[i].username);
-                        status = EEXIST;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateUserNamesExist: no duplicate usernames exist in /etc/passwd");
-    }
-
-    return status;
+    return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoDuplicateGroupsExist(void)
 {
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0, j = 0;
-    unsigned int hits = 0;
-    int status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; (i < groupListSize) && (0 == status); i++)
-        {
-            hits = 0;
-
-            for (j = 0; (j < groupListSize) && (0 == status); j++)
-            {
-                if (0 == strcmp(groupList[i].groupName, groupList[j].groupName))
-                {
-                    hits += 1;
-
-                    if (hits > 1)
-                    {
-                        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateGroupsExist: group name %s appears more than a single time in /etc/group", groupList[i].groupName);
-                        status = EEXIST;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureNoDuplicateGroupsExist: no duplicate group names exist in /etc/group");
-    }
-
-    return status;
+    return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureShadowGroupIsEmpty(void)
 {
-    const char* shadow = "shadow";
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0;
-    bool found = false;
-    int status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            if ((0 == strcmp(groupList[i].groupName, shadow)) && (true == groupList[i].hasUsers))
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureShadowGroupIsEmpty: group shadow (%u) is not empty", groupList[i].groupId);
-                status = ENOENT;
-                break;
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(SecurityBaselineGetLog(), "AuditEnsureShadowGroupIsEmpty: shadow group is %s", found ? "empty" : "not found");
-    }
-
-    return status;
+    return CheckShadowGroupIsEmpty(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRootGroupExists(void)
 {
-    const char* root = "root";
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0;
-    bool found = false;
-    int status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, SecurityBaselineGetLog())))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            if ((0 == strcmp(groupList[i].groupName, root)) && (0 == groupList[i].groupId))
-            {
-                OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureRootGroupExists: root group exists with id 0");
-                found = true;
-                break;
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (false == found)
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "AuditEnsureRootGroupExists: root group with id 0 not found");
-        status = ENOENT;
-    }
-
-    return status;
+    return CheckRootGroupExists(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAllAccountsHavePasswords(void)
 {
-    return 0;
+    return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog());
 }
+
+/////////////////////// continue from here
 
 static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
