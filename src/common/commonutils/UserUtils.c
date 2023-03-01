@@ -374,8 +374,12 @@ int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     }
     else
     {
-        snprintf(command, sizeof(command), commandTemplate, user->username);
+        // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
+        // appear to be buggy (cannot return all shadow lines for all user accounts) so instead ww use this raw way.
+        // Create an internal variant of those functions so we can have all passwd struture entries? TBD
 
+        snprintf(command, sizeof(command), commandTemplate, user->username);
+        
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log)))
         {
             offset = strlen(user->username) + 1;
