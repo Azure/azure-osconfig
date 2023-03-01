@@ -605,7 +605,7 @@ bool CharacterFoundInFile(const char* fileName, char what)
     return found;
 }
 
-int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, , void* log)
+int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, void* log)
 {
     struct stat statStruct = {0};
     int status = 0;

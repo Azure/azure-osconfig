@@ -62,7 +62,7 @@ bool DirectoryExists(const char* name);
 int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 
-int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, , void* log);
+int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
