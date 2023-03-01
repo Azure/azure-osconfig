@@ -901,7 +901,7 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
+            if (userList[i].shell && (0 == strcmp(userList[i].shell, g_noLoginShell)))
             {
                 continue;
             }
@@ -934,7 +934,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (user->shell && (0 == strcmp(user->shell, g_noLoginShell)))
+            if (userList[i].shell && (0 == strcmp(userList[i].shell, g_noLoginShell)))
             {
                 continue;
             }
