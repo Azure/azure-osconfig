@@ -901,7 +901,11 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
+            if (userList[i].shell && strcmp(userList[i].shell, g_noLoginShell))
+            {
+                continue;
+            }
+            else if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
             {
                 OsConfigLogError(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%d) home directory '%s' not found or is not a directory", 
                     userList[i].username, userList[i].userId, userList[i].home);
@@ -914,7 +918,7 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: all users' home directories exist");
+        OsConfigLogInfo(log, "CheckAllUsersHomeDirectoriesExist: all users who can login have home directories that exist");
     }
 
     return status;
