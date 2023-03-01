@@ -597,13 +597,16 @@ int CheckDirectoryOwnership(const char* name, unsigned int desiredOwnerId, unsig
         {
             if (((uid_t)desiredOwnerId != statStruct.st_uid) || ((gid_t)desiredGroupId != statStruct.st_gid))
             {
-                OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u, GID %u instead of expected UID %u, GID %u", 
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-
-                // For now if root owns the directory instead of UID and GID from /etc/passwd this is not treated as an error
-                if (statStruct.st_uid && statStruct.st_gid)
+                if ((0 != statStruct.st_uid) && (0 != statStruct.st_gid))
                 {
+                    OsConfigLogError(log, "CheckDirectoryOwnership: owner of directory '%s' is UID %u, GID %u instead of expected UID %u, GID %u", 
+                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                     status = ENOENT;
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckDirectoryOwnership: owner of directory '%s' is root (UID %u, GID %u) instead of expected UID %u, GID %u",
+                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 }
             }
         }
