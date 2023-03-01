@@ -1261,9 +1261,9 @@ TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
 
 TEST_F(CommonUtilsTest, CharacterFoundInFile)
 {
-    EXPECT_EQ(0, CharacterFoundInFile(nullptr, 0));
-    EXPECT_EQ(0, CharacterFoundInFile("~file_that_does_not_exist", 0));
-    EXPECT_EQ(0, CharacterFoundInFile("/etc/passwd", ':'));
+    EXPECT_FALSE(CharacterFoundInFile(nullptr, 0));
+    EXPECT_FALSE(CharacterFoundInFile("~file_that_does_not_exist", 0));
+    EXPECT_TRUE(CharacterFoundInFile("/etc/passwd", ':'));
 }
 
 TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
