@@ -927,16 +927,21 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             }
             else if (userList[i].home) 
             {
-                if (0 == (_status = CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log)))
+                if (0 == CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))
                 {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u) owns their assigned home directory '%s'",
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                }
+                else if (0 == CheckDirectoryOwnership(userList[i].home, 0, 0, log))
+                {
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' is owned by root",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u) does not own their assigned home directory '%s'",
+                    status = ENOENT;
+                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                    status = _status;
                 }
             }
         }
