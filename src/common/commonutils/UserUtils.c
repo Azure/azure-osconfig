@@ -835,7 +835,6 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
-    bool found = false;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
@@ -845,7 +844,7 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
             if ((0 == strcmp(groupList[i].groupName, g_root)) && groupList[i].groupId)
             {
                 OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
-                status = EACCEES;
+                status = EACCES;
                 break;
             }
         }
@@ -867,7 +866,6 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
-    bool found = false;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
