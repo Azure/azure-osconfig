@@ -929,6 +929,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             {
                 OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%d) does not own their assigned home directory '%s'",
                     userList[i].username, userList[i].userId, userList[i].home);
+                status = ENOENT;
             }
         }
     }
