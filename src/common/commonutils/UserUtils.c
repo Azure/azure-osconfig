@@ -936,8 +936,6 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
             if (((uid_t)user->userId != statStruct.st_uid) || ((gid_t)user->groupId != statStruct.st_gid))
             {
                 status = ENOENT;
-                OsConfigLogError(log, "CheckHomeDirectoryOwnership: user %u, %u owns the home directory '%s' of user %u %u",
-                    statStruct.st_uid, statStruct.st_gid, user->home, user->userId, user->groupId);
             }
         }
         else
@@ -969,7 +967,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             }
             else if (userList[i].home) 
             {
-                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 == CheckHomeDirectoryOwnership(&userList[i], log)))
+                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) cannot login and their assigned home directory '%s' is owned by root",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
