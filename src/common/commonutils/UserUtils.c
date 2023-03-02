@@ -7,7 +7,6 @@
 #include <shadow.h>
 
 #define MAX_GROUPS_USER_CAN_BE_IN 16
-#define MAX_SHADOW_LINE_LENGTH 1024
 
 #define USER_ACCOUNT_LOCKED -1
 #define USER_CANNOT_LOGIN -2
