@@ -9,6 +9,18 @@
 #include <pwd.h>
 #include <grp.h>
 
+enum PasswordEncryptionType
+{
+    unknown = 0,
+    md5 = 1,
+    blowfish = 2,
+    eksBlowfish = 3,
+    unknownBlowfish = 4,
+    sha256 = 5,
+    sha512 = 6
+};
+typedef enum PasswordEncryptionType PasswordEncryptionType;
+
 typedef struct SIMPLIFIED_USER
 {
     char* username;
@@ -16,6 +28,32 @@ typedef struct SIMPLIFIED_USER
     gid_t groupId;
     char* home;
     char* shell;
+    
+    bool isLocked;
+    bool noLogin;
+    bool cannotLogin;
+    bool hasPassword;
+
+    // Type of encryption used for password
+    PasswordEncryptionType passwordEncryptionType;
+    
+    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 (UTC)) 
+    long passwordLastChange;
+    
+    // Min number of days between password changes 
+    long passwordMinDaysBetweenChanges;
+    
+    // Max number of days between password changes
+    long passwordMaxDaysBetweenChanges;
+    
+    // Number of days before password expires to warn user to change it 
+    long passwordWarnDaysBeforeExpiry;   
+    
+    // Number of days after password expires until account is disabled 
+    long passwordDaysAfterExpiry;        
+    
+    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 (UTC)) 
+    long expirationDate;                 
 } SIMPLIFIED_USER;
 
 typedef struct SIMPLIFIED_GROUP
