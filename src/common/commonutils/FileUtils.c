@@ -535,7 +535,7 @@ int UninstallPackage(const char* packageName, void* log)
     return status;
 }
 
-static unsigned int GetNumberOfCharacterInFile(const char* fileName, char what)
+static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
 {
     unsigned int numberOf = 0;
     FILE* file = NULL;
@@ -572,10 +572,10 @@ static unsigned int GetNumberOfCharacterInFile(const char* fileName, char what)
 
 unsigned int GetNumberOfLinesInFile(const char* fileName)
 {
-    return GetNumberOfCharacterInFile(fileName, EOL);
+    return GetNumberOfCharacterInstancesInFile(fileName, EOL);
 }
 
 bool CharacterFoundInFile(const char* fileName, char what)
 {
-    return (GetNumberOfCharacterInFile(fileName, what) > 0) ? true : false;
+    return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }
