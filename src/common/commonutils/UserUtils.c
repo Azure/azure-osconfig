@@ -942,12 +942,12 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
         }
         else
         {
-            OsConfigLogError(log, "CheckDirectoryOwnership: stat('%s') failed with %d", user->home, errno);
+            OsConfigLogError(log, "CheckHomeDirectoryOwnership: stat('%s') failed with %d", user->home, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "CheckDirectoryOwnership: directory '%s' not found, nothing to check", user->home);
+        OsConfigLogInfo(log, "CheckHomeDirectoryOwnership: directory '%s' not found, nothing to check", user->home);
     }
 
     return status;
@@ -969,12 +969,12 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
             }
             else if (userList[i].home) 
             {
-                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 == CheckDirectoryOwnership(userList[i].home, 0, 0, log)))
+                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 == CheckHomeDirectoryOwnership(userList[i].home, 0, 0, log)))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) cannot login and their assigned home directory '%s' is owned by root",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 }
-                else if (0 == CheckDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))
+                else if (0 == CheckHomeDirectoryOwnership(userList[i].home, userList[i].userId, userList[i].groupId, log))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
