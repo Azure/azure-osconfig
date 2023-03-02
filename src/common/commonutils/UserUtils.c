@@ -692,12 +692,12 @@ static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                         break;
 
                     case '!':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked ('!')", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked", user->username, user->userId);
                         status = USER_ACCOUNT_LOCKED;
                         break;
 
                     case '*':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password ('*')", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password", user->username, user->userId);
                         status = USER_CANNOT_LOGIN;
                         break;
 
