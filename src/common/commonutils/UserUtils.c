@@ -712,35 +712,35 @@ static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 switch (shadowEntry->sp_pwdp[1])
                 {
                     case '1':
-                        encryptionType = md5;
+                        encryptionType = (char*)md5;
                         break;
 
                     case '2':
                         switch (shadowEntry->sp_pwdp[2])
                         {
                             case 'a':
-                                encryptionType = blowfish;
+                                encryptionType = (char*)blowfish;
                                 break;
 
                             case 'y':
-                                encryptionType = eksBlowfish;
+                                encryptionType = (char*)eksBlowfish;
                                 break;
 
                             default:
-                                encryptionType = unknownBlowfish;
+                                encryptionType = (char*)unknownBlowfish;
                         }
                         break;
 
                     case '5':
-                        encryptionType = sha256;
+                        encryptionType = (char*)sha256;
                         break;
 
                     case '6':
-                        encryptionType = sha512;
+                        encryptionType = (char*)sha512;
                         break;
 
                     default:
-                        encryptionType = unknown;
+                        encryptionType = (char*)unknown;
                 }
                 OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set (encryption: %s)",
                     user->username, user->userId, user->groupId, encryptionType);
