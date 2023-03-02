@@ -209,7 +209,6 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
                     user->username, user->userId, user->groupId);
                 user->isLocked = true;
                 user->hasPassword = false;
-                status = ENOENT;
                 break;
 
             case '*':
@@ -217,7 +216,6 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
                     user->username, user->userId, user->groupId);
                 user->cannotLogin = true;
                 user->hasPassword = false;
-                status = ENOENT;
                 break;
 
             case ':':
@@ -225,7 +223,6 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
                 OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
                     user->username, user->userId, user->groupId, control);
                 user->hasPassword = false;
-                status = ENOENT;
         }
     }
     else
