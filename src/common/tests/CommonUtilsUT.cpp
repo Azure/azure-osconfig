@@ -1266,7 +1266,7 @@ TEST_F(CommonUtilsTest, CharacterFoundInFile)
     EXPECT_TRUE(CharacterFoundInFile("/etc/passwd", ':'));
 }
 
-TEST_F(CommonUtilsTest, EnumerateUsersAndGroups)
+TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
@@ -1316,22 +1316,42 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
     EXPECT_EQ(nullptr, groupList);
 }
 
-TEST_F(CommonUtilsTest, CheckUserAndGroups)
+TEST_F(CommonUtilsTest, CheckUsersAndGroups)
 {
     EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
+    EXPECT_EQ(0, CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(nullptr));
+    EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
+{
     EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr));
     EXPECT_EQ(0, CheckNoDuplicateGidsExist(nullptr));
     EXPECT_EQ(0, CheckNoDuplicateUserNamesExist(nullptr));
     EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr));
-    EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
-    EXPECT_EQ(0, CheckRootGroupExists(nullptr));
-    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
-    EXPECT_EQ(0, CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckNoPlusEntries)
+{
     EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcPasswd(nullptr));
     EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcShadow(nullptr));
     EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcGroup(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
+{
+    EXPECT_EQ(0, CheckRootGroupExists(nullptr));
     EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
     EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
+{
+    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
+{
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
 }

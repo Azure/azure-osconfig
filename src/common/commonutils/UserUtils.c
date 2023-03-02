@@ -257,8 +257,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
                     if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u), group %d): group name '%s', gid %d", 
-                           user->username, user->groupId, i, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        OsConfigLogInfo(log, "EnumerateUserGroups(user[%d] '%s' (%u): group name '%s', gid %u", 
+                            user->username, i, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
                     }
                 }
                 else
@@ -316,7 +316,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
 
                         if (IsFullLoggingEnabled())
                         {
-                            OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %d, %s", i, 
+                            OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i, 
                                 (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
                         }
                     }
@@ -384,7 +384,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
                         {
                             if (IsFullLoggingEnabled())
                             {
-                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) found in /etc/group",
+                                OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in /etc/group",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
 
@@ -395,7 +395,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
 
                     if (false == found)
                     {
-                        OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group %s (%u) of user %s (%u) not found in /etc/group",
+                        OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                         status = ENOENT;
                         break;
@@ -522,7 +522,7 @@ int CheckNoDuplicateUserNamesExist(void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateUserNamesExist: username %s appears more than a single time in /etc/passwd", userList[i].username);
+                        OsConfigLogError(log, "CheckNoDuplicateUserNamesExist: username '%s' appears more than a single time in /etc/passwd", userList[i].username);
                         status = EEXIST;
                         break;
                     }
@@ -563,7 +563,7 @@ int CheckNoDuplicateGroupsExist(void* log)
 
                     if (hits > 1)
                     {
-                        OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name %s appears more than a single time in /etc/group", groupList[i].groupName);
+                        OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name '%s' appears more than a single time in /etc/group", groupList[i].groupName);
                         status = EEXIST;
                         break;
                     }
@@ -688,37 +688,41 @@ static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 switch (control)
                 {
                     case '$':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) appears to have a password set", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set", 
+                            user->username, user->userId, user->groupId);
                         break;
 
                     case '!':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) account is locked", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) account is locked", 
+                            user->username, user->userId, user->groupId);
                         status = USER_ACCOUNT_LOCKED;
                         break;
 
                     case '*':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%d) cannot login with password", user->username, user->userId);
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) cannot login with password", 
+                            user->username, user->userId, user->groupId);
                         status = USER_CANNOT_LOGIN;
                         break;
 
                     case ':':
                     default:
-                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%d) not found to have a password set ('%c')", user->username, user->userId, control);
+                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')", 
+                            user->username, user->userId, user->groupId, control);
                         status = ENOENT;
                 }
             }
             else
             {
-                OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) returned no data, cannot check if user '%s' (%d) has a password set",
-                    command, user->username, user->userId);
+                OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) returned no data, cannot check if user '%s' (%u, %u) has a password set",
+                    command, user->username, user->userId, user->groupId);
                 status = ENOENT;    
             } 
 
         }
         else
         {
-            OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) failed with %d, cannot check if user '%s' (%d) has a password set",
-                command, status, user->username, user->userId);
+            OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) failed with %d, cannot check if user '%s' (%u, %u) has a password set",
+                command, status, user->username, user->userId, user->groupId);
         }
 
         FREE_MEMORY(textResult);
@@ -741,7 +745,8 @@ int CheckAllUsersHavePasswordsSet(void* log)
             {
                 continue;
             }
-            else if ((0 != (_status = CheckUserHasPassword(&userList[i], log))) && (USER_ACCOUNT_LOCKED != _status) && (USER_CANNOT_LOGIN != _status) && (0 == status))
+            else if ((0 != (_status = CheckUserHasPassword(&userList[i], log))) && 
+                (USER_ACCOUNT_LOCKED != _status) && (USER_CANNOT_LOGIN != _status) && (0 == status))
             {
                 status = _status;
             }
@@ -774,7 +779,8 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
         {
             if (strcmp(userList[i].username, g_root) && (0 == userList[i].userId))
             {
-                OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%d) fails this check", userList[i].username, userList[i].userId);
+                OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%u, %u) fails this check", 
+                    userList[i].username, userList[i].userId, user->groupId);
                 status = EACCES;
             }
         }
@@ -865,7 +871,7 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
         {
             if (strcmp(groupList[i].groupName, g_root) && (0 == groupList[i].groupId))
             {
-                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: group '%s' has GID 0", groupList[i].groupName);
+                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: root has GID 0");
                 status = EACCES;
             }
         }
@@ -898,8 +904,8 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
             }
             else if ((NULL != userList[i].home) && (false == DirectoryExists(userList[i].home)))
             {
-                OsConfigLogError(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%d) home directory '%s' not found or is not a directory", 
-                    userList[i].username, userList[i].userId, userList[i].home);
+                OsConfigLogError(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%u, %u) home directory '%s' not found or is not a directory", 
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 status = ENOENT;
             }
         }
