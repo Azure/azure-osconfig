@@ -4,7 +4,11 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
-//const char* commandTemplate = "sudo cat /etc/users | grep %s";
+#define MAX_GROUPS_USER_CAN_BE_IN 16
+#define MAX_SHADOW_LINE_LENGTH 1024
+
+#define USER_ACCOUNT_LOCKED -1
+#define USER_CANNOT_LOGIN -2
 
 static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
@@ -193,8 +197,6 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
         FREE_MEMORY(*groupList);
     }
 }
-
-#define MAX_GROUPS_USER_CAN_BE_IN 16
 
 int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
@@ -652,16 +654,11 @@ static bool NoLoginUser(SIMPLIFIED_USER* user)
         (0 == strcmp(user->shell, g_olderNoLoginShell))));
 }
 
-#define USER_ACCOUNT_LOCKED -1
-#define USER_CANNOT_LOGIN -2
-
-#define MAXIMUM_LINE_LENGTH 1024
-
 static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
     char* commandTemplate = "cat /etc/shadow | grep %s";
 
-    char command[MAXIMUM_LINE_LENGTH] = {0};
+    char command[MAX_SHADOW_LINE_LENGTH] = {0};
     char* textResult = NULL;
     size_t offset = 0;
     char control = 0;
