@@ -232,7 +232,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (uid: %u)) is in %d groups", user->username, user->groupId, numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups", user->username, user->groupId, numberOfGroups);
         }
 
         for (i = 0; i < numberOfGroups; i++)
@@ -257,8 +257,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
                     if (IsFullLoggingEnabled())
                     {
-                        OsConfigLogInfo(log, "EnumerateUserGroups(user[%d] '%s' (%u): group name '%s', gid %u", 
-                            user->username, i, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
+                        OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", 
+                            user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
                     }
                 }
                 else
@@ -780,7 +780,7 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
             if (strcmp(userList[i].username, g_root) && (0 == userList[i].userId))
             {
                 OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%u, %u) fails this check", 
-                    userList[i].username, userList[i].userId, user->groupId);
+                    userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
         }
