@@ -70,8 +70,6 @@ int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
-
-bool CharacterFoundInFile(const char* fileName, char what);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 
