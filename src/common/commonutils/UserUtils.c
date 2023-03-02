@@ -4,11 +4,9 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
-#define MAX_GROUPS_USER_CAN_BE_IN 16
-#define MAX_SHADOW_LINE_LENGTH 1024
+#include <shadow.h>
 
-#define USER_ACCOUNT_LOCKED -1
-#define USER_CANNOT_LOGIN -2
+#define MAX_GROUPS_USER_CAN_BE_IN 16
 
 static const char* g_root = "root";
 static const char* g_passwdFile = "/etc/passwd";
@@ -113,6 +111,131 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     return status;
 }
 
+static bool NoLoginUser(SIMPLIFIED_USER* user)
+{
+    return (user && user->shell &&
+        ((0 == strcmp(user->shell, g_noLoginShell)) ||
+        (0 == strcmp(user->shell, g_otherNoLoginShell)) ||
+        (0 == strcmp(user->shell, g_olderNoLoginShell))));
+}
+
+static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
+{
+    struct spwd* shadowEntry = NULL;
+    char control = 0;
+    int status = 0;
+
+    if ((NULL == user) || (NULL == user->username))
+    {
+        OsConfigLogError(log, "CheckUserLoginAndPassword: invalid argument");
+        return EINVAL;
+    }
+
+    user->isLocked = false;
+    user->noLogin = false;
+    user->cannotLogin = false;
+    user->hasPassword = false;
+    user->passwordEncryptionType = unknown;
+    user->passwordLastChange = 0;
+    user->passwordMinDaysBetweenChanges = 0;
+    user->passwordMaxDaysBetweenChanges = 0;
+    user->passwordWarnDaysBeforeExpiry = 0;
+    user->passwordDaysAfterExpiry = 0;
+    user->expirationDate = 0;
+
+    if (NoLoginUser(user))
+    {
+        user->noLogin = true;
+        return 0;
+    }
+
+    setspent();
+
+    if (NULL != (shadowEntry = getspnam(user->username)))
+    {
+        control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
+
+        switch (control)
+        {
+            case '$':
+                switch (shadowEntry->sp_pwdp[1])
+                {
+                case '1':
+                    user->passwordEncryptionType = md5;
+                    break;
+
+                case '2':
+                    switch (shadowEntry->sp_pwdp[2])
+                    {
+                    case 'a':
+                        user->passwordEncryptionType = blowfish;
+                        break;
+
+                    case 'y':
+                        user->passwordEncryptionType = eksBlowfish;
+                        break;
+
+                    default:
+                        user->passwordEncryptionType = unknownBlowfish;
+                    }
+                    break;
+
+                case '5':
+                    user->passwordEncryptionType = sha256;
+                    break;
+
+                case '6':
+                    user->passwordEncryptionType = sha512;
+                    break;
+
+                default:
+                    user->passwordEncryptionType = unknown;
+                }
+
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
+                    user->username, user->userId, user->groupId, user->passwordEncryptionType);
+
+                user->hasPassword = true;
+                user->passwordLastChange = shadowEntry->sp_lstchg;
+                user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
+                user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
+                user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
+                user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
+                user->expirationDate = shadowEntry->sp_expire;
+                break;
+
+            case '!':
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
+                    user->username, user->userId, user->groupId);
+                user->isLocked = true;
+                user->hasPassword = false;
+                break;
+
+            case '*':
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
+                    user->username, user->userId, user->groupId);
+                user->cannotLogin = true;
+                user->hasPassword = false;
+                break;
+
+            case ':':
+            default:
+                OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                    user->username, user->userId, user->groupId, control);
+                user->hasPassword = false;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckUserLoginAndPassword: getspnam(%s) failed (%d)", user->username, errno);
+        status = ENOENT;
+    }
+
+    endspent();
+
+    return status;
+}
+
 int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
 {
     struct passwd* userEntry = NULL;
@@ -143,6 +266,11 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
                 if (0 != (status = CopyUserEntry(&((*userList)[i]), userEntry, log)))
                 {
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
+                    break;
+                }
+                else if (0 != (status = CheckUserLoginAndPassword(&((*userList)[i]), log)))
+                {
+                    OsConfigLogError(log, "EnumerateUsers: failed checking user's login and password (%d)", status);
                     break;
                 }
 
@@ -646,91 +774,6 @@ int CheckRootGroupExists(void* log)
     return status;
 }
 
-static bool NoLoginUser(SIMPLIFIED_USER* user)
-{
-    return (user && user->shell && 
-        ((0 == strcmp(user->shell, g_noLoginShell)) || 
-        (0 == strcmp(user->shell, g_otherNoLoginShell)) || 
-        (0 == strcmp(user->shell, g_olderNoLoginShell))));
-}
-
-static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
-{
-    char* commandTemplate = "cat /etc/shadow | grep %s";
-
-    char command[MAX_SHADOW_LINE_LENGTH] = {0};
-    char* textResult = NULL;
-    size_t offset = 0;
-    char control = 0;
-    int status = 0;
-
-    if ((NULL == user) || (NULL == user->username))
-    {
-        OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
-        return EINVAL;
-    }
-
-    // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
-    // appear to have a bug and not always return the shadow entries for all users so instead we do this manually
-
-    if (false == NoLoginUser(user))
-    {
-        snprintf(command, sizeof(command), commandTemplate, user->username);
-        
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log)))
-        {
-            offset = strlen(user->username) + 1;
-
-            if (NULL != textResult)
-            {
-                control = textResult[offset];
-                
-                switch (control)
-                {
-                    case '$':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set", 
-                            user->username, user->userId, user->groupId);
-                        break;
-
-                    case '!':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) account is locked", 
-                            user->username, user->userId, user->groupId);
-                        status = USER_ACCOUNT_LOCKED;
-                        break;
-
-                    case '*':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) cannot login with password", 
-                            user->username, user->userId, user->groupId);
-                        status = USER_CANNOT_LOGIN;
-                        break;
-
-                    case ':':
-                    default:
-                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')", 
-                            user->username, user->userId, user->groupId, control);
-                        status = ENOENT;
-                }
-            }
-            else
-            {
-                OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) returned no data, cannot check if user '%s' (%u, %u) has a password set",
-                    command, user->username, user->userId, user->groupId);
-                status = ENOENT;    
-            } 
-
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) failed with %d, cannot check if user '%s' (%u, %u) has a password set",
-                command, status, user->username, user->userId, user->groupId);
-        }
-
-        FREE_MEMORY(textResult);
-    }
-
-    return status;
-} 
-
 int CheckAllUsersHavePasswordsSet(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -741,12 +784,11 @@ int CheckAllUsersHavePasswordsSet(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (NoLoginUser(&userList[i]))
+            if (userList[i].noLogin)
             {
                 continue;
             }
-            else if ((0 != (_status = CheckUserHasPassword(&userList[i], log))) && 
-                (USER_ACCOUNT_LOCKED != _status) && (USER_CANNOT_LOGIN != _status) && (0 == status))
+            else if ((false == userList[i].hasPassword) && (0 == status))
             {
                 status = _status;
             }
@@ -898,7 +940,7 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (NoLoginUser(&userList[i]))
+            if (userList[i].noLogin)
             {
                 continue;
             }
@@ -964,13 +1006,13 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (NoLoginUser(&userList[i]))
+            if (userList[i].noLogin)
             {
                 continue;
             }
             else if (userList[i].home) 
             {
-                if ((USER_CANNOT_LOGIN == CheckUserHasPassword(&userList[i], log)) && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
+                if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) cannot login and their assigned home directory '%s' is owned by root",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
