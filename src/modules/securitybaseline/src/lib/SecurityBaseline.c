@@ -85,6 +85,13 @@ static const char* g_auditEnsureDefaultRootAccountGroupIsGidZero = "auditEnsureD
 static const char* g_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
 static const char* g_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
 static const char* g_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
+static const char* g_auditEnsureRestrictedUserHomeDirectories = "auditEnsureRestrictedUserHomeDirectories";
+static const char* g_auditEnsurePasswordHashingAlgorithm = "auditEnsurePasswordHashingAlgorithm";
+static const char* g_auditEnsureMinDaysBetweenPasswordChanges = "auditEnsureMinDaysBetweenPasswordChanges";
+static const char* g_auditEnsureInactivePasswordLockPeriod = "auditEnsureInactivePasswordLockPeriod";
+static const char* g_auditEnsurePasswordExpiration = "auditEnsurePasswordExpiration";
+static const char* g_auditEnsurePasswordExpirationWarning = "auditEnsurePasswordExpirationWarning";
+static const char* g_auditEnsureSystemAccountsAreNonLogin = "auditEnsureSystemAccountsAreNonLogin";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -528,6 +535,41 @@ static int AuditEnsureAllUsersHomeDirectoriesExist(void)
 static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
     return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureRestrictedUserHomeDirectories(void)
+{
+    return CheckEnsureRestrictedUserHomeDirectories(SecurityBaselineGetLog());
+}
+
+static int AuditEnsurePasswordHashingAlgorithm(void)
+{
+    return CheckEnsurePasswordHashingAlgorithm(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureMinDaysBetweenPasswordChanges(void)
+{
+    return CheckEnsureMinDaysBetweenPasswordChanges(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureInactivePasswordLockPeriod(void)
+{
+    return CheckEnsureInactivePasswordLockPeriod(SecurityBaselineGetLog());
+}
+
+static int AuditEnsurePasswordExpiration(void)
+{
+    return CheckEnsurePasswordExpiration(SecurityBaselineGetLog());
+}
+
+static int AuditEnsurePasswordExpirationWarning(void)
+{
+    return CheckEnsurePasswordExpirationWarning(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureSystemAccountsAreNonLogin(void)
+{
+    return CheckEnsureSystemAccountsAreNonLogin(SecurityBaselineGetLog());
 }
 
 int AuditSecurityBaseline(void)

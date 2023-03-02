@@ -93,6 +93,13 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
         const char* m_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
         const char* m_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
+        const char* m_auditEnsureRestrictedUserHomeDirectories = "auditEnsureRestrictedUserHomeDirectories";
+        const char* m_auditEnsurePasswordHashingAlgorithm = "auditEnsurePasswordHashingAlgorithm";
+        const char* m_auditEnsureMinDaysBetweenPasswordChanges = "auditEnsureMinDaysBetweenPasswordChanges";
+        const char* m_auditEnsureInactivePasswordLockPeriod = "auditEnsureInactivePasswordLockPeriod";
+        const char* m_auditEnsurePasswordExpiration = "auditEnsurePasswordExpiration";
+        const char* m_auditEnsurePasswordExpirationWarning = "auditEnsurePasswordExpirationWarning";
+        const char* m_auditEnsureSystemAccountsAreNonLogin = "auditEnsureSystemAccountsAreNonLogin";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -357,7 +364,14 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureDefaultRootAccountGroupIsGidZero,
         m_auditEnsureRootIsOnlyUidZeroAccount,
         m_auditEnsureAllUsersHomeDirectoriesExist,
-        m_auditEnsureUsersOwnTheirHomeDirectories
+        m_auditEnsureUsersOwnTheirHomeDirectories,
+        m_auditEnsureRestrictedUserHomeDirectories,
+        m_auditEnsurePasswordHashingAlgorithm,
+        m_auditEnsureMinDaysBetweenPasswordChanges,
+        m_auditEnsureInactivePasswordLockPeriod,
+        m_auditEnsurePasswordExpiration,
+        m_auditEnsurePasswordExpirationWarning,
+        m_auditEnsureSystemAccountsAreNonLogin
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -451,7 +465,14 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureDefaultRootAccountGroupIsGidZero,
         m_auditEnsureRootIsOnlyUidZeroAccount,
         m_auditEnsureAllUsersHomeDirectoriesExist,
-        m_auditEnsureUsersOwnTheirHomeDirectories
+        m_auditEnsureUsersOwnTheirHomeDirectories,
+        m_auditEnsureRestrictedUserHomeDirectories,
+        m_auditEnsurePasswordHashingAlgorithm,
+        m_auditEnsureMinDaysBetweenPasswordChanges,
+        m_auditEnsureInactivePasswordLockPeriod,
+        m_auditEnsurePasswordExpiration,
+        m_auditEnsurePasswordExpirationWarning,
+        m_auditEnsureSystemAccountsAreNonLogin
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

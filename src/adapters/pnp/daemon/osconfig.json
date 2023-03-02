@@ -422,6 +422,34 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRestrictedUserHomeDirectories"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordHashingAlgorithm"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureMinDaysBetweenPasswordChanges"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureInactivePasswordLockPeriod"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordExpiration"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordExpirationWarning"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditSecurityBaseline"
     },
     {

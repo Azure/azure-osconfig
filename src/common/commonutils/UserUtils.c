@@ -9,10 +9,6 @@
 #define MAX_GROUPS_USER_CAN_BE_IN 16
 
 static const char* g_root = "root";
-static const char* g_passwdFile = "/etc/passwd";
-static const char* g_noLoginShell = "/usr/sbin/nologin";
-static const char* g_otherNoLoginShell = "/sbin/nologin";
-static const char* g_olderNoLoginShell = "/bin/false";
 
 static void EmptyUserEntry(SIMPLIFIED_USER* target)
 {
@@ -113,14 +109,16 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
 
 static bool NoLoginUser(SIMPLIFIED_USER* user)
 {
-    return (user && user->shell &&
-        ((0 == strcmp(user->shell, g_noLoginShell)) ||
-        (0 == strcmp(user->shell, g_otherNoLoginShell)) ||
-        (0 == strcmp(user->shell, g_olderNoLoginShell))));
+    
+    return (user && 
 }
 
 static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
 {
+    const char* noLoginShell = "/usr/sbin/nologin";
+    const char* otherNoLoginShell = "/sbin/nologin";
+    const char* olderNoLoginShell = "/bin/false";
+
     struct spwd* shadowEntry = NULL;
     char control = 0;
     int status = 0;
@@ -143,101 +141,104 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
     user->passwordDaysAfterExpiry = 0;
     user->expirationDate = 0;
 
-    if (NoLoginUser(user))
+    if ((user->shell && ((0 == strcmp(user->shell, noLoginShell)) || (0 == strcmp(user->shell, otherNoLoginShell)) || (0 == strcmp(user->shell, olderNoLoginShell))))
     {
         user->noLogin = true;
-        return 0;
-    }
-
-    setspent();
-
-    if (NULL != (shadowEntry = getspnam(user->username)))
-    {
-        control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
-
-        switch (control)
-        {
-            case '$':
-                switch (shadowEntry->sp_pwdp[1])
-                {
-                case '1':
-                    user->passwordEncryptionType = md5;
-                    break;
-
-                case '2':
-                    switch (shadowEntry->sp_pwdp[2])
-                    {
-                    case 'a':
-                        user->passwordEncryptionType = blowfish;
-                        break;
-
-                    case 'y':
-                        user->passwordEncryptionType = eksBlowfish;
-                        break;
-
-                    default:
-                        user->passwordEncryptionType = unknownBlowfish;
-                    }
-                    break;
-
-                case '5':
-                    user->passwordEncryptionType = sha256;
-                    break;
-
-                case '6':
-                    user->passwordEncryptionType = sha512;
-                    break;
-
-                default:
-                    user->passwordEncryptionType = unknown;
-                }
-
-                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
-                    user->username, user->userId, user->groupId, user->passwordEncryptionType);
-
-                user->hasPassword = true;
-                user->passwordLastChange = shadowEntry->sp_lstchg;
-                user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
-                user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
-                user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
-                user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
-                user->expirationDate = shadowEntry->sp_expire;
-                break;
-
-            case '!':
-                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
-                    user->username, user->userId, user->groupId);
-                user->isLocked = true;
-                user->hasPassword = false;
-                break;
-
-            case '*':
-                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
-                    user->username, user->userId, user->groupId);
-                user->cannotLogin = true;
-                user->hasPassword = false;
-                break;
-
-            case ':':
-            default:
-                OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
-                    user->username, user->userId, user->groupId, control);
-                user->hasPassword = false;
-        }
     }
     else
     {
-        OsConfigLogError(log, "CheckUserLoginAndPassword: getspnam(%s) failed (%d)", user->username, errno);
-        status = ENOENT;
-    }
+        setspent();
 
-    endspent();
+        if (NULL != (shadowEntry = getspnam(user->username)))
+        {
+            control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
+
+            switch (control)
+            {
+                case '$':
+                    switch (shadowEntry->sp_pwdp[1])
+                    {
+                        case '1':
+                            user->passwordEncryptionType = md5;
+                            break;
+
+                        case '2':
+                            switch (shadowEntry->sp_pwdp[2])
+                            {
+                            case 'a':
+                                user->passwordEncryptionType = blowfish;
+                                break;
+
+                            case 'y':
+                                user->passwordEncryptionType = eksBlowfish;
+                                break;
+
+                            default:
+                                user->passwordEncryptionType = unknownBlowfish;
+                            }
+                            break;
+
+                        case '5':
+                            user->passwordEncryptionType = sha256;
+                            break;
+
+                        case '6':
+                            user->passwordEncryptionType = sha512;
+                            break;
+
+                        default:
+                            user->passwordEncryptionType = unknown;
+                    }
+
+                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
+                        user->username, user->userId, user->groupId, user->passwordEncryptionType);
+
+                    user->hasPassword = true;
+                    user->passwordLastChange = shadowEntry->sp_lstchg;
+                    user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
+                    user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
+                    user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
+                    user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
+                    user->expirationDate = shadowEntry->sp_expire;
+                    break;
+
+                case '!':
+                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
+                        user->username, user->userId, user->groupId);
+                    user->isLocked = true;
+                    user->hasPassword = false;
+                    break;
+
+                case '*':
+                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
+                        user->username, user->userId, user->groupId);
+                    user->cannotLogin = true;
+                    user->hasPassword = false;
+                    break;
+
+                case ':':
+                default:
+                    OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                        user->username, user->userId, user->groupId, control);
+                    user->hasPassword = false;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckUserLoginAndPassword: getspnam(%s) failed (%d)", user->username, errno);
+            status = ENOENT;
+        }
+
+        endspent();
+    }
 
     return status;
 }
 
 int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
 {
+    const char* passwdFile = "/etc/passwd";
+
     struct passwd* userEntry = NULL;
     unsigned int i = 0;
     size_t listSize = 0;
@@ -252,7 +253,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
     *userList = NULL;
     *size = 0;
 
-    if (0 != (*size = GetNumberOfLinesInFile(g_passwdFile)))
+    if (0 != (*size = GetNumberOfLinesInFile(passwdFile)))
     {
         listSize = (*size) * sizeof(SIMPLIFIED_USER);
         if (NULL != (*userList = malloc(listSize)))
@@ -288,7 +289,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
     }
     else
     {
-        OsConfigLogError(log, "EnumerateUsers: cannot read %s", g_passwdFile);
+        OsConfigLogError(log, "EnumerateUsers: cannot read %s", passwdFile);
         status = EPERM;
     }
 
