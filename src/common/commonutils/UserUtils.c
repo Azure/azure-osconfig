@@ -4,6 +4,8 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
+#include <shadow.h>
+
 #define MAX_GROUPS_USER_CAN_BE_IN 16
 #define MAX_SHADOW_LINE_LENGTH 1024
 
@@ -654,13 +656,29 @@ static bool NoLoginUser(SIMPLIFIED_USER* user)
         (0 == strcmp(user->shell, g_olderNoLoginShell))));
 }
 
+/*
+struct spwd {
+    char *sp_namp;     // Login name 
+    char *sp_pwdp;     // Encrypted password 
+    long  sp_lstchg;   // Date of last change
+                       // (measured in days since
+                       // 1970-01-01 00:00:00 +0000 (UTC)) 
+    long  sp_min;      // Min # of days between changes 
+    long  sp_max;      // Max # of days between changes 
+    long  sp_warn;     // # of days before password expires
+                       // to warn user to change it 
+    long  sp_inact;    // # of days after password expires
+                       // until account is disabled 
+    long  sp_expire;   // Date when account expires
+                       // (measured in days since
+                       // 1970-01-01 00:00:00 +0000 (UTC)) 
+    unsigned long sp_flag;  // Reserved 
+};
+*/
+
 static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
-    char* commandTemplate = "cat /etc/shadow | grep %s";
-
-    char command[MAX_SHADOW_LINE_LENGTH] = {0};
-    char* textResult = NULL;
-    size_t offset = 0;
+    struct spwd* shadowEntry = NULL;
     char control = 0;
     int status = 0;
 
@@ -668,65 +686,51 @@ static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
     {
         OsConfigLogError(log, "CheckUserHasPassword: invalid argument");
         return EINVAL;
-    }
-
-    // Available APIs that return passwd structures from files such as /etc/shadow (fgetpwent and fgetpwent_r)
-    // appear to have a bug and not always return the shadow entries for all users so instead we do this manually
-
-    if (false == NoLoginUser(user))
+    } 
+    else if (NoLoginUser(user))
     {
-        snprintf(command, sizeof(command), commandTemplate, user->username);
-        
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log)))
-        {
-            offset = strlen(user->username) + 1;
-
-            if (NULL != textResult)
-            {
-                control = textResult[offset];
-                
-                switch (control)
-                {
-                    case '$':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set", 
-                            user->username, user->userId, user->groupId);
-                        break;
-
-                    case '!':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) account is locked", 
-                            user->username, user->userId, user->groupId);
-                        status = USER_ACCOUNT_LOCKED;
-                        break;
-
-                    case '*':
-                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) cannot login with password", 
-                            user->username, user->userId, user->groupId);
-                        status = USER_CANNOT_LOGIN;
-                        break;
-
-                    case ':':
-                    default:
-                        OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')", 
-                            user->username, user->userId, user->groupId, control);
-                        status = ENOENT;
-                }
-            }
-            else
-            {
-                OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) returned no data, cannot check if user '%s' (%u, %u) has a password set",
-                    command, user->username, user->userId, user->groupId);
-                status = ENOENT;    
-            } 
-
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckUserHasPassword: ExecuteCommand(%s) failed with %d, cannot check if user '%s' (%u, %u) has a password set",
-                command, status, user->username, user->userId, user->groupId);
-        }
-
-        FREE_MEMORY(textResult);
+        return 0;
     }
+
+    setspent();
+
+    if (NULL != (shadowEntry = getspnam(user->username)))
+    {
+        control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
+
+        switch (control)
+        {
+            case '$':
+                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set",
+                    user->username, user->userId, user->groupId);
+                break;
+
+            case '!':
+                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) account is locked",
+                    user->username, user->userId, user->groupId);
+                status = USER_ACCOUNT_LOCKED;
+                break;
+
+            case '*':
+                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) cannot login with password",
+                    user->username, user->userId, user->groupId);
+                status = USER_CANNOT_LOGIN;
+                break;
+
+            case ':':
+            default:
+                OsConfigLogError(log, "CheckUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                    user->username, user->userId, user->groupId, control);
+                status = ENOENT;
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckUserHasPassword: getspnam(%s) failed (%d)", user->username, errno);
+        status = ENOENT;
+    }
+        
+    endspent();
 
     return status;
 } 
