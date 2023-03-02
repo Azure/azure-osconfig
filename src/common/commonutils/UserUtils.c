@@ -122,7 +122,6 @@ static bool NoLoginUser(SIMPLIFIED_USER* user)
 static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
 {
     struct spwd* shadowEntry = NULL;
-    char* encryptionType = NULL;
     char control = 0;
     int status = 0;
 
@@ -136,6 +135,7 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
     user->noLogin = false;
     user->cannotLogin = false;
     user->hasPassword = false;
+    user->passwordEncryptionType = unknown;
     user->passwordLastChange = 0;
     user->passwordMinDaysBetweenChanges = 0;
     user->passwordMaxDaysBetweenChanges = 0;
@@ -157,75 +157,75 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
 
         switch (control)
         {
-        case '$':
-            switch (shadowEntry->sp_pwdp[1])
-            {
-            case '1':
-                user->passwordEncryptionType = md5;
-                break;
-
-            case '2':
-                switch (shadowEntry->sp_pwdp[2])
+            case '$':
+                switch (shadowEntry->sp_pwdp[1])
                 {
-                case 'a':
-                    user->passwordEncryptionType = blowfish;
+                case '1':
+                    user->passwordEncryptionType = md5;
                     break;
 
-                case 'y':
-                    user->passwordEncryptionType = eksBlowfish;
+                case '2':
+                    switch (shadowEntry->sp_pwdp[2])
+                    {
+                    case 'a':
+                        user->passwordEncryptionType = blowfish;
+                        break;
+
+                    case 'y':
+                        user->passwordEncryptionType = eksBlowfish;
+                        break;
+
+                    default:
+                        user->passwordEncryptionType = unknownBlowfish;
+                    }
+                    break;
+
+                case '5':
+                    user->passwordEncryptionType = sha256;
+                    break;
+
+                case '6':
+                    user->passwordEncryptionType = sha512;
                     break;
 
                 default:
-                    user->passwordEncryptionType = unknownBlowfish;
+                    user->passwordEncryptionType = unknown;
                 }
+
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
+                    user->username, user->userId, user->groupId, user->passwordEncryptionType);
+
+                user->hasPassword = true;
+                user->passwordLastChange = shadowEntry->sp_lstchg;
+                user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
+                user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
+                user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
+                user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
+                user->expirationDate = shadowEntry->sp_expire;
                 break;
 
-            case '5':
-                user->passwordEncryptionType = sha256;
+            case '!':
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
+                    user->username, user->userId, user->groupId);
+                user->isLocked = true;
+                user->hasPassword = false;
+                status = ENOENT;
                 break;
 
-            case '6':
-                user->passwordEncryptionType = sha512;
+            case '*':
+                OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
+                    user->username, user->userId, user->groupId);
+                user->cannotLogin = true;
+                user->hasPassword = false;
+                status = ENOENT;
                 break;
 
+            case ':':
             default:
-                user->passwordEncryptionType = unknown;
-            }
-
-            OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
-                user->username, user->userId, user->groupId, user->passwordEncryptionType);
-
-            user->hasPassword = true;
-            user->passwordLastChange = shadowEntry->sp_lstchg;
-            user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
-            user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
-            user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
-            user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
-            user->expirationDate = shadowEntry->sp_expire;
-            break;
-
-        case '!':
-            OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
-                user->username, user->userId, user->groupId);
-            user->isLocked = true;
-            user->hasPassword = false;
-            status = ENOENT;
-            break;
-
-        case '*':
-            OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
-                user->username, user->userId, user->groupId);
-            user->cannotLogin = true;
-            user->hasPassword = false;
-            status = ENOENT;
-            break;
-
-        case ':':
-        default:
-            OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
-                user->username, user->userId, user->groupId, control);
-            user->hasPassword = false;
-            status = ENOENT;
+                OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                    user->username, user->userId, user->groupId, control);
+                user->hasPassword = false;
+                status = ENOENT;
         }
     }
     else
