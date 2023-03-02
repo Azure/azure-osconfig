@@ -982,7 +982,7 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
+                    OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     status = ENOENT;
                 }
