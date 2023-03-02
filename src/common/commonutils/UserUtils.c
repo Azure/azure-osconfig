@@ -677,6 +677,13 @@ struct spwd {
 
 static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
+    const char* md5 = "$1$"; //MD5
+    "$2a$" //Blowfish
+    "$2y$" //Eksblowfish
+    "$5$" //SHA-256
+    "$6$" //SHA-512
+
+    
     struct spwd* shadowEntry = NULL;
     char control = 0;
     int status = 0;
@@ -702,6 +709,46 @@ static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
             case '$':
                 OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) appears to have a password set",
                     user->username, user->userId, user->groupId);
+                switch (shadowEntry->sp_pwdp[1])
+                {
+                    case '1':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is MD5",
+                            user->username, user->userId, user->groupId);
+                        break;
+
+                    case '2':
+                        switch (shadowEntry->sp_pwdp[2])
+                        {
+                            case 'a':
+                                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is Blowfish",
+                                    user->username, user->userId, user->groupId);
+                                break;
+
+                            case 'y':
+                                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is Eksblowfish",
+                                    user->username, user->userId, user->groupId);
+                                break;
+
+                            default:
+                                OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is Blowfish related but unknown",
+                                    user->username, user->userId, user->groupId);
+                        }
+                        break;
+
+                    case '5':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is SHA-256",
+                            user->username, user->userId, user->groupId);
+                        break;
+
+                    case '6':
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is SHA-512",
+                            user->username, user->userId, user->groupId);
+                        break;
+
+                    default:
+                        OsConfigLogInfo(log, "CheckUserHasPassword: user '%s' (%u, %u) password encryption type is unknown",
+                            user->username, user->userId, user->groupId);
+                }
                 break;
 
             case '!':
