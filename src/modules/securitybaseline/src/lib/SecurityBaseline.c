@@ -8,6 +8,7 @@
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
+#include <UserUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 
@@ -68,6 +69,22 @@ static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "
 static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+static const char* g_auditEnsureAllEtcPasswdGroupsExistInEtcGroup = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
+static const char* g_auditEnsureNoDuplicateUidsExist = "auditEnsureNoDuplicateUidsExist";
+static const char* g_auditEnsureNoDuplicateGidsExist = "auditEnsureNoDuplicateGidsExist";
+static const char* g_auditEnsureNoDuplicateUserNamesExist = "auditEnsureNoDuplicateUserNamesExist";
+static const char* g_auditEnsureNoDuplicateGroupsExist = "auditEnsureNoDuplicateGroupsExist";
+static const char* g_auditEnsureShadowGroupIsEmpty = "auditEnsureShadowGroupIsEmpty";
+static const char* g_auditEnsureRootGroupExists = "auditEnsureRootGroupExists";
+static const char* g_auditEnsureAllAccountsHavePasswords = "auditEnsureAllAccountsHavePasswords";
+static const char* g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcPasswd = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcShadow = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcGroup = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
+static const char* g_auditEnsureDefaultRootAccountGroupIsGidZero = "auditEnsureDefaultRootAccountGroupIsGidZero";
+static const char* g_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
+static const char* g_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
+static const char* g_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -433,6 +450,86 @@ static int AuditEnsureAuditdInstalled(void)
     return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog());
 }
 
+static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
+{
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoDuplicateUidsExist(void)
+{
+    return CheckNoDuplicateUidsExist(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoDuplicateGidsExist(void)
+{
+    return CheckNoDuplicateGidsExist(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoDuplicateUserNamesExist(void)
+{
+    return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoDuplicateGroupsExist(void)
+{
+    return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureShadowGroupIsEmpty(void)
+{
+    return CheckShadowGroupIsEmpty(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureRootGroupExists(void)
+{
+    return CheckRootGroupExists(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureAllAccountsHavePasswords(void)
+{
+    return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
+{
+    return CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
+{
+    return CheckNoLegacyPlusEntriesInEtcPasswd(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
+{
+    return CheckNoLegacyPlusEntriesInEtcShadow(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
+{
+    return CheckNoLegacyPlusEntriesInEtcGroup(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
+{
+    return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureRootIsOnlyUidZeroAccount(void)
+{
+    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureAllUsersHomeDirectoriesExist(void)
+{
+    return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureUsersOwnTheirHomeDirectories(void)
+{
+    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
+}
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -482,7 +579,23 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureSldapdNotInstalled()) &&
         (0 == AuditEnsureBind9NotInstalled()) &&
         (0 == AuditEnsureDovecotCoreNotInstalled()) &&
-        (0 == AuditEnsureAuditdInstalled())) ? 0 : ENOENT;
+        (0 == AuditEnsureAuditdInstalled()) &&
+        (0 == AuditEnsureAllEtcPasswdGroupsExistInEtcGroup()) &&
+        (0 == AuditEnsureNoDuplicateUidsExist()) &&
+        (0 == AuditEnsureNoDuplicateGidsExist()) &&
+        (0 == AuditEnsureNoDuplicateUserNamesExist()) &&
+        (0 == AuditEnsureNoDuplicateGroupsExist()) &&
+        (0 == AuditEnsureShadowGroupIsEmpty()) &&
+        (0 == AuditEnsureRootGroupExists()) &&
+        (0 == AuditEnsureAllAccountsHavePasswords()) &&
+        (0 == AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero()) &&
+        (0 == AuditEnsureNoLegacyPlusEntriesInEtcPasswd()) &&
+        (0 == AuditEnsureNoLegacyPlusEntriesInEtcShadow()) &&
+        (0 == AuditEnsureNoLegacyPlusEntriesInEtcGroup()) &&
+        (0 == AuditEnsureDefaultRootAccountGroupIsGidZero()) &&
+        (0 == AuditEnsureRootIsOnlyUidZeroAccount()) &&
+        (0 == AuditEnsureAllUsersHomeDirectoriesExist()) &&
+        (0 == AuditEnsureUsersOwnTheirHomeDirectories())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -993,6 +1106,70 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureAuditdInstalledObject))
         {
             result = AuditEnsureAuditdInstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroup))
+        {
+            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExist))
+        {
+            result = AuditEnsureNoDuplicateUidsExist() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExist))
+        {
+            result = AuditEnsureNoDuplicateGidsExist() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExist))
+        {
+            result = AuditEnsureNoDuplicateUserNamesExist() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExist))
+        {
+            result = AuditEnsureNoDuplicateGroupsExist() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmpty))
+        {
+            result = AuditEnsureShadowGroupIsEmpty() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRootGroupExists))
+        {
+            result = AuditEnsureRootGroupExists() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswords))
+        {
+            result = AuditEnsureAllAccountsHavePasswords() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero))
+        {
+            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswd))
+        {
+            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadow))
+        {
+            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroup))
+        {
+            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZero))
+        {
+            result = AuditEnsureDefaultRootAccountGroupIsGidZero() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccount))
+        {
+            result = AuditEnsureRootIsOnlyUidZeroAccount() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExist))
+        {
+            result = AuditEnsureAllUsersHomeDirectoriesExist() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectories))
+        {
+            result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
         }
         else
         {

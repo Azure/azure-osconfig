@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
+#include <UserUtils.h>
 
 using namespace std;
 
@@ -490,6 +491,16 @@ TEST_F(CommonUtilsTest, FileExists)
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_FALSE(FileExists(m_path));
     EXPECT_FALSE(FileExists("This file does not exist"));
+}
+
+TEST_F(CommonUtilsTest, DirectoryExists)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_FALSE(DirectoryExists(m_path));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_FALSE(DirectoryExists(m_path));
+    EXPECT_FALSE(DirectoryExists("This directory does not exist"));
+    EXPECT_TRUE(DirectoryExists("/etc"));
 }
 
 TEST_F(CommonUtilsTest, ValidClientName)
@@ -1239,4 +1250,108 @@ TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
     EXPECT_EQ(0, InstallPackage("rolldice", nullptr));
     EXPECT_EQ(0, CheckPackageInstalled("rolldice", nullptr));
     EXPECT_EQ(0, UninstallPackage("rolldice", nullptr));
+}
+
+TEST_F(CommonUtilsTest, GetNumberOfLinesInFile)
+{
+    EXPECT_EQ(0, GetNumberOfLinesInFile(nullptr));
+    EXPECT_EQ(0, GetNumberOfLinesInFile("~file_that_does_not_exist"));
+    EXPECT_EQ(GetNumberOfLinesInFile("/etc/passwd"), GetNumberOfLinesInFile("/etc/shadow"));
+}
+
+TEST_F(CommonUtilsTest, CharacterFoundInFile)
+{
+    EXPECT_FALSE(CharacterFoundInFile(nullptr, 0));
+    EXPECT_FALSE(CharacterFoundInFile("~file_that_does_not_exist", 0));
+    EXPECT_TRUE(CharacterFoundInFile("/etc/passwd", ':'));
+}
+
+TEST_F(CommonUtilsTest, EnumerateUsersAndTheirGroups)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0;
+
+    struct SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+
+    EXPECT_EQ(0, EnumerateUsers(&userList, &userListSize, nullptr));
+    EXPECT_EQ(userListSize, GetNumberOfLinesInFile("/etc/passwd"));
+    EXPECT_NE(nullptr, userList);
+
+    for (unsigned int i = 0; i < userListSize; i++)
+    {
+        EXPECT_NE(nullptr, userList[i].username);
+        
+        EXPECT_EQ(0, EnumerateUserGroups(&userList[i], &groupList, &groupListSize, nullptr));
+        EXPECT_NE(nullptr, groupList);
+        
+        for (unsigned int j = 0; j < groupListSize; j++)
+        {
+            EXPECT_NE(nullptr, groupList[j].groupName);
+        }
+        
+        FreeGroupList(&groupList, groupListSize);
+        EXPECT_EQ(nullptr, groupList);
+    }
+    
+    FreeUsersList(&userList, userListSize);
+    EXPECT_EQ(nullptr, userList);
+}
+
+TEST_F(CommonUtilsTest, EnumerateAllGroups)
+{
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int groupListSize = 0;
+
+    EXPECT_EQ(0, EnumerateAllGroups(&groupList, &groupListSize, nullptr));
+    EXPECT_EQ(groupListSize, GetNumberOfLinesInFile("/etc/group"));
+    EXPECT_NE(nullptr, groupList);
+
+    for (unsigned int i = 0; i < groupListSize; i++)
+    {
+        EXPECT_NE(nullptr, groupList[i].groupName);
+    }
+
+    FreeGroupList(&groupList, groupListSize);
+    EXPECT_EQ(nullptr, groupList);
+}
+
+TEST_F(CommonUtilsTest, CheckUsersAndGroups)
+{
+    EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
+    EXPECT_EQ(0, CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(nullptr));
+    EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
+{
+    EXPECT_EQ(0, CheckNoDuplicateUidsExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGidsExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateUserNamesExist(nullptr));
+    EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckNoPlusEntries)
+{
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcPasswd(nullptr));
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcShadow(nullptr));
+    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcGroup(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
+{
+    EXPECT_EQ(0, CheckRootGroupExists(nullptr));
+    EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
+    EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
+{
+    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
+{
+    EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
+    EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
 }

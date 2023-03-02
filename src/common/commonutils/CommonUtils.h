@@ -57,6 +57,7 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
+bool DirectoryExists(const char* name);
 
 int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
@@ -66,6 +67,9 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 int CheckPackageInstalled(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);
 int UninstallPackage(const char* packageName, void* log);
+
+unsigned int GetNumberOfLinesInFile(const char* fileName);
+bool CharacterFoundInFile(const char* fileName, char what);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

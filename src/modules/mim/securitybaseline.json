@@ -307,6 +307,102 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoDuplicateUidsExist",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoDuplicateGidsExist",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoDuplicateUserNamesExist",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoDuplicateGroupsExist",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureShadowGroupIsEmpty",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureRootGroupExists",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAllAccountsHavePasswords",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoLegacyPlusEntriesInEtcPasswd",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoLegacyPlusEntriesInEtcShadow",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureNoLegacyPlusEntriesInEtcGroup",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDefaultRootAccountGroupIsGidZero",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureRootIsOnlyUidZeroAccount",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAllUsersHomeDirectoriesExist",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureUsersOwnTheirHomeDirectories",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,

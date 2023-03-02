@@ -101,6 +101,20 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+bool DirectoryExists(const char* name)
+{
+    DIR* directory = NULL;
+    bool result = false;
+
+    if (FileExists(name) && (NULL != (directory = opendir(name))))
+    {
+        closedir(directory);
+        result = true;
+    }
+
+    return result;
+}
+
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
 {
     int fileDescriptor = -1;
@@ -519,4 +533,49 @@ int UninstallPackage(const char* packageName, void* log)
     }
 
     return status;
+}
+
+static unsigned int GetNumberOfCharacterInstancesInFile(const char* fileName, char what)
+{
+    unsigned int numberOf = 0;
+    FILE* file = NULL;
+    int fileSize = 0;
+    int i = 0;
+    int next = 0;
+
+    if (FileExists(fileName))
+    {
+        if (NULL != (file = fopen(fileName, "r")))
+        {
+            fseek(file, 0, SEEK_END);
+            fileSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+
+            for (i = 0; i < fileSize; i++)
+            {
+                if (what == (next = fgetc(file)))
+                {
+                    numberOf += 1;
+                }
+                else if (EOF == next)
+                {
+                    break;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    return numberOf;
+}
+
+unsigned int GetNumberOfLinesInFile(const char* fileName)
+{
+    return GetNumberOfCharacterInstancesInFile(fileName, EOL);
+}
+
+bool CharacterFoundInFile(const char* fileName, char what)
+{
+    return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }

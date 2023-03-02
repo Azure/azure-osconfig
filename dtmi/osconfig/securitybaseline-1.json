@@ -307,6 +307,102 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureAllEtcPasswdGroupsExistInEtcGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoDuplicateUidsExist",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoDuplicateGidsExist",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoDuplicateUserNamesExist",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoDuplicateGroupsExist",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureShadowGroupIsEmpty",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRootGroupExists",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllAccountsHavePasswords",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoLegacyPlusEntriesInEtcPasswd",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoLegacyPlusEntriesInEtcShadow",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoLegacyPlusEntriesInEtcGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDefaultRootAccountGroupIsGidZero",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRootIsOnlyUidZeroAccount",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllUsersHomeDirectoriesExist",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureUsersOwnTheirHomeDirectories",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
