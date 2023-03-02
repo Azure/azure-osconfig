@@ -677,13 +677,13 @@ struct spwd {
 
 static int CheckUserHasPassword(SIMPLIFIED_USER* user, void* log)
 {
-    const char md5 = "MD5";
-    const char blowfish = "Blowfish";
-    const char eksBlowfish = "Eksblowfish";
-    const char sha256 = "SHA-256";
-    const char sha512 = "SHA-512";
-    const char unknownBlowfish = "unknown Blowfish";
-    const char unknown = "unknown";
+    const char* md5 = "MD5";
+    const char* blowfish = "Blowfish";
+    const char* eksBlowfish = "Eksblowfish";
+    const char* sha256 = "SHA-256";
+    const char* sha512 = "SHA-512";
+    const char* unknownBlowfish = "unknown Blowfish";
+    const char* unknown = "unknown";
     
     struct spwd* shadowEntry = NULL;
     char* encryptionType = NULL;
