@@ -18,7 +18,20 @@ static void EmptyUserEntry(SIMPLIFIED_USER* target)
         FREE_MEMORY(target->home);
         FREE_MEMORY(target->shell);
 
-        memset(target, 0, sizeof(SIMPLIFIED_GROUP));
+        target->userId = -1;
+        target->groupId = -1;
+        target->isRoot = false;
+        target->isLocked = false;
+        target->noLogin = false;
+        target->cannotLogin = false;
+        target->hasPassword = false;
+        target->passwordEncryption = unknown;
+        target->passwordLastChange = 0;
+        target->passwordMinDaysBetweenChanges = 0;
+        target->passwordMaxDaysBetweenChanges = 0;
+        target->passwordWarnDaysBeforeExpiry = 0;
+        target->passwordDaysAfterExpiry = 0;
+        target->expirationDate = 0; 
     }
 }
 
@@ -68,6 +81,8 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         destination->userId = source->pw_uid;
         destination->groupId = source->pw_gid;
+
+        destination->isRoot = ((0 == destination->userId) && (0 == destination->groupId)) ? true : false;
     }
 
     if ((0 == status) && (0 < (length = source->pw_dir ? strlen(source->pw_dir) : 0)))
@@ -179,18 +194,6 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
         return EINVAL;
     }
 
-    user->isLocked = false;
-    user->noLogin = false;
-    user->cannotLogin = false;
-    user->hasPassword = false;
-    user->passwordEncryption = unknown;
-    user->passwordLastChange = 0;
-    user->passwordMinDaysBetweenChanges = 0;
-    user->passwordMaxDaysBetweenChanges = 0;
-    user->passwordWarnDaysBeforeExpiry = 0;
-    user->passwordDaysAfterExpiry = 0;
-    user->expirationDate = 0;
-
     if (true == (user->noLogin = IsNoLoginUser(user)))
     {
         return 0;
@@ -239,9 +242,6 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                         user->passwordEncryption = unknown;
                 }
 
-                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) appears to have a password set (encryption: %s)",
-                    user->username, user->userId, user->groupId, EncryptionName(user->passwordEncryption));
-                    
                 user->hasPassword = true;
                 user->passwordLastChange = shadowEntry->sp_lstchg;
                 user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
@@ -252,22 +252,18 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 break;
 
             case '!':
-                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) account is locked",
-                    user->username, user->userId, user->groupId);
                 user->isLocked = true;
                 user->hasPassword = false;
                 break;
 
             case '*':
-                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) cannot login with password",
-                    user->username, user->userId, user->groupId);
                 user->cannotLogin = true;
                 user->hasPassword = false;
                 break;
 
             case ':':
             default:
-                OsConfigLogError(log, "CheckIfUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                OsConfigLogError(log, "CheckIfUserHasPassword: user '%s' (%u, %u) appears to be missing password ('%c')",
                     user->username, user->userId, user->groupId, control);
                 user->hasPassword = false;
         }
@@ -827,19 +823,37 @@ int CheckAllUsersHavePasswordsSet(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0, _status = 0;
+    int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin)
+            if (userList[i].hasPassword)
             {
-                continue;
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) appears to have a password set", 
+                    userList[i].username, userList[i].userId, userList[i].groupId);
             }
-            else if ((false == userList[i].hasPassword) && (0 == status))
+            else if (userList[i].noLogin)
             {
-                status = _status;
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) is no login", 
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else if (userList[i].isLocked)
+            {
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) is locked", 
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else if (userList[i].cannotLogin)
+            {
+                OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) cannot login with password", 
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) not found to have a password set", 
+                    userList[i].username, userList[i].userId, userList[i].groupId);
+                status = ENOENT;
             }
         }
     }
@@ -849,10 +863,6 @@ int CheckAllUsersHavePasswordsSet(void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckAllUsersHavePasswordsSet: all users who need passwords appear to have passwords set");
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckAllUsersHavePasswordsSet: not all users who need passwords appear to have passwords set");
     }
 
     return status;
@@ -1101,7 +1111,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].noLogin) || (userList[i].isLocked))
+            if ((userList[i].noLogin) || (userList[i].isRoot))
             {
                 continue;
             }
@@ -1126,16 +1136,52 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all unlocked users who can login have restricted access home directories");
+        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who have home directories have restricted access to them");
     }
 
     return status;
 }
 
-int CheckPasswordHashingAlgorithm(void* log)
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 {
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
     int status = 0;
-    OsConfigLogInfo(log, "bla");
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if (algorithm == userList[i].passwordEncryption)
+                {
+                    OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: user '%s' (%u, %u) has a password encrypted with the proper algorithm %s (%d)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, EncryptionName(userList[i].passwordEncryption), userList[i].passwordEncryption);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, EncryptionName(userList[i].passwordEncryption), 
+                        algorithm, EncryptionName(algorithm));
+                    status = ENOENT;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckPasswordHashingAlgorithm: all users who have passwords have them encrypted with hashing algorithm %s (%d)",
+            EncryptionName(algorithm), algorithm);
+    }
+
     return status;
 }
 

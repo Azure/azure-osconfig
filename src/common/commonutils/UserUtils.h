@@ -29,6 +29,7 @@ typedef struct SIMPLIFIED_USER
     char* home;
     char* shell;
     
+    bool isRoot;
     bool isLocked;
     bool noLogin;
     bool cannotLogin;
@@ -92,7 +93,7 @@ int CheckRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
-int CheckPasswordHashingAlgorithm(void* log);
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(void* log);
 int CheckInactivePasswordLockPeriod(void* log);
 int CheckPasswordExpiration(void* log);
