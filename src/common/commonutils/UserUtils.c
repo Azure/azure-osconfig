@@ -1203,12 +1203,12 @@ int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
             {
                 if (userList[i].passwordMinDaysBetweenChanges >= days)
                 {
-                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %u days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %u)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMinDaysBetweenChanges, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %u days is less than requested %u days",
+                    OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %u days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMinDaysBetweenChanges, days);
                     status = ENOENT;
                 }
@@ -1226,17 +1226,15 @@ int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
     return status;
 }
 
-
-
 int CheckUsersRecordedPasswordChangeDates(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    unsigned long daysLastPasswordChange = 0;
     unsigned long daysCurrent = 0;
+    long timer = 0;
     int status = 0;
 
-    daysCurrent = time() / 86400;
+    daysCurrent = time(&timer) / 86400;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1248,7 +1246,7 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
             }
             else
             {
-                if (userList[i].passwordLastChange <= daysCurrent)
+                if ((unsigned long)userList[i].passwordLastChange <= daysCurrent)
                 {
                     OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
                         userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].passwordLastChange);
@@ -1291,12 +1289,12 @@ int CheckPasswordExpiration(unsigned int days, void* log)
             {
                 if (userList[i].passwordMaxDaysBetweenChanges <= days)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpiration: user '%s' (%u, %u) has a maximum time between password changes of %u days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckPasswordExpiration: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %u)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaxDaysBetweenChanges, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckPasswordExpiration: user '%s' (%u, %u) maximum time between password changes of %u days is more than requested %u days",
+                    OsConfigLogError(log, "CheckPasswordExpiration: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %u days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaxDaysBetweenChanges, days);
                     status = ENOENT;
                 }
@@ -1332,12 +1330,12 @@ int CheckPasswordExpirationWarning(unsigned int days, void* log)
             {
                 if (userList[i].passwordWarnDaysBeforeExpiry >= days)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %u days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %u)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordWarnDaysBeforeExpiry, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %u days, less than requested %u days",
+                    OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %u days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordWarnDaysBeforeExpiry, days);
                     status = ENOENT;
                 }
