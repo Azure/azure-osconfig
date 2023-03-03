@@ -1095,27 +1095,28 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin)
+            if ((userList[i].noLogin) || (userList[i].isLocked))
             {
                 continue;
             }
             else if (DirectoryExists(userList[i].home))
             {
-                if (0 != (status = CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode, true, log)))
+                if (0 == (_status = CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode, true, log)))
                 {
-                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
+                    OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access (%u) set for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
+                    status = _status;
                 }
             }
         }
@@ -1125,7 +1126,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who can login have restricted access home directories");
+        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all unlocked users who can login have restricted access home directories");
     }
 
     return status;
