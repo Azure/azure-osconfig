@@ -1163,6 +1163,20 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
     EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
 }
 
+TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
+{
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
+    for (int i = 0; i < 7777; i++)
+    {
+        EXPECT_EQ(0, SetDirectoryAccess("~test", 0, 0, i, nullptr));
+        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, i, false, nullptr));
+    }
+    EXPECT_EQ(0, ExecuteCommand(nullptr, "remove ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 777, nullptr));
+    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 777, false, nullptr));
+}
+
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 {
     const char* testFstab = 

@@ -107,25 +107,77 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     return status;
 }
 
-static bool NoLoginUser(SIMPLIFIED_USER* user)
+static bool IsNoLogin
+
+static char* EncryptionName(int type)
 {
-    
-    return (user && 
+    char* name = NULL;
+    switch (type)
+    {
+        case md5:
+            name = "MD5";
+            break;
+
+        case blowfish:
+            name = "Blowfish";
+            break;
+
+        case eksBlowfish:
+            name = "Eksblowfish";
+            break;
+
+        case unknownBlowfish:
+            name = "Unknown Blowfish";
+            break;
+
+        case sha256:
+            name = "SHA-256";
+            break;
+
+        case sha512:
+            name = "SHA-512";
+            break;
+
+        case unknown:
+        default:
+            name = "Unknown";
+    }
+
+    return name;
 }
 
-static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
+static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell = "/usr/sbin/nologin";
-    const char* otherNoLoginShell = "/sbin/nologin";
-    const char* olderNoLoginShell = "/bin/false";
+    const char* noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false" };
+    int index = ARRAYSIZE(noLoginShell);
+    bool noLogin = false;
 
+    if (user && user->shell)
+    {
+        while (index > 0)
+        {
+            if (0 == strcmp(user->shell, noLoginShell[size - 1]))
+            {
+                noLogin = true;
+                break;
+            }
+
+            index--;
+        }
+    }
+
+    return noLogin;
+}
+
+static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
+{
     struct spwd* shadowEntry = NULL;
     char control = 0;
     int status = 0;
 
     if ((NULL == user) || (NULL == user->username))
     {
-        OsConfigLogError(log, "CheckUserLoginAndPassword: invalid argument");
+        OsConfigLogError(log, "CheckIfUserHasPassword: invalid argument");
         return EINVAL;
     }
 
@@ -133,7 +185,7 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
     user->noLogin = false;
     user->cannotLogin = false;
     user->hasPassword = false;
-    user->passwordEncryptionType = unknown;
+    user->passwordEncryption = unknown;
     user->passwordLastChange = 0;
     user->passwordMinDaysBetweenChanges = 0;
     user->passwordMaxDaysBetweenChanges = 0;
@@ -141,96 +193,94 @@ static int CheckUserLoginAndPassword(SIMPLIFIED_USER* user, void* log)
     user->passwordDaysAfterExpiry = 0;
     user->expirationDate = 0;
 
-    if ((user->shell && ((0 == strcmp(user->shell, noLoginShell)) || (0 == strcmp(user->shell, otherNoLoginShell)) || (0 == strcmp(user->shell, olderNoLoginShell))))
+    if (true == (user->noLogin = IsNoLoginUser(user)))
     {
-        user->noLogin = true;
+        return 0
     }
-    else
+
+    setspent();
+
+    if (NULL != (shadowEntry = getspnam(user->username)))
     {
-        setspent();
+        control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
 
-        if (NULL != (shadowEntry = getspnam(user->username)))
+        switch (control)
         {
-            control = shadowEntry->sp_pwdp ? shadowEntry->sp_pwdp[0] : 'n';
+            case '$':
+                switch (shadowEntry->sp_pwdp[1])
+                {
+                    case '1':
+                        user->passwordEncryption = md5;
+                        break;
 
-            switch (control)
-            {
-                case '$':
-                    switch (shadowEntry->sp_pwdp[1])
-                    {
-                        case '1':
-                            user->passwordEncryptionType = md5;
+                    case '2':
+                        switch (shadowEntry->sp_pwdp[2])
+                        {
+                        case 'a':
+                            user->passwordEncryption = blowfish;
                             break;
 
-                        case '2':
-                            switch (shadowEntry->sp_pwdp[2])
-                            {
-                            case 'a':
-                                user->passwordEncryptionType = blowfish;
-                                break;
-
-                            case 'y':
-                                user->passwordEncryptionType = eksBlowfish;
-                                break;
-
-                            default:
-                                user->passwordEncryptionType = unknownBlowfish;
-                            }
-                            break;
-
-                        case '5':
-                            user->passwordEncryptionType = sha256;
-                            break;
-
-                        case '6':
-                            user->passwordEncryptionType = sha512;
+                        case 'y':
+                            user->passwordEncryption = eksBlowfish;
                             break;
 
                         default:
-                            user->passwordEncryptionType = unknown;
-                    }
+                            user->passwordEncryption = unknownBlowfish;
+                        }
+                        break;
 
-                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) appears to have a password set (encryption type: %d)",
-                        user->username, user->userId, user->groupId, user->passwordEncryptionType);
+                    case '5':
+                        user->passwordEncryption = sha256;
+                        break;
 
-                    user->hasPassword = true;
-                    user->passwordLastChange = shadowEntry->sp_lstchg;
-                    user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
-                    user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
-                    user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
-                    user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
-                    user->expirationDate = shadowEntry->sp_expire;
-                    break;
+                    case '6':
+                        user->passwordEncryption = sha512;
+                        break;
 
-                case '!':
-                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) account is locked",
-                        user->username, user->userId, user->groupId);
-                    user->isLocked = true;
-                    user->hasPassword = false;
-                    break;
+                    default:
+                        user->passwordEncryption = unknown;
+                }
 
-                case '*':
-                    OsConfigLogInfo(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) cannot login with password",
-                        user->username, user->userId, user->groupId);
-                    user->cannotLogin = true;
-                    user->hasPassword = false;
-                    break;
+                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) appears to have a password set (encryption: %s)",
+                    user->username, user->userId, user->groupId, EncryptionName(user->passwordEncryption));
+                    
+                user->hasPassword = true;
+                user->passwordLastChange = shadowEntry->sp_lstchg;
+                user->passwordMinDaysBetweenChanges = shadowEntry->sp_min;
+                user->passwordMaxDaysBetweenChanges = shadowEntry->sp_max;
+                user->passwordWarnDaysBeforeExpiry = shadowEntry->sp_warn;
+                user->passwordDaysAfterExpiry = shadowEntry->sp_inact;
+                user->expirationDate = shadowEntry->sp_expire;
+                break;
 
-                case ':':
-                default:
-                    OsConfigLogError(log, "CheckUserLoginAndPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
-                        user->username, user->userId, user->groupId, control);
-                    user->hasPassword = false;
-            }
+            case '!':
+                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) account is locked",
+                    user->username, user->userId, user->groupId);
+                user->isLocked = true;
+                user->hasPassword = false;
+                break;
+
+            case '*':
+                OsConfigLogInfo(log, "CheckIfUserHasPassword: user '%s' (%u, %u) cannot login with password",
+                    user->username, user->userId, user->groupId);
+                user->cannotLogin = true;
+                user->hasPassword = false;
+                break;
+
+            case ':':
+            default:
+                OsConfigLogError(log, "CheckIfUserHasPassword: user '%s' (%u, %u) not found to have a password set ('%c')",
+                    user->username, user->userId, user->groupId, control);
+                user->hasPassword = false;
         }
-        else
-        {
-            OsConfigLogError(log, "CheckUserLoginAndPassword: getspnam(%s) failed (%d)", user->username, errno);
-            status = ENOENT;
-        }
-
-        endspent();
     }
+    else
+    {
+        OsConfigLogError(log, "CheckIfUserHasPassword: getspnam(%s) failed (%d)", user->username, errno);
+        status = ENOENT;
+    }
+
+    endspent();
 
     return status;
 }
@@ -269,7 +319,7 @@ int EnumerateUsers(SIMPLIFIED_USER** userList, unsigned int* size, void* log)
                     OsConfigLogError(log, "EnumerateUsers: failed making copy of user entry (%d)", status);
                     break;
                 }
-                else if (0 != (status = CheckUserLoginAndPassword(&((*userList)[i]), log)))
+                else if (0 != (status = CheckIfUserHasPassword(&((*userList)[i]), log)))
                 {
                     OsConfigLogError(log, "EnumerateUsers: failed checking user's login and password (%d)", status);
                     break;
@@ -1040,5 +1090,81 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
         OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: all users who can login own their home directories");
     }
 
+    return status;
+}
+
+int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].noLogin)
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home))
+            {
+                if (0 != (status = CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode, true, log)))
+                {
+                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access (%u) set for their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who can login have restricted access home directories");
+    }
+
+    return status;
+}
+
+int CheckPasswordHashingAlgorithm(void* log)
+{
+    int status = 0;
+    return status;
+}
+
+int CheckMinDaysBetweenPasswordChanges(void* log)
+{
+    int status = 0;
+    return status;
+}
+
+int CheckInactivePasswordLockPeriod(void* log)
+{
+    int status = 0;
+    return status;
+}
+
+int CheckPasswordExpiration(void* log)
+{
+    int status = 0;
+    return status;
+}
+
+int CheckPasswordExpirationWarning(void* log)
+{
+    int status = 0;
+    return status;
+}
+
+int CheckSystemAccountsAreNonLogin(void* log)
+{
+    int status = 0;
     return status;
 }

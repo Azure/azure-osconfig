@@ -9,7 +9,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-enum PasswordEncryptionType
+enum PasswordEncryption
 {
     unknown = 0,
     md5 = 1,
@@ -19,7 +19,7 @@ enum PasswordEncryptionType
     sha256 = 5,
     sha512 = 6
 };
-typedef enum PasswordEncryptionType PasswordEncryptionType;
+typedef enum PasswordEncryption PasswordEncryption;
 
 typedef struct SIMPLIFIED_USER
 {
@@ -35,7 +35,7 @@ typedef struct SIMPLIFIED_USER
     bool hasPassword;
 
     // Type of encryption used for password
-    PasswordEncryptionType passwordEncryptionType;
+    PasswordEncryption passwordEncryption;
     
     // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 (UTC)) 
     long passwordLastChange;
@@ -91,6 +91,13 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log);
 int CheckRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
+int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
+int CheckPasswordHashingAlgorithm(void* log);
+int CheckMinDaysBetweenPasswordChanges(void* log);
+int CheckInactivePasswordLockPeriod(void* log);
+int CheckPasswordExpiration(void* log);
+int CheckPasswordExpirationWarning(void* log);
+int CheckSystemAccountsAreNonLogin(void* log);
 
 #ifdef __cplusplus
 }

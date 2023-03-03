@@ -539,37 +539,37 @@ static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
 {
-    return CheckEnsureRestrictedUserHomeDirectories(SecurityBaselineGetLog());
+    return CheckRestrictedUserHomeDirectories(SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordHashingAlgorithm(void)
 {
-    return CheckEnsurePasswordHashingAlgorithm(SecurityBaselineGetLog());
+    return CheckPasswordHashingAlgorithm(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckEnsureMinDaysBetweenPasswordChanges(SecurityBaselineGetLog());
+    return CheckMinDaysBetweenPasswordChanges(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
 {
-    return CheckEnsureInactivePasswordLockPeriod(SecurityBaselineGetLog());
+    return CheckInactivePasswordLockPeriod(SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpiration(void)
 {
-    return CheckEnsurePasswordExpiration(SecurityBaselineGetLog());
+    return CheckPasswordExpiration(SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckEnsurePasswordExpirationWarning(SecurityBaselineGetLog());
+    return CheckPasswordExpirationWarning(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSystemAccountsAreNonLogin(void)
 {
-    return CheckEnsureSystemAccountsAreNonLogin(SecurityBaselineGetLog());
+    return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog());
 }
 
 int AuditSecurityBaseline(void)
@@ -637,7 +637,14 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureDefaultRootAccountGroupIsGidZero()) &&
         (0 == AuditEnsureRootIsOnlyUidZeroAccount()) &&
         (0 == AuditEnsureAllUsersHomeDirectoriesExist()) &&
-        (0 == AuditEnsureUsersOwnTheirHomeDirectories())) ? 0 : ENOENT;
+        (0 == AuditEnsureUsersOwnTheirHomeDirectories()) &&
+        (0 == AuditEnsureRestrictedUserHomeDirectories()) &&
+        (0 == AuditEnsurePasswordHashingAlgorithm()) &&
+        (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
+        (0 == AuditEnsureInactivePasswordLockPeriod()) &&
+        (0 == AuditEnsurePasswordExpiration()) &&
+        (0 == AuditEnsurePasswordExpirationWarning()) &&
+        (0 == AuditEnsureSystemAccountsAreNonLogin())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -1212,6 +1219,34 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectories))
         {
             result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectories))
+        {
+            result = AuditEnsureRestrictedUserHomeDirectories() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithm))
+        {
+            result = AuditEnsurePasswordHashingAlgorithm() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChanges))
+        {
+            result = AuditEnsureMinDaysBetweenPasswordChanges() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriod))
+        {
+            result = AuditEnsureInactivePasswordLockPeriod() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpiratio))
+        {
+            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarning))
+        {
+            result = AuditEnsurePasswordExpirationWarning() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLogin))
+        {
+            result = AuditEnsureSystemAccountsAreNonLogin() ? g_fail : g_pass;
         }
         else
         {
