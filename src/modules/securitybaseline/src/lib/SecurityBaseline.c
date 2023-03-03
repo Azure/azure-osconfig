@@ -549,22 +549,22 @@ static int AuditEnsurePasswordHashingAlgorithm(void)
 
 static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckMinDaysBetweenPasswordChanges(SecurityBaselineGetLog());
+    return CheckMinDaysBetweenPasswordChanges(7, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
 {
-    return CheckInactivePasswordLockPeriod(SecurityBaselineGetLog());
+    return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpiration(void)
 {
-    return CheckPasswordExpiration(SecurityBaselineGetLog());
+    return CheckPasswordExpiration(365, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckPasswordExpirationWarning(SecurityBaselineGetLog());
+    return CheckPasswordExpirationWarning(7, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSystemAccountsAreNonLogin(void)
