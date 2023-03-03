@@ -7,6 +7,11 @@
       "$id": "#/$defs/mimComponent",
       "type": "object",
       "description": "A MIM component",
+      "required": [
+        "name",
+        "type",
+        "contents"
+      ],
       "properties": {
         "name": {
           "type": "string"
@@ -30,6 +35,12 @@
       "$id": "#/$defs/mimObject",
       "type": "object",
       "description": "A MIM object",
+      "required": [
+        "name",
+        "type",
+        "desired",
+        "schema"
+      ],
       "properties": {
         "name": {
           "type": "string"
@@ -117,6 +128,10 @@
           "type": "array",
           "items": {
             "type": "object",
+            "required": [
+              "name",
+              "enumValue"
+            ],
             "properties": {
               "name": {
                 "type": "string"
@@ -155,6 +170,10 @@
           "type": "array",
           "items": {
             "type": "object",
+            "required": [
+              "name",
+              "enumValue"
+            ],
             "properties": {
               "name": {
                 "type": "string"
@@ -270,6 +289,10 @@
         },
         "mapKey": {
           "type": "object",
+          "required": [
+            "name",
+            "schema"
+          ],
           "properties": {
             "name": {
               "type": "string"
@@ -284,6 +307,10 @@
         },
         "mapValue": {
           "type": "object",
+          "required": [
+            "name",
+            "schema"
+          ],
           "properties": {
             "name": {
               "type": "string"

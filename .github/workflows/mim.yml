@@ -1,0 +1,31 @@
+name: MIM Validation
+
+on:
+  pull_request:
+    paths:
+      - src/modules/mim/*.json
+      - src/modules/schema/mim.schema.json
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Validate
+        run: |
+          failure=0
+
+          for file in src/modules/mim/*.json; do
+            echo "Validating $file"
+            output=$(jsonschema -i $file src/modules/schema/mim.schema.json 2>&1)
+            if [ $? -ne 0 ]; then
+              echo "::error file=$file,title=Validation Error::$output"
+              echo "$output"
+              failure=1
+            fi
+          done
+
+          if [ $failure -eq 1 ]; then
+            exit 1
+          fi
