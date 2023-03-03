@@ -539,7 +539,7 @@ static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
 {
-    return CheckRestrictedUserHomeDirectories(SecurityBaselineGetLog());
+    return CheckRestrictedUserHomeDirectories(750, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordHashingAlgorithm(void)
@@ -1236,7 +1236,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureInactivePasswordLockPeriod() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpiratio))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpiration))
         {
             result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
         }

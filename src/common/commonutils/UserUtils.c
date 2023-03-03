@@ -107,8 +107,6 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     return status;
 }
 
-static bool IsNoLogin
-
 static char* EncryptionName(int type)
 {
     char* name = NULL;
@@ -149,14 +147,14 @@ static char* EncryptionName(int type)
 static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
     const char* noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false" };
-    int index = ARRAYSIZE(noLoginShell);
+    int index = ARRAY_SIZE(noLoginShell);
     bool noLogin = false;
 
     if (user && user->shell)
     {
         while (index > 0)
         {
-            if (0 == strcmp(user->shell, noLoginShell[size - 1]))
+            if (0 == strcmp(user->shell, noLoginShell[index - 1]))
             {
                 noLogin = true;
                 break;
@@ -195,7 +193,7 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
 
     if (true == (user->noLogin = IsNoLoginUser(user)))
     {
-        return 0
+        return 0;
     }
 
     setspent();
@@ -1136,35 +1134,41 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
 int CheckPasswordHashingAlgorithm(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
 
 int CheckMinDaysBetweenPasswordChanges(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
 
 int CheckInactivePasswordLockPeriod(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
 
 int CheckPasswordExpiration(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
 
 int CheckPasswordExpirationWarning(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
 
 int CheckSystemAccountsAreNonLogin(void* log)
 {
     int status = 0;
+    OsConfigLogInfo(log, "bla");
     return status;
 }
