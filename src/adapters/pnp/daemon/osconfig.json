@@ -438,7 +438,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsurePasswordExpiration"
+      "ObjectName": "auditEnsureMaxDaysBetweenPasswordChanges"
     },
     {
       "ComponentName": "SecurityBaseline",

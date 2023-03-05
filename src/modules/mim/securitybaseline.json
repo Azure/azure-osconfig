@@ -427,7 +427,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsurePasswordExpiration",
+          "name": "auditEnsureMaxDaysBetweenPasswordChanges",
           "type": "mimObject",
           "desired": false,
           "schema": "string"

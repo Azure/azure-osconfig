@@ -69,29 +69,29 @@ static const char* g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject = "
 static const char* g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
 static const char* g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
-static const char* g_auditEnsureAllEtcPasswdGroupsExistInEtcGroup = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
-static const char* g_auditEnsureNoDuplicateUidsExist = "auditEnsureNoDuplicateUidsExist";
-static const char* g_auditEnsureNoDuplicateGidsExist = "auditEnsureNoDuplicateGidsExist";
-static const char* g_auditEnsureNoDuplicateUserNamesExist = "auditEnsureNoDuplicateUserNamesExist";
-static const char* g_auditEnsureNoDuplicateGroupsExist = "auditEnsureNoDuplicateGroupsExist";
-static const char* g_auditEnsureShadowGroupIsEmpty = "auditEnsureShadowGroupIsEmpty";
-static const char* g_auditEnsureRootGroupExists = "auditEnsureRootGroupExists";
-static const char* g_auditEnsureAllAccountsHavePasswords = "auditEnsureAllAccountsHavePasswords";
-static const char* g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
-static const char* g_auditEnsureNoLegacyPlusEntriesInEtcPasswd = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
-static const char* g_auditEnsureNoLegacyPlusEntriesInEtcShadow = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
-static const char* g_auditEnsureNoLegacyPlusEntriesInEtcGroup = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
-static const char* g_auditEnsureDefaultRootAccountGroupIsGidZero = "auditEnsureDefaultRootAccountGroupIsGidZero";
-static const char* g_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
-static const char* g_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
-static const char* g_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
-static const char* g_auditEnsureRestrictedUserHomeDirectories = "auditEnsureRestrictedUserHomeDirectories";
-static const char* g_auditEnsurePasswordHashingAlgorithm = "auditEnsurePasswordHashingAlgorithm";
-static const char* g_auditEnsureMinDaysBetweenPasswordChanges = "auditEnsureMinDaysBetweenPasswordChanges";
-static const char* g_auditEnsureInactivePasswordLockPeriod = "auditEnsureInactivePasswordLockPeriod";
-static const char* g_auditEnsurePasswordExpiration = "auditEnsurePasswordExpiration";
-static const char* g_auditEnsurePasswordExpirationWarning = "auditEnsurePasswordExpirationWarning";
-static const char* g_auditEnsureSystemAccountsAreNonLogin = "auditEnsureSystemAccountsAreNonLogin";
+static const char* g_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
+static const char* g_auditEnsureNoDuplicateUidsExistObject = "auditEnsureNoDuplicateUidsExist";
+static const char* g_auditEnsureNoDuplicateGidsExistObject = "auditEnsureNoDuplicateGidsExist";
+static const char* g_auditEnsureNoDuplicateUserNamesExistObject = "auditEnsureNoDuplicateUserNamesExist";
+static const char* g_auditEnsureNoDuplicateGroupsExistObject = "auditEnsureNoDuplicateGroupsExist";
+static const char* g_auditEnsureShadowGroupIsEmptyObject = "auditEnsureShadowGroupIsEmpty";
+static const char* g_auditEnsureRootGroupExistsObject = "auditEnsureRootGroupExists";
+static const char* g_auditEnsureAllAccountsHavePasswordsObject = "auditEnsureAllAccountsHavePasswords";
+static const char* g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcShadowObject = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
+static const char* g_auditEnsureNoLegacyPlusEntriesInEtcGroupObject = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
+static const char* g_auditEnsureDefaultRootAccountGroupIsGidZeroObject = "auditEnsureDefaultRootAccountGroupIsGidZero";
+static const char* g_auditEnsureRootIsOnlyUidZeroAccountObject = "auditEnsureRootIsOnlyUidZeroAccount";
+static const char* g_auditEnsureAllUsersHomeDirectoriesExistObject = "auditEnsureAllUsersHomeDirectoriesExist";
+static const char* g_auditEnsureUsersOwnTheirHomeDirectoriesObject = "auditEnsureUsersOwnTheirHomeDirectories";
+static const char* g_auditEnsureRestrictedUserHomeDirectoriesObject = "auditEnsureRestrictedUserHomeDirectories";
+static const char* g_auditEnsurePasswordHashingAlgorithmObject = "auditEnsurePasswordHashingAlgorithm";
+static const char* g_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
+static const char* g_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
+static const char* g_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+static const char* g_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
+static const char* g_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -557,9 +557,9 @@ static int AuditEnsureInactivePasswordLockPeriod(void)
     return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
 }
 
-static int AuditEnsurePasswordExpiration(void)
+static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return CheckPasswordExpiration(365, SecurityBaselineGetLog());
+    return CheckMaxDaysBetweenPasswordChanges(365, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
@@ -642,7 +642,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsurePasswordHashingAlgorithm()) &&
         (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
         (0 == AuditEnsureInactivePasswordLockPeriod()) &&
-        (0 == AuditEnsurePasswordExpiration()) &&
+        (0 == AuditEnsureMaxDaysBetweenPasswordChanges()) &&
         (0 == AuditEnsurePasswordExpirationWarning()) &&
         (0 == AuditEnsureSystemAccountsAreNonLogin())) ? 0 : ENOENT;
 }
@@ -1156,95 +1156,95 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureAuditdInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroup))
+        else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
         {
             result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExist))
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExistObject))
         {
             result = AuditEnsureNoDuplicateUidsExist() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExist))
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExistObject))
         {
             result = AuditEnsureNoDuplicateGidsExist() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExist))
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExistObject))
         {
             result = AuditEnsureNoDuplicateUserNamesExist() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExist))
+        else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExistObject))
         {
             result = AuditEnsureNoDuplicateGroupsExist() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmpty))
+        else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmptyObject))
         {
             result = AuditEnsureShadowGroupIsEmpty() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRootGroupExists))
+        else if (0 == strcmp(objectName, g_auditEnsureRootGroupExistsObject))
         {
             result = AuditEnsureRootGroupExists() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswords))
+        else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswordsObject))
         {
             result = AuditEnsureAllAccountsHavePasswords() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero))
+        else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
         {
             result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswd))
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject))
         {
             result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadow))
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadowObject))
         {
             result = AuditEnsureNoLegacyPlusEntriesInEtcShadow() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroup))
+        else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroupObject))
         {
             result = AuditEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZero))
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZeroObject))
         {
             result = AuditEnsureDefaultRootAccountGroupIsGidZero() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccount))
+        else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccountObject))
         {
             result = AuditEnsureRootIsOnlyUidZeroAccount() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExist))
+        else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExistObject))
         {
             result = AuditEnsureAllUsersHomeDirectoriesExist() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectories))
+        else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectoriesObject))
         {
             result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectories))
+        else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectoriesObject))
         {
             result = AuditEnsureRestrictedUserHomeDirectories() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithm))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithmObject))
         {
             result = AuditEnsurePasswordHashingAlgorithm() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChanges))
+        else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChangesObject))
         {
             result = AuditEnsureMinDaysBetweenPasswordChanges() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriod))
+        else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriodObject))
         {
             result = AuditEnsureInactivePasswordLockPeriod() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpiration))
+        else if (0 == strcmp(objectName, g_auditMaxDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
+            result = AuditEnsureMaxDaysBetweenPasswordChanges() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarning))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {
             result = AuditEnsurePasswordExpirationWarning() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLogin))
+        else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLoginObject))
         {
             result = AuditEnsureSystemAccountsAreNonLogin() ? g_fail : g_pass;
         }

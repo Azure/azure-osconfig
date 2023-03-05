@@ -77,29 +77,29 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
         const char* m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
-        const char* m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
-        const char* m_auditEnsureNoDuplicateUidsExist = "auditEnsureNoDuplicateUidsExist";
-        const char* m_auditEnsureNoDuplicateGidsExist = "auditEnsureNoDuplicateGidsExist";
-        const char* m_auditEnsureNoDuplicateUserNamesExist = "auditEnsureNoDuplicateUserNamesExist";
-        const char* m_auditEnsureNoDuplicateGroupsExist = "auditEnsureNoDuplicateGroupsExist";
-        const char* m_auditEnsureShadowGroupIsEmpty = "auditEnsureShadowGroupIsEmpty";
-        const char* m_auditEnsureRootGroupExists = "auditEnsureRootGroupExists";
-        const char* m_auditEnsureAllAccountsHavePasswords = "auditEnsureAllAccountsHavePasswords";
-        const char* m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
-        const char* m_auditEnsureNoLegacyPlusEntriesInEtcPasswd = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
-        const char* m_auditEnsureNoLegacyPlusEntriesInEtcShadow = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
-        const char* m_auditEnsureNoLegacyPlusEntriesInEtcGroup = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
-        const char* m_auditEnsureDefaultRootAccountGroupIsGidZero = "auditEnsureDefaultRootAccountGroupIsGidZero";
-        const char* m_auditEnsureRootIsOnlyUidZeroAccount = "auditEnsureRootIsOnlyUidZeroAccount";
-        const char* m_auditEnsureAllUsersHomeDirectoriesExist = "auditEnsureAllUsersHomeDirectoriesExist";
-        const char* m_auditEnsureUsersOwnTheirHomeDirectories = "auditEnsureUsersOwnTheirHomeDirectories";
-        const char* m_auditEnsureRestrictedUserHomeDirectories = "auditEnsureRestrictedUserHomeDirectories";
-        const char* m_auditEnsurePasswordHashingAlgorithm = "auditEnsurePasswordHashingAlgorithm";
-        const char* m_auditEnsureMinDaysBetweenPasswordChanges = "auditEnsureMinDaysBetweenPasswordChanges";
-        const char* m_auditEnsureInactivePasswordLockPeriod = "auditEnsureInactivePasswordLockPeriod";
-        const char* m_auditEnsurePasswordExpiration = "auditEnsurePasswordExpiration";
-        const char* m_auditEnsurePasswordExpirationWarning = "auditEnsurePasswordExpirationWarning";
-        const char* m_auditEnsureSystemAccountsAreNonLogin = "auditEnsureSystemAccountsAreNonLogin";
+        const char* m_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
+        const char* m_auditEnsureNoDuplicateUidsExistObject = "auditEnsureNoDuplicateUidsExist";
+        const char* m_auditEnsureNoDuplicateGidsExistObject = "auditEnsureNoDuplicateGidsExist";
+        const char* m_auditEnsureNoDuplicateUserNamesExistObject = "auditEnsureNoDuplicateUserNamesExist";
+        const char* m_auditEnsureNoDuplicateGroupsExistObject = "auditEnsureNoDuplicateGroupsExist";
+        const char* m_auditEnsureShadowGroupIsEmptyObject = "auditEnsureShadowGroupIsEmpty";
+        const char* m_auditEnsureRootGroupExistsObject = "auditEnsureRootGroupExists";
+        const char* m_auditEnsureAllAccountsHavePasswordsObject = "auditEnsureAllAccountsHavePasswords";
+        const char* m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcShadowObject = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
+        const char* m_auditEnsureNoLegacyPlusEntriesInEtcGroupObject = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
+        const char* m_auditEnsureDefaultRootAccountGroupIsGidZeroObject = "auditEnsureDefaultRootAccountGroupIsGidZero";
+        const char* m_auditEnsureRootIsOnlyUidZeroAccountObject = "auditEnsureRootIsOnlyUidZeroAccount";
+        const char* m_auditEnsureAllUsersHomeDirectoriesExistObject = "auditEnsureAllUsersHomeDirectoriesExist";
+        const char* m_auditEnsureUsersOwnTheirHomeDirectoriesObject = "auditEnsureUsersOwnTheirHomeDirectories";
+        const char* m_auditEnsureRestrictedUserHomeDirectoriesObject = "auditEnsureRestrictedUserHomeDirectories";
+        const char* m_auditEnsurePasswordHashingAlgorithmObject = "auditEnsurePasswordHashingAlgorithm";
+        const char* m_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
+        const char* m_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
+        const char* m_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+        const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
+        const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -349,29 +349,29 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureBind9NotInstalledObject,
         m_auditEnsureDovecotCoreNotInstalledObject,
         m_auditEnsureAuditdInstalledObject,
-        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup,
-        m_auditEnsureNoDuplicateUidsExist,
-        m_auditEnsureNoDuplicateGidsExist,
-        m_auditEnsureNoDuplicateUserNamesExist,
-        m_auditEnsureNoDuplicateGroupsExist,
-        m_auditEnsureShadowGroupIsEmpty,
-        m_auditEnsureRootGroupExists,
-        m_auditEnsureAllAccountsHavePasswords,
-        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-        m_auditEnsureNoLegacyPlusEntriesInEtcPasswd,
-        m_auditEnsureNoLegacyPlusEntriesInEtcShadow,
-        m_auditEnsureNoLegacyPlusEntriesInEtcGroup,
-        m_auditEnsureDefaultRootAccountGroupIsGidZero,
-        m_auditEnsureRootIsOnlyUidZeroAccount,
-        m_auditEnsureAllUsersHomeDirectoriesExist,
-        m_auditEnsureUsersOwnTheirHomeDirectories,
-        m_auditEnsureRestrictedUserHomeDirectories,
-        m_auditEnsurePasswordHashingAlgorithm,
-        //m_auditEnsureMinDaysBetweenPasswordChanges,
-        m_auditEnsureInactivePasswordLockPeriod,
-        //m_auditEnsurePasswordExpiration,
-        m_auditEnsurePasswordExpirationWarning,
-        m_auditEnsureSystemAccountsAreNonLogin
+        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject,
+        m_auditEnsureNoDuplicateUidsExistObject,
+        m_auditEnsureNoDuplicateGidsExistObject,
+        m_auditEnsureNoDuplicateUserNamesExistObject,
+        m_auditEnsureNoDuplicateGroupsExistObject,
+        m_auditEnsureShadowGroupIsEmptyObject,
+        m_auditEnsureRootGroupExistsObject,
+        m_auditEnsureAllAccountsHavePasswordsObject,
+        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcShadowObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcGroupObject,
+        m_auditEnsureDefaultRootAccountGroupIsGidZeroObject,
+        m_auditEnsureRootIsOnlyUidZeroAccountObject,
+        m_auditEnsureAllUsersHomeDirectoriesExistObject,
+        m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
+        m_auditEnsureRestrictedUserHomeDirectoriesObject,
+        m_auditEnsurePasswordHashingAlgorithmObject,
+        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
+        m_auditEnsureInactivePasswordLockPeriodObject,
+        //m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationWarningObject,
+        m_auditEnsureSystemAccountsAreNonLoginObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -450,29 +450,29 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureBind9NotInstalledObject,
         m_auditEnsureDovecotCoreNotInstalledObject,
         m_auditEnsureAuditdInstalledObject,
-        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroup,
-        m_auditEnsureNoDuplicateUidsExist,
-        m_auditEnsureNoDuplicateGidsExist,
-        m_auditEnsureNoDuplicateUserNamesExist,
-        m_auditEnsureNoDuplicateGroupsExist,
-        m_auditEnsureShadowGroupIsEmpty,
-        m_auditEnsureRootGroupExists,
-        m_auditEnsureAllAccountsHavePasswords,
-        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
-        m_auditEnsureNoLegacyPlusEntriesInEtcPasswd,
-        m_auditEnsureNoLegacyPlusEntriesInEtcShadow,
-        m_auditEnsureNoLegacyPlusEntriesInEtcGroup,
-        m_auditEnsureDefaultRootAccountGroupIsGidZero,
-        m_auditEnsureRootIsOnlyUidZeroAccount,
-        m_auditEnsureAllUsersHomeDirectoriesExist,
-        m_auditEnsureUsersOwnTheirHomeDirectories,
-        m_auditEnsureRestrictedUserHomeDirectories,
-        m_auditEnsurePasswordHashingAlgorithm,
-        //m_auditEnsureMinDaysBetweenPasswordChanges,
-        m_auditEnsureInactivePasswordLockPeriod,
-        //m_auditEnsurePasswordExpiration,
-        m_auditEnsurePasswordExpirationWarning,
-        m_auditEnsureSystemAccountsAreNonLogin
+        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject,
+        m_auditEnsureNoDuplicateUidsExistObject,
+        m_auditEnsureNoDuplicateGidsExistObject,
+        m_auditEnsureNoDuplicateUserNamesExistObject,
+        m_auditEnsureNoDuplicateGroupsExistObject,
+        m_auditEnsureShadowGroupIsEmptyObject,
+        m_auditEnsureRootGroupExistsObject,
+        m_auditEnsureAllAccountsHavePasswordsObject,
+        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcShadowObject,
+        m_auditEnsureNoLegacyPlusEntriesInEtcGroupObject,
+        m_auditEnsureDefaultRootAccountGroupIsGidZeroObject,
+        m_auditEnsureRootIsOnlyUidZeroAccountObject,
+        m_auditEnsureAllUsersHomeDirectoriesExistObject,
+        m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
+        m_auditEnsureRestrictedUserHomeDirectoriesObject,
+        m_auditEnsurePasswordHashingAlgorithmObject,
+        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
+        m_auditEnsureInactivePasswordLockPeriodObject,
+        //m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationWarningObject,
+        m_auditEnsureSystemAccountsAreNonLoginObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

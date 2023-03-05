@@ -1226,52 +1226,7 @@ int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
     return status;
 }
 
-int CheckUsersRecordedPasswordChangeDates(void* log)
-{
-    SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0;
-    unsigned long daysCurrent = 0;
-    long timer = 0;
-    int status = 0;
-
-    daysCurrent = time(&timer) / 86400;
-
-    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
-    {
-        for (i = 0; i < userListSize; i++)
-        {
-            if (false == userList[i].hasPassword)
-            {
-                continue;
-            }
-            else
-            {
-                if ((unsigned long)userList[i].passwordLastChange <= daysCurrent)
-                {
-                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
-                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].passwordLastChange);
-                }
-                else
-                {
-                    OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %lu days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordLastChange - daysCurrent);
-                    status = ENOENT;
-                }
-            }
-        }
-    }
-
-    FreeUsersList(&userList, userListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last passord change in the past");
-    }
-
-    return status;
-}
-
-int CheckPasswordExpiration(unsigned int days, void* log)
+int CheckMaxDaysBetweenPasswordChanges(unsigned int days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1289,12 +1244,12 @@ int CheckPasswordExpiration(unsigned int days, void* log)
             {
                 if (userList[i].passwordMaxDaysBetweenChanges <= days)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpiration: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %u)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaxDaysBetweenChanges, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckPasswordExpiration: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %u days",
+                    OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %u days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaxDaysBetweenChanges, days);
                     status = ENOENT;
                 }
@@ -1306,7 +1261,7 @@ int CheckPasswordExpiration(unsigned int days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordExpiration: all users who have passwords have correct number of maximum days (%u) between changes", days);
+        OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%u) between changes", days);
     }
 
     return status;
@@ -1348,6 +1303,51 @@ int CheckPasswordExpirationWarning(unsigned int days, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%u) between changes", days);
+    }
+
+    return status;
+}
+
+int CheckUsersRecordedPasswordChangeDates(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    unsigned long daysCurrent = 0;
+    long timer = 0;
+    int status = 0;
+
+    daysCurrent = time(&timer) / 86400;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if ((unsigned long)userList[i].passwordLastChange <= daysCurrent)
+                {
+                    OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
+                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].passwordLastChange);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %lu days)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordLastChange - daysCurrent);
+                    status = ENOENT;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last passord change in the past");
     }
 
     return status;
