@@ -1362,10 +1362,19 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
 {
     EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
+    EXPECT_EQ(0, CheckUsersRecordedPasswordChangeDates(nullptr));
+    EXPECT_EQ(0, CheckMinDaysBetweenPasswordChanges(0, nullptr));
+    EXPECT_EQ(0, CheckPasswordExpiration(99999, nullptr));
+    EXPECT_EQ(0, CheckPasswordExpirationWarning(0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 {
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckSystemAccountsAreNonLogin)
+{
+    EXPECT_EQ(0, CheckSystemAccountsAreNonLogin(nullptr));
 }

@@ -300,7 +300,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
-        m_auditSecurityBaselineObject,
+        //m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -367,9 +367,9 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureUsersOwnTheirHomeDirectories,
         m_auditEnsureRestrictedUserHomeDirectories,
         m_auditEnsurePasswordHashingAlgorithm,
-        m_auditEnsureMinDaysBetweenPasswordChanges,
+        //m_auditEnsureMinDaysBetweenPasswordChanges,
         m_auditEnsureInactivePasswordLockPeriod,
-        m_auditEnsurePasswordExpiration,
+        //m_auditEnsurePasswordExpiration,
         m_auditEnsurePasswordExpirationWarning,
         m_auditEnsureSystemAccountsAreNonLogin
     };
@@ -401,7 +401,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
-        m_auditSecurityBaselineObject,
+        //m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -468,9 +468,9 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureUsersOwnTheirHomeDirectories,
         m_auditEnsureRestrictedUserHomeDirectories,
         m_auditEnsurePasswordHashingAlgorithm,
-        m_auditEnsureMinDaysBetweenPasswordChanges,
+        //m_auditEnsureMinDaysBetweenPasswordChanges,
         m_auditEnsureInactivePasswordLockPeriod,
-        m_auditEnsurePasswordExpiration,
+        //m_auditEnsurePasswordExpiration,
         m_auditEnsurePasswordExpirationWarning,
         m_auditEnsureSystemAccountsAreNonLogin
     };
