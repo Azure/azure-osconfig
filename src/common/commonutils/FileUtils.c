@@ -368,24 +368,24 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+int CheckFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, log)
+    return CheckAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
 }
 
-int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log)
+int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log)
+    return SetAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
-    return CheckAccess(true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log)
+    return CheckAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
 }
 
 int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(true, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log)
+    return SetAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
