@@ -35,25 +35,25 @@ typedef struct SIMPLIFIED_USER
     bool cannotLogin;
     bool hasPassword;
 
-    // Type of encryption used for password
+    // Encryption algorithm (cypher) used for password
     PasswordEncryption passwordEncryption;
     
-    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 (UTC)) 
-    long passwordLastChange;
+    // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
+    long passwordChange;
     
-    // Min number of days between password changes 
-    long passwordMinDaysBetweenChanges;
+    // Minimum number of days between password changes 
+    long passwordMinimumDays;
     
-    // Max number of days between password changes
-    long passwordMaxDaysBetweenChanges;
+    // Maximum number of days between password changes
+    long passwordMaximumDays;
     
     // Number of days before password expires to warn user to change it 
-    long passwordWarnDaysBeforeExpiry;   
+    long passwordWarningDays;   
     
     // Number of days after password expires until account is disabled 
-    long passwordDaysAfterExpiry;        
+    long passwordExpiredDays;        
     
-    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 (UTC)) 
+    // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
     long expirationDate;                 
 } SIMPLIFIED_USER;
 

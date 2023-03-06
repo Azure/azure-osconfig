@@ -544,7 +544,7 @@ static int AuditEnsureRestrictedUserHomeDirectories(void)
 
 static int AuditEnsurePasswordHashingAlgorithm(void)
 {
-    return CheckPasswordHashingAlgorithm(6, SecurityBaselineGetLog());
+    return CheckPasswordHashingAlgorithm(sha512, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureMinDaysBetweenPasswordChanges(void)

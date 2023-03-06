@@ -1334,6 +1334,7 @@ TEST_F(CommonUtilsTest, CheckUsersAndGroups)
 {
     EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
     EXPECT_EQ(0, CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(nullptr));
+    EXPECT_EQ(0, CheckSystemAccountsAreNonLogin(nullptr));
     EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
 }
 
@@ -1372,9 +1373,4 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 {
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
-}
-
-TEST_F(CommonUtilsTest, CheckSystemAccountsAreNonLogin)
-{
-    EXPECT_EQ(0, CheckSystemAccountsAreNonLogin(nullptr));
 }

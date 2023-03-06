@@ -300,7 +300,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
-        //m_auditSecurityBaselineObject,
+        m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -367,9 +367,9 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
-        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
+        m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
-        //m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditMaxDaysBetweenPasswordChangesObject,
         m_auditEnsurePasswordExpirationWarningObject,
         m_auditEnsureSystemAccountsAreNonLoginObject
     };
