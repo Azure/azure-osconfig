@@ -403,6 +403,48 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureRestrictedUserHomeDirectories",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePasswordHashingAlgorithm",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureMinDaysBetweenPasswordChanges",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureInactivePasswordLockPeriod",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePasswordExpiration",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePasswordExpirationWarning",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSystemAccountsAreNonLogin",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true

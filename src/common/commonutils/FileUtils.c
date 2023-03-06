@@ -367,6 +367,117 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
     return result;
 }
 
+int CheckDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+{
+    struct stat statStruct = { 0 };
+    mode_t currentMode = 0;
+    mode_t desiredMode = 0;
+    int result = ENOENT;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "CheckAccess called with an invalid name argument");
+        return EINVAL;
+    }
+
+    if (DirectoryExists(name))
+    {
+        if (0 == (result = stat(name, &statStruct)))
+        {
+            if ((((uid_t)desiredOwnerId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid)) ||
+                (rootCanOverwriteOwnership && (0 == statStruct.st_uid) && (0 == statStruct.st_gid)))
+            {
+                currentMode = FilterFileAccessFlags(statStruct.st_mode);
+                desiredMode = FilterFileAccessFlags(desiredAccess);
+
+                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
+                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
+                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
+                {
+                    OsConfigLogInfo(log, "CheckDirectoryAccess: access to '%s' (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
+                        name, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
+                        desiredOwnerId, desiredGroupId, desiredAccess, desiredMode);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckDirectoryAccess: no matching access permissions for '%s' (%u-%u) versus expected (%u-%u)",
+                        name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
+                    result = ENOENT;
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckDirectoryAccess: no matching ownership for '%s' (owner: %u, group: %u) versus expected (owner: %u, group: %u)",
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                result = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckDirectoryAccess: stat('%s') failed with %d", name, errno);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckDirectoryAccess: '%s' not found or not a directory, nothing to check", name);
+        result = 0;
+    }
+
+    return result;
+}
+
+int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+{
+    int result = ENOENT;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "SetDirectoryAccess called with an invalid name argument");
+        return EINVAL;
+    }
+
+    if (DirectoryExists(name))
+    {
+        if (0 == (result = CheckDirectoryAccess(name, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
+        {
+            OsConfigLogInfo(log, "SetDirectoryAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
+                name, desiredOwnerId, desiredGroupId, desiredAccess);
+            result = 0;
+        }
+        else
+        {
+            if (0 == (result = chown(name, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
+            {
+                OsConfigLogInfo(log, "SetDirectoryAccess: successfully set '%s' ownership to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
+
+                if (0 == (result = chmod(name, desiredAccess)))
+                {
+                    OsConfigLogInfo(log, "SetDirectoryAccess: successfully set '%s' access to %u", name, desiredAccess);
+                    result = 0;
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetDirectoryAccess: chmod('%s', %d) failed with %d", name, desiredAccess, errno);
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "SetDirectoryAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+            }
+
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "SetDirectoryAccess: '%s' not found or not a directory, nothing to set", name);
+        result = 0;
+    }
+
+    return result;
+
+}
+
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
 {
     FILE* mountFileHandle = NULL;

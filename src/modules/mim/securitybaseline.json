@@ -403,6 +403,48 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureRestrictedUserHomeDirectories",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePasswordHashingAlgorithm",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureMinDaysBetweenPasswordChanges",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureInactivePasswordLockPeriod",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureMaxDaysBetweenPasswordChanges",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePasswordExpirationWarning",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureSystemAccountsAreNonLogin",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,
