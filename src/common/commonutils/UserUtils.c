@@ -1204,12 +1204,12 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
             {
                 if (userList[i].minimumPasswordAge >= days)
                 {
-                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %u days",
+                    OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                     status = ENOENT;
                 }
@@ -1221,7 +1221,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%u) between changes", days);
+        OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
     return status;
@@ -1245,12 +1245,12 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
             {
                 if (userList[i].maximumPasswordAge <= days)
                 {
-                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %u days",
+                    OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                     status = ENOENT;
                 }
@@ -1262,7 +1262,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%u) between changes", days);
+        OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
     return status;
@@ -1286,12 +1286,12 @@ int CheckPasswordExpirationWarning(long days, void* log)
             {
                 if (userList[i].warningPeriod >= days)
                 {
-                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %u)",
+                    OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %u days",
+                    OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                     status = ENOENT;
                 }
@@ -1303,7 +1303,7 @@ int CheckPasswordExpirationWarning(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%u) between changes", days);
+        OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
     return status;
@@ -1334,7 +1334,7 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %lu days)",
+                    OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
                     status = ENOENT;
                 }
