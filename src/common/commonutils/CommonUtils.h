@@ -59,8 +59,8 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 bool FileExists(const char* name);
 bool DirectoryExists(const char* name);
 
-int CheckFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
-int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredFileAccess, void* log);
+int CheckFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
 int CheckDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
 int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
