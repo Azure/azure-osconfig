@@ -39,19 +39,19 @@ typedef struct SIMPLIFIED_USER
     PasswordEncryption passwordEncryption;
     
     // Date of last change (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
-    long passwordChange;
+    long lastPasswordChange;
     
     // Minimum number of days between password changes 
-    long passwordMinimumDays;
+    long minimumPasswordAge;
     
     // Maximum number of days between password changes
-    long passwordMaximumDays;
+    long maximumPasswordAge;
     
     // Number of days before password expires to warn user to change it 
-    long passwordWarningDays;   
+    long warningPeriod;
     
     // Number of days after password expires until account is disabled 
-    long passwordExpiredDays;        
+    long inactivityPeriod;
     
     // Date when user account expires (measured in days since 1970-01-01 00:00:00 +0000 UTC) 
     long expirationDate;                 
@@ -94,9 +94,9 @@ int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
-int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log);
-int CheckMaxDaysBetweenPasswordChanges(unsigned int days, void* log);
-int CheckPasswordExpirationWarning(unsigned int days, void* log);
+int CheckMinDaysBetweenPasswordChanges(long days, void* log);
+int CheckMaxDaysBetweenPasswordChanges(long days, void* log);
+int CheckPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(void* log);
 int CheckSystemAccountsAreNonLogin(void* log);
 

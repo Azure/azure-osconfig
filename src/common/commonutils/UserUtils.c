@@ -7,6 +7,7 @@
 #include <shadow.h>
 
 #define MAX_GROUPS_USER_CAN_BE_IN 16
+#define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
 static const char* g_root = "root";
 
@@ -26,11 +27,11 @@ static void ResetUserEntry(SIMPLIFIED_USER* target)
         target->cannotLogin = false;
         target->hasPassword = false;
         target->passwordEncryption = unknown;
-        target->passwordChange = 0;
-        target->passwordMinimumDays = 0;
-        target->passwordMaximumDays = 0;
-        target->passwordWarningDays = 0;
-        target->passwordExpiredDays = 0;
+        target->lastPasswordChange = 0;
+        target->minimumPasswordAge = 0;
+        target->maximumPasswordAge = 0;
+        target->warningPeriod = 0;
+        target->inactivityPeriod = 0;
         target->expirationDate = 0; 
     }
 }
@@ -243,11 +244,11 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 }
 
                 user->hasPassword = true;
-                user->passwordChange = shadowEntry->sp_lstchg;
-                user->passwordMinimumDays = shadowEntry->sp_min;
-                user->passwordMaximumDays = shadowEntry->sp_max;
-                user->passwordWarningDays = shadowEntry->sp_warn;
-                user->passwordExpiredDays = shadowEntry->sp_inact;
+                user->lastPasswordChange = shadowEntry->sp_lstchg;
+                user->minimumPasswordAge = shadowEntry->sp_min;
+                user->maximumPasswordAge = shadowEntry->sp_max;
+                user->warningPeriod = shadowEntry->sp_warn;
+                user->inactivityPeriod = shadowEntry->sp_inact;
                 user->expirationDate = shadowEntry->sp_expire;
                 break;
 
@@ -1185,7 +1186,7 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     return status;
 }
 
-int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
+int CheckMinDaysBetweenPasswordChanges(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1201,15 +1202,15 @@ int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
             }
             else
             {
-                if (userList[i].passwordMinimumDays >= days)
+                if (userList[i].minimumPasswordAge >= days)
                 {
                     OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) has a minimum time between password changes of %ld days (requested: %u)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMinimumDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %u days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMinimumDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                     status = ENOENT;
                 }
             }
@@ -1226,7 +1227,7 @@ int CheckMinDaysBetweenPasswordChanges(unsigned int days, void* log)
     return status;
 }
 
-int CheckMaxDaysBetweenPasswordChanges(unsigned int days, void* log)
+int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1242,15 +1243,15 @@ int CheckMaxDaysBetweenPasswordChanges(unsigned int days, void* log)
             }
             else
             {
-                if (userList[i].passwordMaximumDays <= days)
+                if (userList[i].maximumPasswordAge <= days)
                 {
                     OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %u)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaximumDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %u days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordMaximumDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                     status = ENOENT;
                 }
             }
@@ -1267,7 +1268,7 @@ int CheckMaxDaysBetweenPasswordChanges(unsigned int days, void* log)
     return status;
 }
 
-int CheckPasswordExpirationWarning(unsigned int days, void* log)
+int CheckPasswordExpirationWarning(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1283,15 +1284,15 @@ int CheckPasswordExpirationWarning(unsigned int days, void* log)
             }
             else
             {
-                if (userList[i].passwordWarningDays >= days)
+                if (userList[i].warningPeriod >= days)
                 {
                     OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %u)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordWarningDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %u days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordWarningDays, days);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                     status = ENOENT;
                 }
             }
@@ -1312,11 +1313,9 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    unsigned long daysCurrent = 0;
     long timer = 0;
     int status = 0;
-
-    daysCurrent = time(&timer) / 86400;
+    long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1328,15 +1327,15 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
             }
             else
             {
-                if ((unsigned long)userList[i].passwordChange <= daysCurrent)
+                if (userList[i].lastPasswordChange <= daysCurrent)
                 {
                     OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) has %lu days since last password change",
-                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].passwordChange);
+                        userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent - userList[i].lastPasswordChange);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %lu days)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordChange - daysCurrent);
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
                     status = ENOENT;
                 }
             }
