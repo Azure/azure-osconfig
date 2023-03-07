@@ -634,6 +634,8 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
         {
             OsConfigLogError(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
         }
+
+        FREE_MEMORY(command);
     }
 
     return status;

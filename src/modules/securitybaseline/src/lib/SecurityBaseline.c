@@ -614,7 +614,7 @@ static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 
 static int AuditEnsureAuditdServiceIsRunning(void) // THIS ONE NEEDS REMEDIATION
 {
-    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT
+    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 int AuditSecurityBaseline(void)
