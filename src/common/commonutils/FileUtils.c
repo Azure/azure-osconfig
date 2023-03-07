@@ -600,3 +600,41 @@ bool CharacterFoundInFile(const char* fileName, char what)
 {
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
 }
+
+int FindTextInFile(const char* fileName, const char* text, void* log)
+{
+    const char* commandTemplate = "cat %s | grep %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindTextInFile called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(text) + 1;
+
+    if (NULL == (command = malloc(commandLength + 1)))
+    {
+        OsConfigLogError(log, "FindTextInFile: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, fileName, text);
+
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        {
+            OsConfigLogInfo(log, "FindTextInFile: '%s' found in '%s'", text, fileName);
+        }
+        else
+        {
+            OsConfigLogError(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+        }
+    }
+
+    return status;
+}

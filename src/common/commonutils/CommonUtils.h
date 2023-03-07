@@ -73,15 +73,14 @@ int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
+int FindTextInFile(const char* fileName, const char* text, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
-
 char* HashCommand(const char* source, void* log);
 
 bool IsValidClientName(const char* name);
-
 bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log);
 
 bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, void* log);

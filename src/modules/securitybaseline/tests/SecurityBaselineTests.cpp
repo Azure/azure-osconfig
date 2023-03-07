@@ -46,7 +46,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-
         const char* m_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
         const char* m_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
         const char* m_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
@@ -62,7 +61,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
         const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
         const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
-
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
         const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
@@ -100,6 +98,14 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
         const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
         const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
+        const char* m_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
+        const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
+        const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
+        const char* m_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
+        const char* m_auditEnsureTheCrondServiceIsEnabledObject = "auditEnsureTheCrondServiceIsEnabled";
+        const char* m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -123,7 +129,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
-
         const char* m_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
         const char* m_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
         const char* m_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
@@ -371,7 +376,15 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
         m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
+        m_auditEnsureSystemAccountsAreNonLoginObject,
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
+        m_auditEnsurePrelinkIsDisabledObject,
+        m_auditEnsureTalkClientIsNotInstalledObject,
+        m_auditEnsureDotDoesNotAppearInRootsPathObject,
+        m_auditEnsureTheCrondServiceIsEnabledObject,
+        m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureAuditdServiceIsRunningObject
     };
     
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -401,7 +414,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
-        //m_auditSecurityBaselineObject,
+        m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -468,11 +481,19 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
-        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
+        m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
-        //m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditMaxDaysBetweenPasswordChangesObject,
         m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
+        m_auditEnsureSystemAccountsAreNonLoginObject,
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
+        m_auditEnsurePrelinkIsDisabledObject,
+        m_auditEnsureTalkClientIsNotInstalledObject,
+        m_auditEnsureDotDoesNotAppearInRootsPathObject,
+        m_auditEnsureTheCrondServiceIsEnabledObject,
+        m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureAuditdServiceIsRunningObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);

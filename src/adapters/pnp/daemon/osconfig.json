@@ -450,6 +450,46 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAuthenticationRequiredForSingleUserMode",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePrelinkIsDisabled",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTalkClientIsNotInstalled",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDotDoesNotAppearInRootsPath",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTheCrondServiceIsEnabled",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRemoteLoginWarningBannerIsConfigured",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureLocalLoginWarningBannerIsConfigured",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAuditdServiceIsRunning",
+      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditSecurityBaseline"
     },
     {
