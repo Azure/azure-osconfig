@@ -665,11 +665,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
     else
     {
         memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, fileName, text);
+        snprintf(command, commandLength, commandTemplate, variableName, text);
 
         if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &results, NULL, log)))
         {
-            if (NULL != strstr(what, results))
+            if (NULL != strstr(text, results))
             {
                 OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
             }

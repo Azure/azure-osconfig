@@ -1417,7 +1417,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
         {
             OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: single user mode, only root user has password");
         }
-        else if (rootHasPassword usersWithPassword)
+        else if (rootHasPassword && usersWithPassword)
         {
             OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root has password");
         }

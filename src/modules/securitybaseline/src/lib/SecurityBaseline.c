@@ -599,24 +599,24 @@ static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 
 static int AuditEnsureTheCrondServiceIsEnabled(void)
 {
-    return (CheckPackageInstalled("cron", SecurityBaselineGetLog() || 
-        (IsDaemonActive("crond.service", SecurityBaselineGetLog()) ? 0 : ENOENT));
+    return (CheckPackageInstalled("cron", SecurityBaselineGetLog()) && 
+        IsDaemonActive("crond.service", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return (FindTextInFile("/etc/issue.net", "\m", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue.net", "\r", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue.net", "\s", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue.net", "\v", SecurityBaselineGetLog()));
+    return (FindTextInFile("/etc/issue.net", "\\m", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\\r", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\\s", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\\v", SecurityBaselineGetLog()));
 }
 
 static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return (FindTextInFile("/etc/issue", "\m", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue", "\r", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue", "\s", SecurityBaselineGetLog()) ||
-        FindTextInFile("/etc/issue", "\v", SecurityBaselineGetLog()));
+    return (FindTextInFile("/etc/issue", "\\m", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\\r", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\\s", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\\v", SecurityBaselineGetLog()));
 }
 
 static int AuditEnsureAuditdServiceIsRunning(void) // ADD REMEDIATION
