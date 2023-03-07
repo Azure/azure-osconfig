@@ -1,10 +1,10 @@
 name: CI
 
-on:
-  pull_request:
-    paths:
-      - src/**
-      - .github/workflows/ci.yml
+on: [push]
+  # pull_request:
+  #   paths:
+  #     - src/**
+  #     - .github/workflows/ci.yml
 
 env:
   BUILD_TYPE: Release
@@ -16,17 +16,15 @@ jobs:
     name: Unit test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian9]
+        os: [ubuntu18.04, ubuntu20.04, debian10, debian11]
         variant:
           [
             { arch: arm, platform: linux/arm/v7 },
             { arch: arm64, platform: linux/arm64/v8 },
             { arch: amd64, platform: linux/amd64 },
           ]
-        exclude:
-          - os: ubuntu20.04
-            variant: { arch: arm, platform: linux/arm/v7 }
 
     steps:
       - uses: actions/checkout@v3
@@ -85,7 +83,7 @@ jobs:
           path: ./build/gtest-output
           output: ${{ steps.test.outputs.xml }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: unit-test
