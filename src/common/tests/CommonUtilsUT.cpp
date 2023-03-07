@@ -1377,7 +1377,7 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 
 TEST_F(CommonUtilsTest, FindTextInFile)
 {
-    EXPECT_TRUE(CreateTestFile(m_path, m_dataWithEol));
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
 
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, m_data, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
@@ -1388,8 +1388,9 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(0, FindTextInFile(m_path, "123", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "$%^&", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, ",./", nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, m_data, nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, m_dataWithEol, nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\{", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
