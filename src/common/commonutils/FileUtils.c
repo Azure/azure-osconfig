@@ -643,7 +643,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
 {
-    const char* commandTemplate = "echo $%s | grep %c";
+    const char* commandTemplate = "echo $%s | grep %s";
     char* command = NULL;
     char* results = NULL;
     size_t commandLength = 0;
@@ -655,7 +655,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    commandLength = strlen(commandTemplate) + strlen(variableName) + 2;
+    commandLength = strlen(commandTemplate) + strlen(variableName) + + strlen(text) + 1;
 
     if (NULL == (command = malloc(commandLength + 1)))
     {
@@ -667,7 +667,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, variableName, text);
 
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &results, NULL, log)))
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
         {
             if (NULL != strstr(text, results))
             {
@@ -677,6 +677,10 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
             {
                 OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
             }
+        }
+        else
+        {
+            OsConfigLogError(log, "FindTextInEnvironmentVariable: echo failed, %d", status);
         }
 
         FREE_MEMORY(results);
