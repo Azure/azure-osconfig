@@ -21,7 +21,7 @@ namespace E2eTesting
         {
             if (!File.Exists(_reportedPath))
             {
-                Assert.Fail("[LocalDataSource] reported path is missing: ", _reportedPath);
+                Assert.Fail("[LocalDataSource] reported path is missing: " + _reportedPath);
             }
             if (!File.Exists(_desiredPath))
             {
