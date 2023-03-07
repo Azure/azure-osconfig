@@ -640,3 +640,48 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
     return status;
 }
+
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
+{
+    const char* commandTemplate = "echo $%s | grep %c";
+    char* command = NULL;
+    char* results = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindCharacterInEnvironmentVariable called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(variableName) + 2;
+
+    if (NULL == (command = malloc(commandLength + 1)))
+    {
+        OsConfigLogError(log, "FindCharacterInEnvironmentVariable: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, fileName, text);
+
+        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &results, NULL, log)))
+        {
+            if (NULL != strstr(what, results))
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+            }
+        }
+
+        FREE_MEMORY(results);
+        FREE_MEMORY(command);
+    }
+
+    return status;
+}

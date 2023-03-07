@@ -73,7 +73,9 @@ int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
+
 int FindTextInFile(const char* fileName, const char* text, void* log);
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

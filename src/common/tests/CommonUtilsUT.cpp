@@ -1358,6 +1358,7 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
     EXPECT_EQ(0, CheckRootGroupExists(nullptr));
     EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
     EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+    EXPECT_EQ(0, CheckRootPasswordForSingleUserMode(nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
@@ -1395,4 +1396,16 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
+{
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", "/", nullptr));
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", "/usr", nullptr));
 }

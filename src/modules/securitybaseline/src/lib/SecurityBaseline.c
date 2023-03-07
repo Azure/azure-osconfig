@@ -579,40 +579,47 @@ static int AuditEnsureSystemAccountsAreNonLogin(void)
 
 static int AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
-    return 0; ///
+    return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog());
 }
 
-static int AuditEnsurePrelinkIsDisabled(void)
+static int AuditEnsurePrelinkIsDisabled(void) // ADD REMEDIATION
 {
-    return 0; ///
+    return (!CheckPackageInstalled("prelink", SecurityBaselineGetLog()));
 }
 
-static int AuditEnsureTalkClientIsNotInstalled(void)
+static int AuditEnsureTalkClientIsNotInstalled(void) // ADD REMEDIATION
 {
-    return 0; ///
+    return !CheckPackageInstalled("talk", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return 0; ///
+    return !FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTheCrondServiceIsEnabled(void)
 {
-    return 0; ///
+    return (CheckPackageInstalled("cron", SecurityBaselineGetLog() || 
+        (IsDaemonActive("crond.service", SecurityBaselineGetLog()) ? 0 : ENOENT));
 }
 
 static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return 0; ///
+    return (FindTextInFile("/etc/issue.net", "\m", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\r", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\s", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue.net", "\v", SecurityBaselineGetLog()));
 }
 
 static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return 0; ///
+    return (FindTextInFile("/etc/issue", "\m", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\r", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\s", SecurityBaselineGetLog()) ||
+        FindTextInFile("/etc/issue", "\v", SecurityBaselineGetLog()));
 }
 
-static int AuditEnsureAuditdServiceIsRunning(void) // THIS ONE NEEDS REMEDIATION
+static int AuditEnsureAuditdServiceIsRunning(void) // ADD REMEDIATION
 {
     return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }

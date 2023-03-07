@@ -1380,3 +1380,57 @@ int CheckSystemAccountsAreNonLogin(void* log)
 
     return status;
 }
+
+int CheckRootPasswordForSingleUserMode(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    bool usersWithPassword = false;
+    bool rootHasPassword = false;
+    int status = 0;
+    
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].hasPassword)
+            {
+                if (userList[i].isRoot)
+                {
+                    OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
+                    rootHasPassword = true;
+                    break;
+                }
+                else if (userList[i].noLogin && userList[i].cannotLogin && userList[i].hasPassword)
+                {
+                    usersWithPassword = true;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status) 
+    {
+        if (rootHasPassword && (false == usersWithPassword))
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: single user mode, only root user has password");
+        }
+        else if (rootHasPassword usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root has password");
+        }
+        else if ((false == rootHasPassword) && usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root does not have password");
+        }
+        else if ((false == rootHasPassword) && (false == usersWithPassword))
+        {
+            OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: no user has password and root does not have password");
+            status = ENOENT;
+        }
+    }
+
+    return status;
+}
