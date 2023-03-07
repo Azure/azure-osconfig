@@ -1377,18 +1377,20 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 
 TEST_F(CommonUtilsTest, FindTextInFile)
 {
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    const char* test = "This is a text with options /1 /2 \\3 \\zoo -34!";
 
-    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, m_data, nullptr));
+    EXPECT_TRUE(CreateTestFile(m_path, test));
+
+    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, test, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
     
-    EXPECT_EQ(0, FindTextInFile(m_path, "{}", nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, "123", nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, "$%^&", nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, ",./", nullptr));
-    EXPECT_EQ(0, FindTextInFile(m_path, "\\{", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\3", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\z", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "34", nullptr));
     EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
     EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
 
