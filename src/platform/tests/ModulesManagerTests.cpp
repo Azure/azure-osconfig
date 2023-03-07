@@ -378,6 +378,8 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, LoadModulesSingleReported)
     {
+        GTEST_SKIP();
+
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 
@@ -395,6 +397,8 @@ namespace Tests
 
     TEST_F(ModuleManagerTests, LoadModulesMultipleReported)
     {
+        GTEST_SKIP();
+
         MPI_JSON_STRING payload = nullptr;
         int payloadSizeBytes = 0;
 

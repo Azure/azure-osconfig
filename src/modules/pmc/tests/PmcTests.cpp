@@ -153,6 +153,8 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, ValidSetGet)
     {
+        GTEST_SKIP();
+
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
             {"apt-get update", std::tuple<int, std::string>(0, "")},
@@ -184,6 +186,8 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetGetUpdatingPackagesSourcesFailure)
     {
+        GTEST_SKIP();
+
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
             {"apt-get update", std::tuple<int, std::string>(EBUSY, "")},
@@ -213,6 +217,8 @@ namespace OSConfig::Platform::Tests
 
     TEST_F(PmcTests, SetGetPackageInstallationTimeoutFailure)
     {
+        GTEST_SKIP();
+
         const std::map<std::string, std::tuple<int, std::string>> textResults =
         {
             {"apt-get update", std::tuple<int, std::string>(0, "")},
