@@ -1304,7 +1304,7 @@ int CheckPasswordExpirationLessThan(long days, void* log)
                 {
                     OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
-                    //status = ENOENT;
+                    status = ENOENT;
                 }
                 else if (userList[i].expirationDate < currentDate)
                 {
