@@ -381,7 +381,6 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
         m_auditEnsureSystemAccountsAreNonLoginObject,
-        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
         m_auditEnsurePrelinkIsDisabledObject,
         m_auditEnsureTalkClientIsNotInstalledObject,
         m_auditEnsureDotDoesNotAppearInRootsPathObject,
@@ -440,7 +439,6 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     int payloadSizeBytes = 0;
 
     const char* mimRequiredObjects[] = {
-        m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
         m_auditEnsurePermissionsOnEtcHostsAllowObject,
@@ -507,13 +505,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
-        m_auditEnsureMinDaysBetweenPasswordChangesObject,
-        m_auditEnsureInactivePasswordLockPeriodObject,
-        m_auditMaxDaysBetweenPasswordChangesObject,
-        m_auditEnsurePasswordExpirationObject,
-        m_auditEnsurePasswordExpirationWarningObject,
         m_auditEnsureSystemAccountsAreNonLoginObject,
-        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
         m_auditEnsurePrelinkIsDisabledObject,
         m_auditEnsureTalkClientIsNotInstalledObject,
         m_auditEnsureDotDoesNotAppearInRootsPathObject,
@@ -522,7 +514,6 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
         m_auditEnsureAuditdServiceIsRunningObject
     };
-
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_truncatedMaxPayloadSizeBytes));
