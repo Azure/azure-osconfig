@@ -63,7 +63,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
         const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
         const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
-        const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCrondServiceIsEnabled";
+        const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCronServiceIsEnabled";
         const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
@@ -147,7 +147,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
         const char* m_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePrelinkIsDisabled";
         const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
-        const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCrondServiceIsEnabled";
+        const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
         const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
 
         const char* m_pass = "\"PASS\"";

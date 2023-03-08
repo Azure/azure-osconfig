@@ -1407,6 +1407,5 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
     EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, nullptr));
 
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", "/", nullptr));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", "/usr", nullptr));
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
 }

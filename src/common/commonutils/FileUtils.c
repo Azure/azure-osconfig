@@ -636,7 +636,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
         }
         else
         {
-            OsConfigLogError(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
             status = ENOENT;
         }
 
@@ -660,7 +660,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    commandLength = strlen(commandTemplate) + strlen(variableName) + + strlen(text) + 1;
+    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
 
     if (NULL == (command = malloc(commandLength + 1)))
     {
@@ -674,7 +674,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
         {
-            if (NULL != strstr(text, results))
+            if (NULL != strstr(results, text))
             {
                 OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
             }
