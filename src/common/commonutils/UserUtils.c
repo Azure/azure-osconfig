@@ -1487,7 +1487,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
         }
         else if ((false == rootHasPassword) && (false == usersWithPassword))
         {
-            OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: no user has password and root does not have password");
+            OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: single user more and root does not have password");
             status = ENOENT;
         }
     }
