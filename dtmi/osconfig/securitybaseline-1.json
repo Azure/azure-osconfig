@@ -427,12 +427,6 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsurePasswordExpiration",
-      "schema": "string",
-      "writable": false
-    },
-    {
-      "@type": "Property",
       "name": "auditEnsurePasswordExpirationWarning",
       "schema": "string",
       "writable": false
@@ -469,7 +463,7 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsureTheCrondServiceIsEnabled",
+      "name": "auditEnsureCronServiceIsEnabled",
       "schema": "string",
       "writable": false
     },
@@ -698,6 +692,30 @@
     {
       "@type": "Property",
       "name": "remediateEnsureAuditdInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePrelinkIsDisabled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureTalkClientIsNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureCronServiceIsEnabled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureAuditdServiceIsRunning",
       "schema": "string",
       "writable": true
     }

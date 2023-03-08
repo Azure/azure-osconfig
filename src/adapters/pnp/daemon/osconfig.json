@@ -466,7 +466,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureTheCrondServiceIsEnabled"
+      "ObjectName": "auditEnsureCronServiceIsEnabled"
     },
     {
       "ComponentName": "SecurityBaseline",

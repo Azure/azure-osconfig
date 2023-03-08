@@ -527,6 +527,10 @@ int InstallPackage(const char* packageName, void* log)
             OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
         }
     }
+    else
+    {
+        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+    }
 
     return status;
 }

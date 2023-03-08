@@ -61,6 +61,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
         const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
         const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
+        const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
+        const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
+        const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCrondServiceIsEnabled";
+        const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
         const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
@@ -99,13 +103,9 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
         const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
         const char* m_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
-        const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
-        const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
         const char* m_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
-        const char* m_auditEnsureTheCrondServiceIsEnabledObject = "auditEnsureTheCrondServiceIsEnabled";
         const char* m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
         const char* m_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
-        const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -144,6 +144,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
         const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
         const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
+        const char* m_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePrelinkIsDisabled";
+        const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
+        const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCrondServiceIsEnabled";
+        const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
 
         const char* m_pass = "\"PASS\"";
 
@@ -247,7 +251,11 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureSldapdNotInstalledObject,
         m_remediateEnsureBind9NotInstalledObject,
         m_remediateEnsureDovecotCoreNotInstalledObject,
-        m_remediateEnsureAuditdInstalledObject
+        m_remediateEnsureAuditdInstalledObject,
+        m_remediateEnsurePrelinkIsDisabledObject,
+        m_remediateEnsureTalkClientIsNotInstalledObject,
+        m_remediateEnsureCronServiceIsEnabledObject,
+        m_remediateEnsureAuditdServiceIsRunningObject
     };
 
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
@@ -381,7 +389,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsurePrelinkIsDisabledObject,
         m_auditEnsureTalkClientIsNotInstalledObject,
         m_auditEnsureDotDoesNotAppearInRootsPathObject,
-        m_auditEnsureTheCrondServiceIsEnabledObject,
+        m_auditEnsureCronServiceIsEnabledObject,
         m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
         m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
         m_auditEnsureAuditdServiceIsRunningObject
@@ -490,7 +498,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsurePrelinkIsDisabledObject,
         m_auditEnsureTalkClientIsNotInstalledObject,
         m_auditEnsureDotDoesNotAppearInRootsPathObject,
-        m_auditEnsureTheCrondServiceIsEnabledObject,
+        m_auditEnsureCronServiceIsEnabledObject,
         m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
         m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
         m_auditEnsureAuditdServiceIsRunningObject

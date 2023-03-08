@@ -184,6 +184,26 @@
     "ObjectName": "remediateEnsureAuditdInstalled"
   },
   {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePrelinkIsDisabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureTalkClientIsNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureCronServiceIsEnabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAuditdServiceIsRunning"
+  },
+  {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditSecurityBaseline",
@@ -642,7 +662,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureTheCrondServiceIsEnabled",
+    "ObjectName": "auditEnsureCronServiceIsEnabled",
     "Payload": "PASS"
   },
   {

@@ -19,12 +19,6 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsurePermissionsOnEtcIssueNet",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
           "name": "auditEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": false,
@@ -469,7 +463,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureTheCrondServiceIsEnabled",
+          "name": "auditEnsureCronServiceIsEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -494,6 +488,12 @@
         },
         {
           "name": "remediateSecurityBaseline",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
@@ -698,6 +698,30 @@
         },
         {
           "name": "remediateEnsureAuditdInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePrelinkIsDisabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureTalkClientIsNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureCronServiceIsEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureAuditdServiceIsRunning",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
