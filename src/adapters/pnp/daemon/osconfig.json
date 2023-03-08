@@ -450,43 +450,35 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureAuthenticationRequiredForSingleUserMode",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureAuthenticationRequiredForSingleUserMode"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsurePrelinkIsDisabled",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsurePrelinkIsDisabled"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureTalkClientIsNotInstalled",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureTalkClientIsNotInstalled"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureDotDoesNotAppearInRootsPath",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureDotDoesNotAppearInRootsPath"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureTheCrondServiceIsEnabled",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureTheCrondServiceIsEnabled"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureRemoteLoginWarningBannerIsConfigured",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureRemoteLoginWarningBannerIsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureLocalLoginWarningBannerIsConfigured",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureLocalLoginWarningBannerIsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureAuditdServiceIsRunning",
-      "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+      "ObjectName": "auditEnsureAuditdServiceIsRunning"
     },
     {
       "ComponentName": "SecurityBaseline",

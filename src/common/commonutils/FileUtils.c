@@ -633,6 +633,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
         else
         {
             OsConfigLogError(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+            status = ENOENT;
         }
 
         FREE_MEMORY(command);
@@ -676,6 +677,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
             else
             {
                 OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+                status = ENOENT;
             }
         }
         else
