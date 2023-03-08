@@ -201,6 +201,10 @@ static char* g_prelink = "prelink";
 static char* g_talk = "talk";
 static char* g_cron = "cron";
 
+static long g_minDaysBetweenPasswordChanges = 7;
+static long g_maxDaysBetweenPasswordChanges = 365;
+static long g_passwordExpirationWarning = 7;
+
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
 
@@ -562,7 +566,7 @@ static int AuditEnsurePasswordHashingAlgorithm(void)
 
 static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckMinDaysBetweenPasswordChanges(7, SecurityBaselineGetLog());
+    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
@@ -572,12 +576,12 @@ static int AuditEnsureInactivePasswordLockPeriod(void)
 
 static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return CheckMaxDaysBetweenPasswordChanges(365, SecurityBaselineGetLog());
+    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckPasswordExpirationWarning(7, SecurityBaselineGetLog());
+    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSystemAccountsAreNonLogin(void)
