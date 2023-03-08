@@ -1272,8 +1272,9 @@ int CheckPasswordExpirationLessThan(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+    long timer = 0;
     int status = 0;
+    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
