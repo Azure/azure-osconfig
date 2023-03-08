@@ -624,18 +624,18 @@ static int AuditEnsureCronServiceIsEnabled(void)
 
 static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return (!FindTextInFile("/etc/issue.net", "\\m", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue.net", "\\r", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue.net", "\\s", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue.net", "\\v", SecurityBaselineGetLog()));
+    return (!FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()));
 }
 
 static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return (!FindTextInFile("/etc/issue", "\\m", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue", "\\r", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue", "\\s", SecurityBaselineGetLog()) &&
-        !FindTextInFile("/etc/issue", "\\v", SecurityBaselineGetLog()));
+    return (!FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()));
 }
 
 static int AuditEnsureAuditdServiceIsRunning(void)
