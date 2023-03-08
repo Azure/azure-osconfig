@@ -388,7 +388,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureCronServiceIsEnabledObject,
         m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
         m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
-        m_auditEnsureAuditdServiceIsRunningObject
+        m_auditEnsureAuditdServiceIsRunningObject,
         m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
@@ -401,7 +401,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    for (i = 0; i < mimObjectsNumber; i++)
+    for (int i = 0; i < mimObjectsNumber; i++)
     {
         EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimObjects[i], &payload, &payloadSizeBytes));
         EXPECT_NE(nullptr, payload);
