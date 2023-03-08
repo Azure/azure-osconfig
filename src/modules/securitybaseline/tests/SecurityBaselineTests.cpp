@@ -381,11 +381,6 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
-        m_auditEnsureMinDaysBetweenPasswordChangesObject,
-        m_auditEnsureInactivePasswordLockPeriodObject,
-        m_auditMaxDaysBetweenPasswordChangesObject,
-        m_auditEnsurePasswordExpirationObject,
-        m_auditEnsurePasswordExpirationWarningObject,
         m_auditEnsureSystemAccountsAreNonLoginObject,
         m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
         m_auditEnsurePrelinkIsDisabledObject,
@@ -396,8 +391,19 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
         m_auditEnsureAuditdServiceIsRunningObject
     };
-    
+
+    const char* mimOptionalObjects[] = {
+        m_auditSecurityBaselineObject,
+        m_auditEnsureMinDaysBetweenPasswordChangesObject,
+        m_auditEnsureInactivePasswordLockPeriodObject,
+        m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationObject,
+        m_auditEnsurePasswordExpirationWarningObject,
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject
+    };
+
     int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+    int mimOptionalObjectsNumber = ARRAY_SIZE(mimOptionalObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
@@ -409,6 +415,17 @@ TEST_F(SecurityBaselineTest, MmiGet)
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         EXPECT_STREQ(payloadString, m_pass);
+        FREE_MEMORY(payloadString);
+        SecurityBaselineMmiFree(payload);
+    }
+
+    for (int i = 0; i < mimOptionalObjectsNumber; i++)
+    {
+        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimOptionalObjects[i], &payload, &payloadSizeBytes));
+        EXPECT_NE(nullptr, payload);
+        EXPECT_NE(0, payloadSizeBytes);
+        EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+        EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
