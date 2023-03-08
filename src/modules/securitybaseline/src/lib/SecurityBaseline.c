@@ -583,7 +583,7 @@ static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
 
 static int AuditEnsurePasswordExpiration(void)
 {
-    return int CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
+    return CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
