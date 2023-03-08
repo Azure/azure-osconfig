@@ -92,6 +92,7 @@ static const char* g_auditEnsurePasswordHashingAlgorithmObject = "auditEnsurePas
 static const char* g_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
 static const char* g_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
 static const char* g_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+static const char* g_auditEnsurePasswordExpirationObject = "auditEnsurePasswordExpiration";
 static const char* g_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
 static const char* g_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
 static const char* g_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
@@ -204,6 +205,7 @@ static char* g_cron = "cron";
 static long g_minDaysBetweenPasswordChanges = 7;
 static long g_maxDaysBetweenPasswordChanges = 365;
 static long g_passwordExpirationWarning = 7;
+static long g_passwordExpiration = 365;
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -579,6 +581,11 @@ static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
     return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
+static int AuditEnsurePasswordExpiration(void)
+{
+    return int CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
+}
+
 static int AuditEnsurePasswordExpirationWarning(void)
 {
     return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
@@ -707,6 +714,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
         (0 == AuditEnsureInactivePasswordLockPeriod()) &&
         (0 == AuditEnsureMaxDaysBetweenPasswordChanges()) &&
+        (0 == AuditEnsurePasswordExpiration()) &&
         (0 == AuditEnsurePasswordExpirationWarning()) &&
         (0 == AuditEnsureSystemAccountsAreNonLogin()) &&
         (0 == AuditEnsureAuthenticationRequiredForSingleUserMode()) &&
@@ -1337,6 +1345,10 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditMaxDaysBetweenPasswordChangesObject))
         {
             result = AuditEnsureMaxDaysBetweenPasswordChanges() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationObject))
+        {
+            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {

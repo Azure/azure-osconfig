@@ -442,6 +442,10 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordExpiration"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePasswordExpirationWarning"
     },
     {

@@ -100,6 +100,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
         const char* m_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
         const char* m_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+        const char* m_auditEnsurePasswordExpirationObject = "auditEnsurePasswordExpiration";
         const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
         const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
         const char* m_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
@@ -383,6 +384,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationObject,
         m_auditEnsurePasswordExpirationWarningObject,
         m_auditEnsureSystemAccountsAreNonLoginObject,
         m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
@@ -492,6 +494,7 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
         m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationObject,
         m_auditEnsurePasswordExpirationWarningObject,
         m_auditEnsureSystemAccountsAreNonLoginObject,
         m_auditEnsureAuthenticationRequiredForSingleUserModeObject,

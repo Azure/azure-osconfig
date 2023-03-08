@@ -96,6 +96,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log);
+int CheckPasswordExpirationLessThan(long days, void* log);
 int CheckPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(void* log);
 int CheckSystemAccountsAreNonLogin(void* log);

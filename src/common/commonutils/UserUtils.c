@@ -1268,6 +1268,48 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int CheckPasswordExpirationLessThan(long days, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if ((userList[i].expirationDate >= currentDate) && ((currentDate - userList[i].expirationDate) <= days))
+                {
+                    OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate, days);
+                }
+                else
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested %ld days",
+                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate, days);
+                    status = ENOENT;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld ddays or less", days);
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationWarning(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;

@@ -427,6 +427,12 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsurePasswordExpiration",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "auditEnsurePasswordExpirationWarning",
       "schema": "string",
       "writable": false
