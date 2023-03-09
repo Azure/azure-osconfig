@@ -576,7 +576,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
 
 char* GetLoginUmask(void* log)
 {
-    const char* command = "cat /etc/login.defs | UMASK";
+    const char* command = "cat /etc/login.defs | grep UMASK";
     char* result = NULL;
 
     if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log))
