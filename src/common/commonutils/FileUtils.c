@@ -618,7 +618,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
-        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'");
+        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'", fileName);
         status = ENOENT;
     }
     else
