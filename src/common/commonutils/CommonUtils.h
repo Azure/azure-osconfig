@@ -105,6 +105,8 @@ char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
 
+bool CheckOsAndKernelMatchDistro(void* log);
+
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
 void RemoveTrailingBlanks(char* target);

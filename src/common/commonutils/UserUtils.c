@@ -58,7 +58,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     
     if ((NULL == destination) || (NULL == source))
     {
-        OsConfigLogError(log, "CopyPasswdEntry: invalid arguments");
+        OsConfigLogError(log, "CopyUserEntry: invalid arguments");
         return EINVAL;
     }
 
@@ -68,7 +68,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->username = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_name '%s'", source->pw_name);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name '%s'", source->pw_name);
             status = ENOMEM;
         }
         else
@@ -90,7 +90,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->home = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_dir '%s'", source->pw_dir);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
         }
         else
@@ -104,7 +104,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->shell = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_shell '%s'", source->pw_shell);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
 
         }
@@ -162,7 +162,7 @@ static char* EncryptionName(int type)
 
 static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false" };
+    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false"};
     int index = ARRAY_SIZE(noLoginShell);
     bool noLogin = false;
 
@@ -253,13 +253,13 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 break;
 
             case '!':
-                user->isLocked = true;
                 user->hasPassword = false;
+                user->isLocked = true;
                 break;
 
             case '*':
-                user->cannotLogin = true;
                 user->hasPassword = false;
+                user->cannotLogin = true;
                 break;
 
             case ':':
@@ -759,6 +759,7 @@ int CheckNoDuplicateGroupsExist(void* log)
 int CheckShadowGroupIsEmpty(void* log)
 {
     const char* shadow = "shadow";
+
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;

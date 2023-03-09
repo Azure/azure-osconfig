@@ -3,6 +3,14 @@
 
 #include "Internal.h"
 
+typedef struct OS_DISTRO_INFO
+{
+    char* id;
+    char* release;
+    char* codename;
+    char* description;
+} OS_DISTRO_INFO;
+
 void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
@@ -419,4 +427,143 @@ char* GetSystemConfiguration(void* log)
     }
 
     return textResult;
+}
+
+static char* GetOsDistroInfoEntry(const char* name, void* log)
+{
+    const char* commandTemplate = "cat /etc/*-release | grep %s=";
+    
+    char* command = NULL;
+    size_t commandLength = 0;
+    char* result = NULL;
+
+    if ((NULL == name) || (0 == strlen(name)))
+    {
+        OsConfigLogError(log, "GetOsDistroInfoEntry: invalid arguments");
+        return NULL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(name) + 1;
+
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "GetOsDistroInfoEntry: out of memory");
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, name);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+        {
+            RemovePrefixBlanks(result);
+            RemoveTrailingBlanks(result);
+            RemovePrefixUpTo(result, '=');
+            RemovePrefixBlanks(result);
+            TruncateAtFirst(result, ' ');
+        }
+        else
+        {
+            FREE_MEMORY(result);
+        }
+    }
+
+    OsConfigLogInfo(log, "'%s': '%s'", name, result);
+    
+    return result;
+}
+
+static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
+{
+    if (info)
+    {
+        FREE_MEMORY(info->id);
+        FREE_MEMORY(info->release);
+        FREE_MEMORY(info->codename);
+        FREE_MEMORY(info->description);
+    }
+}
+
+static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
+{
+    if (NULL == info)
+    {
+        OsConfigLogError(log, "GetDistroInfo: invalid arguments");
+        return EINVAL;
+    }
+    
+    ClearOsDistroInfo(info);
+
+    info->id = GetOsDistroInfoEntry("DISTRIB_ID", log);
+    info->release = GetOsDistroInfoEntry("DISTRIB_RELEASE", log);
+    info->codename = GetOsDistroInfoEntry("DISTRIB_CODENAME", log);
+    info->description = GetOsDistroInfoEntry("DISTRIB_DESCRIPTION", log);
+
+    return 0;
+}
+
+static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
+{
+    if (NULL == info)
+    {
+        OsConfigLogError(log, "GetOsInfo: invalid arguments");
+        return EINVAL;
+    }
+
+    ClearOsDistroInfo(info);
+
+    info->id = GetOsDistroInfoEntry("ID", log);
+    info->release = GetOsDistroInfoEntry("VERSION_ID", log);
+    info->codename = GetOsDistroInfoEntry("VERSION_CODENAME", log);
+    info->description = GetOsDistroInfoEntry("PRETTY_NAME", log);
+
+    return 0;
+}
+
+bool CheckOsAndKernelMatchDistro(void* log)
+{
+    const char* linux = "Linux";
+
+    OS_DISTRO_INFO distro = {0}, os = {0};
+    char* kernelName = GetOsKernelName(log);
+    int status = 0;
+    bool match = false;
+
+    if (0 == (status = GetDistroInfo(&distro, log)))
+    {
+        if (0 == (status = GetOsInfo(&os, log)))
+        {
+            if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
+                (0 == strncmp(distro.release, os.release, strlen(distro.release))) &&
+                (0 == strncmp(distro.codename, os.codename, strlen(distro.codename))) &&
+                (0 == strncmp(distro.description, os.description, strlen(description.release))) &&
+                (0 == strncmp(kernelName, linux, strlen(linux))))
+            {
+                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro matches installed OS and kernel ('%s %s %s %s %s %s')", 
+                    kernelName, distro.id, distro.release, distro.codename, distro.description);
+                match = true;
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s %s %s %s %s %s') does not match installed OS and kernel ('%s %s %s %s %s %s')",
+                    linux, distro.id, distro.release, distro.codename, distro.description,
+                    kernelName, os.id, os.release, os.codename, os.description);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckOsAndKernelMatchDistro: GetOsInfo failed with %d", status);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckOsAndKernelMatchDistro: GetDistroInfo failed with %d", status);
+    }
+
+    FREE_MEMORY(kernelName);
+
+    ClearOsDistroInfo(&distro);
+    ClearOsDistroInfo(&os);
+
+    return match;
 }
