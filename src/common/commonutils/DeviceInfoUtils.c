@@ -581,8 +581,8 @@ char* GetLoginUmask(void* log)
 
     if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log))
     {
-        RemovePrefixBlanks(textResult);
-        RemoveTrailingBlanks(textResult);
+        RemovePrefixBlanks(result);
+        RemoveTrailingBlanks(result);
     }
     else
     {

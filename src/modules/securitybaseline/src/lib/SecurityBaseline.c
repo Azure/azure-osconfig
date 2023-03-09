@@ -653,7 +653,7 @@ static int AuditEnsureSuRestrictedToRootGroup(void)
 
 static int AuditEnsureDefaultUmaskForAllUsers(void)
 {
-    return int CheckLoginUmask("077", SecurityBaselineGetLog());
+    return CheckLoginUmask("077", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAutomountingDisabled(void)
