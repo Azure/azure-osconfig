@@ -461,7 +461,12 @@ static char* GetOsDistroInfoEntry(const char* name, void* log)
             RemoveTrailingBlanks(result);
             RemovePrefixUpTo(result, '=');
             RemovePrefixBlanks(result);
-            TruncateAtFirst(result, ' ');
+
+            if ('"' == result[0])
+            {
+                RemovePrefixUpTo(result, '"');
+                TruncateAtFirst(result, '"');
+            }
         }
         else
         {
