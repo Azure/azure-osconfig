@@ -1268,6 +1268,64 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int CheckPasswordExpirationLessThan(long days, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    long timer = 0;
+    int status = 0;
+    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if (userList[i].expirationDate >= currentDate)
+                {
+                    if ((userList[i].expirationDate - currentDate) <= days)
+                    {
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested: %ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate - currentDate, days);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, less than requested %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate, days);
+                        status = ENOENT;
+                    }
+                }
+                else if (userList[i].expirationDate < 0)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                    status = ENOENT;
+                }
+                else if (userList[i].expirationDate < currentDate)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
+                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate);
+                    status = ENOENT;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld days or less", days);
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationWarning(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1376,6 +1434,62 @@ int CheckSystemAccountsAreNonLogin(void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: all system accounts are non-login");
+    }
+
+    return status;
+}
+
+int CheckRootPasswordForSingleUserMode(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    bool usersWithPassword = false;
+    bool rootHasPassword = false;
+    int status = 0;
+    
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].hasPassword)
+            {
+                if (userList[i].isRoot)
+                {
+                    OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
+                    rootHasPassword = true;
+                    break;
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: user '%s' (%u, %u) appears to have a password", 
+                        userList[i].username, userList[i].userId, userList[i].groupId);
+                    usersWithPassword = true;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status) 
+    {
+        if (rootHasPassword && (false == usersWithPassword))
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: single user mode, only root user has password");
+        }
+        else if (rootHasPassword && usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root has password");
+        }
+        else if ((false == rootHasPassword) && usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root does not have password");
+        }
+        else if ((false == rootHasPassword) && (false == usersWithPassword))
+        {
+            OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: single user more and root does not have password");
+            status = ENOENT;
+        }
     }
 
     return status;

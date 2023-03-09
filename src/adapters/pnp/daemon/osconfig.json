@@ -442,11 +442,47 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordExpiration"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsurePasswordExpirationWarning"
     },
     {
       "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureSystemAccountsAreNonLogin"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAuthenticationRequiredForSingleUserMode"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePrelinkIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTalkClientIsNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDotDoesNotAppearInRootsPath"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureCronServiceIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRemoteLoginWarningBannerIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureLocalLoginWarningBannerIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAuditdServiceIsRunning"
     },
     {
       "ComponentName": "SecurityBaseline",

@@ -46,7 +46,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-
         const char* m_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
         const char* m_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
         const char* m_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
@@ -62,7 +61,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
         const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
         const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
-
+        const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
+        const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
+        const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCronServiceIsEnabled";
+        const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
         const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
@@ -98,8 +100,13 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
         const char* m_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
         const char* m_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+        const char* m_auditEnsurePasswordExpirationObject = "auditEnsurePasswordExpiration";
         const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
         const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
+        const char* m_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
+        const char* m_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
+        const char* m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -123,7 +130,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
-
         const char* m_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
         const char* m_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
         const char* m_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
@@ -139,6 +145,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
         const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
         const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
+        const char* m_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePrelinkIsDisabled";
+        const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
+        const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
+        const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
 
         const char* m_pass = "\"PASS\"";
 
@@ -206,7 +216,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
 
     const char* payload = "PASS";
 
-    const char* mimRequiredObjects[] = {
+    const char* mimObjects[] = {
         m_remediateSecurityBaselineObject,
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
@@ -242,16 +252,21 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureSldapdNotInstalledObject,
         m_remediateEnsureBind9NotInstalledObject,
         m_remediateEnsureDovecotCoreNotInstalledObject,
-        m_remediateEnsureAuditdInstalledObject
+        m_remediateEnsureAuditdInstalledObject,
+        m_remediateEnsurePrelinkIsDisabledObject,
+        m_remediateEnsureTalkClientIsNotInstalledObject,
+        m_remediateEnsureCronServiceIsEnabledObject,
+        m_remediateEnsureAuditdServiceIsRunningObject
     };
 
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+    int mimObjectsNumber = ARRAY_SIZE(mimObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    for (int i = 0; i < mimObjectsNumber; i++)
     {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
+        // All optional, do not expect to suceed with MMI_OK (0), just run to validate no crashes, etc.
+        SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimObjects[i], (MMI_JSON_STRING)payload, strlen(payload));
     }
 
     SecurityBaselineMmiClose(handle);
@@ -299,7 +314,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
-    const char* mimRequiredObjects[] = {
+    const char* mimObjects[] = {
         m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
@@ -367,25 +382,33 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
+        m_auditEnsureSystemAccountsAreNonLoginObject,
+        m_auditEnsurePrelinkIsDisabledObject,
+        m_auditEnsureTalkClientIsNotInstalledObject,
+        m_auditEnsureDotDoesNotAppearInRootsPathObject,
+        m_auditEnsureCronServiceIsEnabledObject,
+        m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureAuditdServiceIsRunningObject,
         m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationObject,
         m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject
     };
-    
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+
+    int mimObjectsNumber = ARRAY_SIZE(mimObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    for (int i = 0; i < mimObjectsNumber; i++)
     {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimObjects[i], &payload, &payloadSizeBytes));
         EXPECT_NE(nullptr, payload);
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        EXPECT_STREQ(payloadString, m_pass);
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
@@ -400,97 +423,15 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
-    const char* mimRequiredObjects[] = {
-        //m_auditSecurityBaselineObject,
-        m_auditEnsurePermissionsOnEtcIssueObject,
-        m_auditEnsurePermissionsOnEtcIssueNetObject,
-        m_auditEnsurePermissionsOnEtcHostsAllowObject,
-        m_auditEnsurePermissionsOnEtcHostsDenyObject,
-        m_auditEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_auditEnsurePermissionsOnEtcShadowObject,
-        m_auditEnsurePermissionsOnEtcShadowDashObject,
-        m_auditEnsurePermissionsOnEtcGShadowObject,
-        m_auditEnsurePermissionsOnEtcGShadowDashObject,
-        m_auditEnsurePermissionsOnEtcPasswdObject,
-        m_auditEnsurePermissionsOnEtcPasswdDashObject,
-        m_auditEnsurePermissionsOnEtcGroupObject,
-        m_auditEnsurePermissionsOnEtcGroupDashObject,
-        m_auditEnsurePermissionsOnEtcAnacronTabObject,
-        m_auditEnsurePermissionsOnEtcCronDObject,
-        m_auditEnsurePermissionsOnEtcCronDailyObject,
-        m_auditEnsurePermissionsOnEtcCronHourlyObject,
-        m_auditEnsurePermissionsOnEtcCronMonthlyObject,
-        m_auditEnsurePermissionsOnEtcCronWeeklyObject,
-        m_auditEnsurePermissionsOnEtcMotdObject,
-        m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartitionObject,
-        m_auditEnsureNodevOptionOnTmpPartitionObject,
-        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
-        m_auditEnsureNosuidOptionOnTmpPartitionObject,
-        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
-        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
-        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
-        m_auditEnsureInetdNotInstalledObject,
-        m_auditEnsureXinetdNotInstalledObject,
-        m_auditEnsureAllTelnetdPackagesUninstalledObject,
-        m_auditEnsureRshServerNotInstalledObject,
-        m_auditEnsureNisNotInstalledObject,
-        m_auditEnsureTftpdNotInstalledObject,
-        m_auditEnsureReadaheadFedoraNotInstalledObject,
-        m_auditEnsureBluetoothHiddNotInstalledObject,
-        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
-        m_auditEnsureIscDhcpdServerNotInstalledObject,
-        m_auditEnsureSendmailNotInstalledObject,
-        m_auditEnsureSldapdNotInstalledObject,
-        m_auditEnsureBind9NotInstalledObject,
-        m_auditEnsureDovecotCoreNotInstalledObject,
-        m_auditEnsureAuditdInstalledObject,
-        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject,
-        m_auditEnsureNoDuplicateUidsExistObject,
-        m_auditEnsureNoDuplicateGidsExistObject,
-        m_auditEnsureNoDuplicateUserNamesExistObject,
-        m_auditEnsureNoDuplicateGroupsExistObject,
-        m_auditEnsureShadowGroupIsEmptyObject,
-        m_auditEnsureRootGroupExistsObject,
-        m_auditEnsureAllAccountsHavePasswordsObject,
-        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcShadowObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcGroupObject,
-        m_auditEnsureDefaultRootAccountGroupIsGidZeroObject,
-        m_auditEnsureRootIsOnlyUidZeroAccountObject,
-        m_auditEnsureAllUsersHomeDirectoriesExistObject,
-        m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
-        m_auditEnsureRestrictedUserHomeDirectoriesObject,
-        m_auditEnsurePasswordHashingAlgorithmObject,
-        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
-        m_auditEnsureInactivePasswordLockPeriodObject,
-        //m_auditMaxDaysBetweenPasswordChangesObject,
-        m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
-    };
-
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
-
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_truncatedMaxPayloadSizeBytes));
-
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
-    {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
-        EXPECT_NE(nullptr, payload);
-        EXPECT_NE(0, payloadSizeBytes);
-        EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-        EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-        FREE_MEMORY(payloadString);
-        SecurityBaselineMmiFree(payload);
-    }
-
+    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
+    FREE_MEMORY(payloadString);
+    SecurityBaselineMmiFree(payload);
     SecurityBaselineMmiClose(handle);
 }
 

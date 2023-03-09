@@ -19,12 +19,6 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsurePermissionsOnEtcIssueNet",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
           "name": "auditEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": false,
@@ -445,7 +439,61 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureAuthenticationRequiredForSingleUserMode",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsurePrelinkIsDisabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureTalkClientIsNotInstalled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDotDoesNotAppearInRootsPath",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureCronServiceIsEnabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureRemoteLoginWarningBannerIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureLocalLoginWarningBannerIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAuditdServiceIsRunning",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePermissionsOnEtcIssueNet",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
@@ -650,6 +698,30 @@
         },
         {
           "name": "remediateEnsureAuditdInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsurePrelinkIsDisabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureTalkClientIsNotInstalled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureCronServiceIsEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureAuditdServiceIsRunning",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

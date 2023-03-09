@@ -1358,6 +1358,9 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
     EXPECT_EQ(0, CheckRootGroupExists(nullptr));
     EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
     EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+    
+    // Optional:
+    CheckRootPasswordForSingleUserMode(nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
@@ -1367,10 +1370,46 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     EXPECT_EQ(0, CheckMinDaysBetweenPasswordChanges(0, nullptr));
     EXPECT_EQ(0, CheckMaxDaysBetweenPasswordChanges(99999, nullptr));
     EXPECT_EQ(0, CheckPasswordExpirationWarning(0, nullptr));
+
+    //Optional:
+    CheckPasswordExpirationLessThan(99999, nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 {
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
+}
+
+TEST_F(CommonUtilsTest, FindTextInFile)
+{
+    const char* test = "This is a text with options /1 /2 \\3 \\zoo -34!";
+
+    EXPECT_TRUE(CreateTestFile(m_path, test));
+
+    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, test, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(m_path, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
+    
+    EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\3", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\z", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "34", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
+{
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
 }

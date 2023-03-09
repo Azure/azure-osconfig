@@ -527,6 +527,10 @@ int InstallPackage(const char* packageName, void* log)
             OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
         }
     }
+    else
+    {
+        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+    }
 
     return status;
 }
@@ -599,4 +603,88 @@ unsigned int GetNumberOfLinesInFile(const char* fileName)
 bool CharacterFoundInFile(const char* fileName, char what)
 {
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
+}
+
+int FindTextInFile(const char* fileName, const char* text, void* log)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindTextInFile called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'", fileName);
+        status = ENOENT;
+    }
+    else
+    {
+        if (NULL != strstr(contents, text))
+        {
+            OsConfigLogInfo(log, "FindTextInFile: '%s' found in '%s'", text, fileName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", text, fileName);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(contents);
+    }
+
+    return status;
+}
+
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
+{
+    const char* commandTemplate = "echo $%s | grep %s";
+    char* command = NULL;
+    char* results = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindTextInEnvironmentVariable called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
+
+    if (NULL == (command = malloc(commandLength + 1)))
+    {
+        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, variableName, text);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        {
+            if (NULL != strstr(results, text))
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "FindTextInEnvironmentVariable: echo failed, %d", status);
+        }
+
+        FREE_MEMORY(results);
+        FREE_MEMORY(command);
+    }
+
+    return status;
 }

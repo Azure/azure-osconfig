@@ -38,7 +38,6 @@ static const char* g_auditEnsurePermissionsOnEtcCronHourlyObject = "auditEnsureP
 static const char* g_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
 static const char* g_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
 static const char* g_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-
 static const char* g_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
 static const char* g_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
 static const char* g_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
@@ -54,7 +53,10 @@ static const char* g_auditEnsureSldapdNotInstalledObject = "auditEnsureSldapdNot
 static const char* g_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
 static const char* g_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
 static const char* g_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
-
+static const char* g_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
+static const char* g_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
+static const char* g_auditEnsureCronServiceIsEnabledObject = "auditEnsureCronServiceIsEnabled";
+static const char* g_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
 // Audit-only
 static const char* g_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
 static const char* g_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
@@ -90,8 +92,13 @@ static const char* g_auditEnsurePasswordHashingAlgorithmObject = "auditEnsurePas
 static const char* g_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
 static const char* g_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
 static const char* g_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+static const char* g_auditEnsurePasswordExpirationObject = "auditEnsurePasswordExpiration";
 static const char* g_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
 static const char* g_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
+static const char* g_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
+static const char* g_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
+static const char* g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
+static const char* g_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -115,7 +122,6 @@ static const char* g_remediateEnsurePermissionsOnEtcCronHourlyObject = "remediat
 static const char* g_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
 static const char* g_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
 static const char* g_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
-
 static const char* g_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
 static const char* g_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
 static const char* g_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
@@ -131,6 +137,10 @@ static const char* g_remediateEnsureSldapdNotInstalledObject = "remediateEnsureS
 static const char* g_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
 static const char* g_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
 static const char* g_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
+static const char* g_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePrelinkIsDisabled";
+static const char* g_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
+static const char* g_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
+static const char* g_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -187,6 +197,14 @@ static const char* g_slapd = "slapd";
 static const char* g_bind9 = "bind9";
 static const char* g_dovecotCore = "dovecot-core";
 static const char* g_auditd = "auditd";
+static char* g_prelink = "prelink";
+static char* g_talk = "talk";
+static char* g_cron = "cron";
+
+static long g_minDaysBetweenPasswordChanges = 7;
+static long g_maxDaysBetweenPasswordChanges = 365;
+static long g_passwordExpirationWarning = 7;
+static long g_passwordExpiration = 365;
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -549,7 +567,7 @@ static int AuditEnsurePasswordHashingAlgorithm(void)
 
 static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckMinDaysBetweenPasswordChanges(7, SecurityBaselineGetLog());
+    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
@@ -559,17 +577,69 @@ static int AuditEnsureInactivePasswordLockPeriod(void)
 
 static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return CheckMaxDaysBetweenPasswordChanges(365, SecurityBaselineGetLog());
+    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
+}
+
+static int AuditEnsurePasswordExpiration(void)
+{
+    return CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckPasswordExpirationWarning(7, SecurityBaselineGetLog());
+    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSystemAccountsAreNonLogin(void)
 {
     return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog());
+}
+
+static int AuditEnsureAuthenticationRequiredForSingleUserMode(void)
+{
+    return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog());
+}
+
+static int AuditEnsurePrelinkIsDisabled(void)
+{
+    return (!CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()));
+}
+
+static int AuditEnsureTalkClientIsNotInstalled(void)
+{
+    return !CheckPackageInstalled(g_talk, SecurityBaselineGetLog());
+}
+
+static int AuditEnsureDotDoesNotAppearInRootsPath(void)
+{
+    return !FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog());
+}
+
+static int AuditEnsureCronServiceIsEnabled(void)
+{
+    return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
+        IsDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
+}
+
+static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
+{
+    return (!FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()));
+}
+
+static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
+{
+    return (!FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog()) &&
+        !FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()));
+}
+
+static int AuditEnsureAuditdServiceIsRunning(void)
+{
+    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 int AuditSecurityBaseline(void)
@@ -643,8 +713,17 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
         (0 == AuditEnsureInactivePasswordLockPeriod()) &&
         (0 == AuditEnsureMaxDaysBetweenPasswordChanges()) &&
+        (0 == AuditEnsurePasswordExpiration()) &&
         (0 == AuditEnsurePasswordExpirationWarning()) &&
-        (0 == AuditEnsureSystemAccountsAreNonLogin())) ? 0 : ENOENT;
+        (0 == AuditEnsureSystemAccountsAreNonLogin()) &&
+        (0 == AuditEnsureAuthenticationRequiredForSingleUserMode()) &&
+        (0 == AuditEnsurePrelinkIsDisabled()) &&
+        (0 == AuditEnsureTalkClientIsNotInstalled()) &&
+        (0 == AuditEnsureDotDoesNotAppearInRootsPath()) &&
+        (0 == AuditEnsureCronServiceIsEnabled()) &&
+        (0 == AuditEnsureRemoteLoginWarningBannerIsConfigured()) &&
+        (0 == AuditEnsureLocalLoginWarningBannerIsConfigured()) &&
+        (0 == AuditEnsureAuditdServiceIsRunning())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -822,6 +901,28 @@ static int RemediateEnsureAuditdInstalled(void)
     return InstallPackage(g_auditd, SecurityBaselineGetLog());
 }
 
+static int RemediateEnsurePrelinkIsDisabled(void)
+{
+    return UninstallPackage(g_prelink, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureTalkClientIsNotInstalled(void)
+{
+    return UninstallPackage(g_talk, SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureCronServiceIsEnabled(void)
+{
+    return (0 == InstallPackage(g_cron, SecurityBaselineGetLog()) &&
+        EnableAndStartDaemon(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
+}
+
+static int RemediateEnsureAuditdServiceIsRunning(void)
+{
+    return (0 == InstallPackage(g_auditd, SecurityBaselineGetLog()) &&
+        EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
+}
+
 int RemediateSecurityBaseline(void)
 {
     return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
@@ -858,7 +959,11 @@ int RemediateSecurityBaseline(void)
         (0 == RemediateEnsureSldapdNotInstalled()) &&
         (0 == RemediateEnsureBind9NotInstalled()) &&
         (0 == RemediateEnsureDovecotCoreNotInstalled()) &&
-        (0 == RemediateEnsureAuditdInstalled())) ? 0 : ENOENT;
+        (0 == RemediateEnsureAuditdInstalled()) &&
+        (0 == RemediateEnsurePrelinkIsDisabled()) &&
+        (0 == RemediateEnsureTalkClientIsNotInstalled()) &&
+        (0 == RemediateEnsureCronServiceIsEnabled()) &&
+        (0 == RemediateEnsureAuditdServiceIsRunning())) ? 0 : ENOENT;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -1240,6 +1345,10 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureMaxDaysBetweenPasswordChanges() ? g_fail : g_pass;
         }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationObject))
+        {
+            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
+        }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {
             result = AuditEnsurePasswordExpirationWarning() ? g_fail : g_pass;
@@ -1247,6 +1356,38 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLoginObject))
         {
             result = AuditEnsureSystemAccountsAreNonLogin() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAuthenticationRequiredForSingleUserModeObject))
+        {
+            result = AuditEnsureAuthenticationRequiredForSingleUserMode() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePrelinkIsDisabledObject))
+        {
+            result = AuditEnsurePrelinkIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureTalkClientIsNotInstalledObject))
+        {
+            result = AuditEnsureTalkClientIsNotInstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDotDoesNotAppearInRootsPathObject))
+        {
+            result = AuditEnsureDotDoesNotAppearInRootsPath() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureCronServiceIsEnabledObject))
+        {
+            result = AuditEnsureCronServiceIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject))
+        {
+            result = AuditEnsureRemoteLoginWarningBannerIsConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureLocalLoginWarningBannerIsConfiguredObject))
+        {
+            result = AuditEnsureLocalLoginWarningBannerIsConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAuditdServiceIsRunningObject))
+        {
+            result = AuditEnsureAuditdServiceIsRunning() ? g_fail : g_pass;
         }
         else
         {
@@ -1261,7 +1402,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
         if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient maxmimum size (%d bytes) versus data size (%d bytes), reported buffer will be truncated",
+            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
                 componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
 
             *payloadSizeBytes = g_maxPayloadSizeBytes;
@@ -1471,6 +1612,22 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_remediateEnsureAuditdInstalledObject))
         {
             status = RemediateEnsureAuditdInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePrelinkIsDisabledObject))
+        {
+            status = RemediateEnsurePrelinkIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTalkClientIsNotInstalledObject))
+        {
+            status = RemediateEnsureTalkClientIsNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureCronServiceIsEnabledObject))
+        {
+            status = RemediateEnsureCronServiceIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAuditdServiceIsRunningObject))
+        {
+            status = RemediateEnsureAuditdServiceIsRunning();
         }
         else
         {
