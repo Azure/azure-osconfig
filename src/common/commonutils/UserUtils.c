@@ -1459,7 +1459,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
                     rootHasPassword = true;
                     break;
                 }
-                else if (userList[i].hasPassword)
+                else
                 {
                     OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: user '%s' (%u, %u) appears to have a password", 
                         userList[i].username, userList[i].userId, userList[i].groupId);

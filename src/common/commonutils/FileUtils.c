@@ -607,9 +607,7 @@ bool CharacterFoundInFile(const char* fileName, char what)
 
 int FindTextInFile(const char* fileName, const char* text, void* log)
 {
-    const char* commandTemplate = "cat %s | grep %s";
-    char* command = NULL;
-    size_t commandLength = 0;
+    char* contents = NULL;
     int status = 0;
 
     if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
@@ -618,29 +616,24 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
         return EINVAL;
     }
 
-    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(text) + 1;
-
-    if (NULL == (command = malloc(commandLength + 1)))
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
-        OsConfigLogError(log, "FindTextInFile: out of memory");
-        status = ENOMEM;
+        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'");
+        status = ENOENT;
     }
     else
     {
-        memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, fileName, text);
-
-        if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+        if (NULL != strstr(contents, text))
         {
             OsConfigLogInfo(log, "FindTextInFile: '%s' found in '%s'", text, fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", text, fileName);
             status = ENOENT;
         }
 
-        FREE_MEMORY(command);
+        FREE_MEMORY(contents);
     }
 
     return status;
