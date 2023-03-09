@@ -545,7 +545,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
                 (0 == strncmp(distro.description, os.description, strlen(distro.description))) &&
                 (0 == strncmp(kernelName, linuxName, strlen(linuxName))))
             {
-                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro matches installed OS and kernel ('%s %s %s %s %s')", 
+                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: installed OS and kernel match distro ('%s %s %s %s %s')", 
                     kernelName, distro.id, distro.release, distro.codename, distro.description);
                 match = true;
             }
@@ -572,4 +572,57 @@ bool CheckOsAndKernelMatchDistro(void* log)
     ClearOsDistroInfo(&os);
 
     return match;
+}
+
+char* GetLoginUmask(void* log)
+{
+    const char* command = "cat /etc/login.defs | UMASK";
+    char* result = NULL;
+
+    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log))
+    {
+        RemovePrefixBlanks(textResult);
+        RemoveTrailingBlanks(textResult);
+    }
+    else
+    {
+        FREE_MEMORY(result);
+    }
+
+    OsConfigLogInfo(log, "UMASK: '%s'", result);
+
+    return result;
+}
+
+int CheckLoginUmask(const char* desired, void* log)
+{
+    char* current = NULL;
+    size_t length = 0;
+    int status = 0;
+        
+    if ((NULL == desired) || (0 == (length = strlen(desired))))
+    {
+        OsConfigLogError(log, "CheckLoginUmask: invalid argument");
+        return EINVAL;
+    }
+
+    if (NULL == (current = GetLoginUmask(log)))
+    {
+        OsConfigLogError(log, "CheckLoginUmask: GetLoginUmask failed");
+        status = ENOENT;
+    }
+    else
+    {
+        if (0 == strncmp(desired, current, length))
+        {
+            OsConfigLogInfo(log, "CheckLoginUmask: current login UMASK '%s' matches desired '%s'", current, desired);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }

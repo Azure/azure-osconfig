@@ -686,6 +686,30 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSuRestrictedToRootGroup",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDefaultUmaskForAllUsers",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAutomountingDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureKernelCompiledFromApprovedSources",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
     "ObjectName": "Blah",
     "ExpectedResult": 22
   },

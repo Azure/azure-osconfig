@@ -487,6 +487,30 @@
           "schema": "string"
         },
         {
+          "name": "auditEnsureSuRestrictedToRootGroup",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDefaultUmaskForAllUsers",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAutomountingDisabled",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureKernelCompiledFromApprovedSources",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
           "name": "remediateSecurityBaseline",
           "type": "mimObject",
           "desired": true,

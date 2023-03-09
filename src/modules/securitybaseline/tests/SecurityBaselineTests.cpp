@@ -107,6 +107,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
         const char* m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
         const char* m_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureSuRestrictedToRootGroupObject = "auditEnsureSuRestrictedToRootGroup";
+        const char* m_auditEnsureDefaultUmaskForAllUsersObject = "auditEnsureDefaultUmaskForAllUsers";
+        const char* m_auditEnsureAutomountingDisabledObject = "auditEnsureAutomountingDisabled";
+        const char* m_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -395,7 +399,11 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditMaxDaysBetweenPasswordChangesObject,
         m_auditEnsurePasswordExpirationObject,
         m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureAuthenticationRequiredForSingleUserModeObject
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
+        m_auditEnsureSuRestrictedToRootGroupObject,
+        m_auditEnsureDefaultUmaskForAllUsersObject,
+        m_auditEnsureAutomountingDisabledObject,
+        m_auditEnsureKernelCompiledFromApprovedSourcesObject
     };
 
     int mimObjectsNumber = ARRAY_SIZE(mimObjects);

@@ -493,6 +493,30 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureSuRestrictedToRootGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDefaultUmaskForAllUsers",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAutomountingDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureKernelCompiledFromApprovedSources",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
