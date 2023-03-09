@@ -659,7 +659,7 @@ static int AuditEnsureDefaultUmaskForAllUsers(void)
 static int AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
-    return (!CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
+    return ((0 != CheckPackageInstalled(autofs, SecurityBaselineGetLog())) && 
         (false == IsDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
