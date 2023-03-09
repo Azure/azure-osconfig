@@ -434,8 +434,9 @@ static char* GetOsDistroInfoEntry(const char* name, void* log)
     const char* commandTemplate = "cat /etc/*-release | grep %s=";
     
     char* command = NULL;
-    size_t commandLength = 0;
     char* result = NULL;
+    size_t commandLength = 0;
+    int status = 0;
 
     if ((NULL == name) || (0 == strlen(name)))
     {
@@ -522,7 +523,7 @@ static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 
 bool CheckOsAndKernelMatchDistro(void* log)
 {
-    const char* linux = "Linux";
+    const char* linuxName = "Linux";
 
     OS_DISTRO_INFO distro = {0}, os = {0};
     char* kernelName = GetOsKernelName(log);
@@ -536,17 +537,17 @@ bool CheckOsAndKernelMatchDistro(void* log)
             if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
                 (0 == strncmp(distro.release, os.release, strlen(distro.release))) &&
                 (0 == strncmp(distro.codename, os.codename, strlen(distro.codename))) &&
-                (0 == strncmp(distro.description, os.description, strlen(description.release))) &&
-                (0 == strncmp(kernelName, linux, strlen(linux))))
+                (0 == strncmp(distro.description, os.description, strlen(distro.description))) &&
+                (0 == strncmp(kernelName, linuxName, strlen(linuxName))))
             {
-                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro matches installed OS and kernel ('%s %s %s %s %s %s')", 
+                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro matches installed OS and kernel ('%s %s %s %s %s')", 
                     kernelName, distro.id, distro.release, distro.codename, distro.description);
                 match = true;
             }
             else
             {
-                OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s %s %s %s %s %s') does not match installed OS and kernel ('%s %s %s %s %s %s')",
-                    linux, distro.id, distro.release, distro.codename, distro.description,
+                OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s %s %s %s %s') does not match installed OS and kernel ('%s %s %s %s %s')",
+                    linuxName, distro.id, distro.release, distro.codename, distro.description,
                     kernelName, os.id, os.release, os.codename, os.description);
             }
         }
