@@ -649,7 +649,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "FindCharacterInEnvironmentVariable called with invalid arguments");
+        OsConfigLogError(log, "FindTextInEnvironmentVariable called with invalid arguments");
         return EINVAL;
     }
 
@@ -657,7 +657,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
     if (NULL == (command = malloc(commandLength + 1)))
     {
-        OsConfigLogError(log, "FindCharacterInEnvironmentVariable: out of memory");
+        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
         status = ENOMEM;
     }
     else
