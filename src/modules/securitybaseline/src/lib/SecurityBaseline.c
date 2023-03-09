@@ -1421,7 +1421,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsureSuRestrictedToRootGroupObject))
         {
-            result = AuditEnsureAuditdServiceIsRunning() ? g_fail : g_pass;
+            result = AuditEnsureSuRestrictedToRootGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultUmaskForAllUsersObject))
         {
