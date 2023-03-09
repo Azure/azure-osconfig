@@ -1320,7 +1320,7 @@ int CheckPasswordExpirationLessThan(long days, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld ddays or less", days);
+        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld days or less", days);
     }
 
     return status;
