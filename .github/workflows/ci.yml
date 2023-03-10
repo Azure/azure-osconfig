@@ -71,16 +71,17 @@ jobs:
           cmd: ctest --output-on-failure --verbose
 
       - run: cp build/Testing/Temporary/LastTest.log ${{ matrix.os }}-${{ matrix.variant.arch }}.log
+        if: success() || failure()
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
-        if: always()
+        if: success() || failure()
         with:
           path: ./build/gtest-output
           output: ${{ matrix.os }}-${{ matrix.variant.arch }}.xml
 
       - uses: actions/upload-artifact@v3
-        if: always()
+        if: success() || failure()
         with:
           name: unit-test
           path: |
