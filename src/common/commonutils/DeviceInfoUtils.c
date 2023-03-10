@@ -521,8 +521,6 @@ static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
 
 static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 {
-    int status = 0;
-
     if (NULL == info)
     {
         OsConfigLogError(log, "GetOsInfo: invalid arguments");
