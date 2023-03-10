@@ -1426,5 +1426,5 @@ TEST_F(CommonUtilsTest, OtherOptionalSecurityBaselineTests)
     EXPECT_STREQ("foo", text);
     FREE_MEMORY(text);
 
-    EXPECT_EQ(0, CheckOsAndKernelMatchDistro(nullptr));
+    EXPECT_TRUE(CheckOsAndKernelMatchDistro(nullptr));
 }
