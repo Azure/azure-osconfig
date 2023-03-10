@@ -11,6 +11,8 @@ typedef struct OS_DISTRO_INFO
     char* description;
 } OS_DISTRO_INFO;
 
+static const char* g_null = "<null>";
+
 void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
@@ -429,16 +431,14 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetOsDistroInfoEntry(const char* name, void* log)
+static char* GetOsDistroInfoEntry(const char* commandTemplate, const char* name, void* log)
 {
-    const char* commandTemplate = "cat /etc/*-release | grep %s=";
-
     char* command = NULL;
     char* result = NULL;
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == name) || (0 == strlen(name)))
+    if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
         OsConfigLogError(log, "GetOsDistroInfoEntry: invalid arguments");
         return NULL;
@@ -470,16 +470,10 @@ static char* GetOsDistroInfoEntry(const char* name, void* log)
         }
         else
         {
-            OsConfigLogError(log, "GetOsDistroInfoEntry: '%s' failed with %d", command, status);
             FREE_MEMORY(result);
         }
 
         FREE_MEMORY(command);
-    }
-
-    if (NULL == result)
-    {
-        result = DuplicateString("<null>");
     }
 
     if (IsFullLoggingEnabled())
@@ -503,6 +497,9 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
 
 static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
 {
+    const char* commandTemplate = "cat /etc/*-release | grep %s=";
+    const char* debianTemplate = "cat /etc/debian_version | grep %s=";
+    
     if (NULL == info)
     {
         OsConfigLogError(log, "GetDistroInfo: invalid arguments");
@@ -511,16 +508,37 @@ static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
     
     ClearOsDistroInfo(info);
 
-    info->id = GetOsDistroInfoEntry("DISTRIB_ID", log);
-    info->release = GetOsDistroInfoEntry("DISTRIB_RELEASE", log);
-    info->codename = GetOsDistroInfoEntry("DISTRIB_CODENAME", log);
-    info->description = GetOsDistroInfoEntry("DISTRIB_DESCRIPTION", log);
+    if ((NULL == (info->id = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_ID", log))) && 
+        (NULL == (info->id = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_ID", log))))
+    {
+        info->id = DuplicateString(g_null);
+    }
+
+    if ((NULL == (info->release = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_RELEASE", log))) && 
+        (NULL == (info->release = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_RELEASE", log))))
+    {
+        info->release = DuplicateString(g_null);
+    }
+
+    if ((NULL == (info->codename = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_CODENAME", log))) && 
+        (NULL == (info->codename = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_CODENAME", log))))
+    {
+        info->codename = DuplicateString(g_null);
+    }
+
+    if ((NULL == (info->description = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_DESCRIPTION", log))) && 
+        (NULL == (info->description = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_DESCRIPTION", log))))
+    {
+        info->description = DuplicateString(g_null);
+    }
 
     return 0;
 }
 
 static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 {
+    const char* commandTemplate = "cat /etc/*-release | grep %s=";
+
     if (NULL == info)
     {
         OsConfigLogError(log, "GetOsInfo: invalid arguments");
@@ -529,10 +547,25 @@ static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 
     ClearOsDistroInfo(info);
 
-    info->id = GetOsDistroInfoEntry("ID", log);
-    info->release = GetOsDistroInfoEntry("VERSION_ID", log);
-    info->codename = GetOsDistroInfoEntry("VERSION_CODENAME", log);
-    info->description = GetOsDistroInfoEntry("PRETTY_NAME", log);
+    if (NULL == (info->id = GetOsDistroInfoEntry(commandTemplate, "ID", log)))
+    {
+        info->id = DuplicateString(g_null);
+    }
+
+    if (NULL == (info->release = GetOsDistroInfoEntry(commandTemplate, "VERSION_ID", log)))
+    {
+        info->release = DuplicateString(g_null);
+    }
+    
+    if (NULL == (info->codename = GetOsDistroInfoEntry(commandTemplate, "VERSION_CODENAME", log)))
+    {
+        info->codename = DuplicateString(g_null);
+    }
+
+    if (NULL == (info->description = GetOsDistroInfoEntry(commandTemplate, "PRETTY_NAME", log)))
+    {
+        info->description = DuplicateString(g_null);
+    }
 
     return 0;
 }
@@ -550,13 +583,15 @@ bool CheckOsAndKernelMatchDistro(void* log)
     {
         if (0 == (status = GetOsInfo(&os, log)))
         {
-            if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
+            if (distro.id && os.id && distro.release && os.release && distro.codename && os.codename && 
+                distro.codename && distro.description && os.description && distro.description && kernelName &&
+                (0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
                 (0 == strncmp(distro.release, os.release, strlen(distro.release))) &&
                 (0 == strncmp(distro.codename, os.codename, strlen(distro.codename))) &&
                 (0 == strncmp(distro.description, os.description, strlen(distro.description))) &&
                 (0 == strncmp(kernelName, linuxName, strlen(linuxName))))
             {
-                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: installed OS and kernel match distro ('%s %s %s %s %s')", 
+                OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: installed OS and kernel match distro ('%s %s %s %s %s')",
                     kernelName, distro.id, distro.release, distro.codename, distro.description);
                 match = true;
             }
