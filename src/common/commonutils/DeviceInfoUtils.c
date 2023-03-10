@@ -472,6 +472,8 @@ static char* GetOsDistroInfoEntry(const char* name, void* log)
         {
             FREE_MEMORY(result);
         }
+
+        FREE_MEMORY(command);
     }
 
     if (IsFullLoggingEnabled())
