@@ -429,16 +429,14 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetOsDistroInfoEntry(const char* name, void* log)
+static char* GetOsDistroInfoEntry(const char commandTemplate, const char* name, void* log)
 {
-    const char* commandTemplate = "cat /etc/*-release | grep %s=";
-    
     char* command = NULL;
     char* result = NULL;
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == name) || (0 == strlen(name)))
+    if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
         OsConfigLogError(log, "GetOsDistroInfoEntry: invalid arguments");
         return NULL;
@@ -502,6 +500,8 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
 
 static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
 {
+    const char* commandTemplate = "cat /etc/lsb-release | grep %s=";
+
     if (NULL == info)
     {
         OsConfigLogError(log, "GetDistroInfo: invalid arguments");
@@ -510,16 +510,18 @@ static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
     
     ClearOsDistroInfo(info);
 
-    info->id = GetOsDistroInfoEntry("DISTRIB_ID", log);
-    info->release = GetOsDistroInfoEntry("DISTRIB_RELEASE", log);
-    info->codename = GetOsDistroInfoEntry("DISTRIB_CODENAME", log);
-    info->description = GetOsDistroInfoEntry("DISTRIB_DESCRIPTION", log);
+    info->id = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_ID", log);
+    info->release = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_RELEASE", log);
+    info->codename = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_CODENAME", log);
+    info->description = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_DESCRIPTION", log);
 
     return 0;
 }
 
 static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 {
+    const char* commandTemplate = "cat /etc/*-release | grep %s=";
+
     if (NULL == info)
     {
         OsConfigLogError(log, "GetOsInfo: invalid arguments");
@@ -528,10 +530,10 @@ static int GetOsInfo(OS_DISTRO_INFO* info, void* log)
 
     ClearOsDistroInfo(info);
 
-    info->id = GetOsDistroInfoEntry("ID", log);
-    info->release = GetOsDistroInfoEntry("VERSION_ID", log);
-    info->codename = GetOsDistroInfoEntry("VERSION_CODENAME", log);
-    info->description = GetOsDistroInfoEntry("PRETTY_NAME", log);
+    info->id = GetOsDistroInfoEntry(commandTemplate, "ID", log);
+    info->release = GetOsDistroInfoEntry(commandTemplate, "VERSION_ID", log);
+    info->codename = GetOsDistroInfoEntry(commandTemplate, "VERSION_CODENAME", log);
+    info->description = GetOsDistroInfoEntry(commandTemplate, "PRETTY_NAME", log);
 
     return 0;
 }
