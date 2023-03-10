@@ -508,7 +508,6 @@ bool CheckOsAndKernelMatchDistro(void* log)
 
     OS_DISTRO_INFO distro = {0}, os = {0};
     char* kernelName = GetOsKernelName(log);
-    int status = 0;
     bool match = false;
 
     // Distro
@@ -518,10 +517,10 @@ bool CheckOsAndKernelMatchDistro(void* log)
     distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
 
     //Installed image
-    os.id = GetEtcReleaseEntry(commandTemplate, "ID", log);
-    os.release = GetEtcReleaseEntry(commandTemplate, "VERSION_ID", log);
-    os.codename = GetEtcReleaseEntry(commandTemplate, "VERSION_CODENAME", log);
-    os.description = GetEtcReleaseEntry(commandTemplate, "PRETTY_NAME", log);
+    os.id = GetEtcReleaseEntry("ID", log);
+    os.release = GetEtcReleaseEntry("VERSION_ID", log);
+    os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
+    os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
 
     if ((0 == strcmp(distro.id, os.id)) &&
         (0 == strcmp(distro.release, os.release)) &&
