@@ -499,7 +499,12 @@ static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
 {
     const char* commandTemplate = "cat /etc/*-release | grep %s=";
     const char* debianTemplate = "cat /etc/debian_version | grep %s=";
-    
+
+    const char* id = "DISTRIB_ID";
+    const char* release = "DISTRIB_RELEASE";
+    const char* codename = "DISTRIB_CODENAME";
+    const char* description = "DISTRIB_DESCRIPTION";
+
     if (NULL == info)
     {
         OsConfigLogError(log, "GetDistroInfo: invalid arguments");
@@ -508,26 +513,26 @@ static int GetDistroInfo(OS_DISTRO_INFO* info, void* log)
     
     ClearOsDistroInfo(info);
 
-    if ((NULL == (info->id = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_ID", log))) && 
-        (NULL == (info->id = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_ID", log))))
+    if ((NULL == (info->id = GetOsDistroInfoEntry(commandTemplate, id, log))) &&
+        (NULL == (info->id = GetOsDistroInfoEntry(debianTemplate, id, log))))
     {
         info->id = DuplicateString(g_null);
     }
 
-    if ((NULL == (info->release = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_RELEASE", log))) && 
-        (NULL == (info->release = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_RELEASE", log))))
+    if ((NULL == (info->release = GetOsDistroInfoEntry(commandTemplate, release, log))) &&
+        (NULL == (info->release = GetOsDistroInfoEntry(debianTemplate, release, log))))
     {
         info->release = DuplicateString(g_null);
     }
 
-    if ((NULL == (info->codename = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_CODENAME", log))) && 
-        (NULL == (info->codename = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_CODENAME", log))))
+    if ((NULL == (info->codename = GetOsDistroInfoEntry(commandTemplate, codename, log))) &&
+        (NULL == (info->codename = GetOsDistroInfoEntry(debianTemplate, codename, log))))
     {
         info->codename = DuplicateString(g_null);
     }
 
-    if ((NULL == (info->description = GetOsDistroInfoEntry(commandTemplate, "DISTRIB_DESCRIPTION", log))) && 
-        (NULL == (info->description = GetOsDistroInfoEntry(debianTemplate, "DISTRIB_DESCRIPTION", log))))
+    if ((NULL == (info->description = GetOsDistroInfoEntry(commandTemplate, description, log))) &&
+        (NULL == (info->description = GetOsDistroInfoEntry(debianTemplate, description, log))))
     {
         info->description = DuplicateString(g_null);
     }
