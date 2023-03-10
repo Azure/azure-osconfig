@@ -429,7 +429,7 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetOsDistroInfoEntry(const char commandTemplate, const char* name, void* log)
+static char* GetOsDistroInfoEntry(const char* commandTemplate, const char* name, void* log)
 {
     char* command = NULL;
     char* result = NULL;
