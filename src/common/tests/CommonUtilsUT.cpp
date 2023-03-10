@@ -1425,5 +1425,6 @@ TEST_F(CommonUtilsTest, OtherOptionalSecurityBaselineTests)
     EXPECT_EQ(0, ExecuteCommand(nullptr, "cat /etc/debian_version", false, true, 0, 0, &text, nullptr, nullptr));
     EXPECT_NE(nullptr, text);
     EXPECT_NE(0, strlen(text));
-    printf("%s\n", text);
+    EXPECT_EQ("foo", text);
+    FREE_MEMORY(text);
 }
