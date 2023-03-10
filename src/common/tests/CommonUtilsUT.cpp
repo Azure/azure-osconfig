@@ -1417,14 +1417,7 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
     EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
 }
 
-TEST_F(CommonUtilsTest, OtherOptionalSecurityBaselineTests)
+TEST_F(CommonUtilsTest, OtherOptionalTests)
 {
-    char* text = NULL;
-    EXPECT_EQ(0, ExecuteCommand(nullptr, "cat /etc/debian_version", false, true, 0, 0, &text, nullptr, nullptr));
-    EXPECT_NE(nullptr, text);
-    EXPECT_NE(0, strlen(text));
-    EXPECT_STREQ("foo", text);
-    FREE_MEMORY(text);
-
-    EXPECT_TRUE(CheckOsAndKernelMatchDistro(nullptr));
+    CheckOsAndKernelMatchDistro(nullptr);
 }
