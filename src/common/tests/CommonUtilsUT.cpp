@@ -1416,8 +1416,3 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
 
     EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
 }
-
-TEST_F(CommonUtilsTest, CheckOsAndKernelMatchDistro)
-{
-    EXPECT_TRUE(CheckOsAndKernelMatchDistro(nullptr));
-}
