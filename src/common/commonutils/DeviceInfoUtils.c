@@ -476,6 +476,11 @@ static char* GetOsDistroInfoEntry(const char* name, void* log)
         FREE_MEMORY(command);
     }
 
+    if (NULL == result)
+    {
+        result = DuplicateString("-");
+    }
+
     if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "'%s': '%s'", name, result);
@@ -595,6 +600,10 @@ char* GetLoginUmask(void* log)
         FREE_MEMORY(result);
     }
 
+    if (NULL == result)
+    {
+        result = DuplicateString("-");
+    }
    
     if (IsFullLoggingEnabled())
     {
