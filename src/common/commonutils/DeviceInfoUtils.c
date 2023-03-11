@@ -528,18 +528,14 @@ bool CheckOsAndKernelMatchDistro(void* log)
         (0 == strcmp(distro.description, os.description)) &&
         (0 == strcmp(kernelName, linuxName)))
     {
-        OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match "
-            "(id: '%s', release: '%s' codename: '%s', description: '%s', kernel name: '%s')",
+        OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
             distro.id, distro.release, distro.codename, distro.description, kernelName);
         match = true;
     }
     else
     {
-        OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro (id: '%s', release: '%s' "
-            "codename: '%s', description: '%s', kernel name: '%s') and installed image (id: '%s', "
-            "release: '%s' codename: '%s', description: '%s', kernel name: '%s') do not match",
-            distro.id, distro.release, distro.codename, distro.description, linuxName, 
-            os.id, os.release, os.codename, os.description, kernelName);
+        OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
     }
 
     FREE_MEMORY(kernelName);
