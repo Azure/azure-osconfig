@@ -3,6 +3,14 @@
 
 #include "Internal.h"
 
+typedef struct OS_DISTRO_INFO
+{
+    char* id;
+    char* release;
+    char* codename;
+    char* description;
+} OS_DISTRO_INFO;
+
 void RemovePrefixBlanks(char* target)
 {
     if (NULL == target)
@@ -419,4 +427,178 @@ char* GetSystemConfiguration(void* log)
     }
 
     return textResult;
+}
+
+static char* GetEtcReleaseEntry(const char* name, void* log)
+{
+    const char* commandTemplate = "cat /etc/*-release | grep %s=";
+
+    char* command = NULL;
+    char* result = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == name) || (0 == strlen(name)))
+    {
+        OsConfigLogError(log, "GetEtcReleaseEntry: invalid arguments");
+        result = DuplicateString("<error>");
+    }
+    else
+    {
+        commandLength = strlen(commandTemplate) + strlen(name) + 1;
+
+        if (NULL == (command = malloc(commandLength)))
+        {
+            OsConfigLogError(log, "GetEtcReleaseEntry: out of memory");
+        }
+        else
+        {
+            memset(command, 0, commandLength);
+            snprintf(command, commandLength, commandTemplate, name);
+
+            if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+            {
+                RemovePrefixBlanks(result);
+                RemoveTrailingBlanks(result);
+                RemovePrefixUpTo(result, '=');
+                RemovePrefixBlanks(result);
+
+                if ('"' == result[0])
+                {
+                    RemovePrefixUpTo(result, '"');
+                    TruncateAtFirst(result, '"');
+                }
+            }
+            else
+            {
+                FREE_MEMORY(result);
+            }
+
+            FREE_MEMORY(command);
+        }
+    }
+
+    if (NULL == result)
+    {
+        result = DuplicateString("<null>");
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "'%s': '%s'", name, result);
+    }
+    
+    return result;
+}
+
+static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
+{
+    if (info)
+    {
+        FREE_MEMORY(info->id);
+        FREE_MEMORY(info->release);
+        FREE_MEMORY(info->codename);
+        FREE_MEMORY(info->description);
+    }
+}
+
+bool CheckOsAndKernelMatchDistro(void* log)
+{
+    const char* linuxName = "Linux";
+
+    OS_DISTRO_INFO distro = {0}, os = {0};
+    char* kernelName = GetOsKernelName(log);
+    bool match = false;
+
+    // Distro
+    distro.id = GetEtcReleaseEntry("DISTRIB_ID", log);
+    distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
+    distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log);
+    distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
+
+    //Installed image
+    os.id = GetEtcReleaseEntry("-w NAME", log);
+    os.release = GetEtcReleaseEntry("VERSION_ID", log);
+    os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
+    os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
+
+    if ((0 == strcmp(distro.id, os.id)) &&
+        (0 == strcmp(distro.release, os.release)) &&
+        (0 == strcmp(distro.codename, os.codename)) &&
+        (0 == strcmp(distro.description, os.description)) &&
+        (0 == strcmp(kernelName, linuxName)))
+    {
+        OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match ('%s', '%s', '%s', '%s', '%s')",
+            distro.id, distro.release, distro.codename, distro.description, kernelName);
+        match = true;
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+            distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+    }
+
+    FREE_MEMORY(kernelName);
+
+    ClearOsDistroInfo(&distro);
+    ClearOsDistroInfo(&os);
+
+    return match;
+}
+
+char* GetLoginUmask(void* log)
+{
+    const char* command = "grep -v '^#' /etc/login.defs | grep UMASK";
+    char* result = NULL;
+
+    if (0 == ExecuteCommand(NULL, command, true, true, 0, 0, &result, NULL, log))
+    {
+        RemovePrefixUpTo(result, ' ');
+        RemovePrefixBlanks(result);
+        RemoveTrailingBlanks(result);
+    }
+    else
+    {
+        FREE_MEMORY(result);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "UMASK: '%s'", result);
+    }
+
+    return result;
+}
+
+int CheckLoginUmask(const char* desired, void* log)
+{
+    char* current = NULL;
+    size_t length = 0;
+    int status = 0;
+        
+    if ((NULL == desired) || (0 == (length = strlen(desired))))
+    {
+        OsConfigLogError(log, "CheckLoginUmask: invalid argument");
+        return EINVAL;
+    }
+
+    if (NULL == (current = GetLoginUmask(log)))
+    {
+        OsConfigLogError(log, "CheckLoginUmask: GetLoginUmask failed");
+        status = ENOENT;
+    }
+    else
+    {
+        if (0 == strncmp(desired, current, length))
+        {
+            OsConfigLogInfo(log, "CheckLoginUmask: current login UMASK '%s' matches desired '%s'", current, desired);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }

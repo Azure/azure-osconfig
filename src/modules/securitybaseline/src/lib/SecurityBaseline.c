@@ -99,6 +99,10 @@ static const char* g_auditEnsureAuthenticationRequiredForSingleUserModeObject = 
 static const char* g_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
 static const char* g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
 static const char* g_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
+static const char* g_auditEnsureSuRestrictedToRootGroupObject = "auditEnsureSuRestrictedToRootGroup";
+static const char* g_auditEnsureDefaultUmaskForAllUsersObject = "auditEnsureDefaultUmaskForAllUsers";
+static const char* g_auditEnsureAutomountingDisabledObject = "auditEnsureAutomountingDisabled";
+static const char* g_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -642,6 +646,28 @@ static int AuditEnsureAuditdServiceIsRunning(void)
     return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
+static int AuditEnsureSuRestrictedToRootGroup(void)
+{
+    return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog());
+}
+
+static int AuditEnsureDefaultUmaskForAllUsers(void)
+{
+    return CheckLoginUmask("077", SecurityBaselineGetLog());
+}
+
+static int AuditEnsureAutomountingDisabled(void)
+{
+    const char* autofs = "autofs";
+    return ((0 != CheckPackageInstalled(autofs, SecurityBaselineGetLog())) && 
+        (false == IsDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+}
+
+static int AuditEnsureKernelCompiledFromApprovedSources(void)
+{
+    return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? 0 : 1;
+}
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -723,7 +749,11 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureCronServiceIsEnabled()) &&
         (0 == AuditEnsureRemoteLoginWarningBannerIsConfigured()) &&
         (0 == AuditEnsureLocalLoginWarningBannerIsConfigured()) &&
-        (0 == AuditEnsureAuditdServiceIsRunning())) ? 0 : ENOENT;
+        (0 == AuditEnsureAuditdServiceIsRunning()) &&
+        (0 == AuditEnsureSuRestrictedToRootGroup()) &&
+        (0 == AuditEnsureDefaultUmaskForAllUsers()) &&
+        (0 == AuditEnsureAutomountingDisabled()) &&
+        (0 == AuditEnsureKernelCompiledFromApprovedSources())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -1388,6 +1418,22 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureAuditdServiceIsRunningObject))
         {
             result = AuditEnsureAuditdServiceIsRunning() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSuRestrictedToRootGroupObject))
+        {
+            result = AuditEnsureSuRestrictedToRootGroup() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultUmaskForAllUsersObject))
+        {
+            result = AuditEnsureDefaultUmaskForAllUsers() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAutomountingDisabledObject))
+        {
+            result = AuditEnsureAutomountingDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureKernelCompiledFromApprovedSourcesObject))
+        {
+            result = AuditEnsureKernelCompiledFromApprovedSources() ? g_fail : g_pass;
         }
         else
         {

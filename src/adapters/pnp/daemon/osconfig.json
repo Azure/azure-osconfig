@@ -486,6 +486,22 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSuRestrictedToRootGroup"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDefaultUmaskForAllUsers"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAutomountingDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureKernelCompiledFromApprovedSources"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditSecurityBaseline"
     },
     {

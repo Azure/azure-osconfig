@@ -655,7 +655,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
     commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
 
-    if (NULL == (command = malloc(commandLength + 1)))
+    if (NULL == (command = malloc(commandLength)))
     {
         OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
         status = ENOMEM;
