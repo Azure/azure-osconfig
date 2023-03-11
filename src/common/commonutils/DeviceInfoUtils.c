@@ -518,7 +518,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
 
     //Installed image
-    os.id = GetEtcReleaseEntry(commandTemplate, "ID", log);
+    os.id = GetEtcReleaseEntry(commandTemplate, "NAME", log);
     os.release = GetEtcReleaseEntry(commandTemplate, "VERSION_ID", log);
     os.codename = GetEtcReleaseEntry(commandTemplate, "VERSION_CODENAME", log);
     os.description = GetEtcReleaseEntry(commandTemplate, "PRETTY_NAME", log);
