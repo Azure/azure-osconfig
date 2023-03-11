@@ -517,7 +517,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
 
     //Installed image
-    os.id = GetEtcReleaseEntry("NAME", log);
+    os.id = GetEtcReleaseEntry("-w NAME", log);
     os.release = GetEtcReleaseEntry("VERSION_ID", log);
     os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
     os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
@@ -530,7 +530,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     {
         OsConfigLogInfo(log, "CheckOsAndKernelMatchDistro: distro and installed image match "
             "(id: '%s', release: '%s' codename: '%s', description: '%s', kernel name: '%s')",
-            kernelName, distro.id, distro.release, distro.codename, distro.description);
+            distro.id, distro.release, distro.codename, distro.description, kernelName);
         match = true;
     }
     else
@@ -538,8 +538,8 @@ bool CheckOsAndKernelMatchDistro(void* log)
         OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro (id: '%s', release: '%s' "
             "codename: '%s', description: '%s', kernel name: '%s') and installed image (id: '%s', "
             "release: '%s' codename: '%s', description: '%s', kernel name: '%s') do not match",
-            linuxName, distro.id, distro.release, distro.codename, distro.description,
-            kernelName, os.id, os.release, os.codename, os.description);
+            distro.id, distro.release, distro.codename, distro.description, linuxName, 
+            os.id, os.release, os.codename, os.description, kernelName);
     }
 
     FREE_MEMORY(kernelName);
