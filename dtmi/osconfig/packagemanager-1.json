@@ -1,9 +1,9 @@
 {
   "@context": "dtmi:dtdl:context;3",
-  "@id": "dtmi:osconfig:pmc;1",
+  "@id": "dtmi:osconfig:packagemanager;1",
   "@type": "Interface",
-  "displayName": "Package Manager Configuration",
-  "description": "Module designed to install DEB-packages using Package Manager",
+  "displayName": "Package Manager",
+  "description": "Provides functionality to remotely install DEB packages using Package Manager",
   "contents": [
     {
       "@type": "Property",

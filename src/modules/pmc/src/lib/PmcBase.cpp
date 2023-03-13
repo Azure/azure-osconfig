@@ -13,7 +13,7 @@
 #include <Mmi.h>
 #include <PmcBase.h>
 
-static const std::string g_componentName = "PackageManagerConfiguration";
+static const std::string g_componentName = "PackageManager";
 static const std::string g_reportedObjectName = "state";
 static const std::string g_desiredObjectName = "desiredState";
 static const std::string g_packages = "packages";
@@ -46,7 +46,7 @@ constexpr const char g_moduleInfo[] = R""""({
     "VersionMajor": 1,
     "VersionMinor": 0,
     "VersionInfo": "",
-    "Components": ["PackageManagerConfiguration"],
+    "Components": ["PackageManager"],
     "Lifetime": 1,
     "UserAccount": 0})"""";
 

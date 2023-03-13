@@ -91,7 +91,7 @@ namespace OSConfig::Platform::Tests
 
         static PmcTestImpl* testModule;
         static constexpr const unsigned int g_maxPayloadSizeBytes = 4000;
-        static constexpr const char* componentName = "PackageManagerConfiguration";
+        static constexpr const char* componentName = "PackageManager";
         static constexpr const char* desiredObjectName = "desiredState";
         static constexpr const char* reportedObjectName = "state";
         static constexpr const char* sourcesDirectory = "sources/";
@@ -327,7 +327,7 @@ namespace OSConfig::Platform::Tests
     TEST_F(PmcTests, SetInvalidPayloadString)
     {
         const std::map<std::string, std::tuple<int, std::string>> textResults;
-        char invalidPayload[] = "C++ PackageManagerConfiguration Module";
+        char invalidPayload[] = "C++ PackageManager Module";
         testModule->SetTextResult(textResults);
 
         //test invalid length

@@ -161,7 +161,7 @@
       "ObjectName": "networkConfiguration"
     },
     {
-      "ComponentName": "PackageManagerConfiguration",
+      "ComponentName": "PackageManager",
       "ObjectName": "state"
     },
     {

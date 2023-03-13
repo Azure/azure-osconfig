@@ -11,12 +11,12 @@
 void __attribute__((constructor)) InitModule()
 {
     PmcLog::OpenLog();
-    OsConfigLogInfo(PmcLog::Get(), "C++ PackageManagerConfiguration module loaded");
+    OsConfigLogInfo(PmcLog::Get(), "C++ PackageManager module loaded");
 }
 
 void __attribute__((destructor)) DestroyModule()
 {
-    OsConfigLogInfo(PmcLog::Get(), "C++ PackageManagerConfiguration module unloaded");
+    OsConfigLogInfo(PmcLog::Get(), "C++ PackageManager module unloaded");
     PmcLog::CloseLog();
 }
 

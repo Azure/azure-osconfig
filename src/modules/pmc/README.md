@@ -22,7 +22,7 @@ The module will automatically replace the placeholder in `signed-by={key-id}` wi
 
 ### Example of desired payload
 ```
-"PackageManagerConfiguration": {
+"PackageManager": {
     "desiredState": {
         "packages": [
             "cowsay sl=5.02-1",
@@ -55,7 +55,7 @@ The `executionState`, `executionSubstate` and `executionSubstateDetails` propert
 | executionState | executionSubstate             | executionSubstateDetails | Meaning                                                                                      |
 | -------------- |------------------------------ | ------------------------ | -------------------------------------------------------------------------------------------- |
 | 0 (Unknown)    | 0 (None)                      | empty                    | No desired properties are known to the module. This is the initial default state.            |
-| 1 (Running)    | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object                                        |
+| 1 (Running)    | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManager JSON object                                        |
 | 1 (Running)    | 2 (DeserializingDesiredState) | empty                    | Deserializing DesiredState JSON object                                                       |
 | 1 (Running)    | 3 (DeserializingGpgKeys)      | key_id                   | Deserializing GpgKeys JSON object                                                            |
 | 1 (Running)    | 4 (DeserializingSources)      | source_id                | Deserializing Sources JSON object                                                            |
@@ -65,7 +65,7 @@ The `executionState`, `executionSubstate` and `executionSubstateDetails` propert
 | 1 (Running)    | 8 (UpdatingPackagesLists)     | empty                    | Refreshing list of packages before updating packages (by running `apt-get update` command)   |
 | 1 (Running)    | 9 (InstallingPackages)        | package_name(s)          | Installing packages (by running `apt-get install` command)                                   |
 | 2 (Succeeded)  | 0 (None)                      | empty                    | All desired properties were applied successfully                                             |
-| 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManagerConfiguration JSON object failed                                 |
+| 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Deserializing PackageManager JSON object failed                                 |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Deserializing DesiredState JSON object failed                                                |
 | 3 (Failed)     | 3 (DeserializingGpgKeys)      | key_id                   | Deserializing GpgKeys JSON object failed                                                     |
 | 3 (Failed)     | 4 (DeserializingSources)      | source_id                | Deserializing Sources JSON object failed                                                     |
@@ -103,7 +103,7 @@ Package Manager Configuration module can fail in different stages. To be able to
 
 | executionState | executionSubstate             | executionSubstateDetails | Possible error causes                                                                           |
 | -------------- |------------------------------ | ------------------------ | ----------------------------------------------------------------------------------------------- |
-| 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Payload too large, unabled to parse JSON payload, not specified PackageManagerConfiguration     |
+| 3 (Failed)     | 1 (DeserializingJsonPayload)  | empty                    | Payload too large, unabled to parse JSON payload, not specified PackageManager     |
 | 3 (Failed)     | 2 (DeserializingDesiredState) | empty                    | Invalid DesiredState payload, incorrect types specified, neither specified Sources nor Packages |
 | 3 (Failed)     | 3 (DeserializingGpgKeys)      | key_id                   | GpgKeys is not a map type, invalid map value                                                    |
 | 3 (Failed)     | 4 (DeserializingSources)      | source_id                | Sources is not a map type, invalid map value                                                    |

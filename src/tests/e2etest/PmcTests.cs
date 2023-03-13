@@ -13,7 +13,7 @@ namespace E2eTesting
     [TestFixture, Category("Pmc"), Ignore("Stability Issues")]
     public class PmcTests : E2ETest
     {
-        private const string _componentName = "PackageManagerConfiguration";
+        private const string _componentName = "PackageManager";
         private const string _desiredObjectName = "desiredState";
         private const string _reportedObjectName = "state";
         private const string _packageNameToUninstall = "sl";
