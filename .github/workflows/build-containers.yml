@@ -22,11 +22,11 @@ jobs:
     outputs:
       containers: ${{ steps.matrix.outputs.containers }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get changed containers
         id: changed-containers
-        uses: tj-actions/changed-files@v18.7
+        uses: tj-actions/changed-files@v35.7.0
         with:
           files: ./devops/docker/**/Dockerfile
 
@@ -131,7 +131,7 @@ jobs:
 
       - name: Docker push (ghcr.io)
         # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
           push: true
