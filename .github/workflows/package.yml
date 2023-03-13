@@ -15,13 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu18.04, ubuntu20.04, debian9]
-        variant:
-          [
-            { arch: arm, platform: linux/arm/v7 },
-            { arch: arm64, platform: linux/arm64/v8 },
-            { arch: amd64, platform: linux/amd64 },
-          ]
+        arch: [arm, arm64, amd64]
     with:
       os: ${{ matrix.os }}
-      arch: ${{ matrix.variant.arch }}
-      platform: ${{ matrix.variant.platform }}
+      arch: ${{ matrix.arch }}

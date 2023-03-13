@@ -67,14 +67,12 @@ jobs:
           image=${dockerfile#devops/docker/}
           image=${image%/*}
           distro=${image%-*}
-          platform=${image#*-}
 
           repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
 
           echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
           echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
           echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
-          echo platform=$(echo -n $platform) >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -115,7 +113,6 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           container: ${{ steps.image.outputs.name }}
-          platform: ${{ steps.image.outputs.platform }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ github.sha }}
 
