@@ -45,9 +45,9 @@
       "name": "Networking"
     },
     {
-      "schema": "dtmi:osconfig:pmc;1",
+      "schema": "dtmi:osconfig:packagemanager;1",
       "@type": "Component",
-      "name": "Pmc"
+      "name": "PackageManager"
     },
     {
       "schema": "dtmi:osconfig:tpm;3",

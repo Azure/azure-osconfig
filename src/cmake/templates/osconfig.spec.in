@@ -139,7 +139,7 @@ rm /etc/aziot/identityd/config.d/osconfig.toml >/dev/null || true
 - E2E tests improvements.
 - Commonutils tests moved to commonutils/tests.
 - Improvements to logging.
-- MIM for the future PackageManagerConfiguration module.
+- MIM for the future PackageManager module.
 - Other security and stability fixes.
 * Mon Feb 21 2022 OSConfig Core Team <osconfigcore@microsoft.com> 1.0.1.20220125
 - include module hostname, tpm, ztsi modules
