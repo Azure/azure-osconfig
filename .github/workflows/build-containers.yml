@@ -103,7 +103,7 @@ jobs:
             type=raw,value=${{ github.run_number }}
             type=sha
 
-      - name: Docker push (ghcr.io)
+      - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
@@ -111,7 +111,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Docker push (azurecr.io)
+      - name: Push image to ACR
         # Only push the image when a pull request is merged to main
         # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         if: false
