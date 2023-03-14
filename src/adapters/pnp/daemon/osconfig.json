@@ -574,7 +574,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsurePermissionsOnBootloaderConfigAreConfigured"
+      "ObjectName": "auditEnsurePermissionsOnBootloaderConfig"
     },
     {
       "ComponentName": "SecurityBaseline",
@@ -590,11 +590,11 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsurePasswordCreationRequirementsAreConfigured"
+      "ObjectName": "auditEnsurePasswordCreationRequirements"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured"
+      "ObjectName": "auditEnsureLockoutForFailedPasswordAttempts"
     },
     {
       "ComponentName": "SecurityBaseline",
@@ -618,7 +618,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled"
+      "ObjectName": "auditEnsureVirtualMemoryRandomizationIsEnabled"
     },
     {
       "ComponentName": "SecurityBaseline",

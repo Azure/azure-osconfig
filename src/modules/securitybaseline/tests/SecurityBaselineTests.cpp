@@ -129,18 +129,18 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureDisabledSupportForRdsObject = "auditEnsureDisabledSupportForRds";
         const char* m_auditEnsureTipcIsDisabledObject = "auditEnsureTipcIsDisabled";
         const char* m_auditEnsureZeroconfNetworkingIsDisabledObject = "auditEnsureZeroconfNetworkingIsDisabled";
-        const char* m_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject = "auditEnsurePermissionsOnBootloaderConfigAreConfigured";
+        const char* m_auditEnsurePermissionsOnBootloaderConfigObject = "auditEnsurePermissionsOnBootloaderConfig";
         const char* m_auditEnsurePasswordReuseIsLimitedObject = "auditEnsurePasswordReuseIsLimited";
         const char* m_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
         const char* m_auditEnsureCoreDumpsAreRestrictedObject = "auditEnsureCoreDumpsAreRestricted";
-        const char* m_auditEnsurePasswordCreationRequirementsAreConfiguredObject = "auditEnsurePasswordCreationRequirementsAreConfigured";
-        const char* m_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject = "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured";
+        const char* m_auditEnsurePasswordCreationRequirementsObject = "auditEnsurePasswordCreationRequirements";
+        const char* m_auditEnsureLockoutForFailedPasswordAttemptsObject = "auditEnsureLockoutForFailedPasswordAttempts";
         const char* m_auditEnsureDisabledInstallationOfCramfsFileSystemObject = "auditEnsureDisabledInstallationOfCramfsFileSystem";
         const char* m_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
         const char* m_auditEnsureDisabledInstallationOfHfsFileSystemObject = "auditEnsureDisabledInstallationOfHfsFileSystem";
         const char* m_auditEnsureDisabledInstallationOfHfsplusFileSystemObject = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
         const char* m_auditEnsureDisabledInstallationOfJffs2FileSystemObject = "auditEnsureDisabledInstallationOfJffs2FileSystem";
-        const char* m_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject = "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled";
+        const char* m_auditEnsureVirtualMemoryRandomizationIsEnabledObject = "auditEnsureVirtualMemoryRandomizationIsEnabled";
         const char* m_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
         const char* m_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
         const char* m_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
@@ -502,18 +502,18 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureDisabledSupportForRdsObject,
         m_auditEnsureTipcIsDisabledObject,
         m_auditEnsureZeroconfNetworkingIsDisabledObject,
-        m_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject,
+        m_auditEnsurePermissionsOnBootloaderConfigObject,
         m_auditEnsurePasswordReuseIsLimitedObject,
         m_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject,
         m_auditEnsureCoreDumpsAreRestrictedObject,
-        m_auditEnsurePasswordCreationRequirementsAreConfiguredObject,
-        m_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject,
+        m_auditEnsurePasswordCreationRequirementsObject,
+        m_auditEnsureLockoutForFailedPasswordAttemptsObject,
         m_auditEnsureDisabledInstallationOfCramfsFileSystemObject,
         m_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject,
         m_auditEnsureDisabledInstallationOfHfsFileSystemObject,
         m_auditEnsureDisabledInstallationOfHfsplusFileSystemObject,
         m_auditEnsureDisabledInstallationOfJffs2FileSystemObject,
-        m_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject,
+        m_auditEnsureVirtualMemoryRandomizationIsEnabledObject,
         m_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject,
         m_auditEnsureLoggingIsConfiguredObject,
         m_auditEnsureSyslogPackageIsInstalledObject,

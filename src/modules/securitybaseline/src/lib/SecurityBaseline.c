@@ -121,18 +121,18 @@ static const char* g_auditEnsureSctpIsDisabledObject = "auditEnsureSctpIsDisable
 static const char* g_auditEnsureDisabledSupportForRdsObject = "auditEnsureDisabledSupportForRds";
 static const char* g_auditEnsureTipcIsDisabledObject = "auditEnsureTipcIsDisabled";
 static const char* g_auditEnsureZeroconfNetworkingIsDisabledObject = "auditEnsureZeroconfNetworkingIsDisabled";
-static const char* g_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject = "auditEnsurePermissionsOnBootloaderConfigAreConfigured";
+static const char* g_auditEnsurePermissionsOnBootloaderConfigObject = "auditEnsurePermissionsOnBootloaderConfig";
 static const char* g_auditEnsurePasswordReuseIsLimitedObject = "auditEnsurePasswordReuseIsLimited";
 static const char* g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
 static const char* g_auditEnsureCoreDumpsAreRestrictedObject = "auditEnsureCoreDumpsAreRestricted";
-static const char* g_auditEnsurePasswordCreationRequirementsAreConfiguredObject = "auditEnsurePasswordCreationRequirementsAreConfigured";
-static const char* g_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject = "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured";
+static const char* g_auditEnsurePasswordCreationRequirementsObject = "auditEnsurePasswordCreationRequirements";
+static const char* g_auditEnsureLockoutForFailedPasswordAttemptsObject = "auditEnsureLockoutForFailedPasswordAttempts";
 static const char* g_auditEnsureDisabledInstallationOfCramfsFileSystemObject = "auditEnsureDisabledInstallationOfCramfsFileSystem";
 static const char* g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
 static const char* g_auditEnsureDisabledInstallationOfHfsFileSystemObject = "auditEnsureDisabledInstallationOfHfsFileSystem";
 static const char* g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
 static const char* g_auditEnsureDisabledInstallationOfJffs2FileSystemObject = "auditEnsureDisabledInstallationOfJffs2FileSystem";
-static const char* g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject = "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled";
+static const char* g_auditEnsureVirtualMemoryRandomizationIsEnabledObject = "auditEnsureVirtualMemoryRandomizationIsEnabled";
 static const char* g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
 static const char* g_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
 static const char* g_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
@@ -838,7 +838,7 @@ static int AuditEnsureZeroconfNetworkingIsDisabled(void)
     return 0; //TBD
 }
 
-static int AuditEnsurePermissionsOnBootloaderConfigAreConfigured(void)
+static int AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     return 0; //TBD
 }
@@ -858,12 +858,12 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
     return 0; //TBD
 }
 
-static int AuditEnsurePasswordCreationRequirementsAreConfigured(void)
+static int AuditEnsurePasswordCreationRequirements(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured(void)
+static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
     return 0; //TBD
 }
@@ -893,7 +893,7 @@ static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
     return 0; //TBD
 }
 
-static int AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled(void)
+static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
     return 0; //TBD
 }
@@ -1252,18 +1252,18 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureDisabledSupportForRds()) &&
         (0 == AuditEnsureTipcIsDisabled()) &&
         (0 == AuditEnsureZeroconfNetworkingIsDisabled()) &&
-        (0 == AuditEnsurePermissionsOnBootloaderConfigAreConfigured()) &&
+        (0 == AuditEnsurePermissionsOnBootloaderConfig()) &&
         (0 == AuditEnsurePasswordReuseIsLimited()) &&
         (0 == AuditEnsureMountingOfUsbStorageDevicesIsDisabled()) &&
         (0 == AuditEnsureCoreDumpsAreRestricted()) &&
-        (0 == AuditEnsurePasswordCreationRequirementsAreConfigured()) &&
-        (0 == AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured()) &&
+        (0 == AuditEnsurePasswordCreationRequirements()) &&
+        (0 == AuditEnsureLockoutForFailedPasswordAttempts()) &&
         (0 == AuditEnsureDisabledInstallationOfCramfsFileSystem()) &&
         (0 == AuditEnsureDisabledInstallationOfFreevxfsFileSystem()) &&
         (0 == AuditEnsureDisabledInstallationOfHfsFileSystem()) &&
         (0 == AuditEnsureDisabledInstallationOfHfsplusFileSystem()) &&
         (0 == AuditEnsureDisabledInstallationOfJffs2FileSystem()) &&
-        (0 == AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled()) &&
+        (0 == AuditEnsureVirtualMemoryRandomizationIsEnabled()) &&
         (0 == AuditEnsureAllBootloadersHavePasswordProtectionEnabled()) &&
         (0 == AuditEnsureLoggingIsConfigured()) &&
         (0 == AuditEnsureSyslogPackageIsInstalled()) &&
@@ -2067,9 +2067,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureZeroconfNetworkingIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigObject))
         {
-            result = AuditEnsurePermissionsOnBootloaderConfigAreConfigured() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnBootloaderConfig() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimitedObject))
         {
@@ -2083,13 +2083,13 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureCoreDumpsAreRestricted() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsAreConfiguredObject))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsObject))
         {
-            result = AuditEnsurePasswordCreationRequirementsAreConfigured() ? g_fail : g_pass;
+            result = AuditEnsurePasswordCreationRequirements() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject))
+        else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsObject))
         {
-            result = AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured() ? g_fail : g_pass;
+            result = AuditEnsureLockoutForFailedPasswordAttempts() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
@@ -2111,9 +2111,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureDisabledInstallationOfJffs2FileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureVirtualMemoryRandomizationIsEnabledObject))
         {
-            result = AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureVirtualMemoryRandomizationIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {

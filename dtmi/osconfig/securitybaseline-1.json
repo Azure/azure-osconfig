@@ -625,7 +625,7 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsurePermissionsOnBootloaderConfigAreConfigured",
+      "name": "auditEnsurePermissionsOnBootloaderConfig",
       "schema": "string",
       "writable": false
     },
@@ -649,13 +649,13 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsurePasswordCreationRequirementsAreConfigured",
+      "name": "auditEnsurePasswordCreationRequirements",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured",
+      "name": "auditEnsureLockoutForFailedPasswordAttempts",
       "schema": "string",
       "writable": false
     },
@@ -691,7 +691,7 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled",
+      "name": "auditEnsureVirtualMemoryRandomizationIsEnabled",
       "schema": "string",
       "writable": false
     },

@@ -619,7 +619,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsurePermissionsOnBootloaderConfigAreConfigured",
+          "name": "auditEnsurePermissionsOnBootloaderConfig",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -643,13 +643,13 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsurePasswordCreationRequirementsAreConfigured",
+          "name": "auditEnsurePasswordCreationRequirements",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured",
+          "name": "auditEnsureLockoutForFailedPasswordAttempts",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -685,7 +685,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled",
+          "name": "auditEnsureVirtualMemoryRandomizationIsEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
