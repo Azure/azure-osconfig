@@ -529,43 +529,43 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces",
+      "name": "auditEnsureIcmpRedirectsIsDisabled",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces",
+      "name": "auditEnsureSourceRoutedPacketsIsDisabled",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled",
+      "name": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled",
+      "name": "auditEnsureIgnoringBogusIcmpBroadcastResponses",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled",
+      "name": "auditEnsureIgnoringIcmpEchoPingsToMulticast",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces",
+      "name": "auditEnsureMartianPacketLoggingIsEnabled",
       "schema": "string",
       "writable": false
     },
     {
       "@type": "Property",
-      "name": "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces",
+      "name": "auditEnsureReversePathSourceValidationIsEnabled",
       "schema": "string",
       "writable": false
     },

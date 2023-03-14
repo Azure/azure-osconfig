@@ -113,13 +113,13 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
         const char* m_auditEnsureDefaultDenyFirewallPolicyIsSetObject = "auditEnsureDefaultDenyFirewallPolicyIsSet";
         const char* m_auditEnsurePacketRedirectSendingIsDisabledObject = "auditEnsurePacketRedirectSendingIsDisabled";
-        const char* m_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject = "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces";
-        const char* m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces";
-        const char* m_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled";
-        const char* m_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject = "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled";
-        const char* m_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject = "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled";
-        const char* m_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject = "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces";
-        const char* m_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject = "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces";
+        const char* m_auditEnsureIcmpRedirectsIsDisabledObject = "auditEnsureIcmpRedirectsIsDisabled";
+        const char* m_auditEnsureSourceRoutedPacketsIsDisabledObject = "auditEnsureSourceRoutedPacketsIsDisabled";
+        const char* m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
+        const char* m_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject = "auditEnsureIgnoringBogusIcmpBroadcastResponses";
+        const char* m_auditEnsureIgnoringIcmpEchoPingsToMulticastObject = "auditEnsureIgnoringIcmpEchoPingsToMulticast";
+        const char* m_auditEnsureMartianPacketLoggingIsEnabledObject = "auditEnsureMartianPacketLoggingIsEnabled";
+        const char* m_auditEnsureReversePathSourceValidationIsEnabledObject = "auditEnsureReversePathSourceValidationIsEnabled";
         const char* m_auditEnsureTcpSynCookiesAreEnabledObject = "auditEnsureTcpSynCookiesAreEnabled";
         const char* m_auditEnsureSystemNotActingAsNetworkSnifferObject = "auditEnsureSystemNotActingAsNetworkSniffer";
         const char* m_auditEnsureAllWirelessInterfacesAreDisabledObject = "auditEnsureAllWirelessInterfacesAreDisabled";
@@ -486,13 +486,13 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureKernelCompiledFromApprovedSourcesObject,
         m_auditEnsureDefaultDenyFirewallPolicyIsSetObject,
         m_auditEnsurePacketRedirectSendingIsDisabledObject,
-        m_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject,
-        m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject,
-        m_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject,
-        m_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject,
-        m_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject,
-        m_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject,
-        m_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject,
+        m_auditEnsureIcmpRedirectsIsDisabledObject,
+        m_auditEnsureSourceRoutedPacketsIsDisabledObject,
+        m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject,
+        m_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject,
+        m_auditEnsureIgnoringIcmpEchoPingsToMulticastObject,
+        m_auditEnsureMartianPacketLoggingIsEnabledObject,
+        m_auditEnsureReversePathSourceValidationIsEnabledObject,
         m_auditEnsureTcpSynCookiesAreEnabledObject,
         m_auditEnsureSystemNotActingAsNetworkSnifferObject,
         m_auditEnsureAllWirelessInterfacesAreDisabledObject,

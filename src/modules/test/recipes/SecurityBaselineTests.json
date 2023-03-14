@@ -758,43 +758,43 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces",
+    "ObjectName": "auditEnsureIcmpRedirectsIsDisabled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces",
+    "ObjectName": "auditEnsureSourceRoutedPacketsIsDisabled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled",
+    "ObjectName": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled",
+    "ObjectName": "auditEnsureIgnoringBogusIcmpBroadcastResponses",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled",
+    "ObjectName": "auditEnsureIgnoringIcmpEchoPingsToMulticast",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces",
+    "ObjectName": "auditEnsureMartianPacketLoggingIsEnabled",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces",
+    "ObjectName": "auditEnsureReversePathSourceValidationIsEnabled",
     "Payload": "PASS"
   },
   {

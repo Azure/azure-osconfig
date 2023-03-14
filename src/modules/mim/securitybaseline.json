@@ -523,43 +523,43 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces",
+          "name": "auditEnsureIcmpRedirectsIsDisabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces",
+          "name": "auditEnsureSourceRoutedPacketsIsDisabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled",
+          "name": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled",
+          "name": "auditEnsureIgnoringBogusIcmpBroadcastResponses",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled",
+          "name": "auditEnsureIgnoringIcmpEchoPingsToMulticast",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces",
+          "name": "auditEnsureMartianPacketLoggingIsEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces",
+          "name": "auditEnsureReversePathSourceValidationIsEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"

@@ -105,13 +105,13 @@ static const char* g_auditEnsureAutomountingDisabledObject = "auditEnsureAutomou
 static const char* g_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
 static const char* g_auditEnsureDefaultDenyFirewallPolicyIsSetObject = "auditEnsureDefaultDenyFirewallPolicyIsSet";
 static const char* g_auditEnsurePacketRedirectSendingIsDisabledObject = "auditEnsurePacketRedirectSendingIsDisabled";
-static const char* g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject = "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces";
-static const char* g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces";
-static const char* g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled";
-static const char* g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject = "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled";
-static const char* g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject = "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled";
-static const char* g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject = "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces";
-static const char* g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject = "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces";
+static const char* g_auditEnsureIcmpRedirectsIsDisabledObject = "auditEnsureIcmpRedirectsIsDisabled";
+static const char* g_auditEnsureSourceRoutedPacketsIsDisabledObject = "auditEnsureSourceRoutedPacketsIsDisabled";
+static const char* g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
+static const char* g_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject = "auditEnsureIgnoringBogusIcmpBroadcastResponses";
+static const char* g_auditEnsureIgnoringIcmpEchoPingsToMulticastObject = "auditEnsureIgnoringIcmpEchoPingsToMulticast";
+static const char* g_auditEnsureMartianPacketLoggingIsEnabledObject = "auditEnsureMartianPacketLoggingIsEnabled";
+static const char* g_auditEnsureReversePathSourceValidationIsEnabledObject = "auditEnsureReversePathSourceValidationIsEnabled";
 static const char* g_auditEnsureTcpSynCookiesAreEnabledObject = "auditEnsureTcpSynCookiesAreEnabled";
 static const char* g_auditEnsureSystemNotActingAsNetworkSnifferObject = "auditEnsureSystemNotActingAsNetworkSniffer";
 static const char* g_auditEnsureAllWirelessInterfacesAreDisabledObject = "auditEnsureAllWirelessInterfacesAreDisabled";
@@ -758,37 +758,37 @@ static int AuditEnsurePacketRedirectSendingIsDisabled(void)
     return 0; //TBD
 }
 
-static int AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces(void)
+static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces(void)
+static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled(void)
+static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled(void)
+static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled(void)
+static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces(void)
+static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     return 0; //TBD
 }
 
-static int AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces(void)
+static int AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
     return 0; //TBD
 }
@@ -1236,13 +1236,13 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureKernelCompiledFromApprovedSources()) &&
         (0 == AuditEnsureDefaultDenyFirewallPolicyIsSet()) &&
         (0 == AuditEnsurePacketRedirectSendingIsDisabled()) &&
-        (0 == AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces()) &&
-        (0 == AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces()) &&
-        (0 == AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled()) &&
-        (0 == AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled()) &&
-        (0 == AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled()) &&
-        (0 == AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces()) &&
-        (0 == AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces()) &&
+        (0 == AuditEnsureIcmpRedirectsIsDisabled()) &&
+        (0 == AuditEnsureSourceRoutedPacketsIsDisabled()) &&
+        (0 == AuditEnsureAcceptingSourceRoutedPacketsIsDisabled()) &&
+        (0 == AuditEnsureIgnoringBogusIcmpBroadcastResponses()) &&
+        (0 == AuditEnsureIgnoringIcmpEchoPingsToMulticast()) &&
+        (0 == AuditEnsureMartianPacketLoggingIsEnabled()) &&
+        (0 == AuditEnsureReversePathSourceValidationIsEnabled()) &&
         (0 == AuditEnsureTcpSynCookiesAreEnabled()) &&
         (0 == AuditEnsureSystemNotActingAsNetworkSniffer()) &&
         (0 == AuditEnsureAllWirelessInterfacesAreDisabled()) &&
@@ -2003,33 +2003,33 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsurePacketRedirectSendingIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject))
+        else if (0 == strcmp(objectName, g_auditEnsureIcmpRedirectsIsDisabledObject))
         {
-            result = AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces() ? g_fail : g_pass;
+            result = AuditEnsureIcmpRedirectsIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject))
+        else if (0 == strcmp(objectName, g_auditEnsureSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces() ? g_fail : g_pass;
+            result = AuditEnsureSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject))
         {
-            result = AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastObject))
         {
-            result = AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject))
+        else if (0 == strcmp(objectName, g_auditEnsureMartianPacketLoggingIsEnabledObject))
         {
-            result = AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces() ? g_fail : g_pass;
+            result = AuditEnsureMartianPacketLoggingIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject))
+        else if (0 == strcmp(objectName, g_auditEnsureReversePathSourceValidationIsEnabledObject))
         {
-            result = AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces() ? g_fail : g_pass;
+            result = AuditEnsureReversePathSourceValidationIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabledObject))
         {
