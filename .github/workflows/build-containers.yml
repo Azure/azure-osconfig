@@ -104,16 +104,6 @@ jobs:
           context: ${{ steps.image.outputs.path }}
           load: true
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
-          tags: |
-            type=raw,value=latest
-            type=raw,value=${{ github.run_number }}
-            type=sha
-
       # Test the container image on 'pull_request' events
 
       - name: Run container
@@ -134,6 +124,16 @@ jobs:
             mkdir build && cd build
             cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
             cmake --build . --config ${{ env.BUILD_TYPE }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.run_number }}
+            type=sha
 
       - name: Docker push (ghcr.io)
         # Only push the image when a pull request is merged to main
