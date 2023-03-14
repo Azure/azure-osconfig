@@ -99,6 +99,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Docker build
+        id: build
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
@@ -111,7 +112,7 @@ jobs:
         id: container
         uses: ./.github/actions/container-run
         with:
-          container: ${{ steps.image.outputs.name }}
+          container: ${{ steps.build.outputs.imageid }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ github.run_number }}
 
