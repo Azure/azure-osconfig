@@ -5,10 +5,10 @@ on:
     paths:
       - devops/docker/**/Dockerfile
   push:
-    # branches:
-    #   - main
-    # paths:
-    #   - devops/docker/**/Dockerfile
+    branches:
+      - main
+    paths:
+      - devops/docker/**/Dockerfile
 
 env:
   REGISTRY: ghcr.io
