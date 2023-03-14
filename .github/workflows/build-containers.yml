@@ -121,9 +121,9 @@ jobs:
         id: container
         uses: ./.github/actions/container-run
         with:
-          container: ${{ steps.image.outputs.name }}
+          container: ${{ env.REGISTRY }}/${{ steps.image.outputs.path }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          tag: ${{ github.sha }}
+          tag: ${{ github.run_number }}
 
       - name: Build azure-osconfig
         if: ${{ github.event_name == 'pull_request' }}
