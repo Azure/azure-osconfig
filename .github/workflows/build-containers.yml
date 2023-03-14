@@ -56,10 +56,7 @@ jobs:
       matrix:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          # Only checkout submodules recursively if this is a pull request
-          submodules: ${{ github.event_name == 'pull_request' && 'recursive' || 'false' }}
+      - uses: actions/checkout@v3
 
       - name: Setup image
         id: image
@@ -68,14 +65,12 @@ jobs:
           image=${dockerfile#devops/docker/}
           image=${image%/*}
           distro=${image%-*}
-          platform=${image#*-}
 
           repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
 
           echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
           echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
           echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
-          echo platform=$(echo -n $platform) >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -98,34 +93,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Docker build
-        id: build
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ steps.image.outputs.path }}
-          load: true
-
-      # Test the container image on 'pull_request' events
-
-      - name: Run container
-        if: ${{ github.event_name == 'pull_request' }}
-        id: container
-        uses: ./.github/actions/container-run
-        with:
-          container: ${{ steps.build.outputs.imageid }}
-          mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          tag: ${{ github.run_number }}
-
-      - name: Build azure-osconfig
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          cmd: |
-            mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
-            cmake --build . --config ${{ env.BUILD_TYPE }}
-
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -137,12 +104,10 @@ jobs:
             type=sha
 
       - name: Docker push (ghcr.io)
-        # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
-          push: true
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
