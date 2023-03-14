@@ -1995,323 +1995,323 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureKernelCompiledFromApprovedSources() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSet))
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSetObject))
         {
             result = AuditEnsureDefaultDenyFirewallPolicyIsSet() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabledObject))
         {
             result = AuditEnsurePacketRedirectSendingIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces))
+        else if (0 == strcmp(objectName, g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject))
         {
             result = AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces))
+        else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject))
         {
             result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject))
         {
             result = AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject))
         {
             result = AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject))
         {
             result = AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces))
+        else if (0 == strcmp(objectName, g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject))
         {
             result = AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces))
+        else if (0 == strcmp(objectName, g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject))
         {
             result = AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabledObject))
         {
             result = AuditEnsureTcpSynCookiesAreEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSniffer))
+        else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSnifferObject))
         {
             result = AuditEnsureSystemNotActingAsNetworkSniffer() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabledObject))
         {
             result = AuditEnsureAllWirelessInterfacesAreDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabledObject))
         {
             result = AuditEnsureIpv6ProtocolIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabledObject))
         {
             result = AuditEnsureDccpIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabledObject))
         {
             result = AuditEnsureSctpIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRds))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRdsObject))
         {
             result = AuditEnsureDisabledSupportForRds() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabledObject))
         {
             result = AuditEnsureTipcIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabledObject))
         {
             result = AuditEnsureZeroconfNetworkingIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigAreConfigured))
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject))
         {
             result = AuditEnsurePermissionsOnBootloaderConfigAreConfigured() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimited))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimitedObject))
         {
             result = AuditEnsurePasswordReuseIsLimited() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject))
         {
             result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestricted))
+        else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestrictedObject))
         {
             result = AuditEnsureCoreDumpsAreRestricted() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsAreConfigured))
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsAreConfiguredObject))
         {
             result = AuditEnsurePasswordCreationRequirementsAreConfigured() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsIsConfigured))
+        else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject))
         {
             result = AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystem))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
             result = AuditEnsureDisabledInstallationOfCramfsFileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystem))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject))
         {
             result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystem))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystemObject))
         {
             result = AuditEnsureDisabledInstallationOfHfsFileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystem))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject))
         {
             result = AuditEnsureDisabledInstallationOfHfsplusFileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystem))
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystemObject))
         {
             result = AuditEnsureDisabledInstallationOfJffs2FileSystem() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject))
         {
             result = AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {
             result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfigured))
+        else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfiguredObject))
         {
             result = AuditEnsureLoggingIsConfigured() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalledObject))
         {
             result = AuditEnsureSyslogPackageIsInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessages))
+        else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject))
         {
             result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsSnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsSnabledObject))
         {
             result = AuditEnsureALoggingServiceIsSnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFiles))
+        else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
             result = AuditEnsureFilePermissionsForAllRsyslogLogFiles() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestricted))
+        else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestrictedObject))
         {
             result = AuditEnsureLoggerConfigurationFilesAreRestricted() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup))
+        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
         {
             result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser))
+        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
         {
             result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessages))
+        else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessagesObject))
         {
             result = AuditEnsureRsyslogNotAcceptingRemoteMessages() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabledObject))
         {
             result = AuditEnsureSyslogRotaterServiceIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabledObject))
         {
             result = AuditEnsureTelnetServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabledObject))
         {
             result = AuditEnsureRcprshServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabledObject))
         {
             result = AuditEnsureTftpServiceisDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsers))
+        else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
             result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocol))
+        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
             result = AuditEnsureSshBestPracticeProtocol() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhosts))
+        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
         {
             result = AuditEnsureSshBestPracticeIgnoreRhosts() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSet))
+        else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSetObject))
         {
             result = AuditEnsureSshLogLevelIsSet() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSet))
+        else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSetObject))
         {
             result = AuditEnsureSshMaxAuthTriesIsSet() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimited))
+        else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimitedObject))
         {
             result = AuditEnsureSshAccessIsLimited() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject))
         {
             result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
             result = AuditEnsureSshHostbasedAuthenticationIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabledObject))
         {
             result = AuditEnsureSshPermitRootLoginIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
             result = AuditEnsureSshPermitEmptyPasswordsIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfigured))
+        else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject))
         {
             result = AuditEnsureSshIdleTimeoutIntervalIsConfigured() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSet))
+        else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSetObject))
         {
             result = AuditEnsureSshLoginGraceTimeIsSet() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsed))
+        else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
             result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabledObject))
         {
             result = AuditEnsureSshWarningBannerIsEnabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptions))
+        else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
             result = AuditEnsureUsersCannotSetSshEnvironmentOptions() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSsh))
+        else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSshObject))
         {
             result = AuditEnsureAppropriateCiphersForSsh() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabledObject))
         {
             result = AuditEnsureAvahiDaemonServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabledObject))
         {
             result = AuditEnsureCupsServiceisDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalled))
+        else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalledObject))
         {
             result = AuditEnsurePostfixPackageIsUninstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabledObject))
         {
             result = AuditEnsurePostfixNetworkListeningIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabledObject))
         {
             result = AuditEnsureRpcgssdServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabledObject))
         {
             result = AuditEnsureRpcidmapdServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabledObject))
         {
             result = AuditEnsurePortmapServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabledObject))
         {
             result = AuditEnsureNetworkFileSystemServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabledObject))
         {
             result = AuditEnsureRpcsvcgssdServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabledObject))
         {
             result = AuditEnsureSnmpServerIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabledObject))
         {
             result = AuditEnsureRsynServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabledObject))
         {
             result = AuditEnsureNisServerIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalled))
+        else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalledObject))
         {
             result = AuditEnsureRshClientNotInstalled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabledObject))
         {
             result = AuditEnsureSmbWithSambaIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritable))
+        else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
             result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFiles))
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFilesObject))
         {
             result = AuditEnsureNoUsersHaveDotForwardFiles() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFiles))
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFilesObject))
         {
             result = AuditEnsureNoUsersHaveDotNetrcFiles() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFiles))
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFilesObject))
         {
             result = AuditEnsureNoUsersHaveDotRhostsFiles() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabled))
+        else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabledObject))
         {
             result = AuditEnsureRloginServiceIsDisabled() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemoved))
+        else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemovedObject))
         {
             result = AuditEnsureUnnecessaryAccountsAreRemoved() ? g_fail : g_pass;
         }
