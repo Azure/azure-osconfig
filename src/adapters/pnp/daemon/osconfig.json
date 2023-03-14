@@ -502,6 +502,326 @@
     },
     {
       "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDefaultDenyFirewallPolicyIsSet"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePacketRedirectSendingIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIcmpRedirectsIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSourceRoutedPacketsIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIgnoringBogusIcmpBroadcastResponses"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIgnoringIcmpEchoPingsToMulticast"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureMartianPacketLoggingIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureReversePathSourceValidationIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTcpSynCookiesAreEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSystemNotActingAsNetworkSniffer"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllWirelessInterfacesAreDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureIpv6ProtocolIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDccpIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSctpIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledSupportForRds"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTipcIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureZeroconfNetworkingIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePermissionsOnBootloaderConfig"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordReuseIsLimited"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureMountingOfUsbStorageDevicesIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureCoreDumpsAreRestricted"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePasswordCreationRequirements"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureLockoutForFailedPasswordAttempts"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledInstallationOfCramfsFileSystem"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledInstallationOfFreevxfsFileSystem"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledInstallationOfHfsFileSystem"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledInstallationOfHfsplusFileSystem"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDisabledInstallationOfJffs2FileSystem"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureVirtualMemoryRandomizationIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllBootloadersHavePasswordProtectionEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureLoggingIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSyslogPackageIsInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSystemdJournaldServicePersistsLogMessages"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureALoggingServiceIsSnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureFilePermissionsForAllRsyslogLogFiles"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureLoggerConfigurationFilesAreRestricted"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRsyslogNotAcceptingRemoteMessages"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSyslogRotaterServiceIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTelnetServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRcprshServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureTftpServiceisDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAtCronIsRestrictedToAuthorizedUsers"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshBestPracticeProtocol"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshBestPracticeIgnoreRhosts"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshLogLevelIsSet"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshMaxAuthTriesIsSet"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshAccessIsLimited"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshPermitRootLoginIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshPermitEmptyPasswordsIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshLoginGraceTimeIsSet"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshWarningBannerIsEnabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureUsersCannotSetSshEnvironmentOptions"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAppropriateCiphersForSsh"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAvahiDaemonServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureCupsServiceisDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePostfixPackageIsUninstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePostfixNetworkListeningIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRpcgssdServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRpcidmapdServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsurePortmapServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNetworkFileSystemServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRpcsvcgssdServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSnmpServerIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRsynServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNisServerIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRshClientNotInstalled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSmbWithSambaIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureUsersDotFilesArentGroupOrWorldWritable"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoUsersHaveDotForwardFiles"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoUsersHaveDotNetrcFiles"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureNoUsersHaveDotRhostsFiles"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureRloginServiceIsDisabled"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditSecurityBaseline"
     },
     {
