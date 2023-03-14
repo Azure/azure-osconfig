@@ -121,7 +121,7 @@ jobs:
         id: container
         uses: ./.github/actions/container-run
         with:
-          container: ${{ env.REGISTRY }}/${{ steps.image.outputs.path }}
+          container: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
           tag: ${{ github.run_number }}
 
