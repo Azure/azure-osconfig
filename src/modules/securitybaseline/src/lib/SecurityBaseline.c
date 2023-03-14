@@ -103,6 +103,86 @@ static const char* g_auditEnsureSuRestrictedToRootGroupObject = "auditEnsureSuRe
 static const char* g_auditEnsureDefaultUmaskForAllUsersObject = "auditEnsureDefaultUmaskForAllUsers";
 static const char* g_auditEnsureAutomountingDisabledObject = "auditEnsureAutomountingDisabled";
 static const char* g_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
+static const char* g_auditEnsureDefaultDenyFirewallPolicyIsSetObject = "auditEnsureDefaultDenyFirewallPolicyIsSet";
+static const char* g_auditEnsurePacketRedirectSendingIsDisabledObject = "auditEnsurePacketRedirectSendingIsDisabled";
+static const char* g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject = "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces";
+static const char* g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces";
+static const char* g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled";
+static const char* g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject = "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled";
+static const char* g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject = "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled";
+static const char* g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject = "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces";
+static const char* g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject = "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces";
+static const char* g_auditEnsureTcpSynCookiesAreEnabledObject = "auditEnsureTcpSynCookiesAreEnabled";
+static const char* g_auditEnsureSystemNotActingAsNetworkSnifferObject = "auditEnsureSystemNotActingAsNetworkSniffer";
+static const char* g_auditEnsureAllWirelessInterfacesAreDisabledObject = "auditEnsureAllWirelessInterfacesAreDisabled";
+static const char* g_auditEnsureIpv6ProtocolIsEnabledObject = "auditEnsureIpv6ProtocolIsEnabled";
+static const char* g_auditEnsureDccpIsDisabledObject = "auditEnsureDccpIsDisabled";
+static const char* g_auditEnsureSctpIsDisabledObject = "auditEnsureSctpIsDisabled";
+static const char* g_auditEnsureDisabledSupportForRdsObject = "auditEnsureDisabledSupportForRds";
+static const char* g_auditEnsureTipcIsDisabledObject = "auditEnsureTipcIsDisabled";
+static const char* g_auditEnsureZeroconfNetworkingIsDisabledObject = "auditEnsureZeroconfNetworkingIsDisabled";
+static const char* g_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject = "auditEnsurePermissionsOnBootloaderConfigAreConfigured";
+static const char* g_auditEnsurePasswordReuseIsLimitedObject = "auditEnsurePasswordReuseIsLimited";
+static const char* g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
+static const char* g_auditEnsureCoreDumpsAreRestrictedObject = "auditEnsureCoreDumpsAreRestricted";
+static const char* g_auditEnsurePasswordCreationRequirementsAreConfiguredObject = "auditEnsurePasswordCreationRequirementsAreConfigured";
+static const char* g_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject = "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured";
+static const char* g_auditEnsureDisabledInstallationOfCramfsFileSystemObject = "auditEnsureDisabledInstallationOfCramfsFileSystem";
+static const char* g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
+static const char* g_auditEnsureDisabledInstallationOfHfsFileSystemObject = "auditEnsureDisabledInstallationOfHfsFileSystem";
+static const char* g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
+static const char* g_auditEnsureDisabledInstallationOfJffs2FileSystemObject = "auditEnsureDisabledInstallationOfJffs2FileSystem";
+static const char* g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject = "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled";
+static const char* g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
+static const char* g_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
+static const char* g_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
+static const char* g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
+static const char* g_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+static const char* g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
+static const char* g_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
+static const char* g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+static const char* g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject = "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+static const char* g_auditEnsureRsyslogNotAcceptingRemoteMessagesObject = "auditEnsureRsyslogNotAcceptingRemoteMessages";
+static const char* g_auditEnsureSyslogRotaterServiceIsEnabledObject = "auditEnsureSyslogRotaterServiceIsEnabled";
+static const char* g_auditEnsureTelnetServiceIsDisabledObject = "auditEnsureTelnetServiceIsDisabled";
+static const char* g_auditEnsureRcprshServiceIsDisabledObject = "auditEnsureRcprshServiceIsDisabled";
+static const char* g_auditEnsureTftpServiceisDisabledObject = "auditEnsureTftpServiceisDisabled";
+static const char* g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
+static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
+static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
+static const char* g_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
+static const char* g_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
+static const char* g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
+static const char* g_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+static const char* g_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
+static const char* g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+static const char* g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
+static const char* g_auditEnsureSshLoginGraceTimeIsSetObject = "auditEnsureSshLoginGraceTimeIsSet";
+static const char* g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+static const char* g_auditEnsureSshWarningBannerIsEnabledObject = "auditEnsureSshWarningBannerIsEnabled";
+static const char* g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+static const char* g_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
+static const char* g_auditEnsureAvahiDaemonServiceIsDisabledObject = "auditEnsureAvahiDaemonServiceIsDisabled";
+static const char* g_auditEnsureCupsServiceisDisabledObject = "auditEnsureCupsServiceisDisabled";
+static const char* g_auditEnsurePostfixPackageIsUninstalledObject = "auditEnsurePostfixPackageIsUninstalled";
+static const char* g_auditEnsurePostfixNetworkListeningIsDisabledObject = "auditEnsurePostfixNetworkListeningIsDisabled";
+static const char* g_auditEnsureRpcgssdServiceIsDisabledObject = "auditEnsureRpcgssdServiceIsDisabled";
+static const char* g_auditEnsureRpcidmapdServiceIsDisabledObject = "auditEnsureRpcidmapdServiceIsDisabled";
+static const char* g_auditEnsurePortmapServiceIsDisabledObject = "auditEnsurePortmapServiceIsDisabled";
+static const char* g_auditEnsureNetworkFileSystemServiceIsDisabledObject = "auditEnsureNetworkFileSystemServiceIsDisabled";
+static const char* g_auditEnsureRpcsvcgssdServiceIsDisabledObject = "auditEnsureRpcsvcgssdServiceIsDisabled";
+static const char* g_auditEnsureSnmpServerIsDisabledObject = "auditEnsureSnmpServerIsDisabled";
+static const char* g_auditEnsureRsynServiceIsDisabledObject = "auditEnsureRsynServiceIsDisabled";
+static const char* g_auditEnsureNisServerIsDisabledObject = "auditEnsureNisServerIsDisabled";
+static const char* g_auditEnsureRshClientNotInstalledObject = "auditEnsureRshClientNotInstalled";
+static const char* g_auditEnsureSmbWithSambaIsDisabledObject = "auditEnsureSmbWithSambaIsDisabled";
+static const char* g_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject = "auditEnsureUsersDotFilesArentGroupOrWorldWritable";
+static const char* g_auditEnsureNoUsersHaveDotForwardFilesObject = "auditEnsureNoUsersHaveDotForwardFiles";
+static const char* g_auditEnsureNoUsersHaveDotNetrcFilesObject = "auditEnsureNoUsersHaveDotNetrcFiles";
+static const char* g_auditEnsureNoUsersHaveDotRhostsFilesObject = "auditEnsureNoUsersHaveDotRhostsFiles";
+static const char* g_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRloginServiceIsDisabled";
+static const char* g_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
 // Remediation
 static const char* g_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -668,6 +748,406 @@ static int AuditEnsureKernelCompiledFromApprovedSources(void)
     return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? 0 : 1;
 }
 
+static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePacketRedirectSendingIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureTcpSynCookiesAreEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureIpv6ProtocolIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDccpIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSctpIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledSupportForRds(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureTipcIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureZeroconfNetworkingIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePermissionsOnBootloaderConfigAreConfigured(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePasswordReuseIsLimited(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureCoreDumpsAreRestricted(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePasswordCreationRequirementsAreConfigured(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureLoggingIsConfigured(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSyslogPackageIsInstalled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureALoggingServiceIsSnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureTelnetServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRcprshServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureTftpServiceisDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshBestPracticeProtocol(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshBestPracticeIgnoreRhosts(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshLogLevelIsSet(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshMaxAuthTriesIsSet(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshAccessIsLimited(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshPermitRootLoginIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshLoginGraceTimeIsSet(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSshWarningBannerIsEnabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAppropriateCiphersForSsh(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureCupsServiceisDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePostfixPackageIsUninstalled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRpcgssdServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRpcidmapdServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsurePortmapServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSnmpServerIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRsynServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureNisServerIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRshClientNotInstalled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureSmbWithSambaIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureNoUsersHaveDotForwardFiles(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureNoUsersHaveDotNetrcFiles(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureRloginServiceIsDisabled(void)
+{
+    return 0; //TBD
+}
+
+static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
+{
+    return 0; //TBD
+}
+
 int AuditSecurityBaseline(void)
 {
     return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
@@ -753,7 +1233,87 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureSuRestrictedToRootGroup()) &&
         (0 == AuditEnsureDefaultUmaskForAllUsers()) &&
         (0 == AuditEnsureAutomountingDisabled()) &&
-        (0 == AuditEnsureKernelCompiledFromApprovedSources())) ? 0 : ENOENT;
+        (0 == AuditEnsureKernelCompiledFromApprovedSources()) &&
+        (0 == AuditEnsureDefaultDenyFirewallPolicyIsSet()) &&
+        (0 == AuditEnsurePacketRedirectSendingIsDisabled()) &&
+        (0 == AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces()) &&
+        (0 == AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces()) &&
+        (0 == AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled()) &&
+        (0 == AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled()) &&
+        (0 == AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled()) &&
+        (0 == AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces()) &&
+        (0 == AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces()) &&
+        (0 == AuditEnsureTcpSynCookiesAreEnabled()) &&
+        (0 == AuditEnsureSystemNotActingAsNetworkSniffer()) &&
+        (0 == AuditEnsureAllWirelessInterfacesAreDisabled()) &&
+        (0 == AuditEnsureIpv6ProtocolIsEnabled()) &&
+        (0 == AuditEnsureDccpIsDisabled()) &&
+        (0 == AuditEnsureSctpIsDisabled()) &&
+        (0 == AuditEnsureDisabledSupportForRds()) &&
+        (0 == AuditEnsureTipcIsDisabled()) &&
+        (0 == AuditEnsureZeroconfNetworkingIsDisabled()) &&
+        (0 == AuditEnsurePermissionsOnBootloaderConfigAreConfigured()) &&
+        (0 == AuditEnsurePasswordReuseIsLimited()) &&
+        (0 == AuditEnsureMountingOfUsbStorageDevicesIsDisabled()) &&
+        (0 == AuditEnsureCoreDumpsAreRestricted()) &&
+        (0 == AuditEnsurePasswordCreationRequirementsAreConfigured()) &&
+        (0 == AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured()) &&
+        (0 == AuditEnsureDisabledInstallationOfCramfsFileSystem()) &&
+        (0 == AuditEnsureDisabledInstallationOfFreevxfsFileSystem()) &&
+        (0 == AuditEnsureDisabledInstallationOfHfsFileSystem()) &&
+        (0 == AuditEnsureDisabledInstallationOfHfsplusFileSystem()) &&
+        (0 == AuditEnsureDisabledInstallationOfJffs2FileSystem()) &&
+        (0 == AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled()) &&
+        (0 == AuditEnsureAllBootloadersHavePasswordProtectionEnabled()) &&
+        (0 == AuditEnsureLoggingIsConfigured()) &&
+        (0 == AuditEnsureSyslogPackageIsInstalled()) &&
+        (0 == AuditEnsureSystemdJournaldServicePersistsLogMessages()) &&
+        (0 == AuditEnsureALoggingServiceIsSnabled()) &&
+        (0 == AuditEnsureFilePermissionsForAllRsyslogLogFiles()) &&
+        (0 == AuditEnsureLoggerConfigurationFilesAreRestricted()) &&
+        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup()) &&
+        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser()) &&
+        (0 == AuditEnsureRsyslogNotAcceptingRemoteMessages()) &&
+        (0 == AuditEnsureSyslogRotaterServiceIsEnabled()) &&
+        (0 == AuditEnsureTelnetServiceIsDisabled()) &&
+        (0 == AuditEnsureRcprshServiceIsDisabled()) &&
+        (0 == AuditEnsureTftpServiceisDisabled()) &&
+        (0 == AuditEnsureAtCronIsRestrictedToAuthorizedUsers()) &&
+        (0 == AuditEnsureSshBestPracticeProtocol()) &&
+        (0 == AuditEnsureSshBestPracticeIgnoreRhosts()) &&
+        (0 == AuditEnsureSshLogLevelIsSet()) &&
+        (0 == AuditEnsureSshMaxAuthTriesIsSet()) &&
+        (0 == AuditEnsureSshAccessIsLimited()) &&
+        (0 == AuditEnsureSshRhostsRsaAuthenticationIsDisabled()) &&
+        (0 == AuditEnsureSshHostbasedAuthenticationIsDisabled()) &&
+        (0 == AuditEnsureSshPermitRootLoginIsDisabled()) &&
+        (0 == AuditEnsureSshPermitEmptyPasswordsIsDisabled()) &&
+        (0 == AuditEnsureSshIdleTimeoutIntervalIsConfigured()) &&
+        (0 == AuditEnsureSshLoginGraceTimeIsSet()) &&
+        (0 == AuditEnsureOnlyApprovedMacAlgorithmsAreUsed()) &&
+        (0 == AuditEnsureSshWarningBannerIsEnabled()) &&
+        (0 == AuditEnsureUsersCannotSetSshEnvironmentOptions()) &&
+        (0 == AuditEnsureAppropriateCiphersForSsh()) &&
+        (0 == AuditEnsureAvahiDaemonServiceIsDisabled()) &&
+        (0 == AuditEnsureCupsServiceisDisabled()) &&
+        (0 == AuditEnsurePostfixPackageIsUninstalled()) &&
+        (0 == AuditEnsurePostfixNetworkListeningIsDisabled()) &&
+        (0 == AuditEnsureRpcgssdServiceIsDisabled()) &&
+        (0 == AuditEnsureRpcidmapdServiceIsDisabled()) &&
+        (0 == AuditEnsurePortmapServiceIsDisabled()) &&
+        (0 == AuditEnsureNetworkFileSystemServiceIsDisabled()) &&
+        (0 == AuditEnsureRpcsvcgssdServiceIsDisabled()) &&
+        (0 == AuditEnsureSnmpServerIsDisabled()) &&
+        (0 == AuditEnsureRsynServiceIsDisabled()) &&
+        (0 == AuditEnsureNisServerIsDisabled()) &&
+        (0 == AuditEnsureRshClientNotInstalled()) &&
+        (0 == AuditEnsureSmbWithSambaIsDisabled()) &&
+        (0 == AuditEnsureUsersDotFilesArentGroupOrWorldWritable()) &&
+        (0 == AuditEnsureNoUsersHaveDotForwardFiles()) &&
+        (0 == AuditEnsureNoUsersHaveDotNetrcFiles()) &&
+        (0 == AuditEnsureNoUsersHaveDotRhostsFiles()) &&
+        (0 == AuditEnsureRloginServiceIsDisabled()) &&
+        (0 == AuditEnsureUnnecessaryAccountsAreRemoved())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -1434,6 +1994,326 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_auditEnsureKernelCompiledFromApprovedSourcesObject))
         {
             result = AuditEnsureKernelCompiledFromApprovedSources() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSet))
+        {
+            result = AuditEnsureDefaultDenyFirewallPolicyIsSet() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabled))
+        {
+            result = AuditEnsurePacketRedirectSendingIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces))
+        {
+            result = AuditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces))
+        {
+            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled))
+        {
+            result = AuditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled))
+        {
+            result = AuditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled))
+        {
+            result = AuditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces))
+        {
+            result = AuditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces))
+        {
+            result = AuditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabled))
+        {
+            result = AuditEnsureTcpSynCookiesAreEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSniffer))
+        {
+            result = AuditEnsureSystemNotActingAsNetworkSniffer() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabled))
+        {
+            result = AuditEnsureAllWirelessInterfacesAreDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabled))
+        {
+            result = AuditEnsureIpv6ProtocolIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabled))
+        {
+            result = AuditEnsureDccpIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabled))
+        {
+            result = AuditEnsureSctpIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRds))
+        {
+            result = AuditEnsureDisabledSupportForRds() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabled))
+        {
+            result = AuditEnsureTipcIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabled))
+        {
+            result = AuditEnsureZeroconfNetworkingIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigAreConfigured))
+        {
+            result = AuditEnsurePermissionsOnBootloaderConfigAreConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimited))
+        {
+            result = AuditEnsurePasswordReuseIsLimited() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabled))
+        {
+            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestricted))
+        {
+            result = AuditEnsureCoreDumpsAreRestricted() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsAreConfigured))
+        {
+            result = AuditEnsurePasswordCreationRequirementsAreConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsIsConfigured))
+        {
+            result = AuditEnsureLockoutForFailedPasswordAttemptsIsConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystem))
+        {
+            result = AuditEnsureDisabledInstallationOfCramfsFileSystem() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystem))
+        {
+            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystem))
+        {
+            result = AuditEnsureDisabledInstallationOfHfsFileSystem() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystem))
+        {
+            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystem))
+        {
+            result = AuditEnsureDisabledInstallationOfJffs2FileSystem() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled))
+        {
+            result = AuditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabled))
+        {
+            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfigured))
+        {
+            result = AuditEnsureLoggingIsConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalled))
+        {
+            result = AuditEnsureSyslogPackageIsInstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessages))
+        {
+            result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsSnabled))
+        {
+            result = AuditEnsureALoggingServiceIsSnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFiles))
+        {
+            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestricted))
+        {
+            result = AuditEnsureLoggerConfigurationFilesAreRestricted() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup))
+        {
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser))
+        {
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessages))
+        {
+            result = AuditEnsureRsyslogNotAcceptingRemoteMessages() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabled))
+        {
+            result = AuditEnsureSyslogRotaterServiceIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabled))
+        {
+            result = AuditEnsureTelnetServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabled))
+        {
+            result = AuditEnsureRcprshServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabled))
+        {
+            result = AuditEnsureTftpServiceisDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsers))
+        {
+            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocol))
+        {
+            result = AuditEnsureSshBestPracticeProtocol() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhosts))
+        {
+            result = AuditEnsureSshBestPracticeIgnoreRhosts() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSet))
+        {
+            result = AuditEnsureSshLogLevelIsSet() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSet))
+        {
+            result = AuditEnsureSshMaxAuthTriesIsSet() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimited))
+        {
+            result = AuditEnsureSshAccessIsLimited() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabled))
+        {
+            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabled))
+        {
+            result = AuditEnsureSshHostbasedAuthenticationIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabled))
+        {
+            result = AuditEnsureSshPermitRootLoginIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabled))
+        {
+            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfigured))
+        {
+            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSet))
+        {
+            result = AuditEnsureSshLoginGraceTimeIsSet() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsed))
+        {
+            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabled))
+        {
+            result = AuditEnsureSshWarningBannerIsEnabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptions))
+        {
+            result = AuditEnsureUsersCannotSetSshEnvironmentOptions() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSsh))
+        {
+            result = AuditEnsureAppropriateCiphersForSsh() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabled))
+        {
+            result = AuditEnsureAvahiDaemonServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabled))
+        {
+            result = AuditEnsureCupsServiceisDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalled))
+        {
+            result = AuditEnsurePostfixPackageIsUninstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabled))
+        {
+            result = AuditEnsurePostfixNetworkListeningIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabled))
+        {
+            result = AuditEnsureRpcgssdServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabled))
+        {
+            result = AuditEnsureRpcidmapdServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabled))
+        {
+            result = AuditEnsurePortmapServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabled))
+        {
+            result = AuditEnsureNetworkFileSystemServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabled))
+        {
+            result = AuditEnsureRpcsvcgssdServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabled))
+        {
+            result = AuditEnsureSnmpServerIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabled))
+        {
+            result = AuditEnsureRsynServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabled))
+        {
+            result = AuditEnsureNisServerIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalled))
+        {
+            result = AuditEnsureRshClientNotInstalled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabled))
+        {
+            result = AuditEnsureSmbWithSambaIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritable))
+        {
+            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFiles))
+        {
+            result = AuditEnsureNoUsersHaveDotForwardFiles() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFiles))
+        {
+            result = AuditEnsureNoUsersHaveDotNetrcFiles() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFiles))
+        {
+            result = AuditEnsureNoUsersHaveDotRhostsFiles() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabled))
+        {
+            result = AuditEnsureRloginServiceIsDisabled() ? g_fail : g_pass;
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemoved))
+        {
+            result = AuditEnsureUnnecessaryAccountsAreRemoved() ? g_fail : g_pass;
         }
         else
         {

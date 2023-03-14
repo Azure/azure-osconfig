@@ -111,6 +111,86 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureDefaultUmaskForAllUsersObject = "auditEnsureDefaultUmaskForAllUsers";
         const char* m_auditEnsureAutomountingDisabledObject = "auditEnsureAutomountingDisabled";
         const char* m_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
+        const char* m_auditEnsureDefaultDenyFirewallPolicyIsSetObject = "auditEnsureDefaultDenyFirewallPolicyIsSet";
+        const char* m_auditEnsurePacketRedirectSendingIsDisabledObject = "auditEnsurePacketRedirectSendingIsDisabled";
+        const char* m_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfacesObject = "auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces";
+        const char* m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfacesObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces";
+        const char* m_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled";
+        const char* m_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabledObject = "auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled";
+        const char* m_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabledObject = "auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled";
+        const char* m_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfacesObject = "auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces";
+        const char* m_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfacesObject = "auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces";
+        const char* m_auditEnsureTcpSynCookiesAreEnabledObject = "auditEnsureTcpSynCookiesAreEnabled";
+        const char* m_auditEnsureSystemNotActingAsNetworkSnifferObject = "auditEnsureSystemNotActingAsNetworkSniffer";
+        const char* m_auditEnsureAllWirelessInterfacesAreDisabledObject = "auditEnsureAllWirelessInterfacesAreDisabled";
+        const char* m_auditEnsureIpv6ProtocolIsEnabledObject = "auditEnsureIpv6ProtocolIsEnabled";
+        const char* m_auditEnsureDccpIsDisabledObject = "auditEnsureDccpIsDisabled";
+        const char* m_auditEnsureSctpIsDisabledObject = "auditEnsureSctpIsDisabled";
+        const char* m_auditEnsureDisabledSupportForRdsObject = "auditEnsureDisabledSupportForRds";
+        const char* m_auditEnsureTipcIsDisabledObject = "auditEnsureTipcIsDisabled";
+        const char* m_auditEnsureZeroconfNetworkingIsDisabledObject = "auditEnsureZeroconfNetworkingIsDisabled";
+        const char* m_auditEnsurePermissionsOnBootloaderConfigAreConfiguredObject = "auditEnsurePermissionsOnBootloaderConfigAreConfigured";
+        const char* m_auditEnsurePasswordReuseIsLimitedObject = "auditEnsurePasswordReuseIsLimited";
+        const char* m_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
+        const char* m_auditEnsureCoreDumpsAreRestrictedObject = "auditEnsureCoreDumpsAreRestricted";
+        const char* m_auditEnsurePasswordCreationRequirementsAreConfiguredObject = "auditEnsurePasswordCreationRequirementsAreConfigured";
+        const char* m_auditEnsureLockoutForFailedPasswordAttemptsIsConfiguredObject = "auditEnsureLockoutForFailedPasswordAttemptsIsConfigured";
+        const char* m_auditEnsureDisabledInstallationOfCramfsFileSystemObject = "auditEnsureDisabledInstallationOfCramfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfHfsFileSystemObject = "auditEnsureDisabledInstallationOfHfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfHfsplusFileSystemObject = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfJffs2FileSystemObject = "auditEnsureDisabledInstallationOfJffs2FileSystem";
+        const char* m_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabledObject = "auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled";
+        const char* m_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
+        const char* m_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
+        const char* m_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
+        const char* m_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
+        const char* m_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+        const char* m_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
+        const char* m_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
+        const char* m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+        const char* m_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject = "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+        const char* m_auditEnsureRsyslogNotAcceptingRemoteMessagesObject = "auditEnsureRsyslogNotAcceptingRemoteMessages";
+        const char* m_auditEnsureSyslogRotaterServiceIsEnabledObject = "auditEnsureSyslogRotaterServiceIsEnabled";
+        const char* m_auditEnsureTelnetServiceIsDisabledObject = "auditEnsureTelnetServiceIsDisabled";
+        const char* m_auditEnsureRcprshServiceIsDisabledObject = "auditEnsureRcprshServiceIsDisabled";
+        const char* m_auditEnsureTftpServiceisDisabledObject = "auditEnsureTftpServiceisDisabled";
+        const char* m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+        const char* m_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
+        const char* m_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
+        const char* m_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
+        const char* m_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
+        const char* m_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
+        const char* m_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
+        const char* m_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+        const char* m_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
+        const char* m_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+        const char* m_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
+        const char* m_auditEnsureSshLoginGraceTimeIsSetObject = "auditEnsureSshLoginGraceTimeIsSet";
+        const char* m_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+        const char* m_auditEnsureSshWarningBannerIsEnabledObject = "auditEnsureSshWarningBannerIsEnabled";
+        const char* m_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+        const char* m_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
+        const char* m_auditEnsureAvahiDaemonServiceIsDisabledObject = "auditEnsureAvahiDaemonServiceIsDisabled";
+        const char* m_auditEnsureCupsServiceisDisabledObject = "auditEnsureCupsServiceisDisabled";
+        const char* m_auditEnsurePostfixPackageIsUninstalledObject = "auditEnsurePostfixPackageIsUninstalled";
+        const char* m_auditEnsurePostfixNetworkListeningIsDisabledObject = "auditEnsurePostfixNetworkListeningIsDisabled";
+        const char* m_auditEnsureRpcgssdServiceIsDisabledObject = "auditEnsureRpcgssdServiceIsDisabled";
+        const char* m_auditEnsureRpcidmapdServiceIsDisabledObject = "auditEnsureRpcidmapdServiceIsDisabled";
+        const char* m_auditEnsurePortmapServiceIsDisabledObject = "auditEnsurePortmapServiceIsDisabled";
+        const char* m_auditEnsureNetworkFileSystemServiceIsDisabledObject = "auditEnsureNetworkFileSystemServiceIsDisabled";
+        const char* m_auditEnsureRpcsvcgssdServiceIsDisabledObject = "auditEnsureRpcsvcgssdServiceIsDisabled";
+        const char* m_auditEnsureSnmpServerIsDisabledObject = "auditEnsureSnmpServerIsDisabled";
+        const char* m_auditEnsureRsynServiceIsDisabledObject = "auditEnsureRsynServiceIsDisabled";
+        const char* m_auditEnsureNisServerIsDisabledObject = "auditEnsureNisServerIsDisabled";
+        const char* m_auditEnsureRshClientNotInstalledObject = "auditEnsureRshClientNotInstalled";
+        const char* m_auditEnsureSmbWithSambaIsDisabledObject = "auditEnsureSmbWithSambaIsDisabled";
+        const char* m_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject = "auditEnsureUsersDotFilesArentGroupOrWorldWritable";
+        const char* m_auditEnsureNoUsersHaveDotForwardFilesObject = "auditEnsureNoUsersHaveDotForwardFiles";
+        const char* m_auditEnsureNoUsersHaveDotNetrcFilesObject = "auditEnsureNoUsersHaveDotNetrcFiles";
+        const char* m_auditEnsureNoUsersHaveDotRhostsFilesObject = "auditEnsureNoUsersHaveDotRhostsFiles";
+        const char* m_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRloginServiceIsDisabled";
+        const char* m_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -403,7 +483,88 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureSuRestrictedToRootGroupObject,
         m_auditEnsureDefaultUmaskForAllUsersObject,
         m_auditEnsureAutomountingDisabledObject,
-        m_auditEnsureKernelCompiledFromApprovedSourcesObject
+        m_auditEnsureKernelCompiledFromApprovedSourcesObject,
+
+        m_auditEnsureDefaultDenyFirewallPolicyIsSet,
+        m_auditEnsurePacketRedirectSendingIsDisabled,
+        m_auditEnsureSendingIcmpRedirectsIsDisabledForAllInterfaces,
+        m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledForAlInterfaces,
+        m_auditEnsureDefaultSettingForAcceptingSourceRoutedPacketsIsDisabled,
+        m_auditEnsureIgnoringBogusIcmpResponsesToBroadcastsIsEnabled,
+        m_auditEnsureIgnoringIcmpEchoPingsToMulticastAddressesIsEnabled,
+        m_auditEnsureLoggingOfMartianPacketsIsEnabledForAllInterfaces,
+        m_auditEnsurePerformingSourceValidationByReversePathIsEnabledForAllInterfaces,
+        m_auditEnsureTcpSynCookiesAreEnabled,
+        m_auditEnsureSystemNotActingAsNetworkSniffer,
+        m_auditEnsureAllWirelessInterfacesAreDisabled,
+        m_auditEnsureIpv6ProtocolIsEnabled,
+        m_auditEnsureDccpIsDisabled,
+        m_auditEnsureSctpIsDisabled,
+        m_auditEnsureDisabledSupportForRds,
+        m_auditEnsureTipcIsDisabled,
+        m_auditEnsureZeroconfNetworkingIsDisabled,
+        m_auditEnsurePermissionsOnBootloaderConfigAreConfigured,
+        m_auditEnsurePasswordReuseIsLimited,
+        m_auditEnsureMountingOfUsbStorageDevicesIsDisabled,
+        m_auditEnsureCoreDumpsAreRestricted,
+        m_auditEnsurePasswordCreationRequirementsAreConfigured,
+        m_auditEnsureLockoutForFailedPasswordAttemptsIsConfigured,
+        m_auditEnsureDisabledInstallationOfCramfsFileSystem,
+        m_auditEnsureDisabledInstallationOfFreevxfsFileSystem,
+        m_auditEnsureDisabledInstallationOfHfsFileSystem,
+        m_auditEnsureDisabledInstallationOfHfsplusFileSystem,
+        m_auditEnsureDisabledInstallationOfJffs2FileSystem,
+        m_auditEnsureRandomizedPlacementOfVirtualMemoryRegionsIsEnabled,
+        m_auditEnsureAllBootloadersHavePasswordProtectionEnabled,
+        m_auditEnsureLoggingIsConfigured,
+        m_auditEnsureSyslogPackageIsInstalled,
+        m_auditEnsureSystemdJournaldServicePersistsLogMessages,
+        m_auditEnsureALoggingServiceIsSnabled,
+        m_auditEnsureFilePermissionsForAllRsyslogLogFiles,
+        m_auditEnsureLoggerConfigurationFilesAreRestricted,
+        m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
+        m_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
+        m_auditEnsureRsyslogNotAcceptingRemoteMessages,
+        m_auditEnsureSyslogRotaterServiceIsEnabled,
+        m_auditEnsureTelnetServiceIsDisabled,
+        m_auditEnsureRcprshServiceIsDisabled,
+        m_auditEnsureTftpServiceisDisabled,
+        m_auditEnsureAtCronIsRestrictedToAuthorizedUsers,
+        m_auditEnsureSshBestPracticeProtocol,
+        m_auditEnsureSshBestPracticeIgnoreRhosts,
+        m_auditEnsureSshLogLevelIsSet,
+        m_auditEnsureSshMaxAuthTriesIsSet,
+        m_auditEnsureSshAccessIsLimited,
+        m_auditEnsureSshRhostsRsaAuthenticationIsDisabled,
+        m_auditEnsureSshHostbasedAuthenticationIsDisabled,
+        m_auditEnsureSshPermitRootLoginIsDisabled,
+        m_auditEnsureSshPermitEmptyPasswordsIsDisabled,
+        m_auditEnsureSshIdleTimeoutIntervalIsConfigured,
+        m_auditEnsureSshLoginGraceTimeIsSet,
+        m_auditEnsureOnlyApprovedMacAlgorithmsAreUsed,
+        m_auditEnsureSshWarningBannerIsEnabled,
+        m_auditEnsureUsersCannotSetSshEnvironmentOptions,
+        m_auditEnsureAppropriateCiphersForSsh,
+        m_auditEnsureAvahiDaemonServiceIsDisabled,
+        m_auditEnsureCupsServiceisDisabled,
+        m_auditEnsurePostfixPackageIsUninstalled,
+        m_auditEnsurePostfixNetworkListeningIsDisabled,
+        m_auditEnsureRpcgssdServiceIsDisabled,
+        m_auditEnsureRpcidmapdServiceIsDisabled,
+        m_auditEnsurePortmapServiceIsDisabled,
+        m_auditEnsureNetworkFileSystemServiceIsDisabled,
+        m_auditEnsureRpcsvcgssdServiceIsDisabled,
+        m_auditEnsureSnmpServerIsDisabled,
+        m_auditEnsureRsynServiceIsDisabled,
+        m_auditEnsureNisServerIsDisabled,
+        m_auditEnsureRshClientNotInstalled,
+        m_auditEnsureSmbWithSambaIsDisabled,
+        m_auditEnsureUsersDotFilesArentGroupOrWorldWritable,
+        m_auditEnsureNoUsersHaveDotForwardFiles,
+        m_auditEnsureNoUsersHaveDotNetrcFiles,
+        m_auditEnsureNoUsersHaveDotRhostsFiles,
+        m_auditEnsureRloginServiceIsDisabled,
+        m_auditEnsureUnnecessaryAccountsAreRemoved
     };
 
     int mimObjectsNumber = ARRAY_SIZE(mimObjects);
