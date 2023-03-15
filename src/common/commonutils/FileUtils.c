@@ -691,7 +691,6 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
 int CompareFileContents(const char* fileName, const char* text, void* log)
 {
-    char* command = NULL;
     char* contents = NULL;
     int status = 0;
 
