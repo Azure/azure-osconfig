@@ -1427,19 +1427,21 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
 
 TEST_F(CommonUtilsTest, CompareFileContents)
 {
-    const char* test = "2";
-
-    EXPECT_TRUE(CreateTestFile(m_path, test));
-
     EXPECT_EQ(EINVAL, CompareFileContents(nullptr, "2", nullptr));
     EXPECT_EQ(EINVAL, CompareFileContents(nullptr, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CompareFileContents(m_path, nullptr, nullptr));
     EXPECT_EQ(EINVAL, CompareFileContents(m_path, "", nullptr));
     EXPECT_EQ(EINVAL, CompareFileContents("", "2", nullptr));
 
-    EXPECT_EQ(0, CompareFileContents(m_path, "2", nullptr));
+    const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
+    size_t sizeOfTest = ARRAY_SIZE(test);
 
-    EXPECT_TRUE(Cleanup(m_path));
+    for (size_t i = 0; i < sizeOfTest; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, test[i]));
+        EXPECT_EQ(0, CompareFileContents(m_path, test[i], nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
 }
 
 TEST_F(CommonUtilsTest, OtherOptionalTests)
