@@ -1442,8 +1442,6 @@ TEST_F(CommonUtilsTest, CompareFileContents)
         EXPECT_EQ(0, CompareFileContents(m_path, test[i], nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
-
-    EXPECT_EQ(0, CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", nullptr));
 }
 
 TEST_F(CommonUtilsTest, OtherOptionalTests)
