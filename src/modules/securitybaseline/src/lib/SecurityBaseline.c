@@ -897,7 +897,10 @@ static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
-    return 0; //TBD
+    char* text = LoadStringFromFile("/proc/sys/kernel/randomize_va_space", true, SecurityBaselineGetLog());
+    int status = ((0 == strcmp(text, "1") || (0 == strcmp(text, "2"))) ? 0 : ENOENT;
+    FREE_MEMORY(text);
+    return status;
 }
 
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
