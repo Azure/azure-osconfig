@@ -101,6 +101,7 @@ int CheckPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(void* log);
 int CheckSystemAccountsAreNonLogin(void* log);
 int CheckRootPasswordForSingleUserMode(void* log);
+int CheckUsersDontHaveDotFiles(const char* name, void* log);
 
 #ifdef __cplusplus
 }
