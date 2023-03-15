@@ -688,3 +688,53 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
     return status;
 }
+
+int CompareFileContents(const char* fileName, const char* text, void* log)
+{
+    const char* commandTemplate = "cat %s";
+    char* command = NULL;
+    char* results = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "CompareFileContents called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(fileName) + 1;
+
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "CompareFileContents: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, fileName);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        {
+            if (0 == strcmp(results, text))
+            {
+                OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "CompareFileContents: '%s' does not match contents of '%s'", text, fileName);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "CompareFileContents: cat %s failed, %d", fileName, status);
+        }
+
+        FREE_MEMORY(results);
+        FREE_MEMORY(command);
+    }
+
+    return status;
+}
