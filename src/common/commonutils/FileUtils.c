@@ -29,7 +29,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             if (string)
             {
                 memset(&string[0], 0, fileSize + 1);
-                for (i = 0; i < fileSize; i++)
+                for (i = 0; i <= fileSize; i++)
                 {
                     next = fgetc(file);
                     if ((EOF == next) || (stopAtEol && (EOL == next)))
@@ -685,6 +685,35 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         FREE_MEMORY(results);
         FREE_MEMORY(command);
     }
+
+    return status;
+}
+
+int CompareFileContents(const char* fileName, const char* text, void* log)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "CompareFileContents called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        if (0 == strcmp(contents, text))
+        {
+            OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "CompareFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            status = ENOENT;
+        }
+    }
+
+    FREE_MEMORY(contents);
 
     return status;
 }
