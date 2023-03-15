@@ -958,8 +958,8 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
-    return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog()))
-        (IsDaemonActive("logrotate.timer", SecurityBaselineGetLog()))
+    return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
+        (IsDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
@@ -1135,17 +1135,17 @@ static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 
 static int AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("forward", nullptr);
+    return CheckUsersDontHaveDotFiles("forward", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("netrc", nullptr);
+    return CheckUsersDontHaveDotFiles("netrc", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("rhosts", nullptr);
+    return CheckUsersDontHaveDotFiles("rhosts", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRloginServiceIsDisabled(void)

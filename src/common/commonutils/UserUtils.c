@@ -1540,7 +1540,7 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
                 if (FileExists(dotPath))
                 {
                     OsConfigLogError(log, "CheckUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
-                        userList[i].username, userList[i].userId, userList[i].groupId, name, path);
+                        userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
                     status = ENOENT;
                 }
 

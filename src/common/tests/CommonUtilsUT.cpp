@@ -1386,7 +1386,7 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 
 TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
 {
-    EXPECT_EQ(EINVAL, CheckUsersDontHaveDotFiles(null, nullptr));
+    EXPECT_EQ(EINVAL, CheckUsersDontHaveDotFiles(nullptr, nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
