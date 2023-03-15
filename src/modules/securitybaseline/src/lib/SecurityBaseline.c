@@ -897,8 +897,8 @@ static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
-    return ((0 == ExecuteCommand(nullptr, "cat /proc/sys/kernel/randomize_va_space | grep 1", false, false, 0, 0, NULL,NULL, NULL)) ||
-        (0 == ExecuteCommand(nullptr, "cat /proc/sys/kernel/randomize_va_space | grep 2", false, false, 0, 0, NULL, NULL, NULL))) ? 0 : ENOENT;
+    return ((0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", SecurityBaselineGetLog())) ||
+        (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
@@ -923,13 +923,12 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 
 static int AuditEnsureALoggingServiceIsSnabled(void)
 {
-    const char* systemd = "systemd";
-    const char* rsyslog = "rsyslog";
-    const char* syslogNg = "syslog-ng";
-
-    return ((IsDaemonActive(rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(systemd, SecurityBaselineGetLog())) ||
-        (IsDaemonActive(syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(systemd, SecurityBaselineGetLog())) ||
-        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && CheckPackageInstalled(systemd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((IsDaemonActive("rsyslog", SecurityBaselineGetLog()) && 
+        (0 != CheckPackageInstalled("syslog-ng", SecurityBaselineGetLog())) && (0 != CheckPackageInstalled("systemd", SecurityBaselineGetLog()))) ||
+        (IsDaemonActive("syslog-ng", SecurityBaselineGetLog()) && 
+        (0 != CheckPackageInstalled("rsyslog", SecurityBaselineGetLog())) && (0 != CheckPackageInstalled("systemd", SecurityBaselineGetLog()))) ||
+        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && 
+        (0 == CheckPackageInstalled("systemd", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)

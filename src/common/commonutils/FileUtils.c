@@ -29,7 +29,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             if (string)
             {
                 memset(&string[0], 0, fileSize + 1);
-                for (i = 0; i < fileSize; i++)
+                for (i = 0; i <= fileSize; i++)
                 {
                     next = fgetc(file);
                     if ((EOF == next) || (stopAtEol && (EOL == next)))
