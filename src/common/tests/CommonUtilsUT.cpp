@@ -1384,6 +1384,14 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
 }
 
+TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
+{
+    EXPECT_EQ(EINVAL, CheckUsersDontHaveDotFiles(nullptr, nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
+}
+
 TEST_F(CommonUtilsTest, FindTextInFile)
 {
     const char* test = "This is a text with options /1 /2 \\3 \\zoo -34!";

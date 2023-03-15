@@ -162,7 +162,8 @@ static char* EncryptionName(int type)
 
 static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false"};
+    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/dev/null", ""};
+
     int index = ARRAY_SIZE(noLoginShell);
     bool noLogin = false;
 
@@ -1495,3 +1496,65 @@ int CheckRootPasswordForSingleUserMode(void* log)
 
     return status;
 }
+
+int CheckUsersDontHaveDotFiles(const char* name, void* log)
+{
+    const char* templateDotPath = "%s/.%s";
+
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    size_t templateLength = 0, length = 0;
+    char* dotPath = NULL;
+    int status = 0;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "CheckUsersDontHaveDotFiles called with an invalid argument");
+        return EINVAL;
+    }
+
+    templateLength = strlen(templateDotPath) + strlen(name) + 1;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((userList[i].noLogin) || (userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home))
+            {
+                length = templateLength + strlen(userList[i].home);
+
+                if (NULL == (dotPath = malloc(length)))
+                {
+                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+                
+                memset(dotPath, 0, length);
+                snprintf(dotPath, length, templateDotPath, userList[i].home, name);
+
+                if (FileExists(dotPath))
+                {
+                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
+                        userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                    status = ENOENT;
+                }
+
+                FREE_MEMORY(dotPath);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUsersDontHaveDotFiles: no users have '.%s' files", name);
+    }
+
+    return status;
+} 

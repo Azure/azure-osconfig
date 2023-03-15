@@ -840,7 +840,9 @@ static int AuditEnsureZeroconfNetworkingIsDisabled(void)
 
 static int AuditEnsurePermissionsOnBootloaderConfig(void)
 {
-    return 0; //TBD
+    return ((0 == CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordReuseIsLimited(void)
@@ -920,12 +922,18 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 
 static int AuditEnsureALoggingServiceIsSnabled(void)
 {
-    return 0; //TBD
+    return ((IsDaemonActive("rsyslog", SecurityBaselineGetLog()) && 
+        (0 != CheckPackageInstalled("syslog-ng", SecurityBaselineGetLog())) && (0 != CheckPackageInstalled("systemd", SecurityBaselineGetLog()))) ||
+        (IsDaemonActive("syslog-ng", SecurityBaselineGetLog()) && 
+        (0 != CheckPackageInstalled("rsyslog", SecurityBaselineGetLog())) && (0 != CheckPackageInstalled("systemd", SecurityBaselineGetLog()))) ||
+        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && 
+        (0 == CheckPackageInstalled("systemd", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return 0; //TBD
+    return ((0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
@@ -950,7 +958,9 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
-    return 0; //TBD
+    return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
+        (IsDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
@@ -1095,17 +1105,17 @@ static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 
 static int AuditEnsureSnmpServerIsDisabled(void)
 {
-    return 0; //TBD
+    return IsDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRsynServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return IsDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureNisServerIsDisabled(void)
 {
-    return 0; //TBD
+    return IsDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRshClientNotInstalled(void)
@@ -1125,17 +1135,17 @@ static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 
 static int AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return 0; //TBD
+    return CheckUsersDontHaveDotFiles("forward", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return 0; //TBD
+    return CheckUsersDontHaveDotFiles("netrc", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return 0; //TBD
+    return CheckUsersDontHaveDotFiles("rhosts", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRloginServiceIsDisabled(void)
