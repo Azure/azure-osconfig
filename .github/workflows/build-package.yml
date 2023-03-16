@@ -21,10 +21,6 @@ on:
         description: The architecture to build for.
         type: string
         required: true
-      platform:
-        description: The platform to build for.
-        type: string
-        required: true
 
 env:
   BUILD_TYPE: Release
@@ -49,7 +45,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          platform: ${{ inputs.platform }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -82,7 +77,7 @@ jobs:
         with:
           allowedDelta: 10
           distroName: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
+          arch: ${{ inputs.arch }}
 
       - uses: actions/upload-artifact@v2
         with:
