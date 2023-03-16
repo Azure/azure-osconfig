@@ -930,9 +930,9 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 
 static int AuditEnsureALoggingServiceIsSnabled(void)
 {
-    return ((IsDaemonActive(g_rsyslog, SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()))) ||
-        (IsDaemonActive(g_syslogNg, SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ||
-        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())))) ? 0 : ENOENT;
+    return (((0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) && IsDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
+        ((0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog())) && IsDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
+        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && IsDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -943,7 +943,8 @@ static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return 0; //TBD
+    return ((0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", -1, -1, 644, SecurityBaselineGetLog())) && 
+        (0 == CheckFileAccess("/etc/rsyslog.conf" - 1, -1, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
