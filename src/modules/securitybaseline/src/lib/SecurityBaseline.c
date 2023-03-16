@@ -419,7 +419,7 @@ static int AuditEnsurePermissionsOnEtcMotd(void)
 
 static int AuditEnsureKernelSupportForCpuNx(void)
 {
-    return (true == IsCpuFlagSupported("nx", SecurityBaselineGetLog())) ? 0 : 1;
+    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNodevOptionOnHomePartition(void)
@@ -476,82 +476,82 @@ static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
     return (CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, SecurityBaselineGetLog()) &&
-        (CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog())));
+        (CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureInetdNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_inetd, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureXinetdNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int auditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return !CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog());
+    return !CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRshServerNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNisNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_nis, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTftpdNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_dhcpServer, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_dhcpServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSendmailNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSldapdNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_slapd, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureBind9NotInstalled(void)
 {
-    return !CheckPackageInstalled(g_bind9, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAuditdInstalled(void)
@@ -686,17 +686,17 @@ static int AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 
 static int AuditEnsurePrelinkIsDisabled(void)
 {
-    return (!CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()));
+    return !CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTalkClientIsNotInstalled(void)
 {
-    return !CheckPackageInstalled(g_talk, SecurityBaselineGetLog());
+    return !CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return !FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog());
+    return !FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
@@ -710,7 +710,7 @@ static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
     return (!FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog()) &&
         !FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog()) &&
         !FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog()) &&
-        !FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()));
+        !FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
@@ -718,7 +718,7 @@ static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
     return (!FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog()) &&
         !FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog()) &&
         !FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog()) &&
-        !FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()));
+        !FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAuditdServiceIsRunning(void)
