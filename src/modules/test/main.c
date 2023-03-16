@@ -488,6 +488,8 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
     MANAGEMENT_MODULE* module = NULL;
     STEP* steps = NULL;
     FAILURE* failures = NULL;
+    STEP* step = NULL;
+    char* name = NULL;
 
     LOG_INFO("Test recipe: %s", path);
 
@@ -514,8 +516,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
 
             for (int i = 0; i < total; i++)
             {
-                STEP* step = &steps[i];
-                char* name = NULL;
+                step = &steps[i];
 
                 if (step->delay > 0)
                 {
