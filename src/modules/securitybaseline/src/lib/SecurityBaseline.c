@@ -944,7 +944,7 @@ static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
     return ((0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", -1, -1, 644, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess("/etc/rsyslog.conf" - 1, -1, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileAccess("/etc/rsyslog.conf", - 1, -1, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
