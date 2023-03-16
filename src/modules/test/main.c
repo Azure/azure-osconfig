@@ -3,6 +3,7 @@
 
 #include <Common.h>
 #include <Module.h>
+#include <math.h>
 
 #define DEFAULT_BIN_PATH "/usr/lib/osconfig"
 #define OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
@@ -85,8 +86,8 @@ typedef struct STEP
 
 typedef struct FAILURE
 {
-    STEP* step;
     int index;
+    char* name;
 } FAILURE;
 
 static bool g_verbose = false;
@@ -475,47 +476,6 @@ long long CurrentMilliseconds()
     return milliseconds;
 }
 
-const char* GetStepTypeString(STEP_TYPE type)
-{
-    switch (type)
-    {
-        case COMMAND:
-            return "Command";
-        case TEST:
-            return "Test";
-        case MODULE:
-            return "Module";
-        default:
-            return "Unknown";
-    }
-}
-
-char* GetStepName(const STEP* step)
-{
-    char* name = NULL;
-
-    if (step != NULL)
-    {
-        switch (step->type)
-        {
-            case COMMAND:
-                name = strdup(step->data.command.arguments);
-                break;
-            case TEST:
-                name = calloc(strlen(step->data.test.component) + strlen(step->data.test.object) + 2, sizeof(char));
-                if (name != NULL)
-                {
-                    sprintf(name, "%s.%s", step->data.test.component, step->data.test.object);
-                }
-                break;
-            case MODULE:
-                name = strdup(step->data.module.name);
-        }
-    }
-
-    return name;
-}
-
 int InvokeRecipe(const char* client, const char* path, const char* bin)
 {
     int status = 0;
@@ -537,7 +497,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
         LOG_INFO("Bin: %s", bin);
         LOG_TRACE(LINE_SEPARATOR_THICK);
 
-        failures = calloc(total, sizeof(STEP));
+        failures = calloc(total, sizeof(FAILURE));
 
         if (NULL == failures)
         {
@@ -555,7 +515,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             for (int i = 0; i < total; i++)
             {
                 STEP* step = &steps[i];
-                int stepStatus = 0;
+                char* name = NULL;
 
                 if (step->delay > 0)
                 {
@@ -568,7 +528,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                 {
                     case COMMAND:
                         LOG_INFO("Executing command '%s'", step->data.command.arguments);
-                        failed += (0 != (stepStatus = RunCommand(&step->data.command))) ? 1 : 0;
+                        failed += (0 != RunCommand(&step->data.command)) ? 1 : 0;
                         break;
 
                     case TEST:
@@ -578,9 +538,20 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                             LOG_ERROR("No module loaded, skipping test step: %d", i);
                             skipped++;
                         }
-                        else
+                        else if (0 != RunTestStep(&step->data.test, module))
                         {
-                            failed += (0 == (stepStatus = RunTestStep(&step->data.test, module))) ? 0 : 1;
+                            if (NULL == (name = calloc(strlen(step->data.test.component) + strlen(step->data.test.object) + 2, sizeof(char))))
+                            {
+                                LOG_ERROR("Failed to allocate memory for test name");
+                            }
+                            else
+                            {
+                                sprintf(name, "%s.%s", step->data.test.component, step->data.test.object);
+                                failures[failed].name = name;
+                                failures[failed].index = i;
+                            }
+
+                            failed++;
                         }
                         break;
 
@@ -594,7 +565,6 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                                 if (NULL == (modulePath = calloc(strlen(bin) + strlen(step->data.module.name) + 2, sizeof(char))))
                                 {
                                     LOG_ERROR("Failed to allocate memory for module path");
-                                    stepStatus = ENOMEM;
                                     failed++;
                                 }
                                 else
@@ -604,7 +574,6 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                                     if (NULL == (module = LoadModule(client, modulePath)))
                                     {
                                         LOG_ERROR("Failed to load module '%s'", step->data.module.name);
-                                        stepStatus = EINVAL;
                                         failed++;
                                     }
 
@@ -638,12 +607,6 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                         break;
                 }
 
-                if (0 != stepStatus)
-                {
-                    failures[failed - 1].step = step;
-                    failures[failed - 1].index = i;
-                }
-
                 if (i < total - 1)
                 {
                     LOG_TRACE(LINE_SEPARATOR);
@@ -662,22 +625,12 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             if (failed > 0)
             {
                 LOG_TRACE(LINE_SEPARATOR_THICK);
+                LOG_TRACE("Failed tests:");
             }
 
             for (int i = 0; i < failed; i++)
             {
-                STEP* step = failures[i].step;
-                char* name = GetStepName(step);
-                LOG_TRACE("step %d of %d failed", failures[i].index, total);
-                LOG_TRACE("  type: %s", GetStepTypeString(step->type));
-                LOG_TRACE("  name: %s", name);
-
-                if (i < failed - 1)
-                {
-                    LOG_TRACE(LINE_SEPARATOR);
-                }
-
-                FREE_MEMORY(name);
+                LOG_TRACE("  %*d %s", (int)log10(total) + 1, failures[i].index + 1, failures[i].name);
             }
 
             LOG_TRACE(LINE_SEPARATOR_THICK);
