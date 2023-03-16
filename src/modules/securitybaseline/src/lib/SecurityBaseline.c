@@ -924,8 +924,8 @@ static int AuditEnsureSyslogPackageIsInstalled(void)
 
 static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
-    return (0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, 0, 2775, true, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
+        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureALoggingServiceIsSnabled(void)
