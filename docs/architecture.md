@@ -4,7 +4,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular services stack running on a Linux Edge device that facilitates remote Linux device management over Azure (via [Azure PnP](https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play), [Digital Twins](https://github.com/Azure/opendigitaltwins-dtdl/blob/master/DTDL/v2/dtdlv2.md), IoT Hub, [IoT Central](https://azure.microsoft.com/en-us/services/iot-central/), Azure Portal/CLI), Azure Policy, as well local management (such as from OOBE and ADU, etc.). On the device OSConfig runs alongside [Azure Device Update (ADU)](https://github.com/Azure/adu-private-preview), Defender, Edge Runtime, and others.
+Azure Device OS Configuration (OSConfig) is a modular configuration stack for Ubuntu/Debian/Mariner Light Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from OOBE).
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
