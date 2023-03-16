@@ -479,14 +479,14 @@ const char* GetStepTypeString(STEP_TYPE type)
 {
     switch (type)
     {
-    case COMMAND:
-        return "Command";
-    case TEST:
-        return "Test";
-    case MODULE:
-        return "Module";
-    default:
-        return "Unknown";
+        case COMMAND:
+            return "Command";
+        case TEST:
+            return "Test";
+        case MODULE:
+            return "Module";
+        default:
+            return "Unknown";
     }
 }
 
@@ -498,21 +498,18 @@ char* GetStepName(const STEP* step)
     {
         switch (step->type)
         {
-        case COMMAND:
-            name = strdup(step->data.command.arguments);
-            break;
-        case TEST:
-            name = calloc(strlen(step->data.test.component) + strlen(step->data.test.object) + 2, sizeof(char));
-            if (name != NULL)
-            {
-                sprintf(name, "%s.%s", step->data.test.component, step->data.test.object);
-            }
-            break;
-        case MODULE:
-            name = strdup(step->data.module.name);
-            break;
-        default:
-            break;
+            case COMMAND:
+                name = strdup(step->data.command.arguments);
+                break;
+            case TEST:
+                name = calloc(strlen(step->data.test.component) + strlen(step->data.test.object) + 2, sizeof(char));
+                if (name != NULL)
+                {
+                    sprintf(name, "%s.%s", step->data.test.component, step->data.test.object);
+                }
+                break;
+            case MODULE:
+                name = strdup(step->data.module.name);
         }
     }
 
