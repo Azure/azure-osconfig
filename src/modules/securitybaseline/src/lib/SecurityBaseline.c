@@ -700,7 +700,7 @@ static int AuditEnsureTalkClientIsNotInstalled(void)
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return !FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return (0 != FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
@@ -924,14 +924,14 @@ static int AuditEnsureSyslogPackageIsInstalled(void)
 
 static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
-    return CheckDirectoryAccess("/var/log/journal", 0, 0, 2775, SecurityBaselineGetLog());
+    return CheckDirectoryAccess("/var/log/journal", 0, 0, 2775, true, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureALoggingServiceIsSnabled(void)
 {
-    return ((IsDaemonActive(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) ||
-        (IsDaemonActive(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) ||
-        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((IsDaemonActive(g_rsyslog, SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()))) ||
+        (IsDaemonActive(g_syslogNg, SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ||
+        (IsDaemonActive("systemd-journald", SecurityBaselineGetLog()) && (0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
