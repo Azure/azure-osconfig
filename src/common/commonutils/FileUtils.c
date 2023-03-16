@@ -702,7 +702,7 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
 
     if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
     {
-        if (0 == strcmp(contents, text))
+        if (0 == strncmp(contents, text, strlen(text)))
         {
             OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
         }
