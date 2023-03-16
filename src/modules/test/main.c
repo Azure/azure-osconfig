@@ -87,7 +87,6 @@ typedef struct FAILURE
 {
     STEP* step;
     int index;
-    int status;
 } FAILURE;
 
 static bool g_verbose = false;
@@ -645,8 +644,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                 if (0 != stepStatus)
                 {
                     failures[failed - 1].step = step;
-                    failures[failed - 1].status = stepStatus;
-                    failures[failed - 1].index = step->type;
+                    failures[failed - 1].index = i;
                 }
 
                 if (i < total - 1)
@@ -672,16 +670,17 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
             for (int i = 0; i < failed; i++)
             {
                 STEP* step = failures[i].step;
-                LOG_TRACE("Step %d of %d failed", i + 1, total);
+                char* name = GetStepName(step);
+                LOG_TRACE("step %d of %d failed", failures[i].index, total);
                 LOG_TRACE("  type: %s", GetStepTypeString(step->type));
-                LOG_TRACE("  name: %s", GetStepName(step));
-                LOG_TRACE("  index: %d", failures[i].index);
-                LOG_TRACE("  status: %d", failures[i].status);
+                LOG_TRACE("  name: %s", name);
 
                 if (i < failed - 1)
                 {
                     LOG_TRACE(LINE_SEPARATOR);
                 }
+
+                FREE_MEMORY(name);
             }
 
             LOG_TRACE(LINE_SEPARATOR_THICK);
@@ -694,6 +693,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
         }
     }
 
+    FREE_MEMORY(failures);
     FREE_MEMORY(steps);
 
     return status;
