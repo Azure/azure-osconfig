@@ -641,7 +641,7 @@ static int AuditEnsureAllUsersHomeDirectoriesExist(void)
 
 static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
-    return CheckUsersOwnTheirHomeDirectories(-1, SecurityBaselineGetLog());
+    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
@@ -1137,7 +1137,7 @@ static int AuditEnsureSmbWithSambaIsDisabled(void)
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    return CheckUsersOwnTheirHomeDirectories(744, SecurityBaselineGetLog());
+    return CheckUsersRestrictedDotFiles(744, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotForwardFiles(void)

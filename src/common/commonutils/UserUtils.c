@@ -1058,7 +1058,7 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
-int CheckUsersOwnTheirHomeDirectories(int desiredAccess, void* log)
+int CheckUsersOwnTheirHomeDirectories(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1083,21 +1083,6 @@ int CheckUsersOwnTheirHomeDirectories(int desiredAccess, void* log)
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-
-                    if (-1 != desiredAcess) && )
-                    {
-                        if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, desiredAccess, false, log))
-                        {
-                            OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) home directory '%s' has desired access %d",
-                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, desiredAccess);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) home directory '%s' does not have desired access %d",
-                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, desiredAccess);
-                            status = ENOENT;
-                        }
-                    }
                 }
                 else
                 {
@@ -1572,4 +1557,60 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
     }
 
     return status;
-} 
+}
+
+int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    DIR* home = NULL;
+    struct dirent* entry = NULL;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((userList[i].noLogin) || (userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            {
+                while (NULL != (entry = readdir(home)))
+                {
+                    if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
+                    {
+                        if (0 == (_status = CheckFileAccess(entry->d_name, userList[i].userId, userList[i].groupId, mode, log)))
+                        {
+                            OsConfigLogInfo(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' has right access %u and ownership", 
+                                userList[i].username, userList[i].userId, userList[i].groupId, entry->d_name, mode);
+                        }
+                        else
+                        {
+                            OsConfigLogError(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' does not have right access %u or ownership",
+                                userList[i].username, userList[i].userId, userList[i].groupId, entry->d_name, mode);
+                            
+                            if (0 == status)
+                            {
+                                status = _status;
+                            }
+                        }
+
+                    }
+                }
+
+                closedir(home);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access %u");
+    }
+
+    return status;
+}
