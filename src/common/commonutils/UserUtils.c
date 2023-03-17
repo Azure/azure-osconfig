@@ -1596,7 +1596,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                         memset(path, 0, length + 1);
                         snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
 
-                        if (0 != (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))) && (0 == status))
+                        if ((0 != (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))) && (0 == status))
                         {
                             status = _status;
                         }
