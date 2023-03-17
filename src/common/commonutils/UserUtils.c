@@ -1609,7 +1609,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access %u");
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access %u", mode);
     }
 
     return status;
