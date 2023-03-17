@@ -1567,7 +1567,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
     unsigned int userListSize = 0, i = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
-    char* path = NULL
+    char* path = NULL;
     size_t length = 0;
     int status = 0, _status = 0;
 
@@ -1585,7 +1585,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name[0]);
+                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
                         if (NULL == (path = malloc(length + 1)))
                         {
                             OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
@@ -1594,7 +1594,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                         }
                         
                         memset(path, 0, length + 1);
-                        snprintf(path, length, templatePath, userList[i].home, entry->d_name);
+                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
 
                         if (0 == (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
                         {
