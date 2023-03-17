@@ -1561,10 +1561,14 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
 
 int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
 {
+    const char* pathTemplate = "%s/%s";
+    
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
+    char* path = NULL
+    size_t length = 0;
     int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1581,15 +1585,26 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                 {
                     if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
                     {
-                        if (0 == (_status = CheckFileAccess(entry->d_name, userList[i].userId, userList[i].groupId, mode, log)))
+                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name[0]);
+                        if (NULL == (path = malloc(length + 1)))
+                        {
+                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
+                            status = ENOMEM;
+                            break;
+                        }
+                        
+                        memset(path, 0, length + 1);
+                        snprintf(path, length, templatePath, userList[i].home, entry->d_name);
+
+                        if (0 == (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
                         {
                             OsConfigLogInfo(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' has right access %u and ownership", 
-                                userList[i].username, userList[i].userId, userList[i].groupId, entry->d_name, mode);
+                                userList[i].username, userList[i].userId, userList[i].groupId, path, mode);
                         }
                         else
                         {
                             OsConfigLogError(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' does not have right access %u or ownership",
-                                userList[i].username, userList[i].userId, userList[i].groupId, entry->d_name, mode);
+                                userList[i].username, userList[i].userId, userList[i].groupId, path, mode);
                             
                             if (0 == status)
                             {
@@ -1597,6 +1612,7 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                             }
                         }
 
+                        FREE_MEMORY(path);
                     }
                 }
 
