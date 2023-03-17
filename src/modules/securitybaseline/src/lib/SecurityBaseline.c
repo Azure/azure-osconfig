@@ -1158,12 +1158,12 @@ static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 static int AuditEnsureRloginServiceIsDisabled(void)
 {
     return ((0 != CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        (0 != FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())))) ? 0: ENOENT
+        (0 != FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())))) ? 0: ENOENT;
 }
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT
+    return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 int AuditSecurityBaseline(void)
