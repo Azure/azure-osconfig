@@ -1390,6 +1390,7 @@ TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
+    EXPECT_EQ(0, CheckUsersRestrictedDotFiles(0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)

@@ -260,6 +260,7 @@ static const char* g_etcCronMonthly = "/etc/cron.monthly";
 static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcFstab = "/etc/fstab";
+static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -1101,7 +1102,7 @@ static int AuditEnsurePortmapServiceIsDisabled(void)
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return IsDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -1136,7 +1137,7 @@ static int AuditEnsureSmbWithSambaIsDisabled(void)
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    return 0; //TBD
+    return CheckUsersRestrictedDotFiles(744, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotForwardFiles(void)
@@ -1156,12 +1157,13 @@ static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 
 static int AuditEnsureRloginServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return ((0 != CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
+        (0 != FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())))) ? 0: ENOENT;
 }
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return 0; //TBD
+    return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 int AuditSecurityBaseline(void)
