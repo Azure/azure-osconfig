@@ -263,6 +263,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
+    bool exists = false;
     int result = ENOENT;
 
     if (NULL == name)
@@ -271,7 +272,16 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
         return EINVAL;
     }
 
-    if (directory ? DirectoryExists(name) : FileExists(name))
+    if (directory)
+    {
+        exists = DirectoryExists(name);
+    }
+    else
+    {
+        exists = FileExists(name);
+    }
+
+    if (exists) //(directory ? DirectoryExists(name) : FileExists(name))
     {
         if (0 == (result = stat(name, &statStruct)))
         {
