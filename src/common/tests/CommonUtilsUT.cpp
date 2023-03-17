@@ -1381,7 +1381,7 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
 TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 {
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
-    EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
+    EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(-1, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)

@@ -91,7 +91,7 @@ int CheckNoLegacyPlusEntriesInEtcGroup(void* log);
 int CheckDefaultRootAccountGroupIsGidZero(void* log);
 int CheckRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
-int CheckUsersOwnTheirHomeDirectories(void* log);
+int CheckUsersOwnTheirHomeDirectories(int desiredAccess, void* log)
 int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, void* log);

@@ -1058,7 +1058,7 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
-int CheckUsersOwnTheirHomeDirectories(void* log)
+int CheckUsersOwnTheirHomeDirectories(int desiredAccess, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1083,6 +1083,21 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                 {
                     OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) owns their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+
+                    if (-1 != desiredAcess) && )
+                    {
+                        if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, desiredAccess, false, log))
+                        {
+                            OsConfigLogInfo(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) home directory '%s' has desired access %d",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, desiredAccess);
+                        }
+                        else
+                        {
+                            OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) home directory '%s' does not have desired access %d",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, desiredAccess);
+                            status = ENOENT;
+                        }
+                    }
                 }
                 else
                 {
