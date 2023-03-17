@@ -1596,20 +1596,9 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                         memset(path, 0, length + 1);
                         snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
 
-                        if (0 == (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
+                        if (0 != (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))) && (0 == status))
                         {
-                            OsConfigLogInfo(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' has right access %u and ownership", 
-                                userList[i].username, userList[i].userId, userList[i].groupId, path, mode);
-                        }
-                        else
-                        {
-                            OsConfigLogError(log, "CheckUserDotFilesAccess: user '%s' (%u, %u) dot file '%s' does not have right access %u or ownership",
-                                userList[i].username, userList[i].userId, userList[i].groupId, path, mode);
-                            
-                            if (0 == status)
-                            {
-                                status = _status;
-                            }
+                            status = _status;
                         }
 
                         FREE_MEMORY(path);
