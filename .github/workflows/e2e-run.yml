@@ -1,0 +1,131 @@
+name: E2E Tests
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+    secrets:
+      client_id:
+        description: 'Azure Client ID'
+        required: true
+      client_secret:
+        description: 'Azure Client Secret'
+        required: true
+      tenant_id:
+        description: 'Azure Tenant ID'
+        required: true
+      iothub:
+        description: 'Azure IoT Hub name'
+        required: true
+      iothub_connection_string:
+        description: 'Azure IoT Hub connection string'
+        required: true
+
+jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    with:
+      os: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}
+
+  test:
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    needs: package
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        id: package
+        with:
+          name: ${{ inputs.target }}
+          path: package
+
+      - name: Create device identity
+        id: device
+        run: |
+          az login --service-principal \
+            --username ${{ secrets.client_id }} \
+            --password ${{ secrets.client_secret }} \
+            --tenant ${{ secrets.tenant_id }}
+          az extension add --name azure-iot
+          az iot hub device-identity create \
+            --hub-name ${{ secrets.iothub }} \
+            --device-id ${{ inputs.target }} \
+            --output none
+          az iot hub device-identity connection-string show \
+            --hub-name ${{ secrets.iothub }} \
+            --device-id ${{ inputs.target }} \
+            --output tsv > connection_string
+
+          echo "::add-mask::$(cat connection_string)"
+
+          echo id=${{ inputs.target }} >> $GITHUB_OUTPUT
+          echo connection_string=$(cat connection_string) >> $GITHUB_OUTPUT
+
+      - name: Configure device identity
+        run: |
+          sudo aziotctl config mp --connection-string "${{ steps.device.outputs.connection_string}}"
+          sudo aziotctl config apply -c '/etc/aziot/config.toml'
+
+      - name: Install package
+        run: sudo dpkg -i $(ls package/*.deb)
+        working-directory: ${{ steps.package.outputs.path }}
+
+      - name: Configure osconfig
+        run: |
+          sudo systemctl stop osconfig
+          sudo systemctl stop osconfig-platform
+
+          sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
+          sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
+
+          sudo systemctl daemon-reload
+          sudo systemctl start osconfig
+
+          # Wait for osconfig to restart
+          sleep 15s
+
+      - name: Run tests
+        working-directory: ./src/tests/e2etest
+        env:
+          IOTHUB_CONNECTION_STRING: ${{ secrets.iothub_connection_string }}
+          DEVICE_ID: ${{ steps.device.outputs.id }}
+          DOTNET_CLI_HOME: /tmp
+        run: |
+          sudo -E dotnet test \
+            --logger "trx;LogFileName=${{ github.workspace }}/${{ inputs.target }}-results.trx" \
+            --logger "console;verbosity=detailed"
+
+      - name: Stage logs
+        if: success() || failure()
+        run: |
+          sudo cp -f /var/log/osconfig* ${{ runner.temp }}
+          sudo chown $USER:$USER ${{ runner.temp }}/osconfig*
+
+      - name: Check logs
+        if: success() || failure()
+        uses: ./.github/actions/check-logs
+        with:
+          logs: |
+            ${{ runner.temp }}/osconfig_pnp_agent.log
+            ${{ runner.temp }}/osconfig_platform.log
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ${{ inputs.target }}-logs
+          path: ${{ runner.temp }}/osconfig*
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-report
+          path: ${{ github.workspace }}/${{ inputs.target }}-results.trx
