@@ -728,7 +728,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     struct dirent* entry = NULL;
     char* path = NULL;
     size_t length = 0;
-    int status = ENOENT;
+    int status = ENOENT, _status = 0;
 
     if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
     {
@@ -753,10 +753,10 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
                 memset(path, 0, length + 1);
                 snprintf(path, length, pathTemplate, directory, entry->d_name);
 
-                if (0 == (status = FindTextInFile(path, text, log)))
+                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 == status))
                 {
+                    status = _status;
                     OsConfigLogInfo(log, "FindTextInFolder: '%s' found in '%s'", text, path);
-                    break;
                 }
 
                 FREE_MEMORY(path);
@@ -764,6 +764,11 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
         }
 
         closedir(home);
+    }
+
+    if (status)
+    {
+        OsConfigLogError(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
     }
 
     return status;
