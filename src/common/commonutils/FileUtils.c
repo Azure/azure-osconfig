@@ -753,14 +753,9 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
                 memset(path, 0, length + 1);
                 snprintf(path, length, pathTemplate, directory, entry->d_name);
 
-                if (0 == (_status = FindTextInFile(path, text, log)))
+                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 != status))
                 {
-                    if (0 != status)
-                    {
-                       status = _status;
-                    }
-                    
-                    OsConfigLogInfo(log, "FindTextInFolder: '%s' found in '%s'", text, path);
+                    status = _status;
                 }
 
                 FREE_MEMORY(path);
