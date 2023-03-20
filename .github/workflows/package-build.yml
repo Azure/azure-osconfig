@@ -7,22 +7,18 @@ on:
         description: The artifact output containing the packages from this workflow.
         type: string
         required: false
-        default: "package"
+        default: 'package'
       build-type:
         description: The type of build to perform (Debug | Release).
         type: string
         required: false
-        default: "Release"
+        default: 'Release'
       os:
         description: The operating system to build for.
         type: string
         required: true
       arch:
         description: The architecture to build for.
-        type: string
-        required: true
-      platform:
-        description: The platform to build for.
         type: string
         required: true
 
@@ -33,9 +29,7 @@ env:
 
 jobs:
   package:
-    name: Package
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -49,7 +43,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          platform: ${{ inputs.platform }}
 
       - name: Generate build
         uses: ./.github/actions/container-exec
@@ -84,7 +77,9 @@ jobs:
           distroName: ${{ matrix.os }}
           arch: ${{ matrix.variant.arch }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artifact }}
-          path: ./build/osconfig_*
+          path: |
+            ./build/osconfig_*
+            ./build/moduletest
