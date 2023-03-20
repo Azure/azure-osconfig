@@ -1452,9 +1452,9 @@ TEST_F(CommonUtilsTest, OtherOptionalTests)
 
 TEST_F(CommonUtilsTest, FindTextInFolder)
 {
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a"));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test"));
-    EXPECT_EQ(0, FindTextInFolder("/etc", "bin"));
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr));
+    EXPECT_EQ(0, FindTextInFolder("/etc", "bin", nullptr));
 }

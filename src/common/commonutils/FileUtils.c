@@ -720,7 +720,7 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int FindTextInFolder(const char* directory, const char* text)
+int FindTextInFolder(const char* directory, const char* text, void* log)
 {
     const char* pathTemplate = "%s/%s";
 

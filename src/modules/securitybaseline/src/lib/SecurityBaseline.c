@@ -878,27 +878,27 @@ static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs") ? 0 : ENOENT;
+    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs") ? 0 : ENOENT;
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs") ? 0 : ENOENT;
+    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus") ? 0 : ENOENT;
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2") ? 0 : ENOENT;
+    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
