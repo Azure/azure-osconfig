@@ -1,0 +1,31 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-add-key",
+            "parameters": {
+                "key": "https://packages.microsoft.com/keys/microsoft.asc"
+            }
+        },
+        {
+            "name": "linux-add-repository",
+            "parameters": {
+                "repository": "https://packages.microsoft.com/ubuntu/20.04/prod"
+            }
+        },
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "aziot-identity-service"
+            }
+        },
+        {
+            "name": "linux-azcli"
+        },
+        {
+            "name": "linux-dotnet-sdk",
+            "parameters": {
+                "version": "6.0"
+            }
+        }
+    ]
+}
