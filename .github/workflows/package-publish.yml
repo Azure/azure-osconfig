@@ -1,0 +1,85 @@
+name: Publish Package
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        description: The artifact containing the signed packages to publish.
+        type: string
+        required: true
+      channel:
+        description: The channel to publish packages to (insiders-fast | prod).
+        type: string
+        required: true
+
+env:
+  SUBMISSION_KEY: .repoclient/private.pem
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.channel }}
+
+    steps:
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Download Submission Key
+        env:
+          AZ_KEY_VAULT: ${{ secrets.AZ_KEY_VAULT }}
+          REPOCLIENT_KEY: ${{ secrets.REPOCLIENT_KEY }}
+          SUBMISSION_KEY: ${{ env.SUBMISSION_KEY }}
+        run: |
+          az keyvault secret download --encoding utf-8 --file "$SUBMISSION_KEY" --name "$REPOCLIENT_KEY" --vault-name "$AZ_KEY_VAULT"
+
+      - name: Download Repo Client
+        env:
+          AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
+        run: |
+          # TODO: maybe need: --subscription "$AZURE_SUBSCRIPTION"
+          az storage blob download --account-name osconfig -c azure-repoapi-client -n azure-repoapi-client_2.0.1_amd64.deb -f repoclient.deb
+
+      - name: Install repoclient
+        run: |
+          sudo dpkg -i repoclient.deb
+          rm repoclient.deb
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ inputs.artifact }}
+          path: packages
+
+      - name: Configure Repo Client
+        run: |
+          config=$(cat <<EOF
+          {
+              "AADResource": "https://microsoft.onmicrosoft.com/945999e9-da09-4b5b-878f-b66c414602c0",
+              "AADTenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+              "AADAuthorityUrl": "https://login.microsoftonline.com",
+              "server": "azure-apt-cat.cloudapp.net",
+              "port": "443",
+              "AADClientId": "${{ secrets.AAD_CLIENT_ID }}"
+              "AADClientCertificate": "${{ env.SUBMISSION_KEY }}",
+              "repositoryId": "osconfig"
+          }
+          EOF
+          )
+
+          echo "$config" > config.json
+
+      # - name: Publish Packages
+      #   working-directory: ${{ github.workspace }}/packages
+      #   run: |
+      #     function publish() {
+      #       package=$1
+      #       repo_id=$2
+
+      #       # Publish the package
+      #       repoclient -s pmc -v v3 -c config.json package add --check --wait 300 $package -r $repo_id
+      #     }
+
+      #     publish ubuntu1804 ${{ secrets.REPO_ID_bionic }}
+      #     publish ubuntu2004 ${{ secrets.REPO_ID_focal }}
+      #     publish debian9 ${{ secrets.REPO_ID_stretch }}
