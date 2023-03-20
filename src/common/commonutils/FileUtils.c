@@ -742,7 +742,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
         {
             if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
             {
-                length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
+                length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
                 {
                     OsConfigLogError(log, "FindTextInFolder: out of memory");
