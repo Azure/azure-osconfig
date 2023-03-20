@@ -76,8 +76,8 @@ bool CharacterFoundInFile(const char* fileName, char what);
 
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log);
-
 int CompareFileContents(const char* fileName, const char* text, void* log);
+int FindTextInFolder(const char* directory, const char* text);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

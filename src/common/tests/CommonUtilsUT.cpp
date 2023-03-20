@@ -1449,3 +1449,12 @@ TEST_F(CommonUtilsTest, OtherOptionalTests)
 {
     CheckOsAndKernelMatchDistro(nullptr);
 }
+
+TEST_F(CommonUtilsTest, FindTextInFolder)
+{
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a"));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test"));
+    EXPECT_EQ(0, FindTextInFolder("/etc", "bin"));
+}

@@ -261,6 +261,7 @@ static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
+static const char* g_etcModProbeD = "/etc/modprobe.d";
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -877,27 +878,27 @@ static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install cramfs") ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs") ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install hfs") ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus") ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install jffs2") ? 0 : ENOENT;
 }
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
