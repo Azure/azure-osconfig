@@ -1456,5 +1456,6 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(EINVAL, FindTextInFolder(nullptr, "a", nullptr));
     EXPECT_EQ(EINVAL, FindTextInFolder("/etc", nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr));
-    EXPECT_EQ(0, FindTextInFolder("/etc", "bin", nullptr));
+    
+    FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
 }

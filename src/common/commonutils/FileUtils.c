@@ -740,7 +740,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     {
         while (NULL != (entry = readdir(home)))
         {
-            if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
+            if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
             {
                 length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
                 if (NULL == (path = malloc(length + 1)))
@@ -753,9 +753,13 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
                 memset(path, 0, length + 1);
                 snprintf(path, length, pathTemplate, directory, entry->d_name);
 
-                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 == status))
+                if (0 == (_status = FindTextInFile(path, text, log)))
                 {
-                    status = _status;
+                    if (0 != status)
+                    {
+                       status = _status;
+                    }
+                    
                     OsConfigLogInfo(log, "FindTextInFolder: '%s' found in '%s'", text, path);
                 }
 
