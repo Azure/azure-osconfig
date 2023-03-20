@@ -755,7 +755,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
 
                 if (0 == (status = FindTextInFile(path, text, log)))
                 {
-                    OsConfigLogInfp(log, "FindTextInFolder: '%s' found in '%s'", text, path);
+                    OsConfigLogInfo(log, "FindTextInFolder: '%s' found in '%s'", text, path);
                     break;
                 }
 
