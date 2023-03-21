@@ -818,7 +818,6 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
                 if (0 == status)
                 {
                     OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' but is commented out with '%c'", text, fileName, commentMark);
-                    status = 0;
                 }
                 else
                 {
