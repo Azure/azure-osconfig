@@ -803,10 +803,12 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, const char
         {
             if (NULL != (found = strstr(contents, text)))
             {
-                length = strlen(contents);
+                OsConfigLogInfo(log, "FindUncommentedLineInFile: found '%s' <<<<<<<<<<<<<<<<<<", found);
+                length = strlen(contents) - strlen(found);
                 
-                for (index = found - contents; index >= (int)length; index--)
+                for (index = length; index >= 0; index--)
                 {
+                    OsConfigLogInfo(log, "FindUncommentedLineInFile: '%c' <<<<<<<<<<<<<<<<<<", found[index]);
                     if (commentMark == contents[index])
                     {
                         status = 0;
