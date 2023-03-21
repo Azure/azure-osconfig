@@ -813,6 +813,10 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, char* text
                         status = 0;
                         break;
                     }
+                    else if (EOL == contents[index])
+                    {
+                        break;
+                    }
                 }
 
                 if (0 == status)
