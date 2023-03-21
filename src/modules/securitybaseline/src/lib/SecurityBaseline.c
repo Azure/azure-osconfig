@@ -1134,18 +1134,7 @@ static int AuditEnsureNisServerIsDisabled(void)
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
-    /*
-    remediation="Uninstall `rsh` using the appropriate package manager or manual installation:
-    ```
-    yum remove rsh
-    ```
-    ```
-    apt-get remove rsh
-    ```
-    ```
-    zypper remove rsh
-    */
-    return 0; //TBD
+    return CheckPackageInstalled("rsh", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
