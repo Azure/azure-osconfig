@@ -955,13 +955,13 @@ static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog())) : 0 : ENOENT;
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog())) : 0 : ENOENT;
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
