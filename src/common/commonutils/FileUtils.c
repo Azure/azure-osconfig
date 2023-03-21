@@ -612,10 +612,16 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     char* contents = NULL;
     int status = 0;
 
-    if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInFile called with invalid arguments");
         return EINVAL;
+    }
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigLogError(log, "FindTextInFile: file '%s' not found", fileName);
+        return ENOENT;
     }
 
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
@@ -768,6 +774,70 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     if (status)
     {
         OsConfigLogError(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
+    }
+
+    return status;
+}
+
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log)
+{
+    char* contents = NULL;
+    char* found = NULL;
+    int status = ENOENT;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (FileExists(fileName))
+    {
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+        {
+            OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+        }
+        else
+        {
+            if (NULL != (found = strstr(contents, text)))
+            {
+                while (found > contents)
+                {
+                    found--;
+                    if (commentMark == found[0])
+                    {
+                        status = 0;
+                        break;
+                    }
+                    else if (EOL == found[0])
+                    {
+                        break;
+                    }
+                }
+
+                if (0 == status)
+                {
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' but is commented out with '%c'", text, fileName, commentMark);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s', uncommented with '%c'", text, fileName, commentMark);
+                    status = ENOENT;
+                }
+            }
+            else
+            {
+                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
+                status = 0;
+            }
+
+            FREE_MEMORY(contents);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        status = 0;
     }
 
     return status;

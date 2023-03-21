@@ -262,6 +262,9 @@ static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
+static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
+static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
+
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -939,29 +942,32 @@ static int AuditEnsureALoggingServiceIsSnabled(void)
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ((0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return ((0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog())) && 
+        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return 0; //TBD
+    return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
@@ -973,17 +979,17 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return 0; //TBD
-}
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
+}                                                                         
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTftpServiceisDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
@@ -1058,7 +1064,7 @@ static int AuditEnsureSshWarningBannerIsEnabled(void)
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
@@ -1083,7 +1089,7 @@ static int AuditEnsurePostfixPackageIsUninstalled(void)
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return 0; //TBD
+    return (FileExists("/etc/postfix/main.cf")) ? FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
 }
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
@@ -1108,7 +1114,7 @@ static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSnmpServerIsDisabled(void)
@@ -1128,7 +1134,7 @@ static int AuditEnsureNisServerIsDisabled(void)
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
-    return 0; //TBD
+    return CheckPackageInstalled("rsh", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
