@@ -1403,6 +1403,8 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(ENOENT, FindTextInFile("~~DoesNotExist", "text", nullptr));
     
     EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
@@ -1459,3 +1461,56 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     
     FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
 }
+
+TEST_F(CommonUtilsTest, FindUncommentedLineInFile)
+{
+    const char* testFile =
+        "# Test 1\n"
+        "Test 2\n"
+        "#  Test 3\n"
+        "   Test 4\n"
+        "#    Test 5\n"
+        "     Test 6\n"
+        "#      Test 7\n"
+        "       Test 8\n"
+        "#        Test 9\n"
+        "         Test 10\n"
+        "  # Test 11\n"
+        "  Test 12\n"
+        "    #  Test 13\n"
+        "      Test 14\n"
+        "     #    Test 15\n"
+        "          Test 16\n"
+        "         #      Test 17\n"
+        "                Test 18\n"
+        "             #        Test 19\n"
+        "                      Test 20\n";
+
+    char buffer[8] = {0};
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+
+    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', "test", nullptr));
+    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', nullptr, nullptr));
+
+    EXPECT_EQ(0, FindUncommentedLineInFile("/foo/does_not_exist", '#', "Test", nullptr));
+    EXPECT_EQ(0, FindUncommentedLineInFile(m_path, '#', "does-not__exist123", nullptr));
+
+    for (int i = 0; i < 20; i++)
+    {
+        memset(buffer, 0, sizeof(buffer));
+        snprintf(buffer, sizeof(buffer), "Test %d", i);
+
+        if (i % 2)
+        {
+            EXPECT_EQ(0, FindUncommentedLineInFile(m_path, '#', buffer, nullptr));
+        }
+        else
+        {
+            EXPECT_EQ(ENOENT, FindUncommentedLineInFile(m_path, '#', buffer, nullptr));
+        }
+    }
+
+    EXPECT_TRUE(Cleanup(m_path));
+}  

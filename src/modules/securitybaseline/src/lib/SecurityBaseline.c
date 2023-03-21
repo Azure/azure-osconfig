@@ -262,6 +262,9 @@ static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
+static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
+static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
+
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -939,29 +942,30 @@ static int AuditEnsureALoggingServiceIsSnabled(void)
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ((0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return ((0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog())) && 
+        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return 0; //TBD
+    return FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return 0; //TBD
+    return FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return 0; //TBD
+    return (FindTextInFile(g_etcRsyslogConf, "ModLoad imudp", SecurityBaselineGetLog()) && 
+        FindTextInFile(g_etcRsyslogConf, "ModLoad imtcp", SecurityBaselineGetLog())) ? 0 : ENOENT
 }
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
@@ -973,7 +977,10 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return 0; //TBD
+    /*remediation="Remove or comment out the telnet entry in the file '/etc/inetd.conf'"
+      ruleId="0617b91c-2a28-42bd-b5b3-7562555b41ed">
+      <check distro="*" command="CheckNoMatchingLinesIfExists" regex="^[\s\t]*telnet" path="/etc/inetd.conf" />*/
+    return FindTextInFile(g_etcInetdConf, "telnet", SecurityBaselineGetLog()) ? 0 : ENOENT;//or comment
 }
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
