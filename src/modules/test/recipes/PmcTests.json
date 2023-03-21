@@ -5,18 +5,18 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "PackageManagerConfiguration",
+    "ComponentName": "PackageManager",
     "ObjectName": "state"
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "PackageManagerConfiguration",
+    "ComponentName": "PackageManager",
     "ObjectName": "invalid",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "PackageManagerConfiguration",
+    "ComponentName": "PackageManager",
     "ObjectName": "",
     "ExpectedResult": 22
   },
@@ -28,7 +28,7 @@
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "PackageManagerConfiguration",
+    "ComponentName": "PackageManager",
     "ObjectName": "",
     "ExpectedResult": 22
   },
@@ -46,7 +46,7 @@
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "PackageManagerConfiguration",
+    "ComponentName": "PackageManager",
     "ObjectName": "desiredState",
     "Payload": -1,
     "ExpectedResult": 22

@@ -29,7 +29,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             if (string)
             {
                 memset(&string[0], 0, fileSize + 1);
-                for (i = 0; i < fileSize; i++)
+                for (i = 0; i <= fileSize; i++)
                 {
                     next = fgetc(file);
                     if ((EOF == next) || (stopAtEol && (EOL == next)))
@@ -258,7 +258,7 @@ static unsigned int FilterFileAccessFlags(unsigned int mode)
     return flags;
 }
 
-static int CheckAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -275,8 +275,16 @@ static int CheckAccess(bool directory, const char* name, unsigned int desiredOwn
     {
         if (0 == (result = stat(name, &statStruct)))
         {
-            if ((((uid_t)desiredOwnerId == statStruct.st_uid) && ((gid_t)desiredGroupId == statStruct.st_gid)) ||
-                (directory && rootCanOverwriteOwnership && (0 == statStruct.st_uid) && (0 == statStruct.st_gid)))
+            if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid) && 
+                (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_uid))))) ||
+                ((-1 != desiredGroupId) && (((gid_t)desiredGroupId != statStruct.st_gid) && 
+                (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_gid))))))
+            {
+                OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                result = ENOENT;
+            }
+            else 
             {
                 currentMode = FilterFileAccessFlags(statStruct.st_mode);
                 desiredMode = FilterFileAccessFlags(desiredAccess);
@@ -285,23 +293,17 @@ static int CheckAccess(bool directory, const char* name, unsigned int desiredOwn
                     (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
                     (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%u, %u, %u-%u) matches expected (%u, %u, %u-%u)",
+                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)",
                         name, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
                         desiredOwnerId, desiredGroupId, desiredAccess, desiredMode);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "CheckAccess: access to '%s' (%u-%u) does not match expected (%u-%u)",
+                    OsConfigLogError(log, "CheckAccess: access to '%s' (%d-%d) does not match expected (%d-%d)",
                         name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
                     result = ENOENT;
                 }
-            }
-            else
-            {
-                OsConfigLogError(log, "CheckAccess: ownership of '%s' (%u, %u) does not match expected (%u, %u)", 
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                result = ENOENT;
             }
         }
         else
@@ -368,7 +370,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
 {
     return CheckAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
 }
@@ -378,7 +380,7 @@ int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int de
     return SetAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+int CheckDirectoryAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
     return CheckAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
 }
@@ -527,6 +529,10 @@ int InstallPackage(const char* packageName, void* log)
             OsConfigLogError(log, "InstallPackage: installation of '%s' failed with %d", packageName, status);
         }
     }
+    else
+    {
+        OsConfigLogInfo(log, "InstallPackage: '%s' is already installed", packageName);
+    }
 
     return status;
 }
@@ -599,4 +605,117 @@ unsigned int GetNumberOfLinesInFile(const char* fileName)
 bool CharacterFoundInFile(const char* fileName, char what)
 {
     return (GetNumberOfCharacterInstancesInFile(fileName, what) > 0) ? true : false;
+}
+
+int FindTextInFile(const char* fileName, const char* text, void* log)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindTextInFile called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogError(log, "FindTextInFile: cannot read from '%s'", fileName);
+        status = ENOENT;
+    }
+    else
+    {
+        if (NULL != strstr(contents, text))
+        {
+            OsConfigLogInfo(log, "FindTextInFile: '%s' found in '%s'", text, fileName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", text, fileName);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(contents);
+    }
+
+    return status;
+}
+
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
+{
+    const char* commandTemplate = "echo $%s | grep %s";
+    char* command = NULL;
+    char* results = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "FindTextInEnvironmentVariable called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
+
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, variableName, text);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        {
+            if (NULL != strstr(results, text))
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "FindTextInEnvironmentVariable: echo failed, %d", status);
+        }
+
+        FREE_MEMORY(results);
+        FREE_MEMORY(command);
+    }
+
+    return status;
+}
+
+int CompareFileContents(const char* fileName, const char* text, void* log)
+{
+    char* contents = NULL;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(fileName)) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "CompareFileContents called with invalid arguments");
+        return EINVAL;
+    }
+
+    if (NULL != (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        if (0 == strncmp(contents, text, strlen(text)))
+        {
+            OsConfigLogInfo(log, "CompareFileContents: '%s' matches contents of '%s'", text, fileName);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "CompareFileContents: '%s' does not match contents of '%s' ('%s')", text, fileName, contents);
+            status = ENOENT;
+        }
+    }
+
+    FREE_MEMORY(contents);
+
+    return status;
 }

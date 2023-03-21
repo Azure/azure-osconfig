@@ -75,7 +75,7 @@ jobs:
         with:
           allowedDelta: 10
           distroName: ${{ matrix.os }}
-          arch: ${{ matrix.variant.arch }}
+          arch: ${{ inputs.arch }}
 
       - uses: actions/upload-artifact@v3
         with:

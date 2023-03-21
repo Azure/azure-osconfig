@@ -58,7 +58,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     
     if ((NULL == destination) || (NULL == source))
     {
-        OsConfigLogError(log, "CopyPasswdEntry: invalid arguments");
+        OsConfigLogError(log, "CopyUserEntry: invalid arguments");
         return EINVAL;
     }
 
@@ -68,7 +68,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->username = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_name '%s'", source->pw_name);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_name '%s'", source->pw_name);
             status = ENOMEM;
         }
         else
@@ -90,7 +90,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->home = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_dir '%s'", source->pw_dir);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_dir '%s'", source->pw_dir);
             status = ENOMEM;
         }
         else
@@ -104,7 +104,7 @@ static int CopyUserEntry(SIMPLIFIED_USER* destination, struct passwd* source, vo
     {
         if (NULL == (destination->shell = malloc(length + 1)))
         {
-            OsConfigLogError(log, "CopyPasswdEntry: out of memory copying pw_shell '%s'", source->pw_shell);
+            OsConfigLogError(log, "CopyUserEntry: out of memory copying pw_shell '%s'", source->pw_shell);
             status = ENOMEM;
 
         }
@@ -162,7 +162,8 @@ static char* EncryptionName(int type)
 
 static bool IsNoLoginUser(SIMPLIFIED_USER* user)
 {
-    const char* noLoginShell[] = { "/usr/sbin/nologin", "/sbin/nologin", "/bin/false" };
+    const char* noLoginShell[] = {"/usr/sbin/nologin", "/sbin/nologin", "/bin/false", "/bin/true", "/usr/bin/true", "/dev/null", ""};
+
     int index = ARRAY_SIZE(noLoginShell);
     bool noLogin = false;
 
@@ -253,13 +254,13 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                 break;
 
             case '!':
-                user->isLocked = true;
                 user->hasPassword = false;
+                user->isLocked = true;
                 break;
 
             case '*':
-                user->cannotLogin = true;
                 user->hasPassword = false;
+                user->cannotLogin = true;
                 break;
 
             case ':':
@@ -759,6 +760,7 @@ int CheckNoDuplicateGroupsExist(void* log)
 int CheckShadowGroupIsEmpty(void* log)
 {
     const char* shadow = "shadow";
+
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
@@ -1268,6 +1270,64 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int CheckPasswordExpirationLessThan(long days, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    long timer = 0;
+    int status = 0;
+    long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if (userList[i].expirationDate >= currentDate)
+                {
+                    if ((userList[i].expirationDate - currentDate) <= days)
+                    {
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested: %ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate - currentDate, days);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, less than requested %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate, days);
+                        status = ENOENT;
+                    }
+                }
+                else if (userList[i].expirationDate < 0)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                    status = ENOENT;
+                }
+                else if (userList[i].expirationDate < currentDate)
+                {
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
+                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate);
+                    status = ENOENT;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: passwords for all users who have them will expire in %ld days or less", days);
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationWarning(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1376,6 +1436,185 @@ int CheckSystemAccountsAreNonLogin(void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckSystemAccountsAreNonLogin: all system accounts are non-login");
+    }
+
+    return status;
+}
+
+int CheckRootPasswordForSingleUserMode(void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    bool usersWithPassword = false;
+    bool rootHasPassword = false;
+    int status = 0;
+    
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].hasPassword)
+            {
+                if (userList[i].isRoot)
+                {
+                    OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
+                    rootHasPassword = true;
+                    break;
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: user '%s' (%u, %u) appears to have a password", 
+                        userList[i].username, userList[i].userId, userList[i].groupId);
+                    usersWithPassword = true;
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status) 
+    {
+        if (rootHasPassword && (false == usersWithPassword))
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: single user mode, only root user has password");
+        }
+        else if (rootHasPassword && usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root has password");
+        }
+        else if ((false == rootHasPassword) && usersWithPassword)
+        {
+            OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: multi-user mode, root does not have password");
+        }
+        else if ((false == rootHasPassword) && (false == usersWithPassword))
+        {
+            OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: single user more and root does not have password");
+            status = ENOENT;
+        }
+    }
+
+    return status;
+}
+
+int CheckUsersDontHaveDotFiles(const char* name, void* log)
+{
+    const char* templateDotPath = "%s/.%s";
+
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    size_t templateLength = 0, length = 0;
+    char* dotPath = NULL;
+    int status = 0;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "CheckUsersDontHaveDotFiles called with an invalid argument");
+        return EINVAL;
+    }
+
+    templateLength = strlen(templateDotPath) + strlen(name) + 1;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((userList[i].noLogin) || (userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home))
+            {
+                length = templateLength + strlen(userList[i].home);
+
+                if (NULL == (dotPath = malloc(length)))
+                {
+                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+                
+                memset(dotPath, 0, length);
+                snprintf(dotPath, length, templateDotPath, userList[i].home, name);
+
+                if (FileExists(dotPath))
+                {
+                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
+                        userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                    status = ENOENT;
+                }
+
+                FREE_MEMORY(dotPath);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUsersDontHaveDotFiles: no users have '.%s' files", name);
+    }
+
+    return status;
+}
+
+int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
+{
+    const char* pathTemplate = "%s/%s";
+    
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    DIR* home = NULL;
+    struct dirent* entry = NULL;
+    char* path = NULL;
+    size_t length = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((userList[i].noLogin) || (userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            {
+                while (NULL != (entry = readdir(home)))
+                {
+                    if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
+                    {
+                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
+                        if (NULL == (path = malloc(length + 1)))
+                        {
+                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: out of memory");
+                            status = ENOMEM;
+                            break;
+                        }
+                        
+                        memset(path, 0, length + 1);
+                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
+
+                        if ((0 != (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))) && (0 == status))
+                        {
+                            status = _status;
+                        }
+
+                        FREE_MEMORY(path);
+                    }
+                }
+
+                closedir(home);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access %u", mode);
     }
 
     return status;

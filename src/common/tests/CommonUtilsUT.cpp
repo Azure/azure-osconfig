@@ -767,6 +767,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     char* kernelName = NULL;
     char* kernelVersion = NULL;
     char* kernelRelease = NULL;
+    char* umask = NULL;
 
     EXPECT_NE(nullptr, osName = GetOsName(nullptr));
     EXPECT_NE(nullptr, osVersion = GetOsVersion(nullptr));
@@ -782,6 +783,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     EXPECT_NE(nullptr, kernelName = GetOsKernelName(nullptr));
     EXPECT_NE(nullptr, kernelVersion = GetOsKernelVersion(nullptr));
     EXPECT_NE(nullptr, kernelRelease = GetOsKernelRelease(nullptr));
+    EXPECT_NE(nullptr, umask = GetLoginUmask(nullptr));
 
     FREE_MEMORY(osName);
     FREE_MEMORY(osVersion);
@@ -792,6 +794,7 @@ TEST_F(CommonUtilsTest, OsProperties)
     FREE_MEMORY(kernelName);
     FREE_MEMORY(kernelVersion);
     FREE_MEMORY(kernelRelease);
+    FREE_MEMORY(umask);
 }
 
 char* AllocateAndCopyTestString(const char* source)
@@ -1358,6 +1361,9 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
     EXPECT_EQ(0, CheckRootGroupExists(nullptr));
     EXPECT_EQ(0, CheckDefaultRootAccountGroupIsGidZero(nullptr));
     EXPECT_EQ(0, CheckRootIsOnlyUidZeroAccount(nullptr));
+    
+    // Optional:
+    CheckRootPasswordForSingleUserMode(nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
@@ -1367,10 +1373,79 @@ TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
     EXPECT_EQ(0, CheckMinDaysBetweenPasswordChanges(0, nullptr));
     EXPECT_EQ(0, CheckMaxDaysBetweenPasswordChanges(99999, nullptr));
     EXPECT_EQ(0, CheckPasswordExpirationWarning(0, nullptr));
+
+    //Optional:
+    CheckPasswordExpirationLessThan(99999, nullptr);
 }
 
 TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 {
     EXPECT_EQ(0, CheckAllUsersHomeDirectoriesExist(nullptr));
     EXPECT_EQ(0, CheckUsersOwnTheirHomeDirectories(nullptr));
+}
+
+TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
+{
+    EXPECT_EQ(EINVAL, CheckUsersDontHaveDotFiles(nullptr, nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
+    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
+    EXPECT_EQ(0, CheckUsersRestrictedDotFiles(0, nullptr));
+}
+
+TEST_F(CommonUtilsTest, FindTextInFile)
+{
+    const char* test = "This is a text with options /1 /2 \\3 \\zoo -34!";
+
+    EXPECT_TRUE(CreateTestFile(m_path, test));
+
+    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, test, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(m_path, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
+    
+    EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\3", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "\\z", nullptr));
+    EXPECT_EQ(0, FindTextInFile(m_path, "34", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "not found", nullptr));
+    EXPECT_NE(0, FindTextInFile(m_path, "\\m", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
+{
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
+}
+
+TEST_F(CommonUtilsTest, CompareFileContents)
+{
+    EXPECT_EQ(EINVAL, CompareFileContents(nullptr, "2", nullptr));
+    EXPECT_EQ(EINVAL, CompareFileContents(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CompareFileContents(m_path, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CompareFileContents(m_path, "", nullptr));
+    EXPECT_EQ(EINVAL, CompareFileContents("", "2", nullptr));
+
+    const char* test[] = {"2", "ABC", "~1", "This is a test", "One line\nAnd another\n"};
+    size_t sizeOfTest = ARRAY_SIZE(test);
+
+    for (size_t i = 0; i < sizeOfTest; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, test[i]));
+        EXPECT_EQ(0, CompareFileContents(m_path, test[i], nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+}
+
+TEST_F(CommonUtilsTest, OtherOptionalTests)
+{
+    CheckOsAndKernelMatchDistro(nullptr);
 }

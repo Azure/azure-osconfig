@@ -15,7 +15,15 @@ bool IsDaemonActive(const char* name, void* log)
 
     if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
     {
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogError(log, "IsDaemonActive: '%s' appears inactive", name);
+        }
         status = false;
+    }
+    else if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "IsDaemonActive: '%s' appears active", name);
     }
 
     return status;

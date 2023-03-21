@@ -9,9 +9,6 @@ inputs:
   container:
     description: The name of the container.
     required: true
-  platform:
-    description: The container architecture.
-    required: true
   mount:
     description: The volume to mount.
     required: true
@@ -47,7 +44,7 @@ runs:
       id: container
       run: |
         echo Running container ${{ steps.setup.outputs.container }}:${{ inputs.tag }}...
-        id=$(docker run -di --privileged -v ${{ inputs.mount }} --platform=${{ inputs.platform }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
+        id=$(docker run -di --privileged -v ${{ inputs.mount }} ${{ steps.setup.outputs.container }}:${{ inputs.tag }})
 
         echo Container ID: $id
         echo id=$id >> $GITHUB_OUTPUT

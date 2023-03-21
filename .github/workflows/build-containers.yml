@@ -9,9 +9,9 @@ on:
       - main
     paths:
       - devops/docker/**/Dockerfile
-  workflow_dispatch:
 
 env:
+  REGISTRY: ghcr.io
   BUILD_TYPE: Release
   MOUNT: /azure-osconfig
 
@@ -22,11 +22,11 @@ jobs:
     outputs:
       containers: ${{ steps.matrix.outputs.containers }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get changed containers
         id: changed-containers
-        uses: tj-actions/changed-files@v18.7
+        uses: tj-actions/changed-files@v35.7.0
         with:
           files: ./devops/docker/**/Dockerfile
 
@@ -52,13 +52,11 @@ jobs:
       contents: read
       packages: write
     strategy:
+      fail-fast: false
       matrix:
         container: ${{ fromJson(needs.modified-containers.outputs.containers) }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          # Only checkout submodules recursively if this is a pull request
-          submodules: ${{ github.event_name == 'pull_request' && 'recursive' || 'false' }}
+      - uses: actions/checkout@v3
 
       - name: Setup image
         id: image
@@ -67,14 +65,12 @@ jobs:
           image=${dockerfile#devops/docker/}
           image=${image%/*}
           distro=${image%-*}
-          platform=${image#*-}
 
           repo=$(echo ${{ github.repository }} | awk '{print tolower($0)}')
 
           echo name=$(echo -n $repo/$image) >> $GITHUB_OUTPUT
           echo path=$(dirname ${dockerfile}) >> $GITHUB_OUTPUT
           echo distro=$(echo -n $distro) >> $GITHUB_OUTPUT
-          echo platform=$(echo -n $platform) >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v2
@@ -93,55 +89,29 @@ jobs:
       - name: Docker login (ghcr.io)
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ github.token }}
 
-      - name: Docker build
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ github.run_number }}
+            type=sha
+
+      - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: ${{ steps.image.outputs.path }}
-          load: true
-          tags: |
-            ${{ steps.image.outputs.name }}:latest
-            ${{ steps.image.outputs.name }}:${{ github.run_number }}
-            ${{ steps.image.outputs.name }}:${{ github.sha }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-      # Test the container image on 'pull_request' events
-
-      - name: Run container
-        if: ${{ github.event_name == 'pull_request' }}
-        id: container
-        uses: ./.github/actions/container-run
-        with:
-          container: ${{ steps.image.outputs.name }}
-          platform: ${{ steps.image.outputs.platform }}
-          mount: ${{ github.workspace }}:${{ env.MOUNT }}
-          tag: ${{ github.sha }}
-
-      - name: Build azure-osconfig
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: ./.github/actions/container-exec
-        with:
-          container: ${{ steps.container.outputs.id }}
-          cmd: |
-            mkdir build && cd build
-            cmake ../src -DCMAKE_build-type=${{ env.BUILD_TYPE }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=ON -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
-            cmake --build . --config ${{ env.BUILD_TYPE }}
-
-      - name: Docker push (ghcr.io)
-        # Only push the image when a pull request is merged to main
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          registry: ghcr.io
-          tags: |
-            ${{ steps.image.outputs.name }}:latest
-            ${{ steps.image.outputs.name }}:${{ github.run_number }}
-            ${{ steps.image.outputs.name }}:${{ github.sha }}
-
-      - name: Docker push (azurecr.io)
+      - name: Push image to ACR
         # Only push the image when a pull request is merged to main
         # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         if: false

@@ -445,6 +445,558 @@
     },
     {
       "@type": "Property",
+      "name": "auditEnsureAuthenticationRequiredForSingleUserMode",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePrelinkIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTalkClientIsNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDotDoesNotAppearInRootsPath",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureCronServiceIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRemoteLoginWarningBannerIsConfigured",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureLocalLoginWarningBannerIsConfigured",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAuditdServiceIsRunning",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSuRestrictedToRootGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDefaultUmaskForAllUsers",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAutomountingDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureKernelCompiledFromApprovedSources",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDefaultDenyFirewallPolicyIsSet",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePacketRedirectSendingIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIcmpRedirectsIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSourceRoutedPacketsIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIgnoringBogusIcmpBroadcastResponses",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIgnoringIcmpEchoPingsToMulticast",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureMartianPacketLoggingIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureReversePathSourceValidationIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTcpSynCookiesAreEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSystemNotActingAsNetworkSniffer",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllWirelessInterfacesAreDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureIpv6ProtocolIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDccpIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSctpIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledSupportForRds",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTipcIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureZeroconfNetworkingIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePermissionsOnBootloaderConfig",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePasswordReuseIsLimited",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureMountingOfUsbStorageDevicesIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureCoreDumpsAreRestricted",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePasswordCreationRequirements",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureLockoutForFailedPasswordAttempts",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledInstallationOfCramfsFileSystem",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledInstallationOfFreevxfsFileSystem",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledInstallationOfHfsFileSystem",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledInstallationOfHfsplusFileSystem",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureDisabledInstallationOfJffs2FileSystem",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureVirtualMemoryRandomizationIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureLoggingIsConfigured",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSyslogPackageIsInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSystemdJournaldServicePersistsLogMessages",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureALoggingServiceIsSnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureFilePermissionsForAllRsyslogLogFiles",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureLoggerConfigurationFilesAreRestricted",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRsyslogNotAcceptingRemoteMessages",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSyslogRotaterServiceIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTelnetServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRcprshServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureTftpServiceisDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAtCronIsRestrictedToAuthorizedUsers",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshBestPracticeProtocol",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshBestPracticeIgnoreRhosts",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshLogLevelIsSet",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshMaxAuthTriesIsSet",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshAccessIsLimited",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshHostbasedAuthenticationIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshPermitRootLoginIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshPermitEmptyPasswordsIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshLoginGraceTimeIsSet",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSshWarningBannerIsEnabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureUsersCannotSetSshEnvironmentOptions",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAppropriateCiphersForSsh",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureAvahiDaemonServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureCupsServiceisDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePostfixPackageIsUninstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePostfixNetworkListeningIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRpcgssdServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRpcidmapdServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsurePortmapServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNetworkFileSystemServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRpcsvcgssdServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSnmpServerIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRsynServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNisServerIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRshClientNotInstalled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureSmbWithSambaIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureUsersDotFilesArentGroupOrWorldWritable",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoUsersHaveDotForwardFiles",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoUsersHaveDotNetrcFiles",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureNoUsersHaveDotRhostsFiles",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureRloginServiceIsDisabled",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
+      "name": "auditEnsureUnnecessaryAccountsAreRemoved",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Property",
       "name": "remediateSecurityBaseline",
       "schema": "string",
       "writable": true
@@ -650,6 +1202,30 @@
     {
       "@type": "Property",
       "name": "remediateEnsureAuditdInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsurePrelinkIsDisabled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureTalkClientIsNotInstalled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureCronServiceIsEnabled",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": "Property",
+      "name": "remediateEnsureAuditdServiceIsRunning",
       "schema": "string",
       "writable": true
     }

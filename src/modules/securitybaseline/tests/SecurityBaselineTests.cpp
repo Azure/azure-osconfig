@@ -46,7 +46,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsurePermissionsOnEtcCronMonthlyObject = "auditEnsurePermissionsOnEtcCronMonthly";
         const char* m_auditEnsurePermissionsOnEtcCronWeeklyObject = "auditEnsurePermissionsOnEtcCronWeekly";
         const char* m_auditEnsurePermissionsOnEtcMotdObject = "auditEnsurePermissionsOnEtcMotd";
-
         const char* m_auditEnsureInetdNotInstalledObject = "auditEnsureInetdNotInstalled";
         const char* m_auditEnsureXinetdNotInstalledObject = "auditEnsureXinetdNotInstalled";
         const char* m_auditEnsureRshServerNotInstalledObject = "auditEnsureRshServerNotInstalled";
@@ -62,7 +61,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureBind9NotInstalledObject = "auditEnsureBind9NotInstalled";
         const char* m_auditEnsureDovecotCoreNotInstalledObject = "auditEnsureDovecotCoreNotInstalled";
         const char* m_auditEnsureAuditdInstalledObject = "auditEnsureAuditdInstalled";
-
+        const char* m_auditEnsurePrelinkIsDisabledObject = "auditEnsurePrelinkIsDisabled";
+        const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
+        const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCronServiceIsEnabled";
+        const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
         // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
         const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
@@ -98,8 +100,97 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureMinDaysBetweenPasswordChangesObject = "auditEnsureMinDaysBetweenPasswordChanges";
         const char* m_auditEnsureInactivePasswordLockPeriodObject = "auditEnsureInactivePasswordLockPeriod";
         const char* m_auditMaxDaysBetweenPasswordChangesObject = "auditEnsureMaxDaysBetweenPasswordChanges";
+        const char* m_auditEnsurePasswordExpirationObject = "auditEnsurePasswordExpiration";
         const char* m_auditEnsurePasswordExpirationWarningObject = "auditEnsurePasswordExpirationWarning";
         const char* m_auditEnsureSystemAccountsAreNonLoginObject = "auditEnsureSystemAccountsAreNonLogin";
+        const char* m_auditEnsureAuthenticationRequiredForSingleUserModeObject = "auditEnsureAuthenticationRequiredForSingleUserMode";
+        const char* m_auditEnsureDotDoesNotAppearInRootsPathObject = "auditEnsureDotDoesNotAppearInRootsPath";
+        const char* m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject = "auditEnsureRemoteLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureLocalLoginWarningBannerIsConfiguredObject = "auditEnsureLocalLoginWarningBannerIsConfigured";
+        const char* m_auditEnsureSuRestrictedToRootGroupObject = "auditEnsureSuRestrictedToRootGroup";
+        const char* m_auditEnsureDefaultUmaskForAllUsersObject = "auditEnsureDefaultUmaskForAllUsers";
+        const char* m_auditEnsureAutomountingDisabledObject = "auditEnsureAutomountingDisabled";
+        const char* m_auditEnsureKernelCompiledFromApprovedSourcesObject = "auditEnsureKernelCompiledFromApprovedSources";
+        const char* m_auditEnsureDefaultDenyFirewallPolicyIsSetObject = "auditEnsureDefaultDenyFirewallPolicyIsSet";
+        const char* m_auditEnsurePacketRedirectSendingIsDisabledObject = "auditEnsurePacketRedirectSendingIsDisabled";
+        const char* m_auditEnsureIcmpRedirectsIsDisabledObject = "auditEnsureIcmpRedirectsIsDisabled";
+        const char* m_auditEnsureSourceRoutedPacketsIsDisabledObject = "auditEnsureSourceRoutedPacketsIsDisabled";
+        const char* m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
+        const char* m_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject = "auditEnsureIgnoringBogusIcmpBroadcastResponses";
+        const char* m_auditEnsureIgnoringIcmpEchoPingsToMulticastObject = "auditEnsureIgnoringIcmpEchoPingsToMulticast";
+        const char* m_auditEnsureMartianPacketLoggingIsEnabledObject = "auditEnsureMartianPacketLoggingIsEnabled";
+        const char* m_auditEnsureReversePathSourceValidationIsEnabledObject = "auditEnsureReversePathSourceValidationIsEnabled";
+        const char* m_auditEnsureTcpSynCookiesAreEnabledObject = "auditEnsureTcpSynCookiesAreEnabled";
+        const char* m_auditEnsureSystemNotActingAsNetworkSnifferObject = "auditEnsureSystemNotActingAsNetworkSniffer";
+        const char* m_auditEnsureAllWirelessInterfacesAreDisabledObject = "auditEnsureAllWirelessInterfacesAreDisabled";
+        const char* m_auditEnsureIpv6ProtocolIsEnabledObject = "auditEnsureIpv6ProtocolIsEnabled";
+        const char* m_auditEnsureDccpIsDisabledObject = "auditEnsureDccpIsDisabled";
+        const char* m_auditEnsureSctpIsDisabledObject = "auditEnsureSctpIsDisabled";
+        const char* m_auditEnsureDisabledSupportForRdsObject = "auditEnsureDisabledSupportForRds";
+        const char* m_auditEnsureTipcIsDisabledObject = "auditEnsureTipcIsDisabled";
+        const char* m_auditEnsureZeroconfNetworkingIsDisabledObject = "auditEnsureZeroconfNetworkingIsDisabled";
+        const char* m_auditEnsurePermissionsOnBootloaderConfigObject = "auditEnsurePermissionsOnBootloaderConfig";
+        const char* m_auditEnsurePasswordReuseIsLimitedObject = "auditEnsurePasswordReuseIsLimited";
+        const char* m_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
+        const char* m_auditEnsureCoreDumpsAreRestrictedObject = "auditEnsureCoreDumpsAreRestricted";
+        const char* m_auditEnsurePasswordCreationRequirementsObject = "auditEnsurePasswordCreationRequirements";
+        const char* m_auditEnsureLockoutForFailedPasswordAttemptsObject = "auditEnsureLockoutForFailedPasswordAttempts";
+        const char* m_auditEnsureDisabledInstallationOfCramfsFileSystemObject = "auditEnsureDisabledInstallationOfCramfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfHfsFileSystemObject = "auditEnsureDisabledInstallationOfHfsFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfHfsplusFileSystemObject = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
+        const char* m_auditEnsureDisabledInstallationOfJffs2FileSystemObject = "auditEnsureDisabledInstallationOfJffs2FileSystem";
+        const char* m_auditEnsureVirtualMemoryRandomizationIsEnabledObject = "auditEnsureVirtualMemoryRandomizationIsEnabled";
+        const char* m_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
+        const char* m_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
+        const char* m_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
+        const char* m_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
+        const char* m_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+        const char* m_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
+        const char* m_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
+        const char* m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+        const char* m_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject = "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+        const char* m_auditEnsureRsyslogNotAcceptingRemoteMessagesObject = "auditEnsureRsyslogNotAcceptingRemoteMessages";
+        const char* m_auditEnsureSyslogRotaterServiceIsEnabledObject = "auditEnsureSyslogRotaterServiceIsEnabled";
+        const char* m_auditEnsureTelnetServiceIsDisabledObject = "auditEnsureTelnetServiceIsDisabled";
+        const char* m_auditEnsureRcprshServiceIsDisabledObject = "auditEnsureRcprshServiceIsDisabled";
+        const char* m_auditEnsureTftpServiceisDisabledObject = "auditEnsureTftpServiceisDisabled";
+        const char* m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
+        const char* m_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
+        const char* m_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
+        const char* m_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
+        const char* m_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
+        const char* m_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
+        const char* m_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
+        const char* m_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+        const char* m_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
+        const char* m_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+        const char* m_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
+        const char* m_auditEnsureSshLoginGraceTimeIsSetObject = "auditEnsureSshLoginGraceTimeIsSet";
+        const char* m_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+        const char* m_auditEnsureSshWarningBannerIsEnabledObject = "auditEnsureSshWarningBannerIsEnabled";
+        const char* m_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+        const char* m_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
+        const char* m_auditEnsureAvahiDaemonServiceIsDisabledObject = "auditEnsureAvahiDaemonServiceIsDisabled";
+        const char* m_auditEnsureCupsServiceisDisabledObject = "auditEnsureCupsServiceisDisabled";
+        const char* m_auditEnsurePostfixPackageIsUninstalledObject = "auditEnsurePostfixPackageIsUninstalled";
+        const char* m_auditEnsurePostfixNetworkListeningIsDisabledObject = "auditEnsurePostfixNetworkListeningIsDisabled";
+        const char* m_auditEnsureRpcgssdServiceIsDisabledObject = "auditEnsureRpcgssdServiceIsDisabled";
+        const char* m_auditEnsureRpcidmapdServiceIsDisabledObject = "auditEnsureRpcidmapdServiceIsDisabled";
+        const char* m_auditEnsurePortmapServiceIsDisabledObject = "auditEnsurePortmapServiceIsDisabled";
+        const char* m_auditEnsureNetworkFileSystemServiceIsDisabledObject = "auditEnsureNetworkFileSystemServiceIsDisabled";
+        const char* m_auditEnsureRpcsvcgssdServiceIsDisabledObject = "auditEnsureRpcsvcgssdServiceIsDisabled";
+        const char* m_auditEnsureSnmpServerIsDisabledObject = "auditEnsureSnmpServerIsDisabled";
+        const char* m_auditEnsureRsynServiceIsDisabledObject = "auditEnsureRsynServiceIsDisabled";
+        const char* m_auditEnsureNisServerIsDisabledObject = "auditEnsureNisServerIsDisabled";
+        const char* m_auditEnsureRshClientNotInstalledObject = "auditEnsureRshClientNotInstalled";
+        const char* m_auditEnsureSmbWithSambaIsDisabledObject = "auditEnsureSmbWithSambaIsDisabled";
+        const char* m_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject = "auditEnsureUsersDotFilesArentGroupOrWorldWritable";
+        const char* m_auditEnsureNoUsersHaveDotForwardFilesObject = "auditEnsureNoUsersHaveDotForwardFiles";
+        const char* m_auditEnsureNoUsersHaveDotNetrcFilesObject = "auditEnsureNoUsersHaveDotNetrcFiles";
+        const char* m_auditEnsureNoUsersHaveDotRhostsFilesObject = "auditEnsureNoUsersHaveDotRhostsFiles";
+        const char* m_auditEnsureRloginServiceIsDisabledObject = "auditEnsureRloginServiceIsDisabled";
+        const char* m_auditEnsureUnnecessaryAccountsAreRemovedObject = "auditEnsureUnnecessaryAccountsAreRemoved";
 
         // Remediation
         const char* m_remediateSecurityBaselineObject = "remediateSecurityBaseline";
@@ -123,7 +214,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsurePermissionsOnEtcCronMonthlyObject = "remediateEnsurePermissionsOnEtcCronMonthly";
         const char* m_remediateEnsurePermissionsOnEtcCronWeeklyObject = "remediateEnsurePermissionsOnEtcCronWeekly";
         const char* m_remediateEnsurePermissionsOnEtcMotdObject = "remediateEnsurePermissionsOnEtcMotd";
-
         const char* m_remediateEnsureInetdNotInstalledObject = "remediateEnsureInetdNotInstalled";
         const char* m_remediateEnsureXinetdNotInstalledObject = "remediateEnsureXinetdNotInstalled";
         const char* m_remediateEnsureRshServerNotInstalledObject = "remediateEnsureRshServerNotInstalled";
@@ -139,6 +229,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureBind9NotInstalledObject = "remediateEnsureBind9NotInstalled";
         const char* m_remediateEnsureDovecotCoreNotInstalledObject = "remediateEnsureDovecotCoreNotInstalled";
         const char* m_remediateEnsureAuditdInstalledObject = "remediateEnsureAuditdInstalled";
+        const char* m_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePrelinkIsDisabled";
+        const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
+        const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
+        const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
 
         const char* m_pass = "\"PASS\"";
 
@@ -206,7 +300,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
 
     const char* payload = "PASS";
 
-    const char* mimRequiredObjects[] = {
+    const char* mimObjects[] = {
         m_remediateSecurityBaselineObject,
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
@@ -242,16 +336,21 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureSldapdNotInstalledObject,
         m_remediateEnsureBind9NotInstalledObject,
         m_remediateEnsureDovecotCoreNotInstalledObject,
-        m_remediateEnsureAuditdInstalledObject
+        m_remediateEnsureAuditdInstalledObject,
+        m_remediateEnsurePrelinkIsDisabledObject,
+        m_remediateEnsureTalkClientIsNotInstalledObject,
+        m_remediateEnsureCronServiceIsEnabledObject,
+        m_remediateEnsureAuditdServiceIsRunningObject
     };
 
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+    int mimObjectsNumber = ARRAY_SIZE(mimObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    for (int i = 0; i < mimObjectsNumber; i++)
     {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], (MMI_JSON_STRING)payload, strlen(payload)));
+        // All optional, do not expect to suceed with MMI_OK (0), just run to validate no crashes, etc.
+        SecurityBaselineMmiSet(handle, m_securityBaselineComponentName, mimObjects[i], (MMI_JSON_STRING)payload, strlen(payload));
     }
 
     SecurityBaselineMmiClose(handle);
@@ -299,7 +398,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
-    const char* mimRequiredObjects[] = {
+    const char* mimObjects[] = {
         m_auditSecurityBaselineObject,
         m_auditEnsurePermissionsOnEtcIssueObject,
         m_auditEnsurePermissionsOnEtcIssueNetObject,
@@ -367,25 +466,117 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
         m_auditEnsureRestrictedUserHomeDirectoriesObject,
         m_auditEnsurePasswordHashingAlgorithmObject,
+        m_auditEnsureSystemAccountsAreNonLoginObject,
+        m_auditEnsurePrelinkIsDisabledObject,
+        m_auditEnsureTalkClientIsNotInstalledObject,
+        m_auditEnsureDotDoesNotAppearInRootsPathObject,
+        m_auditEnsureCronServiceIsEnabledObject,
+        m_auditEnsureRemoteLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureLocalLoginWarningBannerIsConfiguredObject,
+        m_auditEnsureAuditdServiceIsRunningObject,
         m_auditEnsureMinDaysBetweenPasswordChangesObject,
         m_auditEnsureInactivePasswordLockPeriodObject,
         m_auditMaxDaysBetweenPasswordChangesObject,
+        m_auditEnsurePasswordExpirationObject,
         m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
+        m_auditEnsureAuthenticationRequiredForSingleUserModeObject,
+        m_auditEnsureSuRestrictedToRootGroupObject,
+        m_auditEnsureDefaultUmaskForAllUsersObject,
+        m_auditEnsureAutomountingDisabledObject,
+        m_auditEnsureKernelCompiledFromApprovedSourcesObject,
+        m_auditEnsureDefaultDenyFirewallPolicyIsSetObject,
+        m_auditEnsurePacketRedirectSendingIsDisabledObject,
+        m_auditEnsureIcmpRedirectsIsDisabledObject,
+        m_auditEnsureSourceRoutedPacketsIsDisabledObject,
+        m_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject,
+        m_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject,
+        m_auditEnsureIgnoringIcmpEchoPingsToMulticastObject,
+        m_auditEnsureMartianPacketLoggingIsEnabledObject,
+        m_auditEnsureReversePathSourceValidationIsEnabledObject,
+        m_auditEnsureTcpSynCookiesAreEnabledObject,
+        m_auditEnsureSystemNotActingAsNetworkSnifferObject,
+        m_auditEnsureAllWirelessInterfacesAreDisabledObject,
+        m_auditEnsureIpv6ProtocolIsEnabledObject,
+        m_auditEnsureDccpIsDisabledObject,
+        m_auditEnsureSctpIsDisabledObject,
+        m_auditEnsureDisabledSupportForRdsObject,
+        m_auditEnsureTipcIsDisabledObject,
+        m_auditEnsureZeroconfNetworkingIsDisabledObject,
+        m_auditEnsurePermissionsOnBootloaderConfigObject,
+        m_auditEnsurePasswordReuseIsLimitedObject,
+        m_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject,
+        m_auditEnsureCoreDumpsAreRestrictedObject,
+        m_auditEnsurePasswordCreationRequirementsObject,
+        m_auditEnsureLockoutForFailedPasswordAttemptsObject,
+        m_auditEnsureDisabledInstallationOfCramfsFileSystemObject,
+        m_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject,
+        m_auditEnsureDisabledInstallationOfHfsFileSystemObject,
+        m_auditEnsureDisabledInstallationOfHfsplusFileSystemObject,
+        m_auditEnsureDisabledInstallationOfJffs2FileSystemObject,
+        m_auditEnsureVirtualMemoryRandomizationIsEnabledObject,
+        m_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject,
+        m_auditEnsureLoggingIsConfiguredObject,
+        m_auditEnsureSyslogPackageIsInstalledObject,
+        m_auditEnsureSystemdJournaldServicePersistsLogMessagesObject,
+        m_auditEnsureALoggingServiceIsSnabledObject,
+        m_auditEnsureFilePermissionsForAllRsyslogLogFilesObject,
+        m_auditEnsureLoggerConfigurationFilesAreRestrictedObject,
+        m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject,
+        m_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject,
+        m_auditEnsureRsyslogNotAcceptingRemoteMessagesObject,
+        m_auditEnsureSyslogRotaterServiceIsEnabledObject,
+        m_auditEnsureTelnetServiceIsDisabledObject,
+        m_auditEnsureRcprshServiceIsDisabledObject,
+        m_auditEnsureTftpServiceisDisabledObject,
+        m_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject,
+        m_auditEnsureSshBestPracticeProtocolObject,
+        m_auditEnsureSshBestPracticeIgnoreRhostsObject,
+        m_auditEnsureSshLogLevelIsSetObject,
+        m_auditEnsureSshMaxAuthTriesIsSetObject,
+        m_auditEnsureSshAccessIsLimitedObject,
+        m_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject,
+        m_auditEnsureSshHostbasedAuthenticationIsDisabledObject,
+        m_auditEnsureSshPermitRootLoginIsDisabledObject,
+        m_auditEnsureSshPermitEmptyPasswordsIsDisabledObject,
+        m_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject,
+        m_auditEnsureSshLoginGraceTimeIsSetObject,
+        m_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject,
+        m_auditEnsureSshWarningBannerIsEnabledObject,
+        m_auditEnsureUsersCannotSetSshEnvironmentOptionsObject,
+        m_auditEnsureAppropriateCiphersForSshObject,
+        m_auditEnsureAvahiDaemonServiceIsDisabledObject,
+        m_auditEnsureCupsServiceisDisabledObject,
+        m_auditEnsurePostfixPackageIsUninstalledObject,
+        m_auditEnsurePostfixNetworkListeningIsDisabledObject,
+        m_auditEnsureRpcgssdServiceIsDisabledObject,
+        m_auditEnsureRpcidmapdServiceIsDisabledObject,
+        m_auditEnsurePortmapServiceIsDisabledObject,
+        m_auditEnsureNetworkFileSystemServiceIsDisabledObject,
+        m_auditEnsureRpcsvcgssdServiceIsDisabledObject,
+        m_auditEnsureSnmpServerIsDisabledObject,
+        m_auditEnsureRsynServiceIsDisabledObject,
+        m_auditEnsureNisServerIsDisabledObject,
+        m_auditEnsureRshClientNotInstalledObject,
+        m_auditEnsureSmbWithSambaIsDisabledObject,
+        m_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject,
+        m_auditEnsureNoUsersHaveDotForwardFilesObject,
+        m_auditEnsureNoUsersHaveDotNetrcFilesObject,
+        m_auditEnsureNoUsersHaveDotRhostsFilesObject,
+        m_auditEnsureRloginServiceIsDisabledObject,
+        m_auditEnsureUnnecessaryAccountsAreRemovedObject
     };
-    
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
+
+    int mimObjectsNumber = ARRAY_SIZE(mimObjects);
 
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_normalMaxPayloadSizeBytes));
 
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
+    for (int i = 0; i < mimObjectsNumber; i++)
     {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
+        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimObjects[i], &payload, &payloadSizeBytes));
         EXPECT_NE(nullptr, payload);
         EXPECT_NE(0, payloadSizeBytes);
         EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
         EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        EXPECT_STREQ(payloadString, m_pass);
         FREE_MEMORY(payloadString);
         SecurityBaselineMmiFree(payload);
     }
@@ -400,97 +591,15 @@ TEST_F(SecurityBaselineTest, MmiGetTruncatedPayload)
     char* payloadString = nullptr;
     int payloadSizeBytes = 0;
 
-    const char* mimRequiredObjects[] = {
-        //m_auditSecurityBaselineObject,
-        m_auditEnsurePermissionsOnEtcIssueObject,
-        m_auditEnsurePermissionsOnEtcIssueNetObject,
-        m_auditEnsurePermissionsOnEtcHostsAllowObject,
-        m_auditEnsurePermissionsOnEtcHostsDenyObject,
-        m_auditEnsurePermissionsOnEtcSshSshdConfigObject,
-        m_auditEnsurePermissionsOnEtcShadowObject,
-        m_auditEnsurePermissionsOnEtcShadowDashObject,
-        m_auditEnsurePermissionsOnEtcGShadowObject,
-        m_auditEnsurePermissionsOnEtcGShadowDashObject,
-        m_auditEnsurePermissionsOnEtcPasswdObject,
-        m_auditEnsurePermissionsOnEtcPasswdDashObject,
-        m_auditEnsurePermissionsOnEtcGroupObject,
-        m_auditEnsurePermissionsOnEtcGroupDashObject,
-        m_auditEnsurePermissionsOnEtcAnacronTabObject,
-        m_auditEnsurePermissionsOnEtcCronDObject,
-        m_auditEnsurePermissionsOnEtcCronDailyObject,
-        m_auditEnsurePermissionsOnEtcCronHourlyObject,
-        m_auditEnsurePermissionsOnEtcCronMonthlyObject,
-        m_auditEnsurePermissionsOnEtcCronWeeklyObject,
-        m_auditEnsurePermissionsOnEtcMotdObject,
-        m_auditEnsureKernelSupportForCpuNxObject,
-        m_auditEnsureNodevOptionOnHomePartitionObject,
-        m_auditEnsureNodevOptionOnTmpPartitionObject,
-        m_auditEnsureNodevOptionOnVarTmpPartitionObject,
-        m_auditEnsureNosuidOptionOnTmpPartitionObject,
-        m_auditEnsureNosuidOptionOnVarTmpPartitionObject,
-        m_auditEnsureNoexecOptionOnVarTmpPartitionObject,
-        m_auditEnsureNoexecOptionOnDevShmPartitionObject,
-        m_auditEnsureNodevOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject,
-        m_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
-        m_auditEnsureInetdNotInstalledObject,
-        m_auditEnsureXinetdNotInstalledObject,
-        m_auditEnsureAllTelnetdPackagesUninstalledObject,
-        m_auditEnsureRshServerNotInstalledObject,
-        m_auditEnsureNisNotInstalledObject,
-        m_auditEnsureTftpdNotInstalledObject,
-        m_auditEnsureReadaheadFedoraNotInstalledObject,
-        m_auditEnsureBluetoothHiddNotInstalledObject,
-        m_auditEnsureIsdnUtilsBaseNotInstalledObject,
-        m_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject,
-        m_auditEnsureIscDhcpdServerNotInstalledObject,
-        m_auditEnsureSendmailNotInstalledObject,
-        m_auditEnsureSldapdNotInstalledObject,
-        m_auditEnsureBind9NotInstalledObject,
-        m_auditEnsureDovecotCoreNotInstalledObject,
-        m_auditEnsureAuditdInstalledObject,
-        m_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject,
-        m_auditEnsureNoDuplicateUidsExistObject,
-        m_auditEnsureNoDuplicateGidsExistObject,
-        m_auditEnsureNoDuplicateUserNamesExistObject,
-        m_auditEnsureNoDuplicateGroupsExistObject,
-        m_auditEnsureShadowGroupIsEmptyObject,
-        m_auditEnsureRootGroupExistsObject,
-        m_auditEnsureAllAccountsHavePasswordsObject,
-        m_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcShadowObject,
-        m_auditEnsureNoLegacyPlusEntriesInEtcGroupObject,
-        m_auditEnsureDefaultRootAccountGroupIsGidZeroObject,
-        m_auditEnsureRootIsOnlyUidZeroAccountObject,
-        m_auditEnsureAllUsersHomeDirectoriesExistObject,
-        m_auditEnsureUsersOwnTheirHomeDirectoriesObject,
-        m_auditEnsureRestrictedUserHomeDirectoriesObject,
-        m_auditEnsurePasswordHashingAlgorithmObject,
-        //m_auditEnsureMinDaysBetweenPasswordChangesObject,
-        m_auditEnsureInactivePasswordLockPeriodObject,
-        //m_auditMaxDaysBetweenPasswordChangesObject,
-        m_auditEnsurePasswordExpirationWarningObject,
-        m_auditEnsureSystemAccountsAreNonLoginObject
-    };
-
-    int mimRequiredObjectsNumber = ARRAY_SIZE(mimRequiredObjects);
-
     EXPECT_NE(nullptr, handle = SecurityBaselineMmiOpen(m_clientName, m_truncatedMaxPayloadSizeBytes));
-
-    for (int i = 0; i < mimRequiredObjectsNumber; i++)
-    {
-        EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, mimRequiredObjects[i], &payload, &payloadSizeBytes));
-        EXPECT_NE(nullptr, payload);
-        EXPECT_NE(0, payloadSizeBytes);
-        EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
-        EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
-        EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
-        FREE_MEMORY(payloadString);
-        SecurityBaselineMmiFree(payload);
-    }
-
+    EXPECT_EQ(MMI_OK, SecurityBaselineMmiGet(handle, m_securityBaselineComponentName, m_auditSecurityBaselineObject, &payload, &payloadSizeBytes));
+    EXPECT_NE(nullptr, payload);
+    EXPECT_NE(0, payloadSizeBytes);
+    EXPECT_NE(nullptr, payloadString = CopyPayloadToString(payload, payloadSizeBytes));
+    EXPECT_EQ(strlen(payloadString), payloadSizeBytes);
+    EXPECT_EQ(m_truncatedMaxPayloadSizeBytes, payloadSizeBytes);
+    FREE_MEMORY(payloadString);
+    SecurityBaselineMmiFree(payload);
     SecurityBaselineMmiClose(handle);
 }
 

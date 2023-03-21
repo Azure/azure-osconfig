@@ -4,6 +4,42 @@
     "Module": "securitybaseline.so"
   },
   {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "Blah",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "Test",
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "BlahOh",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "123",
+    "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
+    "ExpectedResult": 22
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
+    "ExpectedResult": 22
+  },
+  {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateSecurityBaseline"
@@ -182,6 +218,26 @@
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureAuditdInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsurePrelinkIsDisabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureTalkClientIsNotInstalled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureCronServiceIsEnabled"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAuditdServiceIsRunning"
   },
   {
     "ObjectType": "Reported",
@@ -618,38 +674,554 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "Blah",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "Test",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "BlahOh",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "123",
-    "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
-    "ExpectedResult": 22
+    "ObjectName": "auditEnsureAuthenticationRequiredForSingleUserMode",
+    "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
-    "ExpectedResult": 22
+    "ObjectName": "auditEnsurePrelinkIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureTalkClientIsNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDotDoesNotAppearInRootsPath",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCronServiceIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRemoteLoginWarningBannerIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLocalLoginWarningBannerIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAuditdServiceIsRunning",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSuRestrictedToRootGroup",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDefaultUmaskForAllUsers",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAutomountingDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureKernelCompiledFromApprovedSources",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDefaultDenyFirewallPolicyIsSet",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePacketRedirectSendingIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIcmpRedirectsIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSourceRoutedPacketsIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAcceptingSourceRoutedPacketsIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIgnoringBogusIcmpBroadcastResponses",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIgnoringIcmpEchoPingsToMulticast",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureMartianPacketLoggingIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureReversePathSourceValidationIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureTcpSynCookiesAreEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSystemNotActingAsNetworkSniffer",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllWirelessInterfacesAreDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureIpv6ProtocolIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDccpIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSctpIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledSupportForRds",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureTipcIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureZeroconfNetworkingIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePermissionsOnBootloaderConfig",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePasswordReuseIsLimited",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureMountingOfUsbStorageDevicesIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCoreDumpsAreRestricted",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePasswordCreationRequirements",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLockoutForFailedPasswordAttempts",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledInstallationOfCramfsFileSystem",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledInstallationOfFreevxfsFileSystem",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledInstallationOfHfsFileSystem",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledInstallationOfHfsplusFileSystem",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDisabledInstallationOfJffs2FileSystem",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureVirtualMemoryRandomizationIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllBootloadersHavePasswordProtectionEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggingIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSyslogPackageIsInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSystemdJournaldServicePersistsLogMessages",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureALoggingServiceIsSnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureFilePermissionsForAllRsyslogLogFiles",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureLoggerConfigurationFilesAreRestricted",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRsyslogNotAcceptingRemoteMessages",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSyslogRotaterServiceIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureTelnetServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRcprshServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureTftpServiceisDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAtCronIsRestrictedToAuthorizedUsers",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshBestPracticeProtocol",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshBestPracticeIgnoreRhosts",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshLogLevelIsSet",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshMaxAuthTriesIsSet",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshAccessIsLimited",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPermitRootLoginIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshPermitEmptyPasswordsIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshLoginGraceTimeIsSet",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSshWarningBannerIsEnabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureUsersCannotSetSshEnvironmentOptions",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAppropriateCiphersForSsh",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAvahiDaemonServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureCupsServiceisDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePostfixPackageIsUninstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePostfixNetworkListeningIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRpcgssdServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRpcidmapdServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsurePortmapServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureNetworkFileSystemServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRpcsvcgssdServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSnmpServerIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRsynServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureNisServerIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRshClientNotInstalled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureSmbWithSambaIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureUsersDotFilesArentGroupOrWorldWritable",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureNoUsersHaveDotForwardFiles",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureNoUsersHaveDotNetrcFiles",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureNoUsersHaveDotRhostsFiles",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureRloginServiceIsDisabled",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "PASS"
   },
   {
     "Action": "UnloadModule"

@@ -59,10 +59,10 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 bool FileExists(const char* name);
 bool DirectoryExists(const char* name);
 
-int CheckFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
 int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
-int CheckDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
+int CheckDirectoryAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
 int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
@@ -73,15 +73,18 @@ int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
+
+int FindTextInFile(const char* fileName, const char* text, void* log);
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log);
+
+int CompareFileContents(const char* fileName, const char* text, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);
-
 char* HashCommand(const char* source, void* log);
 
 bool IsValidClientName(const char* name);
-
 bool IsValidMimObjectPayload(const char* payload, const int payloadSizeBytes, void* log);
 
 bool ParseHttpProxyData(const char* proxyData, char** hostAddress, int* port, char**username, char** password, void* log);
@@ -103,6 +106,9 @@ char* GetProductVendor(void* log);
 char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
+bool CheckOsAndKernelMatchDistro(void* log);
+char* GetLoginUmask(void* log);
+int CheckLoginUmask(const char* desired, void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);

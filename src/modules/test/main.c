@@ -3,6 +3,7 @@
 
 #include <Common.h>
 #include <Module.h>
+#include <math.h>
 
 #define DEFAULT_BIN_PATH "/usr/lib/osconfig"
 #define OSCONFIG_CONFIG_FILE "/etc/osconfig/osconfig.json"
@@ -82,6 +83,12 @@ typedef struct STEP
         TEST_STEP test;
     } data;
 } STEP;
+
+typedef struct FAILURE
+{
+    int index;
+    char* name;
+} FAILURE;
 
 static bool g_verbose = false;
 
@@ -472,7 +479,7 @@ long long CurrentMilliseconds()
 int InvokeRecipe(const char* client, const char* path, const char* bin)
 {
     int status = 0;
-    int failures = 0;
+    int failed = 0;
     int skipped = 0;
     int total = 0;
     long long start = 0;
@@ -480,6 +487,9 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
     char* modulePath = NULL;
     MANAGEMENT_MODULE* module = NULL;
     STEP* steps = NULL;
+    FAILURE* failures = NULL;
+    STEP* step = NULL;
+    char* name = NULL;
 
     LOG_INFO("Test recipe: %s", path);
 
@@ -488,6 +498,14 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
         LOG_INFO("Client: '%s'", client);
         LOG_INFO("Bin: %s", bin);
         LOG_TRACE(LINE_SEPARATOR_THICK);
+
+        failures = calloc(total, sizeof(FAILURE));
+
+        if (NULL == failures)
+        {
+            LOG_ERROR("Failed to allocate memory for failed steps");
+            status = ENOMEM;
+        }
 
         start = CurrentMilliseconds();
 
@@ -498,7 +516,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
 
             for (int i = 0; i < total; i++)
             {
-                STEP* step = &steps[i];
+                step = &steps[i];
 
                 if (step->delay > 0)
                 {
@@ -511,7 +529,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                 {
                     case COMMAND:
                         LOG_INFO("Executing command '%s'", step->data.command.arguments);
-                        failures += (0 == RunCommand(&step->data.command)) ? 0 : 1;
+                        failed += (0 != RunCommand(&step->data.command)) ? 1 : 0;
                         break;
 
                     case TEST:
@@ -521,9 +539,20 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                             LOG_ERROR("No module loaded, skipping test step: %d", i);
                             skipped++;
                         }
-                        else
+                        else if (0 != RunTestStep(&step->data.test, module))
                         {
-                            failures += (0 == RunTestStep(&step->data.test, module)) ? 0 : 1;
+                            if (NULL == (name = calloc(strlen(step->data.test.component) + strlen(step->data.test.object) + 2, sizeof(char))))
+                            {
+                                LOG_ERROR("Failed to allocate memory for test name");
+                            }
+                            else
+                            {
+                                sprintf(name, "%s.%s", step->data.test.component, step->data.test.object);
+                                failures[failed].name = name;
+                                failures[failed].index = i;
+                            }
+
+                            failed++;
                         }
                         break;
 
@@ -537,7 +566,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                                 if (NULL == (modulePath = calloc(strlen(bin) + strlen(step->data.module.name) + 2, sizeof(char))))
                                 {
                                     LOG_ERROR("Failed to allocate memory for module path");
-                                    failures++;
+                                    failed++;
                                 }
                                 else
                                 {
@@ -546,7 +575,7 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                                     if (NULL == (module = LoadModule(client, modulePath)))
                                     {
                                         LOG_ERROR("Failed to load module '%s'", step->data.module.name);
-                                        failures++;
+                                        failed++;
                                     }
 
                                     FREE_MEMORY(modulePath);
@@ -594,16 +623,28 @@ int InvokeRecipe(const char* client, const char* path, const char* bin)
                 module = NULL;
             }
 
+            if (failed > 0)
+            {
+                LOG_TRACE(LINE_SEPARATOR_THICK);
+                LOG_TRACE("Failed tests:");
+            }
+
+            for (int i = 0; i < failed; i++)
+            {
+                LOG_TRACE("  %*d %s", (int)log10(total) + 1, failures[i].index + 1, failures[i].name);
+            }
+
             LOG_TRACE(LINE_SEPARATOR_THICK);
-            LOG_TRACE("summary: %s", failures == 0 ? "PASSED" : "FAILED");
-            LOG_TRACE("  passed: %d", total - failures);
+            LOG_TRACE("summary: %s", failed == 0 ? "PASSED" : "FAILED");
+            LOG_TRACE("  passed: %d", total - failed);
             LOG_TRACE("  skipped: %d", skipped);
-            LOG_TRACE("  failed: %d", failures);
+            LOG_TRACE("  failed: %d", failed);
             LOG_TRACE("  total: %d (%d ms)", total, (int)(end - start));
             LOG_TRACE(LINE_SEPARATOR_THICK);
         }
     }
 
+    FREE_MEMORY(failures);
     FREE_MEMORY(steps);
 
     return status;
