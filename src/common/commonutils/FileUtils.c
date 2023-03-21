@@ -612,7 +612,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     char* contents = NULL;
     int status = 0;
 
-    if ((NULL == fileName)) || (NULL == text) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInFile called with invalid arguments");
         return EINVAL;
@@ -779,15 +779,15 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     return status;
 }
 
-int FindUncommentedLineInFile(const char* fileName, char commentMark, char* text, void* log)
+int FindUncommentedLineInFile(const char* fileName, char commentMark, const char* text, void* log)
 {
     char* contents = NULL;
     char* found = NULL;
     size_t length = 0;
-    char* index = NULL;
+    int index = 0;
     int status = ENOENT;
 
-    if ((NULL == fileName)) || (NULL == text) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindUncommentedLineInFile called with invalid arguments");
         return EINVAL;
@@ -804,9 +804,8 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, char* text
             if (NULL != (found = strstr(contents, text)))
             {
                 length = strlen(contents);
-                index = found - contents;
                 
-                for (index = found; index >= contents; index--)
+                for (index = found - contents; index >= (int)length; index--)
                 {
                     if (commentMark == contents[index])
                     {

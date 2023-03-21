@@ -965,7 +965,7 @@ static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
     return (FindTextInFile(g_etcRsyslogConf, "ModLoad imudp", SecurityBaselineGetLog()) && 
-        FindTextInFile(g_etcRsyslogConf, "ModLoad imtcp", SecurityBaselineGetLog())) ? 0 : ENOENT
+        FindTextInFile(g_etcRsyslogConf, "ModLoad imtcp", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)

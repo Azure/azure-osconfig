@@ -1490,7 +1490,7 @@ TEST_F(CommonUtilsTest, FindUncommentedLineInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(m_path, '#', nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(m_path, '#', nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', "test", nullptr));
     EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', nullptr, nullptr));
 
