@@ -719,3 +719,56 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
 
     return status;
 }
+
+int FindTextInFolder(const char* directory, const char* text, void* log)
+{
+    const char* pathTemplate = "%s/%s";
+
+    DIR* home = NULL;
+    struct dirent* entry = NULL;
+    char* path = NULL;
+    size_t length = 0;
+    int status = ENOENT, _status = 0;
+
+    if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
+    {
+        OsConfigLogError(log, "FindTextInFolder called with invalid arguments");
+        return EINVAL;
+    }
+    
+    if (NULL != (home = opendir(directory)))
+    {
+        while (NULL != (entry = readdir(home)))
+        {
+            if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+            {
+                length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
+                if (NULL == (path = malloc(length + 1)))
+                {
+                    OsConfigLogError(log, "FindTextInFolder: out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+
+                memset(path, 0, length + 1);
+                snprintf(path, length, pathTemplate, directory, entry->d_name);
+
+                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 != status))
+                {
+                    status = _status;
+                }
+
+                FREE_MEMORY(path);
+            }
+        }
+
+        closedir(home);
+    }
+
+    if (status)
+    {
+        OsConfigLogError(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
+    }
+
+    return status;
+}
