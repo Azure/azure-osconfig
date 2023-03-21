@@ -954,18 +954,20 @@ static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog());
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog())) : 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog());
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog())) : 0 : ENOENT;
 }
 
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return (FindTextInFile(g_etcRsyslogConf, "ModLoad imudp", SecurityBaselineGetLog()) && 
-        FindTextInFile(g_etcRsyslogConf, "ModLoad imtcp", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
@@ -977,20 +979,17 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
-    /*remediation="Remove or comment out the telnet entry in the file '/etc/inetd.conf'"
-      ruleId="0617b91c-2a28-42bd-b5b3-7562555b41ed">
-      <check distro="*" command="CheckNoMatchingLinesIfExists" regex="^[\s\t]*telnet" path="/etc/inetd.conf" />*/
-    return FindTextInFile(g_etcInetdConf, "telnet", SecurityBaselineGetLog()) ? 0 : ENOENT;//or comment
-}
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
+}                                                                                                                                                                             
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTftpServiceisDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
@@ -1065,7 +1064,7 @@ static int AuditEnsureSshWarningBannerIsEnabled(void)
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
@@ -1090,7 +1089,7 @@ static int AuditEnsurePostfixPackageIsUninstalled(void)
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
@@ -1115,7 +1114,7 @@ static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSnmpServerIsDisabled(void)
@@ -1135,6 +1134,17 @@ static int AuditEnsureNisServerIsDisabled(void)
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
+    /*
+    remediation="Uninstall `rsh` using the appropriate package manager or manual installation:
+    ```
+    yum remove rsh
+    ```
+    ```
+    apt-get remove rsh
+    ```
+    ```
+    zypper remove rsh
+    */
     return 0; //TBD
 }
 
