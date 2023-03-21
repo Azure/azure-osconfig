@@ -656,7 +656,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
     int status = MMI_OK;
     struct stat sb;
 
-    // Create /etc/sim-agent/ if it does not exist
+    // Create /etc/sim-agent-edge/ if it does not exist
     if (0 != stat(m_agentConfigurationDir.c_str(), &sb))
     {
         if (0 == mkdir(m_agentConfigurationDir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR))
@@ -670,7 +670,7 @@ int Ztsi::CreateConfigurationFile(const AgentConfiguration& configuration)
         }
     }
 
-    // Create /etc/sim-agent/agent.conf if it does not exist
+    // Create /etc/sim-agent-edge/agent.conf if it does not exist
     if (0 != stat(m_agentConfigurationFile.c_str(), &sb))
     {
         std::ofstream newFile(m_agentConfigurationFile, std::ios::out | std::ios::trunc);
