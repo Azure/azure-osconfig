@@ -1497,7 +1497,7 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
 
-    for (int i = 0; i < 20; i++)
+    for (int i = 1; i < 21; i++)
     {
         memset(buffer, 0, sizeof(buffer));
         snprintf(buffer, sizeof(buffer), "Test %d", i);

@@ -783,8 +783,6 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 {
     char* contents = NULL;
     char* found = NULL;
-    size_t length = 0;
-    int index = 0;
     int status = ENOENT;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
@@ -803,18 +801,15 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
         {
             if (NULL != (found = strstr(contents, text)))
             {
-                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: found '%s' <<<<<<<<<<<<<<<<<<", found);
-                length = strlen(contents) - strlen(found);
-                
-                for (index = length; index >= 0; index--)
+                while (found > contents)
                 {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%c' <<<<<<<<<<<<<<<<<<", found[index]);
-                    if (commentMark == contents[index])
+                    found--;
+                    if (commentMark == found[0])
                     {
                         status = 0;
                         break;
                     }
-                    else if (EOL == contents[index])
+                    else if (EOL == found[0])
                     {
                         break;
                     }
