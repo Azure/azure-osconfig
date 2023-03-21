@@ -980,7 +980,7 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
     return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
-}                                                                                                                                                                             
+}                                                                         
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {
