@@ -54,7 +54,7 @@ jobs:
             tweak="${tweak}$(printf '%02d' ${{ github.run_number }})"
 
             mkdir build && cd build
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=$tweak -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=$tweak -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
@@ -75,11 +75,12 @@ jobs:
         with:
           allowedDelta: 10
           distroName: ${{ matrix.os }}
-          arch: ${{ inputs.arch }}
+          arch: ${{ matrix.variant.arch }}
 
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artifact }}
           path: |
             ./build/osconfig_*
-            ./build/moduletest
+            ./build/modules/test/moduletest
+            ./build/modules/bin/*.so

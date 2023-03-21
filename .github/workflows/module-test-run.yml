@@ -1,0 +1,64 @@
+name: Module Test
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      arch:
+        required: true
+        type: string
+
+jobs:
+  package:
+    uses: ./.github/workflows/package-build.yml
+    with:
+      os: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}
+
+  test:
+    needs: package
+    runs-on: [self-hosted, 1ES.Pool=e2e-pool, '1ES.ImageOverride=${{ inputs.target }}']
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: ${{ inputs.target }}
+
+      - name: Create osconfig.json
+        run: |
+          sudo mkdir -p /etc/osconfig
+          sudo cp -r ./src/adapters/pnp/daemon/osconfig.json /etc/osconfig/osconfig.json
+
+      - name: Run moduletest
+        working-directory: ${{ steps.download.outputs.download-path }}/modules/test
+        run: |
+          sudo chmod +x ./moduletest
+
+          recipes=$(ls -d ../../src/modules/test/recipes/*.json | grep -v SampleTests.json)
+
+          for recipe in $recipes; do
+            name=$(basename $recipe | tr '[:upper:]' '[:lower:]' | sed 's/\.[^.]*$//' | sed 's/\(test\|tests\)$//')
+
+            echo -n "testing $name ... "
+
+            if output=$(sudo ./moduletest $recipe --bin ../bin); then
+              echo passed
+            else
+              echo failed
+              echo "::warning file=$name.log::Error(s) in module-test for '$name'"
+            fi
+
+            echo "$output"
+            echo "$output" > ../../$name.log
+          done
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: ${{ inputs.target }}
+          path: '*.log'
