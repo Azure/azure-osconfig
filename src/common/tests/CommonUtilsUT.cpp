@@ -1462,7 +1462,7 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
 }
 
-TEST_F(CommonUtilsTest, FindUncommentedLineInFile)
+TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 {
     const char* testFile =
         "# Test 1\n"
@@ -1490,12 +1490,12 @@ TEST_F(CommonUtilsTest, FindUncommentedLineInFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(m_path, '#', nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', "test", nullptr));
-    EXPECT_EQ(EINVAL, FindUncommentedLineInFile(nullptr, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr));
 
-    EXPECT_EQ(0, FindUncommentedLineInFile("/foo/does_not_exist", '#', "Test", nullptr));
-    EXPECT_EQ(0, FindUncommentedLineInFile(m_path, '#', "does-not__exist123", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
 
     for (int i = 0; i < 20; i++)
     {
@@ -1504,11 +1504,11 @@ TEST_F(CommonUtilsTest, FindUncommentedLineInFile)
 
         if (i % 2)
         {
-            EXPECT_EQ(0, FindUncommentedLineInFile(m_path, '#', buffer, nullptr));
+            EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', buffer, nullptr));
         }
         else
         {
-            EXPECT_EQ(ENOENT, FindUncommentedLineInFile(m_path, '#', buffer, nullptr));
+            EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', buffer, nullptr));
         }
     }
 

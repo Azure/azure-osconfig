@@ -779,7 +779,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
     return status;
 }
 
-int FindUncommentedLineInFile(const char* fileName, char commentMark, const char* text, void* log)
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log)
 {
     char* contents = NULL;
     char* found = NULL;
@@ -789,7 +789,7 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, const char
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
-        OsConfigLogError(log, "FindUncommentedLineInFile called with invalid arguments");
+        OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
         return EINVAL;
     }
 
@@ -797,18 +797,18 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, const char
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            OsConfigLogError(log, "FindUncommentedLineInFile: cannot read from '%s'", fileName);
+            OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
         }
         else
         {
             if (NULL != (found = strstr(contents, text)))
             {
-                OsConfigLogInfo(log, "FindUncommentedLineInFile: found '%s' <<<<<<<<<<<<<<<<<<", found);
+                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: found '%s' <<<<<<<<<<<<<<<<<<", found);
                 length = strlen(contents) - strlen(found);
                 
                 for (index = length; index >= 0; index--)
                 {
-                    OsConfigLogInfo(log, "FindUncommentedLineInFile: '%c' <<<<<<<<<<<<<<<<<<", found[index]);
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%c' <<<<<<<<<<<<<<<<<<", found[index]);
                     if (commentMark == contents[index])
                     {
                         status = 0;
@@ -822,18 +822,18 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, const char
 
                 if (0 == status)
                 {
-                    OsConfigLogInfo(log, "FindUncommentedLineInFile: '%s' found in '%s' commented with '%c'", text, fileName, commentMark);
-                    status = ENOENT;
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' but is commented out with '%c'", text, fileName, commentMark);
+                    status = 0;
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "FindUncommentedLineInFile: '%s' found in '%s' uncommented with '%c'", text, fileName, commentMark);
-                    status = 0;
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s', uncommented with '%c'", text, fileName, commentMark);
+                    status = ENOENT;
                 }
             }
             else
             {
-                OsConfigLogInfo(log, "FindUncommentedLineInFile: '%s' not found in '%s'", text, fileName);
+                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
                 status = 0;
             }
 
@@ -842,7 +842,7 @@ int FindUncommentedLineInFile(const char* fileName, char commentMark, const char
     }
     else
     {
-        OsConfigLogInfo(log, "FindUncommentedLineInFile: file '%s' not found, nothing to look for", fileName);
+        OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
         status = 0;
     }
 
