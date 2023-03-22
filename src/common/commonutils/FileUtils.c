@@ -806,7 +806,6 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
             while (NULL != (found = strstr(found, text)))
             {
                 index = found;
-
                 status = ENOENT;
 
                 while (index > contents)
