@@ -1465,28 +1465,15 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
 TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 {
     const char* testFile =
-        "# Test 1\n"
-        "Test 2\n"
-        "#  Test 3\n"
-        "   Test 4\n"
-        "#    Test 5\n"
-        "     Test 6\n"
-        "#      Test 7\n"
-        "       Test 8\n"
-        "#        Test 9\n"
-        "         Test 10\n"
-        "  # Test 11\n"
-        "  Test 12\n"
-        "    #  Test 13\n"
-        "      Test 14\n"
-        "     #    Test 15\n"
-        "          Test 16\n"
-        "         #      Test 17\n"
-        "                Test 18\n"
-        "             #        Test 19\n"
-        "                      Test 20\n";
+        "# Test 123 commented\n"
+        " Test 123 uncommented\n"
+        "345 Test 345 Test # 345 Test\n"
+        "ABC!DEF # Test 678 1234567890\n"
+        "   ##           Foo    \n"
+        "   #  Example of a line    \n"
+        "          Example of a line    \n"
+        "   ! @  Blah 3    \n";
 
-    char buffer[8] = {0};
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
@@ -1495,22 +1482,31 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr));
 
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
+
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr));
 
-    for (int i = 1; i < 21; i++)
-    {
-        memset(buffer, 0, sizeof(buffer));
-        snprintf(buffer, sizeof(buffer), "Test %d", i);
-
-        if (i % 2)
-        {
-            EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', buffer, nullptr));
-        }
-        else
-        {
-            EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', buffer, nullptr));
-        }
-    }
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 commented", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
+    
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
+    
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr));
+    
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Foo", nullptr));
+    
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
+    
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
-}  
+}
