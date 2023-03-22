@@ -1504,10 +1504,9 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
     EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
     
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
-    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
-
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
+    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }  

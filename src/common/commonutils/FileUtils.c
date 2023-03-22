@@ -783,21 +783,16 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 {
     char* contents = NULL;
     char* found = NULL;
-    int status = ENOENT;
-
-    char* head = NULL;
     char* index = NULL;
     bool foundUncommented = false;
+    int status = ENOENT;
 
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
         return EINVAL;
     }
-
     
-    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
-
     if (FileExists(fileName))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
@@ -807,11 +802,14 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
         else
         {
             found = contents;
+
             while (NULL != (found = strstr(found, text)))
             {
                 index = found;
 
-                while (index > found)
+                status = ENOENT;
+
+                while (index > contents)
                 {
                     index--;
                     if (commentMark == index[0])
@@ -827,50 +825,20 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
                 if (0 == status)
                 {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' (at '%s') but is commented out with '%c'", text, fileName, found, commentMark);
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'", 
+                        text, fileName, (long)(found - contents), commentMark);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' (at '%s'), uncommented with '%c'", text, fileName, found, commentMark);
                     foundUncommented = true;
+                    OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld uncommented with '%c'", 
+                        text, fileName, (long)(found - contents), commentMark);
                 }
 
-                found += strlen(found);
+                found += strlen(text);
             }
 
             status = foundUncommented ? ENOENT : 0; 
-
-            /*if (NULL != (found = strstr(contents, text)))
-            {
-                while (found > contents)
-                {
-                    found--;
-                    if (commentMark == found[0])
-                    {
-                        status = 0;
-                        break;
-                    }
-                    else if (EOL == found[0])
-                    {
-                        break;
-                    }
-                }
-
-                if (0 == status)
-                {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' but is commented out with '%c'", text, fileName, commentMark);
-                }
-                else
-                {
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s', uncommented with '%c'", text, fileName, commentMark);
-                    status = ENOENT;
-                }
-            }
-            else
-            {
-                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
-                status = 0;
-            }*/
 
             FREE_MEMORY(contents);
         }
