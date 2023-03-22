@@ -1509,4 +1509,4 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
-}  
+}
