@@ -785,11 +785,18 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     char* found = NULL;
     int status = ENOENT;
 
+    char* head = NULL;
+    char* index = NULL;
+    bool foundUncommented = false;
+
     if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
         return EINVAL;
     }
+
+    
+    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
 
     if (FileExists(fileName))
     {
@@ -799,7 +806,41 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
         }
         else
         {
-            if (NULL != (found = strstr(contents, text)))
+            found = contents;
+            while (NULL != (found = strstr(found, text)))
+            {
+                index = found;
+
+                while (index > found)
+                {
+                    index--;
+                    if (commentMark == index[0])
+                    {
+                        status = 0;
+                        break;
+                    }
+                    else if (EOL == index[0])
+                    {
+                        break;
+                    }
+                }
+
+                if (0 == status)
+                {
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' (at '%s') but is commented out with '%c'", text, fileName, found, commentMark);
+                }
+                else
+                {
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' (at '%s'), uncommented with '%c'", text, fileName, found, commentMark);
+                    foundUncommented = true;
+                }
+
+                found += strlen(found);
+            }
+
+            status = foundUncommented ? ENOENT : 0; 
+
+            /*if (NULL != (found = strstr(contents, text)))
             {
                 while (found > contents)
                 {
@@ -829,7 +870,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
             {
                 OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found in '%s'", text, fileName);
                 status = 0;
-            }
+            }*/
 
             FREE_MEMORY(contents);
         }
