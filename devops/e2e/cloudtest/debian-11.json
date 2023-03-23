@@ -1,0 +1,43 @@
+{
+    "artifacts": [
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "software-properties-common gnupg2"
+            }
+        },
+        {
+            "name": "linux-add-key",
+            "parameters": {
+                "key": "https://packages.microsoft.com/keys/microsoft.asc"
+            }
+        },
+        {
+            "name": "linux-add-repository",
+            "parameters": {
+                "repository": "https://packages.microsoft.com/debian/11/prod"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://packages.microsoft.com/config/debian/11/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb"
+            }
+        },
+        {
+            "name": "linux-bash-command",
+            "parameters": {
+                "command": "wget https://github.com/Azure/azure-iotedge/releases/download/1.4.1/aziot-identity-service_1.4.1-1_debian11_amd64.deb -O aziot-identity-service.deb && apt install -y ./aziot-identity-service.deb"
+            }
+        },
+        {
+            "name": "linux-install-packages",
+            "parameters": {
+                "packages": "dotnet-sdk-6.0 jq"
+            }
+        },
+        {
+            "name": "linux-azcli"
+        }
+    ]
+}
