@@ -367,7 +367,7 @@ int RunCommand(const COMMAND_STEP* command)
         if (command->status != (status = ExecuteCommand(NULL, command->arguments, false, false, 0, 0, &textResult, NULL, NULL)))
         {
             LOG_ERROR("Command exited with status: %d (expected %d): %s", status, command->status, textResult);
-            status = (status != 0) ? status : -1;
+            status = (0 != status) ? status : -1;
         }
         else if (textResult != NULL)
         {
