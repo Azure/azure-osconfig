@@ -67,27 +67,29 @@ jobs:
           echo id=${{ inputs.target }} >> $GITHUB_OUTPUT
           echo connection_string=$(cat connection_string) >> $GITHUB_OUTPUT
 
-      - name: Configure device identity
+      - name: Configure AIS
         run: |
           sudo aziotctl config mp --connection-string "${{ steps.device.outputs.connection_string}}"
           sudo aziotctl config apply -c '/etc/aziot/config.toml'
 
       - name: Install package
-        run: sudo dpkg -i $(ls package/*.deb)
-
-      - name: Configure osconfig
         run: |
-          sudo systemctl stop osconfig
-          sudo systemctl stop osconfig-platform
+          sudo dpkg -i $(ls package/*.deb)
 
-          sudo sed -i '/\"FullLogging\"/c\\  \"FullLogging\": 1,' /etc/osconfig/osconfig.json
-          sudo sed -i '/\"LocalManagement\"/c\\  \"LocalManagement\": 1,' /etc/osconfig/osconfig.json
+          # Only use reported objects from modules with E2E tests
+          reported=$(cat ./devops/e2e/reported.json)
+          config=$(sudo jq --argjson reported "$reported" '.ReportingIntervalSeconds = 5 | .Reported = $reported' /etc/osconfig/osconfig.json)
+          echo $config | sudo tee /etc/osconfig/osconfig.json
 
-          sudo systemctl daemon-reload
-          sudo systemctl start osconfig
+          # Remove modules that do not have associated E2E tests
+          sudo rm /usr/lib/osconfig/configuration.so
+          sudo rm /usr/lib/osconfig/deviceinfo.so
+          sudo rm /usr/lib/osconfig/pmc.so
+          sudo rm /usr/lib/osconfig/securitybaseline.so
+          sudo rm /usr/lib/osconfig/ztsi.so
 
-          # Wait for osconfig to restart
-          sleep 15s
+          sudo systemctl restart osconfig
+          sleep 90s
 
       - name: Run tests
         working-directory: ./src/tests/e2etest
