@@ -153,11 +153,11 @@ namespace E2eTesting
 
         [Test]
         [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded)]
-        // [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut)]
-        // [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
-        // [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
-        // [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
-        // [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
+        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut)]
+        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
+        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
+        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
+        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
         public async Task CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
