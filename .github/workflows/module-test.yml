@@ -1,8 +1,6 @@
 name: Module Test
 
-on:
-  schedule:
-  - cron: '0 16 * * *' # 4pm UTC / 12am PST
+on: [workflow_dispatch]
 
 jobs:
   test:

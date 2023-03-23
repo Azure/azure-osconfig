@@ -39,6 +39,7 @@ jobs:
         run: |
           sudo chmod +x ./moduletest
 
+          result=0
           recipes=$(ls -d ../../src/modules/test/recipes/*.json | grep -v SampleTests.json)
 
           for recipe in $recipes; do
@@ -50,12 +51,15 @@ jobs:
               echo passed
             else
               echo failed
+              result=1
               echo "::warning file=$name.log::Error(s) in module-test for '$name'"
             fi
 
             echo "$output"
             echo "$output" > ../../$name.log
           done
+
+          exit $result
 
       - uses: actions/upload-artifact@v3
         if: success() || failure()
