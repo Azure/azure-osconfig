@@ -31,9 +31,9 @@ namespace E2eTesting
         }
 
         [Test]
-        public void TpmTest_Get()
+        public async Task TpmTest_Get()
         {
-            Tpm reported = GetReported<Tpm>(_componentName);
+            Tpm reported = await GetReported<Tpm>(_componentName);
 
             Assert.Multiple(() =>
             {
@@ -48,7 +48,6 @@ namespace E2eTesting
                 {
                     RegexAssert.IsMatch(_tpmManufacturerPattern, reported.TpmManufacturer);
                 }
-
             });
         }
     }

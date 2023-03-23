@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -32,9 +33,9 @@ namespace E2eTesting
         }
 
         [Test]
-        public void DeliveryOptimizationTest_Get()
+        public async Task DeliveryOptimizationTest_Get()
         {
-            DeliveryOptimization reported = GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost != null));
+            DeliveryOptimization reported = await GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost != null));
 
             Assert.Multiple(() =>
             {
@@ -43,9 +44,9 @@ namespace E2eTesting
                 Assert.That(reported.PercentageDownloadThrottle, Is.InRange(0, 100));
             });
         }
-        
+
         [Test]
-        public void DeliveryOptimizationTest_Set()
+        public async Task DeliveryOptimizationTest_Set()
         {
             var desired = new DesiredDeliveryOptimization
             {
@@ -55,14 +56,14 @@ namespace E2eTesting
                     CacheHostSource = 1,
                     CacheHostFallback = 2,
                     PercentageDownloadThrottle = 3
-                }   
+                }
             };
 
-            SetDesired(_componentName, desired);
+            await SetDesired(_componentName, desired);
 
-            DeliveryOptimization reported = GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost == desired.DesiredDeliveryOptimizationPolicies.CacheHost && 
-                deliveryOptimization.CacheHostSource == desired.DesiredDeliveryOptimizationPolicies.CacheHostSource && 
-                deliveryOptimization.CacheHostFallback == desired.DesiredDeliveryOptimizationPolicies.CacheHostFallback && 
+            DeliveryOptimization reported = await GetReported(_componentName, (DeliveryOptimization deliveryOptimization) => (deliveryOptimization.CacheHost == desired.DesiredDeliveryOptimizationPolicies.CacheHost &&
+                deliveryOptimization.CacheHostSource == desired.DesiredDeliveryOptimizationPolicies.CacheHostSource &&
+                deliveryOptimization.CacheHostFallback == desired.DesiredDeliveryOptimizationPolicies.CacheHostFallback &&
                 deliveryOptimization.PercentageDownloadThrottle == desired.DesiredDeliveryOptimizationPolicies.PercentageDownloadThrottle));
 
             Assert.Multiple(() =>

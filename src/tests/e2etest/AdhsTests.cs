@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -21,27 +22,27 @@ namespace E2eTesting
         }
 
         [Test]
-        public void AdhsTest_Get()
+        public async Task AdhsTest_Get()
         {
-            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 0 || adhs.OptIn == 1 || adhs.OptIn == 2));
+            Adhs reported = await GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 0 || adhs.OptIn == 1 || adhs.OptIn == 2));
 
             Assert.Multiple(() =>
             {
                 Assert.That(reported.OptIn, Is.InRange(0, 2));
             });
         }
-        
+
         [Test]
-        public void AdhsTest_Set()
+        public async Task AdhsTest_Set()
         {
             var desired = new DesiredAdhs
             {
-                DesiredOptIn = 1 
+                DesiredOptIn = 1
             };
 
-            SetDesired(_componentName, desired);
+            await SetDesired(_componentName, desired);
 
-            Adhs reported = GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 1));
+            Adhs reported = await GetReported(_componentName, (Adhs adhs) => (adhs.OptIn == 1));
 
             Assert.Multiple(() =>
             {
