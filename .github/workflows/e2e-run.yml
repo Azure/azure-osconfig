@@ -81,11 +81,13 @@ jobs:
           config=$(sudo jq --argjson reported "$reported" '.ReportingIntervalSeconds = 5 | .Reported = $reported' /etc/osconfig/osconfig.json)
           echo $config | sudo tee /etc/osconfig/osconfig.json
 
-          # Remove modules that are not invoked by E2E tests
+          # Remove modules that are not to be invoked by E2E tests
           sudo rm /usr/lib/osconfig/configuration.so
           sudo rm /usr/lib/osconfig/deviceinfo.so
+          sudo rm /usr/lib/osconfig/networking.so
           sudo rm /usr/lib/osconfig/pmc.so
           sudo rm /usr/lib/osconfig/securitybaseline.so
+          sudo rm /usr/lib/osconfig/tpm.so
           sudo rm /usr/lib/osconfig/ztsi.so
 
           sudo systemctl restart osconfig

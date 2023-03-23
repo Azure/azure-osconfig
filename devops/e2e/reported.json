@@ -50,21 +50,5 @@
   {
     "ComponentName": "HostName",
     "ObjectName": "hosts"
-  },
-  {
-    "ComponentName": "Networking",
-    "ObjectName": "networkConfiguration"
-  },
-  {
-    "ComponentName": "Tpm",
-    "ObjectName": "tpmStatus"
-  },
-  {
-    "ComponentName": "Tpm",
-    "ObjectName": "tpmVersion"
-  },
-  {
-    "ComponentName": "Tpm",
-    "ObjectName": "tpmManufacturer"
   }
 ]
