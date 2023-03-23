@@ -9,13 +9,13 @@
         {
             "name": "linux-add-repository",
             "parameters": {
-                "repository": "https://packages.microsoft.com/ubuntu/20.04/prod"
+                "repository": "https://packages.microsoft.com/ubuntu/18.04/multiarch/prod"
             }
         },
         {
             "name": "linux-install-packages",
             "parameters": {
-                "packages": "aziot-identity-service"
+                "packages": "aziot-identity-service jq"
             }
         },
         {
