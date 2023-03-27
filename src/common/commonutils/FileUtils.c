@@ -101,6 +101,20 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+bool DirectoryExists(const char* name)
+{
+    DIR* directory = NULL;
+    bool result = false;
+
+    if (FileExists(name) && (NULL != (directory = opendir(name))))
+    {
+        closedir(directory);
+        result = true;
+    }
+
+    return result;
+}
+
 int CheckFileExists(const char* name, void* log)
 {
     int status = 0;
@@ -116,21 +130,6 @@ int CheckFileExists(const char* name, void* log)
     }
 
     return status;
-}
-
-
-bool DirectoryExists(const char* name)
-{
-    DIR* directory = NULL;
-    bool result = false;
-
-    if (FileExists(name) && (NULL != (directory = opendir(name))))
-    {
-        closedir(directory);
-        result = true;
-    }
-
-    return result;
 }
 
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
