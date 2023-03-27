@@ -493,6 +493,15 @@ TEST_F(CommonUtilsTest, FileExists)
     EXPECT_FALSE(FileExists("This file does not exist"));
 }
 
+TEST_F(CommonUtilsTest, CheckFileExists)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_EQ(0, CheckFileExists(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr));
+    EXPECT_EQ(EEXIST("This file does not exist", nullptr));
+}
+
 TEST_F(CommonUtilsTest, DirectoryExists)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));

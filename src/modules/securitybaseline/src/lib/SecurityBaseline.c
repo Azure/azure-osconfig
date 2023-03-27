@@ -994,39 +994,44 @@ static int AuditEnsureTftpServiceisDisabled(void)
 
 static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
-    return ((false == FileExists("/etc/cron.deny")) && 
-        (false == FileExists("/etc/at.deny")) && 
-        (0 == CheckFileAccess("/etc/cron.allow", 0, 0, 600, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess("/etc/at.allow", 0, 0, 600, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    const char* etcCronAllow = "/etc/cron.allow";
+    const char* etcAtAllow = "/etc/at.allow";
+
+    return ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckFileExists("/etc/at.deny", SecurityBaselineGetLog())) &&
+        (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
+        (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshBestPracticeProtocol(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "IgnoreRhosts yes", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLogLevelIsSet(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LogLevel INFO", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshMaxAuthTriesIsSet(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MaxAuthTries 6", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshAccessIsLimited(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowUsers", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowGroups", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyUsers", SecurityBaselineGetLog())) ||
@@ -1035,44 +1040,44 @@ static int AuditEnsureSshAccessIsLimited(void)
 
 static int AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "RhostsRSAAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) || 
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "HostbasedAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitEmptyPasswords no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveCountMax 0", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveInterval", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLoginGraceTimeIsSet(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MACs", SecurityBaselineGetLog())) &&
         ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-256-etm@openssh.com", SecurityBaselineGetLog())) ||
@@ -1082,7 +1087,7 @@ static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static int AuditEnsureSshWarningBannerIsEnabled(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
@@ -1093,7 +1098,7 @@ static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
 {
-    return ((false == FileExists(g_etcSshSshdConfig)) ||
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers aes128-ctr,aes192-ctr,aes256-ctr", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
@@ -1114,7 +1119,7 @@ static int AuditEnsurePostfixPackageIsUninstalled(void)
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return (FileExists("/etc/postfix/main.cf")) ? FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
+    return (0 == CheckFileExists("/etc/postfix/main.cf")) ? FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
 }
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)

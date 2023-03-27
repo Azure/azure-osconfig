@@ -101,6 +101,24 @@ bool FileExists(const char* name)
     return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
 }
 
+int CheckFileExists(const char* name, void* log)
+{
+    int status = 0;
+
+    if (FileExists(name))
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", errno);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", errno);
+        status = EEXIST;
+    }
+
+    return status;
+}
+
+
 bool DirectoryExists(const char* name)
 {
     DIR* directory = NULL;
