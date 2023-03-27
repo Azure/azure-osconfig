@@ -1099,7 +1099,10 @@ static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 static int AuditEnsureAppropriateCiphersForSsh(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers aes128-ctr,aes192-ctr,aes256-ctr", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes128-ctr", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes192-ctr", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
