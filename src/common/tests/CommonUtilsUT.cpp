@@ -1488,25 +1488,25 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr));
 
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 commented", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
     
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
     
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr));
     
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Foo", nullptr));
     
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
     
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
     EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
-    EXPECT_EQ(ENOENT, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }

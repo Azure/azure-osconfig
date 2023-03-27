@@ -837,7 +837,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
                 found += strlen(text);
             }
 
-            status = foundUncommented ? ENOENT : 0; 
+            status = foundUncommented ? EEXIST : 0;
 
             FREE_MEMORY(contents);
         }
