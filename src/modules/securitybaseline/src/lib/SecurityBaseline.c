@@ -1119,7 +1119,8 @@ static int AuditEnsurePostfixPackageIsUninstalled(void)
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return (0 == CheckFileExists("/etc/postfix/main.cf")) ? FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
+    return (0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) ? 
+        FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
 }
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)

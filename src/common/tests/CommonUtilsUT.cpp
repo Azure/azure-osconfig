@@ -499,7 +499,7 @@ TEST_F(CommonUtilsTest, CheckFileExists)
     EXPECT_EQ(0, CheckFileExists(m_path, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
     EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr));
-    EXPECT_EQ(EEXIST("This file does not exist", nullptr));
+    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr));
 }
 
 TEST_F(CommonUtilsTest, DirectoryExists)

@@ -107,11 +107,11 @@ int CheckFileExists(const char* name, void* log)
 
     if (FileExists(name))
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", errno);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", name);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", errno);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", name);
         status = EEXIST;
     }
 
