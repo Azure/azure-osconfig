@@ -933,7 +933,7 @@ static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 
 static int AuditEnsureLoggingIsConfigured(void)
 {
-    return int CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
+    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSyslogPackageIsInstalled(void)
