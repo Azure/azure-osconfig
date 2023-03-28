@@ -861,22 +861,55 @@ static int AuditEnsurePasswordReuseIsLimited(void)
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInEnvironmentVariable("fs.suid_dumpable", "0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInFolder("/etc/security/limits.d/", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    return 0; //TBD
+    const char* pam[] = {
+        "/etc/pam.d/system-auth",
+        "/etc/pam.d/password-auth",
+        "/etc/security/pwquality.conf"
+    };
+
+    int pamSize = ARRAY_SIZE(pam);
+    int i = 0;
+    int status = 0;
+
+    for (i = 0; i < pamSize; i++)
+    {
+        if ((0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "minlen = 14", SecurityBaselineGetLog())) ||
+            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "minclass = 4", SecurityBaselineGetLog())) ||
+            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "dcredit = -1", SecurityBaselineGetLog())) ||
+            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "ucredit = -1", SecurityBaselineGetLog())) ||
+            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "ocredit = -1", SecurityBaselineGetLog())) ||
+            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "lcredit = -1", SecurityBaselineGetLog())))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    return 0; //TBD
+    /*
+    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/common-auth" filter="\s+pam_tally2\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
+    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/password-auth" filter="^\s*auth\s+required\s+pam_faillock\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
+    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/system-auth" filter="^\s*auth\s+required\s+pam_faillock\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
+    */
+
+    CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())
+    CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())
+    CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog())
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
