@@ -856,7 +856,8 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
-    return 0; //TBD
+    //TBD: refine this and expand to other distros
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-password", '#', "remember", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
@@ -873,43 +874,22 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    const char* pam[] = {
-        "/etc/pam.d/system-auth",
-        "/etc/pam.d/password-auth",
-        "/etc/security/pwquality.conf"
-    };
+    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
 
-    int pamSize = ARRAY_SIZE(pam);
-    int i = 0;
-    int status = 0;
-
-    for (i = 0; i < pamSize; i++)
-    {
-        if ((0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "minlen = 14", SecurityBaselineGetLog())) ||
-            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "minclass = 4", SecurityBaselineGetLog())) ||
-            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "dcredit = -1", SecurityBaselineGetLog())) ||
-            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "ucredit = -1", SecurityBaselineGetLog())) ||
-            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "ocredit = -1", SecurityBaselineGetLog())) ||
-            (0 == CheckLineNotFoundOrCommentedOut(etcSecurityPwQuality, '#', "lcredit = -1", SecurityBaselineGetLog())))
-        {
-            status = ENOENT;
-        }
-    }
-
-    return status;
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minlen=14", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minclass=4", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "dcredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ucredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ocredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "lcredit=-1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    /*
-    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/common-auth" filter="\s+pam_tally2\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
-    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/password-auth" filter="^\s*auth\s+required\s+pam_faillock\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
-    <check distro="*" command="CheckMatchingLinesAllIfExists" path="/etc/pam.d/system-auth" filter="^\s*auth\s+required\s+pam_faillock\.so\s+" regex="(deny=[1-5])|(unlock_time=[1-9][0-9]{2,})"/>
-    */
-
-    CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())
-    CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())
-    CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog())
+    //TBD: refine this and expand to other distros
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
@@ -945,12 +925,15 @@ static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
-    return 0; //TBD
+    const char* password = "password";
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggingIsConfigured(void)
 {
-    return 0; //TBD
+    return int CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSyslogPackageIsInstalled(void)
@@ -1140,17 +1123,19 @@ static int AuditEnsureAppropriateCiphersForSsh(void)
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
-    return 0; //TBD
+    const char* cups = "cups";
+    return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
+        (false == IsDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return 0; //TBD
+    return CheckPackageInstalled("postfix", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
@@ -1161,17 +1146,19 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return ((false == IsDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
@@ -1206,7 +1193,12 @@ static int AuditEnsureRshClientNotInstalled(void)
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
 {
-    return 0; //TBD
+    const char* etcSambaConf = "/etc/samba/smb.conf";
+    const char* minProtocol = "min protocol = SMB2";
+
+    return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
