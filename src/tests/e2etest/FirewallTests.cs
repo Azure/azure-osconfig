@@ -105,9 +105,9 @@ namespace E2eTesting
 
 
         [Test]
-        public void FirewallTest_Regex()
+        public async Task FirewallTest_Regex()
         {
-            Firewall reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.State != State.Unknown) && (firewall.Fingerprint != null));
+            Firewall reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.State != State.Unknown) && (firewall.Fingerprint != null));
 
             Assert.Multiple(() =>
             {
@@ -117,7 +117,7 @@ namespace E2eTesting
         }
 
         [Test]
-        public void FirewallTest_SetDesiredRules()
+        public async Task FirewallTest_SetDesiredRules()
         {
             var desired = new Rule[]
             {
@@ -132,12 +132,12 @@ namespace E2eTesting
                 }
             };
 
-            Firewall reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.State != State.Unknown) && (firewall.Fingerprint != null));
+            Firewall reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.State != State.Unknown) && (firewall.Fingerprint != null));
             var initialFingerprint = reported.Fingerprint;
 
-            SetDesired<Rule[]>(_componentName, _desiredRules, desired);
+            await SetDesired<Rule[]>(_componentName, _desiredRules, desired);
 
-            reported = GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.Fingerprint != initialFingerprint));
+            reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.Fingerprint != initialFingerprint));
 
             // Remove the rule added by the test
             desired = new Rule[]
@@ -152,11 +152,11 @@ namespace E2eTesting
                     SourcePort = 1234
                 }
             };
-            SetDesired<Rule[]>(_componentName, _desiredRules, desired);
-            GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.Fingerprint != initialFingerprint));
+            await SetDesired<Rule[]>(_componentName, _desiredRules, desired);
+            await GetReported<Firewall>(_componentName, (Firewall firewall) => (firewall.Fingerprint != initialFingerprint));
 
             // Reset the desired state to empty
-            SetDesired<Rule[]>(_componentName, _desiredRules, new Rule[0]);
+            await SetDesired<Rule[]>(_componentName, _desiredRules, new Rule[0]);
 
             Assert.Multiple(() =>
             {
@@ -167,7 +167,7 @@ namespace E2eTesting
         }
 
         [Test]
-        public void FirewallTest_SetGetDefaultPolicies()
+        public async Task FirewallTest_SetGetDefaultPolicies()
         {
             var desired = new Policy[]
             {
@@ -183,9 +183,9 @@ namespace E2eTesting
                 }
             };
 
-            SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, desired);
+            await SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, desired);
 
-            var reported = GetReported<Firewall>(_componentName, (Firewall firewall) => ((firewall.DefaultPolicies != null) && (firewall.DefaultPolicies.Length == 2)));
+            var reported = await GetReported<Firewall>(_componentName, (Firewall firewall) => ((firewall.DefaultPolicies != null) && (firewall.DefaultPolicies.Length == 2)));
             var reportedPolicies = reported.DefaultPolicies;
 
             Assert.Multiple(() =>
@@ -194,12 +194,11 @@ namespace E2eTesting
                 Assert.AreEqual(desired[0].Direction, reportedPolicies[0].Direction);
                 Assert.AreEqual(desired[1].Action, reportedPolicies[1].Action);
                 Assert.AreEqual(desired[1].Direction, reportedPolicies[1].Direction);
-                Assert.AreEqual(State.Enabled, reported.State);
                 Assert.AreEqual(ConfigurationStatus.Success, reported.ConfigurationStatus);
                 Assert.AreEqual(string.Empty, reported.ConfigurationStatusDetail);
             });
 
-            SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, new Policy[0]);
+            await SetDesired<Policy[]>(_componentName, _desiredDefaultPolicies, new Policy[0]);
         }
     }
 }

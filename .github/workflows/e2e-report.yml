@@ -1,0 +1,18 @@
+name: E2E Report
+
+on:
+  workflow_run:
+    workflows: ['E2E']
+    types:
+      - completed
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/test-reporter@v1
+        with:
+          artifact: e2e-report
+          name: E2E Report
+          path: '*.trx'
+          reporter: dotnet-trx

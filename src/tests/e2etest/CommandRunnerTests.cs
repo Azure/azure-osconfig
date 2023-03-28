@@ -3,7 +3,7 @@
 
 using NUnit.Framework;
 using System;
-using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace E2eTesting
 {
@@ -49,6 +49,11 @@ namespace E2eTesting
             public long ResultCode { get; set; }
             public string TextResult { get; set; }
             public CommandState CurrentState { get; set; }
+        }
+
+        public static string GenerateId()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 4);
         }
 
         public static CommandArguments CreateCommand(string arguments, Action action = Action.RunCommand, int timeout = 0, bool singleLineTextResult = false)
@@ -101,21 +106,34 @@ namespace E2eTesting
             };
         }
 
-        public void SendCommand(CommandArguments command, DataSourceType dataSourceType = DataSourceType.IotHub, bool exptectFailure = false)
+        public async Task SendCommand(CommandArguments command, int expectedAckCode = ACK_SUCCESS)
         {
+            int ackCode = -1;
+
             Console.WriteLine($"{command.Action} \"{command.CommandId}\" ({command.Arguments})");
-            if (!SetDesired<CommandArguments>(_componentName, _desiredObjectName, command, dataSourceType) && !exptectFailure)
+
+            try
             {
-                Assert.Fail("Command failed!");
+                var result = await SetDesired<CommandArguments>(_componentName, _desiredObjectName, command);
+                ackCode = result.Ac;
+            }
+            catch (Exception e)
+            {
+                Assert.Fail("Failed to send command: {0}", e.Message);
+            }
+
+            if (ackCode != expectedAckCode)
+            {
+                Assert.Fail("CommandRunner.CommandArguments expected ackCode {0}, but got {1}", expectedAckCode, ackCode);
             }
         }
 
-        public void CancelCommand(string commandId)
+        public async Task CancelCommand(string commandId)
         {
-            SendCommand(CreateCancelCommand(commandId));
+            await SendCommand(CreateCancelCommand(commandId));
         }
 
-        public void RefreshCommandStatus(string newCommandId, bool exptectFailure = false)
+        public async Task RefreshCommandStatus(string newCommandId, int expectedAckCode = ACK_SUCCESS)
         {
             var refreshCommand = new CommandArguments
             {
@@ -124,43 +142,42 @@ namespace E2eTesting
                 Action = Action.RefreshCommandStatus
             };
 
-            SendCommand(refreshCommand, DataSourceType.IotHub, exptectFailure);
+            await SendCommand(refreshCommand, expectedAckCode);
         }
 
-        public CommandStatus WaitForStatus(string commandId, CommandState state)
+        public async Task<CommandStatus> GetStatus(string commandId, CommandState state)
         {
             Func<CommandStatus, bool> condition = (CommandStatus status) => ((status.CommandId == commandId) && (status.CurrentState == state));
-            return GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
+            return await GetReported<CommandStatus>(_componentName, _reportedObjectName, condition);
         }
 
         [Test]
-        [TestCase("echo 'hello world from local management'", 0, false, 0, "hello world from local management\n", CommandState.Succeeded, DataSourceType.Local)]
-        [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut, DataSourceType.IotHub)]
-        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded, DataSourceType.IotHub)]
-        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed, DataSourceType.IotHub)]
-        public void CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state, DataSourceType dataSourceType)
+        [TestCase("echo 'hello world'", 0, false, 0, "hello world\n", CommandState.Succeeded)]
+        [TestCase("sleep 10s", 1, true, 62, "", CommandState.TimedOut)]
+        [TestCase("sleep 10s", 60, true, 0, "", CommandState.Succeeded)]
+        [TestCase("echo 'single\nline'", 0, true, 0, "single line ", CommandState.Succeeded)]
+        [TestCase("echo 'multiple\nlines'", 0, false, 0, "multiple\nlines\n", CommandState.Succeeded)]
+        [TestCase("blah", 0, false, 127, "sh: 1: blah: not found\n", CommandState.Failed)]
+        public async Task CommandRunnerTest_RunCommand(string arguments, int timeout, bool singleLineTextResult, int resultCode, string textResult, CommandState state)
         {
             var command = CreateCommand(arguments, Action.RunCommand, timeout, singleLineTextResult);
-            SendCommand(command, dataSourceType);
+            await SendCommand(command);
 
-            CommandStatus status = WaitForStatus(command.CommandId, state);
+            CommandStatus status = await GetStatus(command.CommandId, state);
             JsonAssert.AreEqual(CreateCommandStatus(command.CommandId, textResult, state, resultCode), status);
         }
 
         [Test]
-        public void CommandRunnerTest_CancelCommand()
+        public async Task CommandRunnerTest_CancelCommand()
         {
             var commandId = GenerateId();
             var command = CreateLongRunningCommand(commandId);
 
-            SendCommand(command);
-            CommandStatus runningStatus = WaitForStatus(commandId, CommandState.Running);
+            await SendCommand(command);
+            CommandStatus runningStatus = await GetStatus(commandId, CommandState.Running);
 
-            CancelCommand(command.CommandId);
-            CommandStatus canceledStatus = WaitForStatus(commandId, CommandState.Canceled);
+            await CancelCommand(command.CommandId);
+            CommandStatus canceledStatus = await GetStatus(commandId, CommandState.Canceled);
 
             Assert.Multiple(() =>
             {
@@ -170,22 +187,22 @@ namespace E2eTesting
         }
 
         [Test]
-        public void CommandRunnerTest_RepeatCommandId()
+        public async Task CommandRunnerTest_RepeatCommandId()
         {
             var commandId = GenerateId();
             var command = CreateCommand(commandId, "echo 'command 1'", Action.RunCommand, 0, true);
             var commandWithDuplicateCommandId = CreateCommand(commandId, "echo 'command 2'", Action.RunCommand, 0, true);
 
-            SendCommand(command);
-            var commandStatus = WaitForStatus(commandId, CommandState.Succeeded);
+            await SendCommand(command);
+            var commandStatus = await GetStatus(commandId, CommandState.Succeeded);
             JsonAssert.AreEqual(CreateCommandStatus(commandId, "command 1 ", CommandState.Succeeded, 0), commandStatus);
 
             // Send a command with a duplicate command Id
-            SendCommand(commandWithDuplicateCommandId, DataSourceType.IotHub, true);
+            await SendCommand(commandWithDuplicateCommandId, 400);
         }
 
         [Test]
-        public void CommandRunnerTest_CommandSequence()
+        public async Task CommandRunnerTest_CommandSequence()
         {
             var command1 = CreateLongRunningCommand(GenerateId());
             var command2 = CreateCommand("echo 'command 2'");
@@ -197,23 +214,23 @@ namespace E2eTesting
             var expectedCommandStatus3 = CreateCommandStatus(command3.CommandId, "", CommandState.TimedOut, 62);
             var expectedCommandStatus4 = CreateCommandStatus(command4.CommandId, "sh: 1: blah: not found\n", CommandState.Failed, 127);
 
-            SendCommand(command1);
-            SendCommand(command2);
-            SendCommand(command3);
-            SendCommand(command4);
-            SendCommand(CreateCancelCommand(command1.CommandId));
+            await SendCommand(command1);
+            await SendCommand(command2);
+            await SendCommand(command3);
+            await SendCommand(command4);
+            await SendCommand(CreateCancelCommand(command1.CommandId));
 
             // Wait for the last command to complete before checking all command statuses
-            CommandStatus actualCommandStatus4 = WaitForStatus(command4.CommandId, CommandState.Failed);
+            CommandStatus actualCommandStatus4 = await GetStatus(command4.CommandId, CommandState.Failed);
 
-            RefreshCommandStatus(command1.CommandId);
-            CommandStatus actualCommandStatus1 = WaitForStatus(command1.CommandId, CommandState.Canceled);
+            await RefreshCommandStatus(command1.CommandId);
+            CommandStatus actualCommandStatus1 = await GetStatus(command1.CommandId, CommandState.Canceled);
 
-            RefreshCommandStatus(command2.CommandId);
-            CommandStatus actualCommandStatus2 = WaitForStatus(command2.CommandId, CommandState.Succeeded);
+            await RefreshCommandStatus(command2.CommandId);
+            CommandStatus actualCommandStatus2 = await GetStatus(command2.CommandId, CommandState.Succeeded);
 
-            RefreshCommandStatus(command3.CommandId);
-            CommandStatus actualCommandStatus3 = WaitForStatus(command3.CommandId, CommandState.TimedOut);
+            await RefreshCommandStatus(command3.CommandId);
+            CommandStatus actualCommandStatus3 = await GetStatus(command3.CommandId, CommandState.TimedOut);
 
             Assert.Multiple(() =>
             {

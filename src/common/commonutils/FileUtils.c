@@ -115,6 +115,23 @@ bool DirectoryExists(const char* name)
     return result;
 }
 
+int CheckFileExists(const char* name, void* log)
+{
+    int status = 0;
+
+    if (FileExists(name))
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", name);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", name);
+        status = EEXIST;
+    }
+
+    return status;
+}
+
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
 {
     int fileDescriptor = -1;
@@ -612,10 +629,16 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     char* contents = NULL;
     int status = 0;
 
-    if ((!FileExists(fileName)) || (NULL == text) || (0 == strlen(text)))
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
     {
         OsConfigLogError(log, "FindTextInFile called with invalid arguments");
         return EINVAL;
+    }
+
+    if (false == FileExists(fileName))
+    {
+        OsConfigLogError(log, "FindTextInFile: file '%s' not found", fileName);
+        return ENOENT;
     }
 
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
@@ -716,6 +739,131 @@ int CompareFileContents(const char* fileName, const char* text, void* log)
     }
 
     FREE_MEMORY(contents);
+
+    return status;
+}
+
+int FindTextInFolder(const char* directory, const char* text, void* log)
+{
+    const char* pathTemplate = "%s/%s";
+
+    DIR* home = NULL;
+    struct dirent* entry = NULL;
+    char* path = NULL;
+    size_t length = 0;
+    int status = ENOENT, _status = 0;
+
+    if ((NULL == directory) || (false == DirectoryExists(directory)) || (NULL == text))
+    {
+        OsConfigLogError(log, "FindTextInFolder called with invalid arguments");
+        return EINVAL;
+    }
+    
+    if (NULL != (home = opendir(directory)))
+    {
+        while (NULL != (entry = readdir(home)))
+        {
+            if (entry->d_name && strcmp(entry->d_name, ".") && strcmp(entry->d_name, ".."))
+            {
+                length = strlen(pathTemplate) + strlen(directory) + strlen(entry->d_name);
+                if (NULL == (path = malloc(length + 1)))
+                {
+                    OsConfigLogError(log, "FindTextInFolder: out of memory");
+                    status = ENOMEM;
+                    break;
+                }
+
+                memset(path, 0, length + 1);
+                snprintf(path, length, pathTemplate, directory, entry->d_name);
+
+                if ((0 == (_status = FindTextInFile(path, text, log))) && (0 != status))
+                {
+                    status = _status;
+                }
+
+                FREE_MEMORY(path);
+            }
+        }
+
+        closedir(home);
+    }
+
+    if (status)
+    {
+        OsConfigLogError(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
+    }
+
+    return status;
+}
+
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log)
+{
+    char* contents = NULL;
+    char* found = NULL;
+    char* index = NULL;
+    bool foundUncommented = false;
+    int status = ENOENT;
+
+    if ((NULL == fileName) || (NULL == text) || (0 == strlen(text)))
+    {
+        OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut called with invalid arguments");
+        return EINVAL;
+    }
+    
+    if (FileExists(fileName))
+    {
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+        {
+            OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: cannot read from '%s'", fileName);
+        }
+        else
+        {
+            found = contents;
+
+            while (NULL != (found = strstr(found, text)))
+            {
+                index = found;
+                status = ENOENT;
+
+                while (index > contents)
+                {
+                    index--;
+                    if (commentMark == index[0])
+                    {
+                        status = 0;
+                        break;
+                    }
+                    else if (EOL == index[0])
+                    {
+                        break;
+                    }
+                }
+
+                if (0 == status)
+                {
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld but is commented out with '%c'", 
+                        text, fileName, (long)(found - contents), commentMark);
+                }
+                else
+                {
+                    foundUncommented = true;
+                    OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld uncommented with '%c'", 
+                        text, fileName, (long)(found - contents), commentMark);
+                }
+
+                found += strlen(text);
+            }
+
+            status = foundUncommented ? EEXIST : 0;
+
+            FREE_MEMORY(contents);
+        }
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: file '%s' not found, nothing to look for", fileName);
+        status = 0;
+    }
 
     return status;
 }
