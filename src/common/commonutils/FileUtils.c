@@ -115,6 +115,23 @@ bool DirectoryExists(const char* name)
     return result;
 }
 
+int CheckFileExists(const char* name, void* log)
+{
+    int status = 0;
+
+    if (FileExists(name))
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", name);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", name);
+        status = EEXIST;
+    }
+
+    return status;
+}
+
 static bool LockUnlockFile(FILE* file, bool lock, void* log)
 {
     int fileDescriptor = -1;
@@ -837,7 +854,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
                 found += strlen(text);
             }
 
-            status = foundUncommented ? ENOENT : 0; 
+            status = foundUncommented ? EEXIST : 0;
 
             FREE_MEMORY(contents);
         }
