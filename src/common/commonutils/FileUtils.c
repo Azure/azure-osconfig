@@ -867,3 +867,36 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
     return status;
 }
+
+int FindTextInCommandOutput(const char* command, const char* text, void* log)
+{
+    const char* command = "sysctl -a";
+    char* results = NULL;
+
+    if ((NULL == command) || (NULL == text))
+    {
+        OsConfigLogError(log, "FindTextInCommandOutput called with invalid argument");
+        return EINVAL;
+    }
+
+    if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+    {
+        if (NULL != strstr(results, text))
+        {
+            OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' found in '%s' output", text, command);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(results);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
+    }
+
+    return status;
+}

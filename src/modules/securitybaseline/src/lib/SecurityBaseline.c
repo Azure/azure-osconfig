@@ -764,87 +764,104 @@ static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return 0; //TBD
+    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
-    return 0; //TBD
+    const char* command = "/sbin/ip addr list";
+    const char* text = "PROMISC";
+
+    return (FindTextInCommandOutput(command, text, SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
-    return 0; //TBD
+    static const char* etcSysCtlConf = "/etc/sysctl.conf";
+
+    return (CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDccpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install dccp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSctpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install sctp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDisabledSupportForRds(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install rds /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTipcIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install tipc /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePermissionsOnBootloaderConfig(void)
