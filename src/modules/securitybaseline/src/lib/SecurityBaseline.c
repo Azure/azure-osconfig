@@ -14,6 +14,8 @@
 
 #include "SecurityBaseline.h"
 
+typedef int(*AuditRemediate)(void);
+
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
@@ -1252,8 +1254,6 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
-
-typedef int(*AuditRemediate)(void);
 
 AuditRemediate g_auditChecks[] =
 {
