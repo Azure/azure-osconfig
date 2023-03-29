@@ -1253,9 +1253,198 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
+typedef int(*Audit)(void);
+
+
 int AuditSecurityBaseline(void)
 {
-    return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
+    Audit* auditChecks[] =
+    {
+        AuditEnsurePermissionsOnEtcIssue(),
+        AuditEnsurePermissionsOnEtcIssueNet(),
+        AuditEnsurePermissionsOnEtcHostsAllow(),
+        AuditEnsurePermissionsOnEtcHostsDeny(),
+        AuditEnsurePermissionsOnEtcSshSshdConfig(),
+        AuditEnsurePermissionsOnEtcShadow(),
+        AuditEnsurePermissionsOnEtcShadowDash(),
+        AuditEnsurePermissionsOnEtcGShadow(),
+        AuditEnsurePermissionsOnEtcGShadowDash(),
+        AuditEnsurePermissionsOnEtcPasswd(),
+        AuditEnsurePermissionsOnEtcPasswdDash(),
+        AuditEnsurePermissionsOnEtcGroup(),
+        AuditEnsurePermissionsOnEtcGroupDash(),
+        AuditEnsurePermissionsOnEtcAnacronTab(),
+        AuditEnsurePermissionsOnEtcCronD(),
+        AuditEnsurePermissionsOnEtcCronDaily(),
+        AuditEnsurePermissionsOnEtcCronHourly(),
+        AuditEnsurePermissionsOnEtcCronMonthly(),
+        AuditEnsurePermissionsOnEtcCronWeekly(),
+        AuditEnsurePermissionsOnEtcMotd(),
+        AuditEnsureKernelSupportForCpuNx(),
+        AuditEnsureNodevOptionOnHomePartition(),
+        AuditEnsureNodevOptionOnTmpPartition(),
+        AuditEnsureNodevOptionOnVarTmpPartition(),
+        AuditEnsureNosuidOptionOnTmpPartition(),
+        AuditEnsureNosuidOptionOnVarTmpPartition(),
+        AuditEnsureNoexecOptionOnVarTmpPartition(),
+        AuditEnsureNoexecOptionOnDevShmPartition(),
+        AuditEnsureNodevOptionEnabledForAllRemovableMedia(),
+        AuditEnsureNoexecOptionEnabledForAllRemovableMedia(),
+        AuditEnsureNosuidOptionEnabledForAllRemovableMedia(),
+        AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(),
+        AuditEnsureInetdNotInstalled(),
+        AuditEnsureXinetdNotInstalled(),
+        auditEnsureAllTelnetdPackagesUninstalled(),
+        AuditEnsureRshServerNotInstalled(),
+        AuditEnsureNisNotInstalled(),
+        AuditEnsureTftpdNotInstalled(),
+        AuditEnsureReadaheadFedoraNotInstalled(),
+        AuditEnsureBluetoothHiddNotInstalled(),
+        AuditEnsureIsdnUtilsBaseNotInstalled(),
+        AuditEnsureIsdnUtilsKdumpToolsNotInstalled(),
+        AuditEnsureIscDhcpdServerNotInstalled(),
+        AuditEnsureSendmailNotInstalled(),
+        AuditEnsureSldapdNotInstalled(),
+        AuditEnsureBind9NotInstalled(),
+        AuditEnsureDovecotCoreNotInstalled(),
+        AuditEnsureAuditdInstalled(),
+        AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(),
+        AuditEnsureNoDuplicateUidsExist(),
+        AuditEnsureNoDuplicateGidsExist(),
+        AuditEnsureNoDuplicateUserNamesExist(),
+        AuditEnsureNoDuplicateGroupsExist(),
+        AuditEnsureShadowGroupIsEmpty(),
+        AuditEnsureRootGroupExists(),
+        AuditEnsureAllAccountsHavePasswords(),
+        AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(),
+        AuditEnsureNoLegacyPlusEntriesInEtcPasswd(),
+        AuditEnsureNoLegacyPlusEntriesInEtcShadow(),
+        AuditEnsureNoLegacyPlusEntriesInEtcGroup(),
+        AuditEnsureDefaultRootAccountGroupIsGidZero(),
+        AuditEnsureRootIsOnlyUidZeroAccount(),
+        AuditEnsureAllUsersHomeDirectoriesExist(),
+        AuditEnsureUsersOwnTheirHomeDirectories(),
+        AuditEnsureRestrictedUserHomeDirectories(),
+        AuditEnsurePasswordHashingAlgorithm(),
+        AuditEnsureMinDaysBetweenPasswordChanges(),
+        AuditEnsureInactivePasswordLockPeriod(),
+        AuditEnsureMaxDaysBetweenPasswordChanges(),
+        AuditEnsurePasswordExpiration(),
+        AuditEnsurePasswordExpirationWarning(),
+        AuditEnsureSystemAccountsAreNonLogin(),
+        AuditEnsureAuthenticationRequiredForSingleUserMode(),
+        AuditEnsurePrelinkIsDisabled(),
+        AuditEnsureTalkClientIsNotInstalled(),
+        AuditEnsureDotDoesNotAppearInRootsPath(),
+        AuditEnsureCronServiceIsEnabled(),
+        AuditEnsureRemoteLoginWarningBannerIsConfigured(),
+        AuditEnsureLocalLoginWarningBannerIsConfigured(),
+        AuditEnsureAuditdServiceIsRunning(),
+        AuditEnsureSuRestrictedToRootGroup(),
+        AuditEnsureDefaultUmaskForAllUsers(),
+        AuditEnsureAutomountingDisabled(),
+        AuditEnsureKernelCompiledFromApprovedSources(),
+        AuditEnsureDefaultDenyFirewallPolicyIsSet(),
+        AuditEnsurePacketRedirectSendingIsDisabled(),
+        AuditEnsureIcmpRedirectsIsDisabled(),
+        AuditEnsureSourceRoutedPacketsIsDisabled(),
+        AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(),
+        AuditEnsureIgnoringBogusIcmpBroadcastResponses(),
+        AuditEnsureIgnoringIcmpEchoPingsToMulticast(),
+        AuditEnsureMartianPacketLoggingIsEnabled(),
+        AuditEnsureReversePathSourceValidationIsEnabled(),
+        AuditEnsureTcpSynCookiesAreEnabled(),
+        AuditEnsureSystemNotActingAsNetworkSniffer(),
+        AuditEnsureAllWirelessInterfacesAreDisabled(),
+        AuditEnsureIpv6ProtocolIsEnabled(),
+        AuditEnsureDccpIsDisabled(),
+        AuditEnsureSctpIsDisabled(),
+        AuditEnsureDisabledSupportForRds(),
+        AuditEnsureTipcIsDisabled(),
+        AuditEnsureZeroconfNetworkingIsDisabled(),
+        AuditEnsurePermissionsOnBootloaderConfig(),
+        AuditEnsurePasswordReuseIsLimited(),
+        AuditEnsureMountingOfUsbStorageDevicesIsDisabled(),
+        AuditEnsureCoreDumpsAreRestricted(),
+        AuditEnsurePasswordCreationRequirements(),
+        AuditEnsureLockoutForFailedPasswordAttempts(),
+        AuditEnsureDisabledInstallationOfCramfsFileSystem(),
+        AuditEnsureDisabledInstallationOfFreevxfsFileSystem(),
+        AuditEnsureDisabledInstallationOfHfsFileSystem(),
+        AuditEnsureDisabledInstallationOfHfsplusFileSystem(),
+        AuditEnsureDisabledInstallationOfJffs2FileSystem(),
+        AuditEnsureVirtualMemoryRandomizationIsEnabled(),
+        AuditEnsureAllBootloadersHavePasswordProtectionEnabled(),
+        AuditEnsureLoggingIsConfigured(),
+        AuditEnsureSyslogPackageIsInstalled(),
+        AuditEnsureSystemdJournaldServicePersistsLogMessages(),
+        AuditEnsureALoggingServiceIsSnabled(),
+        AuditEnsureFilePermissionsForAllRsyslogLogFiles(),
+        AuditEnsureLoggerConfigurationFilesAreRestricted(),
+        AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(),
+        AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(),
+        AuditEnsureRsyslogNotAcceptingRemoteMessages(),
+        AuditEnsureSyslogRotaterServiceIsEnabled(),
+        AuditEnsureTelnetServiceIsDisabled(),
+        AuditEnsureRcprshServiceIsDisabled(),
+        AuditEnsureTftpServiceisDisabled(),
+        AuditEnsureAtCronIsRestrictedToAuthorizedUsers(),
+        AuditEnsureSshBestPracticeProtocol(),
+        AuditEnsureSshBestPracticeIgnoreRhosts(),
+        AuditEnsureSshLogLevelIsSet(),
+        AuditEnsureSshMaxAuthTriesIsSet(),
+        AuditEnsureSshAccessIsLimited(),
+        AuditEnsureSshRhostsRsaAuthenticationIsDisabled(),
+        AuditEnsureSshHostbasedAuthenticationIsDisabled(),
+        AuditEnsureSshPermitRootLoginIsDisabled(),
+        AuditEnsureSshPermitEmptyPasswordsIsDisabled(),
+        AuditEnsureSshIdleTimeoutIntervalIsConfigured(),
+        AuditEnsureSshLoginGraceTimeIsSet(),
+        AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(),
+        AuditEnsureSshWarningBannerIsEnabled(),
+        AuditEnsureUsersCannotSetSshEnvironmentOptions(),
+        AuditEnsureAppropriateCiphersForSsh(),
+        AuditEnsureAvahiDaemonServiceIsDisabled(),
+        AuditEnsureCupsServiceisDisabled(),
+        AuditEnsurePostfixPackageIsUninstalled(),
+        AuditEnsurePostfixNetworkListeningIsDisabled(),
+        AuditEnsureRpcgssdServiceIsDisabled(),
+        AuditEnsureRpcidmapdServiceIsDisabled(),
+        AuditEnsurePortmapServiceIsDisabled(),
+        AuditEnsureNetworkFileSystemServiceIsDisabled(),
+        AuditEnsureRpcsvcgssdServiceIsDisabled(),
+        AuditEnsureSnmpServerIsDisabled(),
+        AuditEnsureRsynServiceIsDisabled(),
+        AuditEnsureNisServerIsDisabled(),
+        AuditEnsureRshClientNotInstalled(),
+        AuditEnsureSmbWithSambaIsDisabled(),
+        AuditEnsureUsersDotFilesArentGroupOrWorldWritable(),
+        AuditEnsureNoUsersHaveDotForwardFiles(),
+        AuditEnsureNoUsersHaveDotNetrcFiles(),
+        AuditEnsureNoUsersHaveDotRhostsFiles(),
+        AuditEnsureRloginServiceIsDisabled(),
+        AuditEnsureUnnecessaryAccountsAreRemoved()
+    }
+
+    size_t numAuditChecks = ARRAY_SIZE(auditChecks);
+    size_t i = 0;
+    int status = 0, _status = 0;
+
+    OsConfigLogInfo(log, "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
+
+    for (i = 0; i < numAuditChecks; i++)
+    {
+        if ((0 != (_status = (auditChecks[i]()))) && (0 == status))
+        {
+            OsConfigLogError(log, "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
+            status = ENOENT;
+        }
+    }
+
+    return status;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    /*return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
         (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
         (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && 
         (0 == AuditEnsurePermissionsOnEtcHostsDeny()) &&
@@ -1418,7 +1607,7 @@ int AuditSecurityBaseline(void)
         (0 == AuditEnsureNoUsersHaveDotNetrcFiles()) &&
         (0 == AuditEnsureNoUsersHaveDotRhostsFiles()) &&
         (0 == AuditEnsureRloginServiceIsDisabled()) &&
-        (0 == AuditEnsureUnnecessaryAccountsAreRemoved())) ? 0 : ENOENT;
+        (0 == AuditEnsureUnnecessaryAccountsAreRemoved())) ? 0 : ENOENT;*/
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
