@@ -12,7 +12,7 @@
 #include <Mmi.h>
 #include <Ztsi.h>
 
-static const std::string g_ztsiConfigFile = "/etc/sim-agent/config.json";
+static const std::string g_ztsiConfigFile = "/etc/sim-agent-edge/config.json";
 
 void __attribute__((constructor)) InitModule()
 {
@@ -219,3 +219,4 @@ void MmiFree(MMI_JSON_STRING payload)
         delete[] payload;
     }
 }
+
