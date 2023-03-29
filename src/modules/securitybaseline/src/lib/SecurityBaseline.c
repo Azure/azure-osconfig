@@ -1423,191 +1423,22 @@ Audit g_auditChecks[] =
     &AuditEnsureUnnecessaryAccountsAreRemoved
 };
 
+size_t g_numAuditChecks = ARRAY_SIZE(g_auditChecks);
+
 int AuditSecurityBaseline(void)
 {
-
-    size_t numAuditChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
-    int status = 0, _status = 0;
+    int status = 0;
 
-    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
-
-    for (i = 0; i < numAuditChecks; i++)
+    for (i = 0; i < g_numAuditChecks; i++)
     {
-        if ((0 != (_status = (g_auditChecks[i]()))) && (0 == status))
+        if ((0 != g_auditChecks[i]()) && (0 == status))
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
             status = ENOENT;
         }
     }
 
     return status;
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    /*return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
-        (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
-        (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && 
-        (0 == AuditEnsurePermissionsOnEtcHostsDeny()) &&
-        (0 == AuditEnsurePermissionsOnEtcSshSshdConfig()) &&
-        (0 == AuditEnsurePermissionsOnEtcShadow()) &&
-        (0 == AuditEnsurePermissionsOnEtcShadowDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcGShadow()) &&
-        (0 == AuditEnsurePermissionsOnEtcGShadowDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcPasswd()) &&
-        (0 == AuditEnsurePermissionsOnEtcPasswdDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcGroup()) &&
-        (0 == AuditEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcAnacronTab()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronD()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronDaily()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == AuditEnsurePermissionsOnEtcMotd()) &&
-        (0 == AuditEnsureKernelSupportForCpuNx()) &&
-        (0 == AuditEnsureNodevOptionOnHomePartition()) &&
-        (0 == AuditEnsureNodevOptionOnTmpPartition()) &&
-        (0 == AuditEnsureNodevOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNosuidOptionOnTmpPartition()) &&
-        (0 == AuditEnsureNosuidOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNoexecOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNoexecOptionOnDevShmPartition()) &&
-        (0 == AuditEnsureNodevOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNoexecOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNosuidOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts()) &&
-        (0 == AuditEnsureInetdNotInstalled()) &&
-        (0 == AuditEnsureXinetdNotInstalled()) &&
-        (0 == auditEnsureAllTelnetdPackagesUninstalled()) &&
-        (0 == AuditEnsureRshServerNotInstalled()) &&
-        (0 == AuditEnsureNisNotInstalled()) &&
-        (0 == AuditEnsureTftpdNotInstalled()) &&
-        (0 == AuditEnsureReadaheadFedoraNotInstalled()) &&
-        (0 == AuditEnsureBluetoothHiddNotInstalled()) &&
-        (0 == AuditEnsureIsdnUtilsBaseNotInstalled()) &&
-        (0 == AuditEnsureIsdnUtilsKdumpToolsNotInstalled()) &&
-        (0 == AuditEnsureIscDhcpdServerNotInstalled()) &&
-        (0 == AuditEnsureSendmailNotInstalled()) &&
-        (0 == AuditEnsureSldapdNotInstalled()) &&
-        (0 == AuditEnsureBind9NotInstalled()) &&
-        (0 == AuditEnsureDovecotCoreNotInstalled()) &&
-        (0 == AuditEnsureAuditdInstalled()) &&
-        (0 == AuditEnsureAllEtcPasswdGroupsExistInEtcGroup()) &&
-        (0 == AuditEnsureNoDuplicateUidsExist()) &&
-        (0 == AuditEnsureNoDuplicateGidsExist()) &&
-        (0 == AuditEnsureNoDuplicateUserNamesExist()) &&
-        (0 == AuditEnsureNoDuplicateGroupsExist()) &&
-        (0 == AuditEnsureShadowGroupIsEmpty()) &&
-        (0 == AuditEnsureRootGroupExists()) &&
-        (0 == AuditEnsureAllAccountsHavePasswords()) &&
-        (0 == AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcPasswd()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcShadow()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcGroup()) &&
-        (0 == AuditEnsureDefaultRootAccountGroupIsGidZero()) &&
-        (0 == AuditEnsureRootIsOnlyUidZeroAccount()) &&
-        (0 == AuditEnsureAllUsersHomeDirectoriesExist()) &&
-        (0 == AuditEnsureUsersOwnTheirHomeDirectories()) &&
-        (0 == AuditEnsureRestrictedUserHomeDirectories()) &&
-        (0 == AuditEnsurePasswordHashingAlgorithm()) &&
-        (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
-        (0 == AuditEnsureInactivePasswordLockPeriod()) &&
-        (0 == AuditEnsureMaxDaysBetweenPasswordChanges()) &&
-        (0 == AuditEnsurePasswordExpiration()) &&
-        (0 == AuditEnsurePasswordExpirationWarning()) &&
-        (0 == AuditEnsureSystemAccountsAreNonLogin()) &&
-        (0 == AuditEnsureAuthenticationRequiredForSingleUserMode()) &&
-        (0 == AuditEnsurePrelinkIsDisabled()) &&
-        (0 == AuditEnsureTalkClientIsNotInstalled()) &&
-        (0 == AuditEnsureDotDoesNotAppearInRootsPath()) &&
-        (0 == AuditEnsureCronServiceIsEnabled()) &&
-        (0 == AuditEnsureRemoteLoginWarningBannerIsConfigured()) &&
-        (0 == AuditEnsureLocalLoginWarningBannerIsConfigured()) &&
-        (0 == AuditEnsureAuditdServiceIsRunning()) &&
-        (0 == AuditEnsureSuRestrictedToRootGroup()) &&
-        (0 == AuditEnsureDefaultUmaskForAllUsers()) &&
-        (0 == AuditEnsureAutomountingDisabled()) &&
-        (0 == AuditEnsureKernelCompiledFromApprovedSources()) &&
-        (0 == AuditEnsureDefaultDenyFirewallPolicyIsSet()) &&
-        (0 == AuditEnsurePacketRedirectSendingIsDisabled()) &&
-        (0 == AuditEnsureIcmpRedirectsIsDisabled()) &&
-        (0 == AuditEnsureSourceRoutedPacketsIsDisabled()) &&
-        (0 == AuditEnsureAcceptingSourceRoutedPacketsIsDisabled()) &&
-        (0 == AuditEnsureIgnoringBogusIcmpBroadcastResponses()) &&
-        (0 == AuditEnsureIgnoringIcmpEchoPingsToMulticast()) &&
-        (0 == AuditEnsureMartianPacketLoggingIsEnabled()) &&
-        (0 == AuditEnsureReversePathSourceValidationIsEnabled()) &&
-        (0 == AuditEnsureTcpSynCookiesAreEnabled()) &&
-        (0 == AuditEnsureSystemNotActingAsNetworkSniffer()) &&
-        (0 == AuditEnsureAllWirelessInterfacesAreDisabled()) &&
-        (0 == AuditEnsureIpv6ProtocolIsEnabled()) &&
-        (0 == AuditEnsureDccpIsDisabled()) &&
-        (0 == AuditEnsureSctpIsDisabled()) &&
-        (0 == AuditEnsureDisabledSupportForRds()) &&
-        (0 == AuditEnsureTipcIsDisabled()) &&
-        (0 == AuditEnsureZeroconfNetworkingIsDisabled()) &&
-        (0 == AuditEnsurePermissionsOnBootloaderConfig()) &&
-        (0 == AuditEnsurePasswordReuseIsLimited()) &&
-        (0 == AuditEnsureMountingOfUsbStorageDevicesIsDisabled()) &&
-        (0 == AuditEnsureCoreDumpsAreRestricted()) &&
-        (0 == AuditEnsurePasswordCreationRequirements()) &&
-        (0 == AuditEnsureLockoutForFailedPasswordAttempts()) &&
-        (0 == AuditEnsureDisabledInstallationOfCramfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfFreevxfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfHfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfHfsplusFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfJffs2FileSystem()) &&
-        (0 == AuditEnsureVirtualMemoryRandomizationIsEnabled()) &&
-        (0 == AuditEnsureAllBootloadersHavePasswordProtectionEnabled()) &&
-        (0 == AuditEnsureLoggingIsConfigured()) &&
-        (0 == AuditEnsureSyslogPackageIsInstalled()) &&
-        (0 == AuditEnsureSystemdJournaldServicePersistsLogMessages()) &&
-        (0 == AuditEnsureALoggingServiceIsSnabled()) &&
-        (0 == AuditEnsureFilePermissionsForAllRsyslogLogFiles()) &&
-        (0 == AuditEnsureLoggerConfigurationFilesAreRestricted()) &&
-        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup()) &&
-        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser()) &&
-        (0 == AuditEnsureRsyslogNotAcceptingRemoteMessages()) &&
-        (0 == AuditEnsureSyslogRotaterServiceIsEnabled()) &&
-        (0 == AuditEnsureTelnetServiceIsDisabled()) &&
-        (0 == AuditEnsureRcprshServiceIsDisabled()) &&
-        (0 == AuditEnsureTftpServiceisDisabled()) &&
-        (0 == AuditEnsureAtCronIsRestrictedToAuthorizedUsers()) &&
-        (0 == AuditEnsureSshBestPracticeProtocol()) &&
-        (0 == AuditEnsureSshBestPracticeIgnoreRhosts()) &&
-        (0 == AuditEnsureSshLogLevelIsSet()) &&
-        (0 == AuditEnsureSshMaxAuthTriesIsSet()) &&
-        (0 == AuditEnsureSshAccessIsLimited()) &&
-        (0 == AuditEnsureSshRhostsRsaAuthenticationIsDisabled()) &&
-        (0 == AuditEnsureSshHostbasedAuthenticationIsDisabled()) &&
-        (0 == AuditEnsureSshPermitRootLoginIsDisabled()) &&
-        (0 == AuditEnsureSshPermitEmptyPasswordsIsDisabled()) &&
-        (0 == AuditEnsureSshIdleTimeoutIntervalIsConfigured()) &&
-        (0 == AuditEnsureSshLoginGraceTimeIsSet()) &&
-        (0 == AuditEnsureOnlyApprovedMacAlgorithmsAreUsed()) &&
-        (0 == AuditEnsureSshWarningBannerIsEnabled()) &&
-        (0 == AuditEnsureUsersCannotSetSshEnvironmentOptions()) &&
-        (0 == AuditEnsureAppropriateCiphersForSsh()) &&
-        (0 == AuditEnsureAvahiDaemonServiceIsDisabled()) &&
-        (0 == AuditEnsureCupsServiceisDisabled()) &&
-        (0 == AuditEnsurePostfixPackageIsUninstalled()) &&
-        (0 == AuditEnsurePostfixNetworkListeningIsDisabled()) &&
-        (0 == AuditEnsureRpcgssdServiceIsDisabled()) &&
-        (0 == AuditEnsureRpcidmapdServiceIsDisabled()) &&
-        (0 == AuditEnsurePortmapServiceIsDisabled()) &&
-        (0 == AuditEnsureNetworkFileSystemServiceIsDisabled()) &&
-        (0 == AuditEnsureRpcsvcgssdServiceIsDisabled()) &&
-        (0 == AuditEnsureSnmpServerIsDisabled()) &&
-        (0 == AuditEnsureRsynServiceIsDisabled()) &&
-        (0 == AuditEnsureNisServerIsDisabled()) &&
-        (0 == AuditEnsureRshClientNotInstalled()) &&
-        (0 == AuditEnsureSmbWithSambaIsDisabled()) &&
-        (0 == AuditEnsureUsersDotFilesArentGroupOrWorldWritable()) &&
-        (0 == AuditEnsureNoUsersHaveDotForwardFiles()) &&
-        (0 == AuditEnsureNoUsersHaveDotNetrcFiles()) &&
-        (0 == AuditEnsureNoUsersHaveDotRhostsFiles()) &&
-        (0 == AuditEnsureRloginServiceIsDisabled()) &&
-        (0 == AuditEnsureUnnecessaryAccountsAreRemoved())) ? 0 : ENOENT;*/
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
