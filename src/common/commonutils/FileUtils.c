@@ -870,8 +870,8 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
 int FindTextInCommandOutput(const char* command, const char* text, void* log)
 {
-    const char* command = "sysctl -a";
     char* results = NULL;
+    int status = 0;
 
     if ((NULL == command) || (NULL == text))
     {

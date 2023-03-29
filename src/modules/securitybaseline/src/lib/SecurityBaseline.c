@@ -780,22 +780,22 @@ static int AuditEnsureIcmpRedirectsIsDisabled(void)
 
 static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
@@ -807,12 +807,12 @@ static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 
 static int AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return (EEXISTS == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSystemNotActingAsNetworkSniffer(void)

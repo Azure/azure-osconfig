@@ -1522,12 +1522,12 @@ TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
 
 TEST_F(CommonUtilsTest, FindTextInCommandOutput)
 {
-    EXPECT_EQ(EINVAL, FindTextCommandOutput(nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextCommandOutput("echo Test123", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextCommandOutput(nullptr, "Test", nullptr));
-    EXPECT_NE(0, FindTextCommandOutput("echo Test", "~does_not_exist", nullptr));
-    EXPECT_NE(0, FindTextCommandOutput("blah", "Test", nullptr));
-    EXPECT_EQ(0, FindTextCommandOutput("echo Test123", "Test", nullptr));
-    EXPECT_EQ(0, FindTextCommandOutput("echo Test123", "123", nullptr));
-    EXPECT_EQ(0, FindTextCommandOutput("echo Test123", "2", nullptr));
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput("echo Test123", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, "Test", nullptr));
+    EXPECT_NE(0, FindTextInCommandOutput("echo Test", "~does_not_exist", nullptr));
+    EXPECT_NE(0, FindTextInCommandOutput("blah", "Test", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "Test", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr));
 }
