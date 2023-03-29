@@ -1253,12 +1253,12 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
-typedef int(*Audit)(void);
+typedef int(Audit)(void);
 
 
 int AuditSecurityBaseline(void)
 {
-    Audit* auditChecks[] =
+    Audit auditChecks[] =
     {
         AuditEnsurePermissionsOnEtcIssue(),
         AuditEnsurePermissionsOnEtcIssueNet(),
@@ -1424,19 +1424,19 @@ int AuditSecurityBaseline(void)
         AuditEnsureNoUsersHaveDotRhostsFiles(),
         AuditEnsureRloginServiceIsDisabled(),
         AuditEnsureUnnecessaryAccountsAreRemoved()
-    }
+    };
 
     size_t numAuditChecks = ARRAY_SIZE(auditChecks);
     size_t i = 0;
     int status = 0, _status = 0;
 
-    OsConfigLogInfo(log, "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
+    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
 
     for (i = 0; i < numAuditChecks; i++)
     {
         if ((0 != (_status = (auditChecks[i]()))) && (0 == status))
         {
-            OsConfigLogError(log, "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
+            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
             status = ENOENT;
         }
     }
