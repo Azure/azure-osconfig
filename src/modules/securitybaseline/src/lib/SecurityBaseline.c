@@ -845,22 +845,22 @@ static int AuditEnsureIpv6ProtocolIsEnabled(void)
 
 static int AuditEnsureDccpIsDisabled(void)
 {
-    return FindTextInFolder("/etc/modprobe.d/", "install dccp /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSctpIsDisabled(void)
 {
-    return FindTextInFolder("/etc/modprobe.d/", "install sctp /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDisabledSupportForRds(void)
 {
-    return FindTextInFolder("/etc/modprobe.d/", "install rds /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTipcIsDisabled(void)
 {
-    return FindTextInFolder("/etc/modprobe.d/", "install tipc /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureZeroconfNetworkingIsDisabled(void)
@@ -890,7 +890,7 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
 {
     return ((0 == FindTextInEnvironmentVariable("fs.suid_dumpable", "0", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInFolder("/etc/security/limits.d/", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
