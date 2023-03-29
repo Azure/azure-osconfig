@@ -1253,9 +1253,9 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
-typedef int(*Audit)(void);
+typedef int(*AuditRemediate)(void);
 
-Audit g_auditChecks[] =
+AuditRemediate g_auditChecks[] =
 {
     &AuditEnsurePermissionsOnEtcIssue,
     &AuditEnsurePermissionsOnEtcIssueNet,
@@ -1423,14 +1423,13 @@ Audit g_auditChecks[] =
     &AuditEnsureUnnecessaryAccountsAreRemoved
 };
 
-size_t g_numAuditChecks = ARRAY_SIZE(g_auditChecks);
-
 int AuditSecurityBaseline(void)
 {
+    size_t numChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
     int status = 0;
 
-    for (i = 0; i < g_numAuditChecks; i++)
+    for (i = 0; i < numChecks; i++)
     {
         if ((0 != g_auditChecks[i]()) && (0 == status))
         {
@@ -1638,47 +1637,64 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
         EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
+AuditRemediate g_remediateChecks[] =
+{
+    &RemediateEnsurePermissionsOnEtcIssue,
+    &RemediateEnsurePermissionsOnEtcIssueNet,
+    &RemediateEnsurePermissionsOnEtcHostsAllow,
+    &RemediateEnsurePermissionsOnEtcHostsDeny,
+    &RemediateEnsurePermissionsOnEtcSshSshdConfig,
+    &RemediateEnsurePermissionsOnEtcShadow,
+    &RemediateEnsurePermissionsOnEtcShadowDash,
+    &RemediateEnsurePermissionsOnEtcGShadow,
+    &RemediateEnsurePermissionsOnEtcGShadowDash,
+    &RemediateEnsurePermissionsOnEtcPasswd,
+    &RemediateEnsurePermissionsOnEtcPasswdDash,
+    &RemediateEnsurePermissionsOnEtcGroup,
+    &RemediateEnsurePermissionsOnEtcGroupDash,
+    &RemediateEnsurePermissionsOnEtcAnacronTab,
+    &RemediateEnsurePermissionsOnEtcCronD,
+    &RemediateEnsurePermissionsOnEtcCronDaily,
+    &RemediateEnsurePermissionsOnEtcCronHourly,
+    &RemediateEnsurePermissionsOnEtcCronMonthly,
+    &RemediateEnsurePermissionsOnEtcCronWeekly,
+    &RemediateEnsurePermissionsOnEtcMotd,
+    &RemediateEnsureInetdNotInstalled,
+    &RemediateEnsureXinetdNotInstalled,
+    &RemediateEnsureRshServerNotInstalled,
+    &RemediateEnsureNisNotInstalled,
+    &RemediateEnsureTftpdNotInstalled,
+    &RemediateEnsureReadaheadFedoraNotInstalled,
+    &RemediateEnsureBluetoothHiddNotInstalled,
+    &RemediateEnsureIsdnUtilsBaseNotInstalled,
+    &RemediateEnsureIsdnUtilsKdumpToolsNotInstalled,
+    &RemediateEnsureIscDhcpdServerNotInstalled,
+    &RemediateEnsureSendmailNotInstalled,
+    &RemediateEnsureSldapdNotInstalled,
+    &RemediateEnsureBind9NotInstalled,
+    &RemediateEnsureDovecotCoreNotInstalled,
+    &RemediateEnsureAuditdInstalled,
+    &RemediateEnsurePrelinkIsDisabled,
+    &RemediateEnsureTalkClientIsNotInstalled,
+    &RemediateEnsureCronServiceIsEnabled,
+    &RemediateEnsureAuditdServiceIsRunning
+};
+
 int RemediateSecurityBaseline(void)
 {
-    return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
-        (0 == RemediateEnsurePermissionsOnEtcIssueNet()) &&
-        (0 == RemediateEnsurePermissionsOnEtcHostsAllow()) && 
-        (0 == RemediateEnsurePermissionsOnEtcHostsDeny()) &&
-        (0 == RemediateEnsurePermissionsOnEtcSshSshdConfig()) &&
-        (0 == RemediateEnsurePermissionsOnEtcShadow()) &&
-        (0 == RemediateEnsurePermissionsOnEtcShadowDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGShadow()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGShadowDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcPasswd()) &&
-        (0 == RemediateEnsurePermissionsOnEtcPasswdDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGroup()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcAnacronTab()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronD()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronDaily()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcMotd()) &&
-        (0 == RemediateEnsureInetdNotInstalled()) &&
-        (0 == RemediateEnsureXinetdNotInstalled()) &&
-        (0 == RemediateEnsureRshServerNotInstalled()) &&
-        (0 == RemediateEnsureNisNotInstalled()) &&
-        (0 == RemediateEnsureTftpdNotInstalled()) &&
-        (0 == RemediateEnsureReadaheadFedoraNotInstalled()) &&
-        (0 == RemediateEnsureBluetoothHiddNotInstalled()) &&
-        (0 == RemediateEnsureIsdnUtilsBaseNotInstalled()) &&
-        (0 == RemediateEnsureIsdnUtilsKdumpToolsNotInstalled()) &&
-        (0 == RemediateEnsureIscDhcpdServerNotInstalled()) &&
-        (0 == RemediateEnsureSendmailNotInstalled()) &&
-        (0 == RemediateEnsureSldapdNotInstalled()) &&
-        (0 == RemediateEnsureBind9NotInstalled()) &&
-        (0 == RemediateEnsureDovecotCoreNotInstalled()) &&
-        (0 == RemediateEnsureAuditdInstalled()) &&
-        (0 == RemediateEnsurePrelinkIsDisabled()) &&
-        (0 == RemediateEnsureTalkClientIsNotInstalled()) &&
-        (0 == RemediateEnsureCronServiceIsEnabled()) &&
-        (0 == RemediateEnsureAuditdServiceIsRunning())) ? 0 : ENOENT;
+    size_t numChecks = ARRAY_SIZE(g_remediateChecks);
+    size_t i = 0;
+    int status = 0;
+
+    for (i = 0; i < numChecks; i++)
+    {
+        if ((0 != g_remediateChecks[i]()) && (0 == status))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
