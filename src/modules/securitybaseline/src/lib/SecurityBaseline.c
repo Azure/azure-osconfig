@@ -1336,7 +1336,7 @@ Audit g_auditChecks[] =
     &AuditEnsureCronServiceIsEnabled,
     &AuditEnsureRemoteLoginWarningBannerIsConfigured,
     &AuditEnsureLocalLoginWarningBannerIsConfigured,
-    &AuditEnsure&AuditdServiceIsRunning,
+    &AuditEnsureAuditdServiceIsRunning,
     &AuditEnsureSuRestrictedToRootGroup,
     &AuditEnsureDefaultUmaskForAllUsers,
     &AuditEnsureAutomountingDisabled,
@@ -1423,20 +1423,20 @@ Audit g_auditChecks[] =
     &AuditEnsureUnnecessaryAccountsAreRemoved
 };
 
-size_t g_numAuditChecks = ARRAY_SIZE(g_auditChecks);
-
 int AuditSecurityBaseline(void)
 {
+
+    size_t numAuditChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
     int status = 0, _status = 0;
 
-    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", g_numAuditChecks);
+    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
 
-    for (i = 0; i < g_numAuditChecks; i++)
+    for (i = 0; i < numAuditChecks; i++)
     {
         if ((0 != (_status = (g_auditChecks[i]()))) && (0 == status))
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, g_numAuditChecks, _status);
+            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
             status = ENOENT;
         }
     }
