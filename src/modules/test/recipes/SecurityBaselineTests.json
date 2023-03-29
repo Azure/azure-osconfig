@@ -6,24 +6,18 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "Blah",
+    "ObjectName": "DoesNotExist",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Reported",
-    "ComponentName": "Test",
+    "ComponentName": "DoesNotExist",
     "ObjectName": "auditEnsurePermissionsOnEtcCronWeekly",
     "ExpectedResult": 22
   },
   {
     "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "BlahOh",
-    "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "123",
+    "ComponentName": "DoesNotExist",
     "ObjectName": "remediateEnsurePermissionsOnEtcCronWeekly",
     "ExpectedResult": 22
   },
@@ -38,11 +32,6 @@
     "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsurePermissionsOnEtcHostsAllow",
     "ExpectedResult": 22
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateSecurityBaseline"
   },
   {
     "ObjectType": "Desired",
@@ -240,10 +229,9 @@
     "ObjectName": "remediateEnsureAuditdServiceIsRunning"
   },
   {
-    "ObjectType": "Reported",
+    "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditSecurityBaseline",
-    "Payload": "PASS"
+    "ObjectName": "remediateSecurityBaseline"
   },
   {
     "ObjectType": "Reported",
@@ -1221,6 +1209,12 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditSecurityBaseline",
     "Payload": "PASS"
   },
   {
