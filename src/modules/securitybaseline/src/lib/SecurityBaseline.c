@@ -759,11 +759,11 @@ static int AuditEnsureKernelCompiledFromApprovedSources(void)
 
 static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
-    const char* readIpTables = "iptables -nL";
+    const char* readIpTables = "iptables -S";
 
-    return ((0 == FindTextInCommandOutput(readIpTables, "Chain\\sINPUT\\s\\(policy\\sDROP\\)", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "Chain\\sFORWARD\\s\\(policy\\sDROP\\)", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "Chain\\sOUTPUT\\s\\(policy\\sDROP\\)", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
