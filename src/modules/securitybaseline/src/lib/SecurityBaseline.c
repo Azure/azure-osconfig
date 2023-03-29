@@ -498,7 +498,7 @@ static int AuditEnsureXinetdNotInstalled(void)
     return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
-static int auditEnsureAllTelnetdPackagesUninstalled(void)
+static int AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
     return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
@@ -1304,7 +1304,7 @@ Audit g_auditChecks[] =
     &AuditEnsureSldapdNotInstalled,
     &AuditEnsureBind9NotInstalled,
     &AuditEnsureDovecotCoreNotInstalled,
-    &AuditEnsure&AuditdInstalled,
+    &AuditEnsureAuditdInstalled,
     &AuditEnsureAllEtcPasswdGroupsExistInEtcGroup,
     &AuditEnsureNoDuplicateUidsExist,
     &AuditEnsureNoDuplicateGidsExist,
@@ -1423,20 +1423,20 @@ Audit g_auditChecks[] =
     &AuditEnsureUnnecessaryAccountsAreRemoved
 };
 
+size_t g_numAuditChecks = ARRAY_SIZE(g_auditChecks);
+
 int AuditSecurityBaseline(void)
 {
-
-    size_t numAuditChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
     int status = 0, _status = 0;
 
-    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", numAuditChecks);
+    OsConfigLogInfo(SecurityBaselineGetLog(), "AuditSecurityBaseline: processing %ld audit checks", g_numAuditChecks);
 
-    for (i = 0; i < numAuditChecks; i++)
+    for (i = 0; i < g_numAuditChecks; i++)
     {
-        if ((0 != (_status = (auditChecks[i]()))) && (0 == status))
+        if ((0 != (_status = (g_auditChecks[i]()))) && (0 == status))
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, numAuditChecks, _status);
+            OsConfigLogError(SecurityBaselineGetLog(), "AuditSecurityBaseline: audit check %ld of %ld failed with %d", i, g_numAuditChecks, _status);
             status = ENOENT;
         }
     }
@@ -2091,7 +2091,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
-            result = auditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
+            result = AuditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
