@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu18.04, ubuntu20.04, debian10, debian11]
+        os: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
         arch: [arm, arm64, amd64]
 
     steps:

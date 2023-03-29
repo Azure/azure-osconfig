@@ -58,6 +58,7 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* name);
 bool DirectoryExists(const char* name);
+int CheckFileExists(const char* name, void* log);
 
 int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
 int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
@@ -73,11 +74,12 @@ int UninstallPackage(const char* packageName, void* log);
 
 unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
-
 int FindTextInFile(const char* fileName, const char* text, void* log);
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log);
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
+int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
+int FindTextInCommandOutput(const char* command, const char* text, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

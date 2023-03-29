@@ -493,6 +493,15 @@ TEST_F(CommonUtilsTest, FileExists)
     EXPECT_FALSE(FileExists("This file does not exist"));
 }
 
+TEST_F(CommonUtilsTest, CheckFileExists)
+{
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    EXPECT_EQ(0, CheckFileExists(m_path, nullptr));
+    EXPECT_TRUE(Cleanup(m_path));
+    EXPECT_EQ(EEXIST, CheckFileExists(m_path, nullptr));
+    EXPECT_EQ(EEXIST, CheckFileExists("This file does not exist", nullptr));
+}
+
 TEST_F(CommonUtilsTest, DirectoryExists)
 {
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
@@ -1403,6 +1412,8 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, "", nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(m_path, nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInFile(nullptr, nullptr, nullptr));
+
+    EXPECT_EQ(ENOENT, FindTextInFile("~~DoesNotExist", "text", nullptr));
     
     EXPECT_EQ(0, FindTextInFile(m_path, "text", nullptr));
     EXPECT_EQ(0, FindTextInFile(m_path, "/1", nullptr));
@@ -1458,4 +1469,65 @@ TEST_F(CommonUtilsTest, FindTextInFolder)
     EXPECT_EQ(EINVAL, FindTextInFolder("/foo/does_not_exist", "test", nullptr));
     
     FindTextInFolder("/etc/modprobe.d", "ac97", nullptr);
+}
+
+TEST_F(CommonUtilsTest, CheckLineNotFoundOrCommentedOut)
+{
+    const char* testFile =
+        "# Test 123 commented\n"
+        " Test 123 uncommented\n"
+        "345 Test 345 Test # 345 Test\n"
+        "ABC!DEF # Test 678 1234567890\n"
+        "   ##           Foo    \n"
+        "   #  Example of a line    \n"
+        "          Example of a line    \n"
+        "   ! @  Blah 3    \n";
+
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(m_path, '#', nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', "test", nullptr));
+    EXPECT_EQ(EINVAL, CheckLineNotFoundOrCommentedOut(nullptr, '#', nullptr, nullptr));
+
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut("/foo/does_not_exist", '#', "Test", nullptr));
+
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "does-not__exist123", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "9876543210", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 not really commented", nullptr));
+
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 commented", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 123 uncommented", nullptr));
+    
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test 345 Test # 345 Test", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345 Test", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "345", nullptr));
+    
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "ABC!DEF # Test 678 1234567890", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Test 678 1234567890", nullptr));
+    
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '#', "Foo", nullptr));
+    
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example of a line", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Example", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', " of a ", nullptr));
+    
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '@', "Blah 3", nullptr));
+    EXPECT_EQ(0, CheckLineNotFoundOrCommentedOut(m_path, '!', "Blah 3", nullptr));
+    EXPECT_EQ(EEXIST, CheckLineNotFoundOrCommentedOut(m_path, '#', "Blah 3", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, FindTextInCommandOutput)
+{
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput("echo Test123", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInCommandOutput(nullptr, "Test", nullptr));
+    EXPECT_NE(0, FindTextInCommandOutput("echo Test", "~does_not_exist", nullptr));
+    EXPECT_NE(0, FindTextInCommandOutput("blah", "Test", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "Test", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr));
+    EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr));
 }

@@ -58,7 +58,7 @@ add_module(securitybaseline)
 add_module(tpm)
 add_module(ztsi)
 
-if (BUILD_TESTS)
+if (BUILD_MODULETEST)
     add_subdirectory(test)
 endif()
 

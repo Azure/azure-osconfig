@@ -262,6 +262,9 @@ static const char* g_etcMotd = "/etc/motd";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
+static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
+static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
+
 static const char* g_tmp = "/tmp";
 static const char* g_varTmp = "/var/tmp";
 static const char* g_media = "/media/";
@@ -761,87 +764,104 @@ static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
-    return 0; //TBD
+    const char* command = "/sbin/ip addr list";
+    const char* text = "PROMISC";
+
+    return (FindTextInCommandOutput(command, text, SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
-    return 0; //TBD
+    static const char* etcSysCtlConf = "/etc/sysctl.conf";
+
+    return (CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDccpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install dccp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSctpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install sctp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDisabledSupportForRds(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install rds /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTipcIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder("/etc/modprobe.d/", "install tipc /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePermissionsOnBootloaderConfig(void)
@@ -853,52 +873,65 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
-    return 0; //TBD
+    //TBD: refine this and expand to other distros
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-password", '#', "remember", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInEnvironmentVariable("fs.suid_dumpable", "0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInFolder("/etc/security/limits.d/", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    return 0; //TBD
+    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minlen=14", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minclass=4", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "dcredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ucredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ocredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "lcredit=-1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    return 0; //TBD
+    //TBD: refine this and expand to other distros
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
@@ -909,12 +942,15 @@ static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
-    return 0; //TBD
+    const char* password = "password";
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggingIsConfigured(void)
 {
-    return 0; //TBD
+    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSyslogPackageIsInstalled(void)
@@ -939,29 +975,32 @@ static int AuditEnsureALoggingServiceIsSnabled(void)
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ((0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return ((0 == CheckFileAccess("/etc/syslog-ng/syslog-ng.conf", 0, 0, 644, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess("/etc/rsyslog.conf", 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog())) && 
+        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return 0; //TBD
+    return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
@@ -973,132 +1012,170 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return 0; //TBD
-}
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
+}                                                                         
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTftpServiceisDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
-    return 0; //TBD
+    const char* etcCronAllow = "/etc/cron.allow";
+    const char* etcAtAllow = "/etc/at.allow";
+
+    return ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckFileExists("/etc/at.deny", SecurityBaselineGetLog())) &&
+        (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
+        (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, SecurityBaselineGetLog())) &&
+        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshBestPracticeProtocol(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "IgnoreRhosts yes", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLogLevelIsSet(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LogLevel INFO", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshMaxAuthTriesIsSet(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MaxAuthTries 6", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshAccessIsLimited(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowUsers", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowGroups", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyUsers", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyGroups", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "RhostsRSAAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "HostbasedAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitEmptyPasswords no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveCountMax 0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveInterval", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLoginGraceTimeIsSet(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MACs", SecurityBaselineGetLog())) &&
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-256-etm@openssh.com", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-512", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "bhmac-sha2-256", SecurityBaselineGetLog()))))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshWarningBannerIsEnabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes128-ctr", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes192-ctr", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
-    return 0; //TBD
+    const char* cups = "cups";
+    return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
+        (false == IsDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return 0; //TBD
+    return CheckPackageInstalled("postfix", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return 0; //TBD
+    return (0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) ? 
+        FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
 }
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return ((false == IsDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
@@ -1108,7 +1185,7 @@ static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSnmpServerIsDisabled(void)
@@ -1128,12 +1205,17 @@ static int AuditEnsureNisServerIsDisabled(void)
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
-    return 0; //TBD
+    return CheckPackageInstalled("rsh", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
 {
-    return 0; //TBD
+    const char* etcSambaConf = "/etc/samba/smb.conf";
+    const char* minProtocol = "min protocol = SMB2";
+
+    return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
