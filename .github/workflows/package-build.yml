@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       artifact:
-        description: The artifact output containing the packages from this workflow.
+        description: The artifact name containing the packages from this workflow.
         type: string
         required: false
         default: 'package'
@@ -21,6 +21,11 @@ on:
         description: The architecture to build for.
         type: string
         required: true
+      test:
+        description: Include test collateral in the artifact.
+        type: boolean
+        required: false
+        default: false
 
 env:
   BUILD_TYPE: Release
@@ -29,6 +34,7 @@ env:
 
 jobs:
   package:
+    name: package ${{ inputs.os }}-${{ inputs.arch }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -78,9 +84,16 @@ jobs:
           arch: ${{ matrix.variant.arch }}
 
       - uses: actions/upload-artifact@v3
+        if: ${{ inputs.test }}
         with:
           name: ${{ inputs.artifact }}
           path: |
             ./build/osconfig_*
             ./build/modules/test/moduletest
             ./build/modules/bin/*.so
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ !inputs.test }}
+        with:
+          name: ${{ inputs.artifact }}
+          path: ./build/osconfig_*
