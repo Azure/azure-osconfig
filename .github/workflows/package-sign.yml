@@ -4,78 +4,68 @@ on:
   workflow_call:
     inputs:
       artifact:
-        description: The package artifact to sign. A new artifact (<artifact>-signed) will be created containing the signed packages.
+        description: The artifact containing the packages to be signed.
         type: string
-        required: false
-        default: "package"
-    outputs:
-      artifact:
-        description: The signed package artifact that is created.
-        value: ${{ jobs.signing.outputs.artifact }}
+        required: true
 
 jobs:
-  signing:
-    name: Signing
-    runs-on: windows-latest
-    outputs:
-      artifact: ${{ steps.artifact.outputs.name }}
-    environment: esrp
-
+  esrp:
+    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=windows-2022]
     steps:
       - uses: actions/checkout@v3
 
-      - uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.artifact }}
-          path: unsigned
-
       - name: Setup ESRP
         env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
           AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
           AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
           REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
         run: |
-          # Install ESRP client
+          az login --service-principal --username "$env:CLIENT_ID" --password "$env:CLIENT_SECRET" --tenant "$env:TENANT_ID"
+
           az storage blob download --file esrp.zip --auth-mode login --account-name osconfig --container esrpclient --name esrpclient.zip
           Expand-Archive -Path esrp.zip -DestinationPath .\esrp
 
-          # Install certificates
-          az keyvault secret download --vault-name "$AZURE_VAULT" --name "$AUTH_CERT" --file out.pfx
-          certutil -f -importpfx out.pfx
-          Remove-Item out.pfx
+          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file aadCert.pfx
+          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:REQUEST_SIGNING_CERT" --file esrpCert.pfx
 
-          az keyvault secret download --vault-name "$AZURE_VAULT" --name "$REQUEST_SIGNING_CERT" --file out.pfx
-          certutil -f -importpfx out.pfx
-          Remove-Item out.pfx
+          Set-Location -Path cert:\CurrentUser\My
+          Import-PfxCertificate -FilePath ${{ github.workspace }}\aadCert.pfx
+          Import-PfxCertificate -FilePath ${{ github.workspace }}\esrpCert.pfx
+          Remove-Item -Path ${{ github.workspace }}\aadCert.pfx
+          Remove-Item -Path ${{ github.workspace }}\esrpCert.pfx
 
-      - name: Create signing job
-        id: signing
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+          path: esrp/unsigned
+
+      - name: Run esrpclient
+        working-directory: .\esrp
         run: |
-          $files = (ls unsigned/*.deb | select -expand Name)
-          $source = "${{ github.workspace }}\unsigned"
-          $target = "${{ github.workspace }}\${{ inputs.artifact }}-signed"
-          mkdir $target
+          mkdir signed
 
-          cd .\esrp\createJob.ps1 $files $source $target
+          $auth = ".\Config\Auth.json"
+          $config = ".\Config\Config.json"
+          $policy = ".\Config\Policy.json"
+          $output = "Output\output.json"
+          $src = "${{ github.workspace }}\esrp\unsigned"
+          $dst = "${{ github.workspace }}\esrp\signed"
+
+          .\Config\createJob.ps1 (ls unsigned\*.deb | select -expand Name) $src $dst
+
           cat Job.json
 
-          echo artifact=${{ inputs.artifact }}-signed >> $GITHUB_OUTPUT
-          echo target=$target >> $GITHUB_OUTPUT
-
-      - name: Sign Packages
-        run: |
-          $auth = ".\esrp\Config\Auth.json"
-          $config = ".\esrp\Config\Config.json"
-          $policy = ".\esrp\Config\Policy.json"
-          $output = "${{ steps.signing.outputs.target }}\output.json"
-
-          .\esrp\EsrpClient.exe Sign -a $auth -c $config -p $policy -o $output -l Verbose
+          .\EsrpClient.exe Sign -a $auth -c $config -i "Job.json" -p $policy -o $output -l Verbose -f esrp.log
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.signing.outputs.artifact }}
-          path: ${{ steps.signing.outputs.target }}
+          name: ${{ inputs.artifact }}-signed
+          path: .\esrp\signed
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: esrp
+          path: ${{ github.workspace }}\esrp\esrp.log
