@@ -6,6 +6,9 @@ on:
       channel:
         required: true
         type: string
+      target:
+        required: true
+        type: string
       artifact:
         required: true
         type: string
@@ -68,14 +71,14 @@ jobs:
           name: ${{ inputs.artifact }}
           path: packages
 
-      # - name: Publish
-      #   env:
-      #     REPO_ID_ubuntu-18_04: ${{ secrets.REPO_ID_BIONIC }}
-      #     REPO_ID_ubuntu-20_04: ${{ secrets.REPO_ID_FOCAL }}
-      #     REPO_ID_debian-10: ${{ secrets.REPO_ID_BUSTER }}
-      #     REPO_ID_debian-11: ${{ secrets.REPO_ID_BULLSEYE }}
-      #   run: |
-      #     target=$(echo ${{ inputs.target }} | tr . _)
-      #     repo_id=$(eval echo "\$REPO_ID_$target")
+      - name: Publish
+        env:
+          REPO_ID_ubuntu-18_04: ${{ secrets.REPO_ID_BIONIC }}
+          REPO_ID_ubuntu-20_04: ${{ secrets.REPO_ID_FOCAL }}
+          REPO_ID_debian-10: ${{ secrets.REPO_ID_BUSTER }}
+          REPO_ID_debian-11: ${{ secrets.REPO_ID_BULLSEYE }}
+        run: |
+          target=$(echo ${{ inputs.target }} | tr . _)
+          repo_id=$(eval echo "\$REPO_ID_$target")
 
-      #     repoclient -v v3 -c config.json package add --check --wait 300 packages -r $repo_id
+          repoclient -v v3 -c config.json package add --check --wait 300 packages -r $repo_id

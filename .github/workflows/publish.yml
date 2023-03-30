@@ -34,5 +34,6 @@ jobs:
     uses: ./.github/workflows/package-publish.yml
     with:
       artifact: ${{ inputs.os }}-signed
+      target: ${{ inputs.os }}
       channel: ${{ inputs.channel }}
     secrets: inherit
