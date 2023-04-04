@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <PlatformCommon.h>
+#include <Log.h>
 
 OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 

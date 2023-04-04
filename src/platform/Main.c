@@ -1,14 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <PlatformCommon.h>
-#include <MpiServer.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#include <parson.h>
+
+#include <Server.h>
+#include <Log.h>
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
-
-// 30 seconds
-#define DOWORK_INTERVAL 30
 
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
@@ -19,8 +23,6 @@
 
 #define COMMAND_LOGGING "CommandLogging"
 #define FULL_LOGGING "FullLogging"
-
-static unsigned int g_lastTime = 0;
 
 extern OSCONFIG_LOG_HANDLE g_platformLog;
 
@@ -84,7 +86,7 @@ static void SignalInterrupt(int signal)
     }
     else
     {
-        OsConfigLogInfo(g_platformLog, "Interrupt signal (%d)", signal);
+        LOG_INFO("Interrupt signal (%d)", signal);
         g_stopSignal = signal;
     }
 
@@ -120,44 +122,28 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static void Refresh()
 {
-    MpiShutdown();
-    MpiInitialize();
+    ServerStop();
+    ServerStart();
 
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform reintialized");
+    LOG_INFO("OSConfig Platform reintialized");
 }
 
 void ScheduleRefresh(void)
 {
-    OsConfigLogInfo(GetPlatformLog(), "Scheduling refresh");
+    LOG_INFO("Scheduling refresh");
     g_refreshSignal = SIGHUP;
 }
 
 static void InitializePlatform(void)
 {
-    g_lastTime = (unsigned int)time(NULL);
-
-    MpiInitialize();
-
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
+    ServerStart();
+    LOG_INFO("OSConfig Platform intialized");
 }
 
 void TerminatePlatform(void)
 {
-    MpiShutdown();
-
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
-}
-
-static void PlatformDoWork(void)
-{
-    unsigned int currentTime = time(NULL);
-    unsigned int timeInterval = DOWORK_INTERVAL;
-
-    if (timeInterval <= (currentTime - g_lastTime))
-    {
-        MpiDoWork();
-        g_lastTime = (unsigned int)time(NULL);
-    }
+    ServerStop();
+    LOG_INFO("OSConfig Platform terminated");
 }
 
 static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
@@ -211,12 +197,12 @@ int main(int argc, char *argv[])
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
+    LOG_INFO("OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
+    LOG_INFO("OSConfig version: %s", OSCONFIG_VERSION);
 
     if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
+        LOG_INFO("WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
@@ -229,8 +215,6 @@ int main(int argc, char *argv[])
 
     while (0 == g_stopSignal)
     {
-        PlatformDoWork();
-
         sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
@@ -240,7 +224,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
+    LOG_INFO("OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
     CloseLog(&g_platformLog);

@@ -45,8 +45,8 @@ typedef struct MPI_CALLS
     MpiGetReportedCall mpiGetReported;
 } MPI_CALLS;
 
-void MpiServerInitialize(void);
-void MpiServerShutdown(void);
+void ServerStart(void);
+void ServerStop(void);
 
 HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
 
