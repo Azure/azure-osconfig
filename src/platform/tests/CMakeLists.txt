@@ -3,11 +3,11 @@
 
 project(modulesmanagertests)
 
-set(modulesmanagertests_files
+set(platform_files
     ../Log.c
-    ../ManagementModule.cpp
-    ../ModulesManager.cpp
-    ../MpiServer.c)
+    ../Module.c
+    ../Platform.c
+    ../Server.c)
 
 set(CMAKE_CXX_STANDARD 14)
 
@@ -25,8 +25,8 @@ set(OSCONFIG_JSON_SINGLE_REPORTED ${TEST_CONFIG_DIR}/osconfig-single-reported.js
 set(OSCONFIG_JSON_MULTIPLE_REPORTED ${TEST_CONFIG_DIR}/osconfig-multiple-reported.json)
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ModulesManagerTests.h.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/ModulesManagerTests.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestModules.h.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/TestModules.h
     @ONLY)
 
 configure_file(
@@ -49,25 +49,12 @@ configure_file(
     ${OSCONFIG_JSON_MULTIPLE_REPORTED}
     COPYONLY)
 
-add_library(modulesmanagermocks
-    CommonTests.cpp
-    MockManagementModule.cpp
-    MockModulesManager.cpp)
-target_link_libraries(modulesmanagermocks gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
-target_include_directories(modulesmanagermocks PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${MODULES_INC_DIR}" "${PLATFORM_INC_DIR}")
-
-add_executable(managementmoduletests ${modulesmanagertests_files} ManagementModuleTests.cpp)
-target_link_libraries(managementmoduletests modulesmanagermocks)
-gtest_discover_tests(managementmoduletests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
-
-add_executable(modulesmanagertests ${modulesmanagertests_files} ModulesManagerTests.cpp)
-target_link_libraries(modulesmanagertests modulesmanagermocks)
-gtest_discover_tests(modulesmanagertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
-
-add_executable(mpitests ${modulesmanagertests_files} MpiTests.cpp)
-target_link_libraries(mpitests modulesmanagermocks)
+add_executable(mpitests MpiTests.cpp ${platform_files})
+target_link_libraries(mpitests gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
+target_include_directories(mpitests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MODULES_INC_DIR} ${PLATFORM_INC_DIR})
 gtest_discover_tests(mpitests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
-add_executable(mpiservertests ${modulesmanagertests_files} MpiServerTests.cpp)
-target_link_libraries(mpiservertests modulesmanagermocks)
+add_executable(mpiservertests MpiServerTests.cpp ${platform_files})
+target_link_libraries(mpiservertests gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
+target_include_directories(mpiservertests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MODULES_INC_DIR} ${PLATFORM_INC_DIR})
 gtest_discover_tests(mpiservertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})

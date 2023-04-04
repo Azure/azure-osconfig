@@ -4,9 +4,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <CommonTests.h>
 #include <CommonUtils.h>
-#include <MpiServer.h>
+#include <Server.h>
 #include <Mpi.h>
 
 namespace Tests

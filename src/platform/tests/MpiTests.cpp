@@ -4,21 +4,15 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <PlatformCommon.h>
-#include <ManagementModule.h>
-#include <ModulesManager.h>
-#include <MockManagementModule.h>
-#include <MockModulesManager.h>
-
-using ::testing::Combine;
-using ::testing::Values;
+#include <TestModules.h>
+#include <CommonUtils.h>
+#include <Platform.h>
 
 namespace Tests
 {
     class MpiTests : public ::testing::Test
     {
     protected:
-        ModulesManager m_modulesManager;
         MPI_HANDLE m_handle;
 
         static const char m_defaultClient[];
@@ -39,16 +33,15 @@ namespace Tests
 
     void MpiTests::SetUp()
     {
-        MpiSession* session = new (std::nothrow) MpiSession(m_modulesManager, m_defaultClient);
-        ASSERT_NE(nullptr, session);
-        this->m_handle = reinterpret_cast<MPI_HANDLE>(session);
+        LoadModules(TEST_MODULES_DIR);
+        this->m_handle = MpiOpen(m_defaultClient, 0);
+        ASSERT_NE(nullptr, this->m_handle);
     }
 
     void MpiTests::TearDown()
     {
-        MpiSession* session = reinterpret_cast<MpiSession*>(this->m_handle);
-        ASSERT_NE(nullptr, session);
-        delete session;
+        MpiClose(this->m_handle);
+        UnloadModules();
     }
 
     TEST_F(MpiTests, MpiOpen)

@@ -1,8 +1,10 @@
-#ifndef MODULESMANAGERTESTS_H
-#define MODULESMANAGERTESTS_H
+#ifndef TESTMODULES_H
+#define TESTMODULES_H
+
+#include <Mmi.h>
 
 // Path to the test modules directory
-#define TEST_MODULE_DIR "@TEST_MODULES_DIR@"
+#define TEST_MODULES_DIR "@TEST_MODULES_DIR@"
 
 // Path to each test module
 #define TEST_VALID_MODULE_PATH_V1 "@VALID_MODULE_V1_PATH@"
@@ -124,4 +126,4 @@
     "}" \
 "}"
 
-#endif // MODULESMANAGERTESTS_H
+#endif // TESTMODULES_H
