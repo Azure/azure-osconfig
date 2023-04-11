@@ -2,7 +2,7 @@ name: Publish (insiders-fast)
 
 on:
   schedule:
-    - cron: "0 8 * * *"  # Every day at 8:00 am UTC
+    - cron: '0 8 * * *' # Every day at 8am UTC (12am PST)
 
 jobs:
   changes:
@@ -11,32 +11,18 @@ jobs:
     outputs:
       new: ${{ steps.commits.outputs.new }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Check last commit
         id: commits
         run: |
-          date=$(gh api graphql -F owner='Azure' -F name='azure-osconfig' -f query='
-            query($name: String!, $owner: String!) {
-              repository(name: $name, owner: $owner) {
-                defaultBranchRef {
-                  target {
-                    ... on Commit {
-                      pushedDate
-                    }
-                  }
-                }
-              }
-            }' | jq .data.repository.defaultBranchRef.target.pushedDate | sed 's/"//g')
+          echo Last commit: $(git log -1 --format=%ct)
+          echo 24hrs ago: $(date -d '24 hours ago' +%s)
 
-          # Only publish a new package if changes have been made since the last package was published
-
-          cutoff=$(date -d '1 day ago' +%s)
-          age=$(date -d "$date" +%s)
-
-          if (($age > $cutoff))
-          then
+          # If the last commit was greater than 24 hours ago, skip the build
+          if [[ $(git log -1 --format=%ct) -lt $(date -d '24 hours ago' +%s) ]]; then
             echo new=true >> $GITHUB_OUTPUT
           else
-            echo ::warning title="No changes since last nightly package" "Last change was committed on $date. Skipping nightly package."
             echo new=false >> $GITHUB_OUTPUT
           fi
 
