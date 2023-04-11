@@ -16,9 +16,6 @@ jobs:
       - name: Check last commit
         id: commits
         run: |
-          echo Last commit: $(git log -1 --format=%ct)
-          echo 24hrs ago: $(date -d '24 hours ago' +%s)
-
           # If the last commit was greater than 24 hours ago, skip the build
           if [[ $(git log -1 --format=%ct) -lt $(date -d '24 hours ago' +%s) ]]; then
             echo new=true >> $GITHUB_OUTPUT
