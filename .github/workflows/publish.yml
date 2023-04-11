@@ -21,6 +21,8 @@ jobs:
       os: ${{ inputs.os }}
       arch: ${{ matrix.arch }}
       artifact: ${{ inputs.os }}
+      display-name: package ${{ inputs.os }}-${{ inputs.arch }}
+      release: true
 
   signing:
     uses: ./.github/workflows/package-sign.yml
@@ -30,8 +32,8 @@ jobs:
     secrets: inherit
 
   publish:
-    needs: signing
     uses: ./.github/workflows/package-publish.yml
+    needs: signing
     with:
       artifact: ${{ inputs.os }}-signed
       target: ${{ inputs.os }}
