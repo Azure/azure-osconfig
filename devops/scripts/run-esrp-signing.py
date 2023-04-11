@@ -7,7 +7,7 @@ import subprocess
 import sys
 import re
 
-parser = argparse.ArgumentParser(description='Sign binaries for macOS')
+parser = argparse.ArgumentParser(description='Sign binaries via ESRPClient.exe')
 parser.add_argument('path', help='Path to file for signing')
 parser.add_argument('keycode', help='Platform-specific key code for signing')
 parser.add_argument('opcode', help='Platform-specific operation code for signing')
