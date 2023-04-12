@@ -1,0 +1,58 @@
+name: Publish (prod)
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  publish:
+    name: Publish
+    uses: ./.github/workflows/publish.yml
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
+    with:
+      os: ${{ matrix.os }}
+    secrets: inherit
+
+  release:
+    name: Release
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ubuntu-18.04-signed
+          path: packages
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ubuntu-20.04-signed
+          path: packages
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: debian-10-signed
+          path: packages
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: debian-11-signed
+          path: packages
+
+      - name: Create release
+        working-directory: packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --repo ${{ github.repository }} \
+            --title "${{ github.ref_name }}" \
+            --target ${{ github.sha }} \
+            --generate-notes \
+            --latest \
+            *.deb

@@ -1,0 +1,41 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        required: true
+      channel:
+        type: string
+        required: true
+
+jobs:
+  package:
+    name: package ${{ matrix.arch }}
+    uses: ./.github/workflows/package-build.yml
+    strategy:
+      matrix:
+        arch: [amd64, arm64, arm]
+    with:
+      os: ${{ inputs.os }}
+      arch: ${{ matrix.arch }}
+      artifact: ${{ inputs.os }}
+      display-name: package ${{ inputs.os }}-${{ inputs.arch }}
+      release: true
+
+  signing:
+    uses: ./.github/workflows/package-sign.yml
+    needs: package
+    with:
+      artifact: ${{ inputs.os }}
+    secrets: inherit
+
+  publish:
+    uses: ./.github/workflows/package-publish.yml
+    needs: signing
+    with:
+      artifact: ${{ inputs.os }}-signed
+      target: ${{ inputs.os }}
+      channel: ${{ inputs.channel }}
+    secrets: inherit

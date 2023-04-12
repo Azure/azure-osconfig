@@ -1,0 +1,52 @@
+name: Sign Package
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        description: The artifact containing the packages to be signed.
+        type: string
+        required: true
+
+jobs:
+  esrp:
+    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=windows-2022]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup ESRP
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
+          AUTH_CERT: ${{ secrets.AZURE_VAULT_AUTH_CERT_NAME }}
+          REQUEST_SIGNING_CERT: ${{ secrets.AZURE_VAULT_REQUEST_SIGNING_CERT_NAME }}
+        run: |
+          az login --service-principal --username "$env:CLIENT_ID" --password "$env:CLIENT_SECRET" --tenant "$env:TENANT_ID"
+
+          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:AUTH_CERT" --file out.pfx
+          certutil -f -importpfx out.pfx
+          Remove-Item -Path out.pfx
+
+          az keyvault secret download --vault-name "$env:AZURE_VAULT" --name "$env:REQUEST_SIGNING_CERT" --file out.pfx
+          certutil -f -importpfx out.pfx
+          Remove-Item -Path out.pfx
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+          path: unsigned
+
+      - name: Sign package
+        env:
+          AAD_ID: ${{ secrets.ESRP_AAD_ID }}
+          LINUX_KEY_CODE: ${{ secrets.ESRP_LINUX_KEY_CODE }}
+          LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
+        run: |
+          python devops\scripts\run-esrp-signing.py unsigned $env:LINUX_KEY_CODE $env:LINUX_OP_CODE
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}-signed
+          path: signed
