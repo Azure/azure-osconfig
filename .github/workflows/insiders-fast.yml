@@ -18,9 +18,9 @@ jobs:
         run: |
           # If the last commit was greater than 24 hours ago, skip the build
           if [[ $(git log -1 --format=%ct) -lt $(date -d '24 hours ago' +%s) ]]; then
-            echo new=true >> $GITHUB_OUTPUT
-          else
             echo new=false >> $GITHUB_OUTPUT
+          else
+            echo new=true >> $GITHUB_OUTPUT
           fi
 
   publish:
