@@ -1,0 +1,53 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main, future/*, release/*]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: 29 22 * * 2
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/azure/azure-osconfig/ubuntu20.04-amd64
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [cpp]
+        # CodeQL language support https://aka.ms/codeql-docs/language-support
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - run: mkdir build
+
+      - name: Generate build
+        working-directory: build
+        run: cmake ../src -DCMAKE_build-type=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
+
+      - name: Build azure-osconfig
+        working-directory: build
+        run: cmake --build . --config Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: '/language:${{matrix.language}}'
