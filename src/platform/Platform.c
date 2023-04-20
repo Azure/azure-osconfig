@@ -17,6 +17,11 @@
 #define AZURE_OSCONFIG "Azure OSConfig"
 #define CONFIG_JSON "/etc/osconfig/osconfig.json"
 
+#define MODEL_VERSION "ModelVersion"
+#define REPORTED "Reported"
+#define COMPONENT_NAME "ComponentName"
+#define OBJECT_NAME "ObjectName"
+
 #define UUID_LENGTH 36
 
 typedef struct MODULE_SESSION
@@ -36,17 +41,44 @@ typedef struct SESSION
     struct SESSION* next;
 } SESSION;
 
+typedef struct REPORTED_OBJECT
+{
+    const char* component;
+    const char* object;
+} REPORTED_OBJECT;
+
 static SESSION* g_sessions = NULL;
 static MODULE* g_modules = NULL;
+static REPORTED_OBJECT* g_reportedObjects = NULL;
+static int g_numReportedObjects = 0;
 
-char* GetClientName(void)
+void LoadModules(const char* directory)
 {
+    MODULE* module = NULL;
+    DIR* dir = NULL;
+    struct dirent* entry = NULL;
+    char* path = NULL;
     char* client = NULL;
     int version = 0;
+    const char* component = NULL;
+    const char* object = NULL;
+    int reportedCount = 0;
     JSON_Value* config = NULL;
     JSON_Object* configObject = NULL;
+    JSON_Array* reportedArray = NULL;
+    JSON_Object* reportedObject = NULL;
+    REPORTED_OBJECT* reported = NULL;
 
-    if (NULL == (config = json_parse_file(CONFIG_JSON)))
+    if (g_modules != NULL)
+    {
+        return;
+    }
+
+    if (NULL == (dir = opendir(directory)))
+    {
+        LOG_ERROR("Failed to open module directory: %s", directory);
+    }
+    else if (NULL == (config = json_parse_file(CONFIG_JSON)))
     {
         LOG_ERROR("Failed to parse %s\n", CONFIG_JSON);
     }
@@ -54,7 +86,7 @@ char* GetClientName(void)
     {
         LOG_ERROR("Failed to get config object\n");
     }
-    else if (0 == (version = json_object_get_number(configObject, "ModelVersion")))
+    else if (0 == (version = json_object_get_number(configObject, MODEL_VERSION)))
     {
         LOG_ERROR("Failed to get model version\n");
     }
@@ -69,39 +101,7 @@ char* GetClientName(void)
         {
             sprintf(client, "%s %d;%s", AZURE_OSCONFIG, version, OSCONFIG_VERSION);
         }
-    }
 
-    if (config != NULL)
-    {
-        json_value_free(config);
-    }
-
-    return client;
-}
-
-void LoadModules(const char* directory)
-{
-    MODULE* module = NULL;
-    char* path = NULL;
-    char* client = NULL;
-    DIR* dir = NULL;
-    struct dirent* entry = NULL;
-
-    if (g_modules != NULL)
-    {
-        return;
-    }
-
-    if (NULL == (dir = opendir(directory)))
-    {
-        LOG_ERROR("Failed to open module directory: %s", directory);
-    }
-    else if (NULL == (client = GetClientName()))
-    {
-        LOG_ERROR("Failed to get client name");
-    }
-    else
-    {
         while ((entry = readdir(dir)) != NULL)
         {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
@@ -135,6 +135,60 @@ void LoadModules(const char* directory)
             free(path);
         }
     }
+
+
+    if ((NULL != config) && (NULL != configObject))
+    {
+        if (NULL != (reportedArray = json_object_get_array(configObject, REPORTED)))
+        {
+            reportedCount = (int)json_array_get_count(reportedArray);
+            g_numReportedObjects = reportedCount;
+
+            if ((reportedCount > 0) && (NULL != (g_reportedObjects = (REPORTED_OBJECT*)malloc(sizeof(REPORTED_OBJECT) * reportedCount))))
+            {
+                for (int i = 0; i < reportedCount; i++)
+                {
+                    reported = &g_reportedObjects[i];
+
+                    if (NULL == (reportedObject = json_array_get_object(reportedArray, i)))
+                    {
+                        LOG_ERROR("Array element at index %d is not an object", i);
+                        g_numReportedObjects--;
+                    }
+                    else if (NULL == (component = json_object_get_string(reportedObject, COMPONENT_NAME)))
+                    {
+                        LOG_ERROR("Object at index %d is missing '%s'", i, COMPONENT_NAME);
+                        g_numReportedObjects--;
+                    }
+                    else if (NULL == (component = strdup(component)))
+                    {
+                        LOG_ERROR("Failed to allocate memory for component name");
+                        g_numReportedObjects--;
+                    }
+                    else if (NULL == (object = json_object_get_string(reportedObject, OBJECT_NAME)))
+                    {
+                        LOG_ERROR("Object at index %d is missing '%s'", i, OBJECT_NAME);
+                        g_numReportedObjects--;
+                    }
+                    else if (NULL == (object = strdup(object)))
+                    {
+                        LOG_ERROR("Failed to allocate memory for object name");
+                        g_numReportedObjects--;
+                    }
+                    else
+                    {
+                        reported->component = component;
+                        reported->object = object;
+                    }
+                }
+            }
+        }
+    }
+
+    if (config != NULL)
+    {
+        json_value_free(config);
+    }
 }
 
 void UnloadModules(void)
@@ -148,6 +202,9 @@ void UnloadModules(void)
         UnloadModule(module);
         module = next;
     }
+
+    FREE_MEMORY(g_reportedObjects);
+    g_numReportedObjects = 0;
 }
 
 static char* GenerateUuid(void)
@@ -232,7 +289,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
         LOG_ERROR("Failed to allocate memory for session");
     }
 
-    return (session) ? (MPI_HANDLE)session->uuid : NULL;
+    return (session) ? (MPI_HANDLE)strdup(session->uuid) : NULL;
 }
 
 SESSION* FindSession(const char* uuid)
@@ -301,18 +358,20 @@ bool ComponentExists(MODULE* module, const char* component)
     return exists;
 }
 
-MODULE_SESSION* FindModuleSession(MODULE_SESSION* session, const char* component)
+MODULE_SESSION* FindModuleSession(MODULE_SESSION* modules, const char* component)
 {
-    while (session != NULL)
+    MODULE_SESSION* current = modules;
+
+    while (current != NULL)
     {
-        if (ComponentExists(session->module, component))
+        if (ComponentExists(current->module, component))
         {
             break;
         }
-        session = session->next;
+        current = current->next;
     }
 
-    return session;
+    return current;
 }
 
 int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const MPI_JSON_STRING payload, const int payloadSizeBytes)
@@ -378,7 +437,6 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
 int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MPI_OK;
-    // TODO: here and elsewhere - UUID type
     const char* uuid = (const char*)handle;
     char* json = NULL;
     const char* component = NULL;
@@ -476,6 +534,17 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     SESSION* session = NULL;
     MODULE_SESSION* moduleSession = NULL;
     JSON_Value* rootValue = NULL;
+    JSON_Object* rootObject = NULL;
+    JSON_Value* componentValue = NULL;
+    JSON_Object* componentObject = NULL;
+    JSON_Value* objectValue = NULL;
+    REPORTED_OBJECT* reported = NULL;
+    MMI_JSON_STRING mmiPayload = NULL;
+    const char* componentName = NULL;
+    const char* objectName = NULL;
+    int mmiPayloadSizeBytes = 0;
+    int mmiStatus = MMI_OK;
+    char* payloadJson = NULL;
 
     if ((NULL == handle) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -492,20 +561,75 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
         LOG_ERROR("Failed to initialize json object");
         status = ENOMEM;
     }
+    else if (NULL == (rootObject = json_value_get_object(rootValue)))
+    {
+        LOG_ERROR("Failed to get root json object from value");
+        status = ENOMEM;
+    }
     else
     {
-        // TODO:
-        // Parse the osconfig.json file and iterate over the objects in the "Reported" array
-        // For each component-object pair, call the module's get function and add the result to the json object
+        for (int i = 0; i < g_numReportedObjects; i++)
+        {
+            reported = &g_reportedObjects[i];
+            componentName = reported->component;
+            objectName = reported->object;
 
-        UNUSED(session);
-        UNUSED(moduleSession);
+            if (NULL == (moduleSession = FindModuleSession(session->modules, componentName)))
+            {
+                LOG_ERROR("No module exists with component: %s", componentName);
+            }
+            else
+            {
+                mmiStatus = moduleSession->module->get(moduleSession->handle, componentName, objectName, &mmiPayload, &mmiPayloadSizeBytes);
 
-        *payload = json_serialize_to_string(rootValue);
+                LOG_TRACE("MmiGet(%s, %s) returned %d (%.*s)", componentName, objectName, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
+
+                if (MMI_OK != mmiStatus)
+                {
+                    LOG_ERROR("MmiGet(%s, %s), returned %d", componentName, objectName, mmiStatus);
+                }
+                else if (NULL == (payloadJson = (char*)malloc(mmiPayloadSizeBytes + 1)))
+                {
+                    LOG_ERROR("Failed to allocate memory for json");
+                }
+                else
+                {
+                    memcpy(payloadJson, mmiPayload, mmiPayloadSizeBytes);
+                    payloadJson[mmiPayloadSizeBytes] = '\0';
+
+                    if (NULL == (objectValue = json_parse_string(payloadJson)))
+                    {
+                        LOG_ERROR("MmiGet(%s, %s) returned an invalid payload: %s", componentName, objectName, payloadJson);
+                    }
+                    else
+                    {
+                        if (NULL == (componentValue = json_object_get_value(rootObject, componentName)))
+                        {
+                            componentValue = json_value_init_object();
+                            json_object_set_value(rootObject, componentName, componentValue);
+                        }
+
+                        if (NULL == (componentObject = json_value_get_object(componentValue)))
+                        {
+                            LOG_ERROR("Failed to get JSON object for component: %s", componentName);
+                        }
+                        else
+                        {
+                            json_object_set_value(componentObject, objectName, objectValue);
+                        }
+                    }
+
+                    FREE_MEMORY(payloadJson);
+                }
+
+                FREE_MEMORY(mmiPayload);
+            }
+        }
+
+        *payload = json_serialize_to_string_pretty(rootValue);
         *payloadSizeBytes = (int)strlen(*payload);
         json_value_free(rootValue);
     }
-
 
     return status;
 }
