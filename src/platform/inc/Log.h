@@ -12,9 +12,11 @@
 
 #define LOG_INFO(format, ...) OsConfigLogInfo(GetPlatformLog(), format, ##__VA_ARGS__)
 #define LOG_ERROR(format, ...) OsConfigLogError(GetPlatformLog(), format, ##__VA_ARGS__)
+
 #define LOG_TRACE(format, ...) if (IsFullLoggingEnabled()) { \
     OsConfigLogInfo(GetPlatformLog(), format, ##__VA_ARGS__); \
 }
+
 #define LOG_WARN(format, ...) if (IsFullLoggingEnabled()) { \
     OsConfigLogError(GetPlatformLog(), format, ##__VA_ARGS__); \
 }
