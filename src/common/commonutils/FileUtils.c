@@ -274,22 +274,22 @@ static unsigned int FilterFileAccessFlags(unsigned int mode)
     return flags;
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+static int CheckAccess(bool directory, const char* what, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
     int result = ENOENT;
 
-    if (NULL == name)
+    if (NULL == what)
     {
-        OsConfigLogError(log, "CheckAccess called with an invalid name argument");
+        OsConfigLogError(log, "CheckAccess called with an invalid what argument");
         return EINVAL;
     }
 
-    if (directory ? DirectoryExists(name) : FileExists(name))
+    if (directory ? DirectoryExists(what) : FileExists(what))
     {
-        if (0 == (result = stat(name, &statStruct)))
+        if (0 == (result = stat(what, &statStruct)))
         {
             if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid) && 
                 (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_uid))))) ||
@@ -297,7 +297,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_gid))))))
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                    what, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
             else 
@@ -310,76 +310,76 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
                     OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)",
-                        name, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
+                        what, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
                         desiredOwnerId, desiredGroupId, desiredAccess, desiredMode);
                     result = 0;
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d-%d) does not match expected (%d-%d)",
-                        name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
+                        what, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
                     result = ENOENT;
                 }
             }
         }
         else
         {
-            OsConfigLogError(log, "CheckAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogError(log, "CheckAccess: stat('%s') failed with %d", what, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
+        OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", what);
         result = 0;
     }
 
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+static int SetAccess(bool directory, const char* what, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
     int result = ENOENT;
 
-    if (NULL == name)
+    if (NULL == what)
     {
-        OsConfigLogError(log, "SetAccess called with an invalid name argument");
+        OsConfigLogError(log, "SetAccess called with an invalid what argument");
         return EINVAL;
     }
 
-    if (directory ? DirectoryExists(name) : FileExists(name))
+    if (directory ? DirectoryExists(what) : FileExists(what))
     {
-        if (0 == (result = CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
+        if (0 == (result = CheckAccess(directory, what, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
         {
             OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
-                name, desiredOwnerId, desiredGroupId, desiredAccess);
+                what, desiredOwnerId, desiredGroupId, desiredAccess);
             result = 0;
         }
         else
         {
-            if (0 == (result = chown(name, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
+            if (0 == (result = chown(what, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
             {
-                OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
+                OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", what, desiredOwnerId, desiredGroupId);
 
-                if (0 == (result = chmod(name, desiredAccess)))
+                if (0 == (result = chmod(what, desiredAccess)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", name, desiredAccess);
+                    OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", what, desiredAccess);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetAccess: chmod('%s', %d) failed with %d", name, desiredAccess, errno);
+                    OsConfigLogError(log, "SetAccess: chmod('%s', %d) failed with %d", what, desiredAccess, errno);
                 }
             }
             else
             {
-                OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+                OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", what, desiredOwnerId, desiredGroupId, errno);
             }
 
         }
     }
     else
     {
-        OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", name);
+        OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", what);
         result = 0;
     }
 
