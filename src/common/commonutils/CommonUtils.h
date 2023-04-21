@@ -79,6 +79,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
+int FindTextInCommandOutput(const char* command, const char* text, void* log);
                                                                                                                                                                                                                                                            
 char* DuplicateString(const char* source);
 

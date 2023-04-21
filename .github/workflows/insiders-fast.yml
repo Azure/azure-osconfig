@@ -1,0 +1,37 @@
+name: Publish (insiders-fast)
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Every day at 8am UTC (12am PST)
+
+jobs:
+  changes:
+    name: Check changes
+    runs-on: ubuntu-latest
+    outputs:
+      new: ${{ steps.commits.outputs.new }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check last commit
+        id: commits
+        run: |
+          # If the last commit was greater than 24 hours ago, skip the build
+          if [[ $(git log -1 --format=%ct) -lt $(date -d '24 hours ago' +%s) ]]; then
+            echo new=false >> $GITHUB_OUTPUT
+          else
+            echo new=true >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+    name: Publish
+    needs: changes
+    if: ${{ needs.changes.outputs.new == 'true' }}
+    uses: ./.github/workflows/publish.yml
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
+    with:
+      os: ${{ matrix.os }}
+      channel: insiders-fast
+    secrets: inherit

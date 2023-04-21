@@ -17,6 +17,7 @@ jobs:
       os: ${{ inputs.target }}
       arch: ${{ inputs.arch }}
       artifact: ${{ inputs.target }}
+      test: true
 
   test:
     needs: package

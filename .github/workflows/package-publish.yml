@@ -1,0 +1,81 @@
+name: Publish Package
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+      artifact:
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=ubuntu-22.04]
+    environment: ${{ inputs.channel }}
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}
+          path: packages
+
+      - name: Download repoclient
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
+          REPOCLIENT_KEY: ${{ secrets.REPOCLIENT_KEY }}
+        run: |
+          az login --service-principal --username "$CLIENT_ID" --password "$CLIENT_SECRET" --tenant "$TENANT_ID"
+
+          az storage blob download \
+            --auth-mode login \
+            --account-name osconfig \
+            -c azure-repoapi-client \
+            -n azure-repoapi-client_2.0.1_amd64.deb \
+            -f repoclient.deb
+
+      - name: Install repoclient
+        run: |
+          sudo apt-get install python3-adal --yes
+          sudo dpkg -i repoclient.deb
+          rm repoclient.deb
+
+      - name: Configure repoclient
+        env:
+          AAD_CLIENT_ID: ${{ secrets.AAD_CLIENT_ID }}
+          AAD_CLIENT_SECRET: ${{ secrets.AAD_CLIENT_SECRET }}
+        run: |
+          config=$(cat <<EOF
+          {
+              "server": "azure-apt-cat.cloudapp.net",
+              "port": "443",
+              "repositoryId": "osconfig",
+              "AADAuthorityUrl": "https://login.microsoftonline.com",
+              "AADTenant": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+              "AADResource": "https://microsoft.onmicrosoft.com/945999e9-da09-4b5b-878f-b66c414602c0",
+              "AADClientId": "$AAD_CLIENT_ID",
+              "AADClientSecret": "$AAD_CLIENT_SECRET"
+          }
+          EOF
+          )
+
+          echo "$config" > config.json
+
+      - name: Publish
+        env:
+          REPO_ID_ubuntu_1804: ${{ secrets.REPO_ID_BIONIC }}
+          REPO_ID_ubuntu_2004: ${{ secrets.REPO_ID_FOCAL }}
+          REPO_ID_debian_10: ${{ secrets.REPO_ID_BUSTER }}
+          REPO_ID_debian_11: ${{ secrets.REPO_ID_BULLSEYE }}
+        run: |
+          target=$(echo ${{ inputs.target }} | tr - _ | tr -d .)
+          repo_id=$(eval echo "\$REPO_ID_$target")
+
+          repoclient -v v3 -c config.json package add --check --wait 300 ./packages -r $repo_id

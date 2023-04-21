@@ -14,6 +14,8 @@
 
 #include "SecurityBaseline.h"
 
+typedef int(*AuditRemediate)(void);
+
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
 
@@ -498,7 +500,7 @@ static int AuditEnsureXinetdNotInstalled(void)
     return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
-static int auditEnsureAllTelnetdPackagesUninstalled(void)
+static int AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
     return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
@@ -759,92 +761,118 @@ static int AuditEnsureKernelCompiledFromApprovedSources(void)
 
 static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
-    return 0; //TBD
+    const char* readIpTables = "iptables -S";
+
+    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
-    return 0; //TBD
+    const char* command = "sysctl -a";
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return 0; //TBD
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return 0; //TBD
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
-    return 0; //TBD
+    const char* command = "/sbin/ip addr list";
+    const char* text = "PROMISC";
+
+    return (FindTextInCommandOutput(command, text, SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
-    return 0; //TBD
+    static const char* etcSysCtlConf = "/etc/sysctl.conf";
+
+    return (CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog()) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
+        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDccpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSctpIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDisabledSupportForRds(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureTipcIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return 0; //TBD
+    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePermissionsOnBootloaderConfig(void)
@@ -856,52 +884,65 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
-    return 0; //TBD
+    //TBD: refine this and expand to other distros
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-password", '#', "remember", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return 0; //TBD
+    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    return 0; //TBD
+    return ((0 == FindTextInEnvironmentVariable("fs.suid_dumpable", "0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
+        (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    return 0; //TBD
+    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
+
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minlen=14", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minclass=4", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "dcredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ucredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ocredit=-1", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "lcredit=-1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    return 0; //TBD
+    //TBD: refine this and expand to other distros
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
@@ -912,12 +953,15 @@ static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
-    return 0; //TBD
+    const char* password = "password";
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggingIsConfigured(void)
 {
-    return 0; //TBD
+    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSyslogPackageIsInstalled(void)
@@ -1107,17 +1151,19 @@ static int AuditEnsureAppropriateCiphersForSsh(void)
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
-    return 0; //TBD
+    const char* cups = "cups";
+    return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
+        (false == IsDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return 0; //TBD
+    return CheckPackageInstalled("postfix", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
@@ -1128,17 +1174,19 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return (false == IsDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return 0; //TBD
+    return ((false == IsDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
+        (false == IsDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
@@ -1173,7 +1221,12 @@ static int AuditEnsureRshClientNotInstalled(void)
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
 {
-    return 0; //TBD
+    const char* etcSambaConf = "/etc/samba/smb.conf";
+    const char* minProtocol = "min protocol = SMB2";
+
+    return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
+        ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
@@ -1207,172 +1260,189 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
+AuditRemediate g_auditChecks[] =
+{
+    &AuditEnsurePermissionsOnEtcIssue,
+    &AuditEnsurePermissionsOnEtcIssueNet,
+    &AuditEnsurePermissionsOnEtcHostsAllow,
+    &AuditEnsurePermissionsOnEtcHostsDeny,
+    &AuditEnsurePermissionsOnEtcSshSshdConfig,
+    &AuditEnsurePermissionsOnEtcShadow,
+    &AuditEnsurePermissionsOnEtcShadowDash,
+    &AuditEnsurePermissionsOnEtcGShadow,
+    &AuditEnsurePermissionsOnEtcGShadowDash,
+    &AuditEnsurePermissionsOnEtcPasswd,
+    &AuditEnsurePermissionsOnEtcPasswdDash,
+    &AuditEnsurePermissionsOnEtcGroup,
+    &AuditEnsurePermissionsOnEtcGroupDash,
+    &AuditEnsurePermissionsOnEtcAnacronTab,
+    &AuditEnsurePermissionsOnEtcCronD,
+    &AuditEnsurePermissionsOnEtcCronDaily,
+    &AuditEnsurePermissionsOnEtcCronHourly,
+    &AuditEnsurePermissionsOnEtcCronMonthly,
+    &AuditEnsurePermissionsOnEtcCronWeekly,
+    &AuditEnsurePermissionsOnEtcMotd,
+    &AuditEnsureKernelSupportForCpuNx,
+    &AuditEnsureNodevOptionOnHomePartition,
+    &AuditEnsureNodevOptionOnTmpPartition,
+    &AuditEnsureNodevOptionOnVarTmpPartition,
+    &AuditEnsureNosuidOptionOnTmpPartition,
+    &AuditEnsureNosuidOptionOnVarTmpPartition,
+    &AuditEnsureNoexecOptionOnVarTmpPartition,
+    &AuditEnsureNoexecOptionOnDevShmPartition,
+    &AuditEnsureNodevOptionEnabledForAllRemovableMedia,
+    &AuditEnsureNoexecOptionEnabledForAllRemovableMedia,
+    &AuditEnsureNosuidOptionEnabledForAllRemovableMedia,
+    &AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
+    &AuditEnsureInetdNotInstalled,
+    &AuditEnsureXinetdNotInstalled,
+    &AuditEnsureAllTelnetdPackagesUninstalled,
+    &AuditEnsureRshServerNotInstalled,
+    &AuditEnsureNisNotInstalled,
+    &AuditEnsureTftpdNotInstalled,
+    &AuditEnsureReadaheadFedoraNotInstalled,
+    &AuditEnsureBluetoothHiddNotInstalled,
+    &AuditEnsureIsdnUtilsBaseNotInstalled,
+    &AuditEnsureIsdnUtilsKdumpToolsNotInstalled,
+    &AuditEnsureIscDhcpdServerNotInstalled,
+    &AuditEnsureSendmailNotInstalled,
+    &AuditEnsureSldapdNotInstalled,
+    &AuditEnsureBind9NotInstalled,
+    &AuditEnsureDovecotCoreNotInstalled,
+    &AuditEnsureAuditdInstalled,
+    &AuditEnsureAllEtcPasswdGroupsExistInEtcGroup,
+    &AuditEnsureNoDuplicateUidsExist,
+    &AuditEnsureNoDuplicateGidsExist,
+    &AuditEnsureNoDuplicateUserNamesExist,
+    &AuditEnsureNoDuplicateGroupsExist,
+    &AuditEnsureShadowGroupIsEmpty,
+    &AuditEnsureRootGroupExists,
+    &AuditEnsureAllAccountsHavePasswords,
+    &AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
+    &AuditEnsureNoLegacyPlusEntriesInEtcPasswd,
+    &AuditEnsureNoLegacyPlusEntriesInEtcShadow,
+    &AuditEnsureNoLegacyPlusEntriesInEtcGroup,
+    &AuditEnsureDefaultRootAccountGroupIsGidZero,
+    &AuditEnsureRootIsOnlyUidZeroAccount,
+    &AuditEnsureAllUsersHomeDirectoriesExist,
+    &AuditEnsureUsersOwnTheirHomeDirectories,
+    &AuditEnsureRestrictedUserHomeDirectories,
+    &AuditEnsurePasswordHashingAlgorithm,
+    &AuditEnsureMinDaysBetweenPasswordChanges,
+    &AuditEnsureInactivePasswordLockPeriod,
+    &AuditEnsureMaxDaysBetweenPasswordChanges,
+    &AuditEnsurePasswordExpiration,
+    &AuditEnsurePasswordExpirationWarning,
+    &AuditEnsureSystemAccountsAreNonLogin,
+    &AuditEnsureAuthenticationRequiredForSingleUserMode,
+    &AuditEnsurePrelinkIsDisabled,
+    &AuditEnsureTalkClientIsNotInstalled,
+    &AuditEnsureDotDoesNotAppearInRootsPath,
+    &AuditEnsureCronServiceIsEnabled,
+    &AuditEnsureRemoteLoginWarningBannerIsConfigured,
+    &AuditEnsureLocalLoginWarningBannerIsConfigured,
+    &AuditEnsureAuditdServiceIsRunning,
+    &AuditEnsureSuRestrictedToRootGroup,
+    &AuditEnsureDefaultUmaskForAllUsers,
+    &AuditEnsureAutomountingDisabled,
+    &AuditEnsureKernelCompiledFromApprovedSources,
+    &AuditEnsureDefaultDenyFirewallPolicyIsSet,
+    &AuditEnsurePacketRedirectSendingIsDisabled,
+    &AuditEnsureIcmpRedirectsIsDisabled,
+    &AuditEnsureSourceRoutedPacketsIsDisabled,
+    &AuditEnsureAcceptingSourceRoutedPacketsIsDisabled,
+    &AuditEnsureIgnoringBogusIcmpBroadcastResponses,
+    &AuditEnsureIgnoringIcmpEchoPingsToMulticast,
+    &AuditEnsureMartianPacketLoggingIsEnabled,
+    &AuditEnsureReversePathSourceValidationIsEnabled,
+    &AuditEnsureTcpSynCookiesAreEnabled,
+    &AuditEnsureSystemNotActingAsNetworkSniffer,
+    &AuditEnsureAllWirelessInterfacesAreDisabled,
+    &AuditEnsureIpv6ProtocolIsEnabled,
+    &AuditEnsureDccpIsDisabled,
+    &AuditEnsureSctpIsDisabled,
+    &AuditEnsureDisabledSupportForRds,
+    &AuditEnsureTipcIsDisabled,
+    &AuditEnsureZeroconfNetworkingIsDisabled,
+    &AuditEnsurePermissionsOnBootloaderConfig,
+    &AuditEnsurePasswordReuseIsLimited,
+    &AuditEnsureMountingOfUsbStorageDevicesIsDisabled,
+    &AuditEnsureCoreDumpsAreRestricted,
+    &AuditEnsurePasswordCreationRequirements,
+    &AuditEnsureLockoutForFailedPasswordAttempts,
+    &AuditEnsureDisabledInstallationOfCramfsFileSystem,
+    &AuditEnsureDisabledInstallationOfFreevxfsFileSystem,
+    &AuditEnsureDisabledInstallationOfHfsFileSystem,
+    &AuditEnsureDisabledInstallationOfHfsplusFileSystem,
+    &AuditEnsureDisabledInstallationOfJffs2FileSystem,
+    &AuditEnsureVirtualMemoryRandomizationIsEnabled,
+    &AuditEnsureAllBootloadersHavePasswordProtectionEnabled,
+    &AuditEnsureLoggingIsConfigured,
+    &AuditEnsureSyslogPackageIsInstalled,
+    &AuditEnsureSystemdJournaldServicePersistsLogMessages,
+    &AuditEnsureALoggingServiceIsSnabled,
+    &AuditEnsureFilePermissionsForAllRsyslogLogFiles,
+    &AuditEnsureLoggerConfigurationFilesAreRestricted,
+    &AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
+    &AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
+    &AuditEnsureRsyslogNotAcceptingRemoteMessages,
+    &AuditEnsureSyslogRotaterServiceIsEnabled,
+    &AuditEnsureTelnetServiceIsDisabled,
+    &AuditEnsureRcprshServiceIsDisabled,
+    &AuditEnsureTftpServiceisDisabled,
+    &AuditEnsureAtCronIsRestrictedToAuthorizedUsers,
+    &AuditEnsureSshBestPracticeProtocol,
+    &AuditEnsureSshBestPracticeIgnoreRhosts,
+    &AuditEnsureSshLogLevelIsSet,
+    &AuditEnsureSshMaxAuthTriesIsSet,
+    &AuditEnsureSshAccessIsLimited,
+    &AuditEnsureSshRhostsRsaAuthenticationIsDisabled,
+    &AuditEnsureSshHostbasedAuthenticationIsDisabled,
+    &AuditEnsureSshPermitRootLoginIsDisabled,
+    &AuditEnsureSshPermitEmptyPasswordsIsDisabled,
+    &AuditEnsureSshIdleTimeoutIntervalIsConfigured,
+    &AuditEnsureSshLoginGraceTimeIsSet,
+    &AuditEnsureOnlyApprovedMacAlgorithmsAreUsed,
+    &AuditEnsureSshWarningBannerIsEnabled,
+    &AuditEnsureUsersCannotSetSshEnvironmentOptions,
+    &AuditEnsureAppropriateCiphersForSsh,
+    &AuditEnsureAvahiDaemonServiceIsDisabled,
+    &AuditEnsureCupsServiceisDisabled,
+    &AuditEnsurePostfixPackageIsUninstalled,
+    &AuditEnsurePostfixNetworkListeningIsDisabled,
+    &AuditEnsureRpcgssdServiceIsDisabled,
+    &AuditEnsureRpcidmapdServiceIsDisabled,
+    &AuditEnsurePortmapServiceIsDisabled,
+    &AuditEnsureNetworkFileSystemServiceIsDisabled,
+    &AuditEnsureRpcsvcgssdServiceIsDisabled,
+    &AuditEnsureSnmpServerIsDisabled,
+    &AuditEnsureRsynServiceIsDisabled,
+    &AuditEnsureNisServerIsDisabled,
+    &AuditEnsureRshClientNotInstalled,
+    &AuditEnsureSmbWithSambaIsDisabled,
+    &AuditEnsureUsersDotFilesArentGroupOrWorldWritable,
+    &AuditEnsureNoUsersHaveDotForwardFiles,
+    &AuditEnsureNoUsersHaveDotNetrcFiles,
+    &AuditEnsureNoUsersHaveDotRhostsFiles,
+    &AuditEnsureRloginServiceIsDisabled,
+    &AuditEnsureUnnecessaryAccountsAreRemoved
+};
+
 int AuditSecurityBaseline(void)
 {
-    return ((0 == AuditEnsurePermissionsOnEtcIssue()) && 
-        (0 == AuditEnsurePermissionsOnEtcIssueNet()) && 
-        (0 == AuditEnsurePermissionsOnEtcHostsAllow()) && 
-        (0 == AuditEnsurePermissionsOnEtcHostsDeny()) &&
-        (0 == AuditEnsurePermissionsOnEtcSshSshdConfig()) &&
-        (0 == AuditEnsurePermissionsOnEtcShadow()) &&
-        (0 == AuditEnsurePermissionsOnEtcShadowDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcGShadow()) &&
-        (0 == AuditEnsurePermissionsOnEtcGShadowDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcPasswd()) &&
-        (0 == AuditEnsurePermissionsOnEtcPasswdDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcGroup()) &&
-        (0 == AuditEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == AuditEnsurePermissionsOnEtcAnacronTab()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronD()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronDaily()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronHourly()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == AuditEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == AuditEnsurePermissionsOnEtcMotd()) &&
-        (0 == AuditEnsureKernelSupportForCpuNx()) &&
-        (0 == AuditEnsureNodevOptionOnHomePartition()) &&
-        (0 == AuditEnsureNodevOptionOnTmpPartition()) &&
-        (0 == AuditEnsureNodevOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNosuidOptionOnTmpPartition()) &&
-        (0 == AuditEnsureNosuidOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNoexecOptionOnVarTmpPartition()) &&
-        (0 == AuditEnsureNoexecOptionOnDevShmPartition()) &&
-        (0 == AuditEnsureNodevOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNoexecOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNosuidOptionEnabledForAllRemovableMedia()) &&
-        (0 == AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts()) &&
-        (0 == AuditEnsureInetdNotInstalled()) &&
-        (0 == AuditEnsureXinetdNotInstalled()) &&
-        (0 == auditEnsureAllTelnetdPackagesUninstalled()) &&
-        (0 == AuditEnsureRshServerNotInstalled()) &&
-        (0 == AuditEnsureNisNotInstalled()) &&
-        (0 == AuditEnsureTftpdNotInstalled()) &&
-        (0 == AuditEnsureReadaheadFedoraNotInstalled()) &&
-        (0 == AuditEnsureBluetoothHiddNotInstalled()) &&
-        (0 == AuditEnsureIsdnUtilsBaseNotInstalled()) &&
-        (0 == AuditEnsureIsdnUtilsKdumpToolsNotInstalled()) &&
-        (0 == AuditEnsureIscDhcpdServerNotInstalled()) &&
-        (0 == AuditEnsureSendmailNotInstalled()) &&
-        (0 == AuditEnsureSldapdNotInstalled()) &&
-        (0 == AuditEnsureBind9NotInstalled()) &&
-        (0 == AuditEnsureDovecotCoreNotInstalled()) &&
-        (0 == AuditEnsureAuditdInstalled()) &&
-        (0 == AuditEnsureAllEtcPasswdGroupsExistInEtcGroup()) &&
-        (0 == AuditEnsureNoDuplicateUidsExist()) &&
-        (0 == AuditEnsureNoDuplicateGidsExist()) &&
-        (0 == AuditEnsureNoDuplicateUserNamesExist()) &&
-        (0 == AuditEnsureNoDuplicateGroupsExist()) &&
-        (0 == AuditEnsureShadowGroupIsEmpty()) &&
-        (0 == AuditEnsureRootGroupExists()) &&
-        (0 == AuditEnsureAllAccountsHavePasswords()) &&
-        (0 == AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcPasswd()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcShadow()) &&
-        (0 == AuditEnsureNoLegacyPlusEntriesInEtcGroup()) &&
-        (0 == AuditEnsureDefaultRootAccountGroupIsGidZero()) &&
-        (0 == AuditEnsureRootIsOnlyUidZeroAccount()) &&
-        (0 == AuditEnsureAllUsersHomeDirectoriesExist()) &&
-        (0 == AuditEnsureUsersOwnTheirHomeDirectories()) &&
-        (0 == AuditEnsureRestrictedUserHomeDirectories()) &&
-        (0 == AuditEnsurePasswordHashingAlgorithm()) &&
-        (0 == AuditEnsureMinDaysBetweenPasswordChanges()) &&
-        (0 == AuditEnsureInactivePasswordLockPeriod()) &&
-        (0 == AuditEnsureMaxDaysBetweenPasswordChanges()) &&
-        (0 == AuditEnsurePasswordExpiration()) &&
-        (0 == AuditEnsurePasswordExpirationWarning()) &&
-        (0 == AuditEnsureSystemAccountsAreNonLogin()) &&
-        (0 == AuditEnsureAuthenticationRequiredForSingleUserMode()) &&
-        (0 == AuditEnsurePrelinkIsDisabled()) &&
-        (0 == AuditEnsureTalkClientIsNotInstalled()) &&
-        (0 == AuditEnsureDotDoesNotAppearInRootsPath()) &&
-        (0 == AuditEnsureCronServiceIsEnabled()) &&
-        (0 == AuditEnsureRemoteLoginWarningBannerIsConfigured()) &&
-        (0 == AuditEnsureLocalLoginWarningBannerIsConfigured()) &&
-        (0 == AuditEnsureAuditdServiceIsRunning()) &&
-        (0 == AuditEnsureSuRestrictedToRootGroup()) &&
-        (0 == AuditEnsureDefaultUmaskForAllUsers()) &&
-        (0 == AuditEnsureAutomountingDisabled()) &&
-        (0 == AuditEnsureKernelCompiledFromApprovedSources()) &&
-        (0 == AuditEnsureDefaultDenyFirewallPolicyIsSet()) &&
-        (0 == AuditEnsurePacketRedirectSendingIsDisabled()) &&
-        (0 == AuditEnsureIcmpRedirectsIsDisabled()) &&
-        (0 == AuditEnsureSourceRoutedPacketsIsDisabled()) &&
-        (0 == AuditEnsureAcceptingSourceRoutedPacketsIsDisabled()) &&
-        (0 == AuditEnsureIgnoringBogusIcmpBroadcastResponses()) &&
-        (0 == AuditEnsureIgnoringIcmpEchoPingsToMulticast()) &&
-        (0 == AuditEnsureMartianPacketLoggingIsEnabled()) &&
-        (0 == AuditEnsureReversePathSourceValidationIsEnabled()) &&
-        (0 == AuditEnsureTcpSynCookiesAreEnabled()) &&
-        (0 == AuditEnsureSystemNotActingAsNetworkSniffer()) &&
-        (0 == AuditEnsureAllWirelessInterfacesAreDisabled()) &&
-        (0 == AuditEnsureIpv6ProtocolIsEnabled()) &&
-        (0 == AuditEnsureDccpIsDisabled()) &&
-        (0 == AuditEnsureSctpIsDisabled()) &&
-        (0 == AuditEnsureDisabledSupportForRds()) &&
-        (0 == AuditEnsureTipcIsDisabled()) &&
-        (0 == AuditEnsureZeroconfNetworkingIsDisabled()) &&
-        (0 == AuditEnsurePermissionsOnBootloaderConfig()) &&
-        (0 == AuditEnsurePasswordReuseIsLimited()) &&
-        (0 == AuditEnsureMountingOfUsbStorageDevicesIsDisabled()) &&
-        (0 == AuditEnsureCoreDumpsAreRestricted()) &&
-        (0 == AuditEnsurePasswordCreationRequirements()) &&
-        (0 == AuditEnsureLockoutForFailedPasswordAttempts()) &&
-        (0 == AuditEnsureDisabledInstallationOfCramfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfFreevxfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfHfsFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfHfsplusFileSystem()) &&
-        (0 == AuditEnsureDisabledInstallationOfJffs2FileSystem()) &&
-        (0 == AuditEnsureVirtualMemoryRandomizationIsEnabled()) &&
-        (0 == AuditEnsureAllBootloadersHavePasswordProtectionEnabled()) &&
-        (0 == AuditEnsureLoggingIsConfigured()) &&
-        (0 == AuditEnsureSyslogPackageIsInstalled()) &&
-        (0 == AuditEnsureSystemdJournaldServicePersistsLogMessages()) &&
-        (0 == AuditEnsureALoggingServiceIsSnabled()) &&
-        (0 == AuditEnsureFilePermissionsForAllRsyslogLogFiles()) &&
-        (0 == AuditEnsureLoggerConfigurationFilesAreRestricted()) &&
-        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup()) &&
-        (0 == AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser()) &&
-        (0 == AuditEnsureRsyslogNotAcceptingRemoteMessages()) &&
-        (0 == AuditEnsureSyslogRotaterServiceIsEnabled()) &&
-        (0 == AuditEnsureTelnetServiceIsDisabled()) &&
-        (0 == AuditEnsureRcprshServiceIsDisabled()) &&
-        (0 == AuditEnsureTftpServiceisDisabled()) &&
-        (0 == AuditEnsureAtCronIsRestrictedToAuthorizedUsers()) &&
-        (0 == AuditEnsureSshBestPracticeProtocol()) &&
-        (0 == AuditEnsureSshBestPracticeIgnoreRhosts()) &&
-        (0 == AuditEnsureSshLogLevelIsSet()) &&
-        (0 == AuditEnsureSshMaxAuthTriesIsSet()) &&
-        (0 == AuditEnsureSshAccessIsLimited()) &&
-        (0 == AuditEnsureSshRhostsRsaAuthenticationIsDisabled()) &&
-        (0 == AuditEnsureSshHostbasedAuthenticationIsDisabled()) &&
-        (0 == AuditEnsureSshPermitRootLoginIsDisabled()) &&
-        (0 == AuditEnsureSshPermitEmptyPasswordsIsDisabled()) &&
-        (0 == AuditEnsureSshIdleTimeoutIntervalIsConfigured()) &&
-        (0 == AuditEnsureSshLoginGraceTimeIsSet()) &&
-        (0 == AuditEnsureOnlyApprovedMacAlgorithmsAreUsed()) &&
-        (0 == AuditEnsureSshWarningBannerIsEnabled()) &&
-        (0 == AuditEnsureUsersCannotSetSshEnvironmentOptions()) &&
-        (0 == AuditEnsureAppropriateCiphersForSsh()) &&
-        (0 == AuditEnsureAvahiDaemonServiceIsDisabled()) &&
-        (0 == AuditEnsureCupsServiceisDisabled()) &&
-        (0 == AuditEnsurePostfixPackageIsUninstalled()) &&
-        (0 == AuditEnsurePostfixNetworkListeningIsDisabled()) &&
-        (0 == AuditEnsureRpcgssdServiceIsDisabled()) &&
-        (0 == AuditEnsureRpcidmapdServiceIsDisabled()) &&
-        (0 == AuditEnsurePortmapServiceIsDisabled()) &&
-        (0 == AuditEnsureNetworkFileSystemServiceIsDisabled()) &&
-        (0 == AuditEnsureRpcsvcgssdServiceIsDisabled()) &&
-        (0 == AuditEnsureSnmpServerIsDisabled()) &&
-        (0 == AuditEnsureRsynServiceIsDisabled()) &&
-        (0 == AuditEnsureNisServerIsDisabled()) &&
-        (0 == AuditEnsureRshClientNotInstalled()) &&
-        (0 == AuditEnsureSmbWithSambaIsDisabled()) &&
-        (0 == AuditEnsureUsersDotFilesArentGroupOrWorldWritable()) &&
-        (0 == AuditEnsureNoUsersHaveDotForwardFiles()) &&
-        (0 == AuditEnsureNoUsersHaveDotNetrcFiles()) &&
-        (0 == AuditEnsureNoUsersHaveDotRhostsFiles()) &&
-        (0 == AuditEnsureRloginServiceIsDisabled()) &&
-        (0 == AuditEnsureUnnecessaryAccountsAreRemoved())) ? 0 : ENOENT;
+    size_t numChecks = ARRAY_SIZE(g_auditChecks);
+    size_t i = 0;
+    int status = 0;
+
+    for (i = 0; i < numChecks; i++)
+    {
+        if ((0 != g_auditChecks[i]()) && (0 == status))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }
 
 static int RemediateEnsurePermissionsOnEtcIssue(void)
@@ -1572,47 +1642,64 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
         EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
+AuditRemediate g_remediateChecks[] =
+{
+    &RemediateEnsurePermissionsOnEtcIssue,
+    &RemediateEnsurePermissionsOnEtcIssueNet,
+    &RemediateEnsurePermissionsOnEtcHostsAllow,
+    &RemediateEnsurePermissionsOnEtcHostsDeny,
+    &RemediateEnsurePermissionsOnEtcSshSshdConfig,
+    &RemediateEnsurePermissionsOnEtcShadow,
+    &RemediateEnsurePermissionsOnEtcShadowDash,
+    &RemediateEnsurePermissionsOnEtcGShadow,
+    &RemediateEnsurePermissionsOnEtcGShadowDash,
+    &RemediateEnsurePermissionsOnEtcPasswd,
+    &RemediateEnsurePermissionsOnEtcPasswdDash,
+    &RemediateEnsurePermissionsOnEtcGroup,
+    &RemediateEnsurePermissionsOnEtcGroupDash,
+    &RemediateEnsurePermissionsOnEtcAnacronTab,
+    &RemediateEnsurePermissionsOnEtcCronD,
+    &RemediateEnsurePermissionsOnEtcCronDaily,
+    &RemediateEnsurePermissionsOnEtcCronHourly,
+    &RemediateEnsurePermissionsOnEtcCronMonthly,
+    &RemediateEnsurePermissionsOnEtcCronWeekly,
+    &RemediateEnsurePermissionsOnEtcMotd,
+    &RemediateEnsureInetdNotInstalled,
+    &RemediateEnsureXinetdNotInstalled,
+    &RemediateEnsureRshServerNotInstalled,
+    &RemediateEnsureNisNotInstalled,
+    &RemediateEnsureTftpdNotInstalled,
+    &RemediateEnsureReadaheadFedoraNotInstalled,
+    &RemediateEnsureBluetoothHiddNotInstalled,
+    &RemediateEnsureIsdnUtilsBaseNotInstalled,
+    &RemediateEnsureIsdnUtilsKdumpToolsNotInstalled,
+    &RemediateEnsureIscDhcpdServerNotInstalled,
+    &RemediateEnsureSendmailNotInstalled,
+    &RemediateEnsureSldapdNotInstalled,
+    &RemediateEnsureBind9NotInstalled,
+    &RemediateEnsureDovecotCoreNotInstalled,
+    &RemediateEnsureAuditdInstalled,
+    &RemediateEnsurePrelinkIsDisabled,
+    &RemediateEnsureTalkClientIsNotInstalled,
+    &RemediateEnsureCronServiceIsEnabled,
+    &RemediateEnsureAuditdServiceIsRunning
+};
+
 int RemediateSecurityBaseline(void)
 {
-    return ((0 == RemediateEnsurePermissionsOnEtcIssue()) && 
-        (0 == RemediateEnsurePermissionsOnEtcIssueNet()) &&
-        (0 == RemediateEnsurePermissionsOnEtcHostsAllow()) && 
-        (0 == RemediateEnsurePermissionsOnEtcHostsDeny()) &&
-        (0 == RemediateEnsurePermissionsOnEtcSshSshdConfig()) &&
-        (0 == RemediateEnsurePermissionsOnEtcShadow()) &&
-        (0 == RemediateEnsurePermissionsOnEtcShadowDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGShadow()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGShadowDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcPasswd()) &&
-        (0 == RemediateEnsurePermissionsOnEtcPasswdDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGroup()) &&
-        (0 == RemediateEnsurePermissionsOnEtcGroupDash()) &&
-        (0 == RemediateEnsurePermissionsOnEtcAnacronTab()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronD()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronDaily()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronHourly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronMonthly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcCronWeekly()) &&
-        (0 == RemediateEnsurePermissionsOnEtcMotd()) &&
-        (0 == RemediateEnsureInetdNotInstalled()) &&
-        (0 == RemediateEnsureXinetdNotInstalled()) &&
-        (0 == RemediateEnsureRshServerNotInstalled()) &&
-        (0 == RemediateEnsureNisNotInstalled()) &&
-        (0 == RemediateEnsureTftpdNotInstalled()) &&
-        (0 == RemediateEnsureReadaheadFedoraNotInstalled()) &&
-        (0 == RemediateEnsureBluetoothHiddNotInstalled()) &&
-        (0 == RemediateEnsureIsdnUtilsBaseNotInstalled()) &&
-        (0 == RemediateEnsureIsdnUtilsKdumpToolsNotInstalled()) &&
-        (0 == RemediateEnsureIscDhcpdServerNotInstalled()) &&
-        (0 == RemediateEnsureSendmailNotInstalled()) &&
-        (0 == RemediateEnsureSldapdNotInstalled()) &&
-        (0 == RemediateEnsureBind9NotInstalled()) &&
-        (0 == RemediateEnsureDovecotCoreNotInstalled()) &&
-        (0 == RemediateEnsureAuditdInstalled()) &&
-        (0 == RemediateEnsurePrelinkIsDisabled()) &&
-        (0 == RemediateEnsureTalkClientIsNotInstalled()) &&
-        (0 == RemediateEnsureCronServiceIsEnabled()) &&
-        (0 == RemediateEnsureAuditdServiceIsRunning())) ? 0 : ENOENT;
+    size_t numChecks = ARRAY_SIZE(g_remediateChecks);
+    size_t i = 0;
+    int status = 0;
+
+    for (i = 0; i < numChecks; i++)
+    {
+        if ((0 != g_remediateChecks[i]()) && (0 == status))
+        {
+            status = ENOENT;
+        }
+    }
+
+    return status;
 }
 
 MMI_HANDLE SecurityBaselineMmiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
@@ -1856,7 +1943,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
-            result = auditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
+            result = AuditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
