@@ -95,17 +95,17 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
-bool FileExists(const char* name)
+bool FileExists(const char* fileName)
 {
-    return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
+    return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;
 }
 
-bool DirectoryExists(const char* name)
+bool DirectoryExists(const char* fileName)
 {
     DIR* directory = NULL;
     bool result = false;
 
-    if (FileExists(name) && (NULL != (directory = opendir(name))))
+    if (FileExists(fileName) && (NULL != (directory = opendir(fileName))))
     {
         closedir(directory);
         result = true;
@@ -114,17 +114,17 @@ bool DirectoryExists(const char* name)
     return result;
 }
 
-int CheckFileExists(const char* name, void* log)
+int CheckFileExists(const char* fileName, void* log)
 {
     int status = 0;
 
-    if (FileExists(name))
+    if (FileExists(fileName))
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", name);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", fileName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", name);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", fileName);
         status = EEXIST;
     }
 
@@ -274,22 +274,22 @@ static unsigned int FilterFileAccessFlags(unsigned int mode)
     return flags;
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+static int CheckAccess(bool directory, const char* what, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
     int result = ENOENT;
 
-    if (NULL == name)
+    if (NULL == what)
     {
-        OsConfigLogError(log, "CheckAccess called with an invalid name argument");
+        OsConfigLogError(log, "CheckAccess called with an invalid what argument");
         return EINVAL;
     }
 
-    if (directory ? DirectoryExists(name) : FileExists(name))
+    if (directory ? DirectoryExists(what) : FileExists(what))
     {
-        if (0 == (result = stat(name, &statStruct)))
+        if (0 == (result = stat(what, &statStruct)))
         {
             if (((-1 != desiredOwnerId) && (((uid_t)desiredOwnerId != statStruct.st_uid) && 
                 (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_uid))))) ||
@@ -297,7 +297,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 (directory && rootCanOverwriteOwnership && ((0 != statStruct.st_gid))))))
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                    what, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
             else 
@@ -310,100 +310,100 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
                 {
                     OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)",
-                        name, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
+                        what, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
                         desiredOwnerId, desiredGroupId, desiredAccess, desiredMode);
                     result = 0;
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d-%d) does not match expected (%d-%d)",
-                        name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
+                        what, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
                     result = ENOENT;
                 }
             }
         }
         else
         {
-            OsConfigLogError(log, "CheckAccess: stat('%s') failed with %d", name, errno);
+            OsConfigLogError(log, "CheckAccess: stat('%s') failed with %d", what, errno);
         }
     }
     else
     {
-        OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
+        OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", what);
         result = 0;
     }
 
     return result;
 }
 
-static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+static int SetAccess(bool directory, const char* what, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
     int result = ENOENT;
 
-    if (NULL == name)
+    if (NULL == what)
     {
-        OsConfigLogError(log, "SetAccess called with an invalid name argument");
+        OsConfigLogError(log, "SetAccess called with an invalid what argument");
         return EINVAL;
     }
 
-    if (directory ? DirectoryExists(name) : FileExists(name))
+    if (directory ? DirectoryExists(what) : FileExists(what))
     {
-        if (0 == (result = CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
+        if (0 == (result = CheckAccess(directory, what, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
         {
             OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
-                name, desiredOwnerId, desiredGroupId, desiredAccess);
+                what, desiredOwnerId, desiredGroupId, desiredAccess);
             result = 0;
         }
         else
         {
-            if (0 == (result = chown(name, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
+            if (0 == (result = chown(what, (uid_t)desiredOwnerId, (gid_t)desiredGroupId)))
             {
-                OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
+                OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", what, desiredOwnerId, desiredGroupId);
 
-                if (0 == (result = chmod(name, desiredAccess)))
+                if (0 == (result = chmod(what, desiredAccess)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", name, desiredAccess);
+                    OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", what, desiredAccess);
                     result = 0;
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetAccess: chmod('%s', %d) failed with %d", name, desiredAccess, errno);
+                    OsConfigLogError(log, "SetAccess: chmod('%s', %d) failed with %d", what, desiredAccess, errno);
                 }
             }
             else
             {
-                OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
+                OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", what, desiredOwnerId, desiredGroupId, errno);
             }
 
         }
     }
     else
     {
-        OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", name);
+        OsConfigLogInfo(log, "SetAccess: '%s' not found, nothing to set", what);
         result = 0;
     }
 
     return result;
 }
 
-int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return CheckAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
 }
 
-int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
-    return CheckAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
 }
 
-int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
