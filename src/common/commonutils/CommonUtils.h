@@ -56,15 +56,15 @@ int ExecuteCommand(void* context, const char* command, bool replaceEol, bool for
 
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
-bool FileExists(const char* name);
-bool DirectoryExists(const char* name);
-int CheckFileExists(const char* name, void* log);
+bool FileExists(const char* fileName);
+bool DirectoryExists(const char* directoryName);
+int CheckFileExists(const char* fileName, void* log);
 
-int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
-int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
-int CheckDirectoryAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
-int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
+int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
 
@@ -129,10 +129,10 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
 int SleepMilliseconds(long milliseconds);
 
-bool IsDaemonActive(const char* name, void* log);
-bool EnableAndStartDaemon(const char* name, void* log);
-void StopAndDisableDaemon(const char* name, void* log);
-bool RestartDaemon(const char* name, void* log);
+bool IsDaemonActive(const char* daemonName, void* log);
+bool EnableAndStartDaemon(const char* daemonName, void* log);
+void StopAndDisableDaemon(const char* daemonName, void* log);
+bool RestartDaemon(const char* daemonName, void* log);
 
 char* GetHttpProxyData(void* log);
 
