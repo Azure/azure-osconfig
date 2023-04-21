@@ -16,8 +16,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
         return string;
     }
 
-    file = fopen(fileName, "r");
-    if (file)
+    if (NULL != (file = fopen(fileName, "r")))
     {
         if (LockFile(file, log))
         {
