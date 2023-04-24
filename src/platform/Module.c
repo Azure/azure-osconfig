@@ -367,4 +367,6 @@ void UnloadModule(MODULE* module)
     FREE_MEMORY(module->name);
 
     FreeModuleInfo(module->info);
+
+    FREE_MEMORY(module);
 }

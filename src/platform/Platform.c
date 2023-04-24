@@ -191,19 +191,73 @@ void LoadModules(const char* directory)
     }
 }
 
-void UnloadModules(void)
+void FreeModules(MODULE* modules)
 {
-    MODULE* module = g_modules;
+    MODULE* curr = modules;
     MODULE* next = NULL;
 
-    while (module != NULL)
+    while (curr != NULL)
     {
-        next = module->next;
-        UnloadModule(module);
-        module = next;
+        next = curr->next;
+        UnloadModule(curr);
+        curr = next;
     }
 
-    FREE_MEMORY(g_reportedObjects);
+    modules = NULL;
+}
+
+void FreeModuleSessions(MODULE_SESSION* sessions)
+{
+    MODULE_SESSION* curr = sessions;
+    MODULE_SESSION* next = NULL;
+
+    while (curr != NULL)
+    {
+        next = curr->next;
+        curr->module->close(curr->handle);
+        curr->handle = NULL;
+        curr = next;
+    }
+
+    sessions = NULL;
+}
+
+void FreeSessions(SESSION* sessions)
+{
+    SESSION* curr = sessions;
+    SESSION* next = NULL;
+
+    while (curr != NULL)
+    {
+        next = curr->next;
+        FREE_MEMORY(curr->uuid);
+        FREE_MEMORY(curr->client);
+
+        FreeModuleSessions(curr->modules);
+
+        curr = next;
+    }
+
+    sessions = NULL;
+}
+
+void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
+{
+    for (int i = 0; i < numReportedObjects; i++)
+    {
+        free((char*)reportedObjects[i].component);
+        free((char*)reportedObjects[i].object);
+    }
+
+    FREE_MEMORY(reportedObjects);
+}
+
+void UnloadModules(void)
+{
+    FreeSessions(g_sessions);
+    FreeModules(g_modules);
+    FreeReportedObjects(g_reportedObjects, g_numReportedObjects);
+
     g_numReportedObjects = 0;
 }
 
