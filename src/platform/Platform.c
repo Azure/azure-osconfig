@@ -15,7 +15,6 @@
 #define MODULE_EXT ".so"
 
 #define AZURE_OSCONFIG "Azure OSConfig"
-#define CONFIG_JSON "/etc/osconfig/osconfig.json"
 
 #define MODEL_VERSION "ModelVersion"
 #define REPORTED "Reported"
@@ -52,7 +51,7 @@ static MODULE* g_modules = NULL;
 static REPORTED_OBJECT* g_reportedObjects = NULL;
 static int g_numReportedObjects = 0;
 
-void LoadModules(const char* directory)
+void LoadModules(const char* directory, const char* configJson)
 {
     MODULE* module = NULL;
     DIR* dir = NULL;
@@ -78,24 +77,24 @@ void LoadModules(const char* directory)
     {
         LOG_ERROR("Failed to open module directory: %s", directory);
     }
-    else if (NULL == (config = json_parse_file(CONFIG_JSON)))
+    else if (NULL == (config = json_parse_file(configJson)))
     {
-        LOG_ERROR("Failed to parse %s\n", CONFIG_JSON);
+        LOG_ERROR("Failed to parse configuration JSON (%s)", configJson);
     }
     else if (NULL == (configObject = json_value_get_object(config)))
     {
-        LOG_ERROR("Failed to get config object\n");
+        LOG_ERROR("Failed to get config object");
     }
     else if (0 == (version = json_object_get_number(configObject, MODEL_VERSION)))
     {
-        LOG_ERROR("Failed to get model version\n");
+        LOG_ERROR("Failed to get model version from configuration JSON (%s)", configJson);
     }
     else
     {
         client = (char*)calloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5, sizeof(char));
         if (NULL == client)
         {
-            LOG_ERROR("Failed to allocate memory for client name\n");
+            LOG_ERROR("Failed to allocate memory for client name");
         }
         else
         {
@@ -132,7 +131,7 @@ void LoadModules(const char* directory)
                 LOG_ERROR("Failed to load module: %s", entry->d_name);
             }
 
-            free(path);
+            FREE_MEMORY(path);
         }
     }
 
@@ -206,26 +205,11 @@ void FreeModules(MODULE* modules)
     modules = NULL;
 }
 
-void FreeModuleSessions(MODULE_SESSION* sessions)
-{
-    MODULE_SESSION* curr = sessions;
-    MODULE_SESSION* next = NULL;
-
-    while (curr != NULL)
-    {
-        next = curr->next;
-        curr->module->close(curr->handle);
-        curr->handle = NULL;
-        curr = next;
-    }
-
-    sessions = NULL;
-}
-
 void FreeSessions(SESSION* sessions)
 {
     SESSION* curr = sessions;
     SESSION* next = NULL;
+    MODULE_SESSION* moduleSession = NULL;
 
     while (curr != NULL)
     {
@@ -233,7 +217,12 @@ void FreeSessions(SESSION* sessions)
         FREE_MEMORY(curr->uuid);
         FREE_MEMORY(curr->client);
 
-        FreeModuleSessions(curr->modules);
+        while (curr->modules != NULL)
+        {
+            moduleSession = curr->modules;
+            curr->modules = moduleSession->next;
+            FREE_MEMORY(moduleSession);
+        }
 
         curr = next;
     }
@@ -365,34 +354,36 @@ SESSION* FindSession(const char* uuid)
 void MpiClose(MPI_HANDLE handle)
 {
     SESSION* session = NULL;
-    MODULE_SESSION* moduleSession = NULL;
-    MODULE_SESSION* next = NULL;
+    SESSION* prev = NULL;
 
     if (NULL == handle)
     {
         LOG_ERROR("Invalid (null) handle");
     }
-    else if (NULL == (session = FindSession((const char*)handle)))
+    else if (NULL == (session = FindSession(handle)))
     {
-        LOG_ERROR("Failed to find session (%s)", (const char*)handle);
+        LOG_ERROR("Failed to find session for handle (%s)", (char*)handle);
     }
-    else if (session->modules != NULL)
+    else
     {
-        moduleSession = session->modules;
-        next = NULL;
-
-        while (moduleSession != NULL)
+        // Remove the session from the linked list
+        if (session == g_sessions)
         {
-            next = moduleSession->next;
-
-            moduleSession->module->close(moduleSession->handle);
-            moduleSession->handle = NULL;
-            moduleSession->module = NULL;
-
-            FREE_MEMORY(moduleSession);
-
-            moduleSession = next;
+            g_sessions = session->next;
         }
+        else
+        {
+            prev = g_sessions;
+            while (prev->next != session)
+            {
+                prev = prev->next;
+            }
+            prev->next = session->next;
+        }
+
+        FREE_MEMORY(session->uuid);
+        FREE_MEMORY(session->client);
+        FREE_MEMORY(session);
     }
 }
 

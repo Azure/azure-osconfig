@@ -241,6 +241,8 @@ MODULE* LoadModule(const char* client, const char* path)
     MMI_JSON_STRING payload = NULL;
     int payloadSize = 0;
 
+    printf("Loading module %s", path);
+
     if (NULL == client)
     {
         LOG_ERROR("Invalid (null) client");
@@ -335,7 +337,7 @@ MODULE* LoadModule(const char* client, const char* path)
         }
     }
 
-    if ((status != 0) && (module != NULL))
+    if (status != 0)
     {
         UnloadModule(module);
         module = NULL;
@@ -353,20 +355,19 @@ void UnloadModule(MODULE* module)
 
     if (NULL != module->handle)
     {
-        module->getInfo = NULL;
-        module->open = NULL;
-        module->close = NULL;
-        module->get = NULL;
-        module->set = NULL;
-        module->free = NULL;
-
         dlclose(module->handle);
         module->handle = NULL;
     }
 
-    FREE_MEMORY(module->name);
+    module->getInfo = NULL;
+    module->open = NULL;
+    module->close = NULL;
+    module->get = NULL;
+    module->set = NULL;
+    module->free = NULL;
 
     FreeModuleInfo(module->info);
 
+    FREE_MEMORY(module->name);
     FREE_MEMORY(module);
 }

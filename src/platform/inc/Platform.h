@@ -11,7 +11,7 @@ extern "C"
 {
 #endif
 
-void LoadModules(const char* path);
+void LoadModules(const char* path, const char* configJson);
 void UnloadModules(void);
 
 #ifdef __cplusplus

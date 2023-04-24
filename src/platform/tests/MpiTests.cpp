@@ -33,7 +33,7 @@ namespace Tests
 
     void MpiTests::SetUp()
     {
-        LoadModules(TEST_MODULES_DIR);
+        LoadModules(TEST_MODULES_DIR, TEST_CONFIG_JSON_MULTIPLE_REPORTED);
         this->m_handle = MpiOpen(m_defaultClient, 0);
         ASSERT_NE(nullptr, this->m_handle);
     }
