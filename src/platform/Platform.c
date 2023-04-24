@@ -320,7 +320,7 @@ void MpiClose(MPI_HANDLE handle)
     }
     else if (NULL == (session = FindSession((const char*)handle)))
     {
-        LOG_ERROR("Failed to find session");
+        LOG_ERROR("Failed to find session (%s)", (const char*)handle);
     }
     else if (session->modules != NULL)
     {
@@ -388,7 +388,7 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: %s", uuid);
+        LOG_ERROR("No session exists with uuid: '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
@@ -418,7 +418,7 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: %s", uuid);
+        LOG_ERROR("No session exists with uuid: '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
