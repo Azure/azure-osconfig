@@ -1,4 +1,5 @@
 {
+    "ModelVersion": 123,
     "Reported": [
         {
             "ComponentName": "TestModule_Component_1",
