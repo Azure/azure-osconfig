@@ -22,7 +22,6 @@ static const char* g_reported = "Reported";
 static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 
-
 typedef struct MODULE_SESSION
 {
     MODULE* module;
@@ -70,7 +69,7 @@ void LoadModules(const char* directory, const char* configJson)
     {
         if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(GetPlatformLog(), "Modules already loaded");
+            OsConfigLogInfo(GetPlatformLog(), "Modules are already loaded");
         }
 
         return;
@@ -218,8 +217,6 @@ static void FreeSessions(SESSION* sessions)
     while (curr != NULL)
     {
         next = curr->next;
-        FREE_MEMORY(curr->uuid);
-        FREE_MEMORY(curr->client);
 
         while (curr->modules != NULL)
         {
@@ -227,6 +224,10 @@ static void FreeSessions(SESSION* sessions)
             curr->modules = moduleSession->next;
             FREE_MEMORY(moduleSession);
         }
+
+        FREE_MEMORY(curr->uuid);
+        FREE_MEMORY(curr->client);
+        FREE_MEMORY(curr);
 
         curr = next;
     }
