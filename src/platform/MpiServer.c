@@ -75,6 +75,7 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
     int status = MPI_OK;
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_SET_URI, componentName, objectName);
+
     status = MpiSet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
@@ -99,6 +100,7 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
     int status = MPI_OK;
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallObjectTemplate, MPI_GET_URI, componentName, objectName);
+
     status = MpiGet((MPI_HANDLE)handle, componentName, objectName, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
@@ -123,6 +125,7 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
     int status = MPI_OK;
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_SET_DESIRED_URI);
+
     status = MpiSetDesired((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
@@ -147,6 +150,7 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
     int status = MPI_OK;
 
     snprintf(g_mpiCall, sizeof(g_mpiCall), g_mpiCallModelTemplate, MPI_GET_REPORTED_URI);
+
     status = MpiGetReported((MPI_HANDLE)handle, payload, payloadSize);
 
     if (IsFullLoggingEnabled())
