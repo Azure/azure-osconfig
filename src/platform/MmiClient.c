@@ -10,76 +10,66 @@
 
 #include <parson.h>
 
-#define MMI_OPEN_FUNCTION "MmiOpen"
-#define MMI_CLOSE_FUNCTION "MmiClose"
-#define MMI_GET_FUNCTION "MmiGet"
-#define MMI_SET_FUNCTION "MmiSet"
-#define MMI_GETINFO_FUNCTION "MmiGetInfo"
-#define MMI_FREE_FUNCTION "MmiFree"
+static const char* g_mmiOpenFunction = "MmiOpen";
+static const char* g_mmiCloseFunction = "MmiClose";
+static const char* g_mmiGetFunction = "MmiGet";
+static const char* g_mmiSetFunction = "MmiSet";
+static const char* g_mmiGetInfoFunction = "MmiGetInfo";
+static const char* g_mmiFreeFunction = "MmiFree";
 
 // Required module info fields
-#define INFO_NAME "Name"
-#define INFO_DESCRIPTION "Description"
-#define INFO_MANUFACTURER "Manufacturer"
-#define INFO_VESRION_MAJOR "VersionMajor"
-#define INFO_VERSION_MINOR "VersionMinor"
-#define INFO_VERSION_INFO "VersionInfo"
-#define INFO_COMPONENTS "Components"
-#define INFO_LIFETIME "Lifetime"
+static const char* g_infoName = "Name";
+static const char* g_infoDescription = "Description";
+static const char* g_infoManufacturer = "Manufacturer";
+static const char* g_infoVersionMajor = "VersionMajor";
+static const char* g_infoVersionMinor = "VersionMinor";
+static const char* g_infoVersionInfo = "VersionInfo";
+static const char* g_infoComponents = "Components";
+static const char* g_infoLifetime = "Lifetime";
 
 // Optional module info fields
-#define INFO_VERSION_PATCH "VersionPatch"
-#define INFO_VERSION_TWEAK "VersionTweak"
-#define INFO_LICENSE_URI "LicenseUri"
-#define INFO_PROJECT_URI "ProjectUri"
-#define INFO_USER_ACCOUNT_URI "UserAccount"
+static const char* g_infoVersionPatch = "VersionPatch";
+static const char* g_infoVersionTweak = "VersionTweak";
+static const char* g_infoLicenseUri = "LicenseUri";
+static const char* g_infoProjectUri = "ProjectUri";
+static const char* g_infoUserAccount = "UserAccount";
 
-void FreeModuleInfo(MODULE_INFO* info)
+static void FreeModuleInfo(MODULE_INFO* info)
 {
-    if (NULL == info)
+    if (NULL != info)
     {
-        return;
-    }
+        FREE_MEMORY(info->name);
+        FREE_MEMORY(info->description);
+        FREE_MEMORY(info->manufacturer);
+        FREE_MEMORY(info->versionInfo);
+        FREE_MEMORY(info->licenseUri);
+        FREE_MEMORY(info->projectUri);
 
-    FREE_MEMORY(info->name);
-    FREE_MEMORY(info->description);
-    FREE_MEMORY(info->manufacturer);
-    FREE_MEMORY(info->versionInfo);
-    FREE_MEMORY(info->licenseUri);
-    FREE_MEMORY(info->projectUri);
-
-    if (NULL != info->components)
-    {
-        for (unsigned int i = 0; i < info->componentCount; i++)
+        if (NULL != info->components)
         {
-            if (NULL != info->components[i])
+            for (unsigned int i = 0; i < info->componentCount; i++)
             {
-                free(info->components[i]);
+                if (NULL != info->components[i])
+                {
+                    FREE_MEMORY(info->components[i]);
+                }
             }
+
+            FREE_MEMORY(info->components);
         }
 
-        free(info->components);
+        FREE_MEMORY(info);
     }
-
-    free(info);
 }
 
-int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
+static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
 {
     MODULE_INFO* info = NULL;
     JSON_Object* object = NULL;
     JSON_Array* components = NULL;
     int componentsCount = 0;
     int status = 0;
-
-    const char* name = NULL;
-    const char* description = NULL;
-    const char* component = NULL;
-    const char* versionInfo = NULL;
-    const char* manufacturer = NULL;
-    const char* licenseUri = NULL;
-    const char* projectUri = NULL;
-    int lifetime = 0;
+    char* component = NULL;
 
     if (value == NULL)
     {
@@ -96,56 +86,56 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
         OsConfigLogError(GetPlatformLog(), "JSON value is not an object");
         status = EINVAL;
     }
-    else if (NULL == (info = (MODULE_INFO*)calloc(1, sizeof(MODULE_INFO))))
+    else if (NULL == (info = (MODULE_INFO*)malloc(sizeof(MODULE_INFO))))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module info");
         status = ENOMEM;
     }
     else
     {
-        if (NULL == (name = json_object_get_string(object, INFO_NAME)))
+        if (NULL == (info->name = (char*)json_object_get_string(object, g_infoName)))
         {
-            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_NAME);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoName);
             status = EINVAL;
         }
-        else if (NULL == (info->name = strdup(name)))
+        else if (NULL == (info->name = strdup(info->name)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
             status = ENOMEM;
         }
-        else if (NULL == (description = json_object_get_string(object, INFO_DESCRIPTION)))
+        else if (NULL == (info->description = (char*)json_object_get_string(object, g_infoDescription)))
         {
-            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_DESCRIPTION);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoDescription);
             status = EINVAL;
         }
-        else if (NULL == (info->description = strdup(description)))
+        else if (NULL == (info->description = strdup(info->description)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module description");
             status = ENOMEM;
         }
-        else if (NULL == (manufacturer = json_object_get_string(object, INFO_MANUFACTURER)))
+        else if (NULL == (info->manufacturer = (char*)json_object_get_string(object, g_infoManufacturer)))
         {
-            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_MANUFACTURER);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoManufacturer);
             status = EINVAL;
         }
-        else if (NULL == (info->manufacturer = strdup(manufacturer)))
+        else if (NULL == (info->manufacturer = strdup(info->manufacturer)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module manufacturer");
             status = ENOMEM;
         }
-        else if (NULL == (versionInfo = json_object_get_string(object, INFO_VERSION_INFO)))
+        else if (NULL == (info->versionInfo = (char*)json_object_get_string(object, g_infoVersionInfo)))
         {
-            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_VERSION_INFO);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoVersionInfo);
             status = EINVAL;
         }
-        else if (NULL == (info->versionInfo = strdup(versionInfo)))
+        else if (NULL == (info->versionInfo = strdup(info->versionInfo)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module version info");
             status = ENOMEM;
         }
-        else if (NULL == (components = json_object_get_array(object, INFO_COMPONENTS)))
+        else if (NULL == (components = json_object_get_array(object, g_infoComponents)))
         {
-            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_COMPONENTS);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoComponents);
             status = EINVAL;
         }
         else if (0 == (componentsCount = json_array_get_count(components)))
@@ -153,45 +143,49 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             OsConfigLogError(GetPlatformLog(), "Module info has no components");
             status = EINVAL;
         }
-        else if (json_value_get_type(json_object_get_value(object, INFO_LIFETIME)) != JSONNumber)
+        else if (json_value_get_type(json_object_get_value(object, g_infoLifetime)) != JSONNumber)
         {
             OsConfigLogError(GetPlatformLog(), "Module info has invalid lifetime type");
             status = EINVAL;
         }
         else
         {
-            lifetime = json_object_get_number(object, INFO_LIFETIME);
-            licenseUri = json_object_get_string(object, INFO_LICENSE_URI);
-            projectUri = json_object_get_string(object, INFO_PROJECT_URI);
-            info->userAccount = json_object_get_number(object, INFO_USER_ACCOUNT_URI);
-            info->version.major = json_object_get_number(object, INFO_VESRION_MAJOR);
-            info->version.minor = json_object_get_number(object, INFO_VERSION_MINOR);
-            info->version.patch = json_object_get_number(object, INFO_VERSION_PATCH);
-            info->version.tweak = json_object_get_number(object, INFO_VERSION_TWEAK);
+            info->licenseUri = (char*)json_object_get_string(object, g_infoLicenseUri);
+            info->projectUri = (char*)json_object_get_string(object, g_infoProjectUri);
+            info->userAccount = json_object_get_number(object, g_infoUserAccount);
+            info->version.major = json_object_get_number(object, g_infoVersionMajor);
+            info->version.minor = json_object_get_number(object, g_infoVersionMinor);
+            info->version.patch = json_object_get_number(object, g_infoVersionPatch);
+            info->version.tweak = json_object_get_number(object, g_infoVersionTweak);
 
-            if ((lifetime < 0) || (2 < lifetime))
+            if (json_object_has_value_of_type(object, g_infoLifetime, JSONNumber))
             {
-                OsConfigLogError(GetPlatformLog(), "Module info has invalid lifetime: %d", lifetime);
-                status = EINVAL;
+                info->lifetime = json_object_get_number(object, g_infoLifetime);
+
+                if ((info->lifetime < 0) || (2 < info->lifetime))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Module info has invalid lifetime: %d", info->lifetime);
+                    status = EINVAL;
+                }
             }
             else
             {
-                info->lifetime = lifetime;
+                OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoLifetime);
             }
 
-            if ((NULL != licenseUri) && (NULL == (info->licenseUri = strdup(licenseUri))))
+            if ((NULL != info->licenseUri) && (NULL == (info->licenseUri = strdup(info->licenseUri))))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module license URI");
                 status = ENOMEM;
             }
 
-            if ((NULL != projectUri) && (NULL == (info->projectUri = strdup(projectUri))))
+            if ((NULL != info->projectUri) && (NULL == (info->projectUri = strdup(info->projectUri))))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module project URI");
                 status = ENOMEM;
             }
 
-            if (NULL == (info->components = (char**)calloc(componentsCount, sizeof(char*))))
+            if (NULL == (info->components = (char**)malloc(componentsCount * sizeof(char*))))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module components");
                 status = ENOMEM;
@@ -251,7 +245,7 @@ MODULE* LoadModule(const char* client, const char* path)
         OsConfigLogError(GetPlatformLog(), "Invalid (null) path");
         status = EINVAL;
     }
-    else if (NULL == (module = (MODULE*)calloc(1, sizeof(MODULE))))
+    else if (NULL == (module = (MODULE*)malloc(sizeof(MODULE))))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module");
         status = ENOMEM;
@@ -272,39 +266,39 @@ MODULE* LoadModule(const char* client, const char* path)
         }
         else
         {
-            if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, MMI_GETINFO_FUNCTION)))
+            if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, g_mmiGetInfoFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_GETINFO_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetInfoFunction, dlerror());
                 status = ENOENT;
             }
 
-            if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, MMI_OPEN_FUNCTION)))
+            if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, g_mmiOpenFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_OPEN_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiOpenFunction, dlerror());
                 status = ENOENT;
             }
 
-            if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, MMI_CLOSE_FUNCTION)))
+            if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, g_mmiCloseFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_CLOSE_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiCloseFunction, dlerror());
                 status = ENOENT;
             }
 
-            if (NULL == (module->get = (MMI_GET)dlsym(module->handle, MMI_GET_FUNCTION)))
+            if (NULL == (module->get = (MMI_GET)dlsym(module->handle, g_mmiGetFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_GET_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetFunction, dlerror());
                 status = ENOENT;
             }
 
-            if (NULL == (module->set = (MMI_SET)dlsym(module->handle, MMI_SET_FUNCTION)))
+            if (NULL == (module->set = (MMI_SET)dlsym(module->handle, g_mmiSetFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_SET_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiSetFunction, dlerror());
                 status = ENOENT;
             }
 
-            if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, MMI_FREE_FUNCTION)))
+            if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, g_mmiFreeFunction)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_FREE_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiFreeFunction, dlerror());
                 status = ENOENT;
             }
 
