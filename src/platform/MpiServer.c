@@ -561,7 +561,7 @@ static void* MpiServerWorker(void* arguments)
     return NULL;
 }
 
-void ServerStart(void)
+void MpiInitialize(void)
 {
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
@@ -612,7 +612,7 @@ void ServerStart(void)
     }
 }
 
-void ServerStop(void)
+void MpiShutdown(void)
 {
     g_serverActive = false;
     pthread_join(g_mpiServerWorker, NULL);
@@ -622,3 +622,5 @@ void ServerStop(void)
     close(g_socketfd);
     unlink(g_mpiSocket);
 }
+
+void MpiDoWork(void) {}

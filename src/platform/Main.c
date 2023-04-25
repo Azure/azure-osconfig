@@ -14,6 +14,9 @@
 // 100 milliseconds
 #define DOWORK_SLEEP 100
 
+// 30 seconds
+#define DOWORK_INTERVAL 30
+
 // The configuration file for OSConfig
 #define CONFIG_FILE "/etc/osconfig/osconfig.json"
 
@@ -23,6 +26,8 @@
 
 #define COMMAND_LOGGING "CommandLogging"
 #define FULL_LOGGING "FullLogging"
+
+static unsigned int g_lastTime = 0;
 
 extern OSCONFIG_LOG_HANDLE g_platformLog;
 
@@ -86,7 +91,7 @@ static void SignalInterrupt(int signal)
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "Interrupt signal (%d)", signal);
+        OsConfigLogInfo(g_platformLog, "Interrupt signal (%d)", signal);
         g_stopSignal = signal;
     }
 
@@ -122,8 +127,8 @@ static void SignalReloadConfiguration(int incomingSignal)
 
 static void Refresh()
 {
-    ServerStop();
-    ServerStart();
+    MpiShutdown();
+    MpiInitialize();
 
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform reintialized");
 }
@@ -136,14 +141,30 @@ void ScheduleRefresh(void)
 
 static void InitializePlatform(void)
 {
-    ServerStart();
+    g_lastTime = (unsigned int)time(NULL);
+
+    MpiInitialize();
+
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
 }
 
 void TerminatePlatform(void)
 {
-    ServerStop();
+    MpiShutdown();
+
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
+}
+
+static void PlatformDoWork(void)
+{
+    unsigned int currentTime = time(NULL);
+    unsigned int timeInterval = DOWORK_INTERVAL;
+
+    if (timeInterval <= (currentTime - g_lastTime))
+    {
+        MpiDoWork();
+        g_lastTime = (unsigned int)time(NULL);
+    }
 }
 
 static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
@@ -177,7 +198,7 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
     return IsLoggingEnabledInJsonConfig(jsonString, FULL_LOGGING);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     UNUSED(argc);
     UNUSED(argv);
@@ -215,6 +236,8 @@ int main(int argc, char *argv[])
 
     while (0 == g_stopSignal)
     {
+        PlatformDoWork();
+
         sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
