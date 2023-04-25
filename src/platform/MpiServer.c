@@ -79,7 +79,14 @@ static int CallMpiSet(MPI_HANDLE handle, const char* componentName, const char* 
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s'), status: %d", componentName, objectName, handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSet(%s, %s) request, session %p ('%s'), failed: %d", componentName, objectName, handle, (char*)handle, status);
+        }
     }
 
     memset(g_mpiCall, 0, sizeof(g_mpiCall));
@@ -96,7 +103,14 @@ static int CallMpiGet(MPI_HANDLE handle, const char* componentName, const char* 
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s'), status: %d", componentName, objectName, handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s')", componentName, objectName, handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGet(%s, %s) request, session %p ('%s'), failed: %d", componentName, objectName, handle, (char*)handle, status);
+        }
     }
 
     memset(g_mpiCall, 0, sizeof(g_mpiCall));
@@ -113,7 +127,14 @@ static int CallMpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, c
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired request, session %p ('%s'), status: %d", handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired request, session %p ('%s')", handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
+        }
     }
 
     memset(g_mpiCall, 0, sizeof(g_mpiCall));
@@ -130,7 +151,14 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
 
     if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiGetReported request, session %p ('%s'), status: %d", handle, (char*)handle, status);
+        if (MPI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiGetReported request, session %p ('%s')", handle, (char*)handle);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGetReported request, session %p ('%s'), failed: %d", handle, (char*)handle, status);
+        }
     }
 
     memset(g_mpiCall, 0, sizeof(g_mpiCall));
@@ -417,20 +445,20 @@ static char* HttpReasonAsString(HTTP_STATUS statusCode)
     {
         switch (statusCode)
         {
-        case HTTP_OK:
-            strcpy(reason, "OK");
-            break;
-        case HTTP_BAD_REQUEST:
-            strcpy(reason, "Bad Request");
-            break;
-        case HTTP_NOT_FOUND:
-            strcpy(reason, "Not Found");
-            break;
-        case HTTP_INTERNAL_SERVER_ERROR:
-            strcpy(reason, "Internal Server Error");
-            break;
-        default:
-            strcpy(reason, "Unknown");
+            case HTTP_OK:
+                strcpy(reason, "OK");
+                break;
+            case HTTP_BAD_REQUEST:
+                strcpy(reason, "Bad Request");
+                break;
+            case HTTP_NOT_FOUND:
+                strcpy(reason, "Not Found");
+                break;
+            case HTTP_INTERNAL_SERVER_ERROR:
+                strcpy(reason, "Internal Server Error");
+                break;
+            default:
+                strcpy(reason, "Unknown");
         }
     }
 
