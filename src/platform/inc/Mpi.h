@@ -12,6 +12,11 @@ typedef void* MPI_HANDLE;
 // Not null terminated, UTF-8, JSON formatted string
 typedef char* MPI_JSON_STRING;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 MPI_HANDLE MpiOpen(
     const char* clientName,
     const unsigned int maxPayloadSizeBytes);
@@ -38,5 +43,9 @@ int MpiGetReported(
 void MpiClose(MPI_HANDLE clientSession);
 
 void MpiFree(MPI_JSON_STRING payload);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // MPI_H

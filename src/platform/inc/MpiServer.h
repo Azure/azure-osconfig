@@ -4,8 +4,6 @@
 #ifndef MPI_SERVER_H
 #define MPI_SERVER_H
 
-#include <Mpi.h>
-
 #define MPI_CALL_MESSAGE_LENGTH 256
 
 #define MPI_OPEN_URI "MpiOpen"
@@ -14,6 +12,11 @@
 #define MPI_GET_URI "MpiGet"
 #define MPI_SET_DESIRED_URI "MpiSetDesired"
 #define MPI_GET_REPORTED_URI "MpiGetReported"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef enum HttpStatus
 {
@@ -45,5 +48,9 @@ void MpiShutdown(void);
 void MpiDoWork(void);
 
 HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // MPI_SERVER_H

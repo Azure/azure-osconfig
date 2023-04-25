@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <PlatformCommon.h>
+#include <MmiClient.h>
 
 #define AZURE_OSCONFIG "Azure OSConfig"
 #define MODULE_EXT ".so"

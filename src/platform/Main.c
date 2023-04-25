@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <MpiServer.h>
 #include <PlatformCommon.h>
+#include <MpiServer.h>
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
@@ -22,7 +22,7 @@
 
 static unsigned int g_lastTime = 0;
 
-extern OSCONFIG_LOG_HANDLE g_platformLog;
+OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
@@ -52,6 +52,11 @@ static int g_refreshSignal = 0;
 #define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
 #define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
 #define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
+
+OSCONFIG_LOG_HANDLE GetPlatformLog()
+{
+    return g_platformLog;
+}
 
 static void SignalInterrupt(int signal)
 {

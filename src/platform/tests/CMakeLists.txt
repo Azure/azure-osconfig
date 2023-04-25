@@ -4,7 +4,6 @@
 project(modulesmanagertests)
 
 set(platform_files
-    ../Log.c
     ../MmiClient.c
     ../ModulesManager.c
     ../MpiServer.c)

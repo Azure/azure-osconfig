@@ -24,12 +24,20 @@
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
-#include <MmiClient.h>
 #include <Mpi.h>
 #include <ModulesManager.h>
 
 #include <version.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 OSCONFIG_LOG_HANDLE GetPlatformLog(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PLATFORMCOMMON_H

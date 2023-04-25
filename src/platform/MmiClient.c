@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include <PlatformCommon.h>
+#include <MmiClient.h>
 
 static const char* g_mmiOpenFunction = "MmiOpen";
 static const char* g_mmiCloseFunction = "MmiClose";
