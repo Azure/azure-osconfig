@@ -18,13 +18,13 @@ extern "C"
 {
 #endif
 
-typedef enum HttpStatus
+typedef enum HTTP_STATUS
 {
     HTTP_OK = 200,
     HTTP_BAD_REQUEST = 400,
     HTTP_NOT_FOUND = 404,
     HTTP_INTERNAL_SERVER_ERROR = 500
-} HttpStatus;
+} HTTP_STATUS;
 
 typedef MPI_HANDLE(*MpiOpenCall)(const char*, const unsigned int);
 typedef void(*MpiCloseCall)(MPI_HANDLE);
@@ -47,7 +47,7 @@ void MpiInitialize(void);
 void MpiShutdown(void);
 void MpiDoWork(void);
 
-HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
+HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
 
 #ifdef __cplusplus
 }

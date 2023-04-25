@@ -159,11 +159,11 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
     return status;
 }
 
-HttpStatus SetErrorResponse(const char* uri, int mpiStatus, char** response, int* responseSize)
+HTTP_STATUS SetErrorResponse(const char* uri, int mpiStatus, char** response, int* responseSize)
 {
     int size = 0;
     const char* errorFormat = "\"%d\"";
-    HttpStatus status = HTTP_OK;
+    HTTP_STATUS status = HTTP_OK;
 
     if (MPI_OK != mpiStatus)
     {
@@ -184,7 +184,7 @@ HttpStatus SetErrorResponse(const char* uri, int mpiStatus, char** response, int
     return status;
 }
 
-HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers)
+HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers)
 {
     JSON_Value* rootValue = NULL;
     JSON_Value* clientValue = NULL;
@@ -202,7 +202,7 @@ HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** respon
     int maxPayloadSizeBytes = 0;
     int estimatedSize = 0;
     const char* responseFormat = "\"%s\"";
-    HttpStatus status = HTTP_OK;
+    HTTP_STATUS status = HTTP_OK;
 
     if (NULL == uri)
     {
@@ -428,7 +428,7 @@ HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** respon
     return status;
 }
 
-static char* HttpReasonAsString(HttpStatus statusCode)
+static char* HttpReasonAsString(HTTP_STATUS statusCode)
 {
     char* reason = NULL;
 
@@ -464,7 +464,7 @@ static void* MpiServerWorker(void* arguments)
     char* uri = NULL;
     int contentLength = 0;
     char* requestBody = NULL;
-    HttpStatus status = HTTP_OK;
+    HTTP_STATUS status = HTTP_OK;
     char* httpReason = NULL;
     char* responseBody = NULL;
     int responseSize = 0;
