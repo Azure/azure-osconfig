@@ -38,13 +38,13 @@ static const char* g_objectName = "ObjectName";
 static const char* g_payload = "Payload";
 
 static int g_socketfd = -1;
-static struct sockaddr_un g_socketaddr = { 0 };
+static struct sockaddr_un g_socketaddr = {0};
 static socklen_t g_socketlen = 0;
 
 static pthread_t g_mpiServerWorker = 0;
 static bool g_serverActive = false;
 
-char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = { 0 };
+char g_mpiCall[MPI_CALL_MESSAGE_LENGTH] = {0};
 static const char g_mpiCallObjectTemplate[] = " during %s to %s.%s\n";
 static const char g_mpiCallModelTemplate[] = " during %s\n";
 
@@ -379,7 +379,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                             if (MPI_OK != (mpiStatus = handlers.mpiSet((MPI_HANDLE)client, component, object, (MPI_JSON_STRING)payload, strlen(payload))))
                             {
                                 status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-
                                 if (IsFullLoggingEnabled())
                                 {
                                     OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
@@ -390,7 +389,6 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                     else if (MPI_OK != (mpiStatus = handlers.mpiGet((MPI_HANDLE)client, component, object, response, responseSize)))
                     {
                         status = SetErrorResponse(uri, mpiStatus, response, responseSize);
-
                         if (IsFullLoggingEnabled())
                         {
                             OsConfigLogError(GetPlatformLog(), "%s(%s, %s): failed for client '%s' with %d (returning %d)", uri, component, object, client, mpiStatus, status);
