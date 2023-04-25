@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Module.h>
+#include <MmiClient.h>
 #include <Log.h>
 
 #include <dlfcn.h>
@@ -83,79 +83,79 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
 
     if (value == NULL)
     {
-        LOG_ERROR("Invalid (null) JSON value");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) JSON value");
         status = EINVAL;
     }
     else if (moduleInfo == NULL)
     {
-        LOG_ERROR("Invalid (null) module info");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) module info");
         status = EINVAL;
     }
     else if (NULL == (object = json_value_get_object(value)))
     {
-        LOG_ERROR("JSON value is not an object");
+        OsConfigLogError(GetPlatformLog(), "JSON value is not an object");
         status = EINVAL;
     }
     else if (NULL == (info = (MODULE_INFO*)calloc(1, sizeof(MODULE_INFO))))
     {
-        LOG_ERROR("Failed to allocate memory for module info");
+        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module info");
         status = ENOMEM;
     }
     else
     {
         if (NULL == (name = json_object_get_string(object, INFO_NAME)))
         {
-            LOG_ERROR("Module info is missing required field '%s'", INFO_NAME);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_NAME);
             status = EINVAL;
         }
         else if (NULL == (info->name = strdup(name)))
         {
-            LOG_ERROR("Failed to allocate memory for module name");
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
             status = ENOMEM;
         }
         else if (NULL == (description = json_object_get_string(object, INFO_DESCRIPTION)))
         {
-            LOG_ERROR("Module info is missing required field '%s'", INFO_DESCRIPTION);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_DESCRIPTION);
             status = EINVAL;
         }
         else if (NULL == (info->description = strdup(description)))
         {
-            LOG_ERROR("Failed to allocate memory for module description");
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module description");
             status = ENOMEM;
         }
         else if (NULL == (manufacturer = json_object_get_string(object, INFO_MANUFACTURER)))
         {
-            LOG_ERROR("Module info is missing required field '%s'", INFO_MANUFACTURER);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_MANUFACTURER);
             status = EINVAL;
         }
         else if (NULL == (info->manufacturer = strdup(manufacturer)))
         {
-            LOG_ERROR("Failed to allocate memory for module manufacturer");
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module manufacturer");
             status = ENOMEM;
         }
         else if (NULL == (versionInfo = json_object_get_string(object, INFO_VERSION_INFO)))
         {
-            LOG_ERROR("Module info is missing required field '%s'", INFO_VERSION_INFO);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_VERSION_INFO);
             status = EINVAL;
         }
         else if (NULL == (info->versionInfo = strdup(versionInfo)))
         {
-            LOG_ERROR("Failed to allocate memory for module version info");
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module version info");
             status = ENOMEM;
         }
         else if (NULL == (components = json_object_get_array(object, INFO_COMPONENTS)))
         {
-            LOG_ERROR("Module info is missing required field '%s'", INFO_COMPONENTS);
+            OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", INFO_COMPONENTS);
             status = EINVAL;
         }
         else if (0 == (componentsCount = json_array_get_count(components)))
         {
-            LOG_ERROR("Module info has no components");
+            OsConfigLogError(GetPlatformLog(), "Module info has no components");
             status = EINVAL;
         }
         else if (json_value_get_type(json_object_get_value(object, INFO_LIFETIME)) != JSONNumber)
         {
-            LOG_ERROR("Module info has invalid lifetime type");
+            OsConfigLogError(GetPlatformLog(), "Module info has invalid lifetime type");
             status = EINVAL;
         }
         else
@@ -171,7 +171,7 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
 
             if ((lifetime < 0) || (2 < lifetime))
             {
-                LOG_ERROR("Module info has invalid lifetime: %d", lifetime);
+                OsConfigLogError(GetPlatformLog(), "Module info has invalid lifetime: %d", lifetime);
                 status = EINVAL;
             }
             else
@@ -181,19 +181,19 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
 
             if ((NULL != licenseUri) && (NULL == (info->licenseUri = strdup(licenseUri))))
             {
-                LOG_ERROR("Failed to allocate memory for module license URI");
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module license URI");
                 status = ENOMEM;
             }
 
             if ((NULL != projectUri) && (NULL == (info->projectUri = strdup(projectUri))))
             {
-                LOG_ERROR("Failed to allocate memory for module project URI");
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module project URI");
                 status = ENOMEM;
             }
 
             if (NULL == (info->components = (char**)calloc(componentsCount, sizeof(char*))))
             {
-                LOG_ERROR("Failed to allocate memory for module components");
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module components");
                 status = ENOMEM;
             }
             else
@@ -204,13 +204,13 @@ int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                 {
                     if (NULL == (component = (char*)json_array_get_string(components, i)))
                     {
-                        LOG_ERROR("Failed to get component name at index: %d", i);
+                        OsConfigLogError(GetPlatformLog(), "Failed to get component name at index: %d", i);
                         status = EINVAL;
                         break;
                     }
                     else if (NULL == (info->components[i] = strdup(component)))
                     {
-                        LOG_ERROR("Failed to copy component name at index: %d", i);
+                        OsConfigLogError(GetPlatformLog(), "Failed to copy component name at index: %d", i);
                         status = ENOMEM;
                         break;
                     }
@@ -241,72 +241,70 @@ MODULE* LoadModule(const char* client, const char* path)
     MMI_JSON_STRING payload = NULL;
     int payloadSize = 0;
 
-    printf("Loading module %s", path);
-
     if (NULL == client)
     {
-        LOG_ERROR("Invalid (null) client");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) client");
         status = EINVAL;
     }
     else if (NULL == path)
     {
-        LOG_ERROR("Invalid (null) path");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) path");
         status = EINVAL;
     }
     else if (NULL == (module = (MODULE*)calloc(1, sizeof(MODULE))))
     {
-        LOG_ERROR("Failed to allocate memory for module");
+        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module");
         status = ENOMEM;
     }
     else if (NULL == (module->name = strdup(path)))
     {
-        LOG_ERROR("Failed to allocate memory for module name");
+        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
         status = ENOMEM;
     }
     else
     {
-        LOG_INFO("Loading module %s", path);
+        OsConfigLogInfo(GetPlatformLog(), "Loading module %s", path);
 
         if (NULL == (module->handle = dlopen(path, RTLD_NOW)))
         {
-            LOG_ERROR("Failed to load module %s: ", dlerror());
+            OsConfigLogError(GetPlatformLog(), "Failed to load module %s: ", dlerror());
             status = ENOENT;
         }
         else
         {
             if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, MMI_GETINFO_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_GETINFO_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_GETINFO_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, MMI_OPEN_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_OPEN_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_OPEN_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, MMI_CLOSE_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_CLOSE_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_CLOSE_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->get = (MMI_GET)dlsym(module->handle, MMI_GET_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_GET_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_GET_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->set = (MMI_SET)dlsym(module->handle, MMI_SET_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_SET_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_SET_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
             if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, MMI_FREE_FUNCTION)))
             {
-                LOG_ERROR("Function '%s()' is missing from MMI: %s", MMI_FREE_FUNCTION, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", MMI_FREE_FUNCTION, dlerror());
                 status = ENOENT;
             }
 
@@ -314,24 +312,24 @@ MODULE* LoadModule(const char* client, const char* path)
             {
                 if (MMI_OK != (module->getInfo(client, &payload, &payloadSize)))
                 {
-                    LOG_ERROR("Failed to get module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "Failed to get module info: %s", path);
                     status = ENOENT;
                 }
                 else if (NULL == (value = json_parse_string(payload)))
                 {
-                    LOG_ERROR("Failed to parse module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
                     status = ENOENT;
                 }
                 else if (0 != (status = ParseModuleInfo(value, &info)))
                 {
-                    LOG_ERROR("Failed to parse module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
                     status = ENOENT;
                 }
                 else
                 {
                     module->info = info;
 
-                    LOG_INFO("Loaded module: '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
+                    OsConfigLogInfo(GetPlatformLog(), "Loaded module: '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
                 }
             }
         }

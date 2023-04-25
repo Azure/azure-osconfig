@@ -5,7 +5,7 @@
 #include <gmock/gmock.h>
 
 #include <CommonUtils.h>
-#include <Server.h>
+#include <MpiServer.h>
 #include <Mpi.h>
 
 namespace Tests

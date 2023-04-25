@@ -8,7 +8,7 @@
 
 #include <parson.h>
 
-#include <Server.h>
+#include <MpiServer.h>
 #include <Log.h>
 
 // 100 milliseconds
@@ -86,7 +86,7 @@ static void SignalInterrupt(int signal)
     }
     else
     {
-        LOG_INFO("Interrupt signal (%d)", signal);
+        OsConfigLogInfo(GetPlatformLog(), "Interrupt signal (%d)", signal);
         g_stopSignal = signal;
     }
 
@@ -125,25 +125,25 @@ static void Refresh()
     ServerStop();
     ServerStart();
 
-    LOG_INFO("OSConfig Platform reintialized");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform reintialized");
 }
 
 void ScheduleRefresh(void)
 {
-    LOG_INFO("Scheduling refresh");
+    OsConfigLogInfo(GetPlatformLog(), "Scheduling refresh");
     g_refreshSignal = SIGHUP;
 }
 
 static void InitializePlatform(void)
 {
     ServerStart();
-    LOG_INFO("OSConfig Platform intialized");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
 }
 
 void TerminatePlatform(void)
 {
     ServerStop();
-    LOG_INFO("OSConfig Platform terminated");
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
 }
 
 static bool IsLoggingEnabledInJsonConfig(const char* jsonString, const char* loggingSetting)
@@ -197,12 +197,12 @@ int main(int argc, char *argv[])
 
     g_platformLog = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
 
-    LOG_INFO("OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
-    LOG_INFO("OSConfig version: %s", OSCONFIG_VERSION);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform starting (PID: %d, PPID: %d)", pid = getpid(), getppid());
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig version: %s", OSCONFIG_VERSION);
 
     if (IsCommandLoggingEnabled() || IsFullLoggingEnabled())
     {
-        LOG_INFO("WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
+        OsConfigLogInfo(GetPlatformLog(), "WARNING: verbose logging (command and/or full) is enabled. To disable verbose logging edit %s and restart OSConfig", CONFIG_FILE);
     }
 
     for (int i = 0; i < stopSignalsCount; i++)
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    LOG_INFO("OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
+    OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform (PID: %d) exiting with %d", pid, g_stopSignal);
 
     TerminatePlatform();
     CloseLog(&g_platformLog);

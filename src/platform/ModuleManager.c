@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <Platform.h>
-#include <Module.h>
-#include <Log.h>
-
 #include <dirent.h>
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
 
 #include <parson.h>
+
+#include <ModuleManager.h>
+#include <MmiClient.h>
+#include <Log.h>
 
 #define MODULE_EXT ".so"
 
@@ -75,26 +75,26 @@ void LoadModules(const char* directory, const char* configJson)
 
     if (NULL == (dir = opendir(directory)))
     {
-        LOG_ERROR("Failed to open module directory: %s", directory);
+        OsConfigLogError(GetPlatformLog(), "Failed to open module directory: %s", directory);
     }
     else if (NULL == (config = json_parse_file(configJson)))
     {
-        LOG_ERROR("Failed to parse configuration JSON (%s)", configJson);
+        OsConfigLogError(GetPlatformLog(), "Failed to parse configuration JSON (%s)", configJson);
     }
     else if (NULL == (configObject = json_value_get_object(config)))
     {
-        LOG_ERROR("Failed to get config object");
+        OsConfigLogError(GetPlatformLog(), "Failed to get config object");
     }
     else if (0 == (version = json_object_get_number(configObject, MODEL_VERSION)))
     {
-        LOG_ERROR("Failed to get model version from configuration JSON (%s)", configJson);
+        OsConfigLogError(GetPlatformLog(), "Failed to get model version from configuration JSON (%s)", configJson);
     }
     else
     {
         client = (char*)calloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5, sizeof(char));
         if (NULL == client)
         {
-            LOG_ERROR("Failed to allocate memory for client name");
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for client name");
         }
         else
         {
@@ -115,7 +115,7 @@ void LoadModules(const char* directory, const char* configJson)
 
             if (NULL == (path = calloc(strlen(directory) + strlen(entry->d_name) + 2, sizeof(char))))
             {
-                LOG_ERROR("Failed to allocate memory for module path");
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module path");
                 continue;
             }
 
@@ -128,7 +128,7 @@ void LoadModules(const char* directory, const char* configJson)
             }
             else
             {
-                LOG_ERROR("Failed to load module: %s", entry->d_name);
+                OsConfigLogError(GetPlatformLog(), "Failed to load module: %s", entry->d_name);
             }
 
             FREE_MEMORY(path);
@@ -151,27 +151,27 @@ void LoadModules(const char* directory, const char* configJson)
 
                     if (NULL == (reportedObject = json_array_get_object(reportedArray, i)))
                     {
-                        LOG_ERROR("Array element at index %d is not an object", i);
+                        OsConfigLogError(GetPlatformLog(), "Array element at index %d is not an object", i);
                         g_numReportedObjects--;
                     }
                     else if (NULL == (component = json_object_get_string(reportedObject, COMPONENT_NAME)))
                     {
-                        LOG_ERROR("Object at index %d is missing '%s'", i, COMPONENT_NAME);
+                        OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, COMPONENT_NAME);
                         g_numReportedObjects--;
                     }
                     else if (NULL == (component = strdup(component)))
                     {
-                        LOG_ERROR("Failed to allocate memory for component name");
+                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for component name");
                         g_numReportedObjects--;
                     }
                     else if (NULL == (object = json_object_get_string(reportedObject, OBJECT_NAME)))
                     {
-                        LOG_ERROR("Object at index %d is missing '%s'", i, OBJECT_NAME);
+                        OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, OBJECT_NAME);
                         g_numReportedObjects--;
                     }
                     else if (NULL == (object = strdup(object)))
                     {
-                        LOG_ERROR("Failed to allocate memory for object name");
+                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for object name");
                         g_numReportedObjects--;
                     }
                     else
@@ -298,7 +298,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
 
     if (NULL == clientName)
     {
-        LOG_ERROR("Invalid (null) client name");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) client name");
         return NULL;
     }
 
@@ -318,7 +318,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
             }
             else
             {
-                LOG_ERROR("Failed to allocate memory for module session");
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module session");
             }
 
             module = module->next;
@@ -329,7 +329,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
-        LOG_ERROR("Failed to allocate memory for session");
+        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for session");
     }
 
     return (session) ? (MPI_HANDLE)strdup(session->uuid) : NULL;
@@ -358,11 +358,11 @@ void MpiClose(MPI_HANDLE handle)
 
     if (NULL == handle)
     {
-        LOG_ERROR("Invalid (null) handle");
+        OsConfigLogError(GetPlatformLog(), "Invalid (null) handle");
     }
     else if (NULL == (session = FindSession(handle)))
     {
-        LOG_ERROR("Failed to find session for handle (%s)", (char*)handle);
+        OsConfigLogError(GetPlatformLog(), "Failed to find session for handle (%s)", (char*)handle);
     }
     else
     {
@@ -428,17 +428,17 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
 
     if ((NULL == handle) || (NULL == component) || (NULL == object) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
-        LOG_ERROR("MpiSet(%p, %s, %s, %p, %d) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
         status = EINVAL;
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "No session exists with uuid: '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
     {
-        LOG_ERROR("No module exists with component: %s", component);
+        OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", component);
         status = EINVAL;
     }
     else
@@ -458,17 +458,17 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
 
     if ((NULL == handle) || (NULL == component) || (NULL == object) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
-        LOG_ERROR("MpiGet(%p, %s, %s, %p, %p) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
         status = EINVAL;
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "No session exists with uuid: '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
     {
-        LOG_ERROR("No module exists with component: %s", component);
+        OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", component);
         status = EINVAL;
     }
     else
@@ -498,17 +498,17 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
 
     if ((NULL == handle) || (NULL == payload) || (payloadSizeBytes <= 0))
     {
-        LOG_ERROR("MpiSet(%p, %p, %d) called with invalid arguments", handle, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %p, %d) called with invalid arguments", handle, payload, payloadSizeBytes);
         status = EINVAL;
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: %s", uuid);
+        OsConfigLogError(GetPlatformLog(), "No session exists with uuid: %s", uuid);
         status = EINVAL;
     }
     else if (NULL == (json = (char*)malloc(payloadSizeBytes + 1)))
     {
-        LOG_ERROR("Failed to allocate memory for json");
+        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for json");
         status = ENOMEM;
     }
     else
@@ -518,7 +518,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
 
         if (NULL == (rootValue = json_parse_string(json)))
         {
-            LOG_ERROR("Failed to parse json");
+            OsConfigLogError(GetPlatformLog(), "Failed to parse json");
             status = EINVAL;
         }
         else
@@ -535,7 +535,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
 
                 if (NULL == moduleSession)
                 {
-                    LOG_ERROR("No module exists with component: %s", component);
+                    OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", component);
                     status = EINVAL;
                 }
                 else
@@ -551,7 +551,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
 
                         if (NULL == objectJson)
                         {
-                            LOG_ERROR("Failed to serialize json");
+                            OsConfigLogError(GetPlatformLog(), "Failed to serialize json");
                             status = EINVAL;
                         }
                         else
@@ -593,22 +593,22 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
     if ((NULL == handle) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
-        LOG_ERROR("MpiGetReported(%p, %p, %p) called with invalid arguments", handle, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiGetReported(%p, %p, %p) called with invalid arguments", handle, payload, payloadSizeBytes);
         status = EINVAL;
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        LOG_ERROR("No session exists with uuid: %s", uuid);
+        OsConfigLogError(GetPlatformLog(), "No session exists with uuid: %s", uuid);
         status = EINVAL;
     }
     else if (NULL == (rootValue = json_value_init_object()))
     {
-        LOG_ERROR("Failed to initialize json object");
+        OsConfigLogError(GetPlatformLog(), "Failed to initialize json object");
         status = ENOMEM;
     }
     else if (NULL == (rootObject = json_value_get_object(rootValue)))
     {
-        LOG_ERROR("Failed to get root json object from value");
+        OsConfigLogError(GetPlatformLog(), "Failed to get root json object from value");
         status = ENOMEM;
     }
     else
@@ -621,21 +621,24 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
             if (NULL == (moduleSession = FindModuleSession(session->modules, componentName)))
             {
-                LOG_ERROR("No module exists with component: %s", componentName);
+                OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", componentName);
             }
             else
             {
                 mmiStatus = moduleSession->module->get(moduleSession->handle, componentName, objectName, &mmiPayload, &mmiPayloadSizeBytes);
 
-                LOG_TRACE("MmiGet(%s, %s) returned %d (%.*s)", componentName, objectName, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
+                if (IsFullLoggingEnabled())
+                {
+                    OsConfigLogInfo(GetPlatformLog(), "MmiGet(%s, %s) returned %d (%.*s)", componentName, objectName, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
+                }
 
                 if (MMI_OK != mmiStatus)
                 {
-                    LOG_ERROR("MmiGet(%s, %s), returned %d", componentName, objectName, mmiStatus);
+                    OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s), returned %d", componentName, objectName, mmiStatus);
                 }
                 else if (NULL == (payloadJson = (char*)malloc(mmiPayloadSizeBytes + 1)))
                 {
-                    LOG_ERROR("Failed to allocate memory for json");
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for json");
                 }
                 else
                 {
@@ -644,7 +647,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
-                        LOG_ERROR("MmiGet(%s, %s) returned an invalid payload: %s", componentName, objectName, payloadJson);
+                        OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload: %s", componentName, objectName, payloadJson);
                     }
                     else
                     {
@@ -656,7 +659,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
                         if (NULL == (componentObject = json_value_get_object(componentValue)))
                         {
-                            LOG_ERROR("Failed to get JSON object for component: %s", componentName);
+                            OsConfigLogError(GetPlatformLog(), "Failed to get JSON object for component: %s", componentName);
                         }
                         else
                         {

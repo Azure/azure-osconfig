@@ -18,9 +18,9 @@ project(osconfig-platform)
 set(osconfig_platform_files
     ./Log.c
     ./Main.c
-    ./Module.c
-    ./Platform.c
-    ./Server.c)
+    ./MmiClient.c
+    ./ModuleManager.c
+    ./MpiServer.c)
 
 set(target_name osconfig-platform)
 
