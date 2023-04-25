@@ -53,7 +53,7 @@ static int g_refreshSignal = 0;
 #define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
 #define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
 
-OSCONFIG_LOG_HANDLE GetPlatformLog()
+OSCONFIG_LOG_HANDLE GetPlatformLog(void)
 {
     return g_platformLog;
 }
