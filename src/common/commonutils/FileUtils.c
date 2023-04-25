@@ -16,8 +16,7 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
         return string;
     }
 
-    file = fopen(fileName, "r");
-    if (file)
+    if (NULL != (file = fopen(fileName, "r")))
     {
         if (LockFile(file, log))
         {
@@ -96,17 +95,17 @@ int RestrictFileAccessToCurrentAccountOnly(const char* fileName)
     return chmod(fileName, S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IXUSR | S_IXGRP);
 }
 
-bool FileExists(const char* name)
+bool FileExists(const char* fileName)
 {
-    return ((NULL != name) && (-1 != access(name, F_OK))) ? true : false;
+    return ((NULL != fileName) && (-1 != access(fileName, F_OK))) ? true : false;
 }
 
-bool DirectoryExists(const char* name)
+bool DirectoryExists(const char* fileName)
 {
     DIR* directory = NULL;
     bool result = false;
 
-    if (FileExists(name) && (NULL != (directory = opendir(name))))
+    if (FileExists(fileName) && (NULL != (directory = opendir(fileName))))
     {
         closedir(directory);
         result = true;
@@ -115,17 +114,17 @@ bool DirectoryExists(const char* name)
     return result;
 }
 
-int CheckFileExists(const char* name, void* log)
+int CheckFileExists(const char* fileName, void* log)
 {
     int status = 0;
 
-    if (FileExists(name))
+    if (FileExists(fileName))
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", name);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' exists", fileName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", name);
+        OsConfigLogInfo(log, "CheckFileExists: file '%s' not found", fileName);
         status = EEXIST;
     }
 
@@ -387,24 +386,24 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return CheckAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
 }
 
-int SetFileAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(false, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
-    return CheckAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
 }
 
-int SetDirectoryAccess(const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
+int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    return SetAccess(true, name, desiredOwnerId, desiredGroupId, desiredAccess, log);
+    return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
 int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
