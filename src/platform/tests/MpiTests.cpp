@@ -4,9 +4,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <PlatformCommon.h>
 #include <TestModules.h>
-#include <CommonUtils.h>
-#include <ModuleManager.h>
 
 namespace Tests
 {

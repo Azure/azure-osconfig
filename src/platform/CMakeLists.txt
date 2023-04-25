@@ -19,7 +19,7 @@ set(osconfig_platform_files
     ./Log.c
     ./Main.c
     ./MmiClient.c
-    ./ModuleManager.c
+    ./ModulesManager.c
     ./MpiServer.c)
 
 set(target_name osconfig-platform)

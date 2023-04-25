@@ -15,18 +15,13 @@
 #define MPI_SET_DESIRED_URI "MpiSetDesired"
 #define MPI_GET_REPORTED_URI "MpiGetReported"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-typedef enum HTTP_STATUS
+typedef enum HttpStatus
 {
     HTTP_OK = 200,
     HTTP_BAD_REQUEST = 400,
     HTTP_NOT_FOUND = 404,
     HTTP_INTERNAL_SERVER_ERROR = 500
-} HTTP_STATUS;
+} HttpStatus;
 
 typedef MPI_HANDLE(*MpiOpenCall)(const char*, const unsigned int);
 typedef void(*MpiCloseCall)(MPI_HANDLE);
@@ -49,10 +44,6 @@ void MpiInitialize(void);
 void MpiShutdown(void);
 void MpiDoWork(void);
 
-HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
-
-#ifdef __cplusplus
-}
-#endif
+HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
 
 #endif // MPI_SERVER_H

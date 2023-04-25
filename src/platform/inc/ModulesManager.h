@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef PLATFORM_H
-#define PLATFORM_H
-
-#include <Mpi.h>
+#ifndef MODULESMANAGER_H
+#define MODULESMANAGER_H
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+bool AreModulesLoaded(void);
 void LoadModules(const char* path, const char* configJson);
 void UnloadModules(void);
 
@@ -18,4 +17,4 @@ void UnloadModules(void);
 }
 #endif
 
-#endif // PLATFORM_H
+#endif // MODULESMANAGER_H

@@ -1,18 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <pthread.h>
-#include <stdbool.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/un.h>
-#include <unistd.h>
-
-#include <parson.h>
-
-#include <CommonUtils.h>
-#include <Log.h>
-#include <ModuleManager.h>
+#include <PlatformCommon.h>
 #include <MpiServer.h>
 
 // 500 milliseconds
@@ -24,8 +13,8 @@
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
 
-#define MODULE_BIN_PATH "/usr/lib/osconfig"
-#define CONFIG_JSON_PATH "/etc/osconfig/osconfig.json"
+static const char* g_moduleBinPath = "/usr/lib/osconfig";
+static const char* g_configJsonPath = "/etc/osconfig/osconfig.json";
 
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
@@ -170,11 +159,11 @@ static int CallMpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* 
     return status;
 }
 
-HTTP_STATUS SetErrorResponse(const char* uri, int mpiStatus, char** response, int* responseSize)
+HttpStatus SetErrorResponse(const char* uri, int mpiStatus, char** response, int* responseSize)
 {
     int size = 0;
     const char* errorFormat = "\"%d\"";
-    HTTP_STATUS status = HTTP_OK;
+    HttpStatus status = HTTP_OK;
 
     if (MPI_OK != mpiStatus)
     {
@@ -195,7 +184,7 @@ HTTP_STATUS SetErrorResponse(const char* uri, int mpiStatus, char** response, in
     return status;
 }
 
-HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers)
+HttpStatus HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers)
 {
     JSON_Value* rootValue = NULL;
     JSON_Value* clientValue = NULL;
@@ -213,7 +202,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     int maxPayloadSizeBytes = 0;
     int estimatedSize = 0;
     const char* responseFormat = "\"%s\"";
-    HTTP_STATUS status = HTTP_OK;
+    HttpStatus status = HTTP_OK;
 
     if (NULL == uri)
     {
@@ -439,7 +428,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
     return status;
 }
 
-static char* HttpReasonAsString(HTTP_STATUS statusCode)
+static char* HttpReasonAsString(HttpStatus statusCode)
 {
     char* reason = NULL;
 
@@ -475,7 +464,7 @@ static void* MpiServerWorker(void* arguments)
     char* uri = NULL;
     int contentLength = 0;
     char* requestBody = NULL;
-    HTTP_STATUS status = HTTP_OK;
+    HttpStatus status = HTTP_OK;
     char* httpReason = NULL;
     char* responseBody = NULL;
     int responseSize = 0;
@@ -501,7 +490,10 @@ static void* MpiServerWorker(void* arguments)
 
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
-            LoadModules(MODULE_BIN_PATH, CONFIG_JSON_PATH);
+            if (!AreModulesLoaded())
+            {
+                LoadModules(g_moduleBinPath, g_configJsonPath);
+            }
 
             if (IsFullLoggingEnabled())
             {
@@ -653,4 +645,6 @@ void MpiShutdown(void)
     unlink(g_mpiSocket);
 }
 
-void MpiDoWork(void) {}
+void MpiDoWork(void) {
+    return;
+}

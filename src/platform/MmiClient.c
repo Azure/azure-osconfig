@@ -1,14 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <MmiClient.h>
-#include <Log.h>
-
-#include <dlfcn.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include <parson.h>
+#include <PlatformCommon.h>
 
 static const char* g_mmiOpenFunction = "MmiOpen";
 static const char* g_mmiCloseFunction = "MmiClose";
@@ -101,7 +94,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
         else if (NULL == (info->name = strdup(info->name)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
-            status = ENOMEM;
+            status = errno;
         }
         else if (NULL == (info->description = (char*)json_object_get_string(object, g_infoDescription)))
         {
@@ -111,7 +104,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
         else if (NULL == (info->description = strdup(info->description)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module description");
-            status = ENOMEM;
+            status = errno;
         }
         else if (NULL == (info->manufacturer = (char*)json_object_get_string(object, g_infoManufacturer)))
         {
@@ -121,7 +114,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
         else if (NULL == (info->manufacturer = strdup(info->manufacturer)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module manufacturer");
-            status = ENOMEM;
+            status = errno;
         }
         else if (NULL == (info->versionInfo = (char*)json_object_get_string(object, g_infoVersionInfo)))
         {
@@ -131,7 +124,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
         else if (NULL == (info->versionInfo = strdup(info->versionInfo)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module version info");
-            status = ENOMEM;
+            status = errno;
         }
         else if (NULL == (components = json_object_get_array(object, g_infoComponents)))
         {
@@ -176,13 +169,13 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             if ((NULL != info->licenseUri) && (NULL == (info->licenseUri = strdup(info->licenseUri))))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module license URI");
-                status = ENOMEM;
+                status = errno;
             }
 
             if ((NULL != info->projectUri) && (NULL == (info->projectUri = strdup(info->projectUri))))
             {
                 OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module project URI");
-                status = ENOMEM;
+                status = errno;
             }
 
             if (NULL == (info->components = (char**)malloc(componentsCount * sizeof(char*))))
@@ -205,7 +198,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
                     else if (NULL == (info->components[i] = strdup(component)))
                     {
                         OsConfigLogError(GetPlatformLog(), "Failed to copy component name at index: %d", i);
-                        status = ENOMEM;
+                        status = errno;
                         break;
                     }
                 }
@@ -253,7 +246,7 @@ MODULE* LoadModule(const char* client, const char* path)
     else if (NULL == (module->name = strdup(path)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
-        status = ENOMEM;
+        status = errno;
     }
     else
     {

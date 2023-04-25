@@ -6,7 +6,7 @@ project(modulesmanagertests)
 set(platform_files
     ../Log.c
     ../MmiClient.c
-    ../ModuleManager.c
+    ../ModulesManager.c
     ../MpiServer.c)
 
 set(CMAKE_CXX_STANDARD 14)

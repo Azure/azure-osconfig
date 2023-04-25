@@ -1,15 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#include <fcntl.h>
-#include <signal.h>
-#include <pthread.h>
-#include <unistd.h>
-
-#include <parson.h>
-
 #include <MpiServer.h>
-#include <Log.h>
+#include <PlatformCommon.h>
 
 // 100 milliseconds
 #define DOWORK_SLEEP 100
