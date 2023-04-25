@@ -94,12 +94,14 @@ void LoadModules(const char* directory, const char* configJson)
     }
     else
     {
-        if (NULL == (client = (char*)calloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5, sizeof(char))))
+        // Allocate memory for client name "Azure OSConfig <version>;<osconfig version>" + null terminator
+        if (NULL == (client = (char*)malloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for client name");
         }
         else
         {
+            memset(client, 0, strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5);
             sprintf(client, "%s %d;%s", AZURE_OSCONFIG, version, OSCONFIG_VERSION);
         }
 
