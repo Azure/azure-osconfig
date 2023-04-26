@@ -343,53 +343,57 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     {
         OsConfigLogError(GetPlatformLog(), "Modules are not loaded, cannot open a session");
     }
-    else if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
+    else if (NULL == (uuid = GenerateUuid()))
     {
-        if (NULL == (session->client = strdup(clientName)))
-        {
-            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for client name");
-            FREE_MEMORY(session);
-        }
-        else if (NULL == (session->uuid = GenerateUuid()))
-        {
-            OsConfigLogError(GetPlatformLog(), "Failed to generate UUID");
-            FREE_MEMORY(session->client);
-            FREE_MEMORY(session);
-        }
-        else
-        {
-            module = g_modules;
-
-            while (module)
-            {
-                if (NULL != (moduleSession = (MODULE_SESSION*)malloc(sizeof(MODULE_SESSION))))
-                {
-                    moduleSession->module = module;
-                    moduleSession->handle = module->open(clientName, maxPayloadSizeBytes);
-                    moduleSession->next = session->modules;
-                    session->modules = moduleSession;
-                }
-                else
-                {
-                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module session");
-                }
-
-                module = module->next;
-            }
-
-            session->next = g_sessions;
-            g_sessions = session;
-        }
-
+        OsConfigLogError(GetPlatformLog(), "Failed to generate UUID");
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for session");
-    }
+        if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
+        {
+            if (NULL != (session->client = strdup(clientName)))
+            {
+                if (NULL != (session->uuid = strdup(uuid)))
+                {
+                    module = g_modules;
 
-    if (session && (NULL == (uuid = strdup(session->uuid))))
-    {
-        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for UUID");
+                    while (module)
+                    {
+                        if (NULL != (moduleSession = (MODULE_SESSION*)malloc(sizeof(MODULE_SESSION))))
+                        {
+                            moduleSession->module = module;
+                            moduleSession->handle = module->open(clientName, maxPayloadSizeBytes);
+                            moduleSession->next = session->modules;
+                            session->modules = moduleSession;
+                        }
+                        else
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module session");
+                        }
+
+                        module = module->next;
+                    }
+
+                    session->next = g_sessions;
+                    g_sessions = session;
+                }
+                else
+                {
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for session UUID");
+                    FREE_MEMORY(session->client);
+                    FREE_MEMORY(session);
+                }
+            }
+            else
+            {
+                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for client name");
+                FREE_MEMORY(session);
+            }
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for session");
+        }
     }
 
     return (MPI_HANDLE)uuid;
