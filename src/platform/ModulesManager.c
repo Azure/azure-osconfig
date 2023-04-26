@@ -296,16 +296,17 @@ static char* GenerateUuid(void)
     int random = 0;
     char c = ' ';
     int i = 0;
+    ssize_t size = UUID_LENGTH + 1;
 
-    if (NULL == (uuid = (char*)malloc(UUID_LENGTH + 1)))
+    if (NULL == (uuid = (char*)malloc(size)))
     {
         return NULL;
     }
 
-    memset(uuid, 0, UUID_LENGTH + 1);
+    memset(uuid, 0, size);
     srand(clock());
 
-    for (i = 0; i < UUID_LENGTH + 1; i++)
+    for (i = 0; i < size; i++)
     {
         random = rand() % 16;
         c = ' ';
