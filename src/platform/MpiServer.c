@@ -3,6 +3,7 @@
 
 #include <PlatformCommon.h>
 #include <MpiServer.h>
+#include <ModulesManager.h>
 
 // 500 milliseconds
 #define MPI_WORKER_SLEEP 500

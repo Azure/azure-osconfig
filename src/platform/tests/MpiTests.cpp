@@ -6,6 +6,7 @@
 
 #include <PlatformCommon.h>
 #include <TestModules.h>
+#include <ModulesManager.h>
 
 namespace Tests
 {

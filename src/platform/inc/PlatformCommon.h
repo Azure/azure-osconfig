@@ -19,14 +19,11 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 
-#include <parson.h>
-
 #include <CommonUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 #include <Mpi.h>
-#include <ModulesManager.h>
-
+#include <parson.h>
 #include <version.h>
 
 #ifdef __cplusplus
