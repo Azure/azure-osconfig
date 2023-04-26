@@ -38,7 +38,7 @@ typedef struct MODULE_INFO
     Lifetime lifetime;
     char* licenseUri;
     char* projectUri;
-    unsigned int userAccount;
+    unsigned int userAccount; // TODO
 } MODULE_INFO;
 
 typedef struct MODULE
