@@ -642,6 +642,7 @@ void MpiShutdown(void)
     unlink(g_mpiSocket);
 }
 
-void MpiDoWork(void) {
+void MpiDoWork(void)
+{
     return;
 }
