@@ -43,7 +43,7 @@ static void FreeModuleInfo(MODULE_INFO* info)
 
         if (info->components)
         {
-            for (; i < (int)info->componentCount; i++)
+            for (i = 0; i < (int)info->componentCount; i++)
             {
                 if (NULL != info->components[i])
                 {
@@ -193,7 +193,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             {
                 info->componentCount = componentsCount;
 
-                for (; i < componentsCount; i++)
+                for (i = 0; i < componentsCount; i++)
                 {
                     if (NULL == (component = (char*)json_array_get_string(components, i)))
                     {
@@ -270,37 +270,37 @@ MODULE* LoadModule(const char* client, const char* path)
             {
                 if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, g_mmiGetInfoFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetInfoFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiGetInfoFunction, dlerror());
                     status = ENOENT;
                 }
 
                 if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, g_mmiOpenFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiOpenFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiOpenFunction, dlerror());
                     status = ENOENT;
                 }
 
                 if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, g_mmiCloseFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiCloseFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiCloseFunction, dlerror());
                     status = ENOENT;
                 }
 
                 if (NULL == (module->get = (MMI_GET)dlsym(module->handle, g_mmiGetFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiGetFunction, dlerror());
                     status = ENOENT;
                 }
 
                 if (NULL == (module->set = (MMI_SET)dlsym(module->handle, g_mmiSetFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiSetFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiSetFunction, dlerror());
                     status = ENOENT;
                 }
 
                 if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, g_mmiFreeFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiFreeFunction, dlerror());
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' not implmenented: %s", g_mmiFreeFunction, dlerror());
                     status = ENOENT;
                 }
 

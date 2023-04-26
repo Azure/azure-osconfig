@@ -10,7 +10,7 @@
 #define UUID_LENGTH 36
 
 static const char* g_modelVersion = "ModelVersion";
-static const char* g_reportedObjects = "Reported";
+static const char* g_reportedObjectType = "Reported";
 static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 
@@ -69,13 +69,11 @@ static void LoadModules(const char* directory, const char* configJson)
     ssize_t reportedSize = 0;
     ssize_t pathSize = 0;
 
-    OsConfigLogInfo(GetPlatformLog(), "Loading modules...");
-
     if ((NULL == directory) || (NULL == configJson))
     {
         OsConfigLogError(GetPlatformLog(), "LoadModules(%p, %p) called with invalid arguments", directory, configJson);
     }
-    else if(NULL == (dir = opendir(directory)))
+    else if (NULL == (dir = opendir(directory)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to open module directory: %s", directory);
     }
@@ -125,6 +123,7 @@ static void LoadModules(const char* directory, const char* configJson)
                 continue;
             }
 
+            // <directory>/<module .so> + null-terminator
             pathSize = strlen(directory) + strlen(entry->d_name) + 2;
 
             if (NULL == (path = malloc(pathSize)))
@@ -151,7 +150,7 @@ static void LoadModules(const char* directory, const char* configJson)
 
     if (config && configObject)
     {
-        if (NULL != (reportedArray = json_object_get_array(configObject, g_reportedObjects)))
+        if (NULL != (reportedArray = json_object_get_array(configObject, g_reportedObjectType)))
         {
             reportedCount = (int)json_array_get_count(reportedArray);
 
@@ -163,7 +162,7 @@ static void LoadModules(const char* directory, const char* configJson)
                 {
                     memset(reported, 0, reportedSize);
 
-                    for (; i < reportedCount; i++)
+                    for (i = 0; i < reportedCount; i++)
                     {
                         if (NULL == (reportedObject = json_array_get_object(reportedArray, i)))
                         {
@@ -269,7 +268,7 @@ static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReporte
 {
     int i = 0;
 
-    for (; i < numReportedObjects; i++)
+    for (i = 0; i < numReportedObjects; i++)
     {
         FREE_MEMORY(reportedObjects[i].component);
         FREE_MEMORY(reportedObjects[i].object);
@@ -301,9 +300,10 @@ static char* GenerateUuid(void)
         return NULL;
     }
 
+    memset(uuid, 0, UUID_LENGTH + 1);
     srand(clock());
 
-    for (; i < UUID_LENGTH + 1; i++)
+    for (i = 0; i < UUID_LENGTH + 1; i++)
     {
         random = rand() % 16;
         c = ' ';
@@ -322,7 +322,7 @@ static char* GenerateUuid(void)
             case 'N':
                 c = '4';
         }
-        uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
+        uuid[i] = c;
     }
 
     return uuid;
@@ -456,7 +456,7 @@ static bool ComponentExists(MODULE* module, const char* component)
     bool exists = false;
     int i = 0;
 
-    for (; i < (int)module->info->componentCount; i++)
+    for (i = 0; i < (int)module->info->componentCount; i++)
     {
         if (0 == strcmp(module->info->components[i], component))
         {
@@ -593,7 +593,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
             rootObject = json_value_get_object(rootValue);
             componentCount = (int)json_object_get_count(rootObject);
 
-            for (; i < componentCount; i++)
+            for (i = 0; i < componentCount; i++)
             {
                 component = json_object_get_name(rootObject, i);
                 componentObject = json_object_get_object(rootObject, component);
@@ -609,7 +609,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                     // Iterate over the "keys" in the component object
                     objectCount = (int)json_object_get_count(componentObject);
 
-                    for (; j < objectCount; j++)
+                    for (j = 0; j < objectCount; j++)
                     {
                         object = json_object_get_name(componentObject, j);
                         objectValue = json_object_get_value(componentObject, object);
@@ -677,7 +677,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     }
     else
     {
-        for (; i < g_reportedTotal; i++)
+        for (i = 0; i < g_reportedTotal; i++)
         {
             if (NULL == (moduleSession = FindModuleSession(session->modules, g_reported[i].component)))
             {
