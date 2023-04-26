@@ -240,7 +240,7 @@ MODULE* LoadModule(const char* client, const char* path)
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "Loading module %s", path);
+        OsConfigLogInfo(GetPlatformLog(), "Loading module '%s'", path);
 
         memset(module, 0, sizeof(MODULE));
 
