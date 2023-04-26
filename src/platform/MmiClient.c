@@ -65,12 +65,12 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
     int status = 0;
     char* component = NULL;
 
-    if (value == NULL)
+    if (NULL == value)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid (null) JSON value");
         status = EINVAL;
     }
-    else if (moduleInfo == NULL)
+    else if (NULL == moduleInfo)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid (null) module info");
         status = EINVAL;

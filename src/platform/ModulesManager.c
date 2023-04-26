@@ -42,6 +42,13 @@ static MODULE* g_modules = NULL;
 static REPORTED_OBJECT* g_reportedObjects = NULL;
 static int g_numReportedObjects = 0;
 
+OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+
+OSCONFIG_LOG_HANDLE GetPlatformLog(void)
+{
+    return g_platformLog;
+}
+
 bool AreModulesLoaded()
 {
     return NULL != g_modules;

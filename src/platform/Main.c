@@ -22,7 +22,7 @@
 
 static unsigned int g_lastTime = 0;
 
-OSCONFIG_LOG_HANDLE g_platformLog = NULL;
+extern OSCONFIG_LOG_HANDLE g_platformLog;
 
 extern char g_mpiCall[MPI_CALL_MESSAGE_LENGTH];
 
@@ -52,11 +52,6 @@ static int g_refreshSignal = 0;
 #define ERROR_MESSAGE_SIGILL ERROR_MESSAGE_CRASH "illegal instruction (SIGILL)"
 #define ERROR_MESSAGE_SIGABRT ERROR_MESSAGE_CRASH "abnormal termination (SIGABRT)"
 #define ERROR_MESSAGE_SIGBUS ERROR_MESSAGE_CRASH "illegal memory access (SIGBUS)"
-
-OSCONFIG_LOG_HANDLE GetPlatformLog(void)
-{
-    return g_platformLog;
-}
 
 static void SignalInterrupt(int signal)
 {
