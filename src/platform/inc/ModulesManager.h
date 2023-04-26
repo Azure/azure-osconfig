@@ -9,8 +9,7 @@ extern "C"
 {
 #endif
 
-void AreModulesLoadedAndLoadIfNot(void);
-void LoadModules(const char* path, const char* configJson);
+void AreModulesLoadedAndLoadIfNot(const char* path, const char* configJson);
 void UnloadModules(void);
 
 #ifdef __cplusplus

@@ -13,6 +13,9 @@
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
 
+#define MODULES_BIN_PATH "/usr/lib/osconfig"
+#define CONFIG_JSON_PATH "/etc/osconfig/osconfig.json"
+
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
 
@@ -487,7 +490,7 @@ static void* MpiServerWorker(void* arguments)
 
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
-            AreModulesLoadedAndLoadIfNot();
+            AreModulesLoadedAndLoadIfNot(MODULES_BIN_PATH, CONFIG_JSON_PATH);
 
             if (IsFullLoggingEnabled())
             {

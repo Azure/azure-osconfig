@@ -9,9 +9,6 @@
 
 #define UUID_LENGTH 36
 
-static const char* g_moduleBinPath = "/usr/lib/osconfig";
-static const char* g_configJsonPath = "/etc/osconfig/osconfig.json";
-
 static const char* g_modelVersion = "ModelVersion";
 static const char* g_reported = "Reported";
 static const char* g_componentName = "ComponentName";
@@ -52,7 +49,7 @@ OSCONFIG_LOG_HANDLE GetPlatformLog(void)
     return g_platformLog;
 }
 
-void LoadModules(const char* directory, const char* configJson)
+static void LoadModules(const char* directory, const char* configJson)
 {
     MODULE* module = NULL;
     DIR* dir = NULL;
@@ -185,11 +182,11 @@ void LoadModules(const char* directory, const char* configJson)
     }
 }
 
-void AreModulesLoadedAndLoadIfNot(void)
+void AreModulesLoadedAndLoadIfNot(const char* directory, const char* configJson)
 {
     if (NULL == g_modules)
     {
-        LoadModules(g_moduleBinPath, g_configJsonPath);
+        LoadModules(directory, configJson);
     }
 }
 
