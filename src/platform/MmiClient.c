@@ -164,7 +164,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             }
             else
             {
-                OsConfigLogError(GetPlatformLog(), "ParseModuleInfo: module info is missing required field: %s", g_infoLifetime);
+                OsConfigLogError(GetPlatformLog(), "ParseModuleInfo: module info is missing required field '%s'", g_infoLifetime);
             }
 
             if ((NULL != info->licenseUri) && (NULL == (info->licenseUri = strdup(info->licenseUri))))
@@ -296,22 +296,22 @@ MODULE* LoadModule(const char* client, const char* path)
             {
                 if (MMI_OK != (module->getInfo(client, &payload, &payloadSize)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to get module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to get module info '%s'", path);
                     status = ENOENT;
                 }
                 else if (NULL == (value = json_parse_string(payload)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to parse module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to parse module info '%s'", path);
                     status = ENOENT;
                 }
                 else if (0 != (status = ParseModuleInfo(value, &info)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to parse module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "LoadModule: failed to parse module info '%s'", path);
                     status = ENOENT;
                 }
                 else
                 {
-                    OsConfigLogInfo(GetPlatformLog(), "Module loaded: '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
+                    OsConfigLogInfo(GetPlatformLog(), "Module loaded '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
                     module->info = info;
                 }
             }
