@@ -43,7 +43,7 @@ typedef struct MODULE_INFO
 
 typedef struct MODULE
 {
-    char* name;
+    char* path;
     void* handle;
     MODULE_INFO* info;
 
