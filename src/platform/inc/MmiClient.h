@@ -15,7 +15,7 @@ typedef enum Lifetime
 {
     UNDEFINED = 0,
     KEEPALIVE = 1,
-    SHORT = 2
+    SHORT = 2 // TODO
 } Lifetime;
 
 typedef struct VERSION
