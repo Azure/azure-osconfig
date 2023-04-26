@@ -10,7 +10,7 @@
 #define UUID_LENGTH 36
 
 static const char* g_modelVersion = "ModelVersion";
-static const char* g_reported = "Reported";
+static const char* g_reportedObjects = "Reported";
 static const char* g_componentName = "ComponentName";
 static const char* g_objectName = "ObjectName";
 
@@ -39,8 +39,8 @@ typedef struct REPORTED_OBJECT
 
 static SESSION* g_sessions = NULL;
 static MODULE* g_modules = NULL;
-static REPORTED_OBJECT* g_reportedObjects = NULL;
-static int g_numReportedObjects = 0;
+static REPORTED_OBJECT* g_reported = NULL;
+static int g_reportedTotal = 0;
 
 OSCONFIG_LOG_HANDLE g_platformLog = NULL;
 
@@ -55,16 +55,27 @@ static void LoadModules(const char* directory, const char* configJson)
     DIR* dir = NULL;
     struct dirent* entry = NULL;
     char* path = NULL;
-    char* client = NULL;
+    char* clientName = NULL;
     int version = 0;
-    int reportedCount = 0;
     JSON_Value* config = NULL;
     JSON_Object* configObject = NULL;
     JSON_Array* reportedArray = NULL;
     JSON_Object* reportedObject = NULL;
     REPORTED_OBJECT* reported = NULL;
+    int reportedCount = 0;
+    int reportedTotal = 0;
+    int i = 0;
+    ssize_t clientNameSize = 0;
+    ssize_t reportedSize = 0;
+    ssize_t pathSize = 0;
 
-    if (NULL == (dir = opendir(directory)))
+    OsConfigLogInfo(GetPlatformLog(), "Loading modules...");
+
+    if ((NULL == directory) || (NULL == configJson))
+    {
+        OsConfigLogError(GetPlatformLog(), "LoadModules(%p, %p) called with invalid arguments", directory, configJson);
+    }
+    else if(NULL == (dir = opendir(directory)))
     {
         OsConfigLogError(GetPlatformLog(), "Failed to open module directory: %s", directory);
     }
@@ -82,18 +93,22 @@ static void LoadModules(const char* directory, const char* configJson)
     }
     else
     {
-        // Allocate memory for client name "Azure OSConfig <version>;<osconfig version>" + null terminator
-        if (NULL == (client = (char*)malloc(strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5)))
+        // "Azure OSConfig <version>;<osconfig version>" + null-terminator
+        clientNameSize = strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5;
+
+        if (NULL == (clientName = (char*)malloc(clientNameSize)))
         {
             OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for client name");
         }
         else
         {
-            memset(client, 0, strlen(AZURE_OSCONFIG) + strlen(OSCONFIG_VERSION) + 5);
-            sprintf(client, "%s %d;%s", AZURE_OSCONFIG, version, OSCONFIG_VERSION);
+            memset(clientName, 0, clientNameSize);
+            snprintf(clientName, clientNameSize, "%s %d;%s", AZURE_OSCONFIG, version, OSCONFIG_VERSION);
         }
 
-        while ((entry = readdir(dir)))
+        OsConfigLogInfo(GetPlatformLog(), "Loading modules from '%s' (%s)", directory, clientName);
+
+        while (NULL != (entry = readdir(dir)))
         {
             if (NULL == entry->d_name)
             {
@@ -110,16 +125,17 @@ static void LoadModules(const char* directory, const char* configJson)
                 continue;
             }
 
-            if (NULL == (path = malloc(strlen(directory) + strlen(entry->d_name) + 2)))
+            pathSize = strlen(directory) + strlen(entry->d_name) + 2;
+
+            if (NULL == (path = malloc(pathSize)))
             {
-                OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module path");
                 continue;
             }
 
-            memset(path, 0, strlen(directory) + strlen(entry->d_name) + 2);
-            sprintf(path, "%s/%s", directory, entry->d_name);
+            memset(path, 0, pathSize);
+            snprintf(path, pathSize, "%s/%s", directory, entry->d_name);
 
-            if (NULL != (module = LoadModule(client, path)))
+            if (NULL != (module = LoadModule(clientName, path)))
             {
                 module->next = g_modules;
                 g_modules = module;
@@ -135,42 +151,59 @@ static void LoadModules(const char* directory, const char* configJson)
 
     if (config && configObject)
     {
-        if (NULL != (reportedArray = json_object_get_array(configObject, g_reported)))
+        if (NULL != (reportedArray = json_object_get_array(configObject, g_reportedObjects)))
         {
             reportedCount = (int)json_array_get_count(reportedArray);
-            g_numReportedObjects = reportedCount;
 
-            if ((reportedCount > 0) && (NULL != (g_reportedObjects = (REPORTED_OBJECT*)malloc(sizeof(REPORTED_OBJECT) * reportedCount))))
+            if (0 < reportedCount)
             {
-                for (int i = 0; i < reportedCount; i++)
-                {
-                    reported = &g_reportedObjects[i];
+                reportedSize = sizeof(REPORTED_OBJECT) * reportedCount;
 
-                    if (NULL == (reportedObject = json_array_get_object(reportedArray, i)))
+                if (NULL != (reported = (REPORTED_OBJECT*)malloc(reportedSize)))
+                {
+                    memset(reported, 0, reportedSize);
+
+                    for (; i < reportedCount; i++)
                     {
-                        OsConfigLogError(GetPlatformLog(), "Array element at index %d is not an object", i);
-                        g_numReportedObjects--;
+                        if (NULL == (reportedObject = json_array_get_object(reportedArray, i)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Array element at index %d is not an object", i);
+                        }
+                        else if (NULL == (reported[i].component = (char*)json_object_get_string(reportedObject, g_componentName)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, g_componentName);
+                        }
+                        else if (NULL == (reported[i].component = strdup(reported[i].component)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for component name");
+                        }
+                        else if (NULL == (reported[i].object = (char*)json_object_get_string(reportedObject, g_objectName)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, g_objectName);
+                        }
+                        else if (NULL == (reported[i].object = strdup(reported[i].object)))
+                        {
+                            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for object name");
+                        }
+                        else
+                        {
+                            if (IsFullLoggingEnabled())
+                            {
+                                OsConfigLogInfo(GetPlatformLog(), "Found reported property (%s.%s)", reported[i].component, reported[i].object);
+                            }
+
+                            reportedTotal++;
+                        }
                     }
-                    else if (NULL == (reported->component = (char*)json_object_get_string(reportedObject, g_componentName)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, g_componentName);
-                        g_numReportedObjects--;
-                    }
-                    else if (NULL == (reported->component = strdup(reported->component)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for component name");
-                        g_numReportedObjects--;
-                    }
-                    else if (NULL == (reported->object = (char*)json_object_get_string(reportedObject, g_objectName)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "Object at index %d is missing '%s'", i, g_objectName);
-                        g_numReportedObjects--;
-                    }
-                    else if (NULL == (reported->object = strdup(reported->object)))
-                    {
-                        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for object name");
-                        g_numReportedObjects--;
-                    }
+
+                    OsConfigLogInfo(GetPlatformLog(), "Found %d reported objects in '%s'", reportedTotal, configJson);
+
+                    g_reported = reported;
+                    g_reportedTotal = reportedTotal;
+                }
+                else
+                {
+                    OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for reported objects");
                 }
             }
         }
@@ -234,7 +267,9 @@ static void FreeSessions(SESSION* sessions)
 
 static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReportedObjects)
 {
-    for (int i = 0; i < numReportedObjects; i++)
+    int i = 0;
+
+    for (; i < numReportedObjects; i++)
     {
         FREE_MEMORY(reportedObjects[i].component);
         FREE_MEMORY(reportedObjects[i].object);
@@ -245,11 +280,11 @@ static void FreeReportedObjects(REPORTED_OBJECT* reportedObjects, int numReporte
 
 void UnloadModules(void)
 {
-    FreeSessions(g_sessions);
     FreeModules(g_modules);
-    FreeReportedObjects(g_reportedObjects, g_numReportedObjects);
+    FreeSessions(g_sessions);
+    FreeReportedObjects(g_reported, g_reportedTotal);
 
-    g_numReportedObjects = 0;
+    g_reportedTotal = 0;
 }
 
 static char* GenerateUuid(void)
@@ -257,6 +292,9 @@ static char* GenerateUuid(void)
     char* uuid = NULL;
     static const char uuidTemplate[] = "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx";
     const char* hex = "0123456789ABCDEF-";
+    int random = 0;
+    char c = ' ';
+    int i = 0;
 
     if (NULL == (uuid = (char*)malloc(UUID_LENGTH + 1)))
     {
@@ -265,25 +303,24 @@ static char* GenerateUuid(void)
 
     srand(clock());
 
-    for (int i = 0; i < UUID_LENGTH + 1; i++)
+    for (; i < UUID_LENGTH + 1; i++)
     {
-        int random = rand() % 16;
-        char c = ' ';
+        random = rand() % 16;
+        c = ' ';
 
         switch (uuidTemplate[i])
         {
-        case 'x':
-            c = hex[random];
-            break;
-        case '-':
-            c = '-';
-            break;
-        case 'M':
-            c = hex[(random & 0x03) | 0x08];
-            break;
-        case 'N':
-            c = '4';
-            break;
+            case 'x':
+                c = hex[random];
+                break;
+            case '-':
+                c = '-';
+                break;
+            case 'M':
+                c = hex[(random & 0x03) | 0x08];
+                break;
+            case 'N':
+                c = '4';
         }
         uuid[i] = (i < UUID_LENGTH) ? c : 0x00;
     }
@@ -294,17 +331,19 @@ static char* GenerateUuid(void)
 MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeBytes)
 {
     SESSION* session = NULL;
-    MODULE* module = g_modules;
+    MODULE* module = NULL;
     MODULE_SESSION* moduleSession = NULL;
     char* uuid = NULL;
 
     if (NULL == clientName)
     {
         OsConfigLogError(GetPlatformLog(), "Invalid (null) client name");
-        return NULL;
     }
-
-    if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
+    else if (NULL == g_modules)
+    {
+        OsConfigLogError(GetPlatformLog(), "Modules are not loaded, cannot open a session");
+    }
+    else if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
     {
         if (NULL == (session->client = strdup(clientName)))
         {
@@ -319,6 +358,8 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
         }
         else
         {
+            module = g_modules;
+
             while (module)
             {
                 if (NULL != (moduleSession = (MODULE_SESSION*)malloc(sizeof(MODULE_SESSION))))
@@ -409,8 +450,9 @@ void MpiClose(MPI_HANDLE handle)
 static bool ComponentExists(MODULE* module, const char* component)
 {
     bool exists = false;
+    int i = 0;
 
-    for (int i = 0; i < (int)module->info->componentCount; i++)
+    for (; i < (int)module->info->componentCount; i++)
     {
         if (0 == strcmp(module->info->components[i], component))
         {
@@ -445,7 +487,7 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     MODULE_SESSION* moduleSession = NULL;
     char* uuid = (char*)handle;
 
-    if (!handle || !component || !object || !payload || (payloadSizeBytes <= 0))
+    if ((NULL == handle) || (NULL == component) || (NULL == object) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
         status = EINVAL;
@@ -475,7 +517,7 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     MODULE_SESSION* moduleSession = NULL;
     char* uuid = (char*)handle;
 
-    if (!handle || !component || !object || !payload || !payloadSizeBytes)
+    if ((NULL == handle) || (NULL == component) || (NULL == object) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
         OsConfigLogError(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
         status = EINVAL;
@@ -514,8 +556,10 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
     JSON_Object* rootObject = NULL;
     JSON_Object* componentObject = NULL;
     JSON_Value* objectValue = NULL;
+    int i = 0;
+    int j = 0;
 
-    if ((NULL == handle) || (NULL == payload) || (payloadSizeBytes <= 0))
+    if ((NULL == handle) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
         OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %p, %d) called with invalid arguments", handle, payload, payloadSizeBytes);
         status = EINVAL;
@@ -545,7 +589,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
             rootObject = json_value_get_object(rootValue);
             componentCount = (int)json_object_get_count(rootObject);
 
-            for (int i = 0; i < componentCount; i++)
+            for (; i < componentCount; i++)
             {
                 component = json_object_get_name(rootObject, i);
                 componentObject = json_object_get_object(rootObject, component);
@@ -561,7 +605,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                     // Iterate over the "keys" in the component object
                     objectCount = (int)json_object_get_count(componentObject);
 
-                    for (int j = 0; j < objectCount; j++)
+                    for (; j < objectCount; j++)
                     {
                         object = json_object_get_name(componentObject, j);
                         objectValue = json_object_get_value(componentObject, object);
@@ -601,11 +645,11 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     JSON_Value* componentValue = NULL;
     JSON_Object* componentObject = NULL;
     JSON_Value* objectValue = NULL;
-    REPORTED_OBJECT* reported = NULL;
     MMI_JSON_STRING mmiPayload = NULL;
     int mmiPayloadSizeBytes = 0;
     int mmiStatus = MMI_OK;
     char* payloadJson = NULL;
+    int i = 0;
 
     if ((NULL == handle) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -629,26 +673,24 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     }
     else
     {
-        for (int i = 0; i < g_numReportedObjects; i++)
+        for (; i < g_reportedTotal; i++)
         {
-            reported = &g_reportedObjects[i];
-
-            if (NULL == (moduleSession = FindModuleSession(session->modules, reported->component)))
+            if (NULL == (moduleSession = FindModuleSession(session->modules, g_reported[i].component)))
             {
-                OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", reported->component);
+                OsConfigLogError(GetPlatformLog(), "No module exists with component: %s", g_reported[i].component);
             }
             else
             {
-                mmiStatus = moduleSession->module->get(moduleSession->handle, reported->component, reported->object, &mmiPayload, &mmiPayloadSizeBytes);
+                mmiStatus = moduleSession->module->get(moduleSession->handle, g_reported[i].component, g_reported[i].object, &mmiPayload, &mmiPayloadSizeBytes);
 
                 if (IsFullLoggingEnabled())
                 {
-                    OsConfigLogInfo(GetPlatformLog(), "MmiGet(%s, %s) returned %d (%.*s)", reported->component, reported->object, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
+                    OsConfigLogInfo(GetPlatformLog(), "MmiGet(%s, %s) returned %d (%.*s)", g_reported[i].component, g_reported[i].object, mmiStatus, mmiPayloadSizeBytes, mmiPayload);
                 }
 
                 if (MMI_OK != mmiStatus)
                 {
-                    OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s), returned %d", reported->component, reported->object, mmiStatus);
+                    OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s), returned %d", g_reported[i].component, g_reported[i].object, mmiStatus);
                 }
                 else if (NULL == (payloadJson = (char*)malloc(mmiPayloadSizeBytes + 1)))
                 {
@@ -660,23 +702,23 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
-                        OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload: %s", reported->component, reported->object, payloadJson);
+                        OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload: %s", g_reported[i].component, g_reported[i].object, payloadJson);
                     }
                     else
                     {
-                        if (NULL == (componentValue = json_object_get_value(rootObject, reported->component)))
+                        if (NULL == (componentValue = json_object_get_value(rootObject, g_reported[i].component)))
                         {
                             componentValue = json_value_init_object();
-                            json_object_set_value(rootObject, reported->component, componentValue);
+                            json_object_set_value(rootObject, g_reported[i].component, componentValue);
                         }
 
                         if (NULL == (componentObject = json_value_get_object(componentValue)))
                         {
-                            OsConfigLogError(GetPlatformLog(), "Failed to get JSON object for component: %s", reported->component);
+                            OsConfigLogError(GetPlatformLog(), "Failed to get JSON object for component: %s", g_reported[i].component);
                         }
                         else
                         {
-                            json_object_set_value(componentObject, reported->object, objectValue);
+                            json_object_set_value(componentObject, g_reported[i].object, objectValue);
                         }
                     }
 

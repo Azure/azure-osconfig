@@ -30,7 +30,9 @@ static const char* g_infoUserAccount = "UserAccount";
 
 static void FreeModuleInfo(MODULE_INFO* info)
 {
-    if (NULL != info)
+    int i = 0;
+
+    if (info)
     {
         FREE_MEMORY(info->name);
         FREE_MEMORY(info->description);
@@ -39,9 +41,9 @@ static void FreeModuleInfo(MODULE_INFO* info)
         FREE_MEMORY(info->licenseUri);
         FREE_MEMORY(info->projectUri);
 
-        if (NULL != info->components)
+        if (info->components)
         {
-            for (unsigned int i = 0; i < info->componentCount; i++)
+            for (; i < (int)info->componentCount; i++)
             {
                 if (NULL != info->components[i])
                 {
@@ -64,6 +66,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
     int componentsCount = 0;
     int status = 0;
     char* component = NULL;
+    int i = 0;
 
     if (NULL == value)
     {
@@ -87,6 +90,8 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
     }
     else
     {
+        memset(info, 0, sizeof(MODULE_INFO));
+
         if (NULL == (info->name = (char*)json_object_get_string(object, g_infoName)))
         {
             OsConfigLogError(GetPlatformLog(), "Module info is missing required field '%s'", g_infoName);
@@ -188,7 +193,7 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             {
                 info->componentCount = componentsCount;
 
-                for (int i = 0; i < componentsCount; i++)
+                for (; i < componentsCount; i++)
                 {
                     if (NULL == (component = (char*)json_array_get_string(components, i)))
                     {
@@ -212,7 +217,6 @@ static int ParseModuleInfo(const JSON_Value* value, MODULE_INFO** moduleInfo)
             else
             {
                 FreeModuleInfo(info);
-                info = NULL;
             }
         }
     }
@@ -244,80 +248,85 @@ MODULE* LoadModule(const char* client, const char* path)
         OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module");
         status = ENOMEM;
     }
-    else if (NULL == (module->name = strdup(path)))
-    {
-        OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
-        status = errno;
-    }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "Loading module %s", path);
+        memset(module, 0, sizeof(MODULE));
 
-        if (NULL == (module->handle = dlopen(path, RTLD_NOW)))
+        if (NULL == (module->name = strdup(path)))
         {
-            OsConfigLogError(GetPlatformLog(), "Failed to load module %s: ", dlerror());
-            status = ENOENT;
+            OsConfigLogError(GetPlatformLog(), "Failed to allocate memory for module name");
+            status = errno;
         }
         else
         {
-            if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, g_mmiGetInfoFunction)))
+            OsConfigLogInfo(GetPlatformLog(), "Loading module %s", path);
+
+            if (NULL == (module->handle = dlopen(path, RTLD_NOW)))
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetInfoFunction, dlerror());
+                OsConfigLogError(GetPlatformLog(), "Failed to load module %s: ", dlerror());
                 status = ENOENT;
             }
-
-            if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, g_mmiOpenFunction)))
+            else
             {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiOpenFunction, dlerror());
-                status = ENOENT;
-            }
-
-            if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, g_mmiCloseFunction)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiCloseFunction, dlerror());
-                status = ENOENT;
-            }
-
-            if (NULL == (module->get = (MMI_GET)dlsym(module->handle, g_mmiGetFunction)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetFunction, dlerror());
-                status = ENOENT;
-            }
-
-            if (NULL == (module->set = (MMI_SET)dlsym(module->handle, g_mmiSetFunction)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiSetFunction, dlerror());
-                status = ENOENT;
-            }
-
-            if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, g_mmiFreeFunction)))
-            {
-                OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiFreeFunction, dlerror());
-                status = ENOENT;
-            }
-
-            if (0 == status)
-            {
-                if (MMI_OK != (module->getInfo(client, &payload, &payloadSize)))
+                if (NULL == (module->getInfo = (MMI_GETINFO)dlsym(module->handle, g_mmiGetInfoFunction)))
                 {
-                    OsConfigLogError(GetPlatformLog(), "Failed to get module info: %s", path);
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetInfoFunction, dlerror());
                     status = ENOENT;
                 }
-                else if (NULL == (value = json_parse_string(payload)))
-                {
-                    OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
-                    status = ENOENT;
-                }
-                else if (0 != (status = ParseModuleInfo(value, &info)))
-                {
-                    OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
-                    status = ENOENT;
-                }
-                else
-                {
-                    module->info = info;
 
-                    OsConfigLogInfo(GetPlatformLog(), "Loaded module: '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
+                if (NULL == (module->open = (MMI_OPEN)dlsym(module->handle, g_mmiOpenFunction)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiOpenFunction, dlerror());
+                    status = ENOENT;
+                }
+
+                if (NULL == (module->close = (MMI_CLOSE)dlsym(module->handle, g_mmiCloseFunction)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiCloseFunction, dlerror());
+                    status = ENOENT;
+                }
+
+                if (NULL == (module->get = (MMI_GET)dlsym(module->handle, g_mmiGetFunction)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiGetFunction, dlerror());
+                    status = ENOENT;
+                }
+
+                if (NULL == (module->set = (MMI_SET)dlsym(module->handle, g_mmiSetFunction)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiSetFunction, dlerror());
+                    status = ENOENT;
+                }
+
+                if (NULL == (module->free = (MMI_FREE)dlsym(module->handle, g_mmiFreeFunction)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "Function '%s()' is missing from MMI: %s", g_mmiFreeFunction, dlerror());
+                    status = ENOENT;
+                }
+
+                if (0 == status)
+                {
+                    if (MMI_OK != (module->getInfo(client, &payload, &payloadSize)))
+                    {
+                        OsConfigLogError(GetPlatformLog(), "Failed to get module info: %s", path);
+                        status = ENOENT;
+                    }
+                    else if (NULL == (value = json_parse_string(payload)))
+                    {
+                        OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
+                        status = ENOENT;
+                    }
+                    else if (0 != (status = ParseModuleInfo(value, &info)))
+                    {
+                        OsConfigLogError(GetPlatformLog(), "Failed to parse module info: %s", path);
+                        status = ENOENT;
+                    }
+                    else
+                    {
+                        module->info = info;
+
+                        OsConfigLogInfo(GetPlatformLog(), "Loaded module: '%s' (v%d.%d.%d)", info->name, info->version.major, info->version.minor, info->version.patch);
+                    }
                 }
             }
         }
@@ -334,26 +343,24 @@ MODULE* LoadModule(const char* client, const char* path)
 
 void UnloadModule(MODULE* module)
 {
-    if (NULL == module)
+    if (module)
     {
-        return;
+        if (NULL != module->handle)
+        {
+            dlclose(module->handle);
+            module->handle = NULL;
+        }
+
+        module->getInfo = NULL;
+        module->open = NULL;
+        module->close = NULL;
+        module->get = NULL;
+        module->set = NULL;
+        module->free = NULL;
+
+        FreeModuleInfo(module->info);
+
+        FREE_MEMORY(module->name);
+        FREE_MEMORY(module);
     }
-
-    if (NULL != module->handle)
-    {
-        dlclose(module->handle);
-        module->handle = NULL;
-    }
-
-    module->getInfo = NULL;
-    module->open = NULL;
-    module->close = NULL;
-    module->get = NULL;
-    module->set = NULL;
-    module->free = NULL;
-
-    FreeModuleInfo(module->info);
-
-    FREE_MEMORY(module->name);
-    FREE_MEMORY(module);
 }
