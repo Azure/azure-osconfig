@@ -14,8 +14,6 @@ add_executable(commontests
 target_link_libraries(commontests
     gtest
     gtest_main
-    gmock
-    gmock_main
     pthread
     logging
     commonutils)

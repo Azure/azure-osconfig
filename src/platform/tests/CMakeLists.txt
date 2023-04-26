@@ -49,11 +49,11 @@ configure_file(
     COPYONLY)
 
 add_executable(mpitests MpiTests.cpp ${platform_files})
-target_link_libraries(mpitests gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
+target_link_libraries(mpitests gtest gtest_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
 target_include_directories(mpitests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MODULES_INC_DIR} ${PLATFORM_INC_DIR})
 gtest_discover_tests(mpitests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
 
 add_executable(mpiservertests MpiServerTests.cpp ${platform_files})
-target_link_libraries(mpiservertests gtest gtest_main gmock gmock_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
+target_link_libraries(mpiservertests gtest gtest_main pthread logging commonutils parsonlib ${CMAKE_DL_LIBS})
 target_include_directories(mpiservertests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${MODULES_INC_DIR} ${PLATFORM_INC_DIR})
 gtest_discover_tests(mpiservertests XML_OUTPUT_DIR ${GTEST_OUTPUT_DIR})
