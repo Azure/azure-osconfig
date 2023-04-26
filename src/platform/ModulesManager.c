@@ -501,7 +501,7 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet: no session exists with uuid '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "MpiSet: no session exists with UUID '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
@@ -531,7 +531,7 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGet: no session exists with uuid '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "MpiGet: no session exists with UUID '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
@@ -573,7 +573,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no session exists with uuid '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no session exists with UUID '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (json = (char*)malloc(payloadSizeBytes + 1)))
@@ -665,7 +665,7 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     }
     else if (NULL == (session = FindSession(uuid)))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGetReported: no session exists with uuid '%s'", uuid);
+        OsConfigLogError(GetPlatformLog(), "MpiGetReported: no session exists with UUID '%s'", uuid);
         status = EINVAL;
     }
     else if (NULL == (rootValue = json_value_init_object()))
@@ -709,7 +709,14 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
 
                     if (NULL == (objectValue = json_parse_string(payloadJson)))
                     {
-                        OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload '%s'", g_reported[i].component, g_reported[i].object, payloadJson);
+                        if (IsFullLoggingEnabled())
+                        {
+                            OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload '%s'", g_reported[i].component, g_reported[i].object, payloadJson);
+                        }
+                        else
+                        {
+                            OsConfigLogError(GetPlatformLog(), "MmiGet(%s, %s) returned an invalid payload", g_reported[i].component, g_reported[i].object);
+                        }
                     }
                     else
                     {
