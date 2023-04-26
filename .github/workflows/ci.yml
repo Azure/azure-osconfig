@@ -62,10 +62,7 @@ jobs:
         with:
           container: ${{ steps.container.outputs.id }}
           working-directory: ${{ env.MOUNT }}/build
-          cmd: ctest --output-on-failure --verbose
-
-      - run: cp build/Testing/Temporary/LastTest.log ${{ matrix.os }}-${{ matrix.arch }}.log
-        if: success() || failure()
+          cmd: ctest --output-on-failure --verbose >> ${{ matrix.os }}-${{ matrix.arch }}.log
 
       - name: Generate test report
         uses: ./.github/actions/gtest-xml
