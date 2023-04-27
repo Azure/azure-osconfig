@@ -65,6 +65,7 @@ static void LoadModules(const char* directory, const char* configJson)
     int reportedCount = 0;
     int reportedTotal = 0;
     int i = 0;
+    int loaded = 0;
     ssize_t clientNameSize = 0;
     ssize_t reportedSize = 0;
     ssize_t pathSize = 0;
@@ -140,6 +141,7 @@ static void LoadModules(const char* directory, const char* configJson)
             {
                 module->next = g_modules;
                 g_modules = module;
+                loaded++;
             }
             else
             {
@@ -147,6 +149,15 @@ static void LoadModules(const char* directory, const char* configJson)
             }
 
             FREE_MEMORY(path);
+        }
+
+        if (loaded > 0)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "Loaded %d modules from '%s'", loaded, directory);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "No modules found in '%s'", directory);
         }
     }
 
