@@ -108,9 +108,16 @@ static void LoadModules(const char* directory, const char* configJson)
         }
 
         OsConfigLogInfo(GetPlatformLog(), "LoadModules: client name '%s'", clientName);
+        errno = 0;
 
         while (NULL != (entry = readdir(dir)))
         {
+            if (DT_REG != entry -> d_type)
+            {
+                OsConfigLogError(GetPlatformLog(), "Invalid type '%s' (%d)", entry->d_name, entry->d_type);
+                continue;
+            }
+
             if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
             {
                 OsConfigLogInfo(GetPlatformLog(), "LoadModules: Incorrect file '%s'", entry->d_name);
@@ -147,6 +154,11 @@ static void LoadModules(const char* directory, const char* configJson)
             }
 
             FREE_MEMORY(path);
+        }
+
+        if (0 != errno)
+        {
+            OsConfigLogError(GetPlatformLog(), "LoadModules: failed during readdir() (%d)", errno);
         }
 
         if (loaded > 0)
