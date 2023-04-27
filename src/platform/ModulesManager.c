@@ -74,10 +74,6 @@ static void LoadModules(const char* directory, const char* configJson)
     {
         OsConfigLogError(GetPlatformLog(), "LoadModules(%p, %p) called with invalid arguments", directory, configJson);
     }
-    else if (NULL == (dir = opendir(directory)))
-    {
-        OsConfigLogError(GetPlatformLog(), "LoadModules: failed to open module directory '%s'", directory);
-    }
     else if (NULL == (config = json_parse_file(configJson)))
     {
         OsConfigLogError(GetPlatformLog(), "LoadModules: failed to parse configuration JSON '%s'", configJson);
@@ -89,6 +85,10 @@ static void LoadModules(const char* directory, const char* configJson)
     else if (0 == (version = json_object_get_number(configObject, g_modelVersion)))
     {
         OsConfigLogError(GetPlatformLog(), "LoadModules: failed to get model version from configuration JSON '%s'", configJson);
+    }
+    else if (NULL == (dir = opendir(directory)))
+    {
+        OsConfigLogError(GetPlatformLog(), "LoadModules: failed to open module directory '%s'", directory);
     }
     else
     {
@@ -112,7 +112,7 @@ static void LoadModules(const char* directory, const char* configJson)
 
         while (NULL != (entry = readdir(dir)))
         {
-            if (DT_REG != entry -> d_type)
+            if (DT_REG != entry->d_type)
             {
                 OsConfigLogError(GetPlatformLog(), "Invalid type '%s' (%d)", entry->d_name, entry->d_type);
                 continue;
