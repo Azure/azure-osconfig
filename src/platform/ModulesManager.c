@@ -86,10 +86,6 @@ static void LoadModules(const char* directory, const char* configJson)
     {
         OsConfigLogError(GetPlatformLog(), "LoadModules: failed to get model version from configuration JSON '%s'", configJson);
     }
-    else if (NULL == (dir = opendir(directory)))
-    {
-        OsConfigLogError(GetPlatformLog(), "LoadModules: failed to open module directory '%s'", directory);
-    }
     else
     {
         OsConfigLogInfo(GetPlatformLog(), "LoadModules: loading modules from '%s'", directory);
@@ -110,50 +106,57 @@ static void LoadModules(const char* directory, const char* configJson)
         OsConfigLogInfo(GetPlatformLog(), "LoadModules: client name '%s'", clientName);
         errno = 0;
 
-        while (NULL != (entry = readdir(dir)))
+        if (NULL != (dir = opendir(directory)))
         {
-            if (DT_REG != entry->d_type)
+            while (NULL != (entry = readdir(dir)))
             {
-                OsConfigLogError(GetPlatformLog(), "Invalid type '%s' (%d)", entry->d_name, entry->d_type);
-                continue;
+                if (DT_REG != entry->d_type)
+                {
+                    OsConfigLogError(GetPlatformLog(), "Invalid type '%s' (%d)", entry->d_name, entry->d_type);
+                    continue;
+                }
+
+                if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
+                {
+                    OsConfigLogInfo(GetPlatformLog(), "LoadModules: Incorrect file '%s'", entry->d_name);
+                    continue;
+                }
+
+                if (NULL == strstr(entry->d_name, MODULE_EXT))
+                {
+                    OsConfigLogInfo(GetPlatformLog(), "LoadModules: Missing '.so' extension '%s'", entry->d_name);
+                    continue;
+                }
+
+                // <directory>/<module .so> + null-terminator
+                pathSize = strlen(directory) + strlen(entry->d_name) + 2;
+
+                if (NULL == (path = malloc(pathSize)))
+                {
+                    OsConfigLogError(GetPlatformLog(), "LoadModules: failed to allocate memory for path");
+                    continue;
+                }
+
+                memset(path, 0, pathSize);
+                snprintf(path, pathSize, "%s/%s", directory, entry->d_name);
+
+                if (NULL != (module = LoadModule(clientName, path)))
+                {
+                    module->next = g_modules;
+                    g_modules = module;
+                    loaded++;
+                }
+                else
+                {
+                    OsConfigLogError(GetPlatformLog(), "LoadModules: failed to load module '%s'", entry->d_name);
+                }
+
+                FREE_MEMORY(path);
             }
-
-            if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
-            {
-                OsConfigLogInfo(GetPlatformLog(), "LoadModules: Incorrect file '%s'", entry->d_name);
-                continue;
-            }
-
-            if (NULL == strstr(entry->d_name, MODULE_EXT))
-            {
-                OsConfigLogInfo(GetPlatformLog(), "LoadModules: Missing '.so' extension '%s'", entry->d_name);
-                continue;
-            }
-
-            // <directory>/<module .so> + null-terminator
-            pathSize = strlen(directory) + strlen(entry->d_name) + 2;
-
-            if (NULL == (path = malloc(pathSize)))
-            {
-                OsConfigLogError(GetPlatformLog(), "LoadModules: failed to allocate memory for path");
-                continue;
-            }
-
-            memset(path, 0, pathSize);
-            snprintf(path, pathSize, "%s/%s", directory, entry->d_name);
-
-            if (NULL != (module = LoadModule(clientName, path)))
-            {
-                module->next = g_modules;
-                g_modules = module;
-                loaded++;
-            }
-            else
-            {
-                OsConfigLogError(GetPlatformLog(), "LoadModules: failed to load module '%s'", entry->d_name);
-            }
-
-            FREE_MEMORY(path);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "LoadModules: failed to open module directory '%s'", directory);
         }
 
         if (0 != errno)
