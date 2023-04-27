@@ -111,18 +111,15 @@ static void LoadModules(const char* directory, const char* configJson)
 
         while (NULL != (entry = readdir(dir)))
         {
-            if (NULL == entry->d_name)
-            {
-                continue;
-            }
-
             if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
             {
+                OsConfigLogInfo(GetPlatformLog(), "LoadModules: Incorrect file '%s'", entry->d_name);
                 continue;
             }
 
             if (NULL == strstr(entry->d_name, MODULE_EXT))
             {
+                OsConfigLogInfo(GetPlatformLog(), "LoadModules: Missing '.so' extension '%s'", entry->d_name);
                 continue;
             }
 
@@ -131,6 +128,7 @@ static void LoadModules(const char* directory, const char* configJson)
 
             if (NULL == (path = malloc(pathSize)))
             {
+                OsConfigLogError(GetPlatformLog(), "LoadModules: failed to allocate memory for path");
                 continue;
             }
 
