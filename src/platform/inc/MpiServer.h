@@ -4,8 +4,6 @@
 #ifndef MPI_SERVER_H
 #define MPI_SERVER_H
 
-#include <Mpi.h>
-
 #define MPI_CALL_MESSAGE_LENGTH 256
 
 #define MPI_OPEN_URI "MpiOpen"
@@ -44,9 +42,6 @@ typedef struct MPI_CALLS
     MpiSetDesiredCall mpiSetDesired;
     MpiGetReportedCall mpiGetReported;
 } MPI_CALLS;
-
-void MpiServerInitialize(void);
-void MpiServerShutdown(void);
 
 HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** response, int* responseSize, MPI_CALLS handlers);
 
