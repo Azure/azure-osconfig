@@ -112,19 +112,16 @@ static void LoadModules(const char* directory, const char* configJson)
             {
                 if (DT_REG != entry->d_type)
                 {
-                    OsConfigLogError(GetPlatformLog(), "Invalid type '%s' (%d)", entry->d_name, entry->d_type);
                     continue;
                 }
 
                 if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
                 {
-                    OsConfigLogInfo(GetPlatformLog(), "LoadModules: Incorrect file '%s'", entry->d_name);
                     continue;
                 }
 
                 if (NULL == strstr(entry->d_name, MODULE_EXT))
                 {
-                    OsConfigLogInfo(GetPlatformLog(), "LoadModules: Missing '.so' extension '%s'", entry->d_name);
                     continue;
                 }
 
