@@ -2,12 +2,9 @@
 // Licensed under the MIT License.
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
-#include <CommonTests.h>
-#include <CommonUtils.h>
+#include <PlatformCommon.h>
 #include <MpiServer.h>
-#include <Mpi.h>
 
 namespace Tests
 {

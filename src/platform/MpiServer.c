@@ -3,6 +3,7 @@
 
 #include <PlatformCommon.h>
 #include <MpiServer.h>
+#include <ModulesManager.h>
 
 // 500 milliseconds
 #define MPI_WORKER_SLEEP 500
@@ -12,6 +13,9 @@
 #define MAX_QUEUED_CONNECTIONS 5
 #define MAX_REASONSTRING_LENGTH 32
 #define MAX_STATUS_CODE_LENGTH 3
+
+#define MODULES_BIN_PATH "/usr/lib/osconfig"
+#define CONFIG_JSON_PATH "/etc/osconfig/osconfig.json"
 
 static const char* g_socketPrefix = "/run/osconfig";
 static const char* g_mpiSocket = "/run/osconfig/mpid.sock";
@@ -487,7 +491,7 @@ static void* MpiServerWorker(void* arguments)
 
         if (0 <= (socketHandle = accept(g_socketfd, (struct sockaddr*)&g_socketaddr, &g_socketlen)))
         {
-            AreModulesLoadedAndLoadIfNot();
+            AreModulesLoadedAndLoadIfNot(MODULES_BIN_PATH, CONFIG_JSON_PATH);
 
             if (IsFullLoggingEnabled())
             {
@@ -577,7 +581,7 @@ static void* MpiServerWorker(void* arguments)
     return NULL;
 }
 
-void MpiServerInitialize(void)
+void MpiInitialize(void)
 {
     struct stat st;
     if (-1 == stat(g_socketPrefix, &st))
@@ -628,7 +632,7 @@ void MpiServerInitialize(void)
     }
 }
 
-void MpiServerShutdown(void)
+void MpiShutdown(void)
 {
     g_serverActive = false;
     pthread_join(g_mpiServerWorker, NULL);
@@ -637,4 +641,9 @@ void MpiServerShutdown(void)
 
     close(g_socketfd);
     unlink(g_mpiSocket);
+}
+
+void MpiDoWork(void)
+{
+    return;
 }

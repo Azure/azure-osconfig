@@ -113,7 +113,7 @@ static void SignalInterrupt(int signal)
 static void SignalReloadConfiguration(int incomingSignal)
 {
     g_refreshSignal = incomingSignal;
-    
+
     // Reset the handler
     signal(SIGHUP, SignalReloadConfiguration);
 }
@@ -135,16 +135,16 @@ void ScheduleRefresh(void)
 static void InitializePlatform(void)
 {
     g_lastTime = (unsigned int)time(NULL);
-    
+
     MpiInitialize();
-    
+
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform intialized");
 }
 
 void TerminatePlatform(void)
 {
     MpiShutdown();
-    
+
     OsConfigLogInfo(GetPlatformLog(), "OSConfig Platform terminated");
 }
 
@@ -191,11 +191,11 @@ bool IsFullLoggingEnabledInJsonConfig(const char* jsonString)
     return IsLoggingEnabledInJsonConfig(jsonString, FULL_LOGGING);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     UNUSED(argc);
     UNUSED(argv);
-    
+
     pid_t pid = 0;
     int stopSignalsCount = ARRAY_SIZE(g_stopSignals);
 
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
     while (0 == g_stopSignal)
     {
         PlatformDoWork();
-        
+
         sleep(DOWORK_SLEEP);
 
         if (0 != g_refreshSignal)
