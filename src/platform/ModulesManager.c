@@ -7,8 +7,6 @@
 #define AZURE_OSCONFIG "Azure OSConfig"
 #define MODULE_EXT ".so"
 
-#define UUID_LENGTH 36
-
 static const char* g_modelVersion = "ModelVersion";
 static const char* g_reportedObjectType = "Reported";
 static const char* g_componentName = "ComponentName";
@@ -317,7 +315,7 @@ static char* GenerateUuid(void)
     int random = 0;
     char c = ' ';
     int i = 0;
-    ssize_t size = UUID_LENGTH + 1;
+    ssize_t size = sizeof(uuidTemplate);
 
     if (NULL == (uuid = (char*)malloc(size)))
     {
@@ -327,7 +325,7 @@ static char* GenerateUuid(void)
     memset(uuid, 0, size);
     srand(clock());
 
-    for (i = 0; i < size; i++)
+    for (i = 0; i < size - 1; i++)
     {
         random = rand() % 16;
         c = ' ';
@@ -373,6 +371,8 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
+        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: Creating session with UUID '%s'", uuid);
+
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
             if (NULL != (session->client = strdup(clientName)))
@@ -454,6 +454,8 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
+        OsConfigLogError(GetPlatformLog(), "MpiClose: Closing session with UUID '%s'", session->uuid);
+
         // Remove the session from the linked list
         if (session == g_sessions)
         {
