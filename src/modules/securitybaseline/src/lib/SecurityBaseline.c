@@ -1253,9 +1253,9 @@ static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 
 static int AuditEnsureRloginServiceIsDisabled(void)
 {
-    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog() && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog() &&
-        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog()))) ? 0: ENOENT;
+    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
+        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog()) &&
+        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? 0: ENOENT;
 }
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
