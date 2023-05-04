@@ -274,6 +274,7 @@ static const char* g_nodev = "nodev";
 static const char* g_nosuid = "nosuid";
 static const char* g_noexec = "noexec";
 static const char* g_inetd = "inetd";
+static const char* g_inetUtilsInetd = "inetutils-inetd";
 static const char* g_xinetd = "xinetd";
 static const char* g_rshServer = "rsh-server";
 static const char* g_nis = "nis";
@@ -282,7 +283,7 @@ static const char* g_readAheadFedora = "readahead-fedora";
 static const char* g_bluetooth = "bluetooth";
 static const char* g_isdnUtilsBase = "isdnutils-base";
 static const char* g_kdumpTools = "kdump-tools";
-static const char* g_dhcpServer = "dhcp-server";
+static const char* g_iscDhcpServer = "isc-dhcp-server";
 static const char* g_sendmail = "sendmail";
 static const char* g_slapd = "slapd";
 static const char* g_bind9 = "bind9";
@@ -492,7 +493,8 @@ static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 
 static int AuditEnsureInetdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
+        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureXinetdNotInstalled(void)
@@ -542,7 +544,7 @@ static int AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 
 static int AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_dhcpServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSendmailNotInstalled(void)
@@ -1251,8 +1253,9 @@ static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 
 static int AuditEnsureRloginServiceIsDisabled(void)
 {
-    return ((0 != CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        (0 != FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())))) ? 0: ENOENT;
+    return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog() && 
+        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog() &&
+        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog()))) ? 0: ENOENT;
 }
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
@@ -1547,7 +1550,8 @@ static int RemediateEnsurePermissionsOnEtcMotd(void)
 
 static int RemediateEnsureInetdNotInstalled(void)
 {
-    return UninstallPackage(g_inetd, SecurityBaselineGetLog());
+    return ((0 == UninstallPackage(g_inetd, SecurityBaselineGetLog())) &&
+        (0 == UninstallPackage(g_inetUtilsInetd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureXinetdNotInstalled(void)
@@ -1592,7 +1596,7 @@ static int RemediateEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 
 static int RemediateEnsureIscDhcpdServerNotInstalled(void)
 {
-    return UninstallPackage(g_dhcpServer, SecurityBaselineGetLog());
+    return UninstallPackage(g_iscDhcpServer, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSendmailNotInstalled(void)
