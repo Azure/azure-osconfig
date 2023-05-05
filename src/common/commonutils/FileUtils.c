@@ -274,6 +274,31 @@ static unsigned int FilterFileAccessFlags(unsigned int mode)
     return flags;
 }
 
+static int CompareAccess(unsigned int current, unsigned int desired)
+{
+    // S_IRWXU (00700): Read, write, execute/search by owner
+    // S_IRWXG (00070): Read, write, execute/search by group
+    // S_IRWXO (00007): Read, write, execute/search by others
+    // S_IRUSR (00400): Read permission, owner
+    // S_IRGRP (00040): Read permission, group
+    // S_IROTH (00004): Read permission, others
+    // S_IWUSR (00200): Write permission, owner
+    // S_IWGRP (00020): Write permission, group
+    // S_IWOTH (00002): Write permission, others
+    // S_IXUSR (00100): Execute/search permission, owner
+    // S_IXGRP (00010): Execute/search permission, group
+    // S_IXOTH (00001): Execute/search permission, others
+    // S_ISUID (04000): Set-user-ID on execution
+    // S_ISGID (02000): Set-group-ID on execution
+    // S_ISVTX (01000): On directories, restricted deletion flag
+
+    if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
+        (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
+        (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
+    {
+
+}
+
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
     struct stat statStruct = {0};
@@ -305,20 +330,33 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 currentMode = FilterFileAccessFlags(statStruct.st_mode);
                 desiredMode = FilterFileAccessFlags(desiredAccess);
 
-                if ((((desiredMode & S_IRWXU) == (currentMode & S_IRWXU)) || (0 == (desiredMode & S_IRWXU))) &&
-                    (((desiredMode & S_IRWXG) == (currentMode & S_IRWXG)) || (0 == (desiredMode & S_IRWXG))) &&
-                    (((desiredMode & S_IRWXO) == (currentMode & S_IRWXO)) || (0 == (desiredMode & S_IRWXO))))
+                if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
+                    ((desiredMode & S_IRWXG) && ((desiredMode & S_IRWXG) != (currentMode & S_IRWXG))) ||
+                    ((desiredMode & S_IRWXO) && ((desiredMode & S_IRWXO) != (currentMode & S_IRWXO))) ||
+                    ((desiredMode & S_IRUSR) && ((desiredMode & S_IRUSR) != (currentMode & S_IRUSR))) ||
+                    ((desiredMode & S_IRGRP) && ((desiredMode & S_IRGRP) != (currentMode & S_IRGRP))) ||
+                    ((desiredMode & S_IROTH) && ((desiredMode & S_IROTH) != (currentMode & S_IROTH))) ||
+                    ((desiredMode & S_IWUSR) && ((desiredMode & S_IWUSR) != (currentMode & S_IWUSR))) ||
+                    ((desiredMode & S_IWGRP) && ((desiredMode & S_IWGRP) != (currentMode & S_IWGRP))) ||
+                    ((desiredMode & S_IWOTH) && ((desiredMode & S_IWOTH) != (currentMode & S_IWOTH))) ||
+                    ((desiredMode & S_IXUSR) && ((desiredMode & S_IXUSR) != (currentMode & S_IXUSR))) ||
+                    ((desiredMode & S_IXGRP) && ((desiredMode & S_IXGRP) != (currentMode & S_IXGRP))) ||
+                    ((desiredMode & S_IRWXU) && ((desiredMode & S_IXOTH) != (currentMode & S_IRWXU))) ||
+                    ((desiredMode & S_ISUID) && ((desiredMode & S_ISUID) != (currentMode & S_ISUID))) ||
+                    ((desiredMode & S_ISGID) && ((desiredMode & S_ISGID) != (currentMode & S_ISGID))) ||
+                    ((desiredMode & S_ISVTX) && ((desiredMode & S_ISVTX) != (currentMode & S_ISVTX))) ||
+                    (statStruct.st_mode > desiredAccess))
+                {
+                    OsConfigLogError(log, "CheckAccess: access to '%s' (%d-%d) does not match expected (%d-%d)",
+                        name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
+                    result = ENOENT;
+                }
+                else
                 {
                     OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d, %d, %d-%d) matches expected (%d, %d, %d-%d)",
                         name, statStruct.st_uid, statStruct.st_gid, statStruct.st_mode, currentMode,
                         desiredOwnerId, desiredGroupId, desiredAccess, desiredMode);
                     result = 0;
-                }
-                else
-                {
-                    OsConfigLogError(log, "CheckAccess: access to '%s' (%d-%d) does not match expected (%d-%d)",
-                        name, statStruct.st_mode, currentMode, desiredAccess, desiredMode);
-                    result = ENOENT;
                 }
             }
         }
