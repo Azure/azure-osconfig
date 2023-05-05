@@ -170,7 +170,7 @@ bool UnlockFile(FILE* file, void* log)
     return LockUnlockFile(file, false, log);
 }
 
-/*static unsigned int FilterFileAccessFlags(unsigned int mode)
+static unsigned int FilterFileAccessFlags(unsigned int mode)
 {
     // S_IXOTH (00001): Execute/search permission, others
     // S_IWOTH (00002): Write permission, others
@@ -188,7 +188,9 @@ bool UnlockFile(FILE* file, void* log)
     // S_ISGID (02000): Set-group-ID on execution
     // S_ISUID (04000): Set-user-ID on execution
 
-    mode_t flags = 0;
+    return mode & ((S_IRWXO | S_IRWXG | S_IRWXU));
+
+    /*mode_t flags = 0;
 
     if (mode & S_IRWXU)
     {
@@ -204,7 +206,8 @@ bool UnlockFile(FILE* file, void* log)
         if (mode & S_IWUSR)
         {
             flags |= S_IWUSR;
-        }desiredAccess
+        }
+
         if (mode & S_IXUSR)
         {
             flags |= S_IXUSR;
@@ -269,9 +272,10 @@ bool UnlockFile(FILE* file, void* log)
     {
         flags |= S_ISVTX;
     }
-
+    
     return flags;
-}*/
+    */
+}
 
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
 {
@@ -301,10 +305,26 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             }
             else 
             {
+                // S_IXOTH (00001): Execute/search permission, others
+                // S_IWOTH (00002): Write permission, others
+                // S_IROTH (00004): Read permission, others
+                // S_IRWXO (00007): Read, write, execute/search by others
+                // S_IXGRP (00010): Execute/search permission, group
+                // S_IWGRP (00020): Write permission, group
+                // S_IRGRP (00040): Read permission, group
+                // S_IRWXG (00070): Read, write, execute/search by group
+                // S_IXUSR (00100): Execute/search permission, owner
+                // S_IWUSR (00200): Write permission, owner
+                // S_IRUSR (00400): Read permission, owner
+                // S_IRWXU (00700): Read, write, execute/search by owner
+                // S_ISVTX (01000): On directories, restricted deletion flag
+                // S_ISGID (02000): Set-group-ID on execution
+                // S_ISUID (04000): Set-user-ID on execution
+                
                 //sudo chmod 644 /etc/passwd
                 //ls -l /etc/passwd
-                currentMode = statStruct.st_mode & 0777; //FilterFileAccessFlags(statStruct.st_mode);
-                desiredMode = desiredAccess; //FilterFileAccessFlags(desiredAccess);
+                currentMode = FilterFileAccessFlags(statStruct.st_mode);
+                desiredMode = desiredAccess;
 
                 if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
                     ((desiredMode & S_IRWXG) && ((desiredMode & S_IRWXG) != (currentMode & S_IRWXG))) ||
