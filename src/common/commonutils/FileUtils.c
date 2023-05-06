@@ -170,111 +170,18 @@ bool UnlockFile(FILE* file, void* log)
     return LockUnlockFile(file, false, log);
 }
 
-static unsigned int FilterFileAccessFlags(unsigned int mode)
+static int DecimalToOctal(int decimal)
 {
-    // S_IXOTH (00001): Execute/search permission, others
-    // S_IWOTH (00002): Write permission, others
-    // S_IROTH (00004): Read permission, others
-    // S_IRWXO (00007): Read, write, execute/search by others
-    // S_IXGRP (00010): Execute/search permission, group
-    // S_IWGRP (00020): Write permission, group
-    // S_IRGRP (00040): Read permission, group
-    // S_IRWXG (00070): Read, write, execute/search by group
-    // S_IXUSR (00100): Execute/search permission, owner
-    // S_IWUSR (00200): Write permission, owner
-    // S_IRUSR (00400): Read permission, owner
-    // S_IRWXU (00700): Read, write, execute/search by owner
-    // S_ISVTX (01000): On directories, restricted deletion flag
-    // S_ISGID (02000): Set-group-ID on execution
-    // S_ISUID (04000): Set-user-ID on execution
+    char buffer[10] = {0};
+    snprintf(buffer, ARRAY_SIZE(buffer), "%o", decimal);
+    return atoi(buffer);
+}
 
-    return mode & ((S_IRWXO | S_IRWXG | S_IRWXU));
-
-    /*mode_t flags = 0;
-
-    if (mode & S_IRWXU)
-    {
-        flags |= S_IRWXU;
-    }
-    else
-    {
-        if (mode & S_IRUSR)
-        {
-            flags |= S_IRUSR;
-        }
-
-        if (mode & S_IWUSR)
-        {
-            flags |= S_IWUSR;
-        }
-
-        if (mode & S_IXUSR)
-        {
-            flags |= S_IXUSR;
-        }
-    }
-
-    if (mode & S_IRWXG)
-    {
-        flags |= S_IRWXG;
-    }
-    else
-    {
-        if (mode & S_IRGRP)
-        {
-            flags |= S_IRGRP;
-        }
-
-        if (mode & S_IWGRP)
-        {
-            flags |= S_IWGRP;
-        }
-
-        if (mode & S_IXGRP)
-        {
-            flags |= S_IXGRP;
-        }
-    }
-
-    if (mode & S_IRWXO)
-    {
-        flags |= S_IRWXO;
-    }
-    else
-    {
-        if (mode & S_IROTH)
-        {
-            flags |= S_IROTH;
-        }
-
-        if (mode & S_IWOTH)
-        {
-            flags |= S_IWOTH;
-        }
-
-        if (mode & S_IXOTH)
-        {
-            flags |= S_IXOTH;
-        }
-    }
-
-    if (mode & S_ISUID)
-    {
-        flags |= S_ISUID;
-    }
-
-    if (mode & S_ISGID)
-    {
-        flags |= S_ISGID;
-    }
-
-    if (mode & S_ISVTX)
-    {
-        flags |= S_ISVTX;
-    }
-    
-    return flags;
-    */
+static int OctalToDecimal(int octal)
+{
+    char buffer[10] = {0};
+    snprintf(buffer, ARRAY_SIZE(buffer), "%d", octal);
+    return atoi(buffer);
 }
 
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
@@ -321,9 +228,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 // S_ISGID (02000): Set-group-ID on execution
                 // S_ISUID (04000): Set-user-ID on execution
                 
-                //sudo chmod 644 /etc/passwd
-                //ls -l /etc/passwd
-                currentMode = FilterFileAccessFlags(statStruct.st_mode);
+                currentMode = DecimalToOctal(OctalToDecimal(statStruct.st_mode) & 07777);
                 desiredMode = desiredAccess;
 
                 if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
@@ -369,6 +274,9 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
 static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
+    const char* commandTemplate = "chmod %u %s";
+    char* command = NULL;
+    size_t length = 0;
     int result = ENOENT;
 
     if (NULL == name)
@@ -391,14 +299,28 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
             {
                 OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
 
-                if (0 == (result = chmod(name, desiredAccess)))
+                length += strlen(commandTemplate) + 10 + strlen(name) + 1;
+
+                if (NULL == (command = (char*)malloc(length)))
                 {
-                    OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", name, desiredAccess);
-                    result = 0;
+                    OsConfigLogError(log, "SetAccess: out of memory");
+                    result = ENOMEM;
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetAccess: chmod('%s', %d) failed with %d", name, desiredAccess, errno);
+                    memset(command, 0, length);
+                    snprintf(command, length, commandTemplate, desiredAccess, name);
+
+                    if (0 == (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", name, desiredAccess);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetAccess: 'chmod %d %s' failed with %d", desiredAccess, name, result);
+                    }
+
+                    FREE_MEMORY(command);
                 }
             }
             else
