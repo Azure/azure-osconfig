@@ -315,7 +315,7 @@ static char* GenerateUuid(void)
     int random = 0;
     char c = ' ';
     int i = 0;
-    ssize_t size = sizeof(uuidTemplate);
+    ssize_t size = ARRAY_SIZE(uuidTemplate);
 
     if (NULL == (uuid = (char*)malloc(size)))
     {
