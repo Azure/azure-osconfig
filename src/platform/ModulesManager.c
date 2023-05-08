@@ -454,7 +454,7 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        OsConfigLogError(GetPlatformLog(), "MpiClose: Closing session with UUID '%s'", session->uuid);
+        OsConfigLogInfo(GetPlatformLog(), "MpiClose: Closing session with UUID '%s'", session->uuid);
 
         // Remove the session from the linked list
         if (session == g_sessions)
