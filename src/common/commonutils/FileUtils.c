@@ -29,7 +29,8 @@ char* LoadStringFromFile(const char* fileName, bool stopAtEol, void* log)
             {
                 memset(&string[0], 0, fileSize + 1);
                 for (i = 0; i <= fileSize; i++)
-                {
+                {    // printing the result
+
                     next = fgetc(file);
                     if ((EOF == next) || (stopAtEol && (EOL == next)))
                     {
@@ -179,9 +180,17 @@ static int DecimalToOctal(int decimal)
 
 static int OctalToDecimal(int octal)
 {
-    char buffer[10] = {0};
-    snprintf(buffer, ARRAY_SIZE(buffer), "%d", octal);
-    return atoi(buffer);
+    int internalOctal = octal;
+    int decimal = 0;
+    int i = 0;
+  
+    while (internalOctal) 
+    {
+        decimal += (internalOctal % 10) * pow(8, i++);
+        internalOctal = internalOctal / 10;
+    }
+
+    return decimal;
 }
 
 static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
@@ -228,7 +237,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 // S_ISGID (02000): Set-group-ID on execution
                 // S_ISUID (04000): Set-user-ID on execution
                 
-                currentMode = DecimalToOctal(OctalToDecimal(statStruct.st_mode) & 07777);
+                currentMode = DecimalToOctal(statStruct.st_mode & 07777);
                 desiredMode = desiredAccess;
 
                 if (((desiredMode & S_IRWXU) && ((desiredMode & S_IRWXU) != (currentMode & S_IRWXU))) ||
@@ -274,9 +283,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
 
 static int SetAccess(bool directory, const char* name, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
 {
-    const char* commandTemplate = "chmod %u %s";
-    char* command = NULL;
-    size_t length = 0;
+    mode_t mode = OctalToDecimal(desiredAccess);
     int result = ENOENT;
 
     if (NULL == name)
@@ -299,35 +306,20 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
             {
                 OsConfigLogInfo(log, "SetAccess: successfully set ownership of '%s' to owner %u, group %u", name, desiredOwnerId, desiredGroupId);
 
-                length += strlen(commandTemplate) + 10 + strlen(name) + 1;
-
-                if (NULL == (command = (char*)malloc(length)))
+                if (0 == (result = chmod(name, mode)))
                 {
-                    OsConfigLogError(log, "SetAccess: out of memory");
-                    result = ENOMEM;
+                    OsConfigLogInfo(log, "SetAccess: successfully set access to '%s' to %u", name, desiredAccess);
                 }
                 else
                 {
-                    memset(command, 0, length);
-                    snprintf(command, length, commandTemplate, desiredAccess, name);
-
-                    if (0 == (result = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                    {
-                        OsConfigLogInfo(log, "SetAccess: successfully set '%s' access to %u", name, desiredAccess);
-                    }
-                    else
-                    {
-                        OsConfigLogError(log, "SetAccess: 'chmod %d %s' failed with %d", desiredAccess, name, result);
-                    }
-
-                    FREE_MEMORY(command);
+                    result = errno ? errno : ENOENT;
+                    OsConfigLogError(log, "SetAccess: 'chmod %d %s' failed with %d", desiredAccess, name, result);
                 }
             }
             else
             {
                 OsConfigLogError(log, "SetAccess: chown('%s', %d, %d) failed with %d", name, desiredOwnerId, desiredGroupId, errno);
             }
-
         }
     }
     else
