@@ -1160,7 +1160,7 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
-    unsigned int testModes[] = { 0, 600, 601, 640, 644, 700, 710, 777 };
+    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
     int numTestModes = ARRAY_SIZE(testModes);
     
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
@@ -1178,7 +1178,7 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 
 TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
 {
-    unsigned int testModes[] = { 0, 600, 601, 640, 644, 700, 710, 777 };
+    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
     int numTestModes = ARRAY_SIZE(testModes);
 
     EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
