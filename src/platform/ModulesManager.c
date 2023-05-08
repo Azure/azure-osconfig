@@ -532,6 +532,16 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
         OsConfigLogError(GetPlatformLog(), "MpiSet: no module exists with component '%s'", component);
         status = EINVAL;
     }
+    else if (NULL == moduleSession->module)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiSet: no module is loaded for the given session");
+        status = EINVAL;
+    }
+    else if (NULL == moduleSession->module->set)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiSet: module does not implement MmiSet() function");
+        status = EINVAL;
+    }
     else
     {
         status = moduleSession->module->set(moduleSession->handle, component, object, payload, payloadSizeBytes);
@@ -560,6 +570,16 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiGet: no module exists with component '%s'", component);
+        status = EINVAL;
+    }
+    else if (NULL == moduleSession->module)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiGet: no module is loaded for the given session");
+        status = EINVAL;
+    }
+    else if (NULL == moduleSession->module->get)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiGet: module does not implement MmiGet() function");
         status = EINVAL;
     }
     else
@@ -644,7 +664,14 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                         if (NULL == objectJson)
                         {
                             OsConfigLogError(GetPlatformLog(), "MpiSetDesired: failed to serialize JSON");
-                            status = EINVAL;
+                        }
+                        else if (NULL == moduleSession->module)
+                        {
+                            OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no module is loaded for the given session");
+                        }
+                        else if (NULL == moduleSession->module->set)
+                        {
+                            OsConfigLogError(GetPlatformLog(), "MpiSetDesired: module does not implement MmiSet() function");
                         }
                         else
                         {
@@ -708,6 +735,14 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
             if (NULL == (moduleSession = FindModuleSession(session->modules, g_reported[i].component)))
             {
                 OsConfigLogError(GetPlatformLog(), "MpiGetReported: no module exists with component '%s'", g_reported[i].component);
+            }
+            else if (NULL == moduleSession->module)
+            {
+                OsConfigLogError(GetPlatformLog(), "MpiGetReported: no module is loaded for the given session");
+            }
+            else if (NULL == moduleSession->module->get)
+            {
+                OsConfigLogError(GetPlatformLog(), "MpiGetReported: module does not implement MmiGet() function");
             }
             else
             {
