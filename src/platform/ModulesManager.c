@@ -371,7 +371,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: Creating session with UUID '%s'", uuid);
+        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
 
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
