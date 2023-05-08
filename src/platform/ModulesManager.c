@@ -403,7 +403,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
                 }
                 else
                 {
-                    OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session UUID");
+                    OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session '%s'", uuid);
                     FREE_MEMORY(session->client);
                     FREE_MEMORY(session);
                 }
@@ -416,7 +416,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session");
+            OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session '%s'", uuid);
         }
     }
 
@@ -569,7 +569,7 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     }
     else if (NULL == moduleSession->module)
     {
-        OsConfigLogError(GetPlatformLog(), "MpiGet: no module is loaded for the given session");
+        OsConfigLogError(GetPlatformLog(), "MpiGet: no module is loaded for session '%s'", uuid);
         status = EINVAL;
     }
     else
@@ -657,7 +657,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                         }
                         else if (NULL == moduleSession->module)
                         {
-                            OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no module is loaded for the given session");
+                            OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no module is loaded for session '%s'", uuid);
                         }
                         else
                         {
