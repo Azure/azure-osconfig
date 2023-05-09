@@ -291,7 +291,7 @@ HTTP_STATUS HandleMpiCall(const char* uri, const char* requestBody, char** respo
                 }
                 else
                 {
-                    OsConfigLogError(GetPlatformLog(), "%s: failed to open client '%s'", client, uri);
+                    OsConfigLogError(GetPlatformLog(), "%s: failed to open client '%s'", uri, client);
                     status = HTTP_INTERNAL_SERVER_ERROR;
                 }
             }
