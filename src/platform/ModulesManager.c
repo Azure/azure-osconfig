@@ -375,6 +375,8 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
 
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
+            memset(session, 0, sizeof(MODULE_SESSION));
+            
             if (NULL != (session->client = strdup(clientName)))
             {
                 if (NULL != (session->uuid = strdup(uuid)))
