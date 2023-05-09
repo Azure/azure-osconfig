@@ -7,8 +7,6 @@
 #define AZURE_OSCONFIG "Azure OSConfig"
 #define MODULE_EXT ".so"
 
-#define UUID_LENGTH 36
-
 static const char* g_modelVersion = "ModelVersion";
 static const char* g_reportedObjectType = "Reported";
 static const char* g_componentName = "ComponentName";
@@ -317,7 +315,7 @@ static char* GenerateUuid(void)
     int random = 0;
     char c = ' ';
     int i = 0;
-    ssize_t size = UUID_LENGTH + 1;
+    ssize_t size = ARRAY_SIZE(uuidTemplate);
 
     if (NULL == (uuid = (char*)malloc(size)))
     {
@@ -327,7 +325,7 @@ static char* GenerateUuid(void)
     memset(uuid, 0, size);
     srand(clock());
 
-    for (i = 0; i < size; i++)
+    for (i = 0; i < size - 1; i++)
     {
         random = rand() % 16;
         c = ' ';
@@ -373,8 +371,12 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
+        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
+
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
+            memset(session, 0, sizeof(MODULE_SESSION));
+            
             if (NULL != (session->client = strdup(clientName)))
             {
                 if (NULL != (session->uuid = strdup(uuid)))
@@ -403,7 +405,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
                 }
                 else
                 {
-                    OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session UUID");
+                    OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session '%s'", uuid);
                     FREE_MEMORY(session->client);
                     FREE_MEMORY(session);
                 }
@@ -416,7 +418,7 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session");
+            OsConfigLogError(GetPlatformLog(), "MpiOpen: failed to allocate memory for session '%s'", uuid);
         }
     }
 
@@ -454,6 +456,8 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
+        OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+
         // Remove the session from the linked list
         if (session == g_sessions)
         {
@@ -515,7 +519,7 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     MODULE_SESSION* moduleSession = NULL;
     char* uuid = (char*)handle;
 
-    if ((NULL == handle) || (NULL == component) || (NULL == object) || (NULL == payload) || (0 >= payloadSizeBytes))
+    if ((NULL == handle) || (NULL == component) || (NULL == object))
     {
         OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) called with invalid arguments", handle, component, object, payload, payloadSizeBytes);
         status = EINVAL;
@@ -528,6 +532,11 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiSet: no module exists with component '%s'", component);
+        status = EINVAL;
+    }
+    else if (NULL == moduleSession->module)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiSet: no module is loaded for session '%s'", uuid);
         status = EINVAL;
     }
     else
@@ -558,6 +567,11 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     else if (NULL == (moduleSession = FindModuleSession(session->modules, component)))
     {
         OsConfigLogError(GetPlatformLog(), "MpiGet: no module exists with component '%s'", component);
+        status = EINVAL;
+    }
+    else if (NULL == moduleSession->module)
+    {
+        OsConfigLogError(GetPlatformLog(), "MpiGet: no module is loaded for session '%s'", uuid);
         status = EINVAL;
     }
     else
@@ -642,7 +656,10 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                         if (NULL == objectJson)
                         {
                             OsConfigLogError(GetPlatformLog(), "MpiSetDesired: failed to serialize JSON");
-                            status = EINVAL;
+                        }
+                        else if (NULL == moduleSession->module)
+                        {
+                            OsConfigLogError(GetPlatformLog(), "MpiSetDesired: no module is loaded for session '%s'", uuid);
                         }
                         else
                         {
@@ -706,6 +723,10 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
             if (NULL == (moduleSession = FindModuleSession(session->modules, g_reported[i].component)))
             {
                 OsConfigLogError(GetPlatformLog(), "MpiGetReported: no module exists with component '%s'", g_reported[i].component);
+            }
+            else if (NULL == moduleSession->module)
+            {
+                OsConfigLogError(GetPlatformLog(), "MpiGetReported: no module is loaded for session '%s'", uuid);
             }
             else
             {
