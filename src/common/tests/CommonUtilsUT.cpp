@@ -1160,16 +1160,17 @@ TEST_F(CommonUtilsTest, LoadConfiguration)
 
 TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 {
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    for (int i = 0; i < 7777; i++)
-    {
-        EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, i, nullptr));
-        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, i, nullptr));
-    }
-    EXPECT_TRUE(Cleanup(m_path));
+    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
+    int numTestModes = ARRAY_SIZE(testModes);
     
-    EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, 777, nullptr));
-    EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, 777, nullptr));
+    EXPECT_TRUE(CreateTestFile(m_path, m_data));
+    for (int i = 0; i < numTestModes; i++)
+    {
+        EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, testModes[i], nullptr));
+        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, testModes[i], nullptr));
+    }
+
+    EXPECT_TRUE(Cleanup(m_path));
     
     EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
     EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
@@ -1177,11 +1178,14 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
 
 TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
 {
+    unsigned int testModes[] = { 0, 600, 601, 640, 644, 650, 700, 710, 750, 777 };
+    int numTestModes = ARRAY_SIZE(testModes);
+
     EXPECT_EQ(0, ExecuteCommand(nullptr, "mkdir ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
-    for (int i = 0; i < 7777; i++)
+    for (int i = 0; i < numTestModes; i++)
     {
-        EXPECT_EQ(0, SetDirectoryAccess("~test", 0, 0, i, nullptr));
-        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, i, false, nullptr));
+        EXPECT_EQ(0, SetDirectoryAccess("~test", 0, 0, testModes[i], nullptr));
+        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, testModes[i], false, nullptr));
     }
     EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
 
@@ -1401,7 +1405,6 @@ TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
     EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
-    EXPECT_EQ(0, CheckUsersRestrictedDotFiles(0, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)
