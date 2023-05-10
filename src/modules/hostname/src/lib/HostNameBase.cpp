@@ -9,10 +9,6 @@
 #include <sstream>
 #include <regex>
 #include <algorithm>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/schema.h>
-#include <rapidjson/error/en.h>
 
 #define ERROR_MEMORY_ALLOCATION "%s memory allocation failed: %u bytes"
 #define ERROR_PAYLOAD_TOO_LARGE "%s payload too large: %d (expected less than %d)"

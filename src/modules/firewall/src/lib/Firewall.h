@@ -6,8 +6,7 @@
 #include <cstdarg>
 #include <memory>
 #include <ostream>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
+#include <parson.h>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -139,7 +138,7 @@ private:
 class GenericRule
 {
 public:
-    virtual GenericRule& Parse(const rapidjson::Value& rule);
+    virtual GenericRule& Parse(const JSON_Value* value);
 
     virtual std::vector<std::string> GetParseError() const
     {
@@ -176,8 +175,8 @@ private:
 class GenericPolicy
 {
 public:
-    virtual GenericPolicy& Parse(const rapidjson::Value& rule);
-    virtual void Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const;
+    virtual GenericPolicy& Parse(const JSON_Value* value);
+    virtual void Serialize(JSON_Object* object) const;
 
     virtual std::vector<std::string> GetParseError() const
     {
@@ -303,47 +302,42 @@ public:
     virtual int Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes);
 
 protected:
-    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
-    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
-    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
-    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
-    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) const = 0;
+    virtual int GetState(JSON_Value** value) const = 0;
+    virtual int GetFingerprint(JSON_Value** value) const = 0;
+    virtual int GetDefaultPolicies(JSON_Value** value) const = 0;
+    virtual int GetConfigurationStatus(JSON_Value** value) const = 0;
+    virtual int GetConfigurationStatusDetail(JSON_Value** value) const = 0;
 
-    virtual int SetDefaultPolicies(rapidjson::Document& document) = 0;
-    virtual int SetRules(rapidjson::Document& document) = 0;
+    virtual int SetDefaultPolicies(const JSON_Value* value) = 0;
+    virtual int SetRules(const JSON_Value* value) = 0;
 
 private:
     unsigned int m_maxPayloadSizeBytes;
 };
 
 template<class T>
-std::vector<T> ParseArray(const rapidjson::Value& value)
+std::vector<T> ParseArray(const JSON_Value* value)
 {
-    std::vector<T> rules;
+    std::vector<T> elements;
+    JSON_Array* array = json_value_get_array(value);
+    size_t count = json_array_get_count(array);
 
-    if (value.IsArray())
+    for (size_t i = 0; i < count; ++i)
     {
-        for (auto& value : value.GetArray())
-        {
-            T rule;
-            rule.Parse(value);
-            rules.push_back(rule);
+        T element;
+        element.Parse(json_array_get_value(array, i));
+        elements.push_back(element);
 
-            if (rule.HasParseError())
+        if (element.HasParseError())
+        {
+            for (auto& error : element.GetParseError())
             {
-                for (auto& error : rule.GetParseError())
-                {
-                    OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
-                }
+                OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
             }
         }
     }
-    else
-    {
-        OsConfigLogError(FirewallLog::Get(), "JSON value is not an array");
-    }
 
-    return rules;
+    return elements;
 }
 
 template <class FirewallT>
@@ -358,55 +352,64 @@ protected:
     typedef typename FirewallT::Policy Policy;
     typedef typename FirewallT::Rule Rule;
 
-    virtual int GetState(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
+    virtual int GetState(JSON_Value** value) const override
     {
         State state = m_firewall.Detect();
-        writer.String((state == State::Enabled) ? "enabled" : ((state == State::Disabled) ? "disabled" : "unknown"));
+        *value = json_value_init_string((state == State::Enabled) ? "enabled" : ((state == State::Disabled) ? "disabled" : "unknown"));
         return EXIT_SUCCESS;
     }
 
-    virtual int GetFingerprint(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
+    virtual int GetFingerprint(JSON_Value** value) const override
     {
         std::string fingerprint = m_firewall.Fingerprint();
-        writer.String(fingerprint.c_str());
+        *value = json_value_init_string(fingerprint.c_str());
         return EXIT_SUCCESS;
     }
 
-    virtual int GetDefaultPolicies(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
+    virtual int GetDefaultPolicies(JSON_Value** value) const override
     {
         std::vector<Policy> policies = m_firewall.GetDefaultPolicies();
-        writer.StartArray();
+        JSON_Array* array = nullptr;
+        JSON_Value* policyValue = nullptr;
+        JSON_Object* policyObject = nullptr;
+
+        *value = json_value_init_array();
+        array = json_value_get_array(*value);
+
         for (const Policy& policy : policies)
         {
-            policy.Serialize(writer);
+            policyValue = json_value_init_object();
+            policyObject = json_value_get_object(policyValue);
+            policy.Serialize(policyObject);
+            json_array_append_value(array, policyValue);
         }
-        writer.EndArray();
+
         return EXIT_SUCCESS;
     }
 
-    virtual int GetConfigurationStatus(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
+    virtual int GetConfigurationStatus(JSON_Value** value) const override
     {
         Status status = m_firewall.GetStatus();
-        writer.String((status == Status::Success) ? "success" : ((status == Status::Failure) ? "failure" : "unknown"));
+        *value = json_value_init_string((status == Status::Success) ? "success" : ((status == Status::Failure) ? "failure" : "unknown"));
         return EXIT_SUCCESS;
     }
 
-    virtual int GetConfigurationStatusDetail(rapidjson::Writer<rapidjson::StringBuffer>& writer) const override
+    virtual int GetConfigurationStatusDetail(JSON_Value** value) const override
     {
         std::string statusDetail = m_firewall.GetStatusMessage();
-        writer.String(statusDetail.c_str());
+        *value = json_value_init_string(statusDetail.c_str());
         return EXIT_SUCCESS;
     }
 
-    virtual int SetDefaultPolicies(rapidjson::Document& document) override
+    virtual int SetDefaultPolicies(const JSON_Value* value) override
     {
-        std::vector<Policy> policies = ParseArray<Policy>(document);
+        std::vector<Policy> policies = ParseArray<Policy>(value);
         return m_firewall.SetDefaultPolicies(policies);
     }
 
-    virtual int SetRules(rapidjson::Document& document) override
+    virtual int SetRules(const JSON_Value* value) override
     {
-        std::vector<Rule> rules = ParseArray<Rule>(document);
+        std::vector<Rule> rules = ParseArray<Rule>(value);
         return m_firewall.SetRules(rules);
     }
 

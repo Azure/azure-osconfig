@@ -3,7 +3,7 @@
 
 project(tpm)
 
-add_library(tpm SHARED TpmModule.cpp)
+add_library(tpm SHARED TpmModule.c)
 target_link_libraries(tpm
     PRIVATE
         commonutils

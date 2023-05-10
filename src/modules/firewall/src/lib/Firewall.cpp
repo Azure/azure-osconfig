@@ -34,8 +34,8 @@ const char g_desiredState[] = "desiredState";
 const char g_action[] = "action";
 const char g_direction[] = "direction";
 const char g_protocol[] = "protocol";
-const char g_source[] = "sourceAddress";
-const char g_destination[] = "destinationAddress";
+const char g_sourceAddress[] = "sourceAddress";
+const char g_destinationAddress[] = "destinationAddress";
 const char g_sourcePort[] = "sourcePort";
 const char g_destinationPort[] = "destinationPort";
 
@@ -90,6 +90,8 @@ int FirewallModuleBase::GetInfo(const char* clientName, MMI_JSON_STRING* payload
 int FirewallModuleBase::Get(const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
+    JSON_Value* value = nullptr;
+    char* json = nullptr;
 
     if (nullptr == componentName)
     {
@@ -118,31 +120,28 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
     }
     else
     {
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-
         *payloadSizeBytes = 0;
         *payload = nullptr;
 
         if (0 == m_reportedState.compare(objectName))
         {
-            status = GetState(writer);
+            status = GetState(&value);
         }
         else if (0 == m_reportedFingerprint.compare(objectName))
         {
-            status = GetFingerprint(writer);
+            status = GetFingerprint(&value);
         }
         else if (0 == m_reportedDefaultPolicies.compare(objectName))
         {
-            status = GetDefaultPolicies(writer);
+            status = GetDefaultPolicies(&value);
         }
         else if (0 == m_reportedConfigurationStatus.compare(objectName))
         {
-            status = GetConfigurationStatus(writer);
+            status = GetConfigurationStatus(&value);
         }
         else if (0 == m_reportedConfigurationStatusDetail.compare(objectName))
         {
-            status = GetConfigurationStatusDetail(writer);
+            status = GetConfigurationStatusDetail(&value);
         }
         else
         {
@@ -152,28 +151,44 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
 
         if (MMI_OK == status)
         {
-            if ((m_maxPayloadSizeBytes > 0) && (buffer.GetSize() > m_maxPayloadSizeBytes))
+            json = json_serialize_to_string(value);
+
+            if (nullptr == json)
             {
-                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum payload size: %d > %d", static_cast<int>(buffer.GetSize()), m_maxPayloadSizeBytes);
+                OsConfigLogError(FirewallLog::Get(), "Failed to serialize JSON object");
+                status = ENOMEM;
+            }
+            else if ((m_maxPayloadSizeBytes > 0) && (m_maxPayloadSizeBytes < strlen(json)))
+            {
+                OsConfigLogError(FirewallLog::Get(), "Payload size exceeds maximum size");
                 status = E2BIG;
             }
             else
             {
-                *payloadSizeBytes = buffer.GetSize();
+                *payloadSizeBytes = strlen(json);
                 *payload = new (std::nothrow) char[*payloadSizeBytes];
 
-                if (*payload != nullptr)
+                if (nullptr == *payload)
                 {
-                    std::fill(*payload, *payload + *payloadSizeBytes, 0);
-                    std::memcpy(*payload, buffer.GetString(), *payloadSizeBytes);
+                    OsConfigLogError(FirewallLog::Get(), "Failed to allocate memory for payload");
+                    status = ENOMEM;
                 }
                 else
                 {
-                    *payloadSizeBytes = 0;
-                    status = ENOMEM;
+                    std::memcpy(*payload, json, *payloadSizeBytes);
                 }
             }
         }
+    }
+
+    if (nullptr != json)
+    {
+        json_free_serialized_string(json);
+    }
+
+    if (nullptr != value)
+    {
+        json_value_free(value);
     }
 
     return status;
@@ -182,6 +197,7 @@ int FirewallModuleBase::Get(const char* componentName, const char* objectName, M
 int FirewallModuleBase::Set(const char* componentName, const char* objectName, const MMI_JSON_STRING payload, const int payloadSizeBytes)
 {
     int status = MMI_OK;
+    JSON_Value* value = nullptr;
 
     if (nullptr == componentName)
     {
@@ -209,35 +225,24 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
 
         if (0 == m_firewallComponent.compare(componentName))
         {
-            rapidjson::Document document;
-            document.Parse(payloadJson.c_str());
-
-            if (!document.HasParseError())
+            if (nullptr == (value = json_parse_string(payloadJson.c_str())))
+            {
+                OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
+                status = EINVAL;
+            }
+            else
             {
                 if (0 == m_desiredRules.compare(objectName))
                 {
-                    status = SetRules(document);
+                    status = SetRules(value);
                 }
                 else if (0 == m_desiredDefaultPolicies.compare(objectName))
                 {
-                    status = SetDefaultPolicies(document);
+                    status = SetDefaultPolicies(value);
                 }
                 else
                 {
                     OsConfigLogError(FirewallLog::Get(), "Invalid object name: %s", objectName);
-                    status = EINVAL;
-                }
-            }
-            else
-            {
-                if (IsFullLoggingEnabled())
-                {
-                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload: %s", payloadJson.c_str());
-                    status = EINVAL;
-                }
-                else
-                {
-                    OsConfigLogError(FirewallLog::Get(), "Failed to parse JSON payload");
                     status = EINVAL;
                 }
             }
@@ -249,30 +254,30 @@ int FirewallModuleBase::Set(const char* componentName, const char* objectName, c
         }
     }
 
+    if (nullptr != value)
+    {
+        json_value_free(value);
+    }
+
     return status;
 }
 
-GenericRule& GenericRule::Parse(const rapidjson::Value& value)
+GenericRule& GenericRule::Parse(const JSON_Value* value)
 {
-    if (value.IsObject())
+    JSON_Object* object = json_value_get_object(value);
+
+    if (nullptr != object)
     {
-        if (value.HasMember(g_desiredState))
+        if (json_object_has_value_of_type(object, g_desiredState, JSONString))
         {
-            if (value[g_desiredState].IsString())
+            DesiredState state = DesiredState(json_object_get_string(object, g_desiredState));
+            if (state.IsValid())
             {
-                DesiredState state = DesiredState(value[g_desiredState].GetString());
-                if (state.IsValid())
-                {
-                    m_desiredState = state;
-                }
-                else
-                {
-                    m_parseError.push_back("Invalid desired state: " + std::string(value[g_desiredState].GetString()));
-                }
+                m_desiredState = state;
             }
             else
             {
-                m_parseError.push_back("Desired state must be of type string");
+                m_parseError.push_back("Invalid desired state: " + std::string(json_object_get_string(object, g_desiredState)));
             }
         }
         else
@@ -280,23 +285,16 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_desiredState) + "' field");
         }
 
-        if (value.HasMember(g_action))
+        if (json_object_has_value_of_type(object, g_action, JSONString))
         {
-            if (value[g_action].IsString())
+            Action action = Action(json_object_get_string(object, g_action));
+            if (action.IsValid())
             {
-                Action action = Action(value[g_action].GetString());
-                if (action.IsValid())
-                {
-                    m_action = action;
-                }
-                else
-                {
-                    m_parseError.push_back("Invalid action: " + std::string(value[g_action].GetString()));
-                }
+                m_action = action;
             }
             else
             {
-                m_parseError.push_back("Action must be of type string");
+                m_parseError.push_back("Invalid action: " + std::string(json_object_get_string(object, g_action)));
             }
         }
         else
@@ -304,23 +302,16 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_action) + "' field");
         }
 
-        if (value.HasMember(g_direction))
+        if (json_object_has_value_of_type(object, g_direction, JSONString))
         {
-            if (value[g_direction].IsString())
+            Direction direction = Direction(json_object_get_string(object, g_direction));
+            if (direction.IsValid())
             {
-                Direction direction = Direction(value[g_direction].GetString());
-                if (direction.IsValid())
-                {
-                    m_direction = direction;
-                }
-                else
-                {
-                    m_parseError.push_back("Invalid direction: " + std::string(value[g_direction].GetString()));
-                }
+                m_direction = direction;
             }
             else
             {
-                m_parseError.push_back("Direction must be of type string");
+                m_parseError.push_back("Invalid direction: " + std::string(json_object_get_string(object, g_direction)));
             }
         }
         else
@@ -328,72 +319,57 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
             m_parseError.push_back("Rule must have a '" + std::string(g_direction) + "' field");
         }
 
-        if (value.HasMember(g_protocol))
+        if (json_object_has_value_of_type(object, g_protocol, JSONString))
         {
-            if (value[g_protocol].IsString())
+            Protocol protocol = Protocol(json_object_get_string(object, g_protocol));
+            if (protocol.IsValid())
             {
-                Protocol protocol = Protocol(value[g_protocol].GetString());
-                if (protocol.IsValid())
-                {
-                    m_protocol = protocol;
-                }
-                else
-                {
-                    m_parseError.push_back("Invalid protocol: " + std::string(value[g_protocol].GetString()));
-                }
+                m_protocol = protocol;
             }
             else
             {
-                m_parseError.push_back("Protocol must be of type string");
+                m_parseError.push_back("Invalid protocol: " + std::string(json_object_get_string(object, g_protocol)));
             }
         }
-
-        if (value.HasMember(g_source))
+        else if (json_object_get_value(object, g_protocol))
         {
-            if (value[g_source].IsString())
-            {
-                m_sourceAddress = value[g_source].GetString();
-            }
-            else
-            {
-                m_parseError.push_back("Source must be of type string");
-            }
+            m_parseError.push_back("Protocol must be a string");
         }
 
-        if (value.HasMember(g_destination))
+        if (json_object_has_value_of_type(object, g_sourceAddress, JSONString))
         {
-            if (value[g_destination].IsString())
-            {
-                m_destinationAddress = value[g_destination].GetString();
-            }
-            else
-            {
-                m_parseError.push_back("Destination must be of type string");
-            }
+            m_sourceAddress = std::string(json_object_get_string(object, g_sourceAddress));
+        }
+        else if (json_object_get_value(object, g_sourceAddress))
+        {
+            m_parseError.push_back("Source address must be a string");
         }
 
-        if (value.HasMember(g_sourcePort))
+        if (json_object_has_value_of_type(object, g_sourcePort, JSONNumber))
         {
-            if (value[g_sourcePort].IsInt())
-            {
-                m_sourcePort = std::to_string(value[g_sourcePort].GetInt());
-            }
-            else
-            {
-                m_parseError.push_back("Source port must be of type integer");
-            }
+            m_sourcePort = std::string(json_object_get_string(object, g_sourcePort));
+        }
+        else if (json_object_get_value(object, g_sourcePort))
+        {
+            m_parseError.push_back("Source port must be a string");
         }
 
-        if (value.HasMember(g_destinationPort))
+        if (json_object_has_value_of_type(object, g_destinationAddress, JSONString))
         {
-            if (value[g_destinationPort].IsInt())
-            {
-                m_destinationPort = std::to_string(value[g_destinationPort].GetInt());
-            }
-            else
-            {
-                m_parseError.push_back("Destination port must be of type integer");
-            }
+            m_destinationAddress = std::string(json_object_get_string(object, g_destinationAddress));
+        }
+        else if (json_object_get_value(object, g_destinationAddress))
+        {
+            m_parseError.push_back("Destination address must be a string");
+        }
+
+        if (json_object_has_value_of_type(object, g_destinationPort, JSONNumber))
+        {
+            m_destinationPort = std::string(json_object_get_string(object, g_destinationPort));
+        }
+        else if (json_object_get_value(object, g_destinationPort))
+        {
+            m_parseError.push_back("Destination port must be a string");
         }
     }
     else
@@ -401,16 +377,9 @@ GenericRule& GenericRule::Parse(const rapidjson::Value& value)
         m_parseError.push_back("Rule JSON is not an object");
     }
 
-    if (IsFullLoggingEnabled())
-    {
-        for (auto& error : m_parseError)
-        {
-            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
-        }
-    }
-
     return *this;
 }
+
 
 std::string IpTablesRule::Specification() const
 {
@@ -685,7 +654,7 @@ int IpTables::SetRules(const std::vector<IpTables::Rule>& rules)
     {
         Rule rule = *it;
 
-        if (rule.HasParseError())
+        if (!rule.HasParseError())
         {
             for (const std::string& parseError : rule.GetParseError())
             {
@@ -844,72 +813,55 @@ std::vector<IpTablesPolicy> IpTables::GetDefaultPolicies() const
     return policies;
 }
 
-void GenericPolicy::Serialize(rapidjson::Writer<rapidjson::StringBuffer>& writer) const
+void GenericPolicy::Serialize(JSON_Object* object) const
 {
-    writer.StartObject();
-    writer.String(g_direction);
-    writer.String(m_direction.ToString().c_str());
-    writer.String(g_action);
-    writer.String(m_action.ToString().c_str());
-    writer.EndObject();
+    json_object_set_string(object, g_direction, m_direction.ToString().c_str());
+    json_object_set_string(object, g_action, m_action.ToString().c_str());
 }
 
-GenericPolicy& GenericPolicy::Parse(const rapidjson::Value& value)
+GenericPolicy& GenericPolicy::Parse(const JSON_Value* value)
 {
-    if (value.HasMember(g_action))
+    const JSON_Object* object = json_value_get_object(value);
+
+    if (object)
     {
-        if (value[g_action].IsString())
+        if (json_object_has_value_of_type(object, g_action, JSONString))
         {
-            Action action = Action(value[g_action].GetString());
-            if (action.IsValid() && (action != "reject"))
+            Action action = Action(json_object_get_string(object, g_action));
+            if (action.IsValid())
             {
                 m_action = action;
             }
             else
             {
-                m_parseError.push_back("Invalid action: " + std::string(value[g_action].GetString()));
+                m_parseError.push_back("Invalid policy action: " + std::string(json_object_get_string(object, g_action)));
             }
         }
         else
         {
-            m_parseError.push_back("Policy action must be of type string");
+            m_parseError.push_back("Missing action from policy");
         }
-    }
-    else
-    {
-        m_parseError.push_back("Policy must contain action");
-    }
 
-    if (value.HasMember(g_direction))
-    {
-        if (value[g_direction].IsString())
+        if (json_object_has_value_of_type(object, g_direction, JSONString))
         {
-            Direction direction = Direction(value[g_direction].GetString());
+            Direction direction = Direction(json_object_get_string(object, g_direction));
             if (direction.IsValid())
             {
                 m_direction = direction;
             }
             else
             {
-                m_parseError.push_back("Invalid direction: " + std::string(value[g_direction].GetString()));
+                m_parseError.push_back("Invalid policy direction: " + std::string(json_object_get_string(object, g_direction)));
             }
         }
         else
         {
-            m_parseError.push_back("Policy direction must be of type string");
+            m_parseError.push_back("Missing direction from policy");
         }
     }
     else
     {
-        m_parseError.push_back("Policy must contain direction");
-    }
-
-    for (auto& error : m_parseError)
-    {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(FirewallLog::Get(), "%s", error.c_str());
-        }
+        m_parseError.push_back("Invalid JSON object");
     }
 
     return *this;

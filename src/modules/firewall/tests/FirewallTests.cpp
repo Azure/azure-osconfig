@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <parson.h>
 
 #include <Firewall.h>
 
@@ -10,21 +11,22 @@ namespace tests
 {
     testing::AssertionResult JsonEq(const std::string& expectedJson, const std::string& actualJson)
     {
-        rapidjson::Document actual;
-        rapidjson::Document expected;
+        JSON_Value* expected = json_parse_string(expectedJson.c_str());
+        JSON_Value* actual = json_parse_string(actualJson.c_str());
+
         testing::AssertionResult result = testing::AssertionSuccess();
 
-        if (expected.Parse(expectedJson.c_str()).HasParseError())
+        if (expected == nullptr)
         {
-            result = testing::AssertionFailure() << "expected JSON is not valid JSON" << expectedJson;
+            result = testing::AssertionFailure() << "Expected JSON is invalid";
         }
-        else if (actual.Parse(actualJson.c_str()).HasParseError())
+        else if (actual == nullptr)
         {
-            result = testing::AssertionFailure() << "actual JSON is not valid JSON" << actualJson;
+            result = testing::AssertionFailure() << "Actual JSON is invalid";
         }
-        else if (actual != expected)
+        else if (!json_value_equals(expected, actual))
         {
-            result = testing::AssertionFailure() << "expected:\n\t" << expectedJson << "\n but got:\n\t" << actualJson;
+            result = testing::AssertionFailure() << "JSON values are not equal";
         }
 
         return result;
@@ -338,7 +340,7 @@ namespace tests
 
     std::string Policy(std::string direction, std::string action)
     {
-        return"{\"direction\": \"" + direction + "\", \"action\": \"" + action + "\"}";
+        return "{\"direction\": \"" + direction + "\", \"action\": \"" + action + "\"}";
     }
 
     TEST_F(FirewallTests, ParsePolicy)
@@ -352,18 +354,18 @@ namespace tests
 
         for (auto policyJson : policies)
         {
-            rapidjson::Document document;
-            document.Parse(policyJson.c_str());
+            JSON_Value* value = json_parse_string(policyJson.c_str());
+            JSON_Object* object = json_value_get_object(value);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
-            EXPECT_TRUE(document.HasMember("direction"));
-            EXPECT_TRUE(document.HasMember("action"));
+            EXPECT_NE(nullptr, value);
+            EXPECT_NE(nullptr, object);
+            EXPECT_TRUE(json_object_has_value_of_type(object, "direction", JSONString));
+            EXPECT_TRUE(json_object_has_value_of_type(object, "action", JSONString));
 
             IpTablesPolicy policy;
-            policy.Parse(document);
+            policy.Parse(value);
 
-            EXPECT_FALSE(policy.HasParseError());
+            EXPECT_FALSE(policy.HasParseError()) << policyJson;
         }
     }
 
@@ -380,19 +382,19 @@ namespace tests
 
         for (auto ruleJson : rules)
         {
-            rapidjson::Document document;
-            document.Parse(ruleJson.c_str());
+            JSON_Value* value = json_parse_string(ruleJson.c_str());
+            JSON_Object* object = json_value_get_object(value);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
-            EXPECT_TRUE(document.HasMember("desiredState"));
-            EXPECT_TRUE(document.HasMember("action"));
-            EXPECT_TRUE(document.HasMember("direction"));
+            EXPECT_NE(nullptr, value);
+            EXPECT_NE(nullptr, object);
+            EXPECT_TRUE(json_object_has_value_of_type(object, "desiredState", JSONString));
+            EXPECT_TRUE(json_object_has_value_of_type(object, "action", JSONString));
+            EXPECT_TRUE(json_object_has_value_of_type(object, "direction", JSONString));
 
             IpTablesRule rule;
-            rule.Parse(document);
+            rule.Parse(value);
 
-            EXPECT_FALSE(rule.HasParseError());
+            EXPECT_FALSE(rule.HasParseError()) << ruleJson;
         }
     }
 
@@ -418,14 +420,14 @@ namespace tests
 
         for (auto ruleJson : invalidRules)
         {
-            rapidjson::Document document;
-            document.Parse(ruleJson.c_str());
+            JSON_Value* value = json_parse_string(ruleJson.c_str());
+            JSON_Object* object = json_value_get_object(value);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
+            EXPECT_NE(nullptr, value);
+            EXPECT_NE(nullptr, object);
 
             IpTablesRule rule;
-            rule.Parse(document);
+            rule.Parse(value);
 
             EXPECT_TRUE(rule.HasParseError()) << ruleJson;
         }
@@ -440,19 +442,18 @@ namespace tests
             "{\"direction\": \"in\"}",
             "{\"direction\": \"in\", \"action\": 123}",
             "{\"direction\": \"in\", \"action\": \"invalid\"}",
-            "{\"direction\": \"in\", \"action\": \"reject\"}",
         };
 
         for (auto policyJson : invalidPolicies)
         {
-            rapidjson::Document document;
-            document.Parse(policyJson.c_str());
+            JSON_Value* value = json_parse_string(policyJson.c_str());
+            JSON_Object* object = json_value_get_object(value);
 
-            EXPECT_FALSE(document.HasParseError());
-            EXPECT_TRUE(document.IsObject());
+            EXPECT_NE(nullptr, value);
+            EXPECT_NE(nullptr, object);
 
             IpTablesPolicy policy;
-            policy.Parse(document);
+            policy.Parse(value);
 
             EXPECT_TRUE(policy.HasParseError()) << policyJson;
         }

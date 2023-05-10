@@ -2,8 +2,8 @@
 # Licensed under the MIT License.
 
 project(tpmlib)
-add_library(tpmlib STATIC Tpm.cpp)
-target_link_libraries(tpmlib PRIVATE logging commonutils)
+add_library(tpmlib STATIC Tpm.c)
+target_link_libraries(tpmlib PRIVATE logging commonutils parsonlib)
 target_include_directories(tpmlib
     PUBLIC
         ${MODULES_INC_DIR}

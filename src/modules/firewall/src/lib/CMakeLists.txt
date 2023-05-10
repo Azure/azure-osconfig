@@ -6,7 +6,7 @@ project(firewalllib)
 add_library(firewalllib STATIC Firewall.cpp)
 set_property(TARGET firewalllib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_link_libraries(firewalllib PRIVATE logging commonutils)
+target_link_libraries(firewalllib logging commonutils parsonlib)
 target_include_directories(firewalllib
     PUBLIC
         ${MODULES_INC_DIR}

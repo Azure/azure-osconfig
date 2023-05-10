@@ -3,7 +3,8 @@
 
 project(hostname)
 
-add_library(hostname SHARED HostNameModule.cpp)
+add_library(hostname SHARED HostnameModule.c)
+
 target_link_libraries(hostname
     PRIVATE
         commonutils
@@ -11,13 +12,16 @@ target_link_libraries(hostname
     PUBLIC
         hostnamelib
 )
+
 target_include_directories(hostname
     PUBLIC
         ${MODULES_INC_DIR}
 )
+
 set_target_properties(hostname
     PROPERTIES
         PREFIX ""
         POSITION_INDEPENDENT_CODE ON
 )
+
 install(TARGETS hostname DESTINATION ${MODULES_INSTALL_DIR})
