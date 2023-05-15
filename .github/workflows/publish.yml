@@ -21,7 +21,7 @@ jobs:
       os: ${{ inputs.os }}
       arch: ${{ matrix.arch }}
       artifact: ${{ inputs.os }}
-      display-name: package ${{ inputs.os }}-${{ inputs.arch }}
+      display-name: package ${{ inputs.os }}-${{ matrix.arch }}
       release: true
 
   signing:

@@ -59,17 +59,29 @@ jobs:
           container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
 
+      - name: Set tweak
+        id: version
+        run: |
+          # Set the tweak version (YYMMDD + 2 digit run attempt)
+          now=$(date +'%Y%m%d')
+          number=$(printf '%02d' ${{ github.run_attempt }})
+          tweak="$(date +'%Y%m%d')$(printf '%02d' ${{ github.run_attempt }})"
+
+          echo date: $now
+          echo number: $number
+          echo tweak: $tweak
+
+          echo tweak=$tweak >> $GITHUB_OUTPUT
+
+      - run: mkdir build && cd build
+
       - name: Generate build
         uses: ./.github/actions/container-exec
         with:
           container: ${{ steps.container.outputs.id }}
+          working-directory: ${{ env.MOUNT }}/build
           cmd: |
-            # Set the tweak version (YYMMDD + 2 digit run number)
-            tweak=$(date +'%Y%m%d')
-            tweak="${tweak}$(printf '%02d' ${{ github.run_number }})"
-
-            mkdir build && cd build
-            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=$tweak -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=ON -G Ninja
+            cmake ../src -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DTWEAK_VERSION=${{ steps.version.outputs.tweak }} -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_MODULETEST=ON -DBUILD_SAMPLES=OFF -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build azure-osconfig
         uses: ./.github/actions/container-exec
