@@ -1279,18 +1279,18 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption2)
         "192.168.0.216: / mnt / HDD1 / media / freenas / nfs    defaults, proto = tcp, port = 2049    0 0\n";
 
     EXPECT_TRUE(CreateTestFile(m_path, originalFstab));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "nfs", "noexec", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "nfs", "noesuid", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, passFstab));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "nfs", "noexec", nullptr, nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "nfs", "noesuid", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, failFstab));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "nfs", "noexec", nullptr, nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "nfs", "noesuid", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 }
 
