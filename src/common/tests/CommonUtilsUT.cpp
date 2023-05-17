@@ -1276,7 +1276,7 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption2)
         "UUID=B06C-6E89  /boot/efi       vfat    umask=0077      0 1\n"
         "/dev/disk/cloud/azure_resource-part1    /mnt    auto    defaults,nofail,x-systemd.requires=cloud-init.service,_netdev,comment=cloudconfig       0       2\n"
         "/var/tmp.partition /media/ext1dev ext2 loop,rw 0 0\n"
-        "192.168.0.216: / mnt / HDD1 / media / freenas / nfs    defaults, proto = tcp, port = 2049    0 0\n";
+        "192.168.0.216:/mnt/HDD1    /media/freenas/    nfs    defaults,proto=tcp,port=2049    0 0\n";
 
     EXPECT_TRUE(CreateTestFile(m_path, originalFstab));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
