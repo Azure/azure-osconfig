@@ -471,17 +471,17 @@ static int AuditEnsureNoexecOptionOnDevShmPartition(void)
 
 static int AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_nodev, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_noexec, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, NULL, g_media, g_nosuid, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
