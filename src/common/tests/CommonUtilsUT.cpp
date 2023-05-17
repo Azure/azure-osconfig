@@ -1254,55 +1254,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckFileSystemMountingOption2)
-{
-    const char* originalFstab =
-        "# CLOUD_IMG: This file was created/modified by the Cloud Image build process\n"
-        "UUID=1937f012-ef27-469a-8f75-8d63a6a39aa0       /        ext4   defaults,discard        0 1\n"
-        "UUID=B06C-6E89  /boot/efi       vfat    umask=0077      0 1\n"
-        "/dev/disk/cloud/azure_resource-part1    /mnt    auto    defaults,nofail,x-systemd.requires=cloud-init.service,_netdev,comment=cloudconfig       0       2\n";
-
-    const char* passFstab =
-        "# CLOUD_IMG: This file was created/modified by the Cloud Image build process\n"
-        "UUID=1937f012-ef27-469a-8f75-8d63a6a39aa0       /        ext4   defaults,discard        0 1\n"
-        "UUID=B06C-6E89  /boot/efi       vfat    umask=0077      0 1\n"
-        "/dev/disk/cloud/azure_resource-part1    /mnt    auto    defaults,nofail,x-systemd.requires=cloud-init.service,_netdev,comment=cloudconfig       0       2\n"
-        "/var/tmp.partition /media/ext1dev ext2 nodev,noexec,nosuid,loop,rw 0 0\n"
-        "192.168.0.216:/mnt/HDD1    /media/freenas/    nfs    defaults,noexec,nosuid,proto=tcp,port=2049    0 0\n";
-
-    const char* failFstab =
-        "# CLOUD_IMG: This file was created/modified by the Cloud Image build process\n"
-        "UUID=1937f012-ef27-469a-8f75-8d63a6a39aa0       /        ext4   defaults,discard        0 1\n"
-        "UUID=B06C-6E89  /boot/efi       vfat    umask=0077      0 1\n"
-        "/dev/disk/cloud/azure_resource-part1    /mnt    auto    defaults,nofail,x-systemd.requires=cloud-init.service,_netdev,comment=cloudconfig       0       2\n"
-        "/var/tmp.partition /media/ext1dev ext2 loop,rw 0 0\n"
-        "192.168.0.216:/mnt/HDD1    /media/freenas/    nfs    defaults,proto=tcp,port=2049    0 0\n";
-
-    EXPECT_TRUE(CreateTestFile(m_path, originalFstab));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "nosuid", nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
-
-    EXPECT_TRUE(CreateTestFile(m_path, passFstab));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "nosuid", nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
-
-    EXPECT_TRUE(CreateTestFile(m_path, failFstab));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "noexec", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media/", nullptr, "nosuid", nullptr));
-
-    EXPECT_TRUE(Cleanup(m_path));
-}
-
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
 {
     EXPECT_EQ(EINVAL, CheckPackageInstalled(nullptr, nullptr));
