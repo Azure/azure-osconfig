@@ -1281,16 +1281,25 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption2)
     EXPECT_TRUE(CreateTestFile(m_path, originalFstab));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "nosuid", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, passFstab));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "nosuid", nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, failFstab));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "noexec", nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "nfs", "nosuid", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "noexec", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "/media/", "nosuid", nullptr));
+
     EXPECT_TRUE(Cleanup(m_path));
 }
 
