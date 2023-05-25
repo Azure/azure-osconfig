@@ -219,16 +219,16 @@ static int CheckIfUserHasPassword(SIMPLIFIED_USER* user, void* log)
                     case '2':
                         switch (shadowEntry->sp_pwdp[2])
                         {
-                        case 'a':
-                            user->passwordEncryption = blowfish;
-                            break;
+                            case 'a':
+                                user->passwordEncryption = blowfish;
+                                break;
 
-                        case 'y':
-                            user->passwordEncryption = eksBlowfish;
-                            break;
+                            case 'y':
+                                user->passwordEncryption = eksBlowfish;
+                                break;
 
-                        default:
-                            user->passwordEncryption = unknownBlowfish;
+                            default:
+                                user->passwordEncryption = unknownBlowfish;
                         }
                         break;
 
@@ -871,7 +871,7 @@ int CheckAllUsersHavePasswordsSet(void* log)
     return status;
 }
 
-int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
+int CheckRootIsOnlyUidZeroAccount(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -881,9 +881,9 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (strcmp(userList[i].username, g_root) && (0 == userList[i].userId))
+            if ((0 != strcmp(userList[i].username, g_root)) && (0 == userList[i].userId))
             {
-                OsConfigLogError(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: user '%s' (%u, %u) fails this check", 
+                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EACCES;
             }
@@ -894,7 +894,7 @@ int CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckNonRootAccountsHaveUniqueUidsGreaterThanZero: all users who are not root have UIDs greater than 0");
+        OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: all users who are not root have UIDs greater than 0");
     }
 
     return status;
@@ -960,36 +960,6 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
     }
 
     return status;
-}
-
-int CheckRootIsOnlyUidZeroAccount(void* log)
-{
-    SIMPLIFIED_GROUP* groupList = NULL;
-    unsigned int groupListSize = 0;
-    unsigned int i = 0;
-    int status = 0;
-
-    if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
-    {
-        for (i = 0; i < groupListSize; i++)
-        {
-            if (strcmp(groupList[i].groupName, g_root) && (0 == groupList[i].groupId))
-            {
-                OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: root has GID 0");
-                status = EACCES;
-            }
-        }
-    }
-
-    FreeGroupList(&groupList, groupListSize);
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "CheckRootIsOnlyUidZeroAccount: only the root group has GID 0");
-    }
-
-    return status;
-
 }
 
 int CheckAllUsersHomeDirectoriesExist(void* log)
