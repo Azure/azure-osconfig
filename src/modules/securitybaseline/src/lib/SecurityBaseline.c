@@ -614,7 +614,7 @@ static int AuditEnsureAllAccountsHavePasswords(void)
 
 static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
-    return CheckNonRootAccountsHaveUniqueUidsGreaterThanZero(SecurityBaselineGetLog());
+    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
@@ -639,7 +639,7 @@ static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 
 static int AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
-    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
+    return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? 0 : EACCES;
 }
 
 static int AuditEnsureAllUsersHomeDirectoriesExist(void)
