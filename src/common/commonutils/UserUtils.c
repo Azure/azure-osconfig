@@ -900,36 +900,21 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     return status;
 }
 
-static int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log)
+int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log)
 {
     int status = 0;
 
     if (FileExists(fileName) && CharacterFoundInFile(fileName, '+'))
     {
-        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in %s", fileName, fileName);
+        OsConfigLogError(log, "CheckNoLegacyPlusEntriesInFile(%s): there are + lines in file '%s'", fileName, fileName);
         status = ENOENT;
     }
     else
     {
-        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no + lines in %s", fileName, fileName);
+        OsConfigLogInfo(log, "CheckNoLegacyPlusEntriesInFile(%s): there are no + lines in file '%s'", fileName, fileName);
     }
 
     return status;
-}
-
-int CheckNoLegacyPlusEntriesInEtcPasswd(void* log)
-{
-    return CheckNoLegacyPlusEntriesInFile("etc/passwd", log);
-}
-
-int CheckNoLegacyPlusEntriesInEtcShadow(void* log)
-{
-    return CheckNoLegacyPlusEntriesInFile("etc/shadow", log);
-}
-
-int CheckNoLegacyPlusEntriesInEtcGroup(void* log)
-{
-    return CheckNoLegacyPlusEntriesInFile("etc/group", log);
 }
 
 int CheckDefaultRootAccountGroupIsGidZero(void* log)

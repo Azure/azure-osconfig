@@ -619,17 +619,17 @@ static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return CheckNoLegacyPlusEntriesInEtcPasswd(SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return CheckNoLegacyPlusEntriesInEtcShadow(SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return CheckNoLegacyPlusEntriesInEtcGroup(SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
