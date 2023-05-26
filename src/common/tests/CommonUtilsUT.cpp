@@ -1361,11 +1361,43 @@ TEST_F(CommonUtilsTest, CheckNoDuplicateUsersGroups)
     EXPECT_EQ(0, CheckNoDuplicateGroupsExist(nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckNoPlusEntries)
+TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
 {
-    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcPasswd(nullptr));
-    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcShadow(nullptr));
-    EXPECT_EQ(0, CheckNoLegacyPlusEntriesInEtcGroup(nullptr));
+    const char* testPath = "~plusentries";
+    
+    const char* goodTestFileContents[] = {
+        "hplip:*:18858:0:99999:7:::\nwhoopsie:*:18858:0:99999:7:::\ncolord:*:18858:0:99999:7:::\ngeoclue:*:18858:0:99999:7:::",
+        "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin",
+        "whoopsie:x:127:\ncolord:x:128:\ngeoclue:x:129:"
+    };
+
+    const char* badTestFileContents[] = {
+        "+:!:::::::\nhplip:*:18858:0:99999:7:::\nwhoopsie:*:18858:0:99999:7:::\ncolord:*:18858:0:99999:7:::\ngeoclue:*:18858:0:99999:7:::",
+        "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\n+:!:::::::\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin",
+        "whoopsie:x:127:\ncolord:x:128:\n+:!:::::::\ngeoclue:x:129:",
+        "hplip:*:18858:0:99999:7:::\nwhoopsie:*:18858:0:99999:7:::\ncolord:*:18858:0:99999:7:::\ngeoclue:*:18858:0:99999:7:::+",
+        "gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\nnobody:x:65+534:65534:nobody:/nonexistent:/usr/sbin/nologin",
+        "whoo+++psie:x:127:\ncolord:x:128:\ngeoclue:x:129:"
+    };
+
+    int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
+    int badTestFileContentsSize = ARRAY_SIZE(badTestFileContents);
+
+    int i = 0;
+
+    for (i = 0; i < goodTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(testPath, goodTestFileContents[i]));
+        EXPECT_EQ(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_TRUE(Cleanup(testPath));
+    }
+
+    for (i = 0; i < badTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(testPath, badTestFileContents[i]));
+        EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
+        EXPECT_TRUE(Cleanup(testPath));
+    }
 }
 
 TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
