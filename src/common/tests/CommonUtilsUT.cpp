@@ -1394,7 +1394,7 @@ TEST_F(CommonUtilsTest, CheckNoPlusEntriesInFile)
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
-        EXPECT_TRUE(CreateTestFile(testPath, goodTestFileContents[i]));
+        EXPECT_TRUE(CreateTestFile(testPath, badTestFileContents[i]));
         EXPECT_NE(0, CheckNoLegacyPlusEntriesInFile(testPath, nullptr));
         EXPECT_TRUE(Cleanup(testPath));
     }

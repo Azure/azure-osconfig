@@ -85,7 +85,6 @@ int CheckShadowGroupIsEmpty(void* log);
 int CheckRootGroupExists(void* log);
 int CheckRootIsOnlyUidZeroAccount(void* log);
 int CheckAllUsersHavePasswordsSet(void* log);
-int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log);
 int CheckDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
