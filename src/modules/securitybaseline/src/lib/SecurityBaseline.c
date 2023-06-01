@@ -227,6 +227,134 @@ static const char* g_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePr
 static const char* g_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
 static const char* g_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
 static const char* g_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// 125 remediation checks
+static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
+static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
+static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
+static const char* g_remediateEnsureNodevOptionOnTmpPartitionObject = "remediateEnsureNodevOptionOnTmpPartition";
+static const char* g_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remediateEnsureNodevOptionOnVarTmpPartition";
+static const char* g_remediateEnsureNosuidOptionOnTmpPartitionObject = "remediateEnsureNosuidOptionOnTmpPartition";
+static const char* g_remediateEnsureNosuidOptionOnVarTmpPartitionObject = "remediateEnsureNosuidOptionOnVarTmpPartition";
+static const char* g_remediateEnsureNoexecOptionOnVarTmpPartitionObject = "remediateEnsureNoexecOptionOnVarTmpPartition";
+static const char* g_remediateEnsureNoexecOptionOnDevShmPartitionObject = "remediateEnsureNoexecOptionOnDevShmPartition";
+static const char* g_remediateEnsureNodevOptionEnabledForAllRemovableMediaObject = "remediateEnsureNodevOptionEnabledForAllRemovableMedia";
+static const char* g_remediateEnsureNoexecOptionEnabledForAllRemovableMediaObject = "remediateEnsureNoexecOptionEnabledForAllRemovableMedia";
+static const char* g_remediateEnsureNosuidOptionEnabledForAllRemovableMediaObject = "remediateEnsureNosuidOptionEnabledForAllRemovableMedia";
+static const char* g_remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+static const char* g_remediateEnsureAllEtcPasswdGroupsExistInEtcGroupObject = "remediateEnsureAllEtcPasswdGroupsExistInEtcGroup";
+static const char* g_remediateEnsureNoDuplicateUidsExistObject = "remediateEnsureNoDuplicateUidsExist";
+static const char* g_remediateEnsureNoDuplicateGidsExistObject = "remediateEnsureNoDuplicateGidsExist";
+static const char* g_remediateEnsureNoDuplicateUserNamesExistObject = "remediateEnsureNoDuplicateUserNamesExist";
+static const char* g_remediateEnsureNoDuplicateGroupsExistObject = "remediateEnsureNoDuplicateGroupsExist";
+static const char* g_remediateEnsureShadowGroupIsEmptyObject = "remediateEnsureShadowGroupIsEmpty";
+static const char* g_remediateEnsureRootGroupExistsObject = "remediateEnsureRootGroupExists";
+static const char* g_remediateEnsureAllAccountsHavePasswordsObject = "remediateEnsureAllAccountsHavePasswords";
+static const char* g_remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject = "remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+static const char* g_remediateEnsureNoLegacyPlusEntriesInEtcPasswdObject = "remediateEnsureNoLegacyPlusEntriesInEtcPasswd";
+static const char* g_remediateEnsureNoLegacyPlusEntriesInEtcShadowObject = "remediateEnsureNoLegacyPlusEntriesInEtcShadow";
+static const char* g_remediateEnsureNoLegacyPlusEntriesInEtcGroupObject = "remediateEnsureNoLegacyPlusEntriesInEtcGroup";
+static const char* g_remediateEnsureDefaultRootAccountGroupIsGidZeroObject = "remediateEnsureDefaultRootAccountGroupIsGidZero";
+static const char* g_remediateEnsureRootIsOnlyUidZeroAccountObject = "remediateEnsureRootIsOnlyUidZeroAccount";
+static const char* g_remediateEnsureAllUsersHomeDirectoriesExistObject = "remediateEnsureAllUsersHomeDirectoriesExist";
+static const char* g_remediateEnsureUsersOwnTheirHomeDirectoriesObject = "remediateEnsureUsersOwnTheirHomeDirectories";
+static const char* g_remediateEnsureRestrictedUserHomeDirectoriesObject = "remediateEnsureRestrictedUserHomeDirectories";
+static const char* g_remediateEnsurePasswordHashingAlgorithmObject = "remediateEnsurePasswordHashingAlgorithm";
+static const char* g_remediateEnsureMinDaysBetweenPasswordChangesObject = "remediateEnsureMinDaysBetweenPasswordChanges";
+static const char* g_remediateEnsureInactivePasswordLockPeriodObject = "remediateEnsureInactivePasswordLockPeriod";
+static const char* g_remediateMaxDaysBetweenPasswordChangesObject = "remediateEnsureMaxDaysBetweenPasswordChanges";
+static const char* g_remediateEnsurePasswordExpirationObject = "remediateEnsurePasswordExpiration";
+static const char* g_remediateEnsurePasswordExpirationWarningObject = "remediateEnsurePasswordExpirationWarning";
+static const char* g_remediateEnsureSystemAccountsAreNonLoginObject = "remediateEnsureSystemAccountsAreNonLogin";
+static const char* g_remediateEnsureAuthenticationRequiredForSingleUserModeObject = "remediateEnsureAuthenticationRequiredForSingleUserMode";
+static const char* g_remediateEnsureDotDoesNotAppearInRootsPathObject = "remediateEnsureDotDoesNotAppearInRootsPath";
+static const char* g_remediateEnsureRemoteLoginWarningBannerIsConfiguredObject = "remediateEnsureRemoteLoginWarningBannerIsConfigured";
+static const char* g_remediateEnsureLocalLoginWarningBannerIsConfiguredObject = "remediateEnsureLocalLoginWarningBannerIsConfigured";
+static const char* g_remediateEnsureSuRestrictedToRootGroupObject = "remediateEnsureSuRestrictedToRootGroup";
+static const char* g_remediateEnsureDefaultUmaskForAllUsersObject = "remediateEnsureDefaultUmaskForAllUsers";
+static const char* g_remediateEnsureAutomountingDisabledObject = "remediateEnsureAutomountingDisabled";
+static const char* g_remediateEnsureKernelCompiledFromApprovedSourcesObject = "remediateEnsureKernelCompiledFromApprovedSources";
+static const char* g_remediateEnsureDefaultDenyFirewallPolicyIsSetObject = "remediateEnsureDefaultDenyFirewallPolicyIsSet";
+static const char* g_remediateEnsurePacketRedirectSendingIsDisabledObject = "remediateEnsurePacketRedirectSendingIsDisabled";
+static const char* g_remediateEnsureIcmpRedirectsIsDisabledObject = "remediateEnsureIcmpRedirectsIsDisabled";
+static const char* g_remediateEnsureSourceRoutedPacketsIsDisabledObject = "remediateEnsureSourceRoutedPacketsIsDisabled";
+static const char* g_remediateEnsureAcceptingSourceRoutedPacketsIsDisabledObject = "remediateEnsureAcceptingSourceRoutedPacketsIsDisabled";
+static const char* g_remediateEnsureIgnoringBogusIcmpBroadcastResponsesObject = "remediateEnsureIgnoringBogusIcmpBroadcastResponses";
+static const char* g_remediateEnsureIgnoringIcmpEchoPingsToMulticastObject = "remediateEnsureIgnoringIcmpEchoPingsToMulticast";
+static const char* g_remediateEnsureMartianPacketLoggingIsEnabledObject = "remediateEnsureMartianPacketLoggingIsEnabled";
+static const char* g_remediateEnsureReversePathSourceValidationIsEnabledObject = "remediateEnsureReversePathSourceValidationIsEnabled";
+static const char* g_remediateEnsureTcpSynCookiesAreEnabledObject = "remediateEnsureTcpSynCookiesAreEnabled";
+static const char* g_remediateEnsureSystemNotActingAsNetworkSnifferObject = "remediateEnsureSystemNotActingAsNetworkSniffer";
+static const char* g_remediateEnsureAllWirelessInterfacesAreDisabledObject = "remediateEnsureAllWirelessInterfacesAreDisabled";
+static const char* g_remediateEnsureIpv6ProtocolIsEnabledObject = "remediateEnsureIpv6ProtocolIsEnabled";
+static const char* g_remediateEnsureDccpIsDisabledObject = "remediateEnsureDccpIsDisabled";
+static const char* g_remediateEnsureSctpIsDisabledObject = "remediateEnsureSctpIsDisabled";
+static const char* g_remediateEnsureDisabledSupportForRdsObject = "remediateEnsureDisabledSupportForRds";
+static const char* g_remediateEnsureTipcIsDisabledObject = "remediateEnsureTipcIsDisabled";
+static const char* g_remediateEnsureZeroconfNetworkingIsDisabledObject = "remediateEnsureZeroconfNetworkingIsDisabled";
+static const char* g_remediateEnsurePermissionsOnBootloaderConfigObject = "remediateEnsurePermissionsOnBootloaderConfig";
+static const char* g_remediateEnsurePasswordReuseIsLimitedObject = "remediateEnsurePasswordReuseIsLimited";
+static const char* g_remediateEnsureMountingOfUsbStorageDevicesIsDisabledObject = "remediateEnsureMountingOfUsbStorageDevicesIsDisabled";
+static const char* g_remediateEnsureCoreDumpsAreRestrictedObject = "remediateEnsureCoreDumpsAreRestricted";
+static const char* g_remediateEnsurePasswordCreationRequirementsObject = "remediateEnsurePasswordCreationRequirements";
+static const char* g_remediateEnsureLockoutForFailedPasswordAttemptsObject = "remediateEnsureLockoutForFailedPasswordAttempts";
+static const char* g_remediateEnsureDisabledInstallationOfCramfsFileSystemObject = "remediateEnsureDisabledInstallationOfCramfsFileSystem";
+static const char* g_remediateEnsureDisabledInstallationOfFreevxfsFileSystemObject = "remediateEnsureDisabledInstallationOfFreevxfsFileSystem";
+static const char* g_remediateEnsureDisabledInstallationOfHfsFileSystemObject = "remediateEnsureDisabledInstallationOfHfsFileSystem";
+static const char* g_remediateEnsureDisabledInstallationOfHfsplusFileSystemObject = "remediateEnsureDisabledInstallationOfHfsplusFileSystem";
+static const char* g_remediateEnsureDisabledInstallationOfJffs2FileSystemObject = "remediateEnsureDisabledInstallationOfJffs2FileSystem";
+static const char* g_remediateEnsureVirtualMemoryRandomizationIsEnabledObject = "remediateEnsureVirtualMemoryRandomizationIsEnabled";
+static const char* g_remediateEnsureAllBootloadersHavePasswordProtectionEnabledObject = "remediateEnsureAllBootloadersHavePasswordProtectionEnabled";
+static const char* g_remediateEnsureLoggingIsConfiguredObject = "remediateEnsureLoggingIsConfigured";
+static const char* g_remediateEnsureSyslogPackageIsInstalledObject = "remediateEnsureSyslogPackageIsInstalled";
+static const char* g_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
+static const char* g_remediateEnsureALoggingServiceIsSnabledObject = "remediateEnsureALoggingServiceIsSnabled";
+static const char* g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
+static const char* g_remediateEnsureLoggerConfigurationFilesAreRestrictedObject = "remediateEnsureLoggerConfigurationFilesAreRestricted";
+static const char* g_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+static const char* g_remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject = "remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+static const char* g_remediateEnsureRsyslogNotAcceptingRemoteMessagesObject = "remediateEnsureRsyslogNotAcceptingRemoteMessages";
+static const char* g_remediateEnsureSyslogRotaterServiceIsEnabledObject = "remediateEnsureSyslogRotaterServiceIsEnabled";
+static const char* g_remediateEnsureTelnetServiceIsDisabledObject = "remediateEnsureTelnetServiceIsDisabled";
+static const char* g_remediateEnsureRcprshServiceIsDisabledObject = "remediateEnsureRcprshServiceIsDisabled";
+static const char* g_remediateEnsureTftpServiceisDisabledObject = "remediateEnsureTftpServiceisDisabled";
+static const char* g_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
+static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
+static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
+static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
+static const char* g_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
+static const char* g_remediateEnsureSshAccessIsLimitedObject = "remediateEnsureSshAccessIsLimited";
+static const char* g_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject = "remediateEnsureSshRhostsRsaAuthenticationIsDisabled";
+static const char* g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
+static const char* g_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
+static const char* g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
+static const char* g_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject = "remediateEnsureSshIdleTimeoutIntervalIsConfigured";
+static const char* g_remediateEnsureSshLoginGraceTimeIsSetObject = "remediateEnsureSshLoginGraceTimeIsSet";
+static const char* g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
+static const char* g_remediateEnsureSshWarningBannerIsEnabledObject = "remediateEnsureSshWarningBannerIsEnabled";
+static const char* g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
+static const char* g_remediateEnsureAppropriateCiphersForSshObject = "remediateEnsureAppropriateCiphersForSsh";
+static const char* g_remediateEnsureAvahiDaemonServiceIsDisabledObject = "remediateEnsureAvahiDaemonServiceIsDisabled";
+static const char* g_remediateEnsureCupsServiceisDisabledObject = "remediateEnsureCupsServiceisDisabled";
+static const char* g_remediateEnsurePostfixPackageIsUninstalledObject = "remediateEnsurePostfixPackageIsUninstalled";
+static const char* g_remediateEnsurePostfixNetworkListeningIsDisabledObject = "remediateEnsurePostfixNetworkListeningIsDisabled";
+static const char* g_remediateEnsureRpcgssdServiceIsDisabledObject = "remediateEnsureRpcgssdServiceIsDisabled";
+static const char* g_remediateEnsureRpcidmapdServiceIsDisabledObject = "remediateEnsureRpcidmapdServiceIsDisabled";
+static const char* g_remediateEnsurePortmapServiceIsDisabledObject = "remediateEnsurePortmapServiceIsDisabled";
+static const char* g_remediateEnsureNetworkFileSystemServiceIsDisabledObject = "remediateEnsureNetworkFileSystemServiceIsDisabled";
+static const char* g_remediateEnsureRpcsvcgssdServiceIsDisabledObject = "remediateEnsureRpcsvcgssdServiceIsDisabled";
+static const char* g_remediateEnsureSnmpServerIsDisabledObject = "remediateEnsureSnmpServerIsDisabled";
+static const char* g_remediateEnsureRsynServiceIsDisabledObject = "remediateEnsureRsynServiceIsDisabled";
+static const char* g_remediateEnsureNisServerIsDisabledObject = "remediateEnsureNisServerIsDisabled";
+static const char* g_remediateEnsureRshClientNotInstalledObject = "remediateEnsureRshClientNotInstalled";
+static const char* g_remediateEnsureSmbWithSambaIsDisabledObject = "remediateEnsureSmbWithSambaIsDisabled";
+static const char* g_remediateEnsureUsersDotFilesArentGroupOrWorldWritableObject = "remediateEnsureUsersDotFilesArentGroupOrWorldWritable";
+static const char* g_remediateEnsureNoUsersHaveDotForwardFilesObject = "remediateEnsureNoUsersHaveDotForwardFiles";
+static const char* g_remediateEnsureNoUsersHaveDotNetrcFilesObject = "remediateEnsureNoUsersHaveDotNetrcFiles";
+static const char* g_remediateEnsureNoUsersHaveDotRhostsFilesObject = "remediateEnsureNoUsersHaveDotRhostsFiles";
+static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
+static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -1646,6 +1774,633 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
         EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+static int RemediateEnsureKernelSupportForCpuNx(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnHomePartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnTmpPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNosuidOptionOnTmpPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNosuidOptionOnVarTmpPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoexecOptionOnVarTmpPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoexecOptionOnDevShmPartition(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllTelnetdPackagesUninstalled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoDuplicateUidsExist(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoDuplicateGidsExist(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoDuplicateUserNamesExist(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoDuplicateGroupsExist(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureShadowGroupIsEmpty(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRootGroupExists(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllAccountsHavePasswords(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDefaultRootAccountGroupIsGidZero(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRootIsOnlyUidZeroAccount(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllUsersHomeDirectoriesExist(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureUsersOwnTheirHomeDirectories(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRestrictedUserHomeDirectories(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePasswordHashingAlgorithm(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureInactivePasswordLockPeriod(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePasswordExpiration(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePasswordExpirationWarning(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSystemAccountsAreNonLogin(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAuthenticationRequiredForSingleUserMode(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDotDoesNotAppearInRootsPath(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureLocalLoginWarningBannerIsConfigured(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSuRestrictedToRootGroup(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDefaultUmaskForAllUsers(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAutomountingDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureKernelCompiledFromApprovedSources(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePacketRedirectSendingIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureIcmpRedirectsIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSourceRoutedPacketsIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureMartianPacketLoggingIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureReversePathSourceValidationIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureTcpSynCookiesAreEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSystemNotActingAsNetworkSniffer(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllWirelessInterfacesAreDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureIpv6ProtocolIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDccpIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSctpIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledSupportForRds(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureTipcIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureZeroconfNetworkingIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePermissionsOnBootloaderConfig(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePasswordReuseIsLimited(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureCoreDumpsAreRestricted(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePasswordCreationRequirements(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureLockoutForFailedPasswordAttempts(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledInstallationOfHfsFileSystem(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureLoggingIsConfigured(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSyslogPackageIsInstalled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureALoggingServiceIsSnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureLoggerConfigurationFilesAreRestricted(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSyslogRotaterServiceIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureTelnetServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRcprshServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureTftpServiceisDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshBestPracticeProtocol(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshLogLevelIsSet(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshMaxAuthTriesIsSet(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshAccessIsLimited(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshPermitRootLoginIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshLoginGraceTimeIsSet(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSshWarningBannerIsEnabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAppropriateCiphersForSsh(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureCupsServiceisDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePostfixPackageIsUninstalled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePostfixNetworkListeningIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRpcgssdServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRpcidmapdServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsurePortmapServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSnmpServerIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRsynServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNisServerIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRshClientNotInstalled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureSmbWithSambaIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoUsersHaveDotForwardFiles(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoUsersHaveDotNetrcFiles(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNoUsersHaveDotRhostsFiles(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureRloginServiceIsDisabled(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
+{
+    return ENOENT; //TODO: add remediation respecting all existing patterns
+}
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 AuditRemediate g_remediateChecks[] =
 {
     &RemediateEnsurePermissionsOnEtcIssue,
@@ -1686,7 +2441,134 @@ AuditRemediate g_remediateChecks[] =
     &RemediateEnsurePrelinkIsDisabled,
     &RemediateEnsureTalkClientIsNotInstalled,
     &RemediateEnsureCronServiceIsEnabled,
-    &RemediateEnsureAuditdServiceIsRunning
+    &RemediateEnsureAuditdServiceIsRunning,
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    &RemediateEnsureKernelSupportForCpuNx,
+    &RemediateEnsureNodevOptionOnHomePartition,
+    &RemediateEnsureNodevOptionOnTmpPartition,
+    &RemediateEnsureNodevOptionOnVarTmpPartition,
+    &RemediateEnsureNosuidOptionOnTmpPartition,
+    &RemediateEnsureNosuidOptionOnVarTmpPartition,
+    &RemediateEnsureNoexecOptionOnVarTmpPartition,
+    &RemediateEnsureNoexecOptionOnDevShmPartition,
+    &RemediateEnsureNodevOptionEnabledForAllRemovableMedia,
+    &RemediateEnsureNoexecOptionEnabledForAllRemovableMedia,
+    &RemediateEnsureNosuidOptionEnabledForAllRemovableMedia,
+    &RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts,
+    &RemediateEnsureAllTelnetdPackagesUninstalled,
+    &RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup,
+    &RemediateEnsureNoDuplicateUidsExist,
+    &RemediateEnsureNoDuplicateGidsExist,
+    &RemediateEnsureNoDuplicateUserNamesExist,
+    &RemediateEnsureNoDuplicateGroupsExist,
+    &RemediateEnsureShadowGroupIsEmpty,
+    &RemediateEnsureRootGroupExists,
+    &RemediateEnsureAllAccountsHavePasswords,
+    &RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero,
+    &RemediateEnsureNoLegacyPlusEntriesInEtcPasswd,
+    &RemediateEnsureNoLegacyPlusEntriesInEtcShadow,
+    &RemediateEnsureNoLegacyPlusEntriesInEtcGroup,
+    &RemediateEnsureDefaultRootAccountGroupIsGidZero,
+    &RemediateEnsureRootIsOnlyUidZeroAccount,
+    &RemediateEnsureAllUsersHomeDirectoriesExist,
+    &RemediateEnsureUsersOwnTheirHomeDirectories,
+    &RemediateEnsureRestrictedUserHomeDirectories,
+    &RemediateEnsurePasswordHashingAlgorithm,
+    &RemediateEnsureMinDaysBetweenPasswordChanges,
+    &RemediateEnsureInactivePasswordLockPeriod,
+    &RemediateEnsureMaxDaysBetweenPasswordChanges,
+    &RemediateEnsurePasswordExpiration,
+    &RemediateEnsurePasswordExpirationWarning,
+    &RemediateEnsureSystemAccountsAreNonLogin,
+    &RemediateEnsureAuthenticationRequiredForSingleUserMode,
+    &RemediateEnsureDotDoesNotAppearInRootsPath,
+    &RemediateEnsureRemoteLoginWarningBannerIsConfigured,
+    &RemediateEnsureLocalLoginWarningBannerIsConfigured,
+    &RemediateEnsureSuRestrictedToRootGroup,
+    &RemediateEnsureDefaultUmaskForAllUsers,
+    &RemediateEnsureAutomountingDisabled,
+    &RemediateEnsureKernelCompiledFromApprovedSources,
+    &RemediateEnsureDefaultDenyFirewallPolicyIsSet,
+    &RemediateEnsurePacketRedirectSendingIsDisabled,
+    &RemediateEnsureIcmpRedirectsIsDisabled,
+    &RemediateEnsureSourceRoutedPacketsIsDisabled,
+    &RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled,
+    &RemediateEnsureIgnoringBogusIcmpBroadcastResponses,
+    &RemediateEnsureIgnoringIcmpEchoPingsToMulticast,
+    &RemediateEnsureMartianPacketLoggingIsEnabled,
+    &RemediateEnsureReversePathSourceValidationIsEnabled,
+    &RemediateEnsureTcpSynCookiesAreEnabled,
+    &RemediateEnsureSystemNotActingAsNetworkSniffer,
+    &RemediateEnsureAllWirelessInterfacesAreDisabled,
+    &RemediateEnsureIpv6ProtocolIsEnabled,
+    &RemediateEnsureDccpIsDisabled,
+    &RemediateEnsureSctpIsDisabled,
+    &RemediateEnsureDisabledSupportForRds,
+    &RemediateEnsureTipcIsDisabled,
+    &RemediateEnsureZeroconfNetworkingIsDisabled,
+    &RemediateEnsurePermissionsOnBootloaderConfig,
+    &RemediateEnsurePasswordReuseIsLimited,
+    &RemediateEnsureMountingOfUsbStorageDevicesIsDisabled,
+    &RemediateEnsureCoreDumpsAreRestricted,
+    &RemediateEnsurePasswordCreationRequirements,
+    &RemediateEnsureLockoutForFailedPasswordAttempts,
+    &RemediateEnsureDisabledInstallationOfCramfsFileSystem,
+    &RemediateEnsureDisabledInstallationOfFreevxfsFileSystem,
+    &RemediateEnsureDisabledInstallationOfHfsFileSystem,
+    &RemediateEnsureDisabledInstallationOfHfsplusFileSystem,
+    &RemediateEnsureDisabledInstallationOfJffs2FileSystem,
+    &RemediateEnsureVirtualMemoryRandomizationIsEnabled,
+    &RemediateEnsureAllBootloadersHavePasswordProtectionEnabled,
+    &RemediateEnsureLoggingIsConfigured,
+    &RemediateEnsureSyslogPackageIsInstalled,
+    &RemediateEnsureSystemdJournaldServicePersistsLogMessages,
+    &RemediateEnsureALoggingServiceIsSnabled,
+    &RemediateEnsureFilePermissionsForAllRsyslogLogFiles,
+    &RemediateEnsureLoggerConfigurationFilesAreRestricted,
+    &RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
+    &RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser,
+    &RemediateEnsureRsyslogNotAcceptingRemoteMessages,
+    &RemediateEnsureSyslogRotaterServiceIsEnabled,
+    &RemediateEnsureTelnetServiceIsDisabled,
+    &RemediateEnsureRcprshServiceIsDisabled,
+    &RemediateEnsureTftpServiceisDisabled,
+    &RemediateEnsureAtCronIsRestrictedToAuthorizedUsers,
+    &RemediateEnsureSshBestPracticeProtocol,
+    &RemediateEnsureSshBestPracticeIgnoreRhosts,
+    &RemediateEnsureSshLogLevelIsSet,
+    &RemediateEnsureSshMaxAuthTriesIsSet,
+    &RemediateEnsureSshAccessIsLimited,
+    &RemediateEnsureSshRhostsRsaAuthenticationIsDisabled,
+    &RemediateEnsureSshHostbasedAuthenticationIsDisabled,
+    &RemediateEnsureSshPermitRootLoginIsDisabled,
+    &RemediateEnsureSshPermitEmptyPasswordsIsDisabled,
+    &RemediateEnsureSshIdleTimeoutIntervalIsConfigured,
+    &RemediateEnsureSshLoginGraceTimeIsSet,
+    &RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed,
+    &RemediateEnsureSshWarningBannerIsEnabled,
+    &RemediateEnsureUsersCannotSetSshEnvironmentOptions,
+    &RemediateEnsureAppropriateCiphersForSsh,
+    &RemediateEnsureAvahiDaemonServiceIsDisabled,
+    &RemediateEnsureCupsServiceisDisabled,
+    &RemediateEnsurePostfixPackageIsUninstalled,
+    &RemediateEnsurePostfixNetworkListeningIsDisabled,
+    &RemediateEnsureRpcgssdServiceIsDisabled,
+    &RemediateEnsureRpcidmapdServiceIsDisabled,
+    &RemediateEnsurePortmapServiceIsDisabled,
+    &RemediateEnsureNetworkFileSystemServiceIsDisabled,
+    &RemediateEnsureRpcsvcgssdServiceIsDisabled,
+    &RemediateEnsureSnmpServerIsDisabled,
+    &RemediateEnsureRsynServiceIsDisabled,
+    &RemediateEnsureNisServerIsDisabled,
+    &RemediateEnsureRshClientNotInstalled,
+    &RemediateEnsureSmbWithSambaIsDisabled,
+    &RemediateEnsureUsersDotFilesArentGroupOrWorldWritable,
+    &RemediateEnsureNoUsersHaveDotForwardFiles,
+    &RemediateEnsureNoUsersHaveDotNetrcFiles,
+    &RemediateEnsureNoUsersHaveDotRhostsFiles,
+    &RemediateEnsureRloginServiceIsDisabled,
+    &RemediateEnsureUnnecessaryAccountsAreRemoved
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 };
 
 int RemediateSecurityBaseline(void)
@@ -2705,6 +3587,512 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureAuditdServiceIsRunning();
         }
+        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        else if (0 == strcmp(objectName, g_remediateEnsureKernelSupportForCpuNxObject))
+        {
+            status = RemediateEnsureKernelSupportForCpuNx();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnHomePartitionObject))
+        {
+            status = RemediateEnsureNodevOptionOnHomePartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnTmpPartitionObject))
+        {
+            status = RemediateEnsureNodevOptionOnTmpPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionOnVarTmpPartitionObject))
+        {
+            status = RemediateEnsureNodevOptionOnVarTmpPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionOnTmpPartitionObject))
+        {
+            status = RemediateEnsureNosuidOptionOnTmpPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionOnVarTmpPartitionObject))
+        {
+            status = RemediateEnsureNosuidOptionOnVarTmpPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionOnVarTmpPartitionObject))
+        {
+            status = RemediateEnsureNoexecOptionOnVarTmpPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionOnDevShmPartitionObject))
+        {
+            status = RemediateEnsureNoexecOptionOnDevShmPartition();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNodevOptionEnabledForAllRemovableMediaObject))
+        {
+            status = RemediateEnsureNodevOptionEnabledForAllRemovableMedia();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoexecOptionEnabledForAllRemovableMediaObject))
+        {
+            status = RemediateEnsureNoexecOptionEnabledForAllRemovableMedia();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNosuidOptionEnabledForAllRemovableMediaObject))
+        {
+            status = RemediateEnsureNosuidOptionEnabledForAllRemovableMedia();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
+        {
+            status = RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllTelnetdPackagesUninstalledObject))
+        {
+            status = RemediateEnsureAllTelnetdPackagesUninstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
+        {
+            status = RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateUidsExistObject))
+        {
+            status = RemediateEnsureNoDuplicateUidsExist();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateGidsExistObject))
+        {
+            status = RemediateEnsureNoDuplicateGidsExist();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateUserNamesExistObject))
+        {
+            status = RemediateEnsureNoDuplicateUserNamesExist();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoDuplicateGroupsExistObject))
+        {
+            status = RemediateEnsureNoDuplicateGroupsExist();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureShadowGroupIsEmptyObject))
+        {
+            status = RemediateEnsureShadowGroupIsEmpty();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRootGroupExistsObject))
+        {
+            status = RemediateEnsureRootGroupExists();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllAccountsHavePasswordsObject))
+        {
+            status = RemediateEnsureAllAccountsHavePasswords();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
+        {
+            status = RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcPasswdObject))
+        {
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcPasswd();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcShadowObject))
+        {
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcShadow();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoLegacyPlusEntriesInEtcGroupObject))
+        {
+            status = RemediateEnsureNoLegacyPlusEntriesInEtcGroup();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDefaultRootAccountGroupIsGidZeroObject))
+        {
+            status = RemediateEnsureDefaultRootAccountGroupIsGidZero();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRootIsOnlyUidZeroAccountObject))
+        {
+            status = RemediateEnsureRootIsOnlyUidZeroAccount();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllUsersHomeDirectoriesExistObject))
+        {
+            status = RemediateEnsureAllUsersHomeDirectoriesExist();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureUsersOwnTheirHomeDirectoriesObject))
+        {
+            status = RemediateEnsureUsersOwnTheirHomeDirectories();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRestrictedUserHomeDirectoriesObject))
+        {
+            status = RemediateEnsureRestrictedUserHomeDirectories();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePasswordHashingAlgorithmObject))
+        {
+            status = RemediateEnsurePasswordHashingAlgorithm();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureMinDaysBetweenPasswordChangesObject))
+        {
+            status = RemediateEnsureMinDaysBetweenPasswordChanges();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureInactivePasswordLockPeriodObject))
+        {
+            status = RemediateEnsureInactivePasswordLockPeriod();
+        }
+        else if (0 == strcmp(objectName, g_remediateMaxDaysBetweenPasswordChangesObject))
+        {
+            status = RemediateEnsureMaxDaysBetweenPasswordChanges();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePasswordExpirationObject))
+        {
+            status = RemediateEnsurePasswordExpiration();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePasswordExpirationWarningObject))
+        {
+            status = RemediateEnsurePasswordExpirationWarning();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSystemAccountsAreNonLoginObject))
+        {
+            status = RemediateEnsureSystemAccountsAreNonLogin();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAuthenticationRequiredForSingleUserModeObject))
+        {
+            status = RemediateEnsureAuthenticationRequiredForSingleUserMode();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDotDoesNotAppearInRootsPathObject))
+        {
+            status = RemediateEnsureDotDoesNotAppearInRootsPath();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRemoteLoginWarningBannerIsConfiguredObject))
+        {
+            status = RemediateEnsureRemoteLoginWarningBannerIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureLocalLoginWarningBannerIsConfiguredObject))
+        {
+            status = RemediateEnsureLocalLoginWarningBannerIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAuditdServiceIsRunningObject))
+        {
+            status = RemediateEnsureAuditdServiceIsRunning();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSuRestrictedToRootGroupObject))
+        {
+            status = RemediateEnsureSuRestrictedToRootGroup();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDefaultUmaskForAllUsersObject))
+        {
+            status = RemediateEnsureDefaultUmaskForAllUsers();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAutomountingDisabledObject))
+        {
+            status = RemediateEnsureAutomountingDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureKernelCompiledFromApprovedSourcesObject))
+        {
+            status = RemediateEnsureKernelCompiledFromApprovedSources();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDefaultDenyFirewallPolicyIsSetObject))
+        {
+            status = RemediateEnsureDefaultDenyFirewallPolicyIsSet();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePacketRedirectSendingIsDisabledObject))
+        {
+            status = RemediateEnsurePacketRedirectSendingIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIcmpRedirectsIsDisabledObject))
+        {
+            status = RemediateEnsureIcmpRedirectsIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSourceRoutedPacketsIsDisabledObject))
+        {
+            status = RemediateEnsureSourceRoutedPacketsIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
+        {
+            status = RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIgnoringBogusIcmpBroadcastResponsesObject))
+        {
+            status = RemediateEnsureIgnoringBogusIcmpBroadcastResponses();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIgnoringIcmpEchoPingsToMulticastObject))
+        {
+            status = RemediateEnsureIgnoringIcmpEchoPingsToMulticast();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureMartianPacketLoggingIsEnabledObject))
+        {
+            status = RemediateEnsureMartianPacketLoggingIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureReversePathSourceValidationIsEnabledObject))
+        {
+            status = RemediateEnsureReversePathSourceValidationIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTcpSynCookiesAreEnabledObject))
+        {
+            status = RemediateEnsureTcpSynCookiesAreEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSystemNotActingAsNetworkSnifferObject))
+        {
+            status = RemediateEnsureSystemNotActingAsNetworkSniffer();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllWirelessInterfacesAreDisabledObject))
+        {
+            status = RemediateEnsureAllWirelessInterfacesAreDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureIpv6ProtocolIsEnabledObject))
+        {
+            status = RemediateEnsureIpv6ProtocolIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDccpIsDisabledObject))
+        {
+            status = RemediateEnsureDccpIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSctpIsDisabledObject))
+        {
+            status = RemediateEnsureSctpIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledSupportForRdsObject))
+        {
+            status = RemediateEnsureDisabledSupportForRds();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTipcIsDisabledObject))
+        {
+            status = RemediateEnsureTipcIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureZeroconfNetworkingIsDisabledObject))
+        {
+            status = RemediateEnsureZeroconfNetworkingIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePermissionsOnBootloaderConfigObject))
+        {
+            status = RemediateEnsurePermissionsOnBootloaderConfig();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePasswordReuseIsLimitedObject))
+        {
+            status = RemediateEnsurePasswordReuseIsLimited();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureMountingOfUsbStorageDevicesIsDisabledObject))
+        {
+            status = RemediateEnsureMountingOfUsbStorageDevicesIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureCoreDumpsAreRestrictedObject))
+        {
+            status = RemediateEnsureCoreDumpsAreRestricted();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePasswordCreationRequirementsObject))
+        {
+            status = RemediateEnsurePasswordCreationRequirements();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureLockoutForFailedPasswordAttemptsObject))
+        {
+            status = RemediateEnsureLockoutForFailedPasswordAttempts();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfCramfsFileSystemObject))
+        {
+            status = RemediateEnsureDisabledInstallationOfCramfsFileSystem();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfFreevxfsFileSystemObject))
+        {
+            status = RemediateEnsureDisabledInstallationOfFreevxfsFileSystem();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfHfsFileSystemObject))
+        {
+            status = RemediateEnsureDisabledInstallationOfHfsFileSystem();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfHfsplusFileSystemObject))
+        {
+            status = RemediateEnsureDisabledInstallationOfHfsplusFileSystem();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDisabledInstallationOfJffs2FileSystemObject))
+        {
+            status = RemediateEnsureDisabledInstallationOfJffs2FileSystem();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureVirtualMemoryRandomizationIsEnabledObject))
+        {
+            status = RemediateEnsureVirtualMemoryRandomizationIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllBootloadersHavePasswordProtectionEnabledObject))
+        {
+            status = RemediateEnsureAllBootloadersHavePasswordProtectionEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureLoggingIsConfiguredObject))
+        {
+            status = RemediateEnsureLoggingIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSyslogPackageIsInstalledObject))
+        {
+            status = RemediateEnsureSyslogPackageIsInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject))
+        {
+            status = RemediateEnsureSystemdJournaldServicePersistsLogMessages();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsSnabledObject))
+        {
+            status = RemediateEnsureALoggingServiceIsSnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject))
+        {
+            status = RemediateEnsureFilePermissionsForAllRsyslogLogFiles();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureLoggerConfigurationFilesAreRestrictedObject))
+        {
+            status = RemediateEnsureLoggerConfigurationFilesAreRestricted();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
+        {
+            status = RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
+        {
+            status = RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRsyslogNotAcceptingRemoteMessagesObject))
+        {
+            status = RemediateEnsureRsyslogNotAcceptingRemoteMessages();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSyslogRotaterServiceIsEnabledObject))
+        {
+            status = RemediateEnsureSyslogRotaterServiceIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTelnetServiceIsDisabledObject))
+        {
+            status = RemediateEnsureTelnetServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRcprshServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRcprshServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureTftpServiceisDisabledObject))
+        {
+            status = RemediateEnsureTftpServiceisDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject))
+        {
+            status = RemediateEnsureAtCronIsRestrictedToAuthorizedUsers();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshBestPracticeProtocolObject))
+        {
+            status = RemediateEnsureSshBestPracticeProtocol();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshBestPracticeIgnoreRhostsObject))
+        {
+            status = RemediateEnsureSshBestPracticeIgnoreRhosts();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshLogLevelIsSetObject))
+        {
+            status = RemediateEnsureSshLogLevelIsSet();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshMaxAuthTriesIsSetObject))
+        {
+            status = RemediateEnsureSshMaxAuthTriesIsSet();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshAccessIsLimitedObject))
+        {
+            status = RemediateEnsureSshAccessIsLimited();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject))
+        {
+            status = RemediateEnsureSshRhostsRsaAuthenticationIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
+        {
+            status = RemediateEnsureSshHostbasedAuthenticationIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshPermitRootLoginIsDisabledObject))
+        {
+            status = RemediateEnsureSshPermitRootLoginIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject))
+        {
+            status = RemediateEnsureSshPermitEmptyPasswordsIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject))
+        {
+            status = RemediateEnsureSshIdleTimeoutIntervalIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshLoginGraceTimeIsSetObject))
+        {
+            status = RemediateEnsureSshLoginGraceTimeIsSet();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
+        {
+            status = RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshWarningBannerIsEnabledObject))
+        {
+            status = RemediateEnsureSshWarningBannerIsEnabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject))
+        {
+            status = RemediateEnsureUsersCannotSetSshEnvironmentOptions();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAppropriateCiphersForSshObject))
+        {
+            status = RemediateEnsureAppropriateCiphersForSsh();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAvahiDaemonServiceIsDisabledObject))
+        {
+            status = RemediateEnsureAvahiDaemonServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureCupsServiceisDisabledObject))
+        {
+            status = RemediateEnsureCupsServiceisDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePostfixPackageIsUninstalledObject))
+        {
+            status = RemediateEnsurePostfixPackageIsUninstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePostfixNetworkListeningIsDisabledObject))
+        {
+            status = RemediateEnsurePostfixNetworkListeningIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRpcgssdServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRpcgssdServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRpcidmapdServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRpcidmapdServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsurePortmapServiceIsDisabledObject))
+        {
+            status = RemediateEnsurePortmapServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNetworkFileSystemServiceIsDisabledObject))
+        {
+            status = RemediateEnsureNetworkFileSystemServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRpcsvcgssdServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRpcsvcgssdServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSnmpServerIsDisabledObject))
+        {
+            status = RemediateEnsureSnmpServerIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRsynServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRsynServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNisServerIsDisabledObject))
+        {
+            status = RemediateEnsureNisServerIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRshClientNotInstalledObject))
+        {
+            status = RemediateEnsureRshClientNotInstalled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureSmbWithSambaIsDisabledObject))
+        {
+            status = RemediateEnsureSmbWithSambaIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureUsersDotFilesArentGroupOrWorldWritableObject))
+        {
+            status = RemediateEnsureUsersDotFilesArentGroupOrWorldWritable();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotForwardFilesObject))
+        {
+            status = RemediateEnsureNoUsersHaveDotForwardFiles();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotNetrcFilesObject))
+        {
+            status = RemediateEnsureNoUsersHaveDotNetrcFiles();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureNoUsersHaveDotRhostsFilesObject))
+        {
+            status = RemediateEnsureNoUsersHaveDotRhostsFiles();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureRloginServiceIsDisabledObject))
+        {
+            status = RemediateEnsureRloginServiceIsDisabled();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureUnnecessaryAccountsAreRemovedObject))
+        {
+            status = RemediateEnsureUnnecessaryAccountsAreRemoved();
+        }
+        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         else
         {
             OsConfigLogError(SecurityBaselineGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
