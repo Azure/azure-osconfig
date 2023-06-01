@@ -65,7 +65,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureTalkClientIsNotInstalledObject = "auditEnsureTalkClientIsNotInstalled";
         const char* m_auditEnsureCronServiceIsEnabledObject = "auditEnsureCronServiceIsEnabled";
         const char* m_auditEnsureAuditdServiceIsRunningObject = "auditEnsureAuditdServiceIsRunning";
-        // Audit-only
         const char* m_auditEnsureKernelSupportForCpuNxObject = "auditEnsureKernelSupportForCpuNx";
         const char* m_auditEnsureAllTelnetdPackagesUninstalledObject = "auditEnsureAllTelnetdPackagesUninstalled";
         const char* m_auditEnsureNodevOptionOnHomePartitionObject = "auditEnsureNodevOptionOnHomePartition";
@@ -233,7 +232,6 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
         const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
         const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
-        // Remaining 125 remediation checks
         const char* m_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
         const char* m_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
         const char* m_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
