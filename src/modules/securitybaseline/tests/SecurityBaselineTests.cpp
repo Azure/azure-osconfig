@@ -233,6 +233,132 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
         const char* m_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
         const char* m_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
+        // Remaining 125 remediation checks
+        const char* m_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
+        const char* m_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
+        const char* m_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
+        const char* m_remediateEnsureNodevOptionOnTmpPartitionObject = "remediateEnsureNodevOptionOnTmpPartition";
+        const char* m_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remediateEnsureNodevOptionOnVarTmpPartition";
+        const char* m_remediateEnsureNosuidOptionOnTmpPartitionObject = "remediateEnsureNosuidOptionOnTmpPartition";
+        const char* m_remediateEnsureNosuidOptionOnVarTmpPartitionObject = "remediateEnsureNosuidOptionOnVarTmpPartition";
+        const char* m_remediateEnsureNoexecOptionOnVarTmpPartitionObject = "remediateEnsureNoexecOptionOnVarTmpPartition";
+        const char* m_remediateEnsureNoexecOptionOnDevShmPartitionObject = "remediateEnsureNoexecOptionOnDevShmPartition";
+        const char* m_remediateEnsureNodevOptionEnabledForAllRemovableMediaObject = "remediateEnsureNodevOptionEnabledForAllRemovableMedia";
+        const char* m_remediateEnsureNoexecOptionEnabledForAllRemovableMediaObject = "remediateEnsureNoexecOptionEnabledForAllRemovableMedia";
+        const char* m_remediateEnsureNosuidOptionEnabledForAllRemovableMediaObject = "remediateEnsureNosuidOptionEnabledForAllRemovableMedia";
+        const char* m_remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject = "remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+        const char* m_remediateEnsureAllEtcPasswdGroupsExistInEtcGroupObject = "remediateEnsureAllEtcPasswdGroupsExistInEtcGroup";
+        const char* m_remediateEnsureNoDuplicateUidsExistObject = "remediateEnsureNoDuplicateUidsExist";
+        const char* m_remediateEnsureNoDuplicateGidsExistObject = "remediateEnsureNoDuplicateGidsExist";
+        const char* m_remediateEnsureNoDuplicateUserNamesExistObject = "remediateEnsureNoDuplicateUserNamesExist";
+        const char* m_remediateEnsureNoDuplicateGroupsExistObject = "remediateEnsureNoDuplicateGroupsExist";
+        const char* m_remediateEnsureShadowGroupIsEmptyObject = "remediateEnsureShadowGroupIsEmpty";
+        const char* m_remediateEnsureRootGroupExistsObject = "remediateEnsureRootGroupExists";
+        const char* m_remediateEnsureAllAccountsHavePasswordsObject = "remediateEnsureAllAccountsHavePasswords";
+        const char* m_remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject = "remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+        const char* m_remediateEnsureNoLegacyPlusEntriesInEtcPasswdObject = "remediateEnsureNoLegacyPlusEntriesInEtcPasswd";
+        const char* m_remediateEnsureNoLegacyPlusEntriesInEtcShadowObject = "remediateEnsureNoLegacyPlusEntriesInEtcShadow";
+        const char* m_remediateEnsureNoLegacyPlusEntriesInEtcGroupObject = "remediateEnsureNoLegacyPlusEntriesInEtcGroup";
+        const char* m_remediateEnsureDefaultRootAccountGroupIsGidZeroObject = "remediateEnsureDefaultRootAccountGroupIsGidZero";
+        const char* m_remediateEnsureRootIsOnlyUidZeroAccountObject = "remediateEnsureRootIsOnlyUidZeroAccount";
+        const char* m_remediateEnsureAllUsersHomeDirectoriesExistObject = "remediateEnsureAllUsersHomeDirectoriesExist";
+        const char* m_remediateEnsureUsersOwnTheirHomeDirectoriesObject = "remediateEnsureUsersOwnTheirHomeDirectories";
+        const char* m_remediateEnsureRestrictedUserHomeDirectoriesObject = "remediateEnsureRestrictedUserHomeDirectories";
+        const char* m_remediateEnsurePasswordHashingAlgorithmObject = "remediateEnsurePasswordHashingAlgorithm";
+        const char* m_remediateEnsureMinDaysBetweenPasswordChangesObject = "remediateEnsureMinDaysBetweenPasswordChanges";
+        const char* m_remediateEnsureInactivePasswordLockPeriodObject = "remediateEnsureInactivePasswordLockPeriod";
+        const char* m_remediateMaxDaysBetweenPasswordChangesObject = "remediateEnsureMaxDaysBetweenPasswordChanges";
+        const char* m_remediateEnsurePasswordExpirationObject = "remediateEnsurePasswordExpiration";
+        const char* m_remediateEnsurePasswordExpirationWarningObject = "remediateEnsurePasswordExpirationWarning";
+        const char* m_remediateEnsureSystemAccountsAreNonLoginObject = "remediateEnsureSystemAccountsAreNonLogin";
+        const char* m_remediateEnsureAuthenticationRequiredForSingleUserModeObject = "remediateEnsureAuthenticationRequiredForSingleUserMode";
+        const char* m_remediateEnsureDotDoesNotAppearInRootsPathObject = "remediateEnsureDotDoesNotAppearInRootsPath";
+        const char* m_remediateEnsureRemoteLoginWarningBannerIsConfiguredObject = "remediateEnsureRemoteLoginWarningBannerIsConfigured";
+        const char* m_remediateEnsureLocalLoginWarningBannerIsConfiguredObject = "remediateEnsureLocalLoginWarningBannerIsConfigured";
+        const char* m_remediateEnsureSuRestrictedToRootGroupObject = "remediateEnsureSuRestrictedToRootGroup";
+        const char* m_remediateEnsureDefaultUmaskForAllUsersObject = "remediateEnsureDefaultUmaskForAllUsers";
+        const char* m_remediateEnsureAutomountingDisabledObject = "remediateEnsureAutomountingDisabled";
+        const char* m_remediateEnsureKernelCompiledFromApprovedSourcesObject = "remediateEnsureKernelCompiledFromApprovedSources";
+        const char* m_remediateEnsureDefaultDenyFirewallPolicyIsSetObject = "remediateEnsureDefaultDenyFirewallPolicyIsSet";
+        const char* m_remediateEnsurePacketRedirectSendingIsDisabledObject = "remediateEnsurePacketRedirectSendingIsDisabled";
+        const char* m_remediateEnsureIcmpRedirectsIsDisabledObject = "remediateEnsureIcmpRedirectsIsDisabled";
+        const char* m_remediateEnsureSourceRoutedPacketsIsDisabledObject = "remediateEnsureSourceRoutedPacketsIsDisabled";
+        const char* m_remediateEnsureAcceptingSourceRoutedPacketsIsDisabledObject = "remediateEnsureAcceptingSourceRoutedPacketsIsDisabled";
+        const char* m_remediateEnsureIgnoringBogusIcmpBroadcastResponsesObject = "remediateEnsureIgnoringBogusIcmpBroadcastResponses";
+        const char* m_remediateEnsureIgnoringIcmpEchoPingsToMulticastObject = "remediateEnsureIgnoringIcmpEchoPingsToMulticast";
+        const char* m_remediateEnsureMartianPacketLoggingIsEnabledObject = "remediateEnsureMartianPacketLoggingIsEnabled";
+        const char* m_remediateEnsureReversePathSourceValidationIsEnabledObject = "remediateEnsureReversePathSourceValidationIsEnabled";
+        const char* m_remediateEnsureTcpSynCookiesAreEnabledObject = "remediateEnsureTcpSynCookiesAreEnabled";
+        const char* m_remediateEnsureSystemNotActingAsNetworkSnifferObject = "remediateEnsureSystemNotActingAsNetworkSniffer";
+        const char* m_remediateEnsureAllWirelessInterfacesAreDisabledObject = "remediateEnsureAllWirelessInterfacesAreDisabled";
+        const char* m_remediateEnsureIpv6ProtocolIsEnabledObject = "remediateEnsureIpv6ProtocolIsEnabled";
+        const char* m_remediateEnsureDccpIsDisabledObject = "remediateEnsureDccpIsDisabled";
+        const char* m_remediateEnsureSctpIsDisabledObject = "remediateEnsureSctpIsDisabled";
+        const char* m_remediateEnsureDisabledSupportForRdsObject = "remediateEnsureDisabledSupportForRds";
+        const char* m_remediateEnsureTipcIsDisabledObject = "remediateEnsureTipcIsDisabled";
+        const char* m_remediateEnsureZeroconfNetworkingIsDisabledObject = "remediateEnsureZeroconfNetworkingIsDisabled";
+        const char* m_remediateEnsurePermissionsOnBootloaderConfigObject = "remediateEnsurePermissionsOnBootloaderConfig";
+        const char* m_remediateEnsurePasswordReuseIsLimitedObject = "remediateEnsurePasswordReuseIsLimited";
+        const char* m_remediateEnsureMountingOfUsbStorageDevicesIsDisabledObject = "remediateEnsureMountingOfUsbStorageDevicesIsDisabled";
+        const char* m_remediateEnsureCoreDumpsAreRestrictedObject = "remediateEnsureCoreDumpsAreRestricted";
+        const char* m_remediateEnsurePasswordCreationRequirementsObject = "remediateEnsurePasswordCreationRequirements";
+        const char* m_remediateEnsureLockoutForFailedPasswordAttemptsObject = "remediateEnsureLockoutForFailedPasswordAttempts";
+        const char* m_remediateEnsureDisabledInstallationOfCramfsFileSystemObject = "remediateEnsureDisabledInstallationOfCramfsFileSystem";
+        const char* m_remediateEnsureDisabledInstallationOfFreevxfsFileSystemObject = "remediateEnsureDisabledInstallationOfFreevxfsFileSystem";
+        const char* m_remediateEnsureDisabledInstallationOfHfsFileSystemObject = "remediateEnsureDisabledInstallationOfHfsFileSystem";
+        const char* m_remediateEnsureDisabledInstallationOfHfsplusFileSystemObject = "remediateEnsureDisabledInstallationOfHfsplusFileSystem";
+        const char* m_remediateEnsureDisabledInstallationOfJffs2FileSystemObject = "remediateEnsureDisabledInstallationOfJffs2FileSystem";
+        const char* m_remediateEnsureVirtualMemoryRandomizationIsEnabledObject = "remediateEnsureVirtualMemoryRandomizationIsEnabled";
+        const char* m_remediateEnsureAllBootloadersHavePasswordProtectionEnabledObject = "remediateEnsureAllBootloadersHavePasswordProtectionEnabled";
+        const char* m_remediateEnsureLoggingIsConfiguredObject = "remediateEnsureLoggingIsConfigured";
+        const char* m_remediateEnsureSyslogPackageIsInstalledObject = "remediateEnsureSyslogPackageIsInstalled";
+        const char* m_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
+        const char* m_remediateEnsureALoggingServiceIsSnabledObject = "remediateEnsureALoggingServiceIsSnabled";
+        const char* m_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
+        const char* m_remediateEnsureLoggerConfigurationFilesAreRestrictedObject = "remediateEnsureLoggerConfigurationFilesAreRestricted";
+        const char* m_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+        const char* m_remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject = "remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+        const char* m_remediateEnsureRsyslogNotAcceptingRemoteMessagesObject = "remediateEnsureRsyslogNotAcceptingRemoteMessages";
+        const char* m_remediateEnsureSyslogRotaterServiceIsEnabledObject = "remediateEnsureSyslogRotaterServiceIsEnabled";
+        const char* m_remediateEnsureTelnetServiceIsDisabledObject = "remediateEnsureTelnetServiceIsDisabled";
+        const char* m_remediateEnsureRcprshServiceIsDisabledObject = "remediateEnsureRcprshServiceIsDisabled";
+        const char* m_remediateEnsureTftpServiceisDisabledObject = "remediateEnsureTftpServiceisDisabled";
+        const char* m_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
+        const char* m_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
+        const char* m_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
+        const char* m_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
+        const char* m_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
+        const char* m_remediateEnsureSshAccessIsLimitedObject = "remediateEnsureSshAccessIsLimited";
+        const char* m_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject = "remediateEnsureSshRhostsRsaAuthenticationIsDisabled";
+        const char* m_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
+        const char* m_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
+        const char* m_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
+        const char* m_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject = "remediateEnsureSshIdleTimeoutIntervalIsConfigured";
+        const char* m_remediateEnsureSshLoginGraceTimeIsSetObject = "remediateEnsureSshLoginGraceTimeIsSet";
+        const char* m_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
+        const char* m_remediateEnsureSshWarningBannerIsEnabledObject = "remediateEnsureSshWarningBannerIsEnabled";
+        const char* m_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
+        const char* m_remediateEnsureAppropriateCiphersForSshObject = "remediateEnsureAppropriateCiphersForSsh";
+        const char* m_remediateEnsureAvahiDaemonServiceIsDisabledObject = "remediateEnsureAvahiDaemonServiceIsDisabled";
+        const char* m_remediateEnsureCupsServiceisDisabledObject = "remediateEnsureCupsServiceisDisabled";
+        const char* m_remediateEnsurePostfixPackageIsUninstalledObject = "remediateEnsurePostfixPackageIsUninstalled";
+        const char* m_remediateEnsurePostfixNetworkListeningIsDisabledObject = "remediateEnsurePostfixNetworkListeningIsDisabled";
+        const char* m_remediateEnsureRpcgssdServiceIsDisabledObject = "remediateEnsureRpcgssdServiceIsDisabled";
+        const char* m_remediateEnsureRpcidmapdServiceIsDisabledObject = "remediateEnsureRpcidmapdServiceIsDisabled";
+        const char* m_remediateEnsurePortmapServiceIsDisabledObject = "remediateEnsurePortmapServiceIsDisabled";
+        const char* m_remediateEnsureNetworkFileSystemServiceIsDisabledObject = "remediateEnsureNetworkFileSystemServiceIsDisabled";
+        const char* m_remediateEnsureRpcsvcgssdServiceIsDisabledObject = "remediateEnsureRpcsvcgssdServiceIsDisabled";
+        const char* m_remediateEnsureSnmpServerIsDisabledObject = "remediateEnsureSnmpServerIsDisabled";
+        const char* m_remediateEnsureRsynServiceIsDisabledObject = "remediateEnsureRsynServiceIsDisabled";
+        const char* m_remediateEnsureNisServerIsDisabledObject = "remediateEnsureNisServerIsDisabled";
+        const char* m_remediateEnsureRshClientNotInstalledObject = "remediateEnsureRshClientNotInstalled";
+        const char* m_remediateEnsureSmbWithSambaIsDisabledObject = "remediateEnsureSmbWithSambaIsDisabled";
+        const char* m_remediateEnsureUsersDotFilesArentGroupOrWorldWritableObject = "remediateEnsureUsersDotFilesArentGroupOrWorldWritable";
+        const char* m_remediateEnsureNoUsersHaveDotForwardFilesObject = "remediateEnsureNoUsersHaveDotForwardFiles";
+        const char* m_remediateEnsureNoUsersHaveDotNetrcFilesObject = "remediateEnsureNoUsersHaveDotNetrcFiles";
+        const char* m_remediateEnsureNoUsersHaveDotRhostsFilesObject = "remediateEnsureNoUsersHaveDotRhostsFiles";
+        const char* m_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
+        const char* m_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
         const char* m_pass = "\"PASS\"";
 
@@ -340,7 +466,132 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsurePrelinkIsDisabledObject,
         m_remediateEnsureTalkClientIsNotInstalledObject,
         m_remediateEnsureCronServiceIsEnabledObject,
-        m_remediateEnsureAuditdServiceIsRunningObject
+        m_remediateEnsureAuditdServiceIsRunningObject,
+        m_remediateEnsureKernelSupportForCpuNxObject,
+        m_remediateEnsureAllTelnetdPackagesUninstalledObject,
+        m_remediateEnsureNodevOptionOnHomePartitionObject,
+        m_remediateEnsureNodevOptionOnTmpPartitionObject,
+        m_remediateEnsureNodevOptionOnVarTmpPartitionObject,
+        m_remediateEnsureNosuidOptionOnTmpPartitionObject,
+        m_remediateEnsureNosuidOptionOnVarTmpPartitionObject,
+        m_remediateEnsureNoexecOptionOnVarTmpPartitionObject,
+        m_remediateEnsureNoexecOptionOnDevShmPartitionObject,
+        m_remediateEnsureNodevOptionEnabledForAllRemovableMediaObject,
+        m_remediateEnsureNoexecOptionEnabledForAllRemovableMediaObject,
+        m_remediateEnsureNosuidOptionEnabledForAllRemovableMediaObject,
+        m_remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject,
+        m_remediateEnsureAllEtcPasswdGroupsExistInEtcGroupObject,
+        m_remediateEnsureNoDuplicateUidsExistObject,
+        m_remediateEnsureNoDuplicateGidsExistObject,
+        m_remediateEnsureNoDuplicateUserNamesExistObject,
+        m_remediateEnsureNoDuplicateGroupsExistObject,
+        m_remediateEnsureShadowGroupIsEmptyObject,
+        m_remediateEnsureRootGroupExistsObject,
+        m_remediateEnsureAllAccountsHavePasswordsObject,
+        m_remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject,
+        m_remediateEnsureNoLegacyPlusEntriesInEtcPasswdObject,
+        m_remediateEnsureNoLegacyPlusEntriesInEtcShadowObject,
+        m_remediateEnsureNoLegacyPlusEntriesInEtcGroupObject,
+        m_remediateEnsureDefaultRootAccountGroupIsGidZeroObject,
+        m_remediateEnsureRootIsOnlyUidZeroAccountObject,
+        m_remediateEnsureAllUsersHomeDirectoriesExistObject,
+        m_remediateEnsureUsersOwnTheirHomeDirectoriesObject,
+        m_remediateEnsureRestrictedUserHomeDirectoriesObject,
+        m_remediateEnsurePasswordHashingAlgorithmObject,
+        m_remediateEnsureMinDaysBetweenPasswordChangesObject,
+        m_remediateEnsureInactivePasswordLockPeriodObject,
+        m_remediateMaxDaysBetweenPasswordChangesObject,
+        m_remediateEnsurePasswordExpirationObject,
+        m_remediateEnsurePasswordExpirationWarningObject,
+        m_remediateEnsureSystemAccountsAreNonLoginObject,
+        m_remediateEnsureAuthenticationRequiredForSingleUserModeObject,
+        m_remediateEnsureDotDoesNotAppearInRootsPathObject,
+        m_remediateEnsureRemoteLoginWarningBannerIsConfiguredObject,
+        m_remediateEnsureLocalLoginWarningBannerIsConfiguredObject,
+        m_remediateEnsureSuRestrictedToRootGroupObject,
+        m_remediateEnsureDefaultUmaskForAllUsersObject,
+        m_remediateEnsureAutomountingDisabledObject,
+        m_remediateEnsureKernelCompiledFromApprovedSourcesObject,
+        m_remediateEnsureDefaultDenyFirewallPolicyIsSetObject,
+        m_remediateEnsurePacketRedirectSendingIsDisabledObject,
+        m_remediateEnsureIcmpRedirectsIsDisabledObject,
+        m_remediateEnsureSourceRoutedPacketsIsDisabledObject,
+        m_remediateEnsureAcceptingSourceRoutedPacketsIsDisabledObject,
+        m_remediateEnsureIgnoringBogusIcmpBroadcastResponsesObject,
+        m_remediateEnsureIgnoringIcmpEchoPingsToMulticastObject,
+        m_remediateEnsureMartianPacketLoggingIsEnabledObject,
+        m_remediateEnsureReversePathSourceValidationIsEnabledObject,
+        m_remediateEnsureTcpSynCookiesAreEnabledObject,
+        m_remediateEnsureSystemNotActingAsNetworkSnifferObject,
+        m_remediateEnsureAllWirelessInterfacesAreDisabledObject,
+        m_remediateEnsureIpv6ProtocolIsEnabledObject,
+        m_remediateEnsureDccpIsDisabledObject,
+        m_remediateEnsureSctpIsDisabledObject,
+        m_remediateEnsureDisabledSupportForRdsObject,
+        m_remediateEnsureTipcIsDisabledObject,
+        m_remediateEnsureZeroconfNetworkingIsDisabledObject,
+        m_remediateEnsurePermissionsOnBootloaderConfigObject,
+        m_remediateEnsurePasswordReuseIsLimitedObject,
+        m_remediateEnsureMountingOfUsbStorageDevicesIsDisabledObject,
+        m_remediateEnsureCoreDumpsAreRestrictedObject,
+        m_remediateEnsurePasswordCreationRequirementsObject,
+        m_remediateEnsureLockoutForFailedPasswordAttemptsObject,
+        m_remediateEnsureDisabledInstallationOfCramfsFileSystemObject,
+        m_remediateEnsureDisabledInstallationOfFreevxfsFileSystemObject,
+        m_remediateEnsureDisabledInstallationOfHfsFileSystemObject,
+        m_remediateEnsureDisabledInstallationOfHfsplusFileSystemObject,
+        m_remediateEnsureDisabledInstallationOfJffs2FileSystemObject,
+        m_remediateEnsureVirtualMemoryRandomizationIsEnabledObject,
+        m_remediateEnsureAllBootloadersHavePasswordProtectionEnabledObject,
+        m_remediateEnsureLoggingIsConfiguredObject,
+        m_remediateEnsureSyslogPackageIsInstalledObject,
+        m_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject,
+        m_remediateEnsureALoggingServiceIsSnabledObject,
+        m_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject,
+        m_remediateEnsureLoggerConfigurationFilesAreRestrictedObject,
+        m_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject,
+        m_remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject,
+        m_remediateEnsureRsyslogNotAcceptingRemoteMessagesObject,
+        m_remediateEnsureSyslogRotaterServiceIsEnabledObject,
+        m_remediateEnsureTelnetServiceIsDisabledObject,
+        m_remediateEnsureRcprshServiceIsDisabledObject,
+        m_remediateEnsureTftpServiceisDisabledObject,
+        m_remediateEnsureAtCronIsRestrictedToAuthorizedUsersObject,
+        m_remediateEnsureSshBestPracticeProtocolObject,
+        m_remediateEnsureSshBestPracticeIgnoreRhostsObject,
+        m_remediateEnsureSshLogLevelIsSetObject,
+        m_remediateEnsureSshMaxAuthTriesIsSetObject,
+        m_remediateEnsureSshAccessIsLimitedObject,
+        m_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject,
+        m_remediateEnsureSshHostbasedAuthenticationIsDisabledObject,
+        m_remediateEnsureSshPermitRootLoginIsDisabledObject,
+        m_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject,
+        m_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject,
+        m_remediateEnsureSshLoginGraceTimeIsSetObject,
+        m_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject,
+        m_remediateEnsureSshWarningBannerIsEnabledObject,
+        m_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject,
+        m_remediateEnsureAppropriateCiphersForSshObject,
+        m_remediateEnsureAvahiDaemonServiceIsDisabledObject,
+        m_remediateEnsureCupsServiceisDisabledObject,
+        m_remediateEnsurePostfixPackageIsUninstalledObject,
+        m_remediateEnsurePostfixNetworkListeningIsDisabledObject,
+        m_remediateEnsureRpcgssdServiceIsDisabledObject,
+        m_remediateEnsureRpcidmapdServiceIsDisabledObject,
+        m_remediateEnsurePortmapServiceIsDisabledObject,
+        m_remediateEnsureNetworkFileSystemServiceIsDisabledObject,
+        m_remediateEnsureRpcsvcgssdServiceIsDisabledObject,
+        m_remediateEnsureSnmpServerIsDisabledObject,
+        m_remediateEnsureRsynServiceIsDisabledObject,
+        m_remediateEnsureNisServerIsDisabledObject,
+        m_remediateEnsureRshClientNotInstalledObject,
+        m_remediateEnsureSmbWithSambaIsDisabledObject,
+        m_remediateEnsureUsersDotFilesArentGroupOrWorldWritableObject,
+        m_remediateEnsureNoUsersHaveDotForwardFilesObject,
+        m_remediateEnsureNoUsersHaveDotNetrcFilesObject,
+        m_remediateEnsureNoUsersHaveDotRhostsFilesObject,
+        m_remediateEnsureRloginServiceIsDisabledObject,
+        m_remediateEnsureUnnecessaryAccountsAreRemovedObject
     };
 
     int mimObjectsNumber = ARRAY_SIZE(mimObjects);

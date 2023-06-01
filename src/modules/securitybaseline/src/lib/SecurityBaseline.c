@@ -227,8 +227,7 @@ static const char* g_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePr
 static const char* g_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
 static const char* g_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
 static const char* g_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-// 125 remediation checks
+// Remaining 125 remediation checks
 static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
 static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
 static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
@@ -354,7 +353,6 @@ static const char* g_remediateEnsureNoUsersHaveDotNetrcFilesObject = "remediateE
 static const char* g_remediateEnsureNoUsersHaveDotRhostsFilesObject = "remediateEnsureNoUsersHaveDotRhostsFiles";
 static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
 static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
@@ -1774,7 +1772,6 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
         EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 static int RemediateEnsureKernelSupportForCpuNx(void)
 {
     return ENOENT; //TODO: add remediation respecting all existing patterns
@@ -2399,7 +2396,6 @@ static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
 {
     return ENOENT; //TODO: add remediation respecting all existing patterns
 }
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 AuditRemediate g_remediateChecks[] =
 {
@@ -2442,7 +2438,6 @@ AuditRemediate g_remediateChecks[] =
     &RemediateEnsureTalkClientIsNotInstalled,
     &RemediateEnsureCronServiceIsEnabled,
     &RemediateEnsureAuditdServiceIsRunning,
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     &RemediateEnsureKernelSupportForCpuNx,
     &RemediateEnsureNodevOptionOnHomePartition,
     &RemediateEnsureNodevOptionOnTmpPartition,
@@ -2568,7 +2563,6 @@ AuditRemediate g_remediateChecks[] =
     &RemediateEnsureNoUsersHaveDotRhostsFiles,
     &RemediateEnsureRloginServiceIsDisabled,
     &RemediateEnsureUnnecessaryAccountsAreRemoved
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 };
 
 int RemediateSecurityBaseline(void)
@@ -3587,7 +3581,6 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureAuditdServiceIsRunning();
         }
-        //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         else if (0 == strcmp(objectName, g_remediateEnsureKernelSupportForCpuNxObject))
         {
             status = RemediateEnsureKernelSupportForCpuNx();
@@ -4092,7 +4085,6 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureUnnecessaryAccountsAreRemoved();
         }
-        //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         else
         {
             OsConfigLogError(SecurityBaselineGetLog(), "MmiSet called for an unsupported object name: %s", objectName);
