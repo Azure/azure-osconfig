@@ -366,7 +366,10 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
+        }
 
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
@@ -451,7 +454,10 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        }
 
         // Remove the session from the linked list
         if (session == g_sessions)
