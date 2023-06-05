@@ -764,7 +764,8 @@ static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 
 static int AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
-    return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? 0 : EACCES;
+    return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && 
+        (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? 0 : EACCES;
 }
 
 static int AuditEnsureAllUsersHomeDirectoriesExist(void)
