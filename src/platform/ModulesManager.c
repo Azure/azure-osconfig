@@ -538,11 +538,11 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     {
         if (MMI_OK == (status = moduleSession->module->set(moduleSession->handle, component, object, payload, payloadSizeBytes)))
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) succeeded", handle, component, object, payload, payloadSizeBytes, status);
+            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) succeeded", moduleSession->handle, component, object, payload, payloadSizeBytes);
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) failed with %d", handle, component, object, payload, payloadSizeBytes, status);
+            OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) failed with %d", moduleSession->handle, component, object, payload, payloadSizeBytes, status);
         }
     }
 
@@ -694,13 +694,16 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
         FREE_MEMORY(json);
     }
 
-    if (MMI_OK == status)
+    if (IsFullLoggingEnabled())
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
-    }
-    else
-    {
-        OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) failed with %d", handle, payload, payloadSizeBytes, status);
+        if (MMI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) failed with %d", handle, payload, payloadSizeBytes, status);
+        }
     }
 
     return status;
@@ -821,11 +824,11 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
     {
         if (MMI_OK == status)
         {
-            OsConfigLogInfo(GetPlatformLog(), "MpiGetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
+            OsConfigLogInfo(GetPlatformLog(), "MpiGetDesired(%p, %p) succeeded", handle, payload);
         }
         else
         {
-            OsConfigLogError(GetPlatformLog(), "MpiGetDesired(%p, %p, %d) failed with %d", handle, payload, payloadSizeBytes, status);
+            OsConfigLogError(GetPlatformLog(), "MpiGetDesired(%p, %p) failed with %d", handle, payload, status);
         }
     }
 
