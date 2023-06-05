@@ -108,17 +108,9 @@ static void LoadModules(const char* directory, const char* configJson)
         {
             while (NULL != (entry = readdir(dir)))
             {
-                if (DT_REG != entry->d_type)
-                {
-                    continue;
-                }
-
-                if ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0))
-                {
-                    continue;
-                }
-
-                if (NULL == strstr(entry->d_name, MODULE_EXT))
+                if ((DT_REG != entry->d_type) || 
+                    ((strcmp(entry->d_name, "") == 0) || (strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) ||
+                    (NULL == strstr(entry->d_name, MODULE_EXT)))
                 {
                     continue;
                 }
@@ -335,12 +327,15 @@ static char* GenerateUuid(void)
             case 'x':
                 c = hex[random];
                 break;
+
             case '-':
                 c = '-';
                 break;
+
             case 'M':
                 c = hex[(random & 0x03) | 0x08];
                 break;
+
             case 'N':
                 c = '4';
         }
@@ -371,7 +366,10 @@ MPI_HANDLE MpiOpen(const char* clientName, const unsigned int maxPayloadSizeByte
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiOpen: creating session with UUID '%s'", uuid);
+        }
 
         if (NULL != (session = (SESSION*)malloc(sizeof(SESSION))))
         {
@@ -456,7 +454,10 @@ void MpiClose(MPI_HANDLE handle)
     }
     else
     {
-        OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        if (IsFullLoggingEnabled())
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiClose: closing session with UUID '%s'", session->uuid);
+        }
 
         // Remove the session from the linked list
         if (session == g_sessions)
@@ -541,7 +542,14 @@ int MpiSet(MPI_HANDLE handle, const char* component, const char* object, const M
     }
     else
     {
-        status = moduleSession->module->set(moduleSession->handle, component, object, payload, payloadSizeBytes);
+        if (MMI_OK == (status = moduleSession->module->set(moduleSession->handle, component, object, payload, payloadSizeBytes)))
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) succeeded", moduleSession->handle, component, object, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %s, %s, %p, %d) failed with %d", moduleSession->handle, component, object, payload, payloadSizeBytes, status);
+        }
     }
 
     return status;
@@ -577,6 +585,18 @@ int MpiGet(MPI_HANDLE handle, const char* component, const char* object, MPI_JSO
     else
     {
         status = moduleSession->module->get(moduleSession->handle, component, object, payload, payloadSizeBytes);
+
+        if (IsFullLoggingEnabled())
+        {
+            if (MMI_OK == status)
+            {
+                OsConfigLogInfo(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) succeeded", handle, component, object, payload, payloadSizeBytes);
+            }
+            else
+            {
+                OsConfigLogError(GetPlatformLog(), "MpiGet(%p, %s, %s, %p, %p) failed with %d", handle, component, object, payload, payloadSizeBytes, status);
+            }
+        }
     }
 
     return status;
@@ -603,7 +623,7 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
 
     if ((NULL == handle) || (NULL == payload) || (0 >= payloadSizeBytes))
     {
-        OsConfigLogError(GetPlatformLog(), "MpiSet(%p, %p, %d) called with invalid arguments", handle, payload, payloadSizeBytes);
+        OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) called with invalid arguments", handle, payload, payloadSizeBytes);
         status = EINVAL;
     }
     else if (NULL == (session = FindSession(uuid)))
@@ -663,7 +683,11 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
                         }
                         else
                         {
-                            status = moduleSession->module->set(moduleSession->handle, component, object, objectJson, (int)strlen(objectJson));
+                            if (MMI_OK != (status = moduleSession->module->set(moduleSession->handle, component, object, objectJson, (int)strlen(objectJson))))
+                            {
+                                OsConfigLogError(GetPlatformLog(), "MpiSetDesired: MmiSet(%p, %s, %s) failed with %d", moduleSession->handle, component, object, status);
+                            }
+
                             FREE_MEMORY(objectJson);
                         }
                     }
@@ -674,6 +698,18 @@ int MpiSetDesired(MPI_HANDLE handle, const MPI_JSON_STRING payload, const int pa
         }
 
         FREE_MEMORY(json);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        if (MMI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) succeeded", handle, payload, payloadSizeBytes);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiSetDesired(%p, %p, %d) failed with %d", handle, payload, payloadSizeBytes, status);
+        }
     }
 
     return status;
@@ -788,6 +824,18 @@ int MpiGetReported(MPI_HANDLE handle, MPI_JSON_STRING* payload, int* payloadSize
         *payload = json_serialize_to_string_pretty(rootValue);
         *payloadSizeBytes = (int)strlen(*payload);
         json_value_free(rootValue);
+    }
+
+    if (IsFullLoggingEnabled())
+    {
+        if (MMI_OK == status)
+        {
+            OsConfigLogInfo(GetPlatformLog(), "MpiGetDesired(%p, %p) succeeded", handle, payload);
+        }
+        else
+        {
+            OsConfigLogError(GetPlatformLog(), "MpiGetDesired(%p, %p) failed with %d", handle, payload, status);
+        }
     }
 
     return status;
