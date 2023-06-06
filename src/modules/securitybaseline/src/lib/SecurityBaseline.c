@@ -1774,627 +1774,627 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 
 static int RemediateEnsureKernelSupportForCpuNx(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnHomePartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnTmpPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionOnTmpPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionOnVarTmpPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionOnVarTmpPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionOnDevShmPartition(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateUidsExist(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateGidsExist(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateUserNamesExist(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoDuplicateGroupsExist(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureShadowGroupIsEmpty(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRootGroupExists(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllAccountsHavePasswords(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultRootAccountGroupIsGidZero(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRootIsOnlyUidZeroAccount(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllUsersHomeDirectoriesExist(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureUsersOwnTheirHomeDirectories(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRestrictedUserHomeDirectories(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAuthenticationRequiredForSingleUserMode(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLocalLoginWarningBannerIsConfigured(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSuRestrictedToRootGroup(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultUmaskForAllUsers(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAutomountingDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureKernelCompiledFromApprovedSources(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePacketRedirectSendingIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIcmpRedirectsIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSourceRoutedPacketsIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMartianPacketLoggingIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureReversePathSourceValidationIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTcpSynCookiesAreEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSystemNotActingAsNetworkSniffer(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureIpv6ProtocolIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDccpIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSctpIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledSupportForRds(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTipcIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePermissionsOnBootloaderConfig(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordReuseIsLimited(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureCoreDumpsAreRestricted(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePasswordCreationRequirements(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLockoutForFailedPasswordAttempts(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLoggingIsConfigured(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSyslogPackageIsInstalled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureALoggingServiceIsSnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSyslogRotaterServiceIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTelnetServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRcprshServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureTftpServiceisDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshBestPracticeProtocol(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshLogLevelIsSet(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshAccessIsLimited(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureCupsServiceisDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePostfixPackageIsUninstalled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSnmpServerIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNisServerIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRshClientNotInstalled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureSmbWithSambaIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureRloginServiceIsDisabled(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return ENOENT; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns
 }
 
 AuditRemediate g_remediateChecks[] =
