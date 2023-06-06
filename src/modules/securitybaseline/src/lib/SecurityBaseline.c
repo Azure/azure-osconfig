@@ -922,7 +922,7 @@ static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
 
 static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
+    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
