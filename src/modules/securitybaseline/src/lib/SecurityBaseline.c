@@ -835,7 +835,7 @@ static int AuditEnsureTalkClientIsNotInstalled(void)
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return (0 != FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (0 != FindTextInEnvironmentVariable("PATH", "\\.", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
