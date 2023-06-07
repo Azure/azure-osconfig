@@ -4,18 +4,14 @@
 
 SecurityBaseline is an [OSConfig Management Module](../../../docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
 
-The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json).
-
-This MIM implements a single MIM component, `SecurityBaseline`. 
-
-This component contains two global reported and desired MIM objects, `auditSecurityBaseline` and `remediateSecurityBaseline` that audit and remediate respectively the entire baseline, and also contains several more pairs of reported and desired MIM objects for the individuals checks with names that follow the respective check descriptions. For example:
+The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json). This MIM implements a single MIM component, `SecurityBaseline`. This component contains two global reported and desired MIM objects, `auditSecurityBaseline` and `remediateSecurityBaseline` that audit and remediate respectively the entire baseline, and also contains several more pairs of reported and desired MIM objects for the individuals checks with names that follow the respective check descriptions. For example:
 
  Check description | Reported MIM object  | Desired MIM object
 -----|-----|-----
-Ensure nodev option set on /home partition | `auditEnsureNodevOptionOnHomePartition` | `remediateEnsureNodevOptionOnHomePartition`
+Ensure nodev option set on home partition | `auditEnsureNodevOptionOnHomePartition` | `remediateEnsureNodevOptionOnHomePartition`
 Ensure users own their home directories | `auditEnsureUsersOwnTheirHomeDirectories` | `remediatesEnsureUsersOwnTheirHomeDirectories`
 
-The SecurityBaseline module implementation is done for all distros that OSConfig targets today: Ubuntu 18.04, Ubuntu 20.04, Debian 10, Debian 11. In a future release the implementation can be expanded to other distros. 
+The SecurityBaseline module implementation is done for all Linux distributions that OSConfig targets today: Ubuntu 18.04, Ubuntu 20.04, Debian 10, Debian 11. In a future release the implementation can be expanded to other distros. 
 
 The full set of reported MIM objects for audit is fully implemented. 
 
