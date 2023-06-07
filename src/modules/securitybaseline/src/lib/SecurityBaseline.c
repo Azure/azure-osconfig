@@ -835,7 +835,7 @@ static int AuditEnsureTalkClientIsNotInstalled(void)
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return (0 != FindTextInEnvironmentVariable("PATH", "\\.", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (0 != FindTextInEnvironmentVariable("PATH", "\\\\.", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
@@ -973,9 +973,9 @@ static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     static const char* etcSysCtlConf = "/etc/sysctl.conf";
 
-    return (CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog()) &&
-        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDccpIsDisabled(void)
