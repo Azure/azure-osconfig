@@ -1,0 +1,141 @@
+# SecurityBaseline 
+
+## Introduction
+
+SecurityBaseline is an [OSConfig Management Module](docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
+
+The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json).
+
+This MIM implements a single MIM component, `SecurityBaseline`. 
+
+This component contains two global reported and desired MIM objects, `auditSecurityBaseline` and `remediateSecurityBaseline` that audit and remediate respectively the entire baseline, and also contains several more pairs of reported and desired MIM objects for the individuals checks with names that follow the respective check descriptions. For example:
+
+ Check description | Reported MIM object  | Desired MIM object
+-----|-----|-----
+Ensure nodev option set on /home partition | `auditEnsureNodevOptionOnHomePartition` | `remediateEnsureNodevOptionOnHomePartition`
+Ensure users own their home directories | `auditEnsureUsersOwnTheirHomeDirectories` | `remediatesEnsureUsersOwnTheirHomeDirectories`
+
+The SecurityBaseline module implementation is done for all distros that OSConfig targets today: Ubuntu 18.04, Ubuntu 20.04, Debian 10, Debian 11. In a future release the implementation can be expanded to other distros. 
+
+The full set of reported MIM objects for audit is fully implemented. 
+
+Remediation is incomplete for 125 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: Azure Policy via AutoManage Machine Configuration and the Universal NRP, GitOps, Digital Twins via IoT Hub, Local Management, etc. All that remains are implementations for the 125 checks.
+
+The implementation of the checks follows a rule where there are general utility check functions added to commonutils libraries which are then simply invoked from the SecurityBaseline module implementation. This will allow us to reuse those checks for other security baseline imlementations in the future.
+
+For example there are functions in commonutils that check and set file access:
+
+```
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
+int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
+```
+
+which then get invoked from several check implementations in [src/lib/securitybaseline.c](src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
+
+Note that for the remaining remediation checks there are missing set counterparts to the check functions in commonutils such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
+                                                                                                                                                                          
+## Building the module
+
+Follow the instructions in the main [README.md](../../README.md) how to install prerequisites and how to build OSConfig. The SecurityBaseline module is built with the rest of OSConfig.
+
+## Testing the module
+
+### Unit tests
+
+From the build directory, run the unit-tests for the Security Baseline module with:
+
+```bash
+sudo modules/securitybaseline/tests/securitybaselinetests
+```
+
+Run the unit-tests for the commonutils libraries with:
+
+```bash
+sudo common/tests/commontests
+```
+
+Or run all the unit-tests for the entire OSConfig project with:
+
+```bash
+sudo ctest
+```
+
+### Functional tests
+
+The test recipe for the module is at (src/modules/test/recipes/SecurityBaselineTests.json)[../test/recipes/SecurityBaselineTests.json].
+
+From the build directory, run the test recipe with:
+
+sudo modules/test/moduletest ../src/modules/test/recipes/SecurityBaselineTests.json
+
+### Testing at runtime with OSConfig and RC/DC
+
+See instructions in the main [README.md](../../../README.md) on how to enable local management.
+
+When local management is enabled we can use the desired configuration (DC) file at `/etc/osconfig/osconfig_desired.json` and the reported configuration (RC) file at `/etc/osconfig/osconfig_reported.json` to test all desired and reported objects for Security Baseline.
+
+## Continuing implementation
+
+The remaining 125 remediation checks can be found in [src/lib/securitybaseline.c](src/lib/securitybaseline.c).
+
+There the MIM object names constants are listed:
+
+```
+// Remaining 125 remediation checks
+static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
+static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
+static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
+static const char* g_remediateEnsureNodevOptionOnTmpPartitionObject = "remediateEnsureNodevOptionOnTmpPartition";
+static const char* g_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remediateEnsureNodevOptionOnVarTmpPartition";
+...
+```
+
+And then later the placeholder check functions that needs to be completed:
+
+```
+static int RemediateEnsureKernelSupportForCpuNx(void)
+{
+    return 0; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnHomePartition(void)
+{
+    return 0; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnTmpPartition(void)
+{
+    return 0; //TODO: add remediation respecting all existing patterns
+}
+
+static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
+{
+    return 0; //TODO: add remediation respecting all existing patterns
+}
+...
+```
+
+By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test check. 
+
+For example, for a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning`:
+
+```
+static int AuditEnsureAuditdServiceIsRunning(void)
+{
+    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+}
+```
+
+```
+static int RemediateEnsureAuditdServiceIsRunning(void)
+{
+    return (0 == InstallPackage(g_auditd, SecurityBaselineGetLog()) &&
+        EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
+}
+```
+
+Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in commonutils. For example, `InstallPackage` together with its matching `CheckPackageInstalled` are implemented in [src/common/commonutils/FileUtils.c](../../common/commonutils/FileUtils.c).
+
+Remember, we want to seaparate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
+
+Last but not least, make sure to follow [CONTRIBUTING](../../../CONTRIBUTING.md)
