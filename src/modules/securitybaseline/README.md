@@ -21,9 +21,9 @@ The full set of reported MIM objects for audit is fully implemented.
 
 Remediation is incomplete for 125 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: Azure Policy via AutoManage Machine Configuration and the Universal NRP, GitOps, Digital Twins via IoT Hub, Local Management, etc. All that remains are implementations for the 125 checks.
 
-The implementation of the checks follows a rule where there are general utility check functions added to commonutils libraries which are then simply invoked from the SecurityBaseline module implementation. This will allow us to reuse those checks for other security baseline imlementations in the future.
+The implementation of the checks follows a rule where there are general utility check functions added to [commonutils](../../common/commonutils/) libraries which are then simply invoked from the [SecurityBaseline module implementation](src/lib/). This will allow us to reuse those checks for other security baseline imlementations in the future.
 
-For example there are functions in commonutils that check and set file access:
+For example there are functions in [commonutils](../../common/commonutils/) that check and set file access:
 
 ```
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
@@ -32,7 +32,7 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
 
 which then get invoked from several check implementations in [src/lib/securitybaseline.c](src/lib/SecurityBaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
 
-Note that for the remaining remediation checks there are missing set counterparts to the check functions in commonutils such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
+Note that for the remaining remediation checks there are missing set counterparts to the check functions in [commonutils](../../common/commonutils/) such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
                                                                                                                                                                           
 ## Building the module
 
@@ -136,7 +136,7 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 }
 ```
 
-Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in commonutils. For example, `InstallPackage` together with its matching `CheckPackageInstalled` are implemented in [src/common/commonutils/](../../common/commonutils/).
+Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in [commonutils](../../common/commonutils/).
 
 Remember, we want to seaparate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
