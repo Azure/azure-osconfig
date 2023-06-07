@@ -30,7 +30,7 @@ int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 ```
 
-which then get invoked from several check implementations in [src/lib/securitybaseline.c](src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
+which then get invoked from several check implementations in [src/lib/securitybaseline.c](/src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
 
 Note that for the remaining remediation checks there are missing set counterparts to the check functions in commonutils such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
                                                                                                                                                                           
