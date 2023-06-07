@@ -30,13 +30,13 @@ int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 ```
 
-which then get invoked from several check implementations in [src/lib/securitybaseline.c](/src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
+which then get invoked from several check implementations in [src/lib/securitybaseline.c](../../../src/modules/securitybaseline/src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
 
 Note that for the remaining remediation checks there are missing set counterparts to the check functions in commonutils such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
                                                                                                                                                                           
 ## Building the module
 
-Follow the instructions in the main [README.md](../../README.md) how to install prerequisites and how to build OSConfig. The SecurityBaseline module is built with the rest of OSConfig.
+Follow the instructions in the main [README.md](../../../README.md) how to install prerequisites and how to build OSConfig. The SecurityBaseline module is built with the rest of OSConfig.
 
 ## Testing the module
 
@@ -66,7 +66,9 @@ The test recipe for the module is at (src/modules/test/recipes/SecurityBaselineT
 
 From the build directory, run the test recipe with:
 
+```bash
 sudo modules/test/moduletest ../src/modules/test/recipes/SecurityBaselineTests.json
+```
 
 ### Testing at runtime with OSConfig and RC/DC
 
@@ -76,7 +78,7 @@ When local management is enabled we can use the desired configuration (DC) file 
 
 ## Continuing implementation
 
-The remaining 125 remediation checks can be found in [src/lib/securitybaseline.c](src/lib/securitybaseline.c).
+The remaining 125 remediation checks can be found in [src/lib/securitybaseline.c](../../../src/modules/securitybaseline/src/lib/securitybaseline.c).
 
 There the MIM object names constants are listed:
 
