@@ -134,6 +134,6 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 
 Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in [commonutils](../../common/commonutils/).
 
-Remember, we want to seaparate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
+Remember, we want to separate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
 Last but not least, make sure to follow [CONTRIBUTING](../../../CONTRIBUTING.md).
