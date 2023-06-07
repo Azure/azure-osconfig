@@ -44,7 +44,7 @@ From the build directory, run the unit-tests for the Security Baseline module wi
 sudo modules/securitybaseline/tests/securitybaselinetests
 ```
 
-Run the unit-tests for the commonutils libraries with:
+Run the unit-tests for the [commonutils](../../common/commonutils/) libraries (that the SecurityBaseline module is using) with:
 
 ```bash
 sudo common/tests/commontests
@@ -113,7 +113,7 @@ static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
 ...
 ```
 
-By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test check. 
+By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test recipe check will fail, etc. 
 
 For example, for a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning`:
 
