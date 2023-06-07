@@ -21,7 +21,7 @@ The implementation of the checks follows a rule where there are general utility 
 
 For example there are functions in [commonutils](../../common/commonutils/) that check and set file access:
 
-```
+```C
 int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 ```
@@ -78,7 +78,7 @@ The remaining 125 remediation checks can be found in [src/lib/SecurityBaseline.c
 
 There the MIM object names constants are listed:
 
-```
+```C
 // Remaining 125 remediation checks
 static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
 static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
@@ -90,7 +90,7 @@ static const char* g_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remedi
 
 And then later the placeholder check functions that needs to be completed:
 
-```
+```C
 static int RemediateEnsureKernelSupportForCpuNx(void)
 {
     return 0; //TODO: add remediation respecting all existing patterns
@@ -117,14 +117,14 @@ By returning 0 (success) these empty placeholder checks do not flag any error in
 
 For example, for a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning`:
 
-```
+```C
 static int AuditEnsureAuditdServiceIsRunning(void)
 {
     return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 ```
 
-```
+```C
 static int RemediateEnsureAuditdServiceIsRunning(void)
 {
     return (0 == InstallPackage(g_auditd, SecurityBaselineGetLog()) &&
