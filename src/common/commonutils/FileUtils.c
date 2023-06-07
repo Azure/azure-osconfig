@@ -807,7 +807,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
                 else
                 {
                     foundUncommented = true;
-                    OsConfigLogError(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld uncommented with '%c'", 
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld uncommented with '%c'", 
                         text, fileName, (long)(found - contents), commentMark);
                 }
 
