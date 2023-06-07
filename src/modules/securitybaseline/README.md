@@ -30,7 +30,7 @@ int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 ```
 
-which then get invoked from several check implementations in [src/lib/securitybaseline.c](../../../src/modules/securitybaseline/src/lib/securitybaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
+which then get invoked from several check implementations in [src/lib/securitybaseline.c](src/lib/SecurityBaseline.c), such as for example `AuditEnsurePermissionsOnEtcIssue` and `RemediateEnsurePermissionsOnEtcIssue`.
 
 Note that for the remaining remediation checks there are missing set counterparts to the check functions in commonutils such as for example `CheckFileSystemMountingOption`, `CheckSystemAccountsAreNonLogin`, etc. 
                                                                                                                                                                           
@@ -78,7 +78,7 @@ When local management is enabled we can use the desired configuration (DC) file 
 
 ## Continuing implementation
 
-The remaining 125 remediation checks can be found in [src/lib/securitybaseline.c](../../../src/modules/securitybaseline/src/lib/securitybaseline.c).
+The remaining 125 remediation checks can be found in [src/lib/SecurityBaseline.c](src/lib/SecurityBaseline.c).
 
 There the MIM object names constants are listed:
 
@@ -136,7 +136,7 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 }
 ```
 
-Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in commonutils. For example, `InstallPackage` together with its matching `CheckPackageInstalled` are implemented in [src/common/commonutils/FileUtils.c](../../common/commonutils/FileUtils.c).
+Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in commonutils. For example, `InstallPackage` together with its matching `CheckPackageInstalled` are implemented in [src/common/commonutils/](../../common/commonutils/).
 
 Remember, we want to seaparate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
