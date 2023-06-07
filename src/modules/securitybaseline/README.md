@@ -2,7 +2,7 @@
 
 ## Introduction
 
-SecurityBaseline is an [OSConfig Management Module](docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
+SecurityBaseline is an [OSConfig Management Module](../../../docs/modules.md) that audits and remediates the [Linux Security Baseline](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux) from the Azure Compute Security Baselines.
 
 The Module Interface Model (MIM) for Security Baseline is at [src/modules/mim/securitybaseline.json](../mim/securitybaseline.json).
 
