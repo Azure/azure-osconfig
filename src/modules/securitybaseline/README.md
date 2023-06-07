@@ -58,7 +58,7 @@ sudo ctest
 
 ### Functional tests
 
-The test recipe for the module is at (src/modules/test/recipes/SecurityBaselineTests.json)[../test/recipes/SecurityBaselineTests.json].
+The test recipe for the module is at [src/modules/test/recipes/SecurityBaselineTests.json](../test/recipes/SecurityBaselineTests.json).
 
 From the build directory, run the test recipe with:
 
@@ -136,4 +136,4 @@ Note these simple functions invoke functions like `IsDaemonActive` and `InstallP
 
 Remember, we want to seaparate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
-Last but not least, make sure to follow [CONTRIBUTING](../../../CONTRIBUTING.md)
+Last but not least, make sure to follow [CONTRIBUTING](../../../CONTRIBUTING.md).
