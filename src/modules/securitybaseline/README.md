@@ -74,7 +74,7 @@ When local management is enabled we can use the desired configuration (DC) file 
 
 ## Continuing implementation
 
-The remaining 125 remediation checks can be found in [src/lib/SecurityBaseline.c](src/lib/SecurityBaseline.c).
+The remediation checks that remain to be fully implemented can be found in [src/lib/SecurityBaseline.c](src/lib/SecurityBaseline.c).
 
 There the MIM object names constants are listed:
 
@@ -115,7 +115,9 @@ static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
 
 By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test recipe check will fail, etc. 
 
-For example, for a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning`:
+### Example 
+
+An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning` in [src/lib/SecurityBaseline.c](src/lib/SecurityBaseline.c):
 
 ```C
 static int AuditEnsureAuditdServiceIsRunning(void)
@@ -132,7 +134,7 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 }
 ```
 
-Note these simple functions invoke functions like `IsDaemonActive` and `InstallPackage`. These functions are implemented in [commonutils](../../common/commonutils/).
+These simple functions invoke functions like `IsDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
 
 Remember, we want to separate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 
