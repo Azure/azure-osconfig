@@ -626,7 +626,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
 {
-    const char* results = NULL;
+    const char* variableValue = NULL;
     int status = 0;
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
@@ -635,21 +635,22 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    if (NULL != (results = getenv(variableName)))
+    if (NULL != (variableValue = getenv(variableName)))
     {
-        if (NULL != strstr(results, text))
+        if (NULL != strstr(variableValue, text))
         {
             OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s')", text, variableName);
         }
         else
         {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, results);
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, variableValue);
             status = ENOENT;
         }
     }
     else
     {
-        status = errno;
+        status = errno ? errno : EFAULT;
+
         if (ENOENT == status)
         {
             OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
