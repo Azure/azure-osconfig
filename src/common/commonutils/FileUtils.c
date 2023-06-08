@@ -626,10 +626,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
 {
-    const char* commandTemplate = "echo $%s | grep %s";
-    char* command = NULL;
-    char* results = NULL;
-    size_t commandLength = 0;
+    const char* results = NULL;
     int status = 0;
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
@@ -638,37 +635,29 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
-
-    if (NULL == (command = malloc(commandLength)))
+    if (NULL != (results = getenv(variableName)))
     {
-        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
-        status = ENOMEM;
-    }
-    else
-    {
-        memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, variableName, text);
-
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        if (NULL != strstr(results, text))
         {
-            if (NULL != strstr(results, text))
-            {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
-            }
-            else
-            {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
-                status = ENOENT;
-            }
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s')", text, variableName);
         }
         else
         {
-            OsConfigLogError(log, "FindTextInEnvironmentVariable: echo failed, %d", status);
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, results);
+            status = ENOENT;
         }
-
-        FREE_MEMORY(results);
-        FREE_MEMORY(command);
+    }
+    else
+    {
+        status = errno;
+        if (ENOENT == status)
+        {
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
+        }
+        else
+        {
+            OsConfigLogError(log, "FindTextInEnvironmentVariable: getenv(%s) failed, %d", variableName, status);
+        }
     }
 
     return status;
