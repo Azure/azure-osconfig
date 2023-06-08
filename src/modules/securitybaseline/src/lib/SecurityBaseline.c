@@ -966,7 +966,7 @@ static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
 
 static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
