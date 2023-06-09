@@ -638,7 +638,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
+    commandLength = strlen(commandTemplate) + strlen(variableName) + 1;
     if (NULL == (command = malloc(commandLength)))
     {
         OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
@@ -647,7 +647,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
     else
     {
         memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, variableName, text);
+        snprintf(command, commandLength, commandTemplate, variableName);
 
         // getenv() is an alternative, however it only gets the variable that is passed to this process while we need the shell one
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
