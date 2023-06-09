@@ -626,7 +626,10 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
 {
-    const char* variableValue = NULL;
+    const char* commandTemplate = "printenv %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    char* variableValue = NULL;
     int status = 0;
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
@@ -635,32 +638,43 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         return EINVAL;
     }
 
-    if (NULL != (variableValue = getenv(variableName)))
+    commandLength = strlen(commandTemplate) + strlen(variableName) + strlen(text) + 1;
+    if (NULL == (command = malloc(commandLength)))
     {
-        if (NULL != strstr(variableValue, text))
-        {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s')", text, variableName);
-        }
-        else
-        {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, variableValue);
-            status = ENOENT;
-        }
+        OsConfigLogError(log, "FindTextInEnvironmentVariable: out of memory");
+        status = ENOMEM;
     }
     else
     {
-        status = errno ? errno : EFAULT;
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, variableName, text);
 
-        if (ENOENT == status)
+        // getenv(variableName) is an alternative, however it only gets the variable that is passed to this process while we need the shell one
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
         {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
+            if (NULL != strstr(variableValue, text))
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s')", text, variableName);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, variableValue);
+                status = ENOENT;
+            }
         }
         else
         {
-            OsConfigLogError(log, "FindTextInEnvironmentVariable: getenv(%s) failed, %d", variableName, status);
+            if (ENOENT == status)
+            {
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
+            }
+            else
+            {
+                OsConfigLogError(log, "FindTextInEnvironmentVariable: 'printenv %s' failed, %d", variableName, status);
+            }
         }
     }
-
+    
     return status;
 }
 
