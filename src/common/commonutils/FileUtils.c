@@ -649,7 +649,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, variableName, text);
 
-        // getenv(variableName) is an alternative, however it only gets the variable that is passed to this process while we need the shell one
+        // getenv() is an alternative, however it only gets the variable that is passed to this process while we need the shell one
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
         {
             if (NULL != strstr(variableValue, text))
@@ -664,15 +664,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         }
         else
         {
-            if (ENOENT == status)
-            {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
-            }
-            else
-            {
-                OsConfigLogError(log, "FindTextInEnvironmentVariable: 'printenv %s' failed, %d", variableName, status);
-            }
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
         }
+
+        FREE_MEMORY(variableValue);
+        FREE_MEMORY(command);
     }
     
     return status;
