@@ -66,7 +66,6 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
-                    if (payload[i] != fputc(payload[i], file))
                     {
                         result = false;
                     }
@@ -722,7 +721,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
             (0 == FindMarkedTextInFile("/etc/environment", "PATH", ".", log)) ||
             (0 == FindMarkedTextInFile("/root/.profile", "PATH", ".", log)))
         {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found configured for '%s' ('%s')", text, variableName, variableValue);
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found configured for '%s'", text, variableName);
             status = 0;
         }
     }
