@@ -632,13 +632,13 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == fileName) || (NULL == label) || (NULL == marker) || (0 == strlen(fileName)) || (0 == strlen(label) || (0 == strlen(marker)))
+    if ((!FileExists(fileName)) || (NULL == label) || (NULL == marker) || (0 == strlen(label)) || (0 == strlen(marker)))
     {
         OsConfigLogError(log, "FindMarkedTextInFile called with invalid arguments");
         return EINVAL;
-    }
+    } 
 
-    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(line) + 1;
+    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(label) + 1;
     if (NULL == (command = malloc(commandLength)))
     {
         OsConfigLogError(log, "FindMarkedTextInFile: out of memory");
