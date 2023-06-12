@@ -649,12 +649,17 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, variableName);
 
-        // getenv() is an alternative, however it only gets the variable that is passed to this process while we need the shell one
+        // '.' found in 'PATH' ('/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/root/.profile.d ')
+        // /etc/sudoers: // Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/root/.profile.d"
+        // + reboot
+        // Also (not seen by daemon):
+        // /root/.profile: // export PATH=$PATH:/root/.profiles/
+        // /etc/environment: PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.profiles3/"
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
         {
             if (NULL != strstr(variableValue, text))
             {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s')", text, variableName);
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, variableValue);
             }
             else
             {
