@@ -1462,6 +1462,38 @@ TEST_F(CommonUtilsTest, FindTextInFile)
     EXPECT_TRUE(Cleanup(m_path));
 }
 
+TEST_F(CommonUtilsTest, FindMarkedTextInFile)
+{
+    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3";
+
+    EXPECT_TRUE(CreateTestFile(m_path, test));
+
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, ";", nullptr));
+
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", "", nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", "", nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", ";", nullptr));
+
+    EXPECT_EQ(ENOENT, FindMarkedTextInFile("~~DoesNotExist", "FOO", ";", nullptr));
+
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ".", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "!", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ";", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "..", nullptr));
+
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ";", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ".", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", "..,", nullptr));
+
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", ".", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", "..,", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
+
 TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
 {
     EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", nullptr));

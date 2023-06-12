@@ -624,6 +624,55 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
+int FindMarkedTextInFile(const char* fileName, const char* label, const char* marker, void* log)
+{
+    const char* commandTemplate = "cat %s | grep %s";
+    char* command = NULL;
+    char* results = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == fileName) || (NULL == label) || (NULL == marker) || (0 == strlen(fileName)) || (0 == strlen(label) || (0 == strlen(marker)))
+    {
+        OsConfigLogError(log, "FindMarkedTextInFile called with invalid arguments");
+        return EINVAL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(line) + 1;
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "FindMarkedTextInFile: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, fileName, label);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        {
+            if (NULL != strstr(results, marker))
+            {
+                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, results);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s' ('%s')", label, marker, fileName, results);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", label, fileName, status);
+        }
+
+        FREE_MEMORY(results);
+        FREE_MEMORY(command);
+    }
+
+    return status;
+}
+
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, void* log)
 {
     const char* commandTemplate = "printenv %s";
@@ -649,12 +698,6 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, variableName);
 
-        // '.' found in 'PATH' ('/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/root/.profile.d ')
-        // /etc/sudoers: // Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/root/.profile.d"
-        // + reboot
-        // Also (not seen by daemon):
-        // /root/.profile: // export PATH=$PATH:/root/.profiles/
-        // /etc/environment: PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.profiles3/"
         if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
         {
             if (NULL != strstr(variableValue, text))
@@ -676,6 +719,17 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         FREE_MEMORY(command);
     }
     
+    if (ENOENT == status)
+    {
+        if ((0 == FindMarkedTextInFile("/etc/sudoers", "secure_path", ".", log)) ||
+            (0 == FindMarkedTextInFile("/etc/environment", "PATH", ".", log)) ||
+            (0 == FindMarkedTextInFile("/root/.profile", "PATH", ".", log)))
+        {
+            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found configured for '%s' ('%s')", text, variableName, variableValue);
+            status = 0;
+        }
+    }
+
     return status;
 }
 
