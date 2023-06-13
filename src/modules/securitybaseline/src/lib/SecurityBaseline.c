@@ -386,9 +386,11 @@ static const char* g_etcCronHourly = "/etc/cron.hourly";
 static const char* g_etcCronMonthly = "/etc/cron.monthly";
 static const char* g_etcCronWeekly = "/etc/cron.weekly";
 static const char* g_etcMotd = "/etc/motd";
+static const char* g_etcEnvironment = "/etc/environment";
 static const char* g_etcFstab = "/etc/fstab";
 static const char* g_etcInetdConf = "/etc/inetd.conf";
 static const char* g_etcModProbeD = "/etc/modprobe.d";
+static const char* g_etcProfile = "/etc/profile";
 static const char* g_etcRsyslogConf = "/etc/rsyslog.conf";
 static const char* g_etcSyslogNgSyslogNgConf = "/etc/syslog-ng/syslog-ng.conf";
 
@@ -835,7 +837,13 @@ static int AuditEnsureTalkClientIsNotInstalled(void)
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    return (0 != FindTextInEnvironmentVariable("PATH", ".", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    const char* path = "PATH";
+    const char* dot = ".";
+    return ((0 != FindTextInEnvironmentVariable(path, dot, SecurityBaselineGetLog()) &&
+        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
@@ -1023,7 +1031,10 @@ static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    return ((0 == FindTextInEnvironmentVariable("fs.suid_dumpable", "0", SecurityBaselineGetLog())) &&
+    const char* fsSuidDumpable = "fs.suid_dumpable";
+    return (((0 == FindTextInEnvironmentVariable(fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
+        (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
+        (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", SecurityBaselineGetLog()))) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
