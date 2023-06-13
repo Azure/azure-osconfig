@@ -636,7 +636,7 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
     {
         OsConfigLogError(log, "FindMarkedTextInFile called with invalid arguments");
         return EINVAL;
-    } 
+    }
 
     commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(label) + 1;
     if (NULL == (command = malloc(commandLength)))
