@@ -837,13 +837,13 @@ static int AuditEnsureTalkClientIsNotInstalled(void)
 
 static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
-    const char path = "PATH";
+    const char* path = "PATH";
     const char* dot = ".";
     return ((0 != FindTextInEnvironmentVariable(path, dot, SecurityBaselineGetLog()) &&
         (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, SecurityBaselineGetLog())) &&
         (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, SecurityBaselineGetLog())) &&
         (0 != FindMarkedTextInFile(g_etcProfile, path, dot, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
