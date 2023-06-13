@@ -648,7 +648,7 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, fileName, label);
 
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log)))
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
             if (NULL != strstr(results, marker))
             {
@@ -697,7 +697,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, variableName);
 
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log)))
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log))) && variableValue)
         {
             if (NULL != strstr(variableValue, text))
             {
@@ -713,22 +713,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
         {
             OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
         }
+
+        FREE_MEMORY(command);
+        FREE_MEMORY(variableValue);
     }
     
-    if (ENOENT == status)
-    {
-        if ((0 == FindMarkedTextInFile("/etc/sudoers", "secure_path", ".", log)) ||
-            (0 == FindMarkedTextInFile("/etc/environment", "PATH", ".", log)) ||
-            (0 == FindMarkedTextInFile("/root/.profile", "PATH", ".", log)))
-        {
-            OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found configured for '%s'", text, variableName);
-            status = 0;
-        }
-    }
-
-    FREE_MEMORY(command);
-    FREE_MEMORY(variableValue);
-
     return status;
 }
 
