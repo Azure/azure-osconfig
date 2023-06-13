@@ -66,6 +66,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
+                    if (payload[i] != fputc(payload[i], file))
                     {
                         result = false;
                     }
