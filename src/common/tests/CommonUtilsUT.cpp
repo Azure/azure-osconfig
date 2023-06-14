@@ -1508,7 +1508,7 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
 
     EXPECT_EQ(0, setenv("TESTVAR", "0", 1));
     EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0", false, nullptr));
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0", true, nullptr));
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0 ", true, nullptr));
     EXPECT_EQ(ENOENT, FindTextInEnvironmentVariable("TESTVAR", "1", true, nullptr));
     EXPECT_EQ(0, unsetenv("TESTVAR"));
 }
