@@ -1464,45 +1464,47 @@ TEST_F(CommonUtilsTest, FindTextInFile)
 
 TEST_F(CommonUtilsTest, FindMarkedTextInFile)
 {
-    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3";
+    const char* test = "Test \n FOO=test:/123:!abcdef.123:/test.d TEST1; TEST2/..TEST3:Blah=0";
 
     EXPECT_TRUE(CreateTestFile(m_path, test));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(nullptr, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, ";", nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(nullptr, nullptr, nullptr, false, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, nullptr, false, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", nullptr, false, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, nullptr, ";", false, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", "", nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", "", nullptr));
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", ";", nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", "", false, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "FOO", "", false, nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile(m_path, "", ";", false, nullptr));
 
-    EXPECT_EQ(EINVAL, FindMarkedTextInFile("~~DoesNotExist", "FOO", ";", nullptr));
+    EXPECT_EQ(EINVAL, FindMarkedTextInFile("~~DoesNotExist", "FOO", ";", false, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ".", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "!", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ";", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "..", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ".", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "!", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", ";", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "FOO", "..", false, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ";", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ".", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", "..", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ";", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", ".", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST1", "..", false, nullptr));
 
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", ".", nullptr));
-    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", "..", nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", ".", false, nullptr));
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "TEST2", "..", false, nullptr));
+
+    EXPECT_EQ(0, FindMarkedTextInFile(m_path, "Blah", "=0", true, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
 
 TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
 {
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, "/", false, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", "", false, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("", "/", false, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, false, nullptr));
+    EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, false, nullptr));
 
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", nullptr));
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", false, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CompareFileContents)

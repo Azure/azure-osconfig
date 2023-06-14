@@ -1032,6 +1032,7 @@ static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable";
+
     return (((0 == FindTextInEnvironmentVariable(fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
         (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
         (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", SecurityBaselineGetLog()))) &&
