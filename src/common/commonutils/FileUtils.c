@@ -627,12 +627,11 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 int FindMarkedTextInFile(const char* fileName, const char* label, const char* marker, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
-    const char path = "PATH";
-    const char dot = ".";
     char* command = NULL;
     char* results = NULL;
     char* found = 0;
     size_t commandLength = 0;
+    bool foundMarker = false;
     int status = 0;
 
     if ((!FileExists(fileName)) || (NULL == label) || (NULL == marker) || (0 == strlen(label)) || (0 == strlen(marker)))
@@ -654,11 +653,22 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
-            if (NULL != (found = strstr(results, marker)))
+            found = results;
+            while (NULL != (found = strstr(found, marker)))
             {
-                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, found);
-            }
-            else
+                found += 1;
+                if (0 == found[0])
+                {
+                    break;
+                }
+                else if (0 == isalpha(found[0]))
+                {
+                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, found);
+                    foundMarker = true;
+                } 
+            } 
+            
+            if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", label, marker, fileName);
                 status = ENOENT;
@@ -683,6 +693,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
     size_t commandLength = 0;
     char* variableValue = NULL;
     char* found = NULL;
+    bool foundText = false;
     int status = 0;
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
@@ -704,13 +715,24 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log))) && variableValue)
         {
-            if (NULL != (found = strstr(variableValue, text)))
+            found = variableValue;
+            while (NULL != (found = strstr(found, text)))
             {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
-            }
-            else
+                found += 1;
+                if (0 == found[0])
+                {
+                    break;
+                } 
+                else if (0 == isalpha(found[0]))
+                {
+                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
+                    foundText = true;
+                }
+            } 
+            
+            if (false == foundText)
             {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s' ('%s')", text, variableName, variableValue);
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
                 status = ENOENT;
             }
         }
