@@ -261,7 +261,11 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    // Special case as this function is invoked by the MPI Client at every MPI request to authenicate access to the socket
+                    if (NULL != log)
+                    {
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    }
                     result = 0;
                 }
             }
@@ -663,7 +667,7 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
                 }
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, found);
+                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, found - 1);
                     foundMarker = true;
                 } 
             } 
@@ -725,7 +729,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
                 } 
                 else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
+                    OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found - 1);
                     foundText = true;
                 }
             } 
