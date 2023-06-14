@@ -627,8 +627,11 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 int FindMarkedTextInFile(const char* fileName, const char* label, const char* marker, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
+    const char path = "PATH";
+    const char dot = ".";
     char* command = NULL;
     char* results = NULL;
+    char* found = 0;
     size_t commandLength = 0;
     int status = 0;
 
@@ -651,9 +654,9 @@ int FindMarkedTextInFile(const char* fileName, const char* label, const char* ma
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
-            if (NULL != strstr(results, marker))
+            if (NULL != (found = strstr(results, marker)))
             {
-                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s'", label, marker, fileName);
+                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", label, marker, fileName, found);
             }
             else
             {
@@ -679,6 +682,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
     char* command = NULL;
     size_t commandLength = 0;
     char* variableValue = NULL;
+    char* found = NULL;
     int status = 0;
 
     if ((NULL == variableName) || (NULL == text) || (0 == strlen(variableName)) || (0 == strlen(text)))
@@ -700,9 +704,9 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, vo
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &variableValue, NULL, log))) && variableValue)
         {
-            if (NULL != strstr(variableValue, text))
+            if (NULL != (found = strstr(variableValue, text)))
             {
-                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s'", text, variableName);
+                OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' found in '%s' ('%s')", text, variableName, found);
             }
             else
             {
