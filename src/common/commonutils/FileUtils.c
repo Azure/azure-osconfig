@@ -624,7 +624,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, bool strictCompare, void* log)
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
@@ -653,40 +653,25 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &results, NULL, log))) && results)
         {
-            if (strictCompare)
+            found = results;
+            while (NULL != (found = strstr(found, marker)))
             {
-                if (0 == strcmp(results, text))
+                found += 1;
+                if (0 == found[0])
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' found set to '%s' in '%s' ('%s')", text, marker, fileName, results);
+                    break;
                 }
-                else
+                else if (0 == isalpha(found[0]))
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found set to '%s' in '%s' ('%s')", text, marker, fileName, results);
-                    status = ENOENT;
-                }
-            }
-            else
-            {
-                found = results;
-                while (NULL != (found = strstr(found, marker)))
-                {
-                    found += 1;
-                    if (0 == found[0])
-                    {
-                        break;
-                    }
-                    else if (0 == isalpha(found[0]))
-                    {
-                        OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
-                        foundMarker = true;
-                    } 
+                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    foundMarker = true;
                 } 
+            } 
             
-                if (false == foundMarker)
-                {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                    status = ENOENT;
-                }
+            if (false == foundMarker)
+            {
+                OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
+                status = ENOENT;
             }
         }
         else

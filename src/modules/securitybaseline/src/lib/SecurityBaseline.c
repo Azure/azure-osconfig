@@ -841,10 +841,10 @@ static int AuditEnsureDotDoesNotAppearInRootsPath(void)
     const char* dot = ".";
 
     return ((0 != FindTextInEnvironmentVariable(path, dot, false, SecurityBaselineGetLog()) &&
-        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, false, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, false, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, false, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, false, SecurityBaselineGetLog())))) ? 0 : ENOENT;
+        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCronServiceIsEnabled(void)
@@ -1035,8 +1035,8 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
     const char* fsSuidDumpable = "fs.suid_dumpable";
 
     return (((0 == FindTextInEnvironmentVariable(fsSuidDumpable, "0", true, SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", true, SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", true, SecurityBaselineGetLog()))) &&
+        (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
+        (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", SecurityBaselineGetLog()))) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }

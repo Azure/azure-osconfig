@@ -76,7 +76,7 @@ unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, bool strictCompare, void* log);
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log);
 int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, void* log);
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
