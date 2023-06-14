@@ -261,7 +261,11 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    // Special case as this function is invoked by the MPI Client at every MPI request to authenicate access to the socket
+                    if (NULL != log)
+                    {
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    }
                     result = 0;
                 }
             }
