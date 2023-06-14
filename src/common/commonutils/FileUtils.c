@@ -655,13 +655,13 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
         {
             if (strictCompare)
             {
-                if (0 == strcmp(variableValue, text))
+                if (0 == strcmp(results, text))
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' found set to '%s' in '%s' ('%s')", text, marker, fileName);
+                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' found set to '%s' in '%s' ('%s')", text, marker, fileName, results);
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found set to '%s' in '%s' ('%s')", text, marker, fileName);
+                    OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found set to '%s' in '%s' ('%s')", text, marker, fileName, results);
                     status = ENOENT;
                 }
             }
