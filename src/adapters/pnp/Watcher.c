@@ -44,7 +44,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
-            //if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
+            if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
                 if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
@@ -74,7 +74,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* ha
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
             // Do not call MpiSetDesired unless this desired configuration is different from previous
-            //if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
+            if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
                 OsConfigLogInfo(log, "Watcher processing DC payload from %s", fileName);
 
