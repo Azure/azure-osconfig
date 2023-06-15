@@ -27,8 +27,8 @@ static bool g_gitCloneInitialized = false;
 static void SaveReportedConfigurationToFile(const char* fileName, char** hash, void* log)
 {
     char* payload = NULL;
-    char* payloadSizeBytes = 0;
     char* payloadHash = NULL;
+    int* payloadSizeBytes = 0;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
