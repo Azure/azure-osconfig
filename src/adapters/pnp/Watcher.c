@@ -289,7 +289,7 @@ void WatcherDoWork(void* log)
 
     if (g_localManagement)
     {
-        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
+        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash, log);
     }
 }
 
