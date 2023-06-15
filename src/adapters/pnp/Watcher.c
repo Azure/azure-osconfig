@@ -14,21 +14,21 @@
 #define GIT_DC_FILE GIT_DC_CLONE "osconfig_desired.json"
 
 static int g_localManagement = 0;
-static char* g_reportedHash = 0;
-static char* g_desiredHash = 0;
+static size_t g_reportedHash = 0;
+static size_t g_desiredHash = 0;
 
 static int g_gitManagement = 0;
 static char* g_gitRepositoryUrl = NULL;
 static char* g_gitBranch = NULL;
-static char* g_gitDesiredHash = 0;
+static size_t g_gitDesiredHash = 0;
 
 static bool g_gitCloneInitialized = false;
 
-static void SaveReportedConfigurationToFile(const char* fileName, char** hash, void* log)
+static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
 {
     char* payload = NULL;
-    char* payloadHash = NULL;
     int payloadSizeBytes = 0;
+    size_t payloadHash = 0;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
@@ -44,28 +44,25 @@ static void SaveReportedConfigurationToFile(const char* fileName, char** hash, v
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
-            if ((NULL != (payloadHash = HashCommand(payload, log))) && ((NULL == *hash) || (0 != strcmp(*hash, payloadHash))))
+            if ((*hash != (payloadHash = HashString(payload))) && payloadHash))
             {
                 if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
                     RestrictFileAccessToCurrentAccountOnly(fileName);
-                    
-                    FREE_MEMORY(*hash);
-                    *hash = DuplicateString(payloadHash);
+                    *hash = payloadHash;
                 }
             }
         }
         
         CallMpiFree(payload);
-        FREE_MEMORY(payloadHash);
     }
 }
 
-static void ProcessDesiredConfigurationFromFile(const char* fileName, char** hash, void* log)
+static void ProcessDesiredConfigurationFromFile(const char* fileName, size_t* hash, void* log)
 {
-    char* payload = NULL;
-    char* payloadHash = NULL;
+    size_t payloadHash = 0;
     int payloadSizeBytes = 0;
+    char* payload = NULL; 
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
 
@@ -77,7 +74,7 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, char** has
         if (payload && (0 != (payloadSizeBytes = strlen(payload))))
         {
             // Do not call MpiSetDesired unless this desired configuration is different from previous
-            if ((NULL != (payloadHash = HashCommand(payload, log))) && ((NULL == *hash) || (0 != strcmp(*hash, payloadHash))))
+            if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
                 OsConfigLogInfo(log, "Watcher processing DC payload from %s", fileName);
 
@@ -89,14 +86,11 @@ static void ProcessDesiredConfigurationFromFile(const char* fileName, char** has
             
                 if (MPI_OK == mpiResult)
                 {
-                    FREE_MEMORY(*hash);
-                    *hash = DuplicateString(payloadHash);
+                    *hash = payloadHash;
                 }
             }
         }
-        
         FREE_MEMORY(payload);
-        FREE_MEMORY(payloadHash);
     }
 }
 
@@ -289,20 +283,16 @@ void WatcherDoWork(void* log)
 
     if (g_localManagement)
     {
-        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash, log);
+        SaveReportedConfigurationToFile(RC_FILE, &g_reportedHash);
     }
 }
 
 void WatcherCleanup(void* log)
 {
-    FREE_MEMORY(g_reportedHash);
-    FREE_MEMORY(g_desiredHash);
-
     DeleteGitClone(GIT_DC_CLONE, log);
 
     FREE_MEMORY(g_gitRepositoryUrl);
     FREE_MEMORY(g_gitBranch);
-    FREE_MEMORY(g_gitDesiredHash);
 }
 
 bool IsWatcherActive(void)
