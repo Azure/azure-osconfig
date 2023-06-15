@@ -28,7 +28,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, char** hash, v
 {
     char* payload = NULL;
     char* payloadHash = NULL;
-    int* payloadSizeBytes = 0;
+    int payloadSizeBytes = 0;
     bool platformAlreadyRunning = true;
     int mpiResult = MPI_OK;
     
