@@ -44,7 +44,7 @@ static void SaveReportedConfigurationToFile(const char* fileName, size_t* hash)
         
         if ((MPI_OK == mpiResult) && (NULL != payload) && (0 < payloadSizeBytes))
         {
-            //if (*hash != (payloadHash = HashString(payload)))
+            //if ((*hash != (payloadHash = HashString(payload))) && payloadHash)
             {
                 if (SavePayloadToFile(fileName, payload, payloadSizeBytes, GetLog()))
                 {
