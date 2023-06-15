@@ -405,7 +405,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     {
         *size = numberOfGroups;
 
-        if (IsFullLoggingEnabled())
+        //if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups", user->username, user->groupId, numberOfGroups);
         }
@@ -430,7 +430,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                     memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                     memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                    if (IsFullLoggingEnabled())
+                    //if (IsFullLoggingEnabled())
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", 
                             user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
@@ -489,7 +489,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        if (IsFullLoggingEnabled())
+                        //if (IsFullLoggingEnabled())
                         {
                             OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i, 
                                 (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
@@ -557,7 +557,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            if (IsFullLoggingEnabled())
+                            //if (IsFullLoggingEnabled())
                             {
                                 OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in /etc/group",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
