@@ -261,7 +261,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                 }
                 else
                 {
-                    OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    // Special case for the MPI Client
+                    if (NULL != log)
+                    {
+                        OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
+                    }
+                    
                     result = 0;
                 }
             }
