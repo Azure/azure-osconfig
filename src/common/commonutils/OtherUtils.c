@@ -80,7 +80,7 @@ size_t HashString(const char* source)
 {
     // Implementation of the djb2 hashing algorithm by Dan Bernstein
 
-    const size_t hash = 5381;
+    size_t hash = 5381;
     size_t length = 0; 
     size_t i = 0;
     
