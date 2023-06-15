@@ -47,6 +47,15 @@ static int CallMpi(const char* name, const char* request, char** response, int* 
     *response = NULL;
     *responseSize = 0;
 
+    if (0 != (status = CheckFileAccess(mpiSocket, 0, 0, 6770, IsFullLoggingEnabled() ? log : NULL)))
+    {
+        if (0 != (status = SetFileAccess(mpiSocket, 0, 0, 6770, IsFullLoggingEnabled() ? log : NULL)))
+        {
+            OsConfigLogError(log, "CallMpi(%s): access to the MPI socket is not protected, cannot call the MPI (%d)", name, status);
+            return status;
+        }
+    }
+
     snprintf(contentLengthString, sizeof(contentLengthString), "%d", (int)strlen(request));
     estimatedDataSize = strlen(name) + strlen(dataFormat) + strlen(request) + strlen(contentLengthString) + 1;
 
