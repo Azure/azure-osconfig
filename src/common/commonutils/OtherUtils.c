@@ -75,3 +75,18 @@ char* GetHttpProxyData(void* log)
 
     return proxyData;
 }
+
+size_t HashString(const char* source)
+{
+    // djb2 hashing algorithm by Dan Bernstein
+
+    size_t hash = 5381;
+    int c = 0;
+
+    while (c = *source++)
+    {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
+}
