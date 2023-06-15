@@ -80,7 +80,7 @@ size_t HashString(const char* source)
 {
     // Implementation of the djb2 hashing algorithm by Dan Bernstein
 
-    size_t hash = 5381;
+    unsigned long hash = 5381;
     size_t length = 0; 
     size_t i = 0;
     
@@ -96,5 +96,5 @@ size_t HashString(const char* source)
         hash = ((hash << 5) + hash) + source[i];
     }
 
-    return hash;
+    return (size_t)hash;
 }

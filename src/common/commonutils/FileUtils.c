@@ -58,8 +58,7 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
     if (fileName && payload && (0 < payloadSizeBytes))
     {
-        file = fopen(fileName, "w");
-        if (file)
+        if (NULL != (file = fopen(fileName, "w")))
         {
             result = LockFile(file, log);
             if (result)
@@ -69,12 +68,17 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
                     if (payload[i] != fputc(payload[i], file))
                     {
                         result = false;
+                        OsConfigLogError(log, "SavePayloadToFile: failed saving '%c' to '%s' (%d)", payload[i], fileName, errno);
                     }
                 }
 
                 UnlockFile(file, log);
             }
             fclose(file);
+        }
+        else
+        {
+            OsConfigLogError(log, "SavePayloadToFile: cannot open for write '%s' (%d)", fileName, errno);
         }
     }
 
