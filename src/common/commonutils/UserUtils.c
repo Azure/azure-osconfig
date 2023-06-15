@@ -391,7 +391,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     *groupList = NULL;
     *size = 0;
 
-    OsConfigLogInfo(log, "#### EnumerateUserGroups about to call getgrouplist(user '%s', user %d)", user ? user->username : "<NULL!>", user ? user->groupId : -1);
+    OsConfigLogInfo(log, "#### EnumerateUserGroups about to call getgrouplist(user '%s', user %d)", user ? user->username : "<NULL!>", user ? user->groupId : 0);
     if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
