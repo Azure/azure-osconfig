@@ -389,7 +389,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     }
     else if (NULL == user->username)
     {
-        OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name);
+        OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
         return ENOENT;
     }
 
