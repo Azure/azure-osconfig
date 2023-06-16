@@ -387,6 +387,11 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         OsConfigLogError(log, "EnumerateUserGroups: invalid arguments");
         return EINVAL;
     }
+    else if (NULL == user->username)
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name");
+        return ENOENT;
+    }
 
     *groupList = NULL;
     *size = 0;
@@ -691,7 +696,7 @@ int CheckNoDuplicateUserNamesExist(void* log)
 
             for (j = 0; (j < userListSize) && (0 == status); j++)
             {
-                if (0 == strcmp(userList[i].username, userList[j].username))
+                if (userList[i].username && userList[j].username && (0 == strcmp(userList[i].username, userList[j].username)))
                 {
                     hits += 1;
 
@@ -881,7 +886,7 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 != strcmp(userList[i].username, g_root)) && (0 == userList[i].userId))
+            if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);

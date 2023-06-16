@@ -3,12 +3,6 @@
 
 #include "Internal.h"
 
-size_t HashString(const char* source)
-{
-    std::hash<std::string> hashString;
-    return hashString(std::string(source));
-}
-
 bool IsValidClientName(const char* name)
 {
     // "Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>"
