@@ -3,6 +3,35 @@
 
 #include "Internal.h"
 
+// To be replaced in the future with a C implementation, such as this djb2 hashing 
+// algorithm implementation which is already verified to work well in this project:
+//
+// size_t HashString(const char* source)
+// {
+//     size_t hash = 5381;
+//     size_t length = 0;
+//     size_t i = 0;
+// 
+//     if (NULL == source)
+//     {
+//         return 0;
+//     }
+// 
+//     length = strlen(source);
+// 
+//     for (i = 0; i < length; i++)
+//     {
+//         hash = ((hash << 5) + hash) + source[i];
+//     }
+// 
+//     return hash;
+// }
+size_t HashString(const char* source)
+{
+    std::hash<std::string> hashString;
+    return hashString(std::string(source));
+}
+
 bool IsValidClientName(const char* name)
 {
     // "Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>"
