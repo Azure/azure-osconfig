@@ -886,11 +886,7 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (NULL == userList[i].username)
-            {
-                continue;
-            }
-            else if ((0 != strcmp(userList[i].username, g_root)) && (0 == userList[i].userId))
+            if (((NULL == userList[i].username) || (0 != strcmp(userList[i].username, g_root))) && (0 == userList[i].userId))
             {
                 OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
