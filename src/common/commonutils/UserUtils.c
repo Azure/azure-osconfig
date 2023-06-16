@@ -387,11 +387,15 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         OsConfigLogError(log, "EnumerateUserGroups: invalid arguments");
         return EINVAL;
     }
+    else if (NULL == user->username)
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: unable to enumerate groups for user without name);
+        return ENOENT;
+    }
 
     *groupList = NULL;
     *size = 0;
-
-    OsConfigLogInfo(log, "#### EnumerateUserGroups about to call getgrouplist(user '%s', user %d)", user ? user->username : "<NULL!>", user ? user->groupId : 0);
+    
     if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
@@ -406,14 +410,13 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     {
         *size = numberOfGroups;
 
-        //if (IsFullLoggingEnabled())
+        if (IsFullLoggingEnabled())
         {
             OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups", user->username, user->groupId, numberOfGroups);
         }
 
         for (i = 0; i < numberOfGroups; i++)
         {
-            OsConfigLogInfo(log, "########## EnumerateUserGroups: calling getgrgid for gropus id %u", groupIds[i]);
             if (NULL == (groupEntry = getgrgid(groupIds[i])))
             {
                 OsConfigLogError(log, "EnumerateUserGroups: getgrgid(%u) failed", (unsigned int)groupIds[i]);
@@ -432,7 +435,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
                     memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                     memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                    //if (IsFullLoggingEnabled())
+                    if (IsFullLoggingEnabled())
                     {
                         OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in group '%s' (%u)", 
                             user->username, user->groupId, (*groupList)[i].groupName, (*groupList)[i].groupId);
@@ -491,7 +494,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
                         memset((*groupList)[i].groupName, 0, groupNameLength + 1);
                         memcpy((*groupList)[i].groupName, groupEntry->gr_name, groupNameLength);
 
-                        //if (IsFullLoggingEnabled())
+                        if (IsFullLoggingEnabled())
                         {
                             OsConfigLogInfo(log, "EnumerateAllGroups(group %d): group name '%s', gid %u, %s", i, 
                                 (*groupList)[i].groupName, (*groupList)[i].groupId, (*groupList)[i].hasUsers ? "has users" : "empty");
@@ -559,7 +562,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
                     {
                         if (userGroupList[j].groupId == groupList[k].groupId)
                         {
-                            //if (IsFullLoggingEnabled())
+                            if (IsFullLoggingEnabled())
                             {
                                 OsConfigLogInfo(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) found in /etc/group",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
@@ -693,7 +696,7 @@ int CheckNoDuplicateUserNamesExist(void* log)
 
             for (j = 0; (j < userListSize) && (0 == status); j++)
             {
-                if (0 == strcmp(userList[i].username, userList[j].username))
+                if (userList[i].username && userList[j].username && (0 == strcmp(userList[i].username, userList[j].username)))
                 {
                     hits += 1;
 
@@ -883,7 +886,11 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((0 != strcmp(userList[i].username, g_root)) && (0 == userList[i].userId))
+            if (NULL == userList[i].username)
+            {
+                continue;
+            }
+            else if ((0 != strcmp(userList[i].username, g_root)) && (0 == userList[i].userId))
             {
                 OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
