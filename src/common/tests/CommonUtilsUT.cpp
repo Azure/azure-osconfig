@@ -1607,3 +1607,45 @@ TEST_F(CommonUtilsTest, FindTextInCommandOutput)
     EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr));
     EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr));
 }
+
+TEST_F(CommonUtilsTest, CheckOptionFromFile)
+{
+    const char* testFile =
+        "FooEntry1:test\n"
+        "Test1=abc\n"
+        "FooEntry2:     234\n"
+        "FooEntry3:     2 3 4\n"
+        "abc Test1 456 # rt 4 $"
+        "Test2:     12          test test\n";
+    
+    char* value = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+
+    EXPECT_EQ(nullptr, GetOptionFromFile(nullptr, nullptr, nullptr));
+    EXPECT_EQ(nullptr, GetOptionFromFile(m_path, nullptr, nullptr));
+    EXPECT_EQ(nullptr, GetOptionFromFile(nullptr, "Test1", nullptr));
+    
+    EXPECT_STREQ("test", value = GetOptionFromFile(m_path, "FooEntry1:", nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("abc", value = GetOptionFromFile(m_path, "Test1=", nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("234", value = GetOptionFromFile(m_path, "FooEntry2:", nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_EQ(234, value = GetIntegerOptionFromFile(m_path, "FooEntry2:", nullptr));
+
+    EXPECT_STREQ("234", value = GetOptionFromFile(m_path, "FooEntry3:", nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_EQ(234, value = GetIntegerOptionFromFile(m_path, "FooEntry3:", nullptr));
+
+    EXPECT_STREQ("12", value = GetOptionFromFile(m_path, "Test2:", nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_EQ(12, value = GetIntegerOptionFromFile(m_path, "Test2:", nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
