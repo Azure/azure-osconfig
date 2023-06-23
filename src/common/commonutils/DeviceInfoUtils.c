@@ -603,7 +603,7 @@ int CheckLoginUmask(const char* desired, void* log)
     return status;
 }
 
-char* GetOptionFromFile(const char* fileName, const char* label, void* log)
+char* GetOptionFromFile(const char* fileName, const char* label, char marker, void* log)
 {
     const char* commandTemplate = "cat %s | grep \"%s\"";
     size_t commandLength = 0;
@@ -629,10 +629,11 @@ char* GetOptionFromFile(const char* fileName, const char* label, void* log)
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && result)
         {
-            RemovePrefixUpTo(result, ' ');
+            RemovePrefixUpTo(result, marker);
             RemovePrefixBlanks(result);
             RemoveTrailingBlanks(result);
             TruncateAtFirst(result, '\n');
+            TruncateAtFirst(result, ' ');
 
             OsConfigLogInfo(log, "GetOptionFromFile: found '%s' in '%s' for '%s'", result, fileName, label);
         }
@@ -648,12 +649,12 @@ char* GetOptionFromFile(const char* fileName, const char* label, void* log)
     return result;
 }
 
-int GetIntegerOptionFromFile(const char* fileName, const char* label, void* log)
+int GetIntegerOptionFromFile(const char* fileName, const char* label, char marker, void* log)
 {
     char* stringValue = NULL;
     int value = 0;
 
-    if (NULL != (stringValue = GetOptionFromFile(fileName, label, log)))
+    if (NULL != (stringValue = GetOptionFromFile(fileName, label, marker, log)))
     {
         value = atoi(stringValue);
         FREE_MEMORY(stringValue);
