@@ -1635,17 +1635,17 @@ TEST_F(CommonUtilsTest, CheckOptionFromFile)
     EXPECT_STREQ("234", value = GetOptionFromFile(m_path, "FooEntry2:", nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_EQ(234, value = GetIntegerOptionFromFile(m_path, "FooEntry2:", nullptr));
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2:", nullptr));
 
     EXPECT_STREQ("234", value = GetOptionFromFile(m_path, "FooEntry3:", nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_EQ(234, value = GetIntegerOptionFromFile(m_path, "FooEntry3:", nullptr));
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry3:", nullptr));
 
     EXPECT_STREQ("12", value = GetOptionFromFile(m_path, "Test2:", nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_EQ(12, value = GetIntegerOptionFromFile(m_path, "Test2:", nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
