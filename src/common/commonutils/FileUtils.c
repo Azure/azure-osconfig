@@ -958,3 +958,63 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
 
     return status;
 }
+
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+{
+    const char* commandTemplate = "cat %s | grep \"%s\"";
+    size_t commandLength = 0;
+    char* command = NULL;
+    char* result = NULL;
+    int status = 0;
+
+    if ((!FileExists(fileName)) || (NULL == option))
+    {
+        OsConfigLogError(log, "GetStringOptionFromFile called with invalid arguments");
+        return NULL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(fileName) + strlen(option) + 1;
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "GetStringOptionFromFile: out of memory");
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, fileName, option);
+
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))) && result)
+        {
+            RemovePrefixUpTo(result, separator);
+            RemovePrefixBlanks(result);
+            RemoveTrailingBlanks(result);
+            TruncateAtFirst(result, '\n');
+            TruncateAtFirst(result, ' ');
+
+            OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", result, fileName, option);
+        }
+        else
+        {
+            OsConfigLogInfo(log, "GetStringOptionFromFile: '%s' not found in '%s' (%d)", option, fileName, status);
+            FREE_MEMORY(result);
+        }
+
+        FREE_MEMORY(command);
+    }
+
+    return result;
+}
+
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+{
+    char* stringValue = NULL;
+    int value = 0;
+
+    if (NULL != (stringValue = GetStringOptionFromFile(fileName, option, separator, log)))
+    {
+        value = atoi(stringValue);
+        FREE_MEMORY(stringValue);
+    }
+
+    return value;
+}

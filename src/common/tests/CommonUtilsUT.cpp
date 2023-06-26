@@ -1608,7 +1608,7 @@ TEST_F(CommonUtilsTest, FindTextInCommandOutput)
     EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr));
 }
 
-TEST_F(CommonUtilsTest, CheckOptionFromFile)
+TEST_F(CommonUtilsTest, GetOptionFromFile)
 {
     const char* testFile =
         "FooEntry1:test\n"
@@ -1622,27 +1622,27 @@ TEST_F(CommonUtilsTest, CheckOptionFromFile)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
-    EXPECT_EQ(nullptr, GetOptionFromFile(nullptr, nullptr, ':', nullptr));
-    EXPECT_EQ(nullptr, GetOptionFromFile(m_path, nullptr, ':', nullptr));
-    EXPECT_EQ(nullptr, GetOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStrigOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
     
-    EXPECT_STREQ("test", value = GetOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("abc", value = GetOptionFromFile(m_path, "Test1=", '=', nullptr));
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("234", value = GetOptionFromFile(m_path, "FooEntry2:", ':', nullptr));
+    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2:", ':', nullptr));
     FREE_MEMORY(value);
 
     EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2:", ':', nullptr));
 
-    EXPECT_STREQ("2", value = GetOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
     FREE_MEMORY(value);
 
     EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
 
-    EXPECT_STREQ("12", value = GetOptionFromFile(m_path, "Test2:", ':', nullptr));
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
     FREE_MEMORY(value);
 
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', nullptr));
