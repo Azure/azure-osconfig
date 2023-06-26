@@ -1613,8 +1613,8 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     const char* testFile =
         "FooEntry1:test\n"
         "Test1=abc\n"
-        "FooEntry2:     234\n"
-        "FooEntry3:     2 3 4\n"
+        "FooEntry2  =     234\n"
+        "FooEntry3 :     2 3 4\n"
         "abc Test1 456 # rt 4 $"
         "Test2:     12          test test\n";
     
@@ -1629,23 +1629,37 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
 
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', nullptr));
+    FREE_MEMORY(value);
+
     EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2:", ':', nullptr));
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2:", ':', nullptr));
+    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', nullptr));
 
     EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
     FREE_MEMORY(value);
 
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', nullptr));
+    FREE_MEMORY(value);
+
     EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', nullptr));
 
     EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
     FREE_MEMORY(value);
 
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', nullptr));
+    FREE_MEMORY(value);
+
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
