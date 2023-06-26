@@ -965,40 +965,43 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     char* contents = NULL;
     char* found = NULL;
 
-    if ((!FileExists(fileName)) || (NULL == option))
+    if ((NULL == fileName) || (NULL == option) || (0 == strlen(fileName) || (0 == strlen(option))))
     {
         OsConfigLogError(log, "GetStringOptionFromFile called with invalid arguments");
         return NULL;
     }
-
-    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    
+    if (FileExists(fileName))
     {
-        OsConfigLogError(log, "GetStringOptionFromFile: cannot read from '%s'", fileName);
-    }
-    else
-    {
-        if (NULL != (found = strstr(contents, option)))
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
-            RemovePrefixUpTo(found, separator);
-            RemovePrefixBlanks(found);
-            RemoveTrailingBlanks(found);
-            TruncateAtFirst(found, '\n');
-            TruncateAtFirst(found, ' ');
-
-            OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", found, fileName, option);
-
-            if (NULL == (result = DuplicateString(found)))
-            {
-                OsConfigLogError(log, "GetStringOptionFromFile: DuplicateString failed (%d)", errno);
-            }
-
+            OsConfigLogError(log, "GetStringOptionFromFile: cannot read from '%s'", fileName);
         }
         else
         {
-            OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", option, fileName);
-        }
+            if (NULL != (found = strstr(contents, option)))
+            {
+                RemovePrefixUpTo(found, separator);
+                RemovePrefixBlanks(found);
+                RemoveTrailingBlanks(found);
+                TruncateAtFirst(found, '\n');
+                TruncateAtFirst(found, ' ');
 
-        FREE_MEMORY(contents);
+                OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", found, fileName, option);
+
+                if (NULL == (result = DuplicateString(found)))
+                {
+                    OsConfigLogError(log, "GetStringOptionFromFile: DuplicateString failed (%d)", errno);
+                }
+
+            }
+            else
+            {
+                OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", option, fileName);
+            }
+
+            FREE_MEMORY(contents);
+        }
     }
 
     return result;

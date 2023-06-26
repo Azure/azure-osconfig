@@ -1128,8 +1128,10 @@ static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
     const char* fileCreateMode = "$FileCreateMode";
     int mode = 0, modeNg = 0;
     
-    return (((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == mode)) &&
-        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg))) ? 0 : ENOENT;
+    return (((EEXIST == CheckFileExists(g_etcRsyslogConf, SecurityBaselineGetLog())) || 
+        (600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode))) &&
+        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, SecurityBaselineGetLog()) || 
+        (600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
