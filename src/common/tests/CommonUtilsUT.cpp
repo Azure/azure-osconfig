@@ -1616,7 +1616,8 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "FooEntry2  =     234\n"
         "FooEntry3 :     2 3 4\n"
         "abc Test1 456 # rt 4 $"
-        "Test2:     12          test test\n";
+        "Test2:     12          test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5";
     
     char* value = nullptr;
 
@@ -1660,6 +1661,15 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', nullptr));
     EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', nullptr));
+
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', nullptr));
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }
