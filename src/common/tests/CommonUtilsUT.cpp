@@ -1623,7 +1623,7 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
-    EXPECT_EQ(nullptr, GetStrigOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
     
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
