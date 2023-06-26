@@ -1643,13 +1643,13 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 
     EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', nullptr));
 
-    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
     FREE_MEMORY(value);
 
     EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', nullptr));
     FREE_MEMORY(value);
 
-    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3:", ':', nullptr));
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
     EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', nullptr));
 
     EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
