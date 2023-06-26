@@ -1032,13 +1032,11 @@ static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    const char* fsSuidDumpable = "fs.suid_dumpable";
+    const char* fsSuidDumpable = "fs.suid_dumpable = 0";
 
-    return (((0 == FindTextInEnvironmentVariable(fsSuidDumpable, "0 ", true, SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", SecurityBaselineGetLog()))) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
+        (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
+        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
