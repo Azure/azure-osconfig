@@ -1022,7 +1022,7 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (4 < GetIntegerOptionFromFile("/etc/pam.d/common-password", "remember", '#', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (4 < GetIntegerOptionFromFile("/etc/pam.d/common-password", "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
