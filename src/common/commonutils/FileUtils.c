@@ -965,7 +965,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
     char* contents = NULL;
     char* found = NULL;
 
-    if ((!FileExists(fileName)) || (NULL == option) || (0 == strlen(option)))
+    if ((!FileExists(fileName)) || (NULL == option))
     {
         OsConfigLogError(log, "GetStringOptionFromFile called with invalid arguments");
         return NULL;
