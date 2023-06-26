@@ -1125,8 +1125,11 @@ static int AuditEnsureALoggingServiceIsSnabled(void)
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ((0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    const char* fileCreateMode = "$FileCreateMode";
+    int mode = 0, modeNg = 0;
+    
+    return (((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, " ", SecurityBaselineGetLog()))) || (640 == mode)) &&
+        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, " ", SecurityBaselineGetLog()))) || (640 == modeNg))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
