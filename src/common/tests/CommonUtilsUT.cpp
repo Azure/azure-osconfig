@@ -1612,11 +1612,11 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 {
     const char* testFile =
         "FooEntry1:test\n"
-        "Test1=abc\n"
+        " Test1=abc foo=123  \n"
         "FooEntry2  =     234\n"
         "FooEntry3 :     2 3 4\n"
         "abc Test4 0456 # rt 4 $"
-        "Test2:     12          test test\n"
+        "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = 3";
     
@@ -1625,8 +1625,13 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
     
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
@@ -1652,7 +1657,6 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', nullptr));
     FREE_MEMORY(value);
     EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', nullptr));
-
 
     EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
     FREE_MEMORY(value);

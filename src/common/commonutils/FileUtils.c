@@ -993,15 +993,18 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
                 {
                     OsConfigLogError(log, "GetStringOptionFromFile: DuplicateString failed (%d)", errno);
                 }
-
             }
             else
             {
-                OsConfigLogInfo(log, "FindTextInFile: '%s' not found in '%s'", option, fileName);
+                OsConfigLogInfo(log, "GetStringOptionFromFile: '%s' not found in '%s'", option, fileName);
             }
 
             FREE_MEMORY(contents);
         }
+    }
+    else
+    {
+        OsConfigLogError(log, "GetStringOptionFromFile: '%s' not found", fileName);
     }
 
     return result;
@@ -1010,7 +1013,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
     char* stringValue = NULL;
-    int value = 0;
+    int value = -1;
 
     if (NULL != (stringValue = GetStringOptionFromFile(fileName, option, separator, log)))
     {
