@@ -1022,7 +1022,7 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-password", '#', "remember", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (4 < GetIntegerOptionFromFile("/etc/pam.d/common-password", "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
@@ -1032,13 +1032,11 @@ static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
 {
-    const char* fsSuidDumpable = "fs.suid_dumpable";
+    const char* fsSuidDumpable = "fs.suid_dumpable = 0";
 
-    return (((0 == FindTextInEnvironmentVariable(fsSuidDumpable, "0 ", true, SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcEnvironment, fsSuidDumpable, "0", SecurityBaselineGetLog())) ||
-        (0 == FindMarkedTextInFile(g_etcProfile, fsSuidDumpable, "0", SecurityBaselineGetLog()))) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInFolder("/etc/security/limits.d", "fs.suid_dumpable = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
+        (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
+        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePasswordCreationRequirements(void)
@@ -1127,8 +1125,12 @@ static int AuditEnsureALoggingServiceIsSnabled(void)
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
-    return ((0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 644, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 644, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    const char* fileCreateMode = "$FileCreateMode";
+    int mode = 0, modeNg = 0;
+    
+    return ((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode)) &&
+        ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, SecurityBaselineGetLog()) || 
+        (600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)

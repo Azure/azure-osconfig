@@ -82,7 +82,10 @@ int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
 int FindTextInCommandOutput(const char* command, const char* text, void* log);
-                                                                                                                                                                                                                                                           
+
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
+
 char* DuplicateString(const char* source);
 
 size_t HashString(const char* source);

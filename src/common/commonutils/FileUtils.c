@@ -958,3 +958,68 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
 
     return status;
 }
+
+char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+{
+    char* result = NULL;
+    char* contents = NULL;
+    char* found = NULL;
+
+    if ((NULL == fileName) || (NULL == option) || (0 == strlen(fileName) || (0 == strlen(option))))
+    {
+        OsConfigLogError(log, "GetStringOptionFromFile called with invalid arguments");
+        return NULL;
+    }
+    
+    if (FileExists(fileName))
+    {
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+        {
+            OsConfigLogError(log, "GetStringOptionFromFile: cannot read from '%s'", fileName);
+        }
+        else
+        {
+            if (NULL != (found = strstr(contents, option)))
+            {
+                RemovePrefixUpTo(found, separator);
+                RemovePrefixBlanks(found);
+                RemoveTrailingBlanks(found);
+                TruncateAtFirst(found, '\n');
+                TruncateAtFirst(found, ' ');
+
+                OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", found, fileName, option);
+
+                if (NULL == (result = DuplicateString(found)))
+                {
+                    OsConfigLogError(log, "GetStringOptionFromFile: DuplicateString failed (%d)", errno);
+                }
+            }
+            else
+            {
+                OsConfigLogInfo(log, "GetStringOptionFromFile: '%s' not found in '%s'", option, fileName);
+            }
+
+            FREE_MEMORY(contents);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "GetStringOptionFromFile: '%s' not found", fileName);
+    }
+
+    return result;
+}
+
+int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
+{
+    char* stringValue = NULL;
+    int value = -1;
+
+    if (NULL != (stringValue = GetStringOptionFromFile(fileName, option, separator, log)))
+    {
+        value = atoi(stringValue);
+        FREE_MEMORY(stringValue);
+    }
+
+    return value;
+}

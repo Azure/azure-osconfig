@@ -1607,3 +1607,74 @@ TEST_F(CommonUtilsTest, FindTextInCommandOutput)
     EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "123", nullptr));
     EXPECT_EQ(0, FindTextInCommandOutput("echo Test123", "2", nullptr));
 }
+
+TEST_F(CommonUtilsTest, GetOptionFromFile)
+{
+    const char* testFile =
+        "FooEntry1:test\n"
+        " Test1=abc foo=123  \n"
+        "FooEntry2  =     234\n"
+        "FooEntry3 :     2 3 4\n"
+        "abc Test4 0456 # rt 4 $"
+        "Test2:     12 $!    test test\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = 3";
+    
+    char* value = nullptr;
+
+    EXPECT_TRUE(CreateTestFile(m_path, testFile));
+
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1", ':', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1=", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("abc", value = GetStringOptionFromFile(m_path, "Test1", '=', nullptr));
+    FREE_MEMORY(value);
+
+    EXPECT_STREQ("234", value = GetStringOptionFromFile(m_path, "FooEntry2", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(234, GetIntegerOptionFromFile(m_path, "FooEntry2", '=', nullptr));
+
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("2", value = GetStringOptionFromFile(m_path, "FooEntry3", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3 :", ':', nullptr));
+    EXPECT_EQ(2, GetIntegerOptionFromFile(m_path, "FooEntry3", ':', nullptr));
+
+    EXPECT_STREQ("0456", value = GetStringOptionFromFile(m_path, "Test4", ' ', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(456, GetIntegerOptionFromFile(m_path, "Test4", ' ', nullptr));
+
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2:", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("12", value = GetStringOptionFromFile(m_path, "Test2", ':', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2:", ':', nullptr));
+    EXPECT_EQ(12, GetIntegerOptionFromFile(m_path, "Test2", ':', nullptr));
+
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember=", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_STREQ("5", value = GetStringOptionFromFile(m_path, "remember", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', nullptr));
+    EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', nullptr));
+
+    EXPECT_STREQ("3", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
+    FREE_MEMORY(value);
+    EXPECT_EQ(3, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
+
+    EXPECT_TRUE(Cleanup(m_path));
+}
