@@ -1403,7 +1403,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
             {
                 if (userList[i].isRoot)
                 {
-                    OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
+                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
                     rootHasPassword = true;
                     break;
                 }
