@@ -1232,7 +1232,7 @@ int CheckPasswordExpirationLessThan(long days, void* log)
             }
             else
             {
-                passwordExpirationDate = userList[i].lastPasswordChange + userList[i].maximumPasswordAge;
+                passwordExpirationDate = (userList[i].maximumPasswordAge >= 0) ? userList[i].lastPasswordChange + userList[i].maximumPasswordAge : userList[i].maximumPasswordAge;
                 
                 if (passwordExpirationDate >= currentDate)
                 {
