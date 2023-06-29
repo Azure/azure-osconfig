@@ -1188,7 +1188,13 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
             }
             else
             {
-                if (userList[i].maximumPasswordAge <= days)
+                if (userList[i].maximumPasswordAge < 0)
+                {
+                    OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has unlimited time between password changes of %ld days (requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    status = ENOENT;
+                }
+                else if (userList[i].maximumPasswordAge <= days)
                 {
                     OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
