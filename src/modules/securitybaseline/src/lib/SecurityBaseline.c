@@ -1027,7 +1027,7 @@ static int AuditEnsurePasswordReuseIsLimited(void)
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
@@ -1059,38 +1059,29 @@ static int AuditEnsureLockoutForFailedPasswordAttempts(void)
         (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
-/*
-auditEnsureMountingOfUsbStorageDevicesIsDisabled
-auditEnsureDisabledInstallationOfCramfsFileSystem
-auditEnsureDisabledInstallationOfFreevxfsFileSystem
-auditEnsureDisabledInstallationOfHfsFileSystem
-auditEnsureDisabledInstallationOfHfsplusFileSystem
-auditEnsureDisabledInstallationOfJffs2FileSystem
-*/
-
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
