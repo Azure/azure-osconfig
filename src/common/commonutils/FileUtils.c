@@ -848,7 +848,7 @@ int FindTextInFolder(const char* directory, const char* text, void* log)
 
     if (status)
     {
-        OsConfigLogError(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
+        OsConfigLogInfo(log, "FindTextInFolder: '%s' not found in any file under '%s'", text, directory);
     }
 
     return status;

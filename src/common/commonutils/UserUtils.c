@@ -1188,7 +1188,13 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
             }
             else
             {
-                if (userList[i].maximumPasswordAge <= days)
+                if (userList[i].maximumPasswordAge < 0)
+                {
+                    OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has unlimited time between password changes of %ld days (requested: %ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    status = ENOENT;
+                }
+                else if (userList[i].maximumPasswordAge <= days)
                 {
                     OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has a maximum time between password changes of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
@@ -1219,6 +1225,7 @@ int CheckPasswordExpirationLessThan(long days, void* log)
     unsigned int userListSize = 0, i = 0;
     long timer = 0;
     int status = 0;
+    long passwordExpirationDate = 0;
     long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1231,30 +1238,32 @@ int CheckPasswordExpirationLessThan(long days, void* log)
             }
             else
             {
-                if (userList[i].expirationDate >= currentDate)
+                passwordExpirationDate = (userList[i].maximumPasswordAge >= 0) ? (userList[i].lastPasswordChange + userList[i].maximumPasswordAge) : userList[i].maximumPasswordAge;
+                
+                if (passwordExpirationDate >= currentDate)
                 {
-                    if ((userList[i].expirationDate - currentDate) <= days)
+                    if ((passwordExpirationDate - currentDate) <= days)
                     {
-                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested: %ld)",
-                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate - currentDate, days);
+                        OsConfigLogInfo(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested: %ld)",
+                            userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                     }
                     else
                     {
-                        OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, less than requested %ld days",
-                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate, days);
+                        OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days, less than requested %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, days);
                         status = ENOENT;
                     }
                 }
-                else if (userList[i].expirationDate < 0)
+                else if (passwordExpirationDate < 0)
                 {
-                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].expirationDate);
+                    OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
+                        userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate);
                     status = ENOENT;
                 }
-                else if (userList[i].expirationDate < currentDate)
+                else if (passwordExpirationDate < currentDate)
                 {
-                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
-                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - userList[i].expirationDate);
+                    OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) expired %ld days ago",
+                        userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate);
                     status = ENOENT;
                 }
             }
@@ -1400,7 +1409,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
             {
                 if (userList[i].isRoot)
                 {
-                    OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
+                    OsConfigLogInfo(log, "CheckRootPasswordForSingleUserMode: root appears to have a password");
                     rootHasPassword = true;
                     break;
                 }
