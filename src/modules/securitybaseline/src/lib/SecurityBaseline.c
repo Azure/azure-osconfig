@@ -1251,9 +1251,8 @@ static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 
 static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveCountMax 0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveInterval", SecurityBaselineGetLog())))) ? 0 : ENOENT;
+    return ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLoginGraceTimeIsSet(void)
@@ -1280,7 +1279,7 @@ static int AuditEnsureSshWarningBannerIsEnabled(void)
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
