@@ -489,7 +489,8 @@ int InstallPackage(const char* packageName, void* log)
 
     if (0 != (status = CheckPackageInstalled(packageName, log)))
     {
-        if (0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log)))
+        if ((0 == (status = CheckOrInstallPackage(commandTemplate, packageName, log))) && 
+            (0 == (status = CheckPackageInstalled(packageName, log))))
         {
             OsConfigLogInfo(log, "InstallPackage: '%s' was successfully installed", packageName);
         }
