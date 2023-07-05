@@ -11,6 +11,14 @@
 #define HOST_NAME_CONFIGURATOR_LOGFILE "/var/log/osconfig_hostname.log"
 #define HOST_NAME_CONFIGURATOR_ROLLEDLOGFILE "/var/log/osconfig_hostname.bak"
 
+static inline void HostName::MmiFreeInternal(MMI_JSON_STRING payload)
+{
+    if (payload)
+    {
+        delete[] payload;
+    }
+}
+
 class HostNameLog
 {
 public:
