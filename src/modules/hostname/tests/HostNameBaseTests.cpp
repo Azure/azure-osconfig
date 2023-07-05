@@ -73,7 +73,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithNewLine)
@@ -94,7 +94,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithNullTerminator)
@@ -115,7 +115,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetNameWithZeroPayloadByteSize)
@@ -136,7 +136,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"device\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetHosts)
@@ -164,7 +164,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithNewLine)
@@ -192,7 +192,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithNullTerminator)
@@ -220,7 +220,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithComments)
@@ -249,7 +249,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback;fe00::0 ip6-localnet;ff00::0 ip6-mcastprefix;ff02::1 ip6-allnodes;ff02::2 ip6-allrouters;ff02::3 ip6-allhosts\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetHostsWithWhitespace)
@@ -272,7 +272,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"127.0.0.1 localhost;::1 ip6-localhost ip6-loopback\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, GetInvalidObject)
@@ -327,7 +327,7 @@ namespace OSConfig::HostName::Tests
         EXPECT_EQ(status, MMI_OK);
         EXPECT_STREQ(result.c_str(), "\"\"");
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetName)
@@ -348,7 +348,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetHosts)
@@ -369,7 +369,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetHostsWithWhitespace)
@@ -390,7 +390,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, MMI_OK);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidObject)
@@ -408,7 +408,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidPayload)
@@ -439,7 +439,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetInvalidHosts)
@@ -459,7 +459,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, EINVAL);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
     TEST(HostNameBaseTests, SetPayloadTooLarge)
@@ -475,7 +475,7 @@ namespace OSConfig::HostName::Tests
 
         EXPECT_EQ(status, E2BIG);
 
-        testModule.MmiFreeInternal(payload);
+        HostName::MmiFreeInternal(payload);
     }
 
 } // namespace OSConfig::HostName::Tests
