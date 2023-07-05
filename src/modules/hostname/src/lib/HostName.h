@@ -11,4 +11,12 @@ public:
     ~HostName();
 
     int RunCommand(const char* command, bool replaceEol, std::string *textResult) override;
+
+    inline void MmiFreeInternal(MMI_JSON_STRING payload)
+    {
+        if (payload)
+        {
+            delete[] payload;
+        }
+    }
 };

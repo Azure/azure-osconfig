@@ -280,15 +280,6 @@ int MmiGet(MMI_HANDLE clientSession, const char* componentName, const char* obje
     }
 }
 
-void MmiFreeInternal(MMI_JSON_STRING payload)
-{
-    if (!payload)
-    {
-        return;
-    }
-    delete[] payload;
-}
-
 void MmiFree(MMI_JSON_STRING payload)
 {
     try
