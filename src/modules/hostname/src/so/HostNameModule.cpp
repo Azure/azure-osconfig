@@ -284,7 +284,7 @@ void MmiFree(MMI_JSON_STRING payload)
 {
     try
     {
-        return HostName::MmiFreeInternal(payload);
+        return ::HostNameFree(payload);
     }
     catch (const std::exception &e)
     {
