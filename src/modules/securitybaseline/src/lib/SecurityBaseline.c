@@ -138,7 +138,7 @@ static const char* g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObjec
 static const char* g_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
 static const char* g_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
 static const char* g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
-static const char* g_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+static const char* g_auditEnsureALoggingServiceIsEnabledObject = "auditEnsureALoggingServiceIsEnabled";
 static const char* g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
 static const char* g_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
 static const char* g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -306,7 +306,7 @@ static const char* g_remediateEnsureAllBootloadersHavePasswordProtectionEnabledO
 static const char* g_remediateEnsureLoggingIsConfiguredObject = "remediateEnsureLoggingIsConfigured";
 static const char* g_remediateEnsureSyslogPackageIsInstalledObject = "remediateEnsureSyslogPackageIsInstalled";
 static const char* g_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
-static const char* g_remediateEnsureALoggingServiceIsSnabledObject = "remediateEnsureALoggingServiceIsSnabled";
+static const char* g_remediateEnsureALoggingServiceIsEnabledObject = "remediateEnsureALoggingServiceIsEnabled";
 static const char* g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
 static const char* g_remediateEnsureLoggerConfigurationFilesAreRestrictedObject = "remediateEnsureLoggerConfigurationFilesAreRestricted";
 static const char* g_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -1116,7 +1116,7 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
         (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
-static int AuditEnsureALoggingServiceIsSnabled(void)
+static int AuditEnsureALoggingServiceIsEnabled(void)
 {
     return (((0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) && IsDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
         ((0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog())) && IsDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
@@ -1523,7 +1523,7 @@ AuditRemediate g_auditChecks[] =
     &AuditEnsureLoggingIsConfigured,
     &AuditEnsureSyslogPackageIsInstalled,
     &AuditEnsureSystemdJournaldServicePersistsLogMessages,
-    &AuditEnsureALoggingServiceIsSnabled,
+    &AuditEnsureALoggingServiceIsEnabled,
     &AuditEnsureFilePermissionsForAllRsyslogLogFiles,
     &AuditEnsureLoggerConfigurationFilesAreRestricted,
     &AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
@@ -2181,7 +2181,7 @@ static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
-static int RemediateEnsureALoggingServiceIsSnabled(void)
+static int RemediateEnsureALoggingServiceIsEnabled(void)
 {
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -2531,7 +2531,7 @@ AuditRemediate g_remediateChecks[] =
     &RemediateEnsureLoggingIsConfigured,
     &RemediateEnsureSyslogPackageIsInstalled,
     &RemediateEnsureSystemdJournaldServicePersistsLogMessages,
-    &RemediateEnsureALoggingServiceIsSnabled,
+    &RemediateEnsureALoggingServiceIsEnabled,
     &RemediateEnsureFilePermissionsForAllRsyslogLogFiles,
     &RemediateEnsureLoggerConfigurationFilesAreRestricted,
     &RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
@@ -3171,9 +3171,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsSnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsEnabledObject))
         {
-            result = AuditEnsureALoggingServiceIsSnabled() ? g_fail : g_pass;
+            result = AuditEnsureALoggingServiceIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
@@ -3915,9 +3915,9 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSystemdJournaldServicePersistsLogMessages();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsSnabledObject))
+        else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsEnabledObject))
         {
-            status = RemediateEnsureALoggingServiceIsSnabled();
+            status = RemediateEnsureALoggingServiceIsEnabled();
         }
         else if (0 == strcmp(objectName, g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {

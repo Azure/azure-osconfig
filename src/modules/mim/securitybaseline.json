@@ -715,7 +715,7 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureALoggingServiceIsSnabled",
+          "name": "auditEnsureALoggingServiceIsEnabled",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -1705,7 +1705,7 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureALoggingServiceIsSnabled",
+          "name": "remediateEnsureALoggingServiceIsEnabled",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

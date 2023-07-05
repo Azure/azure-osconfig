@@ -638,7 +638,7 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureALoggingServiceIsSnabled"
+      "ObjectName": "auditEnsureALoggingServiceIsEnabled"
     },
     {
       "ComponentName": "SecurityBaseline",
