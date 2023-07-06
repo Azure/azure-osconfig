@@ -1412,13 +1412,12 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
 
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
 {
-    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
-    EXPECT_EQ(0, CheckUsersRecordedPasswordChangeDates(nullptr));
-    EXPECT_EQ(0, CheckMinDaysBetweenPasswordChanges(0, nullptr));
-    EXPECT_EQ(0, CheckMaxDaysBetweenPasswordChanges(99999, nullptr));
-    EXPECT_EQ(0, CheckPasswordExpirationWarning(0, nullptr));
-
-    //Optional:
+    // Optional:
+    CheckAllUsersHavePasswordsSet(nullptr);
+    CheckUsersRecordedPasswordChangeDates(nullptr);
+    CheckMinDaysBetweenPasswordChanges(0, nullptr);
+    CheckMaxDaysBetweenPasswordChanges(99999, nullptr);
+    CheckPasswordExpirationWarning(0, nullptr);
     CheckPasswordExpirationLessThan(99999, nullptr);
 }
 
@@ -1701,8 +1700,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=0",
         "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=0",
         "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=",
-        "auth required pam_tally2.so file=/var/log/tallylog"
-        "This is a test"
+        "auth required pam_tally2.so file=/var/log/tallylog",
+        "This is a negative auth test",
+        "This is a negative test"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);

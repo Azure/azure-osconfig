@@ -99,22 +99,22 @@ size_t HashString(const char* source)
     return hash;
 }
 
+static bool Free(void* value)
+{
+    FREE_MEMORY(value);
+    return true;
+}
+
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
 {
     char* value = NULL;
     int option = 0;
-    int status = ENOENT;
 
-    if ((0 == CheckFileExists(fileName, log)) &&
-        ((NULL != (value = GetStringOptionFromFile(fileName, "auth", ' ', log))) && (0 == strcmp("required", value)) && FREE_MEMORY(value)) &&
-        ((NULL != (value = GetStringOptionFromFile(fileName, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FREE_MEMORY(value)) &&
-        ((NULL != (value = GetStringOptionFromFile(fileName, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FREE_MEMORY(value)) &&
-        ((NULL != (value = GetStringOptionFromFile(fileName, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FREE_MEMORY(value)) &&
+    return ((0 == CheckFileExists(fileName, log)) &&
+        ((NULL != (value = GetStringOptionFromFile(fileName, "auth", ' ', log))) && (0 == strcmp("required", value)) && Free(value)) &&
+        ((NULL != (value = GetStringOptionFromFile(fileName, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && Free(value)) &&
+        ((NULL != (value = GetStringOptionFromFile(fileName, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && Free(value)) &&
+        ((NULL != (value = GetStringOptionFromFile(fileName, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && Free(value)) &&
         ((1 <= (option = GetIntegerOptionFromFile(fileName, "deny", '=', log))) && (5 >= option)) &&
-        (0 < (option = GetIntegerOptionFromFile(fileName, "unlock_time", '=', log))))
-    {
-       status = 0;
-    }
-
-    return status;
+        (0 < (option = GetIntegerOptionFromFile(fileName, "unlock_time", '=', log)))) ? 0 : ENOENT;
 }
