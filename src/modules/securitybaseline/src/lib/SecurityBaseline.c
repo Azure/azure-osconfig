@@ -377,6 +377,7 @@ static const char* g_etcGShadow = "/etc/gshadow";
 static const char* g_etcGShadowDash = "/etc/gshadow-";
 static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
+static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcGroup = "/etc/group";
 static const char* g_etcGroupDash = "/etc/group-";
 static const char* g_etcAnacronTab = "/etc/anacrontab";
@@ -1022,7 +1023,7 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (4 < GetIntegerOptionFromFile("/etc/pam.d/common-password", "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
@@ -1041,14 +1042,13 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minlen=14", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minclass=4", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "dcredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ucredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ocredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "lcredit=-1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    //TBD: expand to other distros
+    return ((14 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog())) &&
+        (4 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)

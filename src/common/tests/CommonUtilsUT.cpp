@@ -1618,20 +1618,20 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = 3";
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
     
     char* value = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
     
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
@@ -1672,9 +1672,9 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', nullptr));
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', nullptr));
 
-    EXPECT_STREQ("3", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
+    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(3, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 }

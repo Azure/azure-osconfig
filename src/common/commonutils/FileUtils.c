@@ -1014,7 +1014,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
     char* stringValue = NULL;
-    int value = -1;
+    int value = -999;
 
     if (NULL != (stringValue = GetStringOptionFromFile(fileName, option, separator, log)))
     {
