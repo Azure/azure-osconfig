@@ -1698,6 +1698,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=-1",
         "auth required  pam_tally2.so file=/var/log/tallylog deny=-1 unlock_time=-1",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=0",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=0",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time="
         "This is a test"
     };
 
