@@ -105,29 +105,29 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     int option = 0;
     int status = ENOENT;
 
-    if (EEXIST == CheckFileExists(fileName))
+    if (EEXIST == CheckFileExists(fileName, log))
     {
         return status;
     }
 
-    if ((NULL != (value = GetStringOptionFromFile(fileName, "auth", ' ', SecurityBaselineGetLog()))) && (0 == strcmp("required", value)))
+    if ((NULL != (value = GetStringOptionFromFile(fileName, "auth", ' ', log))) && (0 == strcmp("required", value)))
     {
         FREE_MEMORY(value);
 
-        if ((NULL != (value = GetStringOptionFromFile(fileName, "required", ' ', SecurityBaselineGetLog()))) && (0 == strcmp("pam_tally2.so", value)))
+        if ((NULL != (value = GetStringOptionFromFile(fileName, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)))
         {
             FREE_MEMORY(value);
 
-            if ((NULL != (value = GetStringOptionFromFile(fileName, "pam_tally2.so", ' ', SecurityBaselineGetLog()))) && (0 == strcmp("file=/var/log/tallylog", value)))
+            if ((NULL != (value = GetStringOptionFromFile(fileName, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)))
             {
                 FREE_MEMORY(value);
 
-                if ((NULL != (value = GetStringOptionFromFile(fileName, "file", '=', SecurityBaselineGetLog()))) && (0 == strcmp("/var/log/tallylog", value)))
+                if ((NULL != (value = GetStringOptionFromFile(fileName, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)))
                 {
                     FREE_MEMORY(value);
 
-                    if (((1 = < (option = GetIntegerOptionFromFile(fileName, "deny", '=', SecurityBaselineGetLog()))) && (5 >= option)) &&
-                        (0 < (option = GetIntegerOptionFromFile(fileName, "unlock_time", '=', SecurityBaselineGetLog()))))
+                    if (((1 <= (option = GetIntegerOptionFromFile(fileName, "deny", '=', log))) && (5 >= option)) &&
+                        (0 < (option = GetIntegerOptionFromFile(fileName, "unlock_time", '=', log))))
                     {
                         status = 0;
                     }

@@ -1695,8 +1695,10 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth        required      pam_tally2.so  file=/var/log/foolog deny=3 even_deny_root unlock_time=100",
         "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
         "auth required pam_tally2.so  deny=5 even_deny_root unlock_time=2000",
-        "auth required  pam_tally.so  file=/var/log/tallylog deny=-1 even_deny_root unlock_time=10",
-        "auth required  pam_tally.so  file=/var/log/tallylog deny=2 unlock_time=-1"
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
+        "auth required  pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=-1",
+        "auth required  pam_tally2.so file=/var/log/tallylog deny=-1 unlock_time=-1",
+        "This is a test"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
