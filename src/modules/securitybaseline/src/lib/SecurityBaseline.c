@@ -851,7 +851,7 @@ static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 static int AuditEnsureCronServiceIsEnabled(void)
 {
     return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        IsDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
+        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
@@ -872,7 +872,7 @@ static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 
 static int AuditEnsureAuditdServiceIsRunning(void)
 {
-    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSuRestrictedToRootGroup(void)
@@ -889,7 +889,7 @@ static int AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
     return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
-        (false == IsDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureKernelCompiledFromApprovedSources(void)
@@ -1116,9 +1116,9 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 
 static int AuditEnsureALoggingServiceIsEnabled(void)
 {
-    return (((0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) && IsDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog())) && IsDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && IsDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((CheckPackageInstalled(g_rsyslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
+        (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
+        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -1158,7 +1158,7 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        IsDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
+        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
@@ -1291,14 +1291,14 @@ static int AuditEnsureAppropriateCiphersForSsh(void)
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
     const char* cups = "cups";
     return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
-        (false == IsDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
@@ -1314,24 +1314,24 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return ((false == IsDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
-        (false == IsDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
-        (false == IsDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return IsDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -1341,17 +1341,17 @@ static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 
 static int AuditEnsureSnmpServerIsDisabled(void)
 {
-    return IsDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRsynServiceIsDisabled(void)
 {
-    return IsDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureNisServerIsDisabled(void)
 {
-    return IsDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRshClientNotInstalled(void)
