@@ -1054,9 +1054,7 @@ static int AuditEnsurePasswordCreationRequirements(void)
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
     //TBD: refine this and expand to other distros
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return CheckLockoutForFailedPasswordAttempts("/etc/pam.d/password-auth", SecurityBaselineGetLog());
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)

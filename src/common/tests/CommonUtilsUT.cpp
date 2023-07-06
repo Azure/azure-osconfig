@@ -1678,3 +1678,46 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 
     EXPECT_TRUE(Cleanup(m_path));
 }
+
+TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
+{
+    const char* goodTestFileContents[] = {
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=1000",
+        "auth required pam_tally2.so file=/var/log/tallylog unlock_time=2000 deny=3",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
+        "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
+        "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
+        "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000"
+    };
+
+    const char* badTestFileContents[] = {
+        "auth optional pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
+        "auth        required      pam_tally2.so  file=/var/log/foolog deny=3 even_deny_root unlock_time=100",
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
+        "auth required pam_tally2.so  deny=5 even_deny_root unlock_time=2000",
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=-1 even_deny_root unlock_time=10",
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=2 unlock_time=-1"
+    };
+
+    int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
+    int badTestFileContentsSize = ARRAY_SIZE(badTestFileContents);
+
+    int i = 0;
+
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr));
+
+    for (i = 0; i < goodTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
+        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+
+    for (i = 0; i < badTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+}
