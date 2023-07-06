@@ -31,7 +31,7 @@ bool CheckIfDaemonActive(const char* daemonName, void* log)
 
     if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
     {
-        OsConfigLogError(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
+        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
         status = false;
     }
     else

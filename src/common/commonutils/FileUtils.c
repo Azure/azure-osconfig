@@ -607,7 +607,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
 
     if (false == FileExists(fileName))
     {
-        OsConfigLogError(log, "FindTextInFile: file '%s' not found", fileName);
+        OsConfigLogInfo(log, "FindTextInFile: file '%s' not found", fileName);
         return ENOENT;
     }
 
