@@ -1053,8 +1053,15 @@ static int AuditEnsurePasswordCreationRequirements(void)
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    //TBD: refine this and expand to other distros
-    return CheckLockoutForFailedPasswordAttempts("/etc/pam.d/password-auth", SecurityBaselineGetLog());
+    //TBD: expand to other distros
+    const char* passwordAuth = "/etc/pam.d/password-auth";
+    
+    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "auth", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "pam_tally2.so", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "file=/var/log/tallylog", SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(passwordAuth, "deny", '=', SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(passwordAuth, "unlock_time", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
