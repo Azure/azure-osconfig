@@ -615,6 +615,7 @@ static int AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
+
     return ((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, SecurityBaselineGetLog())) &&
         (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -888,6 +889,7 @@ static int AuditEnsureDefaultUmaskForAllUsers(void)
 static int AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
+
     return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
         (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -909,6 +911,7 @@ static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -916,6 +919,7 @@ static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
@@ -949,6 +953,7 @@ static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -981,7 +986,7 @@ static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
-    static const char* etcSysCtlConf = "/etc/sysctl.conf";
+    const char* etcSysCtlConf = "/etc/sysctl.conf";
 
     return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
@@ -1098,6 +1103,7 @@ static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
     const char* password = "password";
+
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
