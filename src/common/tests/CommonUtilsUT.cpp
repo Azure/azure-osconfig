@@ -1687,8 +1687,19 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
         "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
         "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000",
-        "This is a positive test/nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
-        "This is a positive test/nAnother one with auth/nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123"
+        "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
+        "# here's the fallback if no module succeeds\n"
+        "auth	requisite			pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "auth	required			pam_permit.so\n"
+        "auth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=888\n"
+        "# and here are more per-package modules (the Additional block)\n"
+        "auth	optional			pam_cap.so\n" 
+        "# end of pam-auth-update config"
     };
 
     const char* badTestFileContents[] = {
@@ -1704,7 +1715,18 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=",
         "auth required pam_tally2.so file=/var/log/tallylog",
         "This is a negative auth test",
-        "This is a negative test"
+        "This is a negative test",
+        "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
+        "# here's the fallback if no module succeeds\n"
+        "auth	requisite			pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "auth	required			pam_permit.so\n"
+        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888\n"
+        "# and here are more per-package modules (the Additional block)\n"
+        "auth	optional			pam_cap.so\n" 
+        "# end of pam-auth-update config"
     };
 
     int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);

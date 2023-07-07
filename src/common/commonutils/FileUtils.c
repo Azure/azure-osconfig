@@ -960,19 +960,63 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
     return status;
 }
 
+static char* GetStringOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+{
+    char* found = NULL;
+    char* internal = NULL;
+    char* result = NULL;
+    
+    if ((NULL == buffer) || (NULL == option))
+    {
+        OsConfigLogError(log, "GetStringOptionFromBuffer called with invalid arguments");
+        return result;
+    }
+
+    if (NULL == (internal = DuplicateString(buffer)))
+    {
+        OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate buffer string failed (%d)", errno);
+    }
+    else if (NULL != (found = strstr(internal, option)))
+    {
+        RemovePrefixUpTo(found, separator);
+        RemovePrefixBlanks(found);
+        RemoveTrailingBlanks(found);
+        TruncateAtFirst(found, '\n');
+        TruncateAtFirst(found, ' ');
+
+        OsConfigLogInfo(log, "GetStringOptionFromBuffer: found '%s' for '%s'", found, option);
+
+        if (NULL == (result = DuplicateString(found)))
+        {
+            OsConfigLogError(log, "GetStringOptionFromBuffer: failed to duplicate result string (%d)", errno);
+        }
+
+        FREE_MEMORY(internal);
+    }
+
+    return result;
+}
+
+static int GetIntegerOptionFromBuffer(const char* buffer, const char* option, char separator, void* log)
+{
+    char* stringValue = NULL;
+    int value = -999;
+
+    if (NULL != (stringValue = GetStringOptionFromBuffer(buffer, option, separator, log)))
+    {
+        value = atoi(stringValue);
+        FREE_MEMORY(stringValue);
+    }
+
+    return value;
+}
+
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
-    char* result = NULL;
     char* contents = NULL;
-    char* found = NULL;
+    char* result = NULL;
 
-    if ((NULL == fileName) || (NULL == option) || (0 == strlen(fileName) || (0 == strlen(option))))
-    {
-        OsConfigLogError(log, "GetStringOptionFromFile called with invalid arguments");
-        return NULL;
-    }
-    
-    if (FileExists(fileName))
+    if (option && (0 == CheckFileExists(fileName, log)))
     {
         if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
         {
@@ -980,20 +1024,9 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
         }
         else
         {
-            if (NULL != (found = strstr(contents, option)))
+            if (NULL != (result = GetStringOptionFromBuffer(contents, option, separator, log)))
             {
-                RemovePrefixUpTo(found, separator);
-                RemovePrefixBlanks(found);
-                RemoveTrailingBlanks(found);
-                TruncateAtFirst(found, '\n');
-                TruncateAtFirst(found, ' ');
-
-                OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", found, fileName, option);
-
-                if (NULL == (result = DuplicateString(found)))
-                {
-                    OsConfigLogError(log, "GetStringOptionFromFile: DuplicateString failed (%d)", errno);
-                }
+                OsConfigLogInfo(log, "GetStringOptionFromFile: found '%s' in '%s' for '%s'", result, fileName, option);
             }
             else
             {
@@ -1003,24 +1036,90 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
             FREE_MEMORY(contents);
         }
     }
-    else
-    {
-        OsConfigLogError(log, "GetStringOptionFromFile: '%s' not found", fileName);
-    }
 
     return result;
 }
 
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log)
 {
-    char* stringValue = NULL;
-    int value = -999;
+    char* contents = NULL;
+    int result = -999;
 
-    if (NULL != (stringValue = GetStringOptionFromFile(fileName, option, separator, log)))
+    if (option && (0 == CheckFileExists(fileName, log)))
     {
-        value = atoi(stringValue);
-        FREE_MEMORY(stringValue);
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+        {
+            OsConfigLogError(log, "GetIntegerOptionFromFile: cannot read from '%s'", fileName);
+        }
+        else
+        {
+            if (-999 != (result = GetIntegerOptionFromBuffer(contents, option, separator, log)))
+            {
+                OsConfigLogInfo(log, "GetIntegerOptionFromFile: found '%d' in '%s' for '%s'", result, fileName, option);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "GetIntegerOptionFromFile: '%s' not found in '%s'", option, fileName);
+            }
+
+            FREE_MEMORY(contents);
+        }
     }
 
-    return value;
+    return result;
 }
+
+static bool Free(void* value)
+{
+    FREE_MEMORY(value);
+    return true;
+}
+
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
+{
+    char* contents = NULL;
+    char* buffer = NULL;
+    char* value = NULL;
+    int option = 0;
+    int status = ENOENT;
+    
+    if (0 == CheckFileExists(fileName, log))
+    {
+        if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+        {
+            OsConfigLogError(log, "CheckLockoutForFailedPasswordAttempts: cannot read from '%s'", fileName);
+        }
+        else
+        {
+            buffer = contents;
+
+            while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
+            {
+                if (((0 == strcmp("required", value)) && Free(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && Free(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && Free(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && Free(value)) &&
+                    ((1 <= (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (5 >= option)) &&
+                    (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
+                {
+                    status = 0;
+                    break;
+                }
+                else if (NULL == (buffer = strchr(buffer, '\n')))
+                {
+                    break;
+                }
+                else
+                {
+                    buffer += 1;
+                }
+            }
+
+            FREE_MEMORY(contents);
+        }
+    }
+
+    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+ }
