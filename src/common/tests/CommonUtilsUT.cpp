@@ -1686,7 +1686,9 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         "auth required pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
         "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
         "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
-        "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000"
+        "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000",
+        "This is a positive test/nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "This is a positive test/nAnother one with auth/nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123"
     };
 
     const char* badTestFileContents[] = {
