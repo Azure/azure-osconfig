@@ -1681,9 +1681,10 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
-        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=1000",
-        "auth required pam_tally2.so file=/var/log/tallylog unlock_time=2000 deny=3",
-        "auth required pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=1000",
+        "auth required pam_tally2.so file=/var/log/tallylog unlock_time=2000 deny=2",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=3 even_deny_root unlock_time=1000",
+        "auth required pam_tally2.so   file=/var/log/tallylog test deny=3 even_deny_root 123 unlock_time=1000 456",
         "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
         "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
         "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000",

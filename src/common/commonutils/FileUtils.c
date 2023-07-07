@@ -1093,13 +1093,23 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         {
             buffer = contents;
 
+            // Example of a valid line: 
+            //
+            // auth required pam_tally2.so file=/var/log/tallylog deny=5 [even_deny_root] unlock_time=2000
+            //
+            // To pass, all attributes must be present, including pam_tally2.so, the deny value must be between 1 
+            // and 5 (inclusive), the unlock_time set to a positive value, with any number of spaces between.
+            // The even_deny_root attribute is optional.
+            //
+            // There can be multiple 'auth' lines in the file. Only the right one matters.
+
             while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
             {
                 if (((0 == strcmp("required", value)) && Free(value)) &&
                     ((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && Free(value)) &&
                     ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && Free(value)) &&
                     ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && Free(value)) &&
-                    ((1 <= (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (5 >= option)) &&
+                    ((0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option)) &&
                     (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
                 {
                     status = 0;
