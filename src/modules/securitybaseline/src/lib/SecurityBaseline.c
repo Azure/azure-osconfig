@@ -1290,7 +1290,7 @@ static int AuditEnsureSshWarningBannerIsEnabled(void)
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/ssh/sshd_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
