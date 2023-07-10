@@ -144,7 +144,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
         const char* m_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
         const char* m_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
-        const char* m_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+        const char* m_auditEnsureALoggingServiceIsEnabledObject = "auditEnsureALoggingServiceIsEnabled";
         const char* m_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
         const char* m_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
         const char* m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -311,7 +311,7 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureLoggingIsConfiguredObject = "remediateEnsureLoggingIsConfigured";
         const char* m_remediateEnsureSyslogPackageIsInstalledObject = "remediateEnsureSyslogPackageIsInstalled";
         const char* m_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
-        const char* m_remediateEnsureALoggingServiceIsSnabledObject = "remediateEnsureALoggingServiceIsSnabled";
+        const char* m_remediateEnsureALoggingServiceIsEnabledObject = "remediateEnsureALoggingServiceIsEnabled";
         const char* m_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
         const char* m_remediateEnsureLoggerConfigurationFilesAreRestrictedObject = "remediateEnsureLoggerConfigurationFilesAreRestricted";
         const char* m_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -544,7 +544,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureLoggingIsConfiguredObject,
         m_remediateEnsureSyslogPackageIsInstalledObject,
         m_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject,
-        m_remediateEnsureALoggingServiceIsSnabledObject,
+        m_remediateEnsureALoggingServiceIsEnabledObject,
         m_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject,
         m_remediateEnsureLoggerConfigurationFilesAreRestrictedObject,
         m_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject,
@@ -767,7 +767,7 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureLoggingIsConfiguredObject,
         m_auditEnsureSyslogPackageIsInstalledObject,
         m_auditEnsureSystemdJournaldServicePersistsLogMessagesObject,
-        m_auditEnsureALoggingServiceIsSnabledObject,
+        m_auditEnsureALoggingServiceIsEnabledObject,
         m_auditEnsureFilePermissionsForAllRsyslogLogFilesObject,
         m_auditEnsureLoggerConfigurationFilesAreRestrictedObject,
         m_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject,

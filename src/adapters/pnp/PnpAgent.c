@@ -317,7 +317,7 @@ bool RefreshMpiClientSession(bool* platformAlreadyRunning)
 {
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM, GetLog()))
+    if (g_mpiHandle && IsDaemonActive(OSCONFIG_PLATFORM))
     {
         // Platform is already running
 

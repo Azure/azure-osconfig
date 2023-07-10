@@ -5,7 +5,7 @@
 
 #define MAX_DAEMON_COMMAND_LENGTH 256
 
-bool IsDaemonActive(const char* daemonName, void* log)
+bool IsDaemonActive(const char* daemonName)
 {
     const char* isActiveTemplate = "systemctl is-active %s";
     char isActiveCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
@@ -15,15 +15,23 @@ bool IsDaemonActive(const char* daemonName, void* log)
 
     if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "IsDaemonActive: '%s' appears inactive", daemonName);
-        }
         status = false;
     }
-    else if (IsFullLoggingEnabled())
+
+    return status;
+}
+
+bool CheckIfDaemonActive(const char* daemonName, void* log)
+{
+    bool status = false;
+
+    if (true == (status = IsDaemonActive(daemonName)))
     {
-        OsConfigLogInfo(log, "IsDaemonActive: '%s' appears active", daemonName);
+        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears active", daemonName);
+    }
+    else
+    {
+        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
     }
 
     return status;
@@ -37,7 +45,7 @@ bool EnableAndStartDaemon(const char* daemonName, void* log)
     char startCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     bool status = true;
 
-    if (false == IsDaemonActive(daemonName, log))
+    if (false == IsDaemonActive(daemonName))
     {
         snprintf(enableCommand, sizeof(enableCommand), enableTemplate, daemonName);
         snprintf(startCommand, sizeof(startCommand), startTemplate, daemonName);
@@ -71,7 +79,7 @@ bool RestartDaemon(const char* daemonName, void* log)
     char restartCommand[MAX_DAEMON_COMMAND_LENGTH] = {0};
     bool status = true;
 
-    if (true == IsDaemonActive(daemonName, log))
+    if (true == IsDaemonActive(daemonName))
     {
         snprintf(restartCommand, sizeof(restartCommand), restartTemplate, daemonName);
 

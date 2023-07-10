@@ -122,7 +122,7 @@ An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remedi
 ```C
 static int AuditEnsureAuditdServiceIsRunning(void)
 {
-    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 ```
 
@@ -134,7 +134,7 @@ static int RemediateEnsureAuditdServiceIsRunning(void)
 }
 ```
 
-These simple functions invoke functions like `IsDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
+These simple functions invoke functions like `CheckIfDaemonActive` and `InstallPackage` that are implemented in [commonutils](../../common/commonutils/).
 
 Remember, we want to separate the bulk of generic check implementations from this security baseline so that they could be reused in the future for the implementations of other baselines.
 

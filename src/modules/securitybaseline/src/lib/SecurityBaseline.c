@@ -138,7 +138,7 @@ static const char* g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObjec
 static const char* g_auditEnsureLoggingIsConfiguredObject = "auditEnsureLoggingIsConfigured";
 static const char* g_auditEnsureSyslogPackageIsInstalledObject = "auditEnsureSyslogPackageIsInstalled";
 static const char* g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject = "auditEnsureSystemdJournaldServicePersistsLogMessages";
-static const char* g_auditEnsureALoggingServiceIsSnabledObject = "auditEnsureALoggingServiceIsSnabled";
+static const char* g_auditEnsureALoggingServiceIsEnabledObject = "auditEnsureALoggingServiceIsEnabled";
 static const char* g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
 static const char* g_auditEnsureLoggerConfigurationFilesAreRestrictedObject = "auditEnsureLoggerConfigurationFilesAreRestricted";
 static const char* g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -306,7 +306,7 @@ static const char* g_remediateEnsureAllBootloadersHavePasswordProtectionEnabledO
 static const char* g_remediateEnsureLoggingIsConfiguredObject = "remediateEnsureLoggingIsConfigured";
 static const char* g_remediateEnsureSyslogPackageIsInstalledObject = "remediateEnsureSyslogPackageIsInstalled";
 static const char* g_remediateEnsureSystemdJournaldServicePersistsLogMessagesObject = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
-static const char* g_remediateEnsureALoggingServiceIsSnabledObject = "remediateEnsureALoggingServiceIsSnabled";
+static const char* g_remediateEnsureALoggingServiceIsEnabledObject = "remediateEnsureALoggingServiceIsEnabled";
 static const char* g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
 static const char* g_remediateEnsureLoggerConfigurationFilesAreRestrictedObject = "remediateEnsureLoggerConfigurationFilesAreRestricted";
 static const char* g_remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -377,6 +377,7 @@ static const char* g_etcGShadow = "/etc/gshadow";
 static const char* g_etcGShadowDash = "/etc/gshadow-";
 static const char* g_etcPasswd = "/etc/passwd";
 static const char* g_etcPasswdDash = "/etc/passwd-";
+static const char* g_etcPamdCommonPassword = "/etc/pam.d/common-password";
 static const char* g_etcGroup = "/etc/group";
 static const char* g_etcGroupDash = "/etc/group-";
 static const char* g_etcAnacronTab = "/etc/anacrontab";
@@ -614,6 +615,7 @@ static int AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
+
     return ((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, SecurityBaselineGetLog())) &&
         (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -850,7 +852,7 @@ static int AuditEnsureDotDoesNotAppearInRootsPath(void)
 static int AuditEnsureCronServiceIsEnabled(void)
 {
     return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        IsDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
+        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
@@ -871,7 +873,7 @@ static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 
 static int AuditEnsureAuditdServiceIsRunning(void)
 {
-    return IsDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSuRestrictedToRootGroup(void)
@@ -887,8 +889,9 @@ static int AuditEnsureDefaultUmaskForAllUsers(void)
 static int AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
+
     return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
-        (false == IsDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureKernelCompiledFromApprovedSources(void)
@@ -908,6 +911,7 @@ static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -915,6 +919,7 @@ static int AuditEnsurePacketRedirectSendingIsDisabled(void)
 static int AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
@@ -948,6 +953,7 @@ static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 static int AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
+
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
@@ -980,7 +986,7 @@ static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
 
 static int AuditEnsureIpv6ProtocolIsEnabled(void)
 {
-    static const char* etcSysCtlConf = "/etc/sysctl.conf";
+    const char* etcSysCtlConf = "/etc/sysctl.conf";
 
     return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
@@ -1022,7 +1028,7 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (4 < GetIntegerOptionFromFile("/etc/pam.d/common-password", "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
@@ -1041,22 +1047,26 @@ static int AuditEnsureCoreDumpsAreRestricted(void)
 
 static int AuditEnsurePasswordCreationRequirements(void)
 {
-    const char* etcSecurityPwQualityConf = "/etc/security/pwquality.conf";
-
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minlen=14", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "minclass=4", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "dcredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ucredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "ocredit=-1", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSecurityPwQualityConf, '#', "lcredit=-1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    //TBD: expand to other distros
+    return ((14 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog())) &&
+        (4 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog())) &&
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
-    //TBD: refine this and expand to other distros
-    return ((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/common-auth", '#', "pam_tally", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/password-auth", '#', "pam_faillock", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/pam.d/system-auth", '#', "pam_faillock", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    //TBD: expand to other distros
+    const char* passwordAuth = "/etc/pam.d/password-auth";
+    
+    return ((0 == CheckLockoutForFailedPasswordAttempts(passwordAuth, SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "auth", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "pam_tally2.so", SecurityBaselineGetLog())) &&
+        (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "file=/var/log/tallylog", SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(passwordAuth, "deny", '=', SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(passwordAuth, "unlock_time", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
@@ -1093,6 +1103,7 @@ static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
     const char* password = "password";
+
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
@@ -1116,11 +1127,11 @@ static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
         (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
-static int AuditEnsureALoggingServiceIsSnabled(void)
+static int AuditEnsureALoggingServiceIsEnabled(void)
 {
-    return (((0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) && IsDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog())) && IsDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && IsDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
+        (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
+        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -1160,7 +1171,7 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        IsDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
+        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
@@ -1251,9 +1262,8 @@ static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 
 static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveCountMax 0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "ClientAliveInterval", SecurityBaselineGetLog())))) ? 0 : ENOENT;
+    return ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLoginGraceTimeIsSet(void)
@@ -1280,7 +1290,7 @@ static int AuditEnsureSshWarningBannerIsEnabled(void)
 
 static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/etc/ssh/ssh_config", '#', "PermitUserEnvironment yes", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureAppropriateCiphersForSsh(void)
@@ -1294,14 +1304,14 @@ static int AuditEnsureAppropriateCiphersForSsh(void)
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
     const char* cups = "cups";
     return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
-        (false == IsDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
@@ -1317,24 +1327,24 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return (false == IsDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return ((false == IsDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
-        (false == IsDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
-        (false == IsDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return IsDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -1344,17 +1354,17 @@ static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 
 static int AuditEnsureSnmpServerIsDisabled(void)
 {
-    return IsDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRsynServiceIsDisabled(void)
 {
-    return IsDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureNisServerIsDisabled(void)
 {
-    return IsDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRshClientNotInstalled(void)
@@ -1524,7 +1534,7 @@ AuditRemediate g_auditChecks[] =
     &AuditEnsureLoggingIsConfigured,
     &AuditEnsureSyslogPackageIsInstalled,
     &AuditEnsureSystemdJournaldServicePersistsLogMessages,
-    &AuditEnsureALoggingServiceIsSnabled,
+    &AuditEnsureALoggingServiceIsEnabled,
     &AuditEnsureFilePermissionsForAllRsyslogLogFiles,
     &AuditEnsureLoggerConfigurationFilesAreRestricted,
     &AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
@@ -2182,7 +2192,7 @@ static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
     return 0; //TODO: add remediation respecting all existing patterns
 }
 
-static int RemediateEnsureALoggingServiceIsSnabled(void)
+static int RemediateEnsureALoggingServiceIsEnabled(void)
 {
     return 0; //TODO: add remediation respecting all existing patterns
 }
@@ -2532,7 +2542,7 @@ AuditRemediate g_remediateChecks[] =
     &RemediateEnsureLoggingIsConfigured,
     &RemediateEnsureSyslogPackageIsInstalled,
     &RemediateEnsureSystemdJournaldServicePersistsLogMessages,
-    &RemediateEnsureALoggingServiceIsSnabled,
+    &RemediateEnsureALoggingServiceIsEnabled,
     &RemediateEnsureFilePermissionsForAllRsyslogLogFiles,
     &RemediateEnsureLoggerConfigurationFilesAreRestricted,
     &RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup,
@@ -3172,9 +3182,9 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
         }
-        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsSnabledObject))
+        else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsEnabledObject))
         {
-            result = AuditEnsureALoggingServiceIsSnabled() ? g_fail : g_pass;
+            result = AuditEnsureALoggingServiceIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
@@ -3916,9 +3926,9 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSystemdJournaldServicePersistsLogMessages();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsSnabledObject))
+        else if (0 == strcmp(objectName, g_remediateEnsureALoggingServiceIsEnabledObject))
         {
-            status = RemediateEnsureALoggingServiceIsSnabled();
+            status = RemediateEnsureALoggingServiceIsEnabled();
         }
         else if (0 == strcmp(objectName, g_remediateEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {

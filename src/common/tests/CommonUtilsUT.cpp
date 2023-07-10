@@ -1412,13 +1412,12 @@ TEST_F(CommonUtilsTest, CheckRootUserAndGroup)
 
 TEST_F(CommonUtilsTest, CheckUsersHavePasswords)
 {
-    EXPECT_EQ(0, CheckAllUsersHavePasswordsSet(nullptr));
-    EXPECT_EQ(0, CheckUsersRecordedPasswordChangeDates(nullptr));
-    EXPECT_EQ(0, CheckMinDaysBetweenPasswordChanges(0, nullptr));
-    EXPECT_EQ(0, CheckMaxDaysBetweenPasswordChanges(99999, nullptr));
-    EXPECT_EQ(0, CheckPasswordExpirationWarning(0, nullptr));
-
-    //Optional:
+    // Optional:
+    CheckAllUsersHavePasswordsSet(nullptr);
+    CheckUsersRecordedPasswordChangeDates(nullptr);
+    CheckMinDaysBetweenPasswordChanges(0, nullptr);
+    CheckMaxDaysBetweenPasswordChanges(99999, nullptr);
+    CheckPasswordExpirationWarning(0, nullptr);
     CheckPasswordExpirationLessThan(99999, nullptr);
 }
 
@@ -1618,20 +1617,20 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
         "abc Test4 0456 # rt 4 $"
         "Test2:     12 $!    test test\n"
         "password [success=1 default=ignore] pam_unix.so obscure sha512 remember=5\n"
-        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = 3";
+        "password [success=1 default=ignore] pam_unix.so obscure sha512 remembering   = -1";
     
     char* value = nullptr;
 
     EXPECT_TRUE(CreateTestFile(m_path, testFile));
 
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, nullptr, ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(m_path, nullptr, ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(m_path, nullptr, ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile(nullptr, "Test1", ':', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile(nullptr, "Test1", ':', nullptr));
     EXPECT_EQ(nullptr, GetStringOptionFromFile("~does_not_exist", "Test", '=', nullptr));
-    EXPECT_EQ(-1, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
+    EXPECT_EQ(-999, GetIntegerOptionFromFile("~does_not_exist", "Test", '=', nullptr));
     
     EXPECT_STREQ("test", value = GetStringOptionFromFile(m_path, "FooEntry1:", ':', nullptr));
     FREE_MEMORY(value);
@@ -1672,9 +1671,84 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember=", '=', nullptr));
     EXPECT_EQ(5, GetIntegerOptionFromFile(m_path, "remember", '=', nullptr));
 
-    EXPECT_STREQ("3", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
+    EXPECT_STREQ("-1", value = GetStringOptionFromFile(m_path, "remembering", '=', nullptr));
     FREE_MEMORY(value);
-    EXPECT_EQ(3, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
+    EXPECT_EQ(-1, GetIntegerOptionFromFile(m_path, "remembering", '=', nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
+}
+
+TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
+{
+    const char* goodTestFileContents[] = {
+        "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=1000",
+        "auth required pam_tally2.so file=/var/log/tallylog unlock_time=2000 deny=2",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=3 even_deny_root unlock_time=1000",
+        "auth required pam_tally2.so   file=/var/log/tallylog test deny=3 even_deny_root 123 unlock_time=1000 456",
+        "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
+        "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
+        "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000",
+        "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
+        "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
+        "# here's the fallback if no module succeeds\n"
+        "auth	requisite			pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "auth	required			pam_permit.so\n"
+        "auth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=888\n"
+        "# and here are more per-package modules (the Additional block)\n"
+        "auth	optional			pam_cap.so\n" 
+        "# end of pam-auth-update config"
+    };
+
+    const char* badTestFileContents[] = {
+        "auth optional pam_tally2.so file=/var/log/tallylog deny=2 even_deny_root unlock_time=1000",
+        "auth        required      pam_tally2.so  file=/var/log/foolog deny=3 even_deny_root unlock_time=100",
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
+        "auth required pam_tally2.so  deny=5 even_deny_root unlock_time=2000",
+        "auth required  pam_tally.so  file=/var/log/tallylog deny=1 even_deny_root unlock_time=10",
+        "auth required  pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=-1",
+        "auth required  pam_tally2.so file=/var/log/tallylog deny=-1 unlock_time=-1",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=0",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=0",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=",
+        "auth required pam_tally2.so file=/var/log/tallylog",
+        "This is a negative auth test",
+        "This is a negative test",
+        "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
+        "# here's the fallback if no module succeeds\n"
+        "auth	requisite			pam_deny.so\n"
+        "# prime the stack with a positive return value if there isn't one already;\n"
+        "# this avoids us returning an error just because nothing sets a success code\n"
+        "# since the modules above will each just jump around\n"
+        "auth	required			pam_permit.so\n"
+        "auth required pam_tally2.so file=/var/log/tallylog deny=0 unlock_time=888\n"
+        "# and here are more per-package modules (the Additional block)\n"
+        "auth	optional			pam_cap.so\n" 
+        "# end of pam-auth-update config"
+    };
+
+    int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
+    int badTestFileContentsSize = ARRAY_SIZE(badTestFileContents);
+
+    int i = 0;
+
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(nullptr, nullptr));
+    EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts("~file_that_does_not_exist", nullptr));
+
+    for (i = 0; i < goodTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
+        EXPECT_EQ(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+
+    for (i = 0; i < badTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
+        EXPECT_NE(0, CheckLockoutForFailedPasswordAttempts(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
 }

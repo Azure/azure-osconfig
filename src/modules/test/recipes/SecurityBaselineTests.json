@@ -626,7 +626,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureALoggingServiceIsSnabled"
+    "ObjectName": "remediateEnsureALoggingServiceIsEnabled"
   },
   {
     "ObjectType": "Desired",
@@ -1563,7 +1563,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureALoggingServiceIsSnabled",
+    "ObjectName": "auditEnsureALoggingServiceIsEnabled",
     "Payload": "PASS"
   },
   {

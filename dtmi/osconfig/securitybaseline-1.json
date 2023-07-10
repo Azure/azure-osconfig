@@ -721,7 +721,7 @@
     },
     {
       "@type": "Property",
-      "name": "auditEnsureALoggingServiceIsSnabled",
+      "name": "auditEnsureALoggingServiceIsEnabled",
       "schema": "string",
       "writable": false
     },
@@ -1705,7 +1705,7 @@
     },
     {
       "@type": "Property",
-      "name": "remediateEnsureALoggingServiceIsSnabled",
+      "name": "remediateEnsureALoggingServiceIsEnabled",
       "schema": "string",
       "writable": true
     },

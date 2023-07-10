@@ -83,6 +83,8 @@ int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
 int FindTextInCommandOutput(const char* command, const char* text, void* log);
 
+int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
+
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
@@ -134,7 +136,8 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
 int SleepMilliseconds(long milliseconds);
 
-bool IsDaemonActive(const char* daemonName, void* log);
+bool IsDaemonActive(const char* daemonName);
+bool CheckIfDaemonActive(const char* daemonName, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);
 void StopAndDisableDaemon(const char* daemonName, void* log);
 bool RestartDaemon(const char* daemonName, void* log);
