@@ -1095,11 +1095,11 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
 
             // Example of a valid line: 
             //
-            // auth required pam_tally2.so file=/var/log/tallylog deny=5 [even_deny_root] unlock_time=2000
+            // auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=2000
             //
-            // To pass, all attributes must be present, including pam_tally2.so, the deny value must be between 1 
-            // and 5 (inclusive), the unlock_time set to a positive value, with any number of spaces between.
-            // The even_deny_root attribute is optional.
+            // To pass, all attributes must be present, including pam_tally2.so, the deny value must be between
+            // 1 and 5 (inclusive), the unlock_time set to a positive value, with any number of spaces between.
+            // The even_deny_root and any other attribute like it are optional.
             //
             // There can be multiple 'auth' lines in the file. Only the right one matters.
 
@@ -1115,7 +1115,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
                     status = 0;
                     break;
                 }
-                else if (NULL == (buffer = strchr(buffer, '\n')))
+                else if (NULL == (buffer = strchr(buffer, EOL)))
                 {
                     break;
                 }
