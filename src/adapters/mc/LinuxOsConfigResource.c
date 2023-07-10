@@ -66,7 +66,7 @@ bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(MPI_SERVER, GetLog())
+    if (g_mpiHandle && IsDaemonActive(MPI_SERVER, GetLog()))
     {
         return status;
     }
