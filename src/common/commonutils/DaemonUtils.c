@@ -23,13 +23,7 @@ bool IsDaemonActive(const char* daemonName)
 
 bool CheckIfDaemonActive(const char* daemonName, void* log)
 {
-    const char* isActiveTemplate = "systemctl is-active %s";
-    char isActiveCommand[MAX_DAEMON_COMMAND_LENGTH] = { 0 };
-    bool status = true;
-
-    snprintf(isActiveCommand, sizeof(isActiveCommand), isActiveTemplate, daemonName);
-
-    if (ESRCH == ExecuteCommand(NULL, isActiveCommand, false, false, 0, 0, NULL, NULL, log))
+    if (IsDaemonActive(daemonName))
     {
         OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
         status = false;
