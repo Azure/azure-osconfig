@@ -23,14 +23,15 @@ bool IsDaemonActive(const char* daemonName)
 
 bool CheckIfDaemonActive(const char* daemonName, void* log)
 {
-    if (IsDaemonActive(daemonName))
+    bool status = false;
+
+    if (true == (status = IsDaemonActive(daemonName)))
     {
-        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
-        status = false;
+        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears active", daemonName);
     }
     else
     {
-        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears active", daemonName);
+        OsConfigLogInfo(log, "CheckIfDaemonActive: '%s' appears inactive", daemonName);
     }
 
     return status;
