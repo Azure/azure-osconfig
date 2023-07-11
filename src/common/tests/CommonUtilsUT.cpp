@@ -1752,3 +1752,58 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
         EXPECT_TRUE(Cleanup(m_path));
     }
 }
+
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
+{
+    const char* goodTestFileContents[] = {
+        "MACs hmac-sha2-256",
+        "MACs hmac-sha2-512",
+        "MACs hmac-sha2-256-etm@openssh.com",
+        "MACs hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com",
+        "MACs hmac-sha2-512,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-512,hmac-sha2-256-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-512",
+        "MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-512,hmac-sha2-256-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-512,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-512,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256",
+        "MACs hmac-sha2-256,hmac-sha2-512,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
+        "Test 123\nMACs hmac-sha2-256,hmac-sha2-512,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com\nTest 456"
+    };
+
+    const char* badTestFileContents[] = {
+        "Test 123",
+        "MACs hmac-md5,hmac-md5-96,umac-64@openssh.com,umac-128@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com,test,hmac-sha2-512-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-test,hmac-sha2-512-etm@openssh.com",
+        "Test\n#Test\nMACs test2,hmac-sha2-512-etm@openssh.com\n#Test",
+        "MACs hmac-sha2-256,hmac-234"
+    };
+
+    int goodTestFileContentsSize = ARRAY_SIZE(goodTestFileContents);
+    int badTestFileContentsSize = ARRAY_SIZE(badTestFileContents);
+
+    int i = 0;
+
+    EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(nullptr, nullptr));
+    EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed("~file_that_does_not_exist", nullptr));
+
+    for (i = 0; i < goodTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
+        EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+
+    for (i = 0; i < badTestFileContentsSize; i++)
+    {
+        EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
+        EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr));
+        EXPECT_TRUE(Cleanup(m_path));
+    }
+}
