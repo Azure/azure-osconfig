@@ -1753,7 +1753,6 @@ TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
     }
 }
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
 {
     const char* goodTestFileContents[] = {

@@ -1164,33 +1164,33 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 
                 OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: found MACs set to '%s'", buffer);
                 
-                while (buffer)
+                while (1)
                 {
-                    if (NULL == (value = DuplicateString(macsValue))
+                    if (NULL == (value = DuplicateString(macsValue)))
                     {
                         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
                         status = ENOMEM;
                         break;
                     }
+                    else
+                    {
+                        TruncateAtFirst(value, ',');
 
-                    TruncateAtFirst(value, ',');
-
-                    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: checking MACs value of '%s'", value);
-                
-                    if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
-                    {
-                        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on MACs line in '%s'", value, fileName);
-                        FREE_MEMORY(value);
-                        status = ENOENT;
-                        break;
-                    }
-                    else if ((NULL == (buffer = strchr(buffer, EOL))) && Free(value))
-                    {
-                        break;
-                    }
-                    else if Free(value)
-                    {
-                        buffer += 1;
+                        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: checking MACs value of '%s'", value);
+                    
+                        if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                        {
+                            OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on MACs line in '%s'", value, fileName);
+                            FREE_MEMORY(value);
+                            status = ENOENT;
+                            break;
+                        }
+                        else
+                        {
+                            FREE_MEMORY(value);
+                            //search here for next value
+                            buffer += 1;
+                        }
                     }
                 }
                 
