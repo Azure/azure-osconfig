@@ -1764,6 +1764,7 @@ TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
         "MACs hmac-sha2-512,hmac-sha2-512-etm@openssh.com",
         "MACs hmac-sha2-256,hmac-sha2-512-etm@openssh.com",
         "MACs hmac-sha2-512,hmac-sha2-256-etm@openssh.com",
+        "MACs hmac-sha2-256,hmac-sha2-256,hmac-sha2-256",
         "MACs hmac-sha2-256,hmac-sha2-512",
         "MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com",
         "MACs hmac-sha2-256,hmac-sha2-512,hmac-sha2-256-etm@openssh.com",
@@ -1777,6 +1778,7 @@ TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
 
     const char* badTestFileContents[] = {
         "Test 123",
+        "Test 123\nMACs hmac-sha2-256-etm@openssh.org",
         "MACs hmac-md5,hmac-md5-96,umac-64@openssh.com,umac-128@openssh.com",
         "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com,test,hmac-sha2-512-etm@openssh.com",
         "MACs hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-test,hmac-sha2-512-etm@openssh.com",

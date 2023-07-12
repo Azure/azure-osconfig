@@ -1143,9 +1143,9 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 {
     char* contents = NULL;
     char* macsValue = NULL;
-    size_t macsValueLength = 0;
     char* value = NULL;
-    int i = 0;
+    size_t macsValueLength = 0;
+    size_t i = 0;
     int status = 0;
 
     if (0 != (status = CheckFileExists(fileName, log)))
@@ -1165,12 +1165,11 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
     }
     else
     {
-        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: found MACs set to '%s'", macsValue);
         macsValueLength = strlen(macsValue);
 
-        for (i = 0; i < macsValueLength)
+        for (i = 0; i < macsValueLength; i++)
         {
-            if (NULL == (value = DuplicateString(macsValue)))
+            if (NULL == (value = DuplicateString(&(macsValue[i]))))
             {
                 OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
                 status = ENOMEM;
@@ -1179,15 +1178,19 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
             else
             {
                 TruncateAtFirst(value, ',');
+
                 OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: checking MACs value of '%s'", value);
                     
-                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                // The only allowed values are these 4 below
+                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && 
+                    strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
                 {
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                     status = ENOENT;
                 }
-                
+
                 i += strlen(value);
+
                 FREE_MEMORY(value);
             }
         }
