@@ -915,6 +915,11 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 
             status = foundUncommented ? EEXIST : 0;
 
+            if (EEXIST == status)
+            {
+                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found uncommented with '%c' in '%s'", text, commentMark, fileName);
+            }
+
             FREE_MEMORY(contents);
         }
     }
@@ -981,7 +986,7 @@ static char* GetStringOptionFromBuffer(const char* buffer, const char* option, c
         RemovePrefixUpTo(found, separator);
         RemovePrefixBlanks(found);
         RemoveTrailingBlanks(found);
-        TruncateAtFirst(found, '\n');
+        TruncateAtFirst(found, EOL);
         TruncateAtFirst(found, ' ');
 
         OsConfigLogInfo(log, "GetStringOptionFromBuffer: found '%s' for '%s'", found, option);
@@ -1132,4 +1137,68 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
- }
+}
+
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+{
+    char* contents = NULL;
+    char* macsValue = NULL;
+    char* value = NULL;
+    size_t macsValueLength = 0;
+    size_t i = 0;
+    int status = 0;
+
+    if (!FileExists(fileName))
+    {
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found, nothing to check", fileName);
+        return 0;
+    }
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
+        status = ENOENT;
+    }
+    else if (NULL == (macsValue = GetStringOptionFromBuffer(contents, "MACs", ' ', log)))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'MACs' not found in '%s'", fileName);
+        status = ENOENT;
+    }
+    else
+    {
+        macsValueLength = strlen(macsValue);
+
+        for (i = 0; i < macsValueLength; i++)
+        {
+            if (NULL == (value = DuplicateString(&(macsValue[i]))))
+            {
+                OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(value, ',');
+
+                // The only allowed values are these 4 below
+                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && 
+                    strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                {
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                    status = ENOENT;
+                }
+
+                i += strlen(value);
+
+                FREE_MEMORY(value);
+            }
+        }
+    }
+
+    FREE_MEMORY(macsValue);
+    FREE_MEMORY(contents);
+
+    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
