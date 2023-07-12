@@ -1139,7 +1139,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     return status;
 }
 
- int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 {
     char* contents = NULL;
     char* macsValue = NULL;
