@@ -1171,7 +1171,6 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
