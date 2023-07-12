@@ -1148,12 +1148,13 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
     size_t i = 0;
     int status = 0;
 
-    if (0 != (status = CheckFileExists(fileName, log)))
+    if (!FileExists(fileName))
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found (%d), nothing to check", fileName, status);
-        status = ENOENT;
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found, nothing to check", fileName);
+        return 0;
     }
-    else if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+
+    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
         status = ENOENT;

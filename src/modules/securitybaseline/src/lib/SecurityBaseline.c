@@ -1275,8 +1275,7 @@ static int AuditEnsureSshLoginGraceTimeIsSet(void)
 
 static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (0 == CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureSshWarningBannerIsEnabled(void)

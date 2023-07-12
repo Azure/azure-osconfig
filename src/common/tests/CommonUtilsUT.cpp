@@ -1791,8 +1791,8 @@ TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
 
     int i = 0;
 
-    EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(nullptr, nullptr));
-    EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed("~file_that_does_not_exist", nullptr));
+    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(nullptr, nullptr));
+    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed("~file_that_does_not_exist", nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
