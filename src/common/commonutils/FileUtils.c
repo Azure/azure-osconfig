@@ -1150,8 +1150,8 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 
     if (0 != (status = CheckFileExists(fileName, log)))
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found (%d)", fileName, status);
-        status = EINVAL;
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found (%d), nothing to check", fileName, status);
+        status = ENOENT;
     }
     else if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
@@ -1179,8 +1179,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
             {
                 TruncateAtFirst(value, ',');
 
-                OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: checking MACs value of '%s'", value);
-                    
                 // The only allowed values are these 4 below
                 if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && 
                     strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))

@@ -1262,8 +1262,9 @@ static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 
 static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) || 
+        ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
+        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshLoginGraceTimeIsSet(void)
@@ -1274,13 +1275,8 @@ static int AuditEnsureSshLoginGraceTimeIsSet(void)
 
 static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    // HERE, we need this changed - the MACs values must be all checked to be only from there and no others ################################# 
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MACs", SecurityBaselineGetLog())) &&
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "hmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "hmac-sha2-256-etm@openssh.com", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "hmac-sha2-512", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "hmac-sha2-256", SecurityBaselineGetLog()))))) ? 0 : ENOENT;
+        (0 == CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSshWarningBannerIsEnabled(void)
