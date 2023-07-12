@@ -1145,6 +1145,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
     char* macsValue = NULL;
     char* buffer = NULL;
     char* value = NULL;
+    int i = 0, numberOfCommas = 0;
     int status = ENOENT;
 
     if (0 == CheckFileExists(fileName, log))
@@ -1174,10 +1175,20 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
                     }
                     else
                     {
-                        TruncateAtFirst(value, ',');
+                        numberOfCommas += 1;
+                        
+                        for (i = 0; i < numberOfCommas; i++)
+                        {
+                            TruncateAtFirst(value, ',');
+                        }
 
                         OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: checking MACs value of '%s'", value);
                     
+                        if (0 == strlen(value))
+                        {
+                            break;
+                        }
+
                         if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
                         {
                             OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on MACs line in '%s'", value, fileName);
@@ -1187,9 +1198,9 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
                         }
                         else
                         {
+                            status = 0;
                             FREE_MEMORY(value);
-                            //search here for next value
-                            buffer += 1;
+                            continue;
                         }
                     }
                 }
