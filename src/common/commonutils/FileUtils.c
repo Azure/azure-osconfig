@@ -1137,9 +1137,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
- }
+}
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
 {
     char* contents = NULL;
     char* macsValue = NULL;
