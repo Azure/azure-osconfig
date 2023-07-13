@@ -1172,7 +1172,7 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
     char* osName = NULL;
     char* osVersion = NULL;
-    
+
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
         ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
         ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strcmp(osVersion, "18.04")) && FreeAndReturnTrue(osVersion))) || 
@@ -1183,7 +1183,7 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
     return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
-}                                                                         
+}
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {
