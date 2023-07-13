@@ -20,11 +20,6 @@
     }\
 }\
 
-#define FREE(a) {\
-    FREE_MEMORY(a);\
-    return true;\
-}\
-
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
@@ -141,6 +136,8 @@ int ReadHttpStatusFromSocket(int socketHandle, void* log);
 int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
 int SleepMilliseconds(long milliseconds);
+
+bool FreeAndReturnTrue(void* value);
 
 bool IsDaemonActive(const char* daemonName, void* log);
 bool CheckIfDaemonActive(const char* daemonName, void* log);

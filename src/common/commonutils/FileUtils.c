@@ -1104,10 +1104,10 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
 
             while (NULL != (value = GetStringOptionFromBuffer(buffer, "auth", ' ', log)))
             {
-                if (((0 == strcmp("required", value)) && FREE(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FREE(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FREE(value)) &&
-                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FREE(value)) &&
+                if (((0 == strcmp("required", value)) && FreeAndReturnTrue(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "required", ' ', log))) && (0 == strcmp("pam_tally2.so", value)) && FreeAndReturnTrue(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "pam_tally2.so", ' ', log))) && (0 == strcmp("file=/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
+                    ((NULL != (value = GetStringOptionFromBuffer(buffer, "file", '=', log))) && (0 == strcmp("/var/log/tallylog", value)) && FreeAndReturnTrue(value)) &&
                     ((0 < (option = GetIntegerOptionFromBuffer(buffer, "deny", '=', log))) && (6 > option)) &&
                     (0 < (option = GetIntegerOptionFromBuffer(buffer, "unlock_time", '=', log))))
                 {

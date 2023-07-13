@@ -98,3 +98,9 @@ size_t HashString(const char* source)
 
     return hash;
 }
+
+bool FreeAndReturnTrue(void* value)
+{
+    FREE_MEMORY(value);
+    return true;
+}
