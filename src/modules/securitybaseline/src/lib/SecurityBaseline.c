@@ -1170,12 +1170,13 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
+    const char* 1804 = "18.04"; 
     char* osName = NULL;
     char* osVersion = NULL;
 
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
         ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
-        ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strcmp(osVersion, "18.04")) && FreeAndReturnTrue(osVersion))) || 
+        ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, 1804, strlen(1804))) && FreeAndReturnTrue(osVersion))) ||
         CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
