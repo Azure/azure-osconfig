@@ -20,6 +20,11 @@
     }\
 }\
 
+#define FREE(a) {\
+    FREE_MEMORY(a);\
+    return true;\
+}\
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
