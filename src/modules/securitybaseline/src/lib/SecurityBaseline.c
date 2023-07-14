@@ -1170,15 +1170,21 @@ static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 
 static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
+    const char* version = "18.04"; 
+    char* osName = NULL;
+    char* osVersion = NULL;
+
     return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
-        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog()) &&
+        ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
+        ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
+        CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureTelnetServiceIsDisabled(void)
 {
     return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
-}                                                                         
+}
 
 static int AuditEnsureRcprshServiceIsDisabled(void)
 {

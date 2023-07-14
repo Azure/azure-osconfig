@@ -137,6 +137,8 @@ int ReadHttpContentLengthFromSocket(int socketHandle, void* log);
 
 int SleepMilliseconds(long milliseconds);
 
+bool FreeAndReturnTrue(void* value);
+
 bool IsDaemonActive(const char* daemonName, void* log);
 bool CheckIfDaemonActive(const char* daemonName, void* log);
 bool EnableAndStartDaemon(const char* daemonName, void* log);

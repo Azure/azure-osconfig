@@ -1257,8 +1257,8 @@ int CheckPasswordExpirationLessThan(long days, void* log)
                         }
                         else
                         {
-                            OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days, less than requested %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate, days);
+                            OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
+                                userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
                         }
                     }
