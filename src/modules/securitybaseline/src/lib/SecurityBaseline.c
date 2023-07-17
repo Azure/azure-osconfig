@@ -1372,7 +1372,7 @@ static int AuditEnsureNisServerIsDisabled(void)
 static int AuditEnsureRshClientNotInstalled(void)
 {
     return ((0 != CheckPackageInstalled("rsh", SecurityBaselineGetLog())) && 
-        (0 != CheckPackageInstalled("rsh-client", SecurityBaselineGetLog())) ? 0 : ENOENT;
+        (0 != CheckPackageInstalled("rsh-client", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
