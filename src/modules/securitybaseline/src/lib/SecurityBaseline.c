@@ -1361,7 +1361,7 @@ static int AuditEnsureSnmpServerIsDisabled(void)
 
 static int AuditEnsureRsynServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive("rsyncd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive("rsync", SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureNisServerIsDisabled(void)
@@ -1371,7 +1371,8 @@ static int AuditEnsureNisServerIsDisabled(void)
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
-    return CheckPackageInstalled("rsh", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return ((0 != CheckPackageInstalled("rsh", SecurityBaselineGetLog())) && 
+        (0 != CheckPackageInstalled("rsh-client", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
