@@ -98,7 +98,7 @@ int CheckUsersRecordedPasswordChangeDates(void* log);
 int CheckSystemAccountsAreNonLogin(void* log);
 int CheckRootPasswordForSingleUserMode(void* log);
 int CheckUsersDontHaveDotFiles(const char* name, void* log);
-int CheckUsersRestrictedDotFiles(unsigned int mode, void* log);
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log);
 
 #ifdef __cplusplus
 }
