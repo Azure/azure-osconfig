@@ -1514,17 +1514,24 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
     return status;
 }
 
-int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log)
 {
     const char* pathTemplate = "%s/%s";
     
     SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0;
+    unsigned int userListSize = 0, i = 0, j = 0;
     DIR* home = NULL;
     struct dirent* entry = NULL;
     char* path = NULL;
     size_t length = 0;
+    bool oneGoodMode = false;
     int status = 0, _status = 0;
+
+    if ((NULL == modes) || (0 == numberOfModes))
+    {
+        OsConfigLogError(log, "CheckUsersRestrictedDotFiles: invalid arguyments (%p, %u)", modes, numberOfModes);
+        return EINVAL;
+    }
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1551,9 +1558,20 @@ int CheckUsersRestrictedDotFiles(unsigned int mode, void* log)
                         memset(path, 0, length + 1);
                         snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
 
-                        if ((0 != (_status = CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))) && (0 == status))
+                        oneGoodMode = false;
+
+                        for (j = 0; j < numberOfModes; j++)
                         {
-                            status = _status;
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))
+                            {
+                                oneGoodMode = true;
+                                break;
+                            }
+                        }
+
+                        if ((false == oneGoodMode) && (0 == status))
+                        {
+                            status = ENOENT;
                         }
 
                         FREE_MEMORY(path);
