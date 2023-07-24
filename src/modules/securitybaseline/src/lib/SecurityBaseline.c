@@ -1387,7 +1387,7 @@ static int AuditEnsureSmbWithSambaIsDisabled(void)
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    unsigned int modes[] = { 600, 644, 664, 744 };
+    unsigned int modes[] = {600, 644, 664, 744};
     
     return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
 }
