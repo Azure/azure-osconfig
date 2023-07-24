@@ -1529,7 +1529,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     if ((NULL == modes) || (0 == numberOfModes))
     {
-        OsConfigLogError(log, "CheckUsersRestrictedDotFiles: invalid arguyments (%p, %u)", modes, numberOfModes);
+        OsConfigLogError(log, "CheckUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
         return EINVAL;
     }
 
