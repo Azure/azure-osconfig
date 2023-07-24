@@ -1525,7 +1525,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     char* path = NULL;
     size_t length = 0;
     bool oneGoodMode = false;
-    int status = 0, _status = 0;
+    int status = 0;
 
     if ((NULL == modes) || (0 == numberOfModes))
     {
@@ -1562,7 +1562,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, mode, log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
                             {
                                 oneGoodMode = true;
                                 break;
@@ -1587,7 +1587,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access %u", mode);
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access");
     }
 
     return status;
