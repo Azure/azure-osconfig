@@ -1047,23 +1047,40 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     return status;
 }
 
-int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0;
-    int status = 0, _status = 0;
+    unsigned int userListSize = 0, i = 0, j = 0;
+    int status = 0;
+
+    if ((NULL == modes) || (0 == numberOfModes))
+    {
+        OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: invalid arguments (%p, %u)", modes, numberOfModes);
+        return EINVAL;
+    }
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].noLogin) /*|| (userList[i].isRoot)*/ || (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log))))
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
             {
                 continue;
             }
             else if (DirectoryExists(userList[i].home))
             {
-                if (0 == (_status = CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode, true, log)))
+                oneGoodMode = false;
+
+                for (j = 0; j < numberOfModes; j++)
+                {
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode[j], true, log))
+                    {
+                        oneGoodMode = true;
+                        break;
+                    }
+                }
+
+                if (true == oneGoodMode)
                 {
                     OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
@@ -1072,7 +1089,11 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
                 {
                     OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access (%u) set for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
-                    status = _status;
+                    
+                    if (0 == status)
+                    {
+                        status = ENOENT;
+                    }
                 }
             }
         }

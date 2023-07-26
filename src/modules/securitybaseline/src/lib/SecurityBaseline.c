@@ -784,8 +784,9 @@ static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
 {
-    return ((0 == CheckRestrictedUserHomeDirectories(750, SecurityBaselineGetLog())) || 
-        (0 == CheckRestrictedUserHomeDirectories(700, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    unsigned int modes[] = {750, 700};
+    
+    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
 }
 
 static int AuditEnsurePasswordHashingAlgorithm(void)
