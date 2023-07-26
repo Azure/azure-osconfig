@@ -1051,6 +1051,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
+    bool oneGoodMode = false;
     int status = 0;
 
     if ((NULL == modes) || (0 == numberOfModes))
@@ -1073,7 +1074,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, mode[j], true, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
                     {
                         oneGoodMode = true;
                         break;
@@ -1083,12 +1084,12 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
                 if (true == oneGoodMode)
                 {
                     OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
+                        userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
                 }
                 else
                 {
                     OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access (%u) set for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, mode, userList[i].home);
+                        userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
                     
                     if (0 == status)
                     {
