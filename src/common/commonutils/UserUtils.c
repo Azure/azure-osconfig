@@ -1057,7 +1057,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].noLogin) || (userList[i].isRoot) || (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log))))
+            if ((userList[i].noLogin) /*|| (userList[i].isRoot)*/ || (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log))))
             {
                 continue;
             }
