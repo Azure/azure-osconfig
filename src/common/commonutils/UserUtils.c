@@ -1011,11 +1011,11 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
             {
                 continue;
             }
-            else if (userList[i].home) 
+            else if (DirectoryExists(userList[i].home)) 
             {
                 if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
@@ -1033,6 +1033,12 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     status = ENOENT;
                 }
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' does not exist",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                status = ENOENT;
             }
         }
     }
