@@ -1329,12 +1329,14 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive("rpcgssd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive("rpcgssd", SecurityBaselineGetLog())) && 
+        (false == CheckIfDaemonActive("rpc-gssd", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive("rpcidmapd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive("rpcidmapd", SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive("nfs-idmapd", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
