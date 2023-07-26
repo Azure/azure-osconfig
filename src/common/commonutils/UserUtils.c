@@ -1082,7 +1082,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who have home directories have restricted access to them");
+        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: all users who can login and have home directories have restricted access to them");
     }
 
     return status;
