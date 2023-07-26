@@ -1559,7 +1559,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     {
         for (i = 0; i < userListSize; i++)
         {
-            if ((userList[i].noLogin) || (userList[i].isRoot))
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
             {
                 continue;
             }
@@ -1609,7 +1609,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users have dot files (if any) with right access");
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users who can login have dot files (if any) with right access");
     }
 
     return status;
