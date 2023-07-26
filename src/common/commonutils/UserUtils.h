@@ -88,7 +88,7 @@ int CheckAllUsersHavePasswordsSet(void* log);
 int CheckDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
-int CheckRestrictedUserHomeDirectories(unsigned int mode, void* log);
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log);
