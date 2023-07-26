@@ -222,8 +222,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             }
             else
             {
-                OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected (%d, %d)",
-                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected", name, statStruct.st_uid, statStruct.st_gid);
 
                 // S_IXOTH (00001): Execute/search permission, others
                 // S_IWOTH (00002): Write permission, others
