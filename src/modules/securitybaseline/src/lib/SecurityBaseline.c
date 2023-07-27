@@ -784,7 +784,7 @@ static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
 {
-    unsigned int modes[] = {750, 700};
+    unsigned int modes[] = {700, 750};
     
     return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
 }
@@ -1391,7 +1391,7 @@ static int AuditEnsureSmbWithSambaIsDisabled(void)
 
 static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    unsigned int modes[] = {600, 644, 664, 744};
+    unsigned int modes[] = {600, 644, 664, 700, 744};
     
     return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
 }
@@ -1953,7 +1953,9 @@ static int RemediateEnsureUsersOwnTheirHomeDirectories(void)
 
 static int RemediateEnsureRestrictedUserHomeDirectories(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    unsigned int modes[] = {700, 750};
+
+    return SetRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), 700, 750, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(void)
@@ -2403,7 +2405,9 @@ static int RemediateEnsureSmbWithSambaIsDisabled(void)
 
 static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    unsigned int modes[] = {600, 644, 664, 700, 744};
+
+    return SetUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), 744, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(void)
