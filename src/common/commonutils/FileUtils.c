@@ -222,7 +222,11 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             }
             else
             {
-                OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected", name, statStruct.st_uid, statStruct.st_gid);
+                // Special case for the MPI Client
+                if (NULL != log)
+                {
+                    OsConfigLogInfo(log, "CheckAccess: ownership of '%s' (%d, %d) matches expected", name, statStruct.st_uid, statStruct.st_gid);
+                }
 
                 // S_IXOTH (00001): Execute/search permission, others
                 // S_IWOTH (00002): Write permission, others

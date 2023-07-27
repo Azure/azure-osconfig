@@ -1953,7 +1953,7 @@ static int RemediateEnsureUsersOwnTheirHomeDirectories(void)
 
 static int RemediateEnsureRestrictedUserHomeDirectories(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetRestrictedUserHomeDirectories(700, 750, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(void)

@@ -1113,6 +1113,56 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     return status;
 }
 
+int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int modeForOthers, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home))
+            {
+                if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, true, log))
+                {
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper access (%u) set for their assigned home directory '%s', nothing to set",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
+                }
+                else if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, true, log))
+                {
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper access (%u) set for their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetRestrictedUserHomeDirectories: failed to set proper access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
+                        userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: all users who can login have now restricted access for their home directories");
+    }
+
+    return status;
+}
+
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
