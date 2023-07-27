@@ -784,7 +784,7 @@ static int AuditEnsureUsersOwnTheirHomeDirectories(void)
 
 static int AuditEnsureRestrictedUserHomeDirectories(void)
 {
-    unsigned int modes[] = {750, 700};
+    unsigned int modes[] = {700, 750};
     
     return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
 }
@@ -1953,7 +1953,9 @@ static int RemediateEnsureUsersOwnTheirHomeDirectories(void)
 
 static int RemediateEnsureRestrictedUserHomeDirectories(void)
 {
-    return SetRestrictedUserHomeDirectories(700, 750, SecurityBaselineGetLog());
+    unsigned int modes[] = {700, 750};
+
+    return SetRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), 700, 750, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordHashingAlgorithm(void)

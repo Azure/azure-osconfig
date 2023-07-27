@@ -1113,11 +1113,18 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
     return status;
 }
 
-int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int modeForOthers, void* log)
+int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0;
+    unsigned int userListSize = 0, i = 0, j = 0;
+    bool oneGoodMode = false;
     int status = 0, _status = 0;
+
+    if ((NULL == modes) || (0 == numberOfModes))
+    {
+        OsConfigLogError(log, "SetRestrictedUserHomeDirectories: invalid arguments (%p, %u)", modes, numberOfModes);
+        return EINVAL;
+    }
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1129,24 +1136,35 @@ int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int mode
             }
             else if (DirectoryExists(userList[i].home))
             {
-                if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, true, log))
-                {
-                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper restricted access (%u) for their assigned home directory '%s', nothing to set",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
-                }
-                else if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
-                {
-                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper restricted access (%u) for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
-                }
-                else
-                {
-                    OsConfigLogError(log, "SetRestrictedUserHomeDirectories: failed to set restricted access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
-                        userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
+                oneGoodMode = false;
 
-                    if (0 == status)
+                for (j = 0; j < numberOfModes; j++)
+                {
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
                     {
-                        status = _status;
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper restricted access (%u) for their assigned home directory '%s'",
+                            userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
+                        oneGoodMode = true;
+                        break;
+                    }
+                }
+
+                if (false == oneGoodMode)
+                {
+                    if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
+                    {
+                        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper restricted access (%u) for their assigned home directory '%s'",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetRestrictedUserHomeDirectories: failed to set restricted access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
+                            userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
+
+                        if (0 == status)
+                        {
+                            status = _status;
+                        }
                     }
                 }
             }

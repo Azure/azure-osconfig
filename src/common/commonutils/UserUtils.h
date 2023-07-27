@@ -89,7 +89,7 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log);
 int CheckAllUsersHomeDirectoriesExist(void* log);
 int CheckUsersOwnTheirHomeDirectories(void* log);
 int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, void* log);
-int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int modeForOthers, void* log);
+int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log);
