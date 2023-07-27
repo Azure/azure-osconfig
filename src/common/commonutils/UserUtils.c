@@ -1011,11 +1011,11 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     {
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin)
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
             {
                 continue;
             }
-            else if (userList[i].home) 
+            else if (DirectoryExists(userList[i].home)) 
             {
                 if (userList[i].cannotLogin && (0 != CheckHomeDirectoryOwnership(&userList[i], log)))
                 {
@@ -1033,6 +1033,12 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     status = ENOENT;
                 }
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' does not exist",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                status = ENOENT;
             }
         }
     }
@@ -1076,20 +1082,17 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
                 {
                     if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
                     {
+                        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
+                            userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
                         oneGoodMode = true;
                         break;
                     }
                 }
 
-                if (true == oneGoodMode)
+                if (false == oneGoodMode)
                 {
-                    OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
-                }
-                else
-                {
-                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access (%u) set for their assigned home directory '%s'",
-                        userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
+                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access set for their assigned home directory '%s'",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     
                     if (0 == status)
                     {
@@ -1586,14 +1589,22 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         {
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
                             {
+                                OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) has proper access (%u) set for their dot file '%s'",
+                                    userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
                                 oneGoodMode = true;
                                 break;
                             }
                         }
 
-                        if ((false == oneGoodMode) && (0 == status))
+                        if (false == oneGoodMode)
                         {
-                            status = ENOENT;
+                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) does not has have proper access set for their dot file '%s'",
+                                userList[i].username, userList[i].userId, userList[i].groupId, path);
+                            
+                            if (0 == status)
+                            {
+                                status = ENOENT;
+                            }
                         }
 
                         FREE_MEMORY(path);
