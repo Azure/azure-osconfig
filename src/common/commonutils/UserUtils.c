@@ -1082,7 +1082,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
                 {
                     if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
                     {
-                        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper access (%u) set for their assigned home directory '%s'",
+                        OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper restricted access (%u) for their assigned home directory '%s'",
                             userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
                         oneGoodMode = true;
                         break;
@@ -1091,7 +1091,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 if (false == oneGoodMode)
                 {
-                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper access set for their assigned home directory '%s'",
+                    OsConfigLogError(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) does not have proper restricted access for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     
                     if (0 == status)
@@ -1131,17 +1131,17 @@ int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int mode
             {
                 if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, true, log))
                 {
-                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper access (%u) set for their assigned home directory '%s', nothing to set",
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper restricted access (%u) for their assigned home directory '%s', nothing to set",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
                 }
                 else if (0 == (_status = SetDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, log)))
                 {
-                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper access (%u) set for their assigned home directory '%s'",
+                    OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) has now proper restricted access (%u) for their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].home);
                 }
                 else
                 {
-                    OsConfigLogError(log, "SetRestrictedUserHomeDirectories: failed to set proper access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
+                    OsConfigLogError(log, "SetRestrictedUserHomeDirectories: failed to set restricted access (%u) for user '%s' (%u, %u) assigned home directory '%s' (%d)",
                         userList[i].isRoot ? modeForRoot : modeForOthers, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, _status);
 
                     if (0 == status)
@@ -1157,7 +1157,7 @@ int SetRestrictedUserHomeDirectories(unsigned int modeForRoot, unsigned int mode
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: all users who can login have now restricted access for their home directories");
+        OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: all users who can login have now proper restricted access for their home directories");
     }
 
     return status;
@@ -1639,7 +1639,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                         {
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
                             {
-                                OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) has proper access (%u) set for their dot file '%s'",
+                                OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) has proper restricted access (%u) for their dot file '%s'",
                                     userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
                                 oneGoodMode = true;
                                 break;
@@ -1648,7 +1648,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         if (false == oneGoodMode)
                         {
-                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) does not has have proper access set for their dot file '%s'",
+                            OsConfigLogError(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'",
                                 userList[i].username, userList[i].userId, userList[i].groupId, path);
                             
                             if (0 == status)
@@ -1670,7 +1670,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users who can login have dot files (if any) with right access");
+        OsConfigLogInfo(log, "CheckUserDotFilesAccess: all users who can login have dot files (if any) with proper restricted access");
     }
 
     return status;
@@ -1726,7 +1726,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                         {
                             if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
                             {
-                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has restricted access (%u) set for their dot file '%s'",
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has proper restricted access (%u) set for their dot file '%s'",
                                     userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
                                 oneGoodMode = true;
                                 break;
@@ -1742,7 +1742,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
                             }
                             else
                             {
-                                OsConfigLogError(log, "SetUsersRestrictedDotFiles: failed to set access (%u) for user '%s' (%u, %u) dot file '%s'",
+                                OsConfigLogError(log, "SetUsersRestrictedDotFiles: failed to set restricted access (%u) for user '%s' (%u, %u) dot file '%s'",
                                     mode, userList[i].username, userList[i].userId, userList[i].groupId, path);
 
                                 if (0 == status)
@@ -1765,7 +1765,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "SetUserDotFilesAccess: all users who can login now have restricted access to their dot files, if any");
+        OsConfigLogInfo(log, "SetUserDotFilesAccess: all users who can login now have proper restricted access to their dot files, if any");
     }
 
     return status;
