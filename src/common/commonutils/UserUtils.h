@@ -100,6 +100,7 @@ int CheckSystemAccountsAreNonLogin(void* log);
 int CheckRootPasswordForSingleUserMode(void* log);
 int CheckUsersDontHaveDotFiles(const char* name, void* log);
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log);
+int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 
 #ifdef __cplusplus
 }

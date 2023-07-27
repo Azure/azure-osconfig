@@ -1675,3 +1675,98 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
     return status;
 }
+
+int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log)
+{
+    const char* pathTemplate = "%s/%s";
+
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0, j = 0;
+    DIR* home = NULL;
+    struct dirent* entry = NULL;
+    char* path = NULL;
+    size_t length = 0;
+    bool oneGoodMode = false;
+    int status = 0, _status = 0;
+
+    if ((NULL == modes) || (0 == numberOfModes))
+    {
+        OsConfigLogError(log, "SetUsersRestrictedDotFiles: invalid arguments (%p, %u)", modes, numberOfModes);
+        return EINVAL;
+    }
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            {
+                continue;
+            }
+            else if (DirectoryExists(userList[i].home) && (NULL != (home = opendir(userList[i].home))))
+            {
+                while (NULL != (entry = readdir(home)))
+                {
+                    if ((DT_REG == entry->d_type) && ('.' == entry->d_name[0]))
+                    {
+                        length = strlen(pathTemplate) + strlen(userList[i].home) + strlen(entry->d_name);
+                        if (NULL == (path = malloc(length + 1)))
+                        {
+                            OsConfigLogError(log, "SetUsersRestrictedDotFiles: out of memory");
+                            status = ENOMEM;
+                            break;
+                        }
+
+                        memset(path, 0, length + 1);
+                        snprintf(path, length, pathTemplate, userList[i].home, entry->d_name);
+
+                        oneGoodMode = false;
+
+                        for (j = 0; j < numberOfModes; j++)
+                        {
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
+                            {
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has restricted access (%u) set for their dot file '%s'",
+                                    userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
+                                oneGoodMode = true;
+                                break;
+                            }
+                        }
+
+                        if (false == oneGoodMode)
+                        {
+                            if (0 == (_status = SetFileAccess(path, userList[i].userId, userList[i].groupId, mode, log)))
+                            {
+                                OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) now has restricted access (%u) set for their dot file '%s'",
+                                    userList[i].username, userList[i].userId, userList[i].groupId, mode, path);
+                            }
+                            else
+                            {
+                                OsConfigLogError(log, "SetUsersRestrictedDotFiles: failed to set access (%u) for user '%s' (%u, %u) dot file '%s'",
+                                    mode, userList[i].username, userList[i].userId, userList[i].groupId, path);
+
+                                if (0 == status)
+                                {
+                                    status = _status;
+                                }
+                            }
+                        }
+                            
+                        FREE_MEMORY(path);
+                    }
+                }
+
+                closedir(home);
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetUserDotFilesAccess: all users who can login now have restricted access to their dot files, if any");
+    }
+
+    return status;
+}
