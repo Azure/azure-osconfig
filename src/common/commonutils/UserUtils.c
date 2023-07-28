@@ -1850,7 +1850,8 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
 int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log)
 {
     const char* commandTemplate = "userdel -f -r %s";
-    char command[80] = {0};
+    char* command = NULL;
+    size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     int status = 0, _status = 0;
@@ -1875,8 +1876,16 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
             {
                 if (0 == strcmp(userList[i].username, names[j]))
                 {
-                    memset(command, 0, sizeof(command));
-                    snprintf(command, sizeof(command), commandTemplate, names[j]);
+                    commandLength = strlen(commandTemplate) + strlen(names[j]) + 1;
+                    if (NULL == (command = malloc(commandLength)))
+                    {
+                        OsConfigLogError(log, "RemoveUserAccounts: out of memory");
+                        status = ENOMEM;
+                        break;
+                    }
+                    
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, names[j]);
 
                     if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
@@ -1900,6 +1909,8 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
                     {
                         status = _status;
                     }
+
+                    FREE_MEMORY(command);
                 }
             }
         }
