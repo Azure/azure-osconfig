@@ -1791,12 +1791,9 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
 int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, void* log)
 {
-    const char* etcShadow = "/etc/shadow";
-    const char* etcPasswd = "/etc/passwd";
-    const char* etcGroup = "/etc/group";
-
     SIMPLIFIED_USER* userList = NULL;
-    unsigned int userListSize = 0, i = 0, j = 0;
+    SIMPLIFIED_GROUP* groupList = NULL;
+    unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
     int status = ENOENT;
 
     if ((NULL == names) || (0 == numberOfNames))
@@ -1815,13 +1812,17 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
             {
                 if (0 == strcmp(userList[i].username, names[j]))
                 {
-                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id: %u, gid: %u, home: '%s'", 
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    EnumerateUserGroups(userList[i], &groupList, &groupListSize, log);
+                    
+                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id %u, gid %u, home '%s' and present in %u groups", 
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
                     
                     if (DirectoryExists(userList[i].home))
                     {
                         OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
                     }
+
+                    FreeGroupList(&groupList, &groupListSize);
 
                     status = 0;
                 }
@@ -1831,11 +1832,14 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
 
     FreeUsersList(&userList, userListSize);
 
-    if (status && ((0 == FindTextInFile(etcPasswd, names[j], log)) || 
-        (0 == FindTextInFile(etcShadow, names[j], log)) || 
-        (0 == FindTextInFile(etcGroup, names[j], log))))
+    for (j = 0; j < numberOfNames; j++)
     {
-        status = 0;
+        if ((0 == FindTextInFile("/etc/passwd", names[j], log)) ||
+            (0 == FindTextInFile("/etc/shadow", names[j], log)) ||
+            (0 == FindTextInFile("/etc/group", names[j], log)))
+        {
+            status = 0;
+        }
     }
 
     if (0 == status)
