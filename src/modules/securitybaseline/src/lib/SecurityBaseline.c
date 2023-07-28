@@ -1420,7 +1420,9 @@ static int AuditEnsureRloginServiceIsDisabled(void)
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    const char* names[] = {"games"};
+
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), true, true)) ? ENOENT : 0;
 }
 
 AuditRemediate g_auditChecks[] =

@@ -1788,3 +1788,78 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
     return status;
 }
+
+int CheckIfUserAccountsExist(const char** names, long int numberOfNames, bool checkGroups, bool checkHomes)
+{
+    const char* etcShadow = "/etc/shadow";
+    const char* etcPasswd = "/etc/passwd";
+    const char* etcGroup = "/etc/group";
+
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0, j = 0;
+    int status = ENOENT;
+
+    if ((NULL == names) || (0 == numberOfNames))
+    {
+        OsConfigLogError(log, "CheckIfUserAccountsExist: invalid arguments (%p, %u)", names, numberOfNames);
+        return EINVAL;
+    }
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            {
+                continue;
+            }
+            else
+            {
+                for (j = 0; j < numberOfNames; j++)
+                {
+                    if (0 == strcmp(userList[i].username, names[j]))
+                    {
+                        if (0 == FindTextInFile(etcPasswd, names[i], SecurityBaselineGetLog()))
+                        {
+                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcPasswd);
+                            status = 0;
+                        }
+
+                        if (0 == FindTextInFile(etcShadow, names[i], SecurityBaselineGetLog()))
+                        {
+                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcShadow);
+                            status = 0;
+                        }
+
+                        if (checkGroups && (0 == FindTextInFile(etcGroup, names[i], SecurityBaselineGetLog())))
+                        {
+                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcGroup);
+                            status = 0;
+                        }
+
+                        if (checkHomes && DirectoryExists(userList[i].home))
+                        {
+                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found with an existing assigned home directory '%s'", names[j], userList[i].home);
+                            status = 0;
+                        }
+
+                        if (0 == status)
+                        {
+                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: traces of user '%s' (%u, %u,'%s') presence found",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "CheckIfUserAccountsExist: traces of user accounts presence found");
+    }
+
+    return status;
+}
