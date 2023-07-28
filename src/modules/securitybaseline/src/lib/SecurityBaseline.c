@@ -1422,7 +1422,7 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), true, true, SecurityBaselineGetLog())) ? ENOENT : 0;
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? ENOENT : 0;
 }
 
 AuditRemediate g_auditChecks[] =

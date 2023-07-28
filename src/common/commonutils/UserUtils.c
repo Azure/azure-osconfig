@@ -1789,7 +1789,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, bool checkGroups, bool checkHomes, void* log)
+int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, void* log)
 {
     const char* etcShadow = "/etc/shadow";
     const char* etcPasswd = "/etc/passwd";
@@ -1807,54 +1807,36 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, boo
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
+        status = ENOENT;
+        
         for (i = 0; i < userListSize; i++)
         {
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked)
+            for (j = 0; j < numberOfNames; j++)
             {
-                continue;
-            }
-            else
-            {
-                for (j = 0; j < numberOfNames; j++)
+                if (0 == strcmp(userList[i].username, names[j]))
                 {
-                    if (0 == strcmp(userList[i].username, names[j]))
+                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id: %u, gid: %u, home: '%s'", 
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    
+                    if (DirectoryExists(userList[i].home))
                     {
-                        if (0 == FindTextInFile(etcPasswd, names[i], log))
-                        {
-                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcPasswd);
-                            status = 0;
-                        }
-
-                        if (0 == FindTextInFile(etcShadow, names[i], log))
-                        {
-                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcShadow);
-                            status = 0;
-                        }
-
-                        if (checkGroups && (0 == FindTextInFile(etcGroup, names[i], log)))
-                        {
-                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcGroup);
-                            status = 0;
-                        }
-
-                        if (checkHomes && DirectoryExists(userList[i].home))
-                        {
-                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found with an existing assigned home directory '%s'", names[j], userList[i].home);
-                            status = 0;
-                        }
-
-                        if (0 == status)
-                        {
-                            OsConfigLogInfo(log, "CheckIfUserAccountsExist: traces of user '%s' (%u, %u,'%s') presence found",
-                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
-                        }
+                        OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
                     }
+
+                    status = 0;
                 }
             }
         }
     }
 
     FreeUsersList(&userList, userListSize);
+
+    if (status && ((0 == FindTextInFile(etcPasswd, names[j], log)) || 
+        (0 == FindTextInFile(etcShadow, names[j], log)) || 
+        (0 == FindTextInFile(etcGroup, names[j], log))))
+    {
+        status = 0;
+    }
 
     if (0 == status)
     {
