@@ -1789,7 +1789,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckIfUserAccountsExist(const char** names, long int numberOfNames, bool checkGroups, bool checkHomes)
+int CheckIfUserAccountsExist(const char** names, long int numberOfNames, bool checkGroups, bool checkHomes, void* log)
 {
     const char* etcShadow = "/etc/shadow";
     const char* etcPasswd = "/etc/passwd";
@@ -1819,19 +1819,19 @@ int CheckIfUserAccountsExist(const char** names, long int numberOfNames, bool ch
                 {
                     if (0 == strcmp(userList[i].username, names[j]))
                     {
-                        if (0 == FindTextInFile(etcPasswd, names[i], SecurityBaselineGetLog()))
+                        if (0 == FindTextInFile(etcPasswd, names[i], log))
                         {
                             OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcPasswd);
                             status = 0;
                         }
 
-                        if (0 == FindTextInFile(etcShadow, names[i], SecurityBaselineGetLog()))
+                        if (0 == FindTextInFile(etcShadow, names[i], log))
                         {
                             OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcShadow);
                             status = 0;
                         }
 
-                        if (checkGroups && (0 == FindTextInFile(etcGroup, names[i], SecurityBaselineGetLog())))
+                        if (checkGroups && (0 == FindTextInFile(etcGroup, names[i], log)))
                         {
                             OsConfigLogInfo(log, "CheckIfUserAccountsExist: name '%s' found in '%s'", names[j], etcGroup);
                             status = 0;
