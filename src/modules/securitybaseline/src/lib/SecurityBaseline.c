@@ -2434,7 +2434,9 @@ static int RemediateEnsureRloginServiceIsDisabled(void)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* names[] = {"games"};
+
+    return RemoveUserAccounts(names, ARRAY_SIZE(names), SecurityBaselineGetLog());
 }
 
 AuditRemediate g_remediateChecks[] =

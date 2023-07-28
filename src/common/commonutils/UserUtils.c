@@ -1846,3 +1846,57 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
 
     return status;
 }
+
+int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log)
+{
+    const char* commandTemplate = "userdel -f -r -Z %s";
+    char command[80] = {0};
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0, j = 0;
+    int status = 0, _status = 0;
+
+    if ((NULL == names) || (0 == numberOfNames))
+    {
+        OsConfigLogError(log, "RemoveUserAccounts: invalid arguments (%p, %u)", names, numberOfNames);
+        return EINVAL;
+    }
+
+    if (0 != CheckIfUserAccountsExist(names, numberOfNames, log))
+    {
+        OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
+        return 0;
+    }
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            for (j = 0; j < numberOfNames; j++)
+            {
+                if (0 == strcmp(userList[i].username, names[j]))
+                {
+                    memset(command, 0, sizeof(command));
+                    snprintf(command, sizeof(command), commandTemplate, names[j]);
+
+                    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        OsConfigLogInfo(log, "RemoveUserAccounts: removed user '%s' (%u, %u, '%s')", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        
+                        if (DirectoryExists(userList[i].home))
+                        {
+                            OsConfigLogError(log, "RemoveUserAccounts: home directory of user '%s' remains ('%s') and needs to be manually deleted", names[j], userList[i].home);
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, status);
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    return status;
+}
