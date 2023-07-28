@@ -1789,7 +1789,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckIfUserAccountsExist(const char** names, long int numberOfNames, bool checkGroups, bool checkHomes, void* log)
+int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, bool checkGroups, bool checkHomes, void* log)
 {
     const char* etcShadow = "/etc/shadow";
     const char* etcPasswd = "/etc/passwd";
