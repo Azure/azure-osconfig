@@ -1890,6 +1890,10 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
                         {
                             OsConfigLogError(log, "RemoveUserAccounts: home directory of user '%s' remains ('%s') and needs to be manually deleted", names[j], userList[i].home);
                         }
+                        else
+                        {
+                            OsConfigLogInfo(log, "RemoveUserAccounts: home directory of user '%s' successfully removed ('%s')", names[j], userList[i].home);
+                        }
                     }
                     else
                     {
