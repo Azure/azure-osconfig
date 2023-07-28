@@ -1822,10 +1822,6 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
                     {
                         OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
                     }
-                    else
-                    {
-                        OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' does not exist ('%s')", names[j], userList[i].home);
-                    }
 
                     status = 0;
                 }
