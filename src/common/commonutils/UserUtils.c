@@ -1849,7 +1849,7 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
 
 int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log)
 {
-    const char* commandTemplate = "userdel -f -r -Z %s";
+    const char* commandTemplate = "userdel -f -r %s";
     char command[80] = {0};
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
