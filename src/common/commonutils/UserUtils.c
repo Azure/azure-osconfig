@@ -1812,17 +1812,16 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
             {
                 if (0 == strcmp(userList[i].username, names[j]))
                 {
-                    EnumerateUserGroups(userList[i], &groupList, &groupListSize, log);
-                    
-                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id %u, gid %u, home '%s' and present in %u groups", 
+                    EnumerateUserGroups(&userList[i], &groupList, &groupListSize, log);
+                    FreeGroupList(&groupList, groupListSize);
+
+                    OsConfigLogInfo(log, "CheckIfUserAccountsExist: user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)", 
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
                     
                     if (DirectoryExists(userList[i].home))
                     {
                         OsConfigLogInfo(log, "CheckIfUserAccountsExist: home directory of user '%s' exists ('%s')", names[j], userList[i].home);
                     }
-
-                    FreeGroupList(&groupList, &groupListSize);
 
                     status = 0;
                 }
@@ -1832,19 +1831,17 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
 
     FreeUsersList(&userList, userListSize);
 
-    for (j = 0; j < numberOfNames; j++)
+    if (status)
     {
-        if ((0 == FindTextInFile("/etc/passwd", names[j], log)) ||
-            (0 == FindTextInFile("/etc/shadow", names[j], log)) ||
-            (0 == FindTextInFile("/etc/group", names[j], log)))
+        for (j = 0; j < numberOfNames; j++)
         {
-            status = 0;
+            if ((0 == FindTextInFile("/etc/passwd", names[j], log)) ||
+                (0 == FindTextInFile("/etc/shadow", names[j], log)) ||
+                (0 == FindTextInFile("/etc/group", names[j], log)))
+            {
+                status = 0;
+            }
         }
-    }
-
-    if (0 == status)
-    {
-        OsConfigLogInfo(log, "CheckIfUserAccountsExist: traces of user accounts presence found");
     }
 
     return status;
