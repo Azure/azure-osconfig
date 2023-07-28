@@ -1878,7 +1878,7 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
                     memset(command, 0, sizeof(command));
                     snprintf(command, sizeof(command), commandTemplate, names[j]);
 
-                    if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
                         OsConfigLogInfo(log, "RemoveUserAccounts: removed user '%s' (%u, %u, '%s')", userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                         
@@ -1889,7 +1889,12 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
                     }
                     else
                     {
-                        OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, status);
+                        OsConfigLogError(log, "RemoveUserAccounts: failed to remove user '%s' (%u, %u) (%d)", userList[i].username, userList[i].userId, userList[i].groupId, _status);
+                    }
+
+                    if (0 == status)
+                    {
+                        status = _status;
                     }
                 }
             }
