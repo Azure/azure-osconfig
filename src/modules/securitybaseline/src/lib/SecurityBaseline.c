@@ -1420,7 +1420,9 @@ static int AuditEnsureRloginServiceIsDisabled(void)
 
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return FindTextInFile(g_etcPasswd, "games", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    const char* names[] = {"games"};
+
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? ENOENT : 0;
 }
 
 AuditRemediate g_auditChecks[] =
@@ -2432,7 +2434,9 @@ static int RemediateEnsureRloginServiceIsDisabled(void)
 
 static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    const char* names[] = {"games"};
+
+    return RemoveUserAccounts(names, ARRAY_SIZE(names), SecurityBaselineGetLog());
 }
 
 AuditRemediate g_remediateChecks[] =
