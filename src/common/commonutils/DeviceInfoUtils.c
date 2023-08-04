@@ -454,7 +454,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+            if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &result, NULL, log)))
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
@@ -496,7 +496,7 @@ static char* GetEtcReleaseEntry(const char* name, void* log)
 
 static char* GetLsbReleaseEntry(const char* name, void* log)
 {
-    return GetOsReleaseEntry("lsb_release -a | grep %s:", name, ':', log);
+    return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log);
 }
 
 static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
@@ -525,7 +525,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     if (0 == strcmp(distro.id, none))
     {
         FREE_MEMORY(distro.id);
-        distro.id = GetLsbReleaseEntry("\"Distributor ID\"", log);
+        distro.id = GetLsbReleaseEntry("Distributor ID", log);
     }
 
     distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
