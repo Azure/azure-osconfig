@@ -429,18 +429,16 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetEtcReleaseEntry(const char* name, void* log)
+static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, void* log)
 {
-    const char* commandTemplate = "cat /etc/*-release | grep %s=";
-
     char* command = NULL;
     char* result = NULL;
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == name) || (0 == strlen(name)))
+    if ((NULL == commandTemplate) || (NULL == name) || (0 == strlen(name)))
     {
-        OsConfigLogError(log, "GetEtcReleaseEntry: invalid arguments");
+        OsConfigLogError(log, "GetOsReleaseEntry: invalid arguments");
         result = DuplicateString("<error>");
     }
     else
@@ -449,7 +447,7 @@ static char* GetEtcReleaseEntry(const char* name, void* log)
 
         if (NULL == (command = malloc(commandLength)))
         {
-            OsConfigLogError(log, "GetEtcReleaseEntry: out of memory");
+            OsConfigLogError(log, "GetOsReleaseEntry: out of memory");
         }
         else
         {
@@ -460,7 +458,7 @@ static char* GetEtcReleaseEntry(const char* name, void* log)
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
-                RemovePrefixUpTo(result, '=');
+                RemovePrefixUpTo(result, separator);
                 RemovePrefixBlanks(result);
 
                 if ('"' == result[0])
@@ -487,8 +485,18 @@ static char* GetEtcReleaseEntry(const char* name, void* log)
     {
         OsConfigLogInfo(log, "'%s': '%s'", name, result);
     }
-    
+
     return result;
+}
+
+static char* GetEtcReleaseEntry(const char* name, void* log)
+{
+    return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log);
+}
+
+static char* GetLsbReleaseEntry(const char* name, void* log)
+{
+    return GetOsReleaseEntry("lsb_release -a | grep \"%s:\"", name, ':', log);
 }
 
 static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
@@ -505,24 +513,50 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
 bool CheckOsAndKernelMatchDistro(void* log)
 {
     const char* linuxName = "Linux";
+    const char* none = "<null>";
 
     OS_DISTRO_INFO distro = {0}, os = {0};
     char* kernelName = GetOsKernelName(log);
     bool match = false;
 
     // Distro
-    distro.id = GetEtcReleaseEntry("DISTRIB_ID", log);
-    distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
-    distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log);
-    distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
 
-    //Installed image
+    distro.id = GetEtcReleaseEntry("DISTRIB_ID", log);
+    if (0 == strcmp(distro.id, none))
+    {
+        FREE_MEMORY(distro.id);
+        distro.id = GetLsbReleaseEntry("Distributor ID", log);
+    }
+
+    distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
+    if (0 == strcmp(distro.release, none))
+    {
+        FREE_MEMORY(distro.release);
+        distro.release = GetLsbReleaseEntry("Release", log);
+    }
+
+    distro.codename = GetEtcReleaseEntry("DISTRIB_CODENAME", log);
+    if (0 == strcmp(distro.codename, none))
+    {
+        FREE_MEMORY(distro.codename);
+        distro.codename = GetLsbReleaseEntry("Codename", log);
+    }
+
+    distro.description = GetEtcReleaseEntry("DISTRIB_DESCRIPTION", log);
+    if (0 == strcmp(distro.description, none))
+    {
+        FREE_MEMORY(distro.description);
+        distro.description = GetLsbReleaseEntry("Description", log);
+    }
+
+    // installed OS
+
     os.id = GetEtcReleaseEntry("-w NAME", log);
     os.release = GetEtcReleaseEntry("VERSION_ID", log);
     os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
     os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
 
-    if ((0 == strcmp(distro.id, os.id)) &&
+    if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
         (0 == strcmp(distro.release, os.release)) &&
         (0 == strcmp(distro.codename, os.codename)) &&
         (0 == strcmp(distro.description, os.description)) &&
