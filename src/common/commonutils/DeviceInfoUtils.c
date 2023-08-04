@@ -429,7 +429,7 @@ char* GetSystemConfiguration(void* log)
     return textResult;
 }
 
-static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, void* log)
+static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, char separator, void* log)
 {
     char* command = NULL;
     char* result = NULL;
@@ -458,7 +458,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, vo
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
-                RemovePrefixUpTo(result, '=');
+                RemovePrefixUpTo(result, separator);
                 RemovePrefixBlanks(result);
 
                 if ('"' == result[0])
@@ -491,12 +491,12 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, vo
 
 static char* GetEtcReleaseEntry(const char* name, void* log)
 {
-    return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, log);
+    return GetOsReleaseEntry("cat /etc/*-release | grep %s=", name, '=', log);
 }
 
 static char* GetLsbReleaseEntry(const char* name, void* log)
 {
-    return GetOsReleaseEntry("lsb_release -a | grep %s:", name, log);
+    return GetOsReleaseEntry("lsb_release -a | grep %s:", name, , ':', log);
 }
 
 static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
