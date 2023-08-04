@@ -454,7 +454,7 @@ static char* GetOsReleaseEntry(const char* commandTemplate, const char* name, ch
             memset(command, 0, commandLength);
             snprintf(command, commandLength, commandTemplate, name);
 
-            if (0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &result, NULL, log)))
+            if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
             {
                 RemovePrefixBlanks(result);
                 RemoveTrailingBlanks(result);
