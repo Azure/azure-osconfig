@@ -496,7 +496,7 @@ static char* GetEtcReleaseEntry(const char* name, void* log)
 
 static char* GetLsbReleaseEntry(const char* name, void* log)
 {
-    return GetOsReleaseEntry("lsb_release -a | grep %s:", name, , ':', log);
+    return GetOsReleaseEntry("lsb_release -a | grep %s:", name, ':', log);
 }
 
 static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
