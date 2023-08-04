@@ -513,7 +513,7 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
 bool CheckOsAndKernelMatchDistro(void* log)
 {
     const char* linuxName = "Linux";
-    const char* none = "<null>";
+    //const char* none = "<null>";
 
     OS_DISTRO_INFO distro = {0}, os = {0};
     char* kernelName = GetOsKernelName(log);
@@ -525,7 +525,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     if (0 == strcmp(distro.id, none))
     {
         FREE_MEMORY(distro.id);
-        distro.id = GetLsbReleaseEntry("Distributor ID", log);
+        distro.id = GetLsbReleaseEntry("\"Distributor ID\"", log);
     }
 
     distro.release = GetEtcReleaseEntry("DISTRIB_RELEASE", log);
