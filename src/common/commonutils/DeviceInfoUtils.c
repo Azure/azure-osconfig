@@ -556,7 +556,7 @@ bool CheckOsAndKernelMatchDistro(void* log)
     os.codename = GetEtcReleaseEntry("VERSION_CODENAME", log);
     os.description = GetEtcReleaseEntry("PRETTY_NAME", log);
 
-    if ((0 == strcmp(distro.id, os.id)) &&
+    if ((0 == strncmp(distro.id, os.id, strlen(distro.id))) &&
         (0 == strcmp(distro.release, os.release)) &&
         (0 == strcmp(distro.codename, os.codename)) &&
         (0 == strcmp(distro.description, os.description)) &&
