@@ -98,7 +98,7 @@ int CheckPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(void* log);
 int CheckSystemAccountsAreNonLogin(void* log);
 int CheckRootPasswordForSingleUserMode(void* log);
-int CheckUsersDontHaveDotFiles(const char* name, void* log);
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, void* log);
 int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log);
 int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, unsigned int mode, void* log);
 int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, void* log);

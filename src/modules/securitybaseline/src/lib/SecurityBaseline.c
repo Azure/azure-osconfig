@@ -226,7 +226,6 @@ static const char* g_remediateEnsurePrelinkIsDisabledObject = "remediateEnsurePr
 static const char* g_remediateEnsureTalkClientIsNotInstalledObject = "remediateEnsureTalkClientIsNotInstalled";
 static const char* g_remediateEnsureCronServiceIsEnabledObject = "remediateEnsureCronServiceIsEnabled";
 static const char* g_remediateEnsureAuditdServiceIsRunningObject = "remediateEnsureAuditdServiceIsRunning";
-// Remaining 125 remediation checks
 static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
 static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
 static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
@@ -424,6 +423,25 @@ static const char* g_syslog = "syslog";
 static const char* g_rsyslog = "rsyslog";
 static const char* g_syslogNg = "syslog-ng";
 static const char* g_systemd = "systemd";
+static const char* g_postfix = "postfix";
+static const char* g_avahiDaemon = "avahi-daemon";
+static const char* g_cups = "cups";
+static const char* g_rpcgssd = "rpcgssd";
+static const char* g_rpcGssd = "rpc-gssd";
+static const char* g_rpcidmapd = "rpcidmapd";
+static const char* g_nfsIdmapd = "nfs-idmapd";
+static const char* g_rpcbind = "rpcbind";
+static const char* g_rpcbindService = "rpcbind.service";
+static const char* g_rpcbindSocket = "rpcbind.socket";
+static const char* g_nfsServer = "nfs-server";
+static const char* g_snmpd = "snmpd";
+static const char* g_rsync = "rsync";
+static const char* g_ypserv = "ypserv";
+static const char* g_rsh = "rsh";
+static const char* g_rshClient = "rsh-client";
+static const char* g_forward = "forward";
+static const char* g_netrc = "netrc";
+static const char* g_rhosts = "rhosts";
 
 static long g_minDaysBetweenPasswordChanges = 7;
 static long g_maxDaysBetweenPasswordChanges = 365;
@@ -1308,19 +1326,18 @@ static int AuditEnsureAppropriateCiphersForSsh(void)
 
 static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive("avahi-daemon", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive(g_avahiDaemon, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
 static int AuditEnsureCupsServiceisDisabled(void)
 {
-    const char* cups = "cups";
-    return (CheckPackageInstalled(cups, SecurityBaselineGetLog()) &&
-        (false == CheckIfDaemonActive(cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return (CheckPackageInstalled(g_cups, SecurityBaselineGetLog()) &&
+        (false == CheckIfDaemonActive(g_cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return CheckPackageInstalled("postfix", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_postfix, SecurityBaselineGetLog()) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
@@ -1331,26 +1348,26 @@ static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int AuditEnsureRpcgssdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive("rpcgssd", SecurityBaselineGetLog())) && 
-        (false == CheckIfDaemonActive("rpc-gssd", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive(g_rpcgssd, SecurityBaselineGetLog())) && 
+        (false == CheckIfDaemonActive(g_rpcGssd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive("rpcidmapd", SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive("nfs-idmapd", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive(g_rpcidmapd, SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive(g_nfsIdmapd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsurePortmapServiceIsDisabled(void)
 {
-    return ((false == CheckIfDaemonActive("rpcbind", SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive("rpcbind.service", SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive("rpcbind.socket", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((false == CheckIfDaemonActive(g_rpcbind, SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive(g_rpcbindService, SecurityBaselineGetLog())) &&
+        (false == CheckIfDaemonActive(g_rpcbindSocket, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive("nfs-server", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_nfsServer, SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -1360,23 +1377,23 @@ static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 
 static int AuditEnsureSnmpServerIsDisabled(void)
 {
-    return CheckIfDaemonActive("snmpd", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRsynServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive("rsync", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_rsync, SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureNisServerIsDisabled(void)
 {
-    return CheckIfDaemonActive("ypserv", SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_ypserv, SecurityBaselineGetLog()) ? ENOENT : 0;
 }
 
 static int AuditEnsureRshClientNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled("rsh", SecurityBaselineGetLog())) && 
-        (0 != CheckPackageInstalled("rsh-client", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 != CheckPackageInstalled(g_rsh, SecurityBaselineGetLog())) && 
+        (0 != CheckPackageInstalled(g_rshClient, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureSmbWithSambaIsDisabled(void)
@@ -1398,17 +1415,17 @@ static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 
 static int AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("forward", SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("netrc", SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return CheckUsersDontHaveDotFiles("rhosts", SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog());
 }
 
 static int AuditEnsureRloginServiceIsDisabled(void)
@@ -2337,17 +2354,19 @@ static int RemediateEnsureAppropriateCiphersForSsh(void)
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_avahiDaemon, SecurityBaselineGetLog());
+    return AuditEnsureAvahiDaemonServiceIsDisabled();
 }
 
 static int RemediateEnsureCupsServiceisDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_cups, SecurityBaselineGetLog());
+    return UninstallPackage(g_cups, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePostfixPackageIsUninstalled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return UninstallPackage(g_postfix, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePostfixNetworkListeningIsDisabled(void)
@@ -2357,47 +2376,59 @@ static int RemediateEnsurePostfixNetworkListeningIsDisabled(void)
 
 static int RemediateEnsureRpcgssdServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rpcgssd, SecurityBaselineGetLog());
+    StopAndDisableDaemon(g_rpcGssd, SecurityBaselineGetLog());
+    return AuditEnsureRpcgssdServiceIsDisabled();
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rpcidmapd, SecurityBaselineGetLog());
+    StopAndDisableDaemon(g_nfsIdmapd, SecurityBaselineGetLog());
+    return AuditEnsureRpcidmapdServiceIsDisabled();
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rpcbind, SecurityBaselineGetLog());
+    StopAndDisableDaemon(g_rpcbindService, SecurityBaselineGetLog());
+    StopAndDisableDaemon(g_rpcbindSocket, SecurityBaselineGetLog());
+    return AuditEnsurePortmapServiceIsDisabled();
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_nfsServer, SecurityBaselineGetLog());
+    return auditEnsureNetworkFileSystemServiceIsDisabled();
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return 0; //TODO: add remediation respecting all existing patterns    
 }
 
 static int RemediateEnsureSnmpServerIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_snmpd, SecurityBaselineGetLog());
+    return AuditEnsureSnmpServerIsDisabled();
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_rsync, SecurityBaselineGetLog());
+    return AuditEnsureRsynServiceIsDisabled();
 }
 
 static int RemediateEnsureNisServerIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    StopAndDisableDaemon(g_ypserv, SecurityBaselineGetLog());
+    return RemediateEnsureNisServerIsDisabled();
 }
 
 static int RemediateEnsureRshClientNotInstalled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == UninstallPackage(g_rsh, SecurityBaselineGetLog())) && 
+        (0 == UninstallPackage(g_rshClient, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSmbWithSambaIsDisabled(void)
@@ -2414,17 +2445,17 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureRloginServiceIsDisabled(void)
