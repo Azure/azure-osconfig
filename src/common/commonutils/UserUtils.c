@@ -1545,7 +1545,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
     return status;
 }
 
-int CheckUsersDontHaveDotFiles(const char* name, void* log)
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, void* log)
 {
     const char* templateDotPath = "%s/.%s";
 
@@ -1557,7 +1557,7 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
 
     if (NULL == name)
     {
-        OsConfigLogError(log, "CheckUsersDontHaveDotFiles called with an invalid argument");
+        OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles called with an invalid argument");
         return EINVAL;
     }
 
@@ -1577,7 +1577,7 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
 
                 if (NULL == (dotPath = malloc(length)))
                 {
-                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: out of memory");
+                    OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: out of memory");
                     status = ENOMEM;
                     break;
                 }
@@ -1587,9 +1587,23 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
 
                 if (FileExists(dotPath))
                 {
-                    OsConfigLogError(log, "CheckUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
-                        userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
-                    status = ENOENT;
+                    if (removeDotFiles)
+                    {
+                        remove(dotPath);
+
+                        if (FileExists(dotPath))
+                        {
+                            OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: for user '%s' (%u, %u), '%s' needs to be manually removed",
+                                userList[i].username, userList[i].userId, userList[i].groupId, dotPath);
+                            status = ENOENT;
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
+                            userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                        status = ENOENT;
+                    }
                 }
 
                 FREE_MEMORY(dotPath);
@@ -1601,7 +1615,7 @@ int CheckUsersDontHaveDotFiles(const char* name, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckUsersDontHaveDotFiles: no users have '.%s' files", name);
+        OsConfigLogInfo(log, "CheckOrEnsureUsersDontHaveDotFiles: no users have '.%s' files", name);
     }
 
     return status;

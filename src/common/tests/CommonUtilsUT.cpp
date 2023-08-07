@@ -1429,12 +1429,15 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
     CheckUsersOwnTheirHomeDirectories(nullptr);
 }
 
-TEST_F(CommonUtilsTest, CheckUsersDontHaveDotFiles)
+TEST_F(CommonUtilsTest, CheckOrEnsureUsersDontHaveDotFiles)
 {
-    EXPECT_EQ(EINVAL, CheckUsersDontHaveDotFiles(nullptr, nullptr));
-    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("foo", nullptr));
-    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("blah", nullptr));
-    EXPECT_EQ(0, CheckUsersDontHaveDotFiles("test123", nullptr));
+    EXPECT_EQ(EINVAL, CheckOrEnsureUsersDontHaveDotFiles(nullptr, false, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", false, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", false, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", false, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", true, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", true, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", true, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)
