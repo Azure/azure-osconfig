@@ -2399,7 +2399,7 @@ static int RemediateEnsurePortmapServiceIsDisabled(void)
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_nfsServer, SecurityBaselineGetLog());
-    return auditEnsureNetworkFileSystemServiceIsDisabled();
+    return AuditEnsureNetworkFileSystemServiceIsDisabled();
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -2422,7 +2422,7 @@ static int RemediateEnsureRsynServiceIsDisabled(void)
 static int RemediateEnsureNisServerIsDisabled(void)
 {
     StopAndDisableDaemon(g_ypserv, SecurityBaselineGetLog());
-    return RemediateEnsureNisServerIsDisabled();
+    return AuditEnsureNisServerIsDisabled();
 }
 
 static int RemediateEnsureRshClientNotInstalled(void)

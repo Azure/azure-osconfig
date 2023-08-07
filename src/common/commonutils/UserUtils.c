@@ -1593,8 +1593,8 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
 
                         if (FileExists(dotPath))
                         {
-                            OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: for user '%s' (%u, %u): '%s' needs to be manually removed",
-                                userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                            OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: for user '%s' (%u, %u), '%s' needs to be manually removed",
+                                userList[i].username, userList[i].userId, userList[i].groupId, dotPath);
                             status = ENOENT;
                         }
                     }
