@@ -442,6 +442,7 @@ static const char* g_rshClient = "rsh-client";
 static const char* g_forward = "forward";
 static const char* g_netrc = "netrc";
 static const char* g_rhosts = "rhosts";
+static const char* g_systemdJournald = "systemd-journald";
 
 static long g_minDaysBetweenPasswordChanges = 7;
 static long g_maxDaysBetweenPasswordChanges = 365;
@@ -1151,7 +1152,7 @@ static int AuditEnsureALoggingServiceIsEnabled(void)
 {
     return ((CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
         (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive("systemd-journald", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive(g_systemdJournald, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -2214,17 +2215,25 @@ static int RemediateEnsureLoggingIsConfigured(void)
 
 static int RemediateEnsureSyslogPackageIsInstalled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == InstallPackage(g_systemd, SecurityBaselineGetLog()) && 
+        ((0 == InstallPackage(g_rsyslog, SecurityBaselineGetLog())) || (0 == InstallPackage(g_syslog, SecurityBaselineGetLog())))) ||
+        ((0 == InstallPackage(g_syslogNg, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == InstallPackage(g_systemd, SecurityBaselineGetLog())) &&
+        (0 == SetDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureALoggingServiceIsEnabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    EnableAndStartDaemon(g_rsyslog, SecurityBaselineGetLog())
+
+    return ((((0 == InstallPackage(g_systemd, SecurityBaselineGetLog())) && EnableAndStartDaemon(g_systemdJournald, SecurityBaselineGetLog())) &&
+        (((0 == InstallPackage(g_rsyslog, SecurityBaselineGetLog())) && EnableAndStartDaemon(g_rsyslog, SecurityBaselineGetLog())) || 
+        (((0 == InstallPackage(g_syslog, SecurityBaselineGetLog()) && EnableAndStartDaemon(g_syslog, SecurityBaselineGetLog())))))) ||
+        (((0 == InstallPackage(g_syslogNg, SecurityBaselineGetLog())) && EnableAndStartDaemon(g_syslogNg, SecurityBaselineGetLog())))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(void)
@@ -2234,7 +2243,8 @@ static int RemediateEnsureFilePermissionsForAllRsyslogLogFiles(void)
 
 static int RemediateEnsureLoggerConfigurationFilesAreRestricted(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SetFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, SecurityBaselineGetLog())) &&
+        (0 == SetFileAccess(g_etcRsyslogConf, 0, 0, 640, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
