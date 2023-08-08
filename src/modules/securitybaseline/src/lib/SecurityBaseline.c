@@ -2223,13 +2223,11 @@ static int RemediateEnsureSyslogPackageIsInstalled(void)
 static int RemediateEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
     return ((0 == InstallPackage(g_systemd, SecurityBaselineGetLog())) &&
-        (0 == SetDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == SetDirectoryAccess("/var/log/journal", 0, -1, 2775, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureALoggingServiceIsEnabled(void)
 {
-    EnableAndStartDaemon(g_rsyslog, SecurityBaselineGetLog())
-
     return ((((0 == InstallPackage(g_systemd, SecurityBaselineGetLog())) && EnableAndStartDaemon(g_systemdJournald, SecurityBaselineGetLog())) &&
         (((0 == InstallPackage(g_rsyslog, SecurityBaselineGetLog())) && EnableAndStartDaemon(g_rsyslog, SecurityBaselineGetLog())) || 
         (((0 == InstallPackage(g_syslog, SecurityBaselineGetLog()) && EnableAndStartDaemon(g_syslog, SecurityBaselineGetLog())))))) ||
