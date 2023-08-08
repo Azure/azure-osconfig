@@ -15,7 +15,7 @@ The SecurityBaseline module implementation is done for all Linux distributions t
 
 The full set of reported MIM objects for audit is fully implemented. 
 
-Remediation is incomplete for 125 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) via [AutoManage Machine Configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/) and the [Universal NRP](../../adapters/mc/), GitOps, Digital Twins via [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), Local Management, etc. All that remains are implementations for the 125 checks.
+Remediation is incomplete for 111 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) via [AutoManage Machine Configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/) and the [Universal NRP](../../adapters/mc/), GitOps, Digital Twins via [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), Local Management, etc. All that remains are implementations for the 111 checks.
 
 The implementation of the checks follows a rule where there are general utility check functions added to [commonutils](../../common/commonutils/) libraries which are then simply invoked from the [SecurityBaseline module implementation](src/lib/). This will allow us to reuse those checks for other security baseline imlementations in the future.
 
@@ -79,7 +79,7 @@ The remediation checks that remain to be fully implemented can be found in [src/
 There the MIM object names constants are listed:
 
 ```C
-// Remaining 125 remediation checks
+...
 static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
 static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
 static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
@@ -88,7 +88,7 @@ static const char* g_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remedi
 ...
 ```
 
-And then later the placeholder check functions that needs to be completed:
+And then later the placeholder check functions that need to be completed:
 
 ```C
 static int RemediateEnsureKernelSupportForCpuNx(void)
