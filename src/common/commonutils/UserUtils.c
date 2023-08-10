@@ -1267,12 +1267,12 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
 
 int SetMinDaysBetweenPasswordChanges(long days, void* log)
 {
-    const char* commandTemplate = "chage -m %l %s";
+    const char* commandTemplate = "chage -m %ld %s";
     char* command = NULL;
     size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0;
+    int status = 0, _status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1310,7 +1310,6 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
                         }
 
                         FREE_MEMORY(command);
-                        commandLenght = 0;
 
                         if (0 == status)
                         {
