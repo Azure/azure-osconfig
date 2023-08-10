@@ -1282,39 +1282,36 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
             {
                 continue;
             }
-            else
+            else if (userList[i].minimumPasswordAge < days)
             {
-                if (userList[i].minimumPasswordAge < days)
+                OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+                    
+                if (NULL == (command = malloc(commandLength)))
                 {
-                    OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
-                    
-                    commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-                    
-                    if (NULL == (command = malloc(commandLength)))
+                    OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
-                        status = ENOMEM;
-                        break;
+                        userList[i].minimumPasswordAge = days;
+                        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
                     }
-                    else
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
                     {
-                        memset(command, 0, commandLength);
-                        snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
-                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                        {
-                            userList[i].minimumPasswordAge = days;
-                            OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes is now set to %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, days);
-                        }
-
-                        FREE_MEMORY(command);
-
-                        if (0 == status)
-                        {
-                            status = _status;
-                        }
+                        status = _status;
                     }
                 }
             }
@@ -1395,39 +1392,36 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
             {
                 continue;
             }
-            else
+            else if ((userList[i].maximumPasswordAge > days) || (userList[i].maximumPasswordAge < 0))
             {
-                if ((userList[i].maximumPasswordAge > days) || (userList[i].maximumPasswordAge < 0))
+                OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has maximum time between password changes of %ld days while requested is %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+
+                if (NULL == (command = malloc(commandLength)))
                 {
-                    OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has maximum time between password changes of %ld days while requested is %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                    OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
 
-                    commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-
-                    if (NULL == (command = malloc(commandLength)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
-                        status = ENOMEM;
-                        break;
+                        userList[i].maximumPasswordAge = days;
+                        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
                     }
-                    else
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
                     {
-                        memset(command, 0, commandLength);
-                        snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
-                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                        {
-                            userList[i].maximumPasswordAge = days;
-                            OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes is now set to %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, days);
-                        }
-
-                        FREE_MEMORY(command);
-
-                        if (0 == status)
-                        {
-                            status = _status;
-                        }
+                        status = _status;
                     }
                 }
             }
@@ -1565,39 +1559,36 @@ int SetPasswordExpirationWarning(long days, void* log)
             {
                 continue;
             }
-            else
+            else if (userList[i].warningPeriod < days)
             {
-                if (userList[i].warningPeriod < days)
+                OsConfigLogError(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+
+                if (NULL == (command = malloc(commandLength)))
                 {
-                    OsConfigLogError(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
-                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                    OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
 
-                    commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
-
-                    if (NULL == (command = malloc(commandLength)))
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                     {
-                        OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
-                        status = ENOMEM;
-                        break;
+                        userList[i].warningPeriod = days;
+                        OsConfigLogInfo(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
                     }
-                    else
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
                     {
-                        memset(command, 0, commandLength);
-                        snprintf(command, commandLength, commandTemplate, days, userList[i].username);
-
-                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
-                        {
-                            userList[i].warningPeriod = days;
-                            OsConfigLogInfo(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is now set to %ld days",
-                                userList[i].username, userList[i].userId, userList[i].groupId, days);
-                        }
-
-                        FREE_MEMORY(command);
-
-                        if (0 == status)
-                        {
-                            status = _status;
-                        }
+                        status = _status;
                     }
                 }
             }
@@ -1661,7 +1652,7 @@ int CheckLockoutAfterInactivityLessThan(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
-    int status = 0, _status = 0;
+    int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
