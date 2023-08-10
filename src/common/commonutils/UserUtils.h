@@ -92,6 +92,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, unsigned int modeForRoot, unsigned int modeForOthers, void* log);
 int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log);
 int CheckMinDaysBetweenPasswordChanges(long days, void* log);
+int SetMinDaysBetweenPasswordChanges(long days, void* log);
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log);
 int CheckPasswordExpirationLessThan(long days, void* log);
 int CheckPasswordExpirationWarning(long days, void* log);

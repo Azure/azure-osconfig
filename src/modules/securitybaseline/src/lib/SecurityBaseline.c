@@ -1985,7 +1985,7 @@ static int RemediateEnsurePasswordHashingAlgorithm(void)
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetMinDaysBetweenPasswordChanges(minDaysBetweenPasswordChanges, SecurityBaselineGetLog())
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)

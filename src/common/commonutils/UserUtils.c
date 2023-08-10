@@ -1265,6 +1265,73 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int SetMinDaysBetweenPasswordChanges(long days, void* log)
+{
+    const char* commandTemplate = "chage -m %l %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else
+            {
+                if (userList[i].minimumPasswordAge < days)
+                {
+                    OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    
+                    commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+                    
+                    if (NULL == (command = malloc(commandLength)))
+                    {
+                        OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
+                        status = ENOMEM;
+                        break;
+                    }
+                    else
+                    {
+                        memset(command, 0, commandLength);
+                        snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                        if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                        {
+                            userList[i].minimumPasswordAge = days;
+                            OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes is now set to %ld days",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge);
+                        }
+
+                        FREE_MEMORY(command);
+                        commandLenght = 0;
+
+                        if (0 == status)
+                        {
+                            status = _status;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
+    }
+
+    return status;
+}
+
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
