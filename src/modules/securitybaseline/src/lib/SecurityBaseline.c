@@ -2001,9 +2001,11 @@ static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    // This check has no direct automatic remediation (if expired, users who have passwords must reset passwords themselves)
-    RemediateEnsureMaxDaysBetweenPasswordChanges();
-    return AuditEnsurePasswordExpiration();
+    // Beyond ensuring user passwords will expire in required time limits, this check has no direct 
+    // automatic remediation (if passwords expire, users must reset their passwords themselves)
+    return ((0 == SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
+        (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
