@@ -1516,6 +1516,7 @@ int SetPasswordExpirationLessThan(long days, void* log)
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     long passwordExpirationDate = 0;
+    long timer = 0;
     long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
     int status = 0, _status = 0;
 
@@ -1742,6 +1743,7 @@ int SetUsersRecordedPasswordChangeDates(void* log)
     size_t commandLength = 0;
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    long timer = 0;
     long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
     int status = 0, _status = 0;
 
