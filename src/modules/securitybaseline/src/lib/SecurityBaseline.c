@@ -1990,7 +1990,8 @@ static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)
 {
-    return SetUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()); //revert this?
+    // This check has no automatic remediation (users who have passwords must change passwords themselves)
+    return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
@@ -2000,7 +2001,9 @@ static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    return SetPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
+    // This check has no direct automatic remediation (if expired, users who have passwords must reset passwords themselves)
+    RemediateEnsureMaxDaysBetweenPasswordChanges();
+    return AuditEnsurePasswordExpiration();
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
