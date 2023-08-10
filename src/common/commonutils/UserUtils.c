@@ -1778,7 +1778,7 @@ int SetUsersRecordedPasswordChangeDates(void* log)
                         if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
                         {
                             userList[i].lastPasswordChange = daysCurrent;
-                            OsConfigLogInfo(log, "SetUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is now set to today",
+                            OsConfigLogInfo(log, "SetUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is now set to today (%ld)",
                                 userList[i].username, userList[i].userId, userList[i].groupId, daysCurrent);
                         }
 
