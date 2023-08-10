@@ -99,6 +99,8 @@ int CheckPasswordExpirationLessThan(long days, void* log);
 int CheckPasswordExpirationWarning(long days, void* log);
 int SetPasswordExpirationWarning(long days, void* log);
 int CheckUsersRecordedPasswordChangeDates(void* log);
+int CheckLockoutAfterInactivityLessThan(long days, void* log);
+int SetLockoutAfterInactivityLessThan(long days, void* log);
 int CheckSystemAccountsAreNonLogin(void* log);
 int CheckRootPasswordForSingleUserMode(void* log);
 int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, void* log);

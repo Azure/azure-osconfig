@@ -448,6 +448,7 @@ static long g_minDaysBetweenPasswordChanges = 7;
 static long g_maxDaysBetweenPasswordChanges = 365;
 static long g_passwordExpirationWarning = 7;
 static long g_passwordExpiration = 365;
+static long g_maxInactiveDays = 30;
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -820,7 +821,8 @@ static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
 {
-    return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
+    retrurn ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
+        (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
@@ -1990,8 +1992,7 @@ static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)
 {
-    // This check has no automatic remediation (users who have passwords must change passwords themselves)
-    return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
+    return SetLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
@@ -2001,10 +2002,8 @@ static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    // Beyond ensuring user passwords will expire in required time limits, this check has no direct 
-    // automatic remediation (if passwords expire, users must reset their passwords themselves)
     return ((0 == SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
-        (0 == SetMaxDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
         (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
