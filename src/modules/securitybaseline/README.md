@@ -15,7 +15,7 @@ The SecurityBaseline module implementation is done for all Linux distributions t
 
 The full set of reported MIM objects for audit is fully implemented. 
 
-Remediation is incomplete for 107 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) via [AutoManage Machine Configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/) and the [Universal NRP](../../adapters/mc/), GitOps, Digital Twins via [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), Local Management, etc. All that remains are implementations for the 107 checks.
+Remediation is incomplete for 102 remaining desired MIM objects. All these remaining objects are already plugged into unit-tests, functional tests with test recipe and to all management channels OSConfig supports: [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) via [AutoManage Machine Configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/) and the [Universal NRP](../../adapters/mc/), GitOps, Digital Twins via [IoT Hub](https://learn.microsoft.com/en-us/azure/iot-hub/), Local Management, etc. All that remains are implementations for these checks.
 
 The implementation of the checks follows a rule where there are general utility check functions added to [commonutils](../../common/commonutils/) libraries which are then simply invoked from the [SecurityBaseline module implementation](src/lib/). This will allow us to reuse those checks for other security baseline imlementations in the future.
 
