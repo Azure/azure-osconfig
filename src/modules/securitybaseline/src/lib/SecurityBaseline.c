@@ -1990,22 +1990,22 @@ static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()); //revert this?
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(void)
