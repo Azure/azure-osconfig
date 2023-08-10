@@ -448,6 +448,7 @@ static long g_minDaysBetweenPasswordChanges = 7;
 static long g_maxDaysBetweenPasswordChanges = 365;
 static long g_passwordExpirationWarning = 7;
 static long g_passwordExpiration = 365;
+static long g_maxInactiveDays = 30;
 
 static const char* g_pass = "\"PASS\"";
 static const char* g_fail = "\"FAIL\"";
@@ -820,7 +821,8 @@ static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
 {
-    return CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog());
+    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
+        (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
@@ -1985,27 +1987,29 @@ static int RemediateEnsurePasswordHashingAlgorithm(void)
 
 static int RemediateEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureInactivePasswordLockPeriod(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsurePasswordExpiration(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
+        (0 == SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
+        (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSystemAccountsAreNonLogin(void)

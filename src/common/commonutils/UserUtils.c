@@ -1265,6 +1265,69 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int SetMinDaysBetweenPasswordChanges(long days, void* log)
+{
+    const char* commandTemplate = "chage -m %ld %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else if (userList[i].minimumPasswordAge < days)
+            {
+                OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                    
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+                    
+                if (NULL == (command = malloc(commandLength)))
+                {
+                    OsConfigLogError(log, "SetMinDaysBetweenPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        userList[i].minimumPasswordAge = days;
+                        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
+    }
+
+    return status;
+}
+
 int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1312,6 +1375,69 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
+int SetMaxDaysBetweenPasswordChanges(long days, void* log)
+{
+    const char* commandTemplate = "chage -M %ld %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else if ((userList[i].maximumPasswordAge > days) || (userList[i].maximumPasswordAge < 0))
+            {
+                OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) has maximum time between password changes of %ld days while requested is %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+
+                if (NULL == (command = malloc(commandLength)))
+                {
+                    OsConfigLogError(log, "SetMaxDaysBetweenPasswordChanges: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        userList[i].maximumPasswordAge = days;
+                        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+    }
+
+    return status;
+}
+
 int CheckPasswordExpirationLessThan(long days, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1333,7 +1459,7 @@ int CheckPasswordExpirationLessThan(long days, void* log)
             {
                 if (userList[i].maximumPasswordAge < 0)
                 {
-                    OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
+                    OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
                     status = ENOENT;
                 }
@@ -1345,21 +1471,20 @@ int CheckPasswordExpirationLessThan(long days, void* log)
                     {
                         if ((passwordExpirationDate - currentDate) <= days)
                         {
-                            OsConfigLogInfo(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
+                            OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days (requested maximum: %ld)",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                         }
                         else
                         {
-                            OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
+                            OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
                         }
                     }
                     else if (passwordExpirationDate < currentDate)
                     {
-                        OsConfigLogError(log, "CheckpasswordExpirationDateLessThan: password for user '%s' (%u, %u) expired %ld days ago",
+                        OsConfigLogInfo(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) expired %ld days ago",
                             userList[i].username, userList[i].userId, userList[i].groupId, currentDate - passwordExpirationDate);
-                        status = ENOENT;
                     }
                 }
             }
@@ -1417,6 +1542,69 @@ int CheckPasswordExpirationWarning(long days, void* log)
     return status;
 }
 
+int SetPasswordExpirationWarning(long days, void* log)
+{
+    const char* commandTemplate = "chage -W %ld %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if (false == userList[i].hasPassword)
+            {
+                continue;
+            }
+            else if (userList[i].warningPeriod < days)
+            {
+                OsConfigLogError(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+
+                if (NULL == (command = malloc(commandLength)))
+                {
+                    OsConfigLogError(log, "SetPasswordExpirationWarning: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        userList[i].warningPeriod = days;
+                        OsConfigLogInfo(log, "SetPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+    }
+
+    return status;
+}
+
 int CheckUsersRecordedPasswordChangeDates(void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
@@ -1455,6 +1643,102 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckUsersRecordedPasswordChangeDates: all users who have passwords have dates of last passord change in the past");
+    }
+
+    return status;
+}
+
+int CheckLockoutAfterInactivityLessThan(long days, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((false == userList[i].hasPassword) && (true == userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (userList[i].inactivityPeriod > days)
+            {
+                OsConfigLogInfo(log, "CheckLockoutAfterInactivityLessThan: user '%s' (%u, %u) period of inactivity before lockout is %ld days, more than requested %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+                status = ENOENT;
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
+    }
+
+    return status;
+}
+
+int SetLockoutAfterInactivityLessThan(long days, void* log)
+{
+    const char* commandTemplate = "chage -I %ld %s";
+    char* command = NULL;
+    size_t commandLength = 0;
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    int status = 0, _status = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            if ((false == userList[i].hasPassword) && (true == userList[i].isRoot))
+            {
+                continue;
+            }
+            else if (userList[i].inactivityPeriod > days)
+            {
+                OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) is locked out after %ld days of inactivity while requested is %ld days",
+                    userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+
+                commandLength = strlen(commandTemplate) + strlen(userList[i].username) + 10;
+
+                if (NULL == (command = malloc(commandLength)))
+                {
+                    OsConfigLogError(log, "SetLockoutAfterInactivityLessThan: cannot allocate memory");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    memset(command, 0, commandLength);
+                    snprintf(command, commandLength, commandTemplate, days, userList[i].username);
+
+                    if (0 == (_status = ExecuteCommand(NULL, command, false, false, 0, 0, NULL, NULL, log)))
+                    {
+                        userList[i].inactivityPeriod = days;
+                        OsConfigLogInfo(log, "SetLockoutAfterInactivityLessThan: user '%s' (%u, %u) lockout time after inactivity is now set to %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, days);
+                    }
+
+                    FREE_MEMORY(command);
+
+                    if (0 == status)
+                    {
+                        status = _status;
+                    }
+                }
+            }
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all non-root users who have passwords have correct number of maximum inactivity days (%ld) before lockout", days);
     }
 
     return status;
