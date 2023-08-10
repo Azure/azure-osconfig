@@ -821,7 +821,7 @@ static int AuditEnsureMinDaysBetweenPasswordChanges(void)
 
 static int AuditEnsureInactivePasswordLockPeriod(void)
 {
-    retrurn ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
+    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
         (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
