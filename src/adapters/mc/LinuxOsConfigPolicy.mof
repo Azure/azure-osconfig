@@ -760,7 +760,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource54ref
     LinuxOsConfigClassKey = "EnsureNoDuplicateUidsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateUidsExist";
-    DesiredObjectName = "remediateEnsureNoDuplicateUidsExist;
+    DesiredObjectName = "remediateEnsureNoDuplicateUidsExist";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
