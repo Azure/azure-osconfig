@@ -469,19 +469,6 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    /***********
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] Starting Get
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] Processing key 'EnsureLoggingIsConfigured'
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] Processing ComponentName 'SecurityBaseline'
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] Processing ReportedObjectName 'auditEnsureLoggingIsConfigured' <<<<<<<<<<<
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] CallMpiGet for 'SecurityBaseline' and 'auditEnsureLoggingIsConfigured' returned '"PASS"' (6 long) <<<<<<<<<<<
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] ReportedObjectValue value: 'PASS'
-    Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] MI_Instance_SetElement('LinuxOsConfigClassKey') to string value 'EnsureLoggingIsConfigured' complete with miResult 0
-	Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
-	Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] MI_Instance_SetElement('ReportedObjectName') to string value '  fXm' complete with miResult 0 <<<<<<<<<<<<<< BUG!
-	Message : [MARIUSNI-TINY]: [EnsureLoggingIsConfigured] [LinuxOsConfigResource.Get] MI_Instance_SetElement('ReportedObjectValue') to string value 'PASS' complete with miResult 0
-    *****************/
-
     miValueResource.instance = resultResourceObject;
 
     for (int i = 0; i < allParametersSize; i++)
