@@ -273,6 +273,9 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             }
             else
             {
+                LogInfo(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned '%s' (%d long)",
+                    who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+                
                 if (NULL != (payloadString = malloc(objectValueLength + 1)))
                 {
                     memset(payloadString, 0, objectValueLength + 1);
@@ -420,6 +423,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Processing ComponentName '%s'", g_componentName);
+
     // Read the MIM reported object name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
@@ -438,6 +443,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Processing ReportedObjectName '%s'", g_reportedObjectName);
 
     if (MI_RESULT_OK != (miResult = LinuxOsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
     {
@@ -606,6 +613,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] Processing ComponentName '%s'", g_componentName);
+
     // Read the MIM reported object name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
@@ -624,6 +633,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] Processing ReportedObjectName '%s'", g_reportedObjectName);
 
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("LinuxOsConfigResource.Test", context)))
     {
@@ -766,6 +777,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Processing ComponentName '%s'", g_componentName);
+
     // Read the MIM desired object name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
@@ -785,6 +798,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Processing DesiredObjectName '%s'", g_desiredObjectName);
+
     // Read the MIM desired object value from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
@@ -803,6 +818,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
+
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Processing DesiredObjectValue '%s'", g_desiredObjectValue);
 
     if (NULL == g_mpiHandle)
     {
