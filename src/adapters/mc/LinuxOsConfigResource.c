@@ -273,7 +273,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             }
             else
             {
-                LogInfo(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned '%s' (%d long)",
+                LogInfo(context, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned '%s' (%d long)",
                     who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
                 
                 if (NULL != (payloadString = malloc(objectValueLength + 1)))
