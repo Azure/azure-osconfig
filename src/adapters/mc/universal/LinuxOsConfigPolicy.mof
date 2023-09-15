@@ -8,7 +8,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource0ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -22,7 +22,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource1ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -36,7 +36,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource2ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -50,7 +50,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource3ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -64,7 +64,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource4ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -78,7 +78,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource5ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -92,7 +92,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource6ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -106,7 +106,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource7ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -120,7 +120,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource8ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -134,7 +134,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource9ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -148,7 +148,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource10ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -162,7 +162,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource11ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -176,7 +176,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource12ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -190,7 +190,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource13ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -204,7 +204,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource14ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -218,7 +218,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource15ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -232,7 +232,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource16ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -246,7 +246,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource17ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -260,7 +260,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource18ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -274,7 +274,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource19ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -288,7 +288,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource20ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -302,7 +302,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource21ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -316,7 +316,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource22ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -330,7 +330,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource23ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -344,7 +344,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource24ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -358,7 +358,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource25ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -372,7 +372,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource26ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -386,7 +386,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource27ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -400,7 +400,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource28ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -414,7 +414,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource29ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -428,7 +428,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource30ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -442,7 +442,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource31ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -456,7 +456,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource32ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -470,7 +470,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource33ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -484,7 +484,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource34ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -498,7 +498,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource35ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -512,7 +512,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource36ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -526,7 +526,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource37ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -540,7 +540,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource38ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -554,7 +554,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource39ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -568,7 +568,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource40ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -582,7 +582,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource41ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -596,7 +596,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource42ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -610,7 +610,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource43ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -624,7 +624,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource44ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -638,7 +638,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource45ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -652,7 +652,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource46ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -666,7 +666,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource47ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -680,7 +680,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource48ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -694,7 +694,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource49ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -708,7 +708,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource50ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -722,7 +722,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource51ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -736,7 +736,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource52ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -750,7 +750,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource53ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -764,7 +764,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource54ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -778,7 +778,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource55ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -792,7 +792,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource56ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -806,7 +806,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource57ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -820,7 +820,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource58ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -834,7 +834,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource59ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -848,7 +848,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource60ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -862,7 +862,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource61ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -876,7 +876,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource62ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -890,7 +890,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource63ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -904,7 +904,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource64ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -918,7 +918,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource65ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -932,7 +932,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource66ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -946,7 +946,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource67ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -960,7 +960,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource68ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -974,7 +974,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource69ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -988,7 +988,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource70ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1002,7 +1002,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource71ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1016,7 +1016,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource72ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1030,7 +1030,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource73ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1044,7 +1044,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource74ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1058,7 +1058,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource75ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1072,7 +1072,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource76ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1086,7 +1086,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource77ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1100,7 +1100,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource78ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1114,7 +1114,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource79ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1128,7 +1128,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource80ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1142,7 +1142,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource81ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1156,7 +1156,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource82ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1170,7 +1170,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource83ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1184,7 +1184,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource84ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1198,7 +1198,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource85ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1212,7 +1212,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource86ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1226,7 +1226,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource87ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1240,7 +1240,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource88ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1254,7 +1254,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource89ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1268,7 +1268,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource90ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1282,7 +1282,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource91ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1296,7 +1296,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource92ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1310,7 +1310,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource93ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1324,7 +1324,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource94ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1338,7 +1338,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource95ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1352,7 +1352,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource96ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1366,7 +1366,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource97ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1380,7 +1380,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource98ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1394,7 +1394,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource99ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1408,7 +1408,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource100ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1422,7 +1422,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource101ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1436,7 +1436,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource102ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1450,7 +1450,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource103ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1464,7 +1464,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource104ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1478,7 +1478,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource105ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1492,7 +1492,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource106ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1506,7 +1506,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource107ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1520,7 +1520,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource108ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1534,7 +1534,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource109ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1548,7 +1548,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource110ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1562,7 +1562,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource111ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1576,7 +1576,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource112ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1590,7 +1590,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource113ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1604,7 +1604,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource114ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1618,7 +1618,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource115ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1632,7 +1632,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource116ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1646,7 +1646,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource117ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1660,7 +1660,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource118ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1674,7 +1674,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource119ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1688,7 +1688,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource120ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1702,7 +1702,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource121ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1716,7 +1716,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource122ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1730,7 +1730,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource123ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1744,7 +1744,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource124ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1758,7 +1758,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource125ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1772,7 +1772,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource126ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1786,7 +1786,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource127ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1800,7 +1800,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource128ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1814,7 +1814,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource129ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1828,7 +1828,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource130ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1842,7 +1842,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource131ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1856,7 +1856,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource132ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1870,7 +1870,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource133ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1884,7 +1884,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource134ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1898,7 +1898,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource135ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1912,7 +1912,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource136ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1926,7 +1926,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource137ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1940,7 +1940,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource138ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1954,7 +1954,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource139ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1968,7 +1968,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource140ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1982,7 +1982,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource141ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -1996,7 +1996,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource142ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2010,7 +2010,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource143ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2024,7 +2024,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource144ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2038,7 +2038,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource145ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2052,7 +2052,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource146ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2066,7 +2066,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource147ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2080,7 +2080,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource148ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2094,7 +2094,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource149ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2108,7 +2108,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource150ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2122,7 +2122,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource151ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2136,7 +2136,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource152ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2150,7 +2150,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource153ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2164,7 +2164,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource154ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2178,7 +2178,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource155ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2192,7 +2192,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource156ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2206,7 +2206,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource157ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2220,7 +2220,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource158ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2234,7 +2234,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource159ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2248,7 +2248,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource160ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2262,7 +2262,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource161ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2276,7 +2276,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource162ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2290,7 +2290,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource163ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2304,7 +2304,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource164ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "LinuxOsConfigResource";
+    ConfigurationName = "LinuxOsConfig";
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
@@ -2313,6 +2313,6 @@ instance of OMI_ConfigurationDocument
     Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="9/14/2023 14:00:00";
-    Name="LinuxOsConfigResource";
+    GenerationDate="9/15/2023 8:30:00";
+    Name="LinuxOsConfig";
 };
