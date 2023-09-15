@@ -7,11 +7,7 @@
 #define LOG_FILE "/var/log/osconfig_mc_nrp.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_mc_nrp.bak"
 
-// Retail we'll change these to dynamically allocated strings TODO
-#define MAX_STRING_LENGTH 256
-
-// Retail we'll change this to 0 meaning no limit
-#define MAX_PAYLOAD_LENGTH MAX_STRING_LENGTH
+#define MAX_PAYLOAD_LENGTH 0
 
 // OSConfig's MPI server
 #define MPI_SERVER "osconfig-platform"
@@ -39,7 +35,7 @@
     LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
 }\
 
-static const char* g_mpiClientName = "OSConfig Universal NRP for MC";
+static const char* g_mpiClientName = "OSConfig Universal NRP";
 static const char* g_defaultValue = "<default>";
 
 // Desired (write; also reported together with read group)
@@ -403,6 +399,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Get] Processing key '%s'", g_classKey);
+
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
@@ -587,6 +585,8 @@ void MI_CALL LinuxOsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Test] Processing key '%s'", g_classKey);
+
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
@@ -730,7 +730,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if ((MI_FALSE == in->InputResource.value->LinuxOsConfigClassKey.exists) || (NULL == in->InputResource.value->LinuxOsConfigClassKey.value))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No LinuxOsConfigClassKey");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No LinuxOsConfigClassKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -739,17 +739,19 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == (g_classKey = DuplicateString(in->InputResource.value->LinuxOsConfigClassKey.value)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->LinuxOsConfigClassKey.value);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->LinuxOsConfigClassKey.value);
         g_classKey = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
+    LogInfo(context, GetLog(), "[LinuxOsConfigResource.Set] Processing key '%s'", g_classKey);
+
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No ComponentName");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -758,7 +760,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
         g_componentName = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
@@ -768,7 +770,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No DesiredObjectName");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No DesiredObjectName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -777,7 +779,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
         g_desiredObjectName = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
@@ -787,7 +789,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] No DesiredObjectValue");
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] No DesiredObjectValue");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
@@ -796,7 +798,7 @@ void MI_CALL LinuxOsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
     {
-        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+        LogError(context, miResult, GetLog(), "[LinuxOsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
         g_desiredObjectValue = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
