@@ -656,7 +656,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource46ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource48ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource47ref
 {
     ResourceID = "EnsureNoexecOptionOnVarTmpPartition";
     LinuxOsConfigClassKey = "EnsureNoexecOptionOnVarTmpPartition";
@@ -670,7 +670,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource48ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource49ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource48ref
 {
     ResourceID = "EnsureNoexecOptionOnDevShmPartition";
     LinuxOsConfigClassKey = "EnsureNoexecOptionOnDevShmPartition";
@@ -684,7 +684,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource49ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource50ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource49ref
 {
     ResourceID = "EnsureNodevOptionEnabledForAllRemovableMedia";
     LinuxOsConfigClassKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
@@ -698,7 +698,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource50ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource52ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource50ref
 {
     ResourceID = "EnsureNoexecOptionEnabledForAllRemovableMedia";
     LinuxOsConfigClassKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
@@ -712,7 +712,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource52ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource53ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource51ref
 {
     ResourceID = "EnsureNosuidOptionEnabledForAllRemovableMedia";
     LinuxOsConfigClassKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
@@ -726,7 +726,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource53ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource54ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource52ref
 {
     ResourceID = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
     LinuxOsConfigClassKey = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
@@ -740,7 +740,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource54ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource55ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource53ref
 {
     ResourceID = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
     LinuxOsConfigClassKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
@@ -754,7 +754,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource55ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource56ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource54ref
 {
     ResourceID = "EnsureNoDuplicateUidsExist";
     LinuxOsConfigClassKey = "EnsureNoDuplicateUidsExist";
@@ -768,7 +768,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource56ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource57ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource55ref
 {
     ResourceID = "EnsureNoDuplicateGidsExist";
     LinuxOsConfigClassKey = "EnsureNoDuplicateGidsExist";
@@ -782,7 +782,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource57ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource58ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource56ref
 {
     ResourceID = "EnsureNoDuplicateUserNamesExist";
     LinuxOsConfigClassKey = "EnsureNoDuplicateUserNamesExist";
@@ -796,7 +796,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource58ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource59ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource57ref
 {
     ResourceID = "EnsureNoDuplicateGroupsExist";
     LinuxOsConfigClassKey = "EnsureNoDuplicateGroupsExist";
@@ -810,7 +810,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource59ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource60ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource58ref
 {
     ResourceID = "EnsureShadowGroupIsEmpty";
     LinuxOsConfigClassKey = "EnsureShadowGroupIsEmpty";
@@ -824,7 +824,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource60ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource61ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource59ref
 {
     ResourceID = "EnsureRootGroupExists";
     LinuxOsConfigClassKey = "EnsureRootGroupExists";
@@ -838,7 +838,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource61ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource62ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource60ref
 {
     ResourceID = "EnsureAllAccountsHavePasswords";
     LinuxOsConfigClassKey = "EnsureAllAccountsHavePasswords";
@@ -852,7 +852,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource62ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource63ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource61ref
 {
     ResourceID = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
     LinuxOsConfigClassKey = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
@@ -866,7 +866,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource63ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource64ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource62ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcPasswd";
     LinuxOsConfigClassKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
@@ -880,7 +880,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource64ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource65ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource63ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcShadow";
     LinuxOsConfigClassKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
@@ -894,7 +894,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource65ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource66ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource64ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcGroup";
     LinuxOsConfigClassKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
@@ -908,7 +908,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource66ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource67ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource65ref
 {
     ResourceID = "EnsureDefaultRootAccountGroupIsGidZero";
     LinuxOsConfigClassKey = "EnsureDefaultRootAccountGroupIsGidZero";
@@ -922,7 +922,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource67ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource68ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource66ref
 {
     ResourceID = "EnsureRootIsOnlyUidZeroAccount";
     LinuxOsConfigClassKey = "EnsureRootIsOnlyUidZeroAccount";
@@ -936,7 +936,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource68ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource69ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource67ref
 {
     ResourceID = "EnsureAllUsersHomeDirectoriesExist";
     LinuxOsConfigClassKey = "EnsureAllUsersHomeDirectoriesExist";
@@ -950,7 +950,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource69ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource70ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource68ref
 {
     ResourceID = "EnsureUsersOwnTheirHomeDirectories";
     LinuxOsConfigClassKey = "EnsureUsersOwnTheirHomeDirectories";
@@ -964,7 +964,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource70ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource71ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource69ref
 {
     ResourceID = "EnsureRestrictedUserHomeDirectories";
     LinuxOsConfigClassKey = "EnsureRestrictedUserHomeDirectories";
@@ -978,7 +978,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource71ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource72ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource70ref
 {
     ResourceID = "EnsurePasswordHashingAlgorithm";
     LinuxOsConfigClassKey = "EnsurePasswordHashingAlgorithm";
@@ -992,7 +992,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource72ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource73ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource71ref
 {
     ResourceID = "EnsureMinDaysBetweenPasswordChanges";
     LinuxOsConfigClassKey = "EnsureMinDaysBetweenPasswordChanges";
@@ -1006,7 +1006,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource73ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource74ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource72ref
 {
     ResourceID = "EnsureInactivePasswordLockPeriod";
     LinuxOsConfigClassKey = "EnsureInactivePasswordLockPeriod";
@@ -1020,7 +1020,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource74ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource75ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource73ref
 {
     ResourceID = "EnsureMaxDaysBetweenPasswordChanges";
     LinuxOsConfigClassKey = "EnsureMaxDaysBetweenPasswordChanges";
@@ -1034,7 +1034,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource75ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource76ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource74ref
 {
     ResourceID = "EnsurePasswordExpiration";
     LinuxOsConfigClassKey = "EnsurePasswordExpiration";
@@ -1048,7 +1048,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource76ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource77ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource75ref
 {
     ResourceID = "EnsurePasswordExpirationWarning";
     LinuxOsConfigClassKey = "EnsurePasswordExpirationWarning";
@@ -1062,7 +1062,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource77ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource78ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource76ref
 {
     ResourceID = "EnsureSystemAccountsAreNonLogin";
     LinuxOsConfigClassKey = "EnsureSystemAccountsAreNonLogin";
@@ -1076,7 +1076,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource78ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource79ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource77ref
 {
     ResourceID = "EnsureAuthenticationRequiredForSingleUserMode";
     LinuxOsConfigClassKey = "EnsureAuthenticationRequiredForSingleUserMode";
@@ -1090,7 +1090,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource79ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource80ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource78ref
 {
     ResourceID = "EnsureDotDoesNotAppearInRootsPath";
     LinuxOsConfigClassKey = "EnsureDotDoesNotAppearInRootsPath";
@@ -1104,7 +1104,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource80ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource81ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource79ref
 {
     ResourceID = "EnsureRemoteLoginWarningBannerIsConfigured";
     LinuxOsConfigClassKey = "EnsureRemoteLoginWarningBannerIsConfigured";
@@ -1118,7 +1118,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource81ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource82ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource80ref
 {
     ResourceID = "EnsureLocalLoginWarningBannerIsConfigured";
     LinuxOsConfigClassKey = "EnsureLocalLoginWarningBannerIsConfigured";
@@ -1132,7 +1132,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource82ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource83ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource81ref
 {
     ResourceID = "EnsureSuRestrictedToRootGroup";
     LinuxOsConfigClassKey = "EnsureSuRestrictedToRootGroup";
@@ -1146,7 +1146,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource83ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource84ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource82ref
 {
     ResourceID = "EnsureDefaultUmaskForAllUsers";
     LinuxOsConfigClassKey = "EnsureDefaultUmaskForAllUsers";
@@ -1160,7 +1160,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource84ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource85ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource83ref
 {
     ResourceID = "EnsureAutomountingDisabled";
     LinuxOsConfigClassKey = "EnsureAutomountingDisabled";
@@ -1174,7 +1174,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource85ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource86ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource84ref
 {
     ResourceID = "EnsureKernelCompiledFromApprovedSources";
     LinuxOsConfigClassKey = "EnsureKernelCompiledFromApprovedSources";
@@ -1188,7 +1188,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource86ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource87ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource85ref
 {
     ResourceID = "EnsureDefaultDenyFirewallPolicyIsSet";
     LinuxOsConfigClassKey = "EnsureDefaultDenyFirewallPolicyIsSet";
@@ -1202,7 +1202,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource87ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource88ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource86ref
 {
     ResourceID = "EnsurePacketRedirectSendingIsDisabled";
     LinuxOsConfigClassKey = "EnsurePacketRedirectSendingIsDisabled";
@@ -1216,7 +1216,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource88ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource89ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource87ref
 {
     ResourceID = "EnsureIcmpRedirectsIsDisabled";
     LinuxOsConfigClassKey = "EnsureIcmpRedirectsIsDisabled";
@@ -1230,7 +1230,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource89ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource90ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource88ref
 {
     ResourceID = "EnsureSourceRoutedPacketsIsDisabled";
     LinuxOsConfigClassKey = "EnsureSourceRoutedPacketsIsDisabled";
@@ -1244,7 +1244,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource90ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource91ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource89ref
 {
     ResourceID = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
     LinuxOsConfigClassKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
@@ -1258,7 +1258,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource91ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource92ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource90ref
 {
     ResourceID = "EnsureIgnoringBogusIcmpBroadcastResponses";
     LinuxOsConfigClassKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
@@ -1272,7 +1272,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource92ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource93ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource91ref
 {
     ResourceID = "EnsureIgnoringIcmpEchoPingsToMulticast";
     LinuxOsConfigClassKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
@@ -1286,7 +1286,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource93ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource94ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource92ref
 {
     ResourceID = "EnsureMartianPacketLoggingIsEnabled";
     LinuxOsConfigClassKey = "EnsureMartianPacketLoggingIsEnabled";
@@ -1300,7 +1300,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource94ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource95ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource93ref
 {
     ResourceID = "EnsureReversePathSourceValidationIsEnabled";
     LinuxOsConfigClassKey = "EnsureReversePathSourceValidationIsEnabled";
@@ -1314,7 +1314,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource95ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource96ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource94ref
 {
     ResourceID = "EnsureTcpSynCookiesAreEnabled";
     LinuxOsConfigClassKey = "EnsureTcpSynCookiesAreEnabled";
@@ -1328,7 +1328,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource96ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource97ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource95ref
 {
     ResourceID = "EnsureSystemNotActingAsNetworkSniffer";
     LinuxOsConfigClassKey = "EnsureSystemNotActingAsNetworkSniffer";
@@ -1342,7 +1342,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource97ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource98ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource96ref
 {
     ResourceID = "EnsureAllWirelessInterfacesAreDisabled";
     LinuxOsConfigClassKey = "EnsureAllWirelessInterfacesAreDisabled";
@@ -1356,7 +1356,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource98ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource99ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource97ref
 {
     ResourceID = "EnsureIpv6ProtocolIsEnabled";
     LinuxOsConfigClassKey = "EnsureIpv6ProtocolIsEnabled";
@@ -1370,7 +1370,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource99ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource100ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource98ref
 {
     ResourceID = "EnsureDccpIsDisabled";
     LinuxOsConfigClassKey = "EnsureDccpIsDisabled";
@@ -1384,7 +1384,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource100ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource101ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource99ref
 {
     ResourceID = "EnsureSctpIsDisabled";
     LinuxOsConfigClassKey = "EnsureSctpIsDisabled";
@@ -1398,7 +1398,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource101ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource102ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource100ref
 {
     ResourceID = "EnsureDisabledSupportForRds";
     LinuxOsConfigClassKey = "EnsureDisabledSupportForRds";
@@ -1412,7 +1412,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource102ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource103ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource101ref
 {
     ResourceID = "EnsureTipcIsDisabled";
     LinuxOsConfigClassKey = "EnsureTipcIsDisabled";
@@ -1426,7 +1426,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource103ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource104ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource102ref
 {
     ResourceID = "EnsureZeroconfNetworkingIsDisabled";
     LinuxOsConfigClassKey = "EnsureZeroconfNetworkingIsDisabled";
@@ -1440,7 +1440,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource104ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource105ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource103ref
 {
     ResourceID = "EnsurePermissionsOnBootloaderConfig";
     LinuxOsConfigClassKey = "EnsurePermissionsOnBootloaderConfig";
@@ -1454,7 +1454,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource105ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource106ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource104ref
 {
     ResourceID = "EnsurePasswordReuseIsLimited";
     LinuxOsConfigClassKey = "EnsurePasswordReuseIsLimited";
@@ -1468,7 +1468,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource106ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource107ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource105ref
 {
     ResourceID = "EnsureMountingOfUsbStorageDevicesIsDisabled";
     LinuxOsConfigClassKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
@@ -1482,7 +1482,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource107ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource108ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource106ref
 {
     ResourceID = "EnsureCoreDumpsAreRestricted";
     LinuxOsConfigClassKey = "EnsureCoreDumpsAreRestricted";
@@ -1496,7 +1496,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource108ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource109ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource107ref
 {
     ResourceID = "EnsurePasswordCreationRequirements";
     LinuxOsConfigClassKey = "EnsurePasswordCreationRequirements";
@@ -1510,7 +1510,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource109ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource110ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource108ref
 {
     ResourceID = "EnsureLockoutForFailedPasswordAttempts";
     LinuxOsConfigClassKey = "EnsureLockoutForFailedPasswordAttempts";
@@ -1524,7 +1524,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource110ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource111ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource109ref
 {
     ResourceID = "EnsureDisabledInstallationOfCramfsFileSystem";
     LinuxOsConfigClassKey = "EnsureDisabledInstallationOfCramfsFileSystem";
@@ -1538,7 +1538,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource111ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource112ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource110ref
 {
     ResourceID = "EnsureDisabledInstallationOfFreevxfsFileSystem";
     LinuxOsConfigClassKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
@@ -1552,7 +1552,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource112ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource113ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource111ref
 {
     ResourceID = "EnsureDisabledInstallationOfHfsFileSystem";
     LinuxOsConfigClassKey = "EnsureDisabledInstallationOfHfsFileSystem";
@@ -1566,7 +1566,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource113ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource114ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource112ref
 {
     ResourceID = "EnsureDisabledInstallationOfHfsplusFileSystem";
     LinuxOsConfigClassKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
@@ -1580,7 +1580,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource114ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource115ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource113ref
 {
     ResourceID = "EnsureDisabledInstallationOfJffs2FileSystem";
     LinuxOsConfigClassKey = "EnsureDisabledInstallationOfJffs2FileSystem";
@@ -1594,7 +1594,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource115ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource116ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource114ref
 {
     ResourceID = "EnsureVirtualMemoryRandomizationIsEnabled";
     LinuxOsConfigClassKey = "EnsureVirtualMemoryRandomizationIsEnabled";
@@ -1608,7 +1608,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource116ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource117ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource115ref
 {
     ResourceID = "EnsureAllBootloadersHavePasswordProtectionEnabled";
     LinuxOsConfigClassKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
@@ -1622,7 +1622,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource117ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource118ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource116ref
 {
     ResourceID = "EnsureLoggingIsConfigured";
     LinuxOsConfigClassKey = "EnsureLoggingIsConfigured";
@@ -1636,7 +1636,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource118ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource119ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource117ref
 {
     ResourceID = "EnsureSyslogPackageIsInstalled";
     LinuxOsConfigClassKey = "EnsureSyslogPackageIsInstalled";
@@ -1650,7 +1650,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource119ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource120ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource118ref
 {
     ResourceID = "EnsureSystemdJournaldServicePersistsLogMessages";
     LinuxOsConfigClassKey = "EnsureSystemdJournaldServicePersistsLogMessages";
@@ -1664,7 +1664,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource120ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource121ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource119ref
 {
     ResourceID = "EnsureALoggingServiceIsEnabled";
     LinuxOsConfigClassKey = "EnsureALoggingServiceIsEnabled";
@@ -1678,7 +1678,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource121ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource122ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource120ref
 {
     ResourceID = "EnsureFilePermissionsForAllRsyslogLogFiles";
     LinuxOsConfigClassKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
@@ -1692,7 +1692,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource122ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource123ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource121ref
 {
     ResourceID = "EnsureLoggerConfigurationFilesAreRestricted";
     LinuxOsConfigClassKey = "EnsureLoggerConfigurationFilesAreRestricted";
@@ -1706,7 +1706,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource123ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource124ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource122ref
 {
     ResourceID = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
     LinuxOsConfigClassKey = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -1720,7 +1720,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource124ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource125ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource123ref
 {
     ResourceID = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     LinuxOsConfigClassKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
@@ -1734,7 +1734,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource125ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource126ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource124ref
 {
     ResourceID = "EnsureRsyslogNotAcceptingRemoteMessages";
     LinuxOsConfigClassKey = "EnsureRsyslogNotAcceptingRemoteMessages";
@@ -1748,7 +1748,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource126ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource127ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource125ref
 {
     ResourceID = "EnsureSyslogRotaterServiceIsEnabled";
     LinuxOsConfigClassKey = "EnsureSyslogRotaterServiceIsEnabled";
@@ -1762,7 +1762,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource127ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource128ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource126ref
 {
     ResourceID = "EnsureTelnetServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureTelnetServiceIsDisabled";
@@ -1776,7 +1776,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource128ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource129ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource127ref
 {
     ResourceID = "EnsureRcprshServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRcprshServiceIsDisabled";
@@ -1790,7 +1790,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource129ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource130ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource128ref
 {
     ResourceID = "EnsureTftpServiceisDisabled";
     LinuxOsConfigClassKey = "EnsureTftpServiceisDisabled";
@@ -1804,7 +1804,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource130ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource131ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource129ref
 {
     ResourceID = "EnsureAtCronIsRestrictedToAuthorizedUsers";
     LinuxOsConfigClassKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
@@ -1818,7 +1818,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource131ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource132ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource130ref
 {
     ResourceID = "EnsureSshBestPracticeProtocol";
     LinuxOsConfigClassKey = "EnsureSshBestPracticeProtocol";
@@ -1832,7 +1832,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource132ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource133ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource131ref
 {
     ResourceID = "EnsureSshBestPracticeIgnoreRhosts";
     LinuxOsConfigClassKey = "EnsureSshBestPracticeIgnoreRhosts";
@@ -1846,7 +1846,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource133ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource134ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource132ref
 {
     ResourceID = "EnsureSshLogLevelIsSet";
     LinuxOsConfigClassKey = "EnsureSshLogLevelIsSet";
@@ -1860,7 +1860,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource134ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource135ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource133ref
 {
     ResourceID = "EnsureSshMaxAuthTriesIsSet";
     LinuxOsConfigClassKey = "EnsureSshMaxAuthTriesIsSet";
@@ -1874,7 +1874,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource135ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource136ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource134ref
 {
     ResourceID = "EnsureSshAccessIsLimited";
     LinuxOsConfigClassKey = "EnsureSshAccessIsLimited";
@@ -1888,7 +1888,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource136ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource137ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource135ref
 {
     ResourceID = "EnsureSshRhostsRsaAuthenticationIsDisabled";
     LinuxOsConfigClassKey = "EnsureSshRhostsRsaAuthenticationIsDisabled";
@@ -1902,7 +1902,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource137ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource138ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource136ref
 {
     ResourceID = "EnsureSshHostbasedAuthenticationIsDisabled";
     LinuxOsConfigClassKey = "EnsureSshHostbasedAuthenticationIsDisabled";
@@ -1916,7 +1916,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource138ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource139ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource137ref
 {
     ResourceID = "EnsureSshPermitRootLoginIsDisabled";
     LinuxOsConfigClassKey = "EnsureSshPermitRootLoginIsDisabled";
@@ -1930,7 +1930,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource139ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource140ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource138ref
 {
     ResourceID = "EnsureSshPermitEmptyPasswordsIsDisabled";
     LinuxOsConfigClassKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
@@ -1944,7 +1944,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource140ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource141ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource139ref
 {
     ResourceID = "EnsureSshIdleTimeoutIntervalIsConfigured";
     LinuxOsConfigClassKey = "EnsureSshIdleTimeoutIntervalIsConfigured";
@@ -1958,7 +1958,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource141ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource142ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource140ref
 {
     ResourceID = "EnsureSshLoginGraceTimeIsSet";
     LinuxOsConfigClassKey = "EnsureSshLoginGraceTimeIsSet";
@@ -1972,7 +1972,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource142ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource143ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource141ref
 {
     ResourceID = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
     LinuxOsConfigClassKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
@@ -1986,7 +1986,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource143ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource144ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource142ref
 {
     ResourceID = "EnsureSshWarningBannerIsEnabled";
     LinuxOsConfigClassKey = "EnsureSshWarningBannerIsEnabled";
@@ -2000,7 +2000,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource144ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource145ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource143ref
 {
     ResourceID = "EnsureUsersCannotSetSshEnvironmentOptions";
     LinuxOsConfigClassKey = "EnsureUsersCannotSetSshEnvironmentOptions";
@@ -2014,7 +2014,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource145ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource146ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource144ref
 {
     ResourceID = "EnsureAppropriateCiphersForSsh";
     LinuxOsConfigClassKey = "EnsureAppropriateCiphersForSsh";
@@ -2028,7 +2028,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource146ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource147ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource145ref
 {
     ResourceID = "EnsureAvahiDaemonServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureAvahiDaemonServiceIsDisabled";
@@ -2042,7 +2042,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource147ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource148ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource146ref
 {
     ResourceID = "EnsureCupsServiceisDisabled";
     LinuxOsConfigClassKey = "EnsureCupsServiceisDisabled";
@@ -2056,7 +2056,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource148ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource149ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource147ref
 {
     ResourceID = "EnsurePostfixPackageIsUninstalled";
     LinuxOsConfigClassKey = "EnsurePostfixPackageIsUninstalled";
@@ -2070,7 +2070,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource149ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource150ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource148ref
 {
     ResourceID = "EnsurePostfixNetworkListeningIsDisabled";
     LinuxOsConfigClassKey = "EnsurePostfixNetworkListeningIsDisabled";
@@ -2084,7 +2084,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource150ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource151ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource149ref
 {
     ResourceID = "EnsureRpcgssdServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRpcgssdServiceIsDisabled";
@@ -2098,7 +2098,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource151ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource152ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource150ref
 {
     ResourceID = "EnsureRpcidmapdServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRpcidmapdServiceIsDisabled";
@@ -2112,7 +2112,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource152ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource153ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource151ref
 {
     ResourceID = "EnsurePortmapServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsurePortmapServiceIsDisabled";
@@ -2126,7 +2126,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource153ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource154ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource152ref
 {
     ResourceID = "EnsureNetworkFileSystemServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureNetworkFileSystemServiceIsDisabled";
@@ -2140,7 +2140,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource154ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource155ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource153ref
 {
     ResourceID = "EnsureRpcsvcgssdServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRpcsvcgssdServiceIsDisabled";
@@ -2154,7 +2154,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource155ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource156ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource154ref
 {
     ResourceID = "EnsureSnmpServerIsDisabled";
     LinuxOsConfigClassKey = "EnsureSnmpServerIsDisabled";
@@ -2168,7 +2168,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource156ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource157ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource155ref
 {
     ResourceID = "EnsureRsynServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRsynServiceIsDisabled";
@@ -2182,7 +2182,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource157ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource158ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource156ref
 {
     ResourceID = "EnsureNisServerIsDisabled";
     LinuxOsConfigClassKey = "EnsureNisServerIsDisabled";
@@ -2196,7 +2196,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource158ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource159ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource157ref
 {
     ResourceID = "EnsureRshClientNotInstalled";
     LinuxOsConfigClassKey = "EnsureRshClientNotInstalled";
@@ -2210,7 +2210,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource159ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource160ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource158ref
 {
     ResourceID = "EnsureSmbWithSambaIsDisabled";
     LinuxOsConfigClassKey = "EnsureSmbWithSambaIsDisabled";
@@ -2224,7 +2224,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource160ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource161ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource159ref
 {
     ResourceID = "EnsureUsersDotFilesArentGroupOrWorldWritable";
     LinuxOsConfigClassKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
@@ -2238,7 +2238,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource161ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource162ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource160ref
 {
     ResourceID = "EnsureNoUsersHaveDotForwardFiles";
     LinuxOsConfigClassKey = "EnsureNoUsersHaveDotForwardFiles";
@@ -2252,7 +2252,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource162ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource163ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource161ref
 {
     ResourceID = "EnsureNoUsersHaveDotNetrcFiles";
     LinuxOsConfigClassKey = "EnsureNoUsersHaveDotNetrcFiles";
@@ -2266,7 +2266,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource163ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource164ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource162ref
 {
     ResourceID = "EnsureNoUsersHaveDotRhostsFiles";
     LinuxOsConfigClassKey = "EnsureNoUsersHaveDotRhostsFiles";
@@ -2280,7 +2280,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource164ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource165ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource163ref
 {
     ResourceID = "EnsureRloginServiceIsDisabled";
     LinuxOsConfigClassKey = "EnsureRloginServiceIsDisabled";
@@ -2294,7 +2294,7 @@ instance of LinuxOsConfigResource as $LinuxOsConfigResource165ref
     SourceInfo = "::4::5::LinuxOsConfigResource";
 };
 
-instance of LinuxOsConfigResource as $LinuxOsConfigResource166ref
+instance of LinuxOsConfigResource as $LinuxOsConfigResource164ref
 {
     ResourceID = "EnsureUnnecessaryAccountsAreRemoved";
     LinuxOsConfigClassKey = "EnsureUnnecessaryAccountsAreRemoved";
