@@ -1,8 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-#include "Common.h"
-
 /* @migen@ */
 /*
 **==============================================================================
@@ -11,6 +6,9 @@
 **
 **==============================================================================
 */
+#include <ctype.h>
+#include <MI.h>
+#include "OsConfigResource.h"
 
 /*
 **==============================================================================
@@ -2518,7 +2516,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_quals[] =
 MI_CONST MI_ClassDecl OsConfigResource_rtti =
 {
     MI_FLAG_CLASS, /* flags */
-    0x006C6515, /* code */
+    0x006F6510, /* code */
     MI_T("OsConfigResource"), /* name */
     OsConfigResource_quals, /* qualifiers */
     MI_COUNT(OsConfigResource_quals), /* numQualifiers */
@@ -2553,9 +2551,9 @@ MI_Server* __mi_server;
 
 static MI_ClassDecl MI_CONST* MI_CONST classes[] =
 {
-    &OsConfigResource_rtti,
     &MSFT_Credential_rtti,
     &OMI_BaseResource_rtti,
+    &OsConfigResource_rtti,
 };
 
 MI_SchemaDecl schemaDecl =
