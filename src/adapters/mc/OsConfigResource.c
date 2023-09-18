@@ -4,38 +4,15 @@
 #include "Common.h"
 
 // The log file for the NRP
-#define LOG_FILE "/var/log/osconfig_mc_nrp.log"
-#define ROLLED_LOG_FILE "/var/log/osconfig_mc_nrp.bak"
+#define LOG_FILE "/var/log/osconfig_nrp.log"
+#define ROLLED_LOG_FILE "/var/log/osconfig_nrp.bak"
 
 #define MAX_PAYLOAD_LENGTH 0
 
 // OSConfig's MPI server
 #define MPI_SERVER "osconfig-platform"
 
-#define LogWithMiContext(context, miResult, log, FORMAT, ...) {\
-    {\
-        char message[512] = {0};\
-        if (0 < snprintf(message, ARRAY_SIZE(message), FORMAT, ##__VA_ARGS__)) {\
-            if (MI_RESULT_OK == miResult) {\
-                MI_Context_WriteVerbose(context, message);\
-            } else{\
-                MI_Context_PostError(context, miResult, MI_RESULT_TYPE_MI, message);\
-            }\
-        }\
-    }\
-}\
-
-#define LogInfo(context, log, FORMAT, ...) {\
-    OsConfigLogInfo(log, FORMAT, ##__VA_ARGS__);\
-    LogWithMiContext(context, MI_RESULT_OK, log, FORMAT, ##__VA_ARGS__);\
-}\
-
-#define LogError(context, miResult, log, FORMAT, ...) {\
-    OsConfigLogError(log, FORMAT, ##__VA_ARGS__);\
-    LogWithMiContext(context, miResult, log, FORMAT, ##__VA_ARGS__);\
-}\
-
-static const char* g_mpiClientName = "OSConfig Universal NRP";
+static const char* g_mpiClientName = "OSConfig NRP";
 static const char* g_defaultValue = "<default>";
 
 // Desired (write; also reported together with read group)
@@ -49,16 +26,16 @@ static char* g_desiredObjectValue = NULL;
 static char* g_reportedObjectValue = NULL;
 static unsigned int g_reportedMpiResult = 0;
 
-MPI_HANDLE g_mpiHandle = NULL;
+static MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-OSCONFIG_LOG_HANDLE GetLog()
+static OSCONFIG_LOG_HANDLE GetLog()
 {
     return g_log;
 }
 
-bool RefreshMpiClientSession(void)
+static bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
@@ -119,8 +96,6 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_desiredObjectValue);
     FREE_MEMORY(g_reportedObjectValue);
 }
-
-/* @migen@ */
 
 void MI_CALL OsConfigResource_Load(
     _Outptr_result_maybenull_ OsConfigResource_Self** self,
