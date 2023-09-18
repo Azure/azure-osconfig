@@ -8,7 +8,7 @@ instance of OsConfigResource as $OsConfigResource0ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -22,7 +22,7 @@ instance of OsConfigResource as $OsConfigResource1ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -36,7 +36,7 @@ instance of OsConfigResource as $OsConfigResource2ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -50,7 +50,7 @@ instance of OsConfigResource as $OsConfigResource3ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -64,7 +64,7 @@ instance of OsConfigResource as $OsConfigResource4ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -78,7 +78,7 @@ instance of OsConfigResource as $OsConfigResource5ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -92,7 +92,7 @@ instance of OsConfigResource as $OsConfigResource6ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -106,7 +106,7 @@ instance of OsConfigResource as $OsConfigResource7ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -120,7 +120,7 @@ instance of OsConfigResource as $OsConfigResource8ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -134,7 +134,7 @@ instance of OsConfigResource as $OsConfigResource9ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -148,7 +148,7 @@ instance of OsConfigResource as $OsConfigResource10ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -162,7 +162,7 @@ instance of OsConfigResource as $OsConfigResource11ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -176,7 +176,7 @@ instance of OsConfigResource as $OsConfigResource12ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -190,7 +190,7 @@ instance of OsConfigResource as $OsConfigResource13ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -204,7 +204,7 @@ instance of OsConfigResource as $OsConfigResource14ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -218,7 +218,7 @@ instance of OsConfigResource as $OsConfigResource15ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -232,7 +232,7 @@ instance of OsConfigResource as $OsConfigResource16ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -246,7 +246,7 @@ instance of OsConfigResource as $OsConfigResource17ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -260,7 +260,7 @@ instance of OsConfigResource as $OsConfigResource18ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -274,7 +274,7 @@ instance of OsConfigResource as $OsConfigResource19ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -288,7 +288,7 @@ instance of OsConfigResource as $OsConfigResource20ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -302,7 +302,7 @@ instance of OsConfigResource as $OsConfigResource21ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -316,7 +316,7 @@ instance of OsConfigResource as $OsConfigResource22ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -330,7 +330,7 @@ instance of OsConfigResource as $OsConfigResource23ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -344,7 +344,7 @@ instance of OsConfigResource as $OsConfigResource24ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -358,7 +358,7 @@ instance of OsConfigResource as $OsConfigResource25ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -372,7 +372,7 @@ instance of OsConfigResource as $OsConfigResource26ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -386,7 +386,7 @@ instance of OsConfigResource as $OsConfigResource27ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -400,7 +400,7 @@ instance of OsConfigResource as $OsConfigResource28ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -414,7 +414,7 @@ instance of OsConfigResource as $OsConfigResource29ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -428,7 +428,7 @@ instance of OsConfigResource as $OsConfigResource30ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -442,7 +442,7 @@ instance of OsConfigResource as $OsConfigResource31ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -456,7 +456,7 @@ instance of OsConfigResource as $OsConfigResource32ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -470,7 +470,7 @@ instance of OsConfigResource as $OsConfigResource33ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -484,7 +484,7 @@ instance of OsConfigResource as $OsConfigResource34ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -498,7 +498,7 @@ instance of OsConfigResource as $OsConfigResource35ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -512,7 +512,7 @@ instance of OsConfigResource as $OsConfigResource36ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -526,7 +526,7 @@ instance of OsConfigResource as $OsConfigResource37ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -540,7 +540,7 @@ instance of OsConfigResource as $OsConfigResource38ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -554,7 +554,7 @@ instance of OsConfigResource as $OsConfigResource39ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -568,7 +568,7 @@ instance of OsConfigResource as $OsConfigResource40ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -582,7 +582,7 @@ instance of OsConfigResource as $OsConfigResource41ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -596,7 +596,7 @@ instance of OsConfigResource as $OsConfigResource42ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -610,7 +610,7 @@ instance of OsConfigResource as $OsConfigResource43ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -624,7 +624,7 @@ instance of OsConfigResource as $OsConfigResource44ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -638,7 +638,7 @@ instance of OsConfigResource as $OsConfigResource45ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -652,7 +652,7 @@ instance of OsConfigResource as $OsConfigResource46ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -666,7 +666,7 @@ instance of OsConfigResource as $OsConfigResource47ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -680,7 +680,7 @@ instance of OsConfigResource as $OsConfigResource48ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -694,7 +694,7 @@ instance of OsConfigResource as $OsConfigResource49ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -708,7 +708,7 @@ instance of OsConfigResource as $OsConfigResource50ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -722,7 +722,7 @@ instance of OsConfigResource as $OsConfigResource51ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -736,7 +736,7 @@ instance of OsConfigResource as $OsConfigResource52ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -750,7 +750,7 @@ instance of OsConfigResource as $OsConfigResource53ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -764,7 +764,7 @@ instance of OsConfigResource as $OsConfigResource54ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -778,7 +778,7 @@ instance of OsConfigResource as $OsConfigResource55ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -792,7 +792,7 @@ instance of OsConfigResource as $OsConfigResource56ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -806,7 +806,7 @@ instance of OsConfigResource as $OsConfigResource57ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -820,7 +820,7 @@ instance of OsConfigResource as $OsConfigResource58ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -834,7 +834,7 @@ instance of OsConfigResource as $OsConfigResource59ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -848,7 +848,7 @@ instance of OsConfigResource as $OsConfigResource60ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -862,7 +862,7 @@ instance of OsConfigResource as $OsConfigResource61ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -876,7 +876,7 @@ instance of OsConfigResource as $OsConfigResource62ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -890,7 +890,7 @@ instance of OsConfigResource as $OsConfigResource63ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -904,7 +904,7 @@ instance of OsConfigResource as $OsConfigResource64ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -918,7 +918,7 @@ instance of OsConfigResource as $OsConfigResource65ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -932,7 +932,7 @@ instance of OsConfigResource as $OsConfigResource66ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -946,7 +946,7 @@ instance of OsConfigResource as $OsConfigResource67ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -960,7 +960,7 @@ instance of OsConfigResource as $OsConfigResource68ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -974,7 +974,7 @@ instance of OsConfigResource as $OsConfigResource69ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -988,7 +988,7 @@ instance of OsConfigResource as $OsConfigResource70ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1002,7 +1002,7 @@ instance of OsConfigResource as $OsConfigResource71ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1016,7 +1016,7 @@ instance of OsConfigResource as $OsConfigResource72ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1030,7 +1030,7 @@ instance of OsConfigResource as $OsConfigResource73ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1044,7 +1044,7 @@ instance of OsConfigResource as $OsConfigResource74ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1058,7 +1058,7 @@ instance of OsConfigResource as $OsConfigResource75ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1072,7 +1072,7 @@ instance of OsConfigResource as $OsConfigResource76ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1086,7 +1086,7 @@ instance of OsConfigResource as $OsConfigResource77ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1100,7 +1100,7 @@ instance of OsConfigResource as $OsConfigResource78ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1114,7 +1114,7 @@ instance of OsConfigResource as $OsConfigResource79ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1128,7 +1128,7 @@ instance of OsConfigResource as $OsConfigResource80ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1142,7 +1142,7 @@ instance of OsConfigResource as $OsConfigResource81ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1156,7 +1156,7 @@ instance of OsConfigResource as $OsConfigResource82ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1170,7 +1170,7 @@ instance of OsConfigResource as $OsConfigResource83ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1184,7 +1184,7 @@ instance of OsConfigResource as $OsConfigResource84ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1198,7 +1198,7 @@ instance of OsConfigResource as $OsConfigResource85ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1212,7 +1212,7 @@ instance of OsConfigResource as $OsConfigResource86ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1226,7 +1226,7 @@ instance of OsConfigResource as $OsConfigResource87ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1240,7 +1240,7 @@ instance of OsConfigResource as $OsConfigResource88ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1254,7 +1254,7 @@ instance of OsConfigResource as $OsConfigResource89ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1268,7 +1268,7 @@ instance of OsConfigResource as $OsConfigResource90ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1282,7 +1282,7 @@ instance of OsConfigResource as $OsConfigResource91ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1296,7 +1296,7 @@ instance of OsConfigResource as $OsConfigResource92ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1310,7 +1310,7 @@ instance of OsConfigResource as $OsConfigResource93ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1324,7 +1324,7 @@ instance of OsConfigResource as $OsConfigResource94ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1338,7 +1338,7 @@ instance of OsConfigResource as $OsConfigResource95ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1352,7 +1352,7 @@ instance of OsConfigResource as $OsConfigResource96ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1366,7 +1366,7 @@ instance of OsConfigResource as $OsConfigResource97ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1380,7 +1380,7 @@ instance of OsConfigResource as $OsConfigResource98ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1394,7 +1394,7 @@ instance of OsConfigResource as $OsConfigResource99ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1408,7 +1408,7 @@ instance of OsConfigResource as $OsConfigResource100ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1422,7 +1422,7 @@ instance of OsConfigResource as $OsConfigResource101ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1436,7 +1436,7 @@ instance of OsConfigResource as $OsConfigResource102ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1450,7 +1450,7 @@ instance of OsConfigResource as $OsConfigResource103ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1464,7 +1464,7 @@ instance of OsConfigResource as $OsConfigResource104ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1478,7 +1478,7 @@ instance of OsConfigResource as $OsConfigResource105ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1492,7 +1492,7 @@ instance of OsConfigResource as $OsConfigResource106ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1506,7 +1506,7 @@ instance of OsConfigResource as $OsConfigResource107ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1520,7 +1520,7 @@ instance of OsConfigResource as $OsConfigResource108ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1534,7 +1534,7 @@ instance of OsConfigResource as $OsConfigResource109ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1548,7 +1548,7 @@ instance of OsConfigResource as $OsConfigResource110ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1562,7 +1562,7 @@ instance of OsConfigResource as $OsConfigResource111ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1576,7 +1576,7 @@ instance of OsConfigResource as $OsConfigResource112ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1590,7 +1590,7 @@ instance of OsConfigResource as $OsConfigResource113ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1604,7 +1604,7 @@ instance of OsConfigResource as $OsConfigResource114ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1618,7 +1618,7 @@ instance of OsConfigResource as $OsConfigResource115ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1632,7 +1632,7 @@ instance of OsConfigResource as $OsConfigResource116ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1646,7 +1646,7 @@ instance of OsConfigResource as $OsConfigResource117ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1660,7 +1660,7 @@ instance of OsConfigResource as $OsConfigResource118ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1674,7 +1674,7 @@ instance of OsConfigResource as $OsConfigResource119ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1688,7 +1688,7 @@ instance of OsConfigResource as $OsConfigResource120ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1702,7 +1702,7 @@ instance of OsConfigResource as $OsConfigResource121ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1716,7 +1716,7 @@ instance of OsConfigResource as $OsConfigResource122ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1730,7 +1730,7 @@ instance of OsConfigResource as $OsConfigResource123ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1744,7 +1744,7 @@ instance of OsConfigResource as $OsConfigResource124ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1758,7 +1758,7 @@ instance of OsConfigResource as $OsConfigResource125ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1772,7 +1772,7 @@ instance of OsConfigResource as $OsConfigResource126ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1786,7 +1786,7 @@ instance of OsConfigResource as $OsConfigResource127ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1800,7 +1800,7 @@ instance of OsConfigResource as $OsConfigResource128ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1814,7 +1814,7 @@ instance of OsConfigResource as $OsConfigResource129ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1828,7 +1828,7 @@ instance of OsConfigResource as $OsConfigResource130ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1842,7 +1842,7 @@ instance of OsConfigResource as $OsConfigResource131ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1856,7 +1856,7 @@ instance of OsConfigResource as $OsConfigResource132ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1870,7 +1870,7 @@ instance of OsConfigResource as $OsConfigResource133ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1884,7 +1884,7 @@ instance of OsConfigResource as $OsConfigResource134ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1898,7 +1898,7 @@ instance of OsConfigResource as $OsConfigResource135ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1912,7 +1912,7 @@ instance of OsConfigResource as $OsConfigResource136ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1926,7 +1926,7 @@ instance of OsConfigResource as $OsConfigResource137ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1940,7 +1940,7 @@ instance of OsConfigResource as $OsConfigResource138ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1954,7 +1954,7 @@ instance of OsConfigResource as $OsConfigResource139ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1968,7 +1968,7 @@ instance of OsConfigResource as $OsConfigResource140ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1982,7 +1982,7 @@ instance of OsConfigResource as $OsConfigResource141ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -1996,7 +1996,7 @@ instance of OsConfigResource as $OsConfigResource142ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2010,7 +2010,7 @@ instance of OsConfigResource as $OsConfigResource143ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2024,7 +2024,7 @@ instance of OsConfigResource as $OsConfigResource144ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2038,7 +2038,7 @@ instance of OsConfigResource as $OsConfigResource145ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2052,7 +2052,7 @@ instance of OsConfigResource as $OsConfigResource146ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2066,7 +2066,7 @@ instance of OsConfigResource as $OsConfigResource147ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2080,7 +2080,7 @@ instance of OsConfigResource as $OsConfigResource148ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2094,7 +2094,7 @@ instance of OsConfigResource as $OsConfigResource149ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2108,7 +2108,7 @@ instance of OsConfigResource as $OsConfigResource150ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2122,7 +2122,7 @@ instance of OsConfigResource as $OsConfigResource151ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2136,7 +2136,7 @@ instance of OsConfigResource as $OsConfigResource152ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2150,7 +2150,7 @@ instance of OsConfigResource as $OsConfigResource153ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2164,7 +2164,7 @@ instance of OsConfigResource as $OsConfigResource154ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2178,7 +2178,7 @@ instance of OsConfigResource as $OsConfigResource155ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2192,7 +2192,7 @@ instance of OsConfigResource as $OsConfigResource156ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2206,7 +2206,7 @@ instance of OsConfigResource as $OsConfigResource157ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2220,7 +2220,7 @@ instance of OsConfigResource as $OsConfigResource158ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2234,7 +2234,7 @@ instance of OsConfigResource as $OsConfigResource159ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2248,7 +2248,7 @@ instance of OsConfigResource as $OsConfigResource160ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2262,7 +2262,7 @@ instance of OsConfigResource as $OsConfigResource161ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2276,7 +2276,7 @@ instance of OsConfigResource as $OsConfigResource162ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2290,7 +2290,7 @@ instance of OsConfigResource as $OsConfigResource163ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
@@ -2304,7 +2304,7 @@ instance of OsConfigResource as $OsConfigResource164ref
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
+    ConfigurationName = "OsConfig";
     SourceInfo = "::4::5::OsConfigResource";
 };
 
