@@ -4,10 +4,10 @@
 #pragma include ("MSFT_Credential.mof")
 
 [ClassVersion("1.0.0")]
-class LinuxOsConfigResource : OMI_BaseResource
+class OsConfigResource : OMI_BaseResource
 {
   [key] 
-  string LinuxOsConfigClassKey;
+  string ClassKey;
 
   [write, Description ("MIM Component (for audit and remediation)" )]
   string ComponentName;
@@ -29,17 +29,17 @@ class LinuxOsConfigResource : OMI_BaseResource
 
   [static, Description ("Get resource state based on input configuration." )]
   uint32 GetTargetResource(
-    [in, EmbeddedInstance ("LinuxOsConfigResource"), Description ("Desired configuration to be applied.")]
+    [in, EmbeddedInstance ("OsConfigResource"), Description ("Desired configuration to be applied.")]
     string InputResource,
     [in, Description ("Flags passed to the providers. Reserved for future use." )] 
     uint32 Flags,
-    [out, EmbeddedInstance ("LinuxOsConfigResource"), Description ("The current configuration state." )]
+    [out, EmbeddedInstance ("OsConfigResource"), Description ("The current configuration state." )]
     string OutputResource
   );
     
   [static, Description ("Test resource state based on input configuration." )]
   uint32 TestTargetResource(
-    [in, EmbeddedInstance("LinuxOsConfigResource"), Description ("Desired configuration to be applied." )]
+    [in, EmbeddedInstance("OsConfigResource"), Description ("Desired configuration to be applied." )]
     string InputResource,
     [in, Description ("Flags passed to the providers. Reserved for future use." )]
     uint32 Flags,
@@ -51,7 +51,7 @@ class LinuxOsConfigResource : OMI_BaseResource
 
   [static, Description ("Set desired configuration based on input configuration." )]
   uint32 SetTargetResource(
-    [in, EmbeddedInstance ("LinuxOsConfigResource"), Description ("Desired configuration to be applied." )]
+    [in, EmbeddedInstance ("OsConfigResource"), Description ("Desired configuration to be applied." )]
     string InputResource,
     [in, Description ("Context information that the provider can use to optimize the set. This is optional." )]
     uint64 ProviderContext,
