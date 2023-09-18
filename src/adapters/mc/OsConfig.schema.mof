@@ -7,7 +7,7 @@
 class OsConfigResource : OMI_BaseResource
 {
   [key] 
-  string ClassKey;
+  string  ClassKey;
 
   [write, Description ("MIM Component (for audit and remediation)" )]
   string ComponentName;
