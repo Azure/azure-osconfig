@@ -1453,7 +1453,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ClassKey_quals[] =
 static MI_CONST MI_PropertyDecl OsConfigResource_ClassKey_prop =
 {
     MI_FLAG_PROPERTY|MI_FLAG_KEY|MI_FLAG_READONLY, /* flags */
-    0x006C7915, /* code */
+    0x00637908, /* code */
     MI_T("ClassKey"), /* name */
     OsConfigResource_ClassKey_quals, /* qualifiers */
     MI_COUNT(OsConfigResource_ClassKey_quals), /* numQualifiers */
