@@ -30,12 +30,12 @@ static MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE GetLog()
+OSCONFIG_LOG_HANDLE GetLog()
 {
     return g_log;
 }
 
-static bool RefreshMpiClientSession(void)
+bool RefreshMpiClientSession(void)
 {
     bool status = true;
 
