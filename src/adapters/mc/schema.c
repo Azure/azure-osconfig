@@ -1,4 +1,10 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+#include "Common.h"
+
 /* @migen@ */
+
 /*
 **==============================================================================
 **
@@ -6,9 +12,6 @@
 **
 **==============================================================================
 */
-#include <ctype.h>
-#include <MI.h>
-#include "OsConfigResource.h"
 
 /*
 **==============================================================================
