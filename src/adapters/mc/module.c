@@ -3,18 +3,20 @@
 
 #include "Common.h"
 
-/* @migen@ */
-
 MI_EXTERN_C MI_SchemaDecl schemaDecl;
 
 void MI_CALL Load(MI_Module_Self** self, struct _MI_Context* context)
 {
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module load (PID: %d, context: 0x%p)", getpid(), context);
+
     *self = NULL;
     MI_Context_PostResult(context, MI_RESULT_OK);
 }
 
 void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 {
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module unload (PID: %d, context: 0x%p)", getpid(), context);
+    
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(context);
 
@@ -23,10 +25,11 @@ void MI_CALL Unload(MI_Module_Self* self, struct _MI_Context* context)
 
 MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
 {
-    /* WARNING: THIS FUNCTION AUTOMATICALLY GENERATED. PLEASE DO NOT EDIT. */
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d, server: 0x%p)", getpid(), server);
+    
     static MI_Module module;
-    MI_EXTERN_C MI_Server* __mi_server;
-    __mi_server = server;
+    MI_EXTERN_C MI_Server* __mi_server = server;
+
     module.flags |= MI_MODULE_FLAG_DESCRIPTIONS;
     module.flags |= MI_MODULE_FLAG_VALUES;
     module.flags |= MI_MODULE_FLAG_BOOLEANS;
@@ -37,5 +40,6 @@ MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
     module.schemaDecl = &schemaDecl;
     module.Load = Load;
     module.Unload = Unload;
+    
     return &module;
 }

@@ -30,7 +30,7 @@ MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
-static OSCONFIG_LOG_HANDLE GetLog()
+OSCONFIG_LOG_HANDLE GetLog(void)
 {
     return g_log;
 }
