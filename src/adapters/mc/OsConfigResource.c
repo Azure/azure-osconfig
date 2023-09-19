@@ -32,6 +32,11 @@ static OSCONFIG_LOG_HANDLE g_log = NULL;
 
 OSCONFIG_LOG_HANDLE GetLog(void)
 {
+    if (NULL == g_log)
+    {
+        g_log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
+    }
+    
     return g_log;
 }
 
@@ -64,8 +69,6 @@ static bool RefreshMpiClientSession(void)
 
 void __attribute__((constructor)) Initialize()
 {
-    g_log = OpenLog(LOG_FILE, ROLLED_LOG_FILE);
-
     RefreshMpiClientSession();
 
     g_classKey = DuplicateString(g_defaultValue);
@@ -79,7 +82,7 @@ void __attribute__((constructor)) Initialize()
 
 void __attribute__((destructor)) Destroy()
 {
-    OsConfigLogInfo(GetLog(), "[OsConfigResource] Terminated (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
+    OsConfigLogInfo(GetLog(), "[OsConfigResource] Terminating (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
     
     if (NULL != g_mpiHandle)
     {
