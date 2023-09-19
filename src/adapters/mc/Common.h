@@ -20,7 +20,6 @@
 #include <Mpi.h>
 #include <MpiClient.h>
 
-#include "sal.h"
 #include "MI.h"
 #include "MSFT_Credential.h"
 #include "OMI_BaseResource.h"

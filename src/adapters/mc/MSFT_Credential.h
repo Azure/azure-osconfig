@@ -82,48 +82,48 @@ MSFT_Credential_ConstArrayRef;
 MI_EXTERN_C MI_CONST MI_ClassDecl MSFT_Credential_rtti;
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Construct(
-    _Out_ MSFT_Credential* self,
-    _In_ MI_Context* context)
+    MSFT_Credential* self,
+    MI_Context* context)
 {
     return MI_Context_ConstructInstance(context, &MSFT_Credential_rtti,
         (MI_Instance*)&self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Clone(
-    _In_ const MSFT_Credential* self,
-    _Outptr_ MSFT_Credential** newInstance)
+    const MSFT_Credential* self,
+    MSFT_Credential** newInstance)
 {
     return MI_Instance_Clone(
         &self->__instance, (MI_Instance**)newInstance);
 }
 
 MI_INLINE MI_Boolean MI_CALL MSFT_Credential_IsA(
-    _In_ const MI_Instance* self)
+    const MI_Instance* self)
 {
     MI_Boolean res = MI_FALSE;
     return MI_Instance_IsA(self, &MSFT_Credential_rtti, &res) == MI_RESULT_OK && res;
 }
 
-MI_INLINE MI_Result MI_CALL MSFT_Credential_Destruct(_Inout_ MSFT_Credential* self)
+MI_INLINE MI_Result MI_CALL MSFT_Credential_Destruct(MSFT_Credential* self)
 {
     return MI_Instance_Destruct(&self->__instance);
 }
 
-MI_INLINE MI_Result MI_CALL MSFT_Credential_Delete(_Inout_ MSFT_Credential* self)
+MI_INLINE MI_Result MI_CALL MSFT_Credential_Delete(MSFT_Credential* self)
 {
     return MI_Instance_Delete(&self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Post(
-    _In_ const MSFT_Credential* self,
-    _In_ MI_Context* context)
+    const MSFT_Credential* self,
+    MI_Context* context)
 {
     return MI_Context_PostInstance(context, &self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Set_UserName(
-    _Inout_ MSFT_Credential* self,
-    _In_z_ const MI_Char* str)
+    MSFT_Credential* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -134,8 +134,8 @@ MI_INLINE MI_Result MI_CALL MSFT_Credential_Set_UserName(
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_SetPtr_UserName(
-    _Inout_ MSFT_Credential* self,
-    _In_z_ const MI_Char* str)
+    MSFT_Credential* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -146,7 +146,7 @@ MI_INLINE MI_Result MI_CALL MSFT_Credential_SetPtr_UserName(
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Clear_UserName(
-    _Inout_ MSFT_Credential* self)
+    MSFT_Credential* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -154,8 +154,8 @@ MI_INLINE MI_Result MI_CALL MSFT_Credential_Clear_UserName(
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Set_Password(
-    _Inout_ MSFT_Credential* self,
-    _In_z_ const MI_Char* str)
+    MSFT_Credential* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -166,8 +166,8 @@ MI_INLINE MI_Result MI_CALL MSFT_Credential_Set_Password(
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_SetPtr_Password(
-    _Inout_ MSFT_Credential* self,
-    _In_z_ const MI_Char* str)
+    MSFT_Credential* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -178,7 +178,7 @@ MI_INLINE MI_Result MI_CALL MSFT_Credential_SetPtr_Password(
 }
 
 MI_INLINE MI_Result MI_CALL MSFT_Credential_Clear_Password(
-    _Inout_ MSFT_Credential* self)
+    MSFT_Credential* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,

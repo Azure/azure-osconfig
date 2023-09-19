@@ -121,9 +121,9 @@ void __attribute__((destructor)) Destroy()
 }
 
 void MI_CALL OsConfigResource_Load(
-    _Outptr_result_maybenull_ OsConfigResource_Self** self,
-    _In_opt_ MI_Module_Self* selfModule,
-    _In_ MI_Context* context)
+    OsConfigResource_Self** self,
+    MI_Module_Self* selfModule,
+    MI_Context* context)
 {
     MI_UNREFERENCED_PARAMETER(selfModule);
 
@@ -135,8 +135,8 @@ void MI_CALL OsConfigResource_Load(
 }
 
 void MI_CALL OsConfigResource_Unload(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context)
+    OsConfigResource_Self* self,
+    MI_Context* context)
 {
     MI_UNREFERENCED_PARAMETER(self);
 
@@ -146,13 +146,13 @@ void MI_CALL OsConfigResource_Unload(
 }
 
 void MI_CALL OsConfigResource_EnumerateInstances(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_opt_ const MI_PropertySet* propertySet,
-    _In_ MI_Boolean keysOnly,
-    _In_opt_ const MI_Filter* filter)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const MI_PropertySet* propertySet,
+    MI_Boolean keysOnly,
+    const MI_Filter* filter)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
@@ -167,12 +167,12 @@ void MI_CALL OsConfigResource_EnumerateInstances(
 }
 
 void MI_CALL OsConfigResource_GetInstance(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_ const OsConfigResource* instanceName,
-    _In_opt_ const MI_PropertySet* propertySet)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const OsConfigResource* instanceName,
+    const MI_PropertySet* propertySet)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
@@ -186,11 +186,11 @@ void MI_CALL OsConfigResource_GetInstance(
 }
 
 void MI_CALL OsConfigResource_CreateInstance(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_ const OsConfigResource* newInstance)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const OsConfigResource* newInstance)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
@@ -203,12 +203,12 @@ void MI_CALL OsConfigResource_CreateInstance(
 }
 
 void MI_CALL OsConfigResource_ModifyInstance(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_ const OsConfigResource* modifiedInstance,
-    _In_opt_ const MI_PropertySet* propertySet)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const OsConfigResource* modifiedInstance,
+    const MI_PropertySet* propertySet)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
@@ -222,11 +222,11 @@ void MI_CALL OsConfigResource_ModifyInstance(
 }
 
 void MI_CALL OsConfigResource_DeleteInstance(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_ const OsConfigResource* instanceName)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const OsConfigResource* instanceName)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(nameSpace);
@@ -340,13 +340,13 @@ struct OsConfigResourceParameters
 };
 
 void MI_CALL OsConfigResource_Invoke_GetTargetResource(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_opt_z_ const MI_Char* methodName,
-    _In_ const OsConfigResource* instanceName,
-    _In_opt_ const OsConfigResource_GetTargetResource* in)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const MI_Char* methodName,
+    const OsConfigResource* instanceName,
+    const OsConfigResource_GetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
@@ -543,13 +543,13 @@ Exit:
 }
 
 void MI_CALL OsConfigResource_Invoke_TestTargetResource(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_opt_z_ const MI_Char* methodName,
-    _In_ const OsConfigResource* instanceName,
-    _In_opt_ const OsConfigResource_TestTargetResource* in)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const MI_Char* methodName,
+    const OsConfigResource* instanceName,
+    const OsConfigResource_TestTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
@@ -692,13 +692,13 @@ Exit:
 }
 
 void MI_CALL OsConfigResource_Invoke_SetTargetResource(
-    _In_opt_ OsConfigResource_Self* self,
-    _In_ MI_Context* context,
-    _In_opt_z_ const MI_Char* nameSpace,
-    _In_opt_z_ const MI_Char* className,
-    _In_opt_z_ const MI_Char* methodName,
-    _In_ const OsConfigResource* instanceName,
-    _In_opt_ const OsConfigResource_SetTargetResource* in)
+    OsConfigResource_Self* self,
+    MI_Context* context,
+    const MI_Char* nameSpace,
+    const MI_Char* className,
+    const MI_Char* methodName,
+    const OsConfigResource* instanceName,
+    const OsConfigResource_SetTargetResource* in)
 {
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);

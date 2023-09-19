@@ -6,11 +6,6 @@
 
 #define OMI_ONLY
 
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include "sal.h"
-
 /*
 **==============================================================================
 **
