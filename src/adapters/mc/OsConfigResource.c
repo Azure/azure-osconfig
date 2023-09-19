@@ -49,7 +49,7 @@ static char* g_desiredObjectValue = NULL;
 static char* g_reportedObjectValue = NULL;
 static unsigned int g_reportedMpiResult = 0;
 
-static MPI_HANDLE g_mpiHandle = NULL;
+MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
