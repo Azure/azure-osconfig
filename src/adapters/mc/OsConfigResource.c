@@ -359,7 +359,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
-        { "ClassKey", MI_STRING, in->InputResource.value->ClassKey.value, 0 },
+        { "PayloadKey", MI_STRING, in->InputResource.value->PayloadKey.value, 0 },
         { "ComponentName", MI_STRING, in->InputResource.value->ComponentName.value, 0 },
         { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
         { "ReportedObjectValue", MI_STRING, g_reportedObjectValue, 0 },
@@ -383,18 +383,18 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Read and refresh the class key from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ClassKey.exists) || (NULL == in->InputResource.value->ClassKey.value))
+    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ClassKey");
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
     FREE_MEMORY(g_classKey);
 
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->ClassKey.value)))
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ClassKey.value);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
         g_classKey = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
@@ -573,18 +573,18 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     // Read and refresh the class key from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ClassKey.exists) || (NULL == in->InputResource.value->ClassKey.value))
+    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ClassKey");
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
     FREE_MEMORY(g_classKey);
 
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->ClassKey.value)))
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ClassKey.value);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
         g_classKey = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
@@ -737,18 +737,18 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     // Read and refresh the class key from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ClassKey.exists) || (NULL == in->InputResource.value->ClassKey.value))
+    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ClassKey");
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
     FREE_MEMORY(g_classKey);
 
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->ClassKey.value)))
+    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ClassKey.value);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
         g_classKey = DuplicateString(g_defaultValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;

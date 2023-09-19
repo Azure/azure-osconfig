@@ -20,7 +20,7 @@
 ** OsConfigResource [OsConfigResource]
 **
 ** Keys:
-**    ClassKey
+**    PayloadKey
 **
 **==============================================================================
 */
@@ -37,7 +37,7 @@ typedef struct _OsConfigResource /* extends OMI_BaseResource */
     MI_ConstStringField ConfigurationName;
     MSFT_Credential_ConstRef PsDscRunAsCredential;
     /* OsConfigResource properties */
-    /*KEY*/ MI_ConstStringField ClassKey;
+    /*KEY*/ MI_ConstStringField PayloadKey;
     MI_ConstStringField ComponentName;
     MI_ConstStringField ReportedObjectName;
     MI_ConstStringField ReportedObjectValue;
@@ -367,7 +367,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_PsDscRunAsCredential(
         6);
 }
 
-MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ClassKey(
+MI_INLINE MI_Result MI_CALL OsConfigResource_Set_PayloadKey(
     OsConfigResource* self,
     const MI_Char* str)
 {
@@ -379,7 +379,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Set_ClassKey(
         0);
 }
 
-MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ClassKey(
+MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_PayloadKey(
     OsConfigResource* self,
     const MI_Char* str)
 {
@@ -391,7 +391,7 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_ClassKey(
         MI_FLAG_BORROW);
 }
 
-MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ClassKey(
+MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_PayloadKey(
     OsConfigResource* self)
 {
     return self->__instance.ft->ClearElementAt(
@@ -1098,6 +1098,5 @@ MI_EXTERN_C void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     const MI_Char* methodName,
     const OsConfigResource* instanceName,
     const OsConfigResource_SetTargetResource* in);
-
 
 #endif /* _OsConfigResource_h */

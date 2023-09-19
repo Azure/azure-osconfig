@@ -37,8 +37,8 @@ static MI_CONST MI_QualifierDecl Abstract_qual_decl =
 {
     MI_T("Abstract"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     &Abstract_qual_decl_value, /* value */
 };
@@ -50,7 +50,7 @@ static MI_CONST MI_QualifierDecl Aggregate_qual_decl =
     MI_T("Aggregate"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Aggregate_qual_decl_value, /* value */
 };
@@ -62,7 +62,7 @@ static MI_CONST MI_QualifierDecl Aggregation_qual_decl =
     MI_T("Aggregation"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_ASSOCIATION, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Aggregation_qual_decl_value, /* value */
 };
@@ -71,8 +71,8 @@ static MI_CONST MI_QualifierDecl Alias_qual_decl =
 {
     MI_T("Alias"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -83,8 +83,8 @@ static MI_CONST MI_QualifierDecl ArrayType_qual_decl =
 {
     MI_T("ArrayType"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &ArrayType_qual_decl_value, /* value */
 };
@@ -96,7 +96,7 @@ static MI_CONST MI_QualifierDecl Association_qual_decl =
     MI_T("Association"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_ASSOCIATION, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Association_qual_decl_value, /* value */
 };
@@ -105,8 +105,8 @@ static MI_CONST MI_QualifierDecl BitMap_qual_decl =
 {
     MI_T("BitMap"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -115,8 +115,8 @@ static MI_CONST MI_QualifierDecl BitValues_qual_decl =
 {
     MI_T("BitValues"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -125,8 +125,8 @@ static MI_CONST MI_QualifierDecl ClassConstraint_qual_decl =
 {
     MI_T("ClassConstraint"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -135,8 +135,8 @@ static MI_CONST MI_QualifierDecl ClassVersion_qual_decl =
 {
     MI_T("ClassVersion"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -148,7 +148,7 @@ static MI_CONST MI_QualifierDecl Composition_qual_decl =
     MI_T("Composition"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_ASSOCIATION, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Composition_qual_decl_value, /* value */
 };
@@ -158,7 +158,7 @@ static MI_CONST MI_QualifierDecl Correlatable_qual_decl =
     MI_T("Correlatable"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -169,8 +169,8 @@ static MI_CONST MI_QualifierDecl Counter_qual_decl =
 {
     MI_T("Counter"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Counter_qual_decl_value, /* value */
 };
@@ -181,8 +181,8 @@ static MI_CONST MI_QualifierDecl Delete_qual_decl =
 {
     MI_T("Delete"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Delete_qual_decl_value, /* value */
 };
@@ -192,7 +192,7 @@ static MI_CONST MI_QualifierDecl Deprecated_qual_decl =
     MI_T("Deprecated"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -202,7 +202,7 @@ static MI_CONST MI_QualifierDecl Description_qual_decl =
     MI_T("Description"), /* name */
     MI_STRING, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -212,7 +212,7 @@ static MI_CONST MI_QualifierDecl DisplayDescription_qual_decl =
     MI_T("DisplayDescription"), /* name */
     MI_STRING, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -222,7 +222,7 @@ static MI_CONST MI_QualifierDecl DisplayName_qual_decl =
     MI_T("DisplayName"), /* name */
     MI_STRING, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -233,8 +233,8 @@ static MI_CONST MI_QualifierDecl DN_qual_decl =
 {
     MI_T("DN"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &DN_qual_decl_value, /* value */
 };
@@ -243,8 +243,8 @@ static MI_CONST MI_QualifierDecl EmbeddedInstance_qual_decl =
 {
     MI_T("EmbeddedInstance"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -255,8 +255,8 @@ static MI_CONST MI_QualifierDecl EmbeddedObject_qual_decl =
 {
     MI_T("EmbeddedObject"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &EmbeddedObject_qual_decl_value, /* value */
 };
@@ -267,8 +267,8 @@ static MI_CONST MI_QualifierDecl Exception_qual_decl =
 {
     MI_T("Exception"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Exception_qual_decl_value, /* value */
 };
@@ -280,7 +280,7 @@ static MI_CONST MI_QualifierDecl Expensive_qual_decl =
     MI_T("Expensive"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Expensive_qual_decl_value, /* value */
 };
@@ -292,7 +292,7 @@ static MI_CONST MI_QualifierDecl Experimental_qual_decl =
     MI_T("Experimental"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     &Experimental_qual_decl_value, /* value */
 };
@@ -303,8 +303,8 @@ static MI_CONST MI_QualifierDecl Gauge_qual_decl =
 {
     MI_T("Gauge"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Gauge_qual_decl_value, /* value */
 };
@@ -315,8 +315,8 @@ static MI_CONST MI_QualifierDecl Ifdeleted_qual_decl =
 {
     MI_T("Ifdeleted"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Ifdeleted_qual_decl_value, /* value */
 };
@@ -328,7 +328,7 @@ static MI_CONST MI_QualifierDecl In_qual_decl =
     MI_T("In"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_PARAMETER, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &In_qual_decl_value, /* value */
 };
@@ -339,8 +339,8 @@ static MI_CONST MI_QualifierDecl Indication_qual_decl =
 {
     MI_T("Indication"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Indication_qual_decl_value, /* value */
 };
@@ -351,8 +351,8 @@ static MI_CONST MI_QualifierDecl Invisible_qual_decl =
 {
     MI_T("Invisible"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_METHOD|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_METHOD | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Invisible_qual_decl_value, /* value */
 };
@@ -363,8 +363,8 @@ static MI_CONST MI_QualifierDecl IsPUnit_qual_decl =
 {
     MI_T("IsPUnit"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &IsPUnit_qual_decl_value, /* value */
 };
@@ -375,8 +375,8 @@ static MI_CONST MI_QualifierDecl Key_qual_decl =
 {
     MI_T("Key"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Key_qual_decl_value, /* value */
 };
@@ -387,8 +387,8 @@ static MI_CONST MI_QualifierDecl Large_qual_decl =
 {
     MI_T("Large"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_CLASS|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_CLASS | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Large_qual_decl_value, /* value */
 };
@@ -398,7 +398,7 @@ static MI_CONST MI_QualifierDecl MappingStrings_qual_decl =
     MI_T("MappingStrings"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -408,7 +408,7 @@ static MI_CONST MI_QualifierDecl Max_qual_decl =
     MI_T("Max"), /* name */
     MI_UINT32, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -417,8 +417,8 @@ static MI_CONST MI_QualifierDecl MaxLen_qual_decl =
 {
     MI_T("MaxLen"), /* name */
     MI_UINT32, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -427,8 +427,8 @@ static MI_CONST MI_QualifierDecl MaxValue_qual_decl =
 {
     MI_T("MaxValue"), /* name */
     MI_SINT64, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -438,7 +438,7 @@ static MI_CONST MI_QualifierDecl MethodConstraint_qual_decl =
     MI_T("MethodConstraint"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_METHOD, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -450,7 +450,7 @@ static MI_CONST MI_QualifierDecl Min_qual_decl =
     MI_T("Min"), /* name */
     MI_UINT32, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Min_qual_decl_value, /* value */
 };
@@ -461,8 +461,8 @@ static MI_CONST MI_QualifierDecl MinLen_qual_decl =
 {
     MI_T("MinLen"), /* name */
     MI_UINT32, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &MinLen_qual_decl_value, /* value */
 };
@@ -471,8 +471,8 @@ static MI_CONST MI_QualifierDecl MinValue_qual_decl =
 {
     MI_T("MinValue"), /* name */
     MI_SINT64, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -482,7 +482,7 @@ static MI_CONST MI_QualifierDecl ModelCorrespondence_qual_decl =
     MI_T("ModelCorrespondence"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -492,7 +492,7 @@ static MI_CONST MI_QualifierDecl Nonlocal_qual_decl =
     MI_T("Nonlocal"), /* name */
     MI_STRING, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -502,7 +502,7 @@ static MI_CONST MI_QualifierDecl NonlocalType_qual_decl =
     MI_T("NonlocalType"), /* name */
     MI_STRING, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -512,7 +512,7 @@ static MI_CONST MI_QualifierDecl NullValue_qual_decl =
     MI_T("NullValue"), /* name */
     MI_STRING, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -523,8 +523,8 @@ static MI_CONST MI_QualifierDecl Octetstring_qual_decl =
 {
     MI_T("Octetstring"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Octetstring_qual_decl_value, /* value */
 };
@@ -536,7 +536,7 @@ static MI_CONST MI_QualifierDecl Out_qual_decl =
     MI_T("Out"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_PARAMETER, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Out_qual_decl_value, /* value */
 };
@@ -545,8 +545,8 @@ static MI_CONST MI_QualifierDecl Override_qual_decl =
 {
     MI_T("Override"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -556,7 +556,7 @@ static MI_CONST MI_QualifierDecl Propagated_qual_decl =
     MI_T("Propagated"), /* name */
     MI_STRING, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -565,8 +565,8 @@ static MI_CONST MI_QualifierDecl PropertyConstraint_qual_decl =
 {
     MI_T("PropertyConstraint"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -578,7 +578,7 @@ static MI_CONST MI_QualifierDecl PropertyUsage_qual_decl =
     MI_T("PropertyUsage"), /* name */
     MI_STRING, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &PropertyUsage_qual_decl_value, /* value */
 };
@@ -588,7 +588,7 @@ static MI_CONST MI_QualifierDecl Provider_qual_decl =
     MI_T("Provider"), /* name */
     MI_STRING, /* type */
     MI_FLAG_ANY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -597,8 +597,8 @@ static MI_CONST MI_QualifierDecl PUnit_qual_decl =
 {
     MI_T("PUnit"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -610,7 +610,7 @@ static MI_CONST MI_QualifierDecl Read_qual_decl =
     MI_T("Read"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Read_qual_decl_value, /* value */
 };
@@ -621,8 +621,8 @@ static MI_CONST MI_QualifierDecl Required_qual_decl =
 {
     MI_T("Required"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Required_qual_decl_value, /* value */
 };
@@ -631,8 +631,8 @@ static MI_CONST MI_QualifierDecl Revision_qual_decl =
 {
     MI_T("Revision"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -641,8 +641,8 @@ static MI_CONST MI_QualifierDecl Schema_qual_decl =
 {
     MI_T("Schema"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -651,8 +651,8 @@ static MI_CONST MI_QualifierDecl Source_qual_decl =
 {
     MI_T("Source"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -661,8 +661,8 @@ static MI_CONST MI_QualifierDecl SourceType_qual_decl =
 {
     MI_T("SourceType"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -673,8 +673,8 @@ static MI_CONST MI_QualifierDecl Static_qual_decl =
 {
     MI_T("Static"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Static_qual_decl_value, /* value */
 };
@@ -685,8 +685,8 @@ static MI_CONST MI_QualifierDecl Stream_qual_decl =
 {
     MI_T("Stream"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER, /* scope */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Stream_qual_decl_value, /* value */
 };
@@ -695,8 +695,8 @@ static MI_CONST MI_QualifierDecl Syntax_qual_decl =
 {
     MI_T("Syntax"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -705,8 +705,8 @@ static MI_CONST MI_QualifierDecl SyntaxType_qual_decl =
 {
     MI_T("SyntaxType"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -717,8 +717,8 @@ static MI_CONST MI_QualifierDecl Terminal_qual_decl =
 {
     MI_T("Terminal"), /* name */
     MI_BOOLEAN, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Terminal_qual_decl_value, /* value */
 };
@@ -727,8 +727,8 @@ static MI_CONST MI_QualifierDecl TriggerType_qual_decl =
 {
     MI_T("TriggerType"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION|MI_FLAG_METHOD|MI_FLAG_PROPERTY|MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION | MI_FLAG_METHOD | MI_FLAG_PROPERTY | MI_FLAG_REFERENCE, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -737,8 +737,8 @@ static MI_CONST MI_QualifierDecl UMLPackagePath_qual_decl =
 {
     MI_T("UMLPackagePath"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -747,8 +747,8 @@ static MI_CONST MI_QualifierDecl Units_qual_decl =
 {
     MI_T("Units"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -758,7 +758,7 @@ static MI_CONST MI_QualifierDecl UnknownValues_qual_decl =
     MI_T("UnknownValues"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -768,7 +768,7 @@ static MI_CONST MI_QualifierDecl UnsupportedValues_qual_decl =
     MI_T("UnsupportedValues"), /* name */
     MI_STRINGA, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -777,8 +777,8 @@ static MI_CONST MI_QualifierDecl ValueMap_qual_decl =
 {
     MI_T("ValueMap"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -787,8 +787,8 @@ static MI_CONST MI_QualifierDecl Values_qual_decl =
 {
     MI_T("Values"), /* name */
     MI_STRINGA, /* type */
-    MI_FLAG_METHOD|MI_FLAG_PARAMETER|MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE, /* flavor */
+    MI_FLAG_METHOD | MI_FLAG_PARAMETER | MI_FLAG_PROPERTY, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -797,8 +797,8 @@ static MI_CONST MI_QualifierDecl Version_qual_decl =
 {
     MI_T("Version"), /* name */
     MI_STRING, /* type */
-    MI_FLAG_ASSOCIATION|MI_FLAG_CLASS|MI_FLAG_INDICATION, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TRANSLATABLE|MI_FLAG_RESTRICTED, /* flavor */
+    MI_FLAG_ASSOCIATION | MI_FLAG_CLASS | MI_FLAG_INDICATION, /* scope */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TRANSLATABLE | MI_FLAG_RESTRICTED, /* flavor */
     0, /* subscript */
     NULL, /* value */
 };
@@ -810,7 +810,7 @@ static MI_CONST MI_QualifierDecl Weak_qual_decl =
     MI_T("Weak"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_REFERENCE, /* scope */
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Weak_qual_decl_value, /* value */
 };
@@ -822,7 +822,7 @@ static MI_CONST MI_QualifierDecl Write_qual_decl =
     MI_T("Write"), /* name */
     MI_BOOLEAN, /* type */
     MI_FLAG_PROPERTY, /* scope */
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS, /* flavor */
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS, /* flavor */
     0, /* subscript */
     &Write_qual_decl_value, /* value */
 };
@@ -918,7 +918,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_UserName_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &MSFT_Credential_UserName_Description_qual_value
 };
 
@@ -928,7 +928,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_UserName_MaxLen_qual =
 {
     MI_T("MaxLen"),
     MI_UINT32,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &MSFT_Credential_UserName_MaxLen_qual_value
 };
 
@@ -941,7 +941,7 @@ static MI_Qualifier MI_CONST* MI_CONST MSFT_Credential_UserName_quals[] =
 /* property MSFT_Credential.UserName */
 static MI_CONST MI_PropertyDecl MSFT_Credential_UserName_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_READONLY, /* flags */
     0x00756508, /* code */
     MI_T("UserName"), /* name */
     MSFT_Credential_UserName_quals, /* qualifiers */
@@ -961,7 +961,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_Password_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &MSFT_Credential_Password_Description_qual_value
 };
 
@@ -973,7 +973,7 @@ static MI_Qualifier MI_CONST* MI_CONST MSFT_Credential_Password_quals[] =
 /* property MSFT_Credential.Password */
 static MI_CONST MI_PropertyDecl MSFT_Credential_Password_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_READONLY, /* flags */
     0x00706408, /* code */
     MI_T("Password"), /* name */
     MSFT_Credential_Password_quals, /* qualifiers */
@@ -999,7 +999,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_Abstract_qual =
 {
     MI_T("Abstract"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED,
     &MSFT_Credential_Abstract_qual_value
 };
 
@@ -1009,7 +1009,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_ClassVersion_qual =
 {
     MI_T("ClassVersion"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED,
     &MSFT_Credential_ClassVersion_qual_value
 };
 
@@ -1019,7 +1019,7 @@ static MI_CONST MI_Qualifier MSFT_Credential_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &MSFT_Credential_Description_qual_value
 };
 
@@ -1033,7 +1033,7 @@ static MI_Qualifier MI_CONST* MI_CONST MSFT_Credential_quals[] =
 /* class MSFT_Credential */
 MI_CONST MI_ClassDecl MSFT_Credential_rtti =
 {
-    MI_FLAG_CLASS|MI_FLAG_ABSTRACT, /* flags */
+    MI_FLAG_CLASS | MI_FLAG_ABSTRACT, /* flags */
     0x006D6C0F, /* code */
     MI_T("MSFT_Credential"), /* name */
     MSFT_Credential_quals, /* qualifiers */
@@ -1064,7 +1064,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ResourceId_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_ResourceId_Description_qual_value
 };
 
@@ -1074,7 +1074,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ResourceId_Required_qual =
 {
     MI_T("Required"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_ResourceId_Required_qual_value
 };
 
@@ -1087,7 +1087,7 @@ static MI_Qualifier MI_CONST* MI_CONST OMI_BaseResource_ResourceId_quals[] =
 /* property OMI_BaseResource.ResourceId */
 static MI_CONST MI_PropertyDecl OMI_BaseResource_ResourceId_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_REQUIRED|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_REQUIRED | MI_FLAG_READONLY, /* flags */
     0x0072640A, /* code */
     MI_T("ResourceId"), /* name */
     OMI_BaseResource_ResourceId_quals, /* qualifiers */
@@ -1107,7 +1107,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_SourceInfo_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_SourceInfo_Description_qual_value
 };
 
@@ -1117,7 +1117,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_SourceInfo_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_SourceInfo_Write_qual_value
 };
 
@@ -1150,7 +1150,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_DependsOn_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_DependsOn_Description_qual_value
 };
 
@@ -1160,7 +1160,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_DependsOn_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_DependsOn_Write_qual_value
 };
 
@@ -1193,7 +1193,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ModuleName_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_ModuleName_Description_qual_value
 };
 
@@ -1203,7 +1203,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ModuleName_Required_qual =
 {
     MI_T("Required"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_ModuleName_Required_qual_value
 };
 
@@ -1216,7 +1216,7 @@ static MI_Qualifier MI_CONST* MI_CONST OMI_BaseResource_ModuleName_quals[] =
 /* property OMI_BaseResource.ModuleName */
 static MI_CONST MI_PropertyDecl OMI_BaseResource_ModuleName_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_REQUIRED|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_REQUIRED | MI_FLAG_READONLY, /* flags */
     0x006D650A, /* code */
     MI_T("ModuleName"), /* name */
     OMI_BaseResource_ModuleName_quals, /* qualifiers */
@@ -1236,7 +1236,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ModuleVersion_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_ModuleVersion_Description_qual_value
 };
 
@@ -1246,7 +1246,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ModuleVersion_Required_qual =
 {
     MI_T("Required"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_ModuleVersion_Required_qual_value
 };
 
@@ -1259,7 +1259,7 @@ static MI_Qualifier MI_CONST* MI_CONST OMI_BaseResource_ModuleVersion_quals[] =
 /* property OMI_BaseResource.ModuleVersion */
 static MI_CONST MI_PropertyDecl OMI_BaseResource_ModuleVersion_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_REQUIRED|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_REQUIRED | MI_FLAG_READONLY, /* flags */
     0x006D6E0D, /* code */
     MI_T("ModuleVersion"), /* name */
     OMI_BaseResource_ModuleVersion_quals, /* qualifiers */
@@ -1279,7 +1279,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ConfigurationName_Description_qual
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_ConfigurationName_Description_qual_value
 };
 
@@ -1289,7 +1289,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ConfigurationName_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_ConfigurationName_Write_qual_value
 };
 
@@ -1322,7 +1322,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_PsDscRunAsCredential_Description_q
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_PsDscRunAsCredential_Description_qual_value
 };
 
@@ -1332,7 +1332,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_PsDscRunAsCredential_EmbeddedInsta
 {
     MI_T("EmbeddedInstance"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OMI_BaseResource_PsDscRunAsCredential_EmbeddedInstance_qual_value
 };
 
@@ -1345,7 +1345,7 @@ static MI_Qualifier MI_CONST* MI_CONST OMI_BaseResource_PsDscRunAsCredential_qua
 /* property OMI_BaseResource.PsDscRunAsCredential */
 static MI_CONST MI_PropertyDecl OMI_BaseResource_PsDscRunAsCredential_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_READONLY, /* flags */
     0x00706C14, /* code */
     MI_T("PsDscRunAsCredential"), /* name */
     OMI_BaseResource_PsDscRunAsCredential_quals, /* qualifiers */
@@ -1376,7 +1376,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_Abstract_qual =
 {
     MI_T("Abstract"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED,
     &OMI_BaseResource_Abstract_qual_value
 };
 
@@ -1386,7 +1386,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_ClassVersion_qual =
 {
     MI_T("ClassVersion"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED,
     &OMI_BaseResource_ClassVersion_qual_value
 };
 
@@ -1396,7 +1396,7 @@ static MI_CONST MI_Qualifier OMI_BaseResource_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OMI_BaseResource_Description_qual_value
 };
 
@@ -1410,7 +1410,7 @@ static MI_Qualifier MI_CONST* MI_CONST OMI_BaseResource_quals[] =
 /* class OMI_BaseResource */
 MI_CONST MI_ClassDecl OMI_BaseResource_rtti =
 {
-    MI_FLAG_CLASS|MI_FLAG_ABSTRACT, /* flags */
+    MI_FLAG_CLASS | MI_FLAG_ABSTRACT, /* flags */
     0x006F6510, /* code */
     MI_T("OMI_BaseResource"), /* name */
     OMI_BaseResource_quals, /* qualifiers */
@@ -1435,33 +1435,33 @@ MI_CONST MI_ClassDecl OMI_BaseResource_rtti =
 **==============================================================================
 */
 
-static MI_CONST MI_Boolean OsConfigResource_ClassKey_Key_qual_value = 1;
+static MI_CONST MI_Boolean OsConfigResource_PayloadKey_Key_qual_value = 1;
 
-static MI_CONST MI_Qualifier OsConfigResource_ClassKey_Key_qual =
+static MI_CONST MI_Qualifier OsConfigResource_PayloadKey_Key_qual =
 {
     MI_T("Key"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
-    &OsConfigResource_ClassKey_Key_qual_value
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
+    &OsConfigResource_PayloadKey_Key_qual_value
 };
 
-static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ClassKey_quals[] =
+static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_PayloadKey_quals[] =
 {
-    &OsConfigResource_ClassKey_Key_qual,
+    &OsConfigResource_PayloadKey_Key_qual,
 };
 
-/* property OsConfigResource.ClassKey */
-static MI_CONST MI_PropertyDecl OsConfigResource_ClassKey_prop =
+/* property OsConfigResource.PayloadKey */
+static MI_CONST MI_PropertyDecl OsConfigResource_PayloadKey_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_KEY|MI_FLAG_READONLY, /* flags */
-    0x00637908, /* code */
-    MI_T("ClassKey"), /* name */
-    OsConfigResource_ClassKey_quals, /* qualifiers */
-    MI_COUNT(OsConfigResource_ClassKey_quals), /* numQualifiers */
+    MI_FLAG_PROPERTY | MI_FLAG_KEY | MI_FLAG_READONLY, /* flags */
+    0x0070790A, /* code */
+    MI_T("PayloadKey"), /* name */
+    OsConfigResource_PayloadKey_quals, /* qualifiers */
+    MI_COUNT(OsConfigResource_PayloadKey_quals), /* numQualifiers */
     MI_STRING, /* type */
     NULL, /* className */
     0, /* subscript */
-    offsetof(OsConfigResource, ClassKey), /* offset */
+    offsetof(OsConfigResource, PayloadKey), /* offset */
     MI_T("OsConfigResource"), /* origin */
     MI_T("OsConfigResource"), /* propagator */
     NULL,
@@ -1473,7 +1473,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ComponentName_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_ComponentName_Write_qual_value
 };
 
@@ -1483,7 +1483,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ComponentName_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_ComponentName_Description_qual_value
 };
 
@@ -1516,7 +1516,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedObjectName_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_ReportedObjectName_Write_qual_value
 };
 
@@ -1526,7 +1526,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedObjectName_Description_qua
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_ReportedObjectName_Description_qual_value
 };
 
@@ -1559,7 +1559,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedObjectValue_Read_qual =
 {
     MI_T("Read"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_ReportedObjectValue_Read_qual_value
 };
 
@@ -1569,7 +1569,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedObjectValue_Description_qu
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_ReportedObjectValue_Description_qual_value
 };
 
@@ -1582,7 +1582,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ReportedObjectValue_qual
 /* property OsConfigResource.ReportedObjectValue */
 static MI_CONST MI_PropertyDecl OsConfigResource_ReportedObjectValue_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_READONLY, /* flags */
     0x00726513, /* code */
     MI_T("ReportedObjectValue"), /* name */
     OsConfigResource_ReportedObjectValue_quals, /* qualifiers */
@@ -1602,7 +1602,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectName_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_DesiredObjectName_Write_qual_value
 };
 
@@ -1612,7 +1612,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectName_Description_qual
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_DesiredObjectName_Description_qual_value
 };
 
@@ -1645,7 +1645,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectValue_Write_qual =
 {
     MI_T("Write"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_DesiredObjectValue_Write_qual_value
 };
 
@@ -1655,7 +1655,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectValue_Description_qua
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_DesiredObjectValue_Description_qual_value
 };
 
@@ -1688,7 +1688,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedMpiResult_Read_qual =
 {
     MI_T("Read"),
     MI_BOOLEAN,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_ReportedMpiResult_Read_qual_value
 };
 
@@ -1698,7 +1698,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedMpiResult_Description_qual
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_ReportedMpiResult_Description_qual_value
 };
 
@@ -1711,7 +1711,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ReportedMpiResult_quals[
 /* property OsConfigResource.ReportedMpiResult */
 static MI_CONST MI_PropertyDecl OsConfigResource_ReportedMpiResult_prop =
 {
-    MI_FLAG_PROPERTY|MI_FLAG_READONLY, /* flags */
+    MI_FLAG_PROPERTY | MI_FLAG_READONLY, /* flags */
     0x00727411, /* code */
     MI_T("ReportedMpiResult"), /* name */
     OsConfigResource_ReportedMpiResult_quals, /* qualifiers */
@@ -1734,7 +1734,7 @@ static MI_PropertyDecl MI_CONST* MI_CONST OsConfigResource_props[] =
     &OMI_BaseResource_ModuleVersion_prop,
     &OMI_BaseResource_ConfigurationName_prop,
     &OMI_BaseResource_PsDscRunAsCredential_prop,
-    &OsConfigResource_ClassKey_prop,
+    &OsConfigResource_PayloadKey_prop,
     &OsConfigResource_ComponentName_prop,
     &OsConfigResource_ReportedObjectName_prop,
     &OsConfigResource_ReportedObjectValue_prop,
@@ -1749,7 +1749,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Static_qual =
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_Static_qual_value
 };
 
@@ -1759,7 +1759,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Description_qual
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_GetTargetResource_Description_qual_value
 };
 
@@ -1775,7 +1775,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_InputResource_In
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_InputResource_In_qual_value
 };
 
@@ -1785,7 +1785,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_InputResource_Em
 {
     MI_T("EmbeddedInstance"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
@@ -1795,7 +1795,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_InputResource_De
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_GetTargetResource_InputResource_Description_qual_value
 };
 
@@ -1809,7 +1809,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_GetTargetResource_InputR
 /* parameter OsConfigResource.GetTargetResource(): InputResource */
 static MI_CONST MI_ParameterDecl OsConfigResource_GetTargetResource_InputResource_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x0069650D, /* code */
     MI_T("InputResource"), /* name */
     OsConfigResource_GetTargetResource_InputResource_quals, /* qualifiers */
@@ -1826,7 +1826,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Flags_In_qual =
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_Flags_In_qual_value
 };
 
@@ -1836,7 +1836,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Flags_Descriptio
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_GetTargetResource_Flags_Description_qual_value
 };
 
@@ -1849,7 +1849,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_GetTargetResource_Flags_
 /* parameter OsConfigResource.GetTargetResource(): Flags */
 static MI_CONST MI_ParameterDecl OsConfigResource_GetTargetResource_Flags_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x00667305, /* code */
     MI_T("Flags"), /* name */
     OsConfigResource_GetTargetResource_Flags_quals, /* qualifiers */
@@ -1866,7 +1866,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_OutputResource_O
 {
     MI_T("Out"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_OutputResource_Out_qual_value
 };
 
@@ -1876,7 +1876,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_OutputResource_E
 {
     MI_T("EmbeddedInstance"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_OutputResource_EmbeddedInstance_qual_value
 };
 
@@ -1886,7 +1886,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_OutputResource_D
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_GetTargetResource_OutputResource_Description_qual_value
 };
 
@@ -1900,7 +1900,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_GetTargetResource_Output
 /* parameter OsConfigResource.GetTargetResource(): OutputResource */
 static MI_CONST MI_ParameterDecl OsConfigResource_GetTargetResource_OutputResource_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x006F650E, /* code */
     MI_T("OutputResource"), /* name */
     OsConfigResource_GetTargetResource_OutputResource_quals, /* qualifiers */
@@ -1917,7 +1917,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_MIReturn_Static_
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_GetTargetResource_MIReturn_Static_qual_value
 };
 
@@ -1927,7 +1927,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_MIReturn_Descrip
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_GetTargetResource_MIReturn_Description_qual_value
 };
 
@@ -1940,7 +1940,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_GetTargetResource_MIRetu
 /* parameter OsConfigResource.GetTargetResource(): MIReturn */
 static MI_CONST MI_ParameterDecl OsConfigResource_GetTargetResource_MIReturn_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x006D6E08, /* code */
     MI_T("MIReturn"), /* name */
     OsConfigResource_GetTargetResource_MIReturn_quals, /* qualifiers */
@@ -1962,7 +1962,7 @@ static MI_ParameterDecl MI_CONST* MI_CONST OsConfigResource_GetTargetResource_pa
 /* method OsConfigResource.GetTargetResource() */
 MI_CONST MI_MethodDecl OsConfigResource_GetTargetResource_rtti =
 {
-    MI_FLAG_METHOD|MI_FLAG_STATIC, /* flags */
+    MI_FLAG_METHOD | MI_FLAG_STATIC, /* flags */
     0x00676511, /* code */
     MI_T("GetTargetResource"), /* name */
     OsConfigResource_GetTargetResource_quals, /* qualifiers */
@@ -1983,7 +1983,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Static_qual =
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_Static_qual_value
 };
 
@@ -1993,7 +1993,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Description_qua
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_Description_qual_value
 };
 
@@ -2009,7 +2009,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_InputResource_I
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_InputResource_In_qual_value
 };
 
@@ -2019,7 +2019,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_InputResource_E
 {
     MI_T("EmbeddedInstance"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
@@ -2029,7 +2029,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_InputResource_D
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_InputResource_Description_qual_value
 };
 
@@ -2043,7 +2043,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_TestTargetResource_Input
 /* parameter OsConfigResource.TestTargetResource(): InputResource */
 static MI_CONST MI_ParameterDecl OsConfigResource_TestTargetResource_InputResource_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x0069650D, /* code */
     MI_T("InputResource"), /* name */
     OsConfigResource_TestTargetResource_InputResource_quals, /* qualifiers */
@@ -2060,7 +2060,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Flags_In_qual =
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_Flags_In_qual_value
 };
 
@@ -2070,7 +2070,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Flags_Descripti
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_Flags_Description_qual_value
 };
 
@@ -2083,7 +2083,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_TestTargetResource_Flags
 /* parameter OsConfigResource.TestTargetResource(): Flags */
 static MI_CONST MI_ParameterDecl OsConfigResource_TestTargetResource_Flags_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x00667305, /* code */
     MI_T("Flags"), /* name */
     OsConfigResource_TestTargetResource_Flags_quals, /* qualifiers */
@@ -2100,7 +2100,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Result_Out_qual
 {
     MI_T("Out"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_Result_Out_qual_value
 };
 
@@ -2110,7 +2110,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Result_Descript
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_Result_Description_qual_value
 };
 
@@ -2123,7 +2123,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_TestTargetResource_Resul
 /* parameter OsConfigResource.TestTargetResource(): Result */
 static MI_CONST MI_ParameterDecl OsConfigResource_TestTargetResource_Result_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x00727406, /* code */
     MI_T("Result"), /* name */
     OsConfigResource_TestTargetResource_Result_quals, /* qualifiers */
@@ -2140,7 +2140,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_ProviderContext
 {
     MI_T("Out"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_ProviderContext_Out_qual_value
 };
 
@@ -2150,7 +2150,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_ProviderContext
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_ProviderContext_Description_qual_value
 };
 
@@ -2163,7 +2163,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_TestTargetResource_Provi
 /* parameter OsConfigResource.TestTargetResource(): ProviderContext */
 static MI_CONST MI_ParameterDecl OsConfigResource_TestTargetResource_ProviderContext_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x0070740F, /* code */
     MI_T("ProviderContext"), /* name */
     OsConfigResource_TestTargetResource_ProviderContext_quals, /* qualifiers */
@@ -2180,7 +2180,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_MIReturn_Static
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_TestTargetResource_MIReturn_Static_qual_value
 };
 
@@ -2190,7 +2190,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_MIReturn_Descri
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_TestTargetResource_MIReturn_Description_qual_value
 };
 
@@ -2203,7 +2203,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_TestTargetResource_MIRet
 /* parameter OsConfigResource.TestTargetResource(): MIReturn */
 static MI_CONST MI_ParameterDecl OsConfigResource_TestTargetResource_MIReturn_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x006D6E08, /* code */
     MI_T("MIReturn"), /* name */
     OsConfigResource_TestTargetResource_MIReturn_quals, /* qualifiers */
@@ -2226,7 +2226,7 @@ static MI_ParameterDecl MI_CONST* MI_CONST OsConfigResource_TestTargetResource_p
 /* method OsConfigResource.TestTargetResource() */
 MI_CONST MI_MethodDecl OsConfigResource_TestTargetResource_rtti =
 {
-    MI_FLAG_METHOD|MI_FLAG_STATIC, /* flags */
+    MI_FLAG_METHOD | MI_FLAG_STATIC, /* flags */
     0x00746512, /* code */
     MI_T("TestTargetResource"), /* name */
     OsConfigResource_TestTargetResource_quals, /* qualifiers */
@@ -2247,7 +2247,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Static_qual =
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_Static_qual_value
 };
 
@@ -2257,7 +2257,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Description_qual
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_SetTargetResource_Description_qual_value
 };
 
@@ -2273,7 +2273,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_InputResource_In
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_InputResource_In_qual_value
 };
 
@@ -2283,7 +2283,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_InputResource_Em
 {
     MI_T("EmbeddedInstance"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
@@ -2293,7 +2293,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_InputResource_De
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_SetTargetResource_InputResource_Description_qual_value
 };
 
@@ -2307,7 +2307,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_SetTargetResource_InputR
 /* parameter OsConfigResource.SetTargetResource(): InputResource */
 static MI_CONST MI_ParameterDecl OsConfigResource_SetTargetResource_InputResource_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x0069650D, /* code */
     MI_T("InputResource"), /* name */
     OsConfigResource_SetTargetResource_InputResource_quals, /* qualifiers */
@@ -2324,7 +2324,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_ProviderContext_
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_ProviderContext_In_qual_value
 };
 
@@ -2334,7 +2334,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_ProviderContext_
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_SetTargetResource_ProviderContext_Description_qual_value
 };
 
@@ -2347,7 +2347,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_SetTargetResource_Provid
 /* parameter OsConfigResource.SetTargetResource(): ProviderContext */
 static MI_CONST MI_ParameterDecl OsConfigResource_SetTargetResource_ProviderContext_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x0070740F, /* code */
     MI_T("ProviderContext"), /* name */
     OsConfigResource_SetTargetResource_ProviderContext_quals, /* qualifiers */
@@ -2364,7 +2364,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Flags_In_qual =
 {
     MI_T("In"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_Flags_In_qual_value
 };
 
@@ -2374,7 +2374,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Flags_Descriptio
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_SetTargetResource_Flags_Description_qual_value
 };
 
@@ -2387,7 +2387,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_SetTargetResource_Flags_
 /* parameter OsConfigResource.SetTargetResource(): Flags */
 static MI_CONST MI_ParameterDecl OsConfigResource_SetTargetResource_Flags_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_IN, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_IN, /* flags */
     0x00667305, /* code */
     MI_T("Flags"), /* name */
     OsConfigResource_SetTargetResource_Flags_quals, /* qualifiers */
@@ -2404,7 +2404,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_MIReturn_Static_
 {
     MI_T("Static"),
     MI_BOOLEAN,
-    MI_FLAG_DISABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    MI_FLAG_DISABLEOVERRIDE | MI_FLAG_TOSUBCLASS,
     &OsConfigResource_SetTargetResource_MIReturn_Static_qual_value
 };
 
@@ -2414,7 +2414,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_MIReturn_Descrip
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_SetTargetResource_MIReturn_Description_qual_value
 };
 
@@ -2427,7 +2427,7 @@ static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_SetTargetResource_MIRetu
 /* parameter OsConfigResource.SetTargetResource(): MIReturn */
 static MI_CONST MI_ParameterDecl OsConfigResource_SetTargetResource_MIReturn_param =
 {
-    MI_FLAG_PARAMETER|MI_FLAG_OUT, /* flags */
+    MI_FLAG_PARAMETER | MI_FLAG_OUT, /* flags */
     0x006D6E08, /* code */
     MI_T("MIReturn"), /* name */
     OsConfigResource_SetTargetResource_MIReturn_quals, /* qualifiers */
@@ -2449,7 +2449,7 @@ static MI_ParameterDecl MI_CONST* MI_CONST OsConfigResource_SetTargetResource_pa
 /* method OsConfigResource.SetTargetResource() */
 MI_CONST MI_MethodDecl OsConfigResource_SetTargetResource_rtti =
 {
-    MI_FLAG_METHOD|MI_FLAG_STATIC, /* flags */
+    MI_FLAG_METHOD | MI_FLAG_STATIC, /* flags */
     0x00736511, /* code */
     MI_T("SetTargetResource"), /* name */
     OsConfigResource_SetTargetResource_quals, /* qualifiers */
@@ -2473,20 +2473,20 @@ static MI_MethodDecl MI_CONST* MI_CONST OsConfigResource_meths[] =
 
 static MI_CONST MI_ProviderFT OsConfigResource_funcs =
 {
-  (MI_ProviderFT_Load)OsConfigResource_Load,
-  (MI_ProviderFT_Unload)OsConfigResource_Unload,
-  (MI_ProviderFT_GetInstance)OsConfigResource_GetInstance,
-  (MI_ProviderFT_EnumerateInstances)OsConfigResource_EnumerateInstances,
-  (MI_ProviderFT_CreateInstance)OsConfigResource_CreateInstance,
-  (MI_ProviderFT_ModifyInstance)OsConfigResource_ModifyInstance,
-  (MI_ProviderFT_DeleteInstance)OsConfigResource_DeleteInstance,
-  (MI_ProviderFT_AssociatorInstances)NULL,
-  (MI_ProviderFT_ReferenceInstances)NULL,
-  (MI_ProviderFT_EnableIndications)NULL,
-  (MI_ProviderFT_DisableIndications)NULL,
-  (MI_ProviderFT_Subscribe)NULL,
-  (MI_ProviderFT_Unsubscribe)NULL,
-  (MI_ProviderFT_Invoke)NULL,
+    (MI_ProviderFT_Load)OsConfigResource_Load,
+    (MI_ProviderFT_Unload)OsConfigResource_Unload,
+    (MI_ProviderFT_GetInstance)OsConfigResource_GetInstance,
+    (MI_ProviderFT_EnumerateInstances)OsConfigResource_EnumerateInstances,
+    (MI_ProviderFT_CreateInstance)OsConfigResource_CreateInstance,
+    (MI_ProviderFT_ModifyInstance)OsConfigResource_ModifyInstance,
+    (MI_ProviderFT_DeleteInstance)OsConfigResource_DeleteInstance,
+    (MI_ProviderFT_AssociatorInstances)NULL,
+    (MI_ProviderFT_ReferenceInstances)NULL,
+    (MI_ProviderFT_EnableIndications)NULL,
+    (MI_ProviderFT_DisableIndications)NULL,
+    (MI_ProviderFT_Subscribe)NULL,
+    (MI_ProviderFT_Unsubscribe)NULL,
+    (MI_ProviderFT_Invoke)NULL,
 };
 
 static MI_CONST MI_Char* OsConfigResource_Description_qual_value = MI_T("11");
@@ -2495,7 +2495,7 @@ static MI_CONST MI_Qualifier OsConfigResource_Description_qual =
 {
     MI_T("Description"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_TOSUBCLASS | MI_FLAG_TRANSLATABLE,
     &OsConfigResource_Description_qual_value
 };
 
@@ -2505,7 +2505,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ClassVersion_qual =
 {
     MI_T("ClassVersion"),
     MI_STRING,
-    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_RESTRICTED,
+    MI_FLAG_ENABLEOVERRIDE | MI_FLAG_RESTRICTED,
     &OsConfigResource_ClassVersion_qual_value
 };
 
@@ -2585,4 +2585,3 @@ MI_Result MI_CALL MI_Server_GetSystemName(
 {
     return __mi_server->serverFT->GetSystemName(systemName);
 }
-

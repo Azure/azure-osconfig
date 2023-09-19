@@ -1,7 +1,7 @@
 instance of OsConfigResource as $OsConfigResource0ref
 {
     ResourceID = "EnsureSecurityBaselineCompliance";
-    ClassKey = "EnsureSecurityBaselineCompliance";
+    PayloadKey = "EnsureSecurityBaselineCompliance";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditSecurityBaseline";
     DesiredObjectName = "remediateSecurityBaseline";
@@ -15,7 +15,7 @@ instance of OsConfigResource as $OsConfigResource0ref
 instance of OsConfigResource as $OsConfigResource1ref
 {
     ResourceID = "EnsurePermissionsOnEtcIssue";
-    ClassKey = "EnsurePermissionsOnEtcIssue";
+    PayloadKey = "EnsurePermissionsOnEtcIssue";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcIssue";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcIssue";
@@ -29,7 +29,7 @@ instance of OsConfigResource as $OsConfigResource1ref
 instance of OsConfigResource as $OsConfigResource2ref
 {
     ResourceID = "EnsurePermissionsOnEtcIssueNet";
-    ClassKey = "EnsurePermissionsOnEtcIssueNet";
+    PayloadKey = "EnsurePermissionsOnEtcIssueNet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcIssueNet";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcIssueNet";
@@ -43,7 +43,7 @@ instance of OsConfigResource as $OsConfigResource2ref
 instance of OsConfigResource as $OsConfigResource3ref
 {
     ResourceID = "EnsurePermissionsOnEtcHostsAllow";
-    ClassKey = "EnsurePermissionsOnEtcHostsAllow";
+    PayloadKey = "EnsurePermissionsOnEtcHostsAllow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsAllow";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsAllow";
@@ -57,7 +57,7 @@ instance of OsConfigResource as $OsConfigResource3ref
 instance of OsConfigResource as $OsConfigResource4ref
 {
     ResourceID = "EnsurePermissionsOnEtcHostsDeny";
-    ClassKey = "EnsurePermissionsOnEtcHostsDeny";
+    PayloadKey = "EnsurePermissionsOnEtcHostsDeny";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcHostsDeny";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcHostsDeny";
@@ -71,7 +71,7 @@ instance of OsConfigResource as $OsConfigResource4ref
 instance of OsConfigResource as $OsConfigResource5ref
 {
     ResourceID = "EnsurePermissionsOnEtcSshSshdConfig";
-    ClassKey = "EnsurePermissionsOnEtcSshSshdConfig";
+    PayloadKey = "EnsurePermissionsOnEtcSshSshdConfig";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcSshSshdConfig";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcSshSshdConfig";
@@ -85,7 +85,7 @@ instance of OsConfigResource as $OsConfigResource5ref
 instance of OsConfigResource as $OsConfigResource6ref
 {
     ResourceID = "EnsurePermissionsOnEtcShadow";
-    ClassKey = "EnsurePermissionsOnEtcShadow";
+    PayloadKey = "EnsurePermissionsOnEtcShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcShadow";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcShadow";
@@ -99,7 +99,7 @@ instance of OsConfigResource as $OsConfigResource6ref
 instance of OsConfigResource as $OsConfigResource7ref
 {
     ResourceID = "EnsurePermissionsOnEtcShadowDash";
-    ClassKey = "EnsurePermissionsOnEtcShadowDash";
+    PayloadKey = "EnsurePermissionsOnEtcShadowDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcShadowDash";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcShadowDash";
@@ -113,7 +113,7 @@ instance of OsConfigResource as $OsConfigResource7ref
 instance of OsConfigResource as $OsConfigResource8ref
 {
     ResourceID = "EnsurePermissionsOnEtcGShadow";
-    ClassKey = "EnsurePermissionsOnEtcGShadow";
+    PayloadKey = "EnsurePermissionsOnEtcGShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGShadow";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGShadow";
@@ -127,7 +127,7 @@ instance of OsConfigResource as $OsConfigResource8ref
 instance of OsConfigResource as $OsConfigResource9ref
 {
     ResourceID = "EnsurePermissionsOnEtcGShadowDash";
-    ClassKey = "EnsurePermissionsOnEtcGShadowDash";
+    PayloadKey = "EnsurePermissionsOnEtcGShadowDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGShadowDash";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGShadowDash";
@@ -141,7 +141,7 @@ instance of OsConfigResource as $OsConfigResource9ref
 instance of OsConfigResource as $OsConfigResource10ref
 {
     ResourceID = "EnsurePermissionsOnEtcPasswd";
-    ClassKey = "EnsurePermissionsOnEtcPasswd";
+    PayloadKey = "EnsurePermissionsOnEtcPasswd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcPasswd";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcPasswd";
@@ -155,7 +155,7 @@ instance of OsConfigResource as $OsConfigResource10ref
 instance of OsConfigResource as $OsConfigResource11ref
 {
     ResourceID = "EnsurePermissionsOnEtcPasswdDash";
-    ClassKey = "EnsurePermissionsOnEtcPasswdDash";
+    PayloadKey = "EnsurePermissionsOnEtcPasswdDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcPasswdDash";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcPasswdDash";
@@ -169,7 +169,7 @@ instance of OsConfigResource as $OsConfigResource11ref
 instance of OsConfigResource as $OsConfigResource12ref
 {
     ResourceID = "EnsurePermissionsOnEtcGroup";
-    ClassKey = "EnsurePermissionsOnEtcGroup";
+    PayloadKey = "EnsurePermissionsOnEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGroup";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGroup";
@@ -183,7 +183,7 @@ instance of OsConfigResource as $OsConfigResource12ref
 instance of OsConfigResource as $OsConfigResource13ref
 {
     ResourceID = "EnsurePermissionsOnEtcGroupDash";
-    ClassKey = "EnsurePermissionsOnEtcGroupDash";
+    PayloadKey = "EnsurePermissionsOnEtcGroupDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGroupDash";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcGroupDash";
@@ -197,7 +197,7 @@ instance of OsConfigResource as $OsConfigResource13ref
 instance of OsConfigResource as $OsConfigResource14ref
 {
     ResourceID = "EnsurePermissionsOnEtcAnacronTab";
-    ClassKey = "EnsurePermissionsOnEtcAnacronTab";
+    PayloadKey = "EnsurePermissionsOnEtcAnacronTab";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcAnacronTab";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcAnacronTab";
@@ -211,7 +211,7 @@ instance of OsConfigResource as $OsConfigResource14ref
 instance of OsConfigResource as $OsConfigResource15ref
 {
     ResourceID = "EnsurePermissionsOnEtcCronD";
-    ClassKey = "EnsurePermissionsOnEtcCronD";
+    PayloadKey = "EnsurePermissionsOnEtcCronD";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronD";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronD";
@@ -225,7 +225,7 @@ instance of OsConfigResource as $OsConfigResource15ref
 instance of OsConfigResource as $OsConfigResource16ref
 {
     ResourceID = "EnsurePermissionsOnEtcCronDaily";
-    ClassKey = "EnsurePermissionsOnEtcCronDaily";
+    PayloadKey = "EnsurePermissionsOnEtcCronDaily";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronDaily";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronDaily";
@@ -239,7 +239,7 @@ instance of OsConfigResource as $OsConfigResource16ref
 instance of OsConfigResource as $OsConfigResource17ref
 {
     ResourceID = "EnsurePermissionsOnEtcCronHourly";
-    ClassKey = "EnsurePermissionsOnEtcCronHourly";
+    PayloadKey = "EnsurePermissionsOnEtcCronHourly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronHourly";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronHourly";
@@ -253,7 +253,7 @@ instance of OsConfigResource as $OsConfigResource17ref
 instance of OsConfigResource as $OsConfigResource18ref
 {
     ResourceID = "EnsurePermissionsOnEtcCronMonthly";
-    ClassKey = "EnsurePermissionsOnEtcCronMonthly";
+    PayloadKey = "EnsurePermissionsOnEtcCronMonthly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronMonthly";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronMonthly";
@@ -267,7 +267,7 @@ instance of OsConfigResource as $OsConfigResource18ref
 instance of OsConfigResource as $OsConfigResource19ref
 {
     ResourceID = "EnsurePermissionsOnEtcCronWeekly";
-    ClassKey = "EnsurePermissionsOnEtcCronWeekly";
+    PayloadKey = "EnsurePermissionsOnEtcCronWeekly";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcCronWeekly";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcCronWeekly";
@@ -281,7 +281,7 @@ instance of OsConfigResource as $OsConfigResource19ref
 instance of OsConfigResource as $OsConfigResource20ref
 {
     ResourceID = "EnsurePermissionsOnEtcMotd";
-    ClassKey = "EnsurePermissionsOnEtcMotd";
+    PayloadKey = "EnsurePermissionsOnEtcMotd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcMotd";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcMotd";
@@ -295,7 +295,7 @@ instance of OsConfigResource as $OsConfigResource20ref
 instance of OsConfigResource as $OsConfigResource21ref
 {
     ResourceID = "EnsureInetdNotInstalled";
-    ClassKey = "EnsureInetdNotInstalled";
+    PayloadKey = "EnsureInetdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureInetdNotInstalled";
     DesiredObjectName = "remediateEnsureInetdNotInstalled";
@@ -309,7 +309,7 @@ instance of OsConfigResource as $OsConfigResource21ref
 instance of OsConfigResource as $OsConfigResource22ref
 {
     ResourceID = "EnsureXinetdNotInstalled";
-    ClassKey = "EnsureXinetdNotInstalled";
+    PayloadKey = "EnsureXinetdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureXinetdNotInstalled";
     DesiredObjectName = "remediateEnsureXinetdNotInstalled";
@@ -323,7 +323,7 @@ instance of OsConfigResource as $OsConfigResource22ref
 instance of OsConfigResource as $OsConfigResource23ref
 {
     ResourceID = "EnsureRshServerNotInstalled";
-    ClassKey = "EnsureRshServerNotInstalled";
+    PayloadKey = "EnsureRshServerNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRshServerNotInstalled";
     DesiredObjectName = "remediateEnsureRshServerNotInstalled";
@@ -337,7 +337,7 @@ instance of OsConfigResource as $OsConfigResource23ref
 instance of OsConfigResource as $OsConfigResource24ref
 {
     ResourceID = "EnsureNisNotInstalled";
-    ClassKey = "EnsureNisNotInstalled";
+    PayloadKey = "EnsureNisNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNisNotInstalled";
     DesiredObjectName = "remediateEnsureNisNotInstalled";
@@ -351,7 +351,7 @@ instance of OsConfigResource as $OsConfigResource24ref
 instance of OsConfigResource as $OsConfigResource25ref
 {
     ResourceID = "EnsureTftpdNotInstalled";
-    ClassKey = "EnsureTftpdNotInstalled";
+    PayloadKey = "EnsureTftpdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTftpdNotInstalled";
     DesiredObjectName = "remediateEnsureTftpdNotInstalled";
@@ -365,7 +365,7 @@ instance of OsConfigResource as $OsConfigResource25ref
 instance of OsConfigResource as $OsConfigResource26ref
 {
     ResourceID = "EnsureReadaheadFedoraNotInstalled";
-    ClassKey = "EnsureReadaheadFedoraNotInstalled";
+    PayloadKey = "EnsureReadaheadFedoraNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureReadaheadFedoraNotInstalled";
     DesiredObjectName = "remediateEnsureReadaheadFedoraNotInstalled";
@@ -379,7 +379,7 @@ instance of OsConfigResource as $OsConfigResource26ref
 instance of OsConfigResource as $OsConfigResource27ref
 {
     ResourceID = "EnsureBluetoothHiddNotInstalled";
-    ClassKey = "EnsureBluetoothHiddNotInstalled";
+    PayloadKey = "EnsureBluetoothHiddNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureBluetoothHiddNotInstalled";
     DesiredObjectName = "remediateEnsureBluetoothHiddNotInstalled";
@@ -393,7 +393,7 @@ instance of OsConfigResource as $OsConfigResource27ref
 instance of OsConfigResource as $OsConfigResource28ref
 {
     ResourceID = "EnsureIsdnUtilsBaseNotInstalled";
-    ClassKey = "EnsureIsdnUtilsBaseNotInstalled";
+    PayloadKey = "EnsureIsdnUtilsBaseNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsBaseNotInstalled";
     DesiredObjectName = "remediateEnsureIsdnUtilsBaseNotInstalled";
@@ -407,7 +407,7 @@ instance of OsConfigResource as $OsConfigResource28ref
 instance of OsConfigResource as $OsConfigResource29ref
 {
     ResourceID = "EnsureIsdnUtilsKdumpToolsNotInstalled";
-    ClassKey = "EnsureIsdnUtilsKdumpToolsNotInstalled";
+    PayloadKey = "EnsureIsdnUtilsKdumpToolsNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIsdnUtilsKdumpToolsNotInstalled";
     DesiredObjectName = "remediateEnsureIsdnUtilsKdumpToolsNotInstalled";
@@ -421,7 +421,7 @@ instance of OsConfigResource as $OsConfigResource29ref
 instance of OsConfigResource as $OsConfigResource30ref
 {
     ResourceID = "EnsureIscDhcpdServerNotInstalled";
-    ClassKey = "EnsureIscDhcpdServerNotInstalled";
+    PayloadKey = "EnsureIscDhcpdServerNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIscDhcpdServerNotInstalled";
     DesiredObjectName = "remediateEnsureIscDhcpdServerNotInstalled";
@@ -435,7 +435,7 @@ instance of OsConfigResource as $OsConfigResource30ref
 instance of OsConfigResource as $OsConfigResource31ref
 {
     ResourceID = "EnsureSendmailNotInstalled";
-    ClassKey = "EnsureSendmailNotInstalled";
+    PayloadKey = "EnsureSendmailNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSendmailNotInstalled";
     DesiredObjectName = "remediateEnsureSendmailNotInstalled";
@@ -449,7 +449,7 @@ instance of OsConfigResource as $OsConfigResource31ref
 instance of OsConfigResource as $OsConfigResource32ref
 {
     ResourceID = "EnsureSldapdNotInstalled";
-    ClassKey = "EnsureSldapdNotInstalled";
+    PayloadKey = "EnsureSldapdNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSldapdNotInstalled";
     DesiredObjectName = "remediateEnsureSldapdNotInstalled";
@@ -463,7 +463,7 @@ instance of OsConfigResource as $OsConfigResource32ref
 instance of OsConfigResource as $OsConfigResource33ref
 {
     ResourceID = "EnsureBind9NotInstalled";
-    ClassKey = "EnsureBind9NotInstalled";
+    PayloadKey = "EnsureBind9NotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureBind9NotInstalled";
     DesiredObjectName = "remediateEnsureBind9NotInstalled";
@@ -477,7 +477,7 @@ instance of OsConfigResource as $OsConfigResource33ref
 instance of OsConfigResource as $OsConfigResource34ref
 {
     ResourceID = "EnsureDovecotCoreNotInstalled";
-    ClassKey = "EnsureDovecotCoreNotInstalled";
+    PayloadKey = "EnsureDovecotCoreNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDovecotCoreNotInstalled";
     DesiredObjectName = "remediateEnsureDovecotCoreNotInstalled";
@@ -491,7 +491,7 @@ instance of OsConfigResource as $OsConfigResource34ref
 instance of OsConfigResource as $OsConfigResource35ref
 {
     ResourceID = "EnsureAuditdInstalled";
-    ClassKey = "EnsureAuditdInstalled";
+    PayloadKey = "EnsureAuditdInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuditdInstalled";
     DesiredObjectName = "remediateEnsureAuditdInstalled";
@@ -505,7 +505,7 @@ instance of OsConfigResource as $OsConfigResource35ref
 instance of OsConfigResource as $OsConfigResource36ref
 {
     ResourceID = "EnsurePrelinkIsDisabled";
-    ClassKey = "EnsurePrelinkIsDisabled";
+    PayloadKey = "EnsurePrelinkIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePrelinkIsDisabled";
     DesiredObjectName = "remediateEnsurePrelinkIsDisabled";
@@ -519,7 +519,7 @@ instance of OsConfigResource as $OsConfigResource36ref
 instance of OsConfigResource as $OsConfigResource37ref
 {
     ResourceID = "EnsureTalkClientIsNotInstalled";
-    ClassKey = "EnsureTalkClientIsNotInstalled";
+    PayloadKey = "EnsureTalkClientIsNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTalkClientIsNotInstalled";
     DesiredObjectName = "remediateEnsureTalkClientIsNotInstalled";
@@ -533,7 +533,7 @@ instance of OsConfigResource as $OsConfigResource37ref
 instance of OsConfigResource as $OsConfigResource38ref
 {
     ResourceID = "EnsureCronServiceIsEnabled";
-    ClassKey = "EnsureCronServiceIsEnabled";
+    PayloadKey = "EnsureCronServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCronServiceIsEnabled";
     DesiredObjectName = "remediateEnsureCronServiceIsEnabled";
@@ -547,7 +547,7 @@ instance of OsConfigResource as $OsConfigResource38ref
 instance of OsConfigResource as $OsConfigResource39ref
 {
     ResourceID = "EnsureAuditdServiceIsRunning";
-    ClassKey = "EnsureAuditdServiceIsRunning";
+    PayloadKey = "EnsureAuditdServiceIsRunning";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuditdServiceIsRunning";
     DesiredObjectName = "remediateEnsureAuditdServiceIsRunning";
@@ -561,7 +561,7 @@ instance of OsConfigResource as $OsConfigResource39ref
 instance of OsConfigResource as $OsConfigResource40ref
 {
     ResourceID = "EnsureKernelSupportForCpuNx";
-    ClassKey = "EnsureKernelSupportForCpuNx";
+    PayloadKey = "EnsureKernelSupportForCpuNx";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureKernelSupportForCpuNx";
     DesiredObjectName = "remediateEnsureKernelSupportForCpuNx";
@@ -575,7 +575,7 @@ instance of OsConfigResource as $OsConfigResource40ref
 instance of OsConfigResource as $OsConfigResource41ref
 {
     ResourceID = "EnsureAllTelnetdPackagesUninstalled";
-    ClassKey = "EnsureAllTelnetdPackagesUninstalled";
+    PayloadKey = "EnsureAllTelnetdPackagesUninstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllTelnetdPackagesUninstalled";
     DesiredObjectName = "remediateEnsureAllTelnetdPackagesUninstalled";
@@ -589,7 +589,7 @@ instance of OsConfigResource as $OsConfigResource41ref
 instance of OsConfigResource as $OsConfigResource42ref
 {
     ResourceID = "EnsureNodevOptionOnHomePartition";
-    ClassKey = "EnsureNodevOptionOnHomePartition";
+    PayloadKey = "EnsureNodevOptionOnHomePartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnHomePartition";
     DesiredObjectName = "remediateEnsureNodevOptionOnHomePartition";
@@ -603,7 +603,7 @@ instance of OsConfigResource as $OsConfigResource42ref
 instance of OsConfigResource as $OsConfigResource43ref
 {
     ResourceID = "EnsureNodevOptionOnTmpPartition";
-    ClassKey = "EnsureNodevOptionOnTmpPartition";
+    PayloadKey = "EnsureNodevOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnTmpPartition";
     DesiredObjectName = "remediateEnsureNodevOptionOnTmpPartition";
@@ -617,7 +617,7 @@ instance of OsConfigResource as $OsConfigResource43ref
 instance of OsConfigResource as $OsConfigResource44ref
 {
     ResourceID = ".";
-    ClassKey = "EnsureNodevOptionOnVarTmpPartition";
+    PayloadKey = "EnsureNodevOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnVarTmpPartition";
     DesiredObjectName = "remediateEnsureNodevOptionOnVarTmpPartition";
@@ -631,7 +631,7 @@ instance of OsConfigResource as $OsConfigResource44ref
 instance of OsConfigResource as $OsConfigResource45ref
 {
     ResourceID = "EnsureNosuidOptionOnTmpPartition";
-    ClassKey = "EnsureNosuidOptionOnTmpPartition";
+    PayloadKey = "EnsureNosuidOptionOnTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionOnTmpPartition";
     DesiredObjectName = "remediateEnsureNosuidOptionOnTmpPartition";
@@ -645,7 +645,7 @@ instance of OsConfigResource as $OsConfigResource45ref
 instance of OsConfigResource as $OsConfigResource46ref
 {
     ResourceID = "EnsureNosuidOptionOnVarTmpPartition";
-    ClassKey = "EnsureNosuidOptionOnVarTmpPartition";
+    PayloadKey = "EnsureNosuidOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionOnVarTmpPartition";
     DesiredObjectName = "remediateEnsureNosuidOptionOnVarTmpPartition";
@@ -659,7 +659,7 @@ instance of OsConfigResource as $OsConfigResource46ref
 instance of OsConfigResource as $OsConfigResource47ref
 {
     ResourceID = "EnsureNoexecOptionOnVarTmpPartition";
-    ClassKey = "EnsureNoexecOptionOnVarTmpPartition";
+    PayloadKey = "EnsureNoexecOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionOnVarTmpPartition";
     DesiredObjectName = "remediateEnsureNoexecOptionOnVarTmpPartition";
@@ -673,7 +673,7 @@ instance of OsConfigResource as $OsConfigResource47ref
 instance of OsConfigResource as $OsConfigResource48ref
 {
     ResourceID = "EnsureNoexecOptionOnDevShmPartition";
-    ClassKey = "EnsureNoexecOptionOnDevShmPartition";
+    PayloadKey = "EnsureNoexecOptionOnDevShmPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionOnDevShmPartition";
     DesiredObjectName = "remediateEnsureNoexecOptionOnDevShmPartition";
@@ -687,7 +687,7 @@ instance of OsConfigResource as $OsConfigResource48ref
 instance of OsConfigResource as $OsConfigResource49ref
 {
     ResourceID = "EnsureNodevOptionEnabledForAllRemovableMedia";
-    ClassKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
+    PayloadKey = "EnsureNodevOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionEnabledForAllRemovableMedia";
     DesiredObjectName = "remediateEnsureNodevOptionEnabledForAllRemovableMedia";
@@ -701,7 +701,7 @@ instance of OsConfigResource as $OsConfigResource49ref
 instance of OsConfigResource as $OsConfigResource50ref
 {
     ResourceID = "EnsureNoexecOptionEnabledForAllRemovableMedia";
-    ClassKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
+    PayloadKey = "EnsureNoexecOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecOptionEnabledForAllRemovableMedia";
     DesiredObjectName = "remediateEnsureNoexecOptionEnabledForAllRemovableMedia";
@@ -715,7 +715,7 @@ instance of OsConfigResource as $OsConfigResource50ref
 instance of OsConfigResource as $OsConfigResource51ref
 {
     ResourceID = "EnsureNosuidOptionEnabledForAllRemovableMedia";
-    ClassKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
+    PayloadKey = "EnsureNosuidOptionEnabledForAllRemovableMedia";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNosuidOptionEnabledForAllRemovableMedia";
     DesiredObjectName = "remediateEnsureNosuidOptionEnabledForAllRemovableMedia";
@@ -729,7 +729,7 @@ instance of OsConfigResource as $OsConfigResource51ref
 instance of OsConfigResource as $OsConfigResource52ref
 {
     ResourceID = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
-    ClassKey = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
+    PayloadKey = "EnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
     DesiredObjectName = "remediateEnsureNoexecNosuidOptionsEnabledForAllNfsMounts";
@@ -743,7 +743,7 @@ instance of OsConfigResource as $OsConfigResource52ref
 instance of OsConfigResource as $OsConfigResource53ref
 {
     ResourceID = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
-    ClassKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
+    PayloadKey = "EnsureAllEtcPasswdGroupsExistInEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllEtcPasswdGroupsExistInEtcGroup";
     DesiredObjectName = "remediateEnsureAllEtcPasswdGroupsExistInEtcGroup";
@@ -757,7 +757,7 @@ instance of OsConfigResource as $OsConfigResource53ref
 instance of OsConfigResource as $OsConfigResource54ref
 {
     ResourceID = "EnsureNoDuplicateUidsExist";
-    ClassKey = "EnsureNoDuplicateUidsExist";
+    PayloadKey = "EnsureNoDuplicateUidsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateUidsExist";
     DesiredObjectName = "remediateEnsureNoDuplicateUidsExist";
@@ -771,7 +771,7 @@ instance of OsConfigResource as $OsConfigResource54ref
 instance of OsConfigResource as $OsConfigResource55ref
 {
     ResourceID = "EnsureNoDuplicateGidsExist";
-    ClassKey = "EnsureNoDuplicateGidsExist";
+    PayloadKey = "EnsureNoDuplicateGidsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateGidsExist";
     DesiredObjectName = "remediateEnsureNoDuplicateGidsExist";
@@ -785,7 +785,7 @@ instance of OsConfigResource as $OsConfigResource55ref
 instance of OsConfigResource as $OsConfigResource56ref
 {
     ResourceID = "EnsureNoDuplicateUserNamesExist";
-    ClassKey = "EnsureNoDuplicateUserNamesExist";
+    PayloadKey = "EnsureNoDuplicateUserNamesExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateUserNamesExist";
     DesiredObjectName = "remediateEnsureNoDuplicateUserNamesExist";
@@ -799,7 +799,7 @@ instance of OsConfigResource as $OsConfigResource56ref
 instance of OsConfigResource as $OsConfigResource57ref
 {
     ResourceID = "EnsureNoDuplicateGroupsExist";
-    ClassKey = "EnsureNoDuplicateGroupsExist";
+    PayloadKey = "EnsureNoDuplicateGroupsExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoDuplicateGroupsExist";
     DesiredObjectName = "remediateEnsureNoDuplicateGroupsExist";
@@ -813,7 +813,7 @@ instance of OsConfigResource as $OsConfigResource57ref
 instance of OsConfigResource as $OsConfigResource58ref
 {
     ResourceID = "EnsureShadowGroupIsEmpty";
-    ClassKey = "EnsureShadowGroupIsEmpty";
+    PayloadKey = "EnsureShadowGroupIsEmpty";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureShadowGroupIsEmpty";
     DesiredObjectName = "remediateEnsureShadowGroupIsEmpty";
@@ -827,7 +827,7 @@ instance of OsConfigResource as $OsConfigResource58ref
 instance of OsConfigResource as $OsConfigResource59ref
 {
     ResourceID = "EnsureRootGroupExists";
-    ClassKey = "EnsureRootGroupExists";
+    PayloadKey = "EnsureRootGroupExists";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRootGroupExists";
     DesiredObjectName = "remediateEnsureRootGroupExists";
@@ -841,7 +841,7 @@ instance of OsConfigResource as $OsConfigResource59ref
 instance of OsConfigResource as $OsConfigResource60ref
 {
     ResourceID = "EnsureAllAccountsHavePasswords";
-    ClassKey = "EnsureAllAccountsHavePasswords";
+    PayloadKey = "EnsureAllAccountsHavePasswords";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllAccountsHavePasswords";
     DesiredObjectName = "remediateEnsureAllAccountsHavePasswords";
@@ -855,7 +855,7 @@ instance of OsConfigResource as $OsConfigResource60ref
 instance of OsConfigResource as $OsConfigResource61ref
 {
     ResourceID = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
-    ClassKey = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
+    PayloadKey = "EnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
     DesiredObjectName = "remediateEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero";
@@ -869,7 +869,7 @@ instance of OsConfigResource as $OsConfigResource61ref
 instance of OsConfigResource as $OsConfigResource62ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcPasswd";
-    ClassKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
+    PayloadKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcPasswd";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcPasswd";
@@ -883,7 +883,7 @@ instance of OsConfigResource as $OsConfigResource62ref
 instance of OsConfigResource as $OsConfigResource63ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcShadow";
-    ClassKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
+    PayloadKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcShadow";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcShadow";
@@ -897,7 +897,7 @@ instance of OsConfigResource as $OsConfigResource63ref
 instance of OsConfigResource as $OsConfigResource64ref
 {
     ResourceID = "EnsureNoLegacyPlusEntriesInEtcGroup";
-    ClassKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
+    PayloadKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoLegacyPlusEntriesInEtcGroup";
     DesiredObjectName = "remediateEnsureNoLegacyPlusEntriesInEtcGroup";
@@ -911,7 +911,7 @@ instance of OsConfigResource as $OsConfigResource64ref
 instance of OsConfigResource as $OsConfigResource65ref
 {
     ResourceID = "EnsureDefaultRootAccountGroupIsGidZero";
-    ClassKey = "EnsureDefaultRootAccountGroupIsGidZero";
+    PayloadKey = "EnsureDefaultRootAccountGroupIsGidZero";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultRootAccountGroupIsGidZero";
     DesiredObjectName = "remediateEnsureDefaultRootAccountGroupIsGidZero";
@@ -925,7 +925,7 @@ instance of OsConfigResource as $OsConfigResource65ref
 instance of OsConfigResource as $OsConfigResource66ref
 {
     ResourceID = "EnsureRootIsOnlyUidZeroAccount";
-    ClassKey = "EnsureRootIsOnlyUidZeroAccount";
+    PayloadKey = "EnsureRootIsOnlyUidZeroAccount";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRootIsOnlyUidZeroAccount";
     DesiredObjectName = "remediateEnsureRootIsOnlyUidZeroAccount";
@@ -939,7 +939,7 @@ instance of OsConfigResource as $OsConfigResource66ref
 instance of OsConfigResource as $OsConfigResource67ref
 {
     ResourceID = "EnsureAllUsersHomeDirectoriesExist";
-    ClassKey = "EnsureAllUsersHomeDirectoriesExist";
+    PayloadKey = "EnsureAllUsersHomeDirectoriesExist";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllUsersHomeDirectoriesExist";
     DesiredObjectName = "remediateEnsureAllUsersHomeDirectoriesExist";
@@ -953,7 +953,7 @@ instance of OsConfigResource as $OsConfigResource67ref
 instance of OsConfigResource as $OsConfigResource68ref
 {
     ResourceID = "EnsureUsersOwnTheirHomeDirectories";
-    ClassKey = "EnsureUsersOwnTheirHomeDirectories";
+    PayloadKey = "EnsureUsersOwnTheirHomeDirectories";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUsersOwnTheirHomeDirectories";
     DesiredObjectName = "remediateEnsureUsersOwnTheirHomeDirectories";
@@ -967,7 +967,7 @@ instance of OsConfigResource as $OsConfigResource68ref
 instance of OsConfigResource as $OsConfigResource69ref
 {
     ResourceID = "EnsureRestrictedUserHomeDirectories";
-    ClassKey = "EnsureRestrictedUserHomeDirectories";
+    PayloadKey = "EnsureRestrictedUserHomeDirectories";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRestrictedUserHomeDirectories";
     DesiredObjectName = "remediateEnsureRestrictedUserHomeDirectories";
@@ -981,7 +981,7 @@ instance of OsConfigResource as $OsConfigResource69ref
 instance of OsConfigResource as $OsConfigResource70ref
 {
     ResourceID = "EnsurePasswordHashingAlgorithm";
-    ClassKey = "EnsurePasswordHashingAlgorithm";
+    PayloadKey = "EnsurePasswordHashingAlgorithm";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordHashingAlgorithm";
     DesiredObjectName = "remediateEnsurePasswordHashingAlgorithm";
@@ -995,7 +995,7 @@ instance of OsConfigResource as $OsConfigResource70ref
 instance of OsConfigResource as $OsConfigResource71ref
 {
     ResourceID = "EnsureMinDaysBetweenPasswordChanges";
-    ClassKey = "EnsureMinDaysBetweenPasswordChanges";
+    PayloadKey = "EnsureMinDaysBetweenPasswordChanges";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMinDaysBetweenPasswordChanges";
     DesiredObjectName = "remediateEnsureMinDaysBetweenPasswordChanges";
@@ -1009,7 +1009,7 @@ instance of OsConfigResource as $OsConfigResource71ref
 instance of OsConfigResource as $OsConfigResource72ref
 {
     ResourceID = "EnsureInactivePasswordLockPeriod";
-    ClassKey = "EnsureInactivePasswordLockPeriod";
+    PayloadKey = "EnsureInactivePasswordLockPeriod";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureInactivePasswordLockPeriod";
     DesiredObjectName = "remediateEnsureInactivePasswordLockPeriod";
@@ -1023,7 +1023,7 @@ instance of OsConfigResource as $OsConfigResource72ref
 instance of OsConfigResource as $OsConfigResource73ref
 {
     ResourceID = "EnsureMaxDaysBetweenPasswordChanges";
-    ClassKey = "EnsureMaxDaysBetweenPasswordChanges";
+    PayloadKey = "EnsureMaxDaysBetweenPasswordChanges";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMaxDaysBetweenPasswordChanges";
     DesiredObjectName = "remediateEnsureMaxDaysBetweenPasswordChanges";
@@ -1037,7 +1037,7 @@ instance of OsConfigResource as $OsConfigResource73ref
 instance of OsConfigResource as $OsConfigResource74ref
 {
     ResourceID = "EnsurePasswordExpiration";
-    ClassKey = "EnsurePasswordExpiration";
+    PayloadKey = "EnsurePasswordExpiration";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordExpiration";
     DesiredObjectName = "remediateEnsurePasswordExpiration";
@@ -1051,7 +1051,7 @@ instance of OsConfigResource as $OsConfigResource74ref
 instance of OsConfigResource as $OsConfigResource75ref
 {
     ResourceID = "EnsurePasswordExpirationWarning";
-    ClassKey = "EnsurePasswordExpirationWarning";
+    PayloadKey = "EnsurePasswordExpirationWarning";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordExpirationWarning";
     DesiredObjectName = "remediateEnsurePasswordExpirationWarning";
@@ -1065,7 +1065,7 @@ instance of OsConfigResource as $OsConfigResource75ref
 instance of OsConfigResource as $OsConfigResource76ref
 {
     ResourceID = "EnsureSystemAccountsAreNonLogin";
-    ClassKey = "EnsureSystemAccountsAreNonLogin";
+    PayloadKey = "EnsureSystemAccountsAreNonLogin";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemAccountsAreNonLogin";
     DesiredObjectName = "remediateEnsureSystemAccountsAreNonLogin";
@@ -1079,7 +1079,7 @@ instance of OsConfigResource as $OsConfigResource76ref
 instance of OsConfigResource as $OsConfigResource77ref
 {
     ResourceID = "EnsureAuthenticationRequiredForSingleUserMode";
-    ClassKey = "EnsureAuthenticationRequiredForSingleUserMode";
+    PayloadKey = "EnsureAuthenticationRequiredForSingleUserMode";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAuthenticationRequiredForSingleUserMode";
     DesiredObjectName = "remediateEnsureAuthenticationRequiredForSingleUserMode";
@@ -1093,7 +1093,7 @@ instance of OsConfigResource as $OsConfigResource77ref
 instance of OsConfigResource as $OsConfigResource78ref
 {
     ResourceID = "EnsureDotDoesNotAppearInRootsPath";
-    ClassKey = "EnsureDotDoesNotAppearInRootsPath";
+    PayloadKey = "EnsureDotDoesNotAppearInRootsPath";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDotDoesNotAppearInRootsPath";
     DesiredObjectName = "remediateEnsureDotDoesNotAppearInRootsPath";
@@ -1107,7 +1107,7 @@ instance of OsConfigResource as $OsConfigResource78ref
 instance of OsConfigResource as $OsConfigResource79ref
 {
     ResourceID = "EnsureRemoteLoginWarningBannerIsConfigured";
-    ClassKey = "EnsureRemoteLoginWarningBannerIsConfigured";
+    PayloadKey = "EnsureRemoteLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRemoteLoginWarningBannerIsConfigured";
     DesiredObjectName = "remediateEnsureRemoteLoginWarningBannerIsConfigured";
@@ -1121,7 +1121,7 @@ instance of OsConfigResource as $OsConfigResource79ref
 instance of OsConfigResource as $OsConfigResource80ref
 {
     ResourceID = "EnsureLocalLoginWarningBannerIsConfigured";
-    ClassKey = "EnsureLocalLoginWarningBannerIsConfigured";
+    PayloadKey = "EnsureLocalLoginWarningBannerIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLocalLoginWarningBannerIsConfigured";
     DesiredObjectName = "remediateEnsureLocalLoginWarningBannerIsConfigured";
@@ -1135,7 +1135,7 @@ instance of OsConfigResource as $OsConfigResource80ref
 instance of OsConfigResource as $OsConfigResource81ref
 {
     ResourceID = "EnsureSuRestrictedToRootGroup";
-    ClassKey = "EnsureSuRestrictedToRootGroup";
+    PayloadKey = "EnsureSuRestrictedToRootGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSuRestrictedToRootGroup";
     DesiredObjectName = "remediateEnsureSuRestrictedToRootGroup";
@@ -1149,7 +1149,7 @@ instance of OsConfigResource as $OsConfigResource81ref
 instance of OsConfigResource as $OsConfigResource82ref
 {
     ResourceID = "EnsureDefaultUmaskForAllUsers";
-    ClassKey = "EnsureDefaultUmaskForAllUsers";
+    PayloadKey = "EnsureDefaultUmaskForAllUsers";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultUmaskForAllUsers";
     DesiredObjectName = "remediateEnsureDefaultUmaskForAllUsers";
@@ -1163,7 +1163,7 @@ instance of OsConfigResource as $OsConfigResource82ref
 instance of OsConfigResource as $OsConfigResource83ref
 {
     ResourceID = "EnsureAutomountingDisabled";
-    ClassKey = "EnsureAutomountingDisabled";
+    PayloadKey = "EnsureAutomountingDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAutomountingDisabled";
     DesiredObjectName = "remediateEnsureAutomountingDisabled";
@@ -1177,7 +1177,7 @@ instance of OsConfigResource as $OsConfigResource83ref
 instance of OsConfigResource as $OsConfigResource84ref
 {
     ResourceID = "EnsureKernelCompiledFromApprovedSources";
-    ClassKey = "EnsureKernelCompiledFromApprovedSources";
+    PayloadKey = "EnsureKernelCompiledFromApprovedSources";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureKernelCompiledFromApprovedSources";
     DesiredObjectName = "remediateEnsureKernelCompiledFromApprovedSources";
@@ -1191,7 +1191,7 @@ instance of OsConfigResource as $OsConfigResource84ref
 instance of OsConfigResource as $OsConfigResource85ref
 {
     ResourceID = "EnsureDefaultDenyFirewallPolicyIsSet";
-    ClassKey = "EnsureDefaultDenyFirewallPolicyIsSet";
+    PayloadKey = "EnsureDefaultDenyFirewallPolicyIsSet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDefaultDenyFirewallPolicyIsSet";
     DesiredObjectName = "remediateEnsureDefaultDenyFirewallPolicyIsSet";
@@ -1205,7 +1205,7 @@ instance of OsConfigResource as $OsConfigResource85ref
 instance of OsConfigResource as $OsConfigResource86ref
 {
     ResourceID = "EnsurePacketRedirectSendingIsDisabled";
-    ClassKey = "EnsurePacketRedirectSendingIsDisabled";
+    PayloadKey = "EnsurePacketRedirectSendingIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePacketRedirectSendingIsDisabled";
     DesiredObjectName = "remediateEnsurePacketRedirectSendingIsDisabled";
@@ -1219,7 +1219,7 @@ instance of OsConfigResource as $OsConfigResource86ref
 instance of OsConfigResource as $OsConfigResource87ref
 {
     ResourceID = "EnsureIcmpRedirectsIsDisabled";
-    ClassKey = "EnsureIcmpRedirectsIsDisabled";
+    PayloadKey = "EnsureIcmpRedirectsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIcmpRedirectsIsDisabled";
     DesiredObjectName = "remediateEnsureIcmpRedirectsIsDisabled";
@@ -1233,7 +1233,7 @@ instance of OsConfigResource as $OsConfigResource87ref
 instance of OsConfigResource as $OsConfigResource88ref
 {
     ResourceID = "EnsureSourceRoutedPacketsIsDisabled";
-    ClassKey = "EnsureSourceRoutedPacketsIsDisabled";
+    PayloadKey = "EnsureSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSourceRoutedPacketsIsDisabled";
     DesiredObjectName = "remediateEnsureSourceRoutedPacketsIsDisabled";
@@ -1247,7 +1247,7 @@ instance of OsConfigResource as $OsConfigResource88ref
 instance of OsConfigResource as $OsConfigResource89ref
 {
     ResourceID = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
-    ClassKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
+    PayloadKey = "EnsureAcceptingSourceRoutedPacketsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAcceptingSourceRoutedPacketsIsDisabled";
     DesiredObjectName = "remediateEnsureAcceptingSourceRoutedPacketsIsDisabled";
@@ -1261,7 +1261,7 @@ instance of OsConfigResource as $OsConfigResource89ref
 instance of OsConfigResource as $OsConfigResource90ref
 {
     ResourceID = "EnsureIgnoringBogusIcmpBroadcastResponses";
-    ClassKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
+    PayloadKey = "EnsureIgnoringBogusIcmpBroadcastResponses";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIgnoringBogusIcmpBroadcastResponses";
     DesiredObjectName = "remediateEnsureIgnoringBogusIcmpBroadcastResponses";
@@ -1275,7 +1275,7 @@ instance of OsConfigResource as $OsConfigResource90ref
 instance of OsConfigResource as $OsConfigResource91ref
 {
     ResourceID = "EnsureIgnoringIcmpEchoPingsToMulticast";
-    ClassKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
+    PayloadKey = "EnsureIgnoringIcmpEchoPingsToMulticast";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIgnoringIcmpEchoPingsToMulticast";
     DesiredObjectName = "remediateEnsureIgnoringIcmpEchoPingsToMulticast";
@@ -1289,7 +1289,7 @@ instance of OsConfigResource as $OsConfigResource91ref
 instance of OsConfigResource as $OsConfigResource92ref
 {
     ResourceID = "EnsureMartianPacketLoggingIsEnabled";
-    ClassKey = "EnsureMartianPacketLoggingIsEnabled";
+    PayloadKey = "EnsureMartianPacketLoggingIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMartianPacketLoggingIsEnabled";
     DesiredObjectName = "remediateEnsureMartianPacketLoggingIsEnabled";
@@ -1303,7 +1303,7 @@ instance of OsConfigResource as $OsConfigResource92ref
 instance of OsConfigResource as $OsConfigResource93ref
 {
     ResourceID = "EnsureReversePathSourceValidationIsEnabled";
-    ClassKey = "EnsureReversePathSourceValidationIsEnabled";
+    PayloadKey = "EnsureReversePathSourceValidationIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureReversePathSourceValidationIsEnabled";
     DesiredObjectName = "remediateEnsureReversePathSourceValidationIsEnabled";
@@ -1317,7 +1317,7 @@ instance of OsConfigResource as $OsConfigResource93ref
 instance of OsConfigResource as $OsConfigResource94ref
 {
     ResourceID = "EnsureTcpSynCookiesAreEnabled";
-    ClassKey = "EnsureTcpSynCookiesAreEnabled";
+    PayloadKey = "EnsureTcpSynCookiesAreEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTcpSynCookiesAreEnabled";
     DesiredObjectName = "remediateEnsureTcpSynCookiesAreEnabled";
@@ -1331,7 +1331,7 @@ instance of OsConfigResource as $OsConfigResource94ref
 instance of OsConfigResource as $OsConfigResource95ref
 {
     ResourceID = "EnsureSystemNotActingAsNetworkSniffer";
-    ClassKey = "EnsureSystemNotActingAsNetworkSniffer";
+    PayloadKey = "EnsureSystemNotActingAsNetworkSniffer";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemNotActingAsNetworkSniffer";
     DesiredObjectName = "remediateEnsureSystemNotActingAsNetworkSniffer";
@@ -1345,7 +1345,7 @@ instance of OsConfigResource as $OsConfigResource95ref
 instance of OsConfigResource as $OsConfigResource96ref
 {
     ResourceID = "EnsureAllWirelessInterfacesAreDisabled";
-    ClassKey = "EnsureAllWirelessInterfacesAreDisabled";
+    PayloadKey = "EnsureAllWirelessInterfacesAreDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllWirelessInterfacesAreDisabled";
     DesiredObjectName = "remediateEnsureAllWirelessInterfacesAreDisabled";
@@ -1359,7 +1359,7 @@ instance of OsConfigResource as $OsConfigResource96ref
 instance of OsConfigResource as $OsConfigResource97ref
 {
     ResourceID = "EnsureIpv6ProtocolIsEnabled";
-    ClassKey = "EnsureIpv6ProtocolIsEnabled";
+    PayloadKey = "EnsureIpv6ProtocolIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureIpv6ProtocolIsEnabled";
     DesiredObjectName = "remediateEnsureIpv6ProtocolIsEnabled";
@@ -1373,7 +1373,7 @@ instance of OsConfigResource as $OsConfigResource97ref
 instance of OsConfigResource as $OsConfigResource98ref
 {
     ResourceID = "EnsureDccpIsDisabled";
-    ClassKey = "EnsureDccpIsDisabled";
+    PayloadKey = "EnsureDccpIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDccpIsDisabled";
     DesiredObjectName = "remediateEnsureDccpIsDisabled";
@@ -1387,7 +1387,7 @@ instance of OsConfigResource as $OsConfigResource98ref
 instance of OsConfigResource as $OsConfigResource99ref
 {
     ResourceID = "EnsureSctpIsDisabled";
-    ClassKey = "EnsureSctpIsDisabled";
+    PayloadKey = "EnsureSctpIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSctpIsDisabled";
     DesiredObjectName = "remediateEnsureSctpIsDisabled";
@@ -1401,7 +1401,7 @@ instance of OsConfigResource as $OsConfigResource99ref
 instance of OsConfigResource as $OsConfigResource100ref
 {
     ResourceID = "EnsureDisabledSupportForRds";
-    ClassKey = "EnsureDisabledSupportForRds";
+    PayloadKey = "EnsureDisabledSupportForRds";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledSupportForRds";
     DesiredObjectName = "remediateEnsureDisabledSupportForRds";
@@ -1415,7 +1415,7 @@ instance of OsConfigResource as $OsConfigResource100ref
 instance of OsConfigResource as $OsConfigResource101ref
 {
     ResourceID = "EnsureTipcIsDisabled";
-    ClassKey = "EnsureTipcIsDisabled";
+    PayloadKey = "EnsureTipcIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTipcIsDisabled";
     DesiredObjectName = "remediateEnsureTipcIsDisabled";
@@ -1429,7 +1429,7 @@ instance of OsConfigResource as $OsConfigResource101ref
 instance of OsConfigResource as $OsConfigResource102ref
 {
     ResourceID = "EnsureZeroconfNetworkingIsDisabled";
-    ClassKey = "EnsureZeroconfNetworkingIsDisabled";
+    PayloadKey = "EnsureZeroconfNetworkingIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureZeroconfNetworkingIsDisabled";
     DesiredObjectName = "remediateEnsureZeroconfNetworkingIsDisabled";
@@ -1443,7 +1443,7 @@ instance of OsConfigResource as $OsConfigResource102ref
 instance of OsConfigResource as $OsConfigResource103ref
 {
     ResourceID = "EnsurePermissionsOnBootloaderConfig";
-    ClassKey = "EnsurePermissionsOnBootloaderConfig";
+    PayloadKey = "EnsurePermissionsOnBootloaderConfig";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnBootloaderConfig";
     DesiredObjectName = "remediateEnsurePermissionsOnBootloaderConfig";
@@ -1457,7 +1457,7 @@ instance of OsConfigResource as $OsConfigResource103ref
 instance of OsConfigResource as $OsConfigResource104ref
 {
     ResourceID = "EnsurePasswordReuseIsLimited";
-    ClassKey = "EnsurePasswordReuseIsLimited";
+    PayloadKey = "EnsurePasswordReuseIsLimited";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordReuseIsLimited";
     DesiredObjectName = "remediateEnsurePasswordReuseIsLimited";
@@ -1471,7 +1471,7 @@ instance of OsConfigResource as $OsConfigResource104ref
 instance of OsConfigResource as $OsConfigResource105ref
 {
     ResourceID = "EnsureMountingOfUsbStorageDevicesIsDisabled";
-    ClassKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
+    PayloadKey = "EnsureMountingOfUsbStorageDevicesIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureMountingOfUsbStorageDevicesIsDisabled";
     DesiredObjectName = "remediateEnsureMountingOfUsbStorageDevicesIsDisabled";
@@ -1485,7 +1485,7 @@ instance of OsConfigResource as $OsConfigResource105ref
 instance of OsConfigResource as $OsConfigResource106ref
 {
     ResourceID = "EnsureCoreDumpsAreRestricted";
-    ClassKey = "EnsureCoreDumpsAreRestricted";
+    PayloadKey = "EnsureCoreDumpsAreRestricted";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCoreDumpsAreRestricted";
     DesiredObjectName = "remediateEnsureCoreDumpsAreRestricted";
@@ -1499,7 +1499,7 @@ instance of OsConfigResource as $OsConfigResource106ref
 instance of OsConfigResource as $OsConfigResource107ref
 {
     ResourceID = "EnsurePasswordCreationRequirements";
-    ClassKey = "EnsurePasswordCreationRequirements";
+    PayloadKey = "EnsurePasswordCreationRequirements";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePasswordCreationRequirements";
     DesiredObjectName = "remediateEnsurePasswordCreationRequirements";
@@ -1513,7 +1513,7 @@ instance of OsConfigResource as $OsConfigResource107ref
 instance of OsConfigResource as $OsConfigResource108ref
 {
     ResourceID = "EnsureLockoutForFailedPasswordAttempts";
-    ClassKey = "EnsureLockoutForFailedPasswordAttempts";
+    PayloadKey = "EnsureLockoutForFailedPasswordAttempts";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLockoutForFailedPasswordAttempts";
     DesiredObjectName = "remediateEnsureLockoutForFailedPasswordAttempts";
@@ -1527,7 +1527,7 @@ instance of OsConfigResource as $OsConfigResource108ref
 instance of OsConfigResource as $OsConfigResource109ref
 {
     ResourceID = "EnsureDisabledInstallationOfCramfsFileSystem";
-    ClassKey = "EnsureDisabledInstallationOfCramfsFileSystem";
+    PayloadKey = "EnsureDisabledInstallationOfCramfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfCramfsFileSystem";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfCramfsFileSystem";
@@ -1541,7 +1541,7 @@ instance of OsConfigResource as $OsConfigResource109ref
 instance of OsConfigResource as $OsConfigResource110ref
 {
     ResourceID = "EnsureDisabledInstallationOfFreevxfsFileSystem";
-    ClassKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
+    PayloadKey = "EnsureDisabledInstallationOfFreevxfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfFreevxfsFileSystem";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfFreevxfsFileSystem";
@@ -1555,7 +1555,7 @@ instance of OsConfigResource as $OsConfigResource110ref
 instance of OsConfigResource as $OsConfigResource111ref
 {
     ResourceID = "EnsureDisabledInstallationOfHfsFileSystem";
-    ClassKey = "EnsureDisabledInstallationOfHfsFileSystem";
+    PayloadKey = "EnsureDisabledInstallationOfHfsFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfHfsFileSystem";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfHfsFileSystem";
@@ -1569,7 +1569,7 @@ instance of OsConfigResource as $OsConfigResource111ref
 instance of OsConfigResource as $OsConfigResource112ref
 {
     ResourceID = "EnsureDisabledInstallationOfHfsplusFileSystem";
-    ClassKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
+    PayloadKey = "EnsureDisabledInstallationOfHfsplusFileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfHfsplusFileSystem";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfHfsplusFileSystem";
@@ -1583,7 +1583,7 @@ instance of OsConfigResource as $OsConfigResource112ref
 instance of OsConfigResource as $OsConfigResource113ref
 {
     ResourceID = "EnsureDisabledInstallationOfJffs2FileSystem";
-    ClassKey = "EnsureDisabledInstallationOfJffs2FileSystem";
+    PayloadKey = "EnsureDisabledInstallationOfJffs2FileSystem";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureDisabledInstallationOfJffs2FileSystem";
     DesiredObjectName = "remediateEnsureDisabledInstallationOfJffs2FileSystem";
@@ -1597,7 +1597,7 @@ instance of OsConfigResource as $OsConfigResource113ref
 instance of OsConfigResource as $OsConfigResource114ref
 {
     ResourceID = "EnsureVirtualMemoryRandomizationIsEnabled";
-    ClassKey = "EnsureVirtualMemoryRandomizationIsEnabled";
+    PayloadKey = "EnsureVirtualMemoryRandomizationIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureVirtualMemoryRandomizationIsEnabled";
     DesiredObjectName = "remediateEnsureVirtualMemoryRandomizationIsEnabled";
@@ -1611,7 +1611,7 @@ instance of OsConfigResource as $OsConfigResource114ref
 instance of OsConfigResource as $OsConfigResource115ref
 {
     ResourceID = "EnsureAllBootloadersHavePasswordProtectionEnabled";
-    ClassKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
+    PayloadKey = "EnsureAllBootloadersHavePasswordProtectionEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllBootloadersHavePasswordProtectionEnabled";
     DesiredObjectName = "remediateEnsureAllBootloadersHavePasswordProtectionEnabled";
@@ -1625,7 +1625,7 @@ instance of OsConfigResource as $OsConfigResource115ref
 instance of OsConfigResource as $OsConfigResource116ref
 {
     ResourceID = "EnsureLoggingIsConfigured";
-    ClassKey = "EnsureLoggingIsConfigured";
+    PayloadKey = "EnsureLoggingIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLoggingIsConfigured";
     DesiredObjectName = "remediateEnsureLoggingIsConfigured";
@@ -1639,7 +1639,7 @@ instance of OsConfigResource as $OsConfigResource116ref
 instance of OsConfigResource as $OsConfigResource117ref
 {
     ResourceID = "EnsureSyslogPackageIsInstalled";
-    ClassKey = "EnsureSyslogPackageIsInstalled";
+    PayloadKey = "EnsureSyslogPackageIsInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSyslogPackageIsInstalled";
     DesiredObjectName = "remediateEnsureSyslogPackageIsInstalled";
@@ -1653,7 +1653,7 @@ instance of OsConfigResource as $OsConfigResource117ref
 instance of OsConfigResource as $OsConfigResource118ref
 {
     ResourceID = "EnsureSystemdJournaldServicePersistsLogMessages";
-    ClassKey = "EnsureSystemdJournaldServicePersistsLogMessages";
+    PayloadKey = "EnsureSystemdJournaldServicePersistsLogMessages";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSystemdJournaldServicePersistsLogMessages";
     DesiredObjectName = "remediateEnsureSystemdJournaldServicePersistsLogMessages";
@@ -1667,7 +1667,7 @@ instance of OsConfigResource as $OsConfigResource118ref
 instance of OsConfigResource as $OsConfigResource119ref
 {
     ResourceID = "EnsureALoggingServiceIsEnabled";
-    ClassKey = "EnsureALoggingServiceIsEnabled";
+    PayloadKey = "EnsureALoggingServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureALoggingServiceIsEnabled";
     DesiredObjectName = "remediateEnsureALoggingServiceIsEnabled";
@@ -1681,7 +1681,7 @@ instance of OsConfigResource as $OsConfigResource119ref
 instance of OsConfigResource as $OsConfigResource120ref
 {
     ResourceID = "EnsureFilePermissionsForAllRsyslogLogFiles";
-    ClassKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
+    PayloadKey = "EnsureFilePermissionsForAllRsyslogLogFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureFilePermissionsForAllRsyslogLogFiles";
     DesiredObjectName = "remediateEnsureFilePermissionsForAllRsyslogLogFiles";
@@ -1695,7 +1695,7 @@ instance of OsConfigResource as $OsConfigResource120ref
 instance of OsConfigResource as $OsConfigResource121ref
 {
     ResourceID = "EnsureLoggerConfigurationFilesAreRestricted";
-    ClassKey = "EnsureLoggerConfigurationFilesAreRestricted";
+    PayloadKey = "EnsureLoggerConfigurationFilesAreRestricted";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureLoggerConfigurationFilesAreRestricted";
     DesiredObjectName = "remediateEnsureLoggerConfigurationFilesAreRestricted";
@@ -1709,7 +1709,7 @@ instance of OsConfigResource as $OsConfigResource121ref
 instance of OsConfigResource as $OsConfigResource122ref
 {
     ResourceID = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
-    ClassKey = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
+    PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
     DesiredObjectName = "remediateEnsureAllRsyslogLogFilesAreOwnedByAdmGroup";
@@ -1723,7 +1723,7 @@ instance of OsConfigResource as $OsConfigResource122ref
 instance of OsConfigResource as $OsConfigResource123ref
 {
     ResourceID = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
-    ClassKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
+    PayloadKey = "EnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
     DesiredObjectName = "remediateEnsureAllRsyslogLogFilesAreOwnedBySyslogUser";
@@ -1737,7 +1737,7 @@ instance of OsConfigResource as $OsConfigResource123ref
 instance of OsConfigResource as $OsConfigResource124ref
 {
     ResourceID = "EnsureRsyslogNotAcceptingRemoteMessages";
-    ClassKey = "EnsureRsyslogNotAcceptingRemoteMessages";
+    PayloadKey = "EnsureRsyslogNotAcceptingRemoteMessages";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRsyslogNotAcceptingRemoteMessages";
     DesiredObjectName = "remediateRsyslogNotAcceptingRemoteMessages";
@@ -1751,7 +1751,7 @@ instance of OsConfigResource as $OsConfigResource124ref
 instance of OsConfigResource as $OsConfigResource125ref
 {
     ResourceID = "EnsureSyslogRotaterServiceIsEnabled";
-    ClassKey = "EnsureSyslogRotaterServiceIsEnabled";
+    PayloadKey = "EnsureSyslogRotaterServiceIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSyslogRotaterServiceIsEnabled";
     DesiredObjectName = "remediateEnsureSyslogRotaterServiceIsEnabled";
@@ -1765,7 +1765,7 @@ instance of OsConfigResource as $OsConfigResource125ref
 instance of OsConfigResource as $OsConfigResource126ref
 {
     ResourceID = "EnsureTelnetServiceIsDisabled";
-    ClassKey = "EnsureTelnetServiceIsDisabled";
+    PayloadKey = "EnsureTelnetServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTelnetServiceIsDisabled";
     DesiredObjectName = "remediateEnsureTelnetServiceIsDisabled";
@@ -1779,7 +1779,7 @@ instance of OsConfigResource as $OsConfigResource126ref
 instance of OsConfigResource as $OsConfigResource127ref
 {
     ResourceID = "EnsureRcprshServiceIsDisabled";
-    ClassKey = "EnsureRcprshServiceIsDisabled";
+    PayloadKey = "EnsureRcprshServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRcprshServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRcprshServiceIsDisabled";
@@ -1793,7 +1793,7 @@ instance of OsConfigResource as $OsConfigResource127ref
 instance of OsConfigResource as $OsConfigResource128ref
 {
     ResourceID = "EnsureTftpServiceisDisabled";
-    ClassKey = "EnsureTftpServiceisDisabled";
+    PayloadKey = "EnsureTftpServiceisDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureTftpServiceisDisabled";
     DesiredObjectName = "remediateEnsureTftpServiceisDisabled";
@@ -1807,7 +1807,7 @@ instance of OsConfigResource as $OsConfigResource128ref
 instance of OsConfigResource as $OsConfigResource129ref
 {
     ResourceID = "EnsureAtCronIsRestrictedToAuthorizedUsers";
-    ClassKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
+    PayloadKey = "EnsureAtCronIsRestrictedToAuthorizedUsers";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAtCronIsRestrictedToAuthorizedUsers";
     DesiredObjectName = "remediateEnsureAtCronIsRestrictedToAuthorizedUsers";
@@ -1821,7 +1821,7 @@ instance of OsConfigResource as $OsConfigResource129ref
 instance of OsConfigResource as $OsConfigResource130ref
 {
     ResourceID = "EnsureSshBestPracticeProtocol";
-    ClassKey = "EnsureSshBestPracticeProtocol";
+    PayloadKey = "EnsureSshBestPracticeProtocol";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshBestPracticeProtocol";
     DesiredObjectName = "remediateEnsureSshBestPracticeProtocol";
@@ -1835,7 +1835,7 @@ instance of OsConfigResource as $OsConfigResource130ref
 instance of OsConfigResource as $OsConfigResource131ref
 {
     ResourceID = "EnsureSshBestPracticeIgnoreRhosts";
-    ClassKey = "EnsureSshBestPracticeIgnoreRhosts";
+    PayloadKey = "EnsureSshBestPracticeIgnoreRhosts";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshBestPracticeIgnoreRhosts";
     DesiredObjectName = "remediateEnsureSshBestPracticeIgnoreRhosts";
@@ -1849,7 +1849,7 @@ instance of OsConfigResource as $OsConfigResource131ref
 instance of OsConfigResource as $OsConfigResource132ref
 {
     ResourceID = "EnsureSshLogLevelIsSet";
-    ClassKey = "EnsureSshLogLevelIsSet";
+    PayloadKey = "EnsureSshLogLevelIsSet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshLogLevelIsSet";
     DesiredObjectName = "remediateEnsureSshLogLevelIsSet";
@@ -1863,7 +1863,7 @@ instance of OsConfigResource as $OsConfigResource132ref
 instance of OsConfigResource as $OsConfigResource133ref
 {
     ResourceID = "EnsureSshMaxAuthTriesIsSet";
-    ClassKey = "EnsureSshMaxAuthTriesIsSet";
+    PayloadKey = "EnsureSshMaxAuthTriesIsSet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshMaxAuthTriesIsSet";
     DesiredObjectName = "remediateEnsureSshMaxAuthTriesIsSet";
@@ -1877,7 +1877,7 @@ instance of OsConfigResource as $OsConfigResource133ref
 instance of OsConfigResource as $OsConfigResource134ref
 {
     ResourceID = "EnsureSshAccessIsLimited";
-    ClassKey = "EnsureSshAccessIsLimited";
+    PayloadKey = "EnsureSshAccessIsLimited";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshAccessIsLimited";
     DesiredObjectName = "remediateEnsureSshAccessIsLimited";
@@ -1891,7 +1891,7 @@ instance of OsConfigResource as $OsConfigResource134ref
 instance of OsConfigResource as $OsConfigResource135ref
 {
     ResourceID = "EnsureSshRhostsRsaAuthenticationIsDisabled";
-    ClassKey = "EnsureSshRhostsRsaAuthenticationIsDisabled";
+    PayloadKey = "EnsureSshRhostsRsaAuthenticationIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
     DesiredObjectName = "remediateEnsureSshRhostsRsaAuthenticationIsDisabled";
@@ -1905,7 +1905,7 @@ instance of OsConfigResource as $OsConfigResource135ref
 instance of OsConfigResource as $OsConfigResource136ref
 {
     ResourceID = "EnsureSshHostbasedAuthenticationIsDisabled";
-    ClassKey = "EnsureSshHostbasedAuthenticationIsDisabled";
+    PayloadKey = "EnsureSshHostbasedAuthenticationIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshHostbasedAuthenticationIsDisabled";
     DesiredObjectName = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
@@ -1919,7 +1919,7 @@ instance of OsConfigResource as $OsConfigResource136ref
 instance of OsConfigResource as $OsConfigResource137ref
 {
     ResourceID = "EnsureSshPermitRootLoginIsDisabled";
-    ClassKey = "EnsureSshPermitRootLoginIsDisabled";
+    PayloadKey = "EnsureSshPermitRootLoginIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshPermitRootLoginIsDisabled";
     DesiredObjectName = "remediateEnsureSshPermitRootLoginIsDisabled";
@@ -1933,7 +1933,7 @@ instance of OsConfigResource as $OsConfigResource137ref
 instance of OsConfigResource as $OsConfigResource138ref
 {
     ResourceID = "EnsureSshPermitEmptyPasswordsIsDisabled";
-    ClassKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
+    PayloadKey = "EnsureSshPermitEmptyPasswordsIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
     DesiredObjectName = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -1947,7 +1947,7 @@ instance of OsConfigResource as $OsConfigResource138ref
 instance of OsConfigResource as $OsConfigResource139ref
 {
     ResourceID = "EnsureSshIdleTimeoutIntervalIsConfigured";
-    ClassKey = "EnsureSshIdleTimeoutIntervalIsConfigured";
+    PayloadKey = "EnsureSshIdleTimeoutIntervalIsConfigured";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
     DesiredObjectName = "remediateEnsureSshIdleTimeoutIntervalIsConfigured";
@@ -1961,7 +1961,7 @@ instance of OsConfigResource as $OsConfigResource139ref
 instance of OsConfigResource as $OsConfigResource140ref
 {
     ResourceID = "EnsureSshLoginGraceTimeIsSet";
-    ClassKey = "EnsureSshLoginGraceTimeIsSet";
+    PayloadKey = "EnsureSshLoginGraceTimeIsSet";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshLoginGraceTimeIsSet";
     DesiredObjectName = "remediateEnsureSshLoginGraceTimeIsSet";
@@ -1975,7 +1975,7 @@ instance of OsConfigResource as $OsConfigResource140ref
 instance of OsConfigResource as $OsConfigResource141ref
 {
     ResourceID = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
-    ClassKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
+    PayloadKey = "EnsureOnlyApprovedMacAlgorithmsAreUsed";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
     DesiredObjectName = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
@@ -1989,7 +1989,7 @@ instance of OsConfigResource as $OsConfigResource141ref
 instance of OsConfigResource as $OsConfigResource142ref
 {
     ResourceID = "EnsureSshWarningBannerIsEnabled";
-    ClassKey = "EnsureSshWarningBannerIsEnabled";
+    PayloadKey = "EnsureSshWarningBannerIsEnabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSshWarningBannerIsEnabled";
     DesiredObjectName = "remediateEnsureSshWarningBannerIsEnabled";
@@ -2003,7 +2003,7 @@ instance of OsConfigResource as $OsConfigResource142ref
 instance of OsConfigResource as $OsConfigResource143ref
 {
     ResourceID = "EnsureUsersCannotSetSshEnvironmentOptions";
-    ClassKey = "EnsureUsersCannotSetSshEnvironmentOptions";
+    PayloadKey = "EnsureUsersCannotSetSshEnvironmentOptions";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUsersCannotSetSshEnvironmentOptions";
     DesiredObjectName = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
@@ -2017,7 +2017,7 @@ instance of OsConfigResource as $OsConfigResource143ref
 instance of OsConfigResource as $OsConfigResource144ref
 {
     ResourceID = "EnsureAppropriateCiphersForSsh";
-    ClassKey = "EnsureAppropriateCiphersForSsh";
+    PayloadKey = "EnsureAppropriateCiphersForSsh";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAppropriateCiphersForSsh";
     DesiredObjectName = "remediateEnsureAppropriateCiphersForSsh";
@@ -2031,7 +2031,7 @@ instance of OsConfigResource as $OsConfigResource144ref
 instance of OsConfigResource as $OsConfigResource145ref
 {
     ResourceID = "EnsureAvahiDaemonServiceIsDisabled";
-    ClassKey = "EnsureAvahiDaemonServiceIsDisabled";
+    PayloadKey = "EnsureAvahiDaemonServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureAvahiDaemonServiceIsDisabled";
     DesiredObjectName = "remediateEnsureAvahiDaemonServiceIsDisabled";
@@ -2045,7 +2045,7 @@ instance of OsConfigResource as $OsConfigResource145ref
 instance of OsConfigResource as $OsConfigResource146ref
 {
     ResourceID = "EnsureCupsServiceisDisabled";
-    ClassKey = "EnsureCupsServiceisDisabled";
+    PayloadKey = "EnsureCupsServiceisDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureCupsServiceisDisabled";
     DesiredObjectName = "remediateEnsureCupsServiceisDisabled";
@@ -2059,7 +2059,7 @@ instance of OsConfigResource as $OsConfigResource146ref
 instance of OsConfigResource as $OsConfigResource147ref
 {
     ResourceID = "EnsurePostfixPackageIsUninstalled";
-    ClassKey = "EnsurePostfixPackageIsUninstalled";
+    PayloadKey = "EnsurePostfixPackageIsUninstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePostfixPackageIsUninstalled";
     DesiredObjectName = "remediateEnsurePostfixPackageIsUninstalled";
@@ -2073,7 +2073,7 @@ instance of OsConfigResource as $OsConfigResource147ref
 instance of OsConfigResource as $OsConfigResource148ref
 {
     ResourceID = "EnsurePostfixNetworkListeningIsDisabled";
-    ClassKey = "EnsurePostfixNetworkListeningIsDisabled";
+    PayloadKey = "EnsurePostfixNetworkListeningIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePostfixNetworkListeningIsDisabled";
     DesiredObjectName = "remediateEnsurePostfixNetworkListeningIsDisabled";
@@ -2087,7 +2087,7 @@ instance of OsConfigResource as $OsConfigResource148ref
 instance of OsConfigResource as $OsConfigResource149ref
 {
     ResourceID = "EnsureRpcgssdServiceIsDisabled";
-    ClassKey = "EnsureRpcgssdServiceIsDisabled";
+    PayloadKey = "EnsureRpcgssdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcgssdServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRpcgssdServiceIsDisabled";
@@ -2101,7 +2101,7 @@ instance of OsConfigResource as $OsConfigResource149ref
 instance of OsConfigResource as $OsConfigResource150ref
 {
     ResourceID = "EnsureRpcidmapdServiceIsDisabled";
-    ClassKey = "EnsureRpcidmapdServiceIsDisabled";
+    PayloadKey = "EnsureRpcidmapdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcidmapdServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRpcidmapdServiceIsDisabled";
@@ -2115,7 +2115,7 @@ instance of OsConfigResource as $OsConfigResource150ref
 instance of OsConfigResource as $OsConfigResource151ref
 {
     ResourceID = "EnsurePortmapServiceIsDisabled";
-    ClassKey = "EnsurePortmapServiceIsDisabled";
+    PayloadKey = "EnsurePortmapServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePortmapServiceIsDisabled";
     DesiredObjectName = "remediateEnsurePortmapServiceIsDisabled";
@@ -2129,7 +2129,7 @@ instance of OsConfigResource as $OsConfigResource151ref
 instance of OsConfigResource as $OsConfigResource152ref
 {
     ResourceID = "EnsureNetworkFileSystemServiceIsDisabled";
-    ClassKey = "EnsureNetworkFileSystemServiceIsDisabled";
+    PayloadKey = "EnsureNetworkFileSystemServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNetworkFileSystemServiceIsDisabled";
     DesiredObjectName = "remediateEnsureNetworkFileSystemServiceIsDisabled";
@@ -2143,7 +2143,7 @@ instance of OsConfigResource as $OsConfigResource152ref
 instance of OsConfigResource as $OsConfigResource153ref
 {
     ResourceID = "EnsureRpcsvcgssdServiceIsDisabled";
-    ClassKey = "EnsureRpcsvcgssdServiceIsDisabled";
+    PayloadKey = "EnsureRpcsvcgssdServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRpcsvcgssdServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRpcsvcgssdServiceIsDisabled";
@@ -2157,7 +2157,7 @@ instance of OsConfigResource as $OsConfigResource153ref
 instance of OsConfigResource as $OsConfigResource154ref
 {
     ResourceID = "EnsureSnmpServerIsDisabled";
-    ClassKey = "EnsureSnmpServerIsDisabled";
+    PayloadKey = "EnsureSnmpServerIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSnmpServerIsDisabled";
     DesiredObjectName = "remediateEnsureSnmpServerIsDisabled";
@@ -2171,7 +2171,7 @@ instance of OsConfigResource as $OsConfigResource154ref
 instance of OsConfigResource as $OsConfigResource155ref
 {
     ResourceID = "EnsureRsynServiceIsDisabled";
-    ClassKey = "EnsureRsynServiceIsDisabled";
+    PayloadKey = "EnsureRsynServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRsynServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRsynServiceIsDisabled";
@@ -2185,7 +2185,7 @@ instance of OsConfigResource as $OsConfigResource155ref
 instance of OsConfigResource as $OsConfigResource156ref
 {
     ResourceID = "EnsureNisServerIsDisabled";
-    ClassKey = "EnsureNisServerIsDisabled";
+    PayloadKey = "EnsureNisServerIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNisServerIsDisabled";
     DesiredObjectName = "remediateEnsureNisServerIsDisabled";
@@ -2199,7 +2199,7 @@ instance of OsConfigResource as $OsConfigResource156ref
 instance of OsConfigResource as $OsConfigResource157ref
 {
     ResourceID = "EnsureRshClientNotInstalled";
-    ClassKey = "EnsureRshClientNotInstalled";
+    PayloadKey = "EnsureRshClientNotInstalled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRshClientNotInstalled";
     DesiredObjectName = "remediateEnsureRshClientNotInstalled";
@@ -2213,7 +2213,7 @@ instance of OsConfigResource as $OsConfigResource157ref
 instance of OsConfigResource as $OsConfigResource158ref
 {
     ResourceID = "EnsureSmbWithSambaIsDisabled";
-    ClassKey = "EnsureSmbWithSambaIsDisabled";
+    PayloadKey = "EnsureSmbWithSambaIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureSmbWithSambaIsDisabled";
     DesiredObjectName = "remediateEnsureSmbWithSambaIsDisabled";
@@ -2227,7 +2227,7 @@ instance of OsConfigResource as $OsConfigResource158ref
 instance of OsConfigResource as $OsConfigResource159ref
 {
     ResourceID = "EnsureUsersDotFilesArentGroupOrWorldWritable";
-    ClassKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
+    PayloadKey = "EnsureUsersDotFilesArentGroupOrWorldWritable";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUsersDotFilesArentGroupOrWorldWritable";
     DesiredObjectName = "remediateEnsureUsersDotFilesArentGroupOrWorldWritable";
@@ -2241,7 +2241,7 @@ instance of OsConfigResource as $OsConfigResource159ref
 instance of OsConfigResource as $OsConfigResource160ref
 {
     ResourceID = "EnsureNoUsersHaveDotForwardFiles";
-    ClassKey = "EnsureNoUsersHaveDotForwardFiles";
+    PayloadKey = "EnsureNoUsersHaveDotForwardFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotForwardFiles";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotForwardFiles";
@@ -2255,7 +2255,7 @@ instance of OsConfigResource as $OsConfigResource160ref
 instance of OsConfigResource as $OsConfigResource161ref
 {
     ResourceID = "EnsureNoUsersHaveDotNetrcFiles";
-    ClassKey = "EnsureNoUsersHaveDotNetrcFiles";
+    PayloadKey = "EnsureNoUsersHaveDotNetrcFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotNetrcFiles";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotNetrcFiles";
@@ -2269,7 +2269,7 @@ instance of OsConfigResource as $OsConfigResource161ref
 instance of OsConfigResource as $OsConfigResource162ref
 {
     ResourceID = "EnsureNoUsersHaveDotRhostsFiles";
-    ClassKey = "EnsureNoUsersHaveDotRhostsFiles";
+    PayloadKey = "EnsureNoUsersHaveDotRhostsFiles";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNoUsersHaveDotRhostsFiles";
     DesiredObjectName = "remediateEnsureNoUsersHaveDotRhostsFiles";
@@ -2283,7 +2283,7 @@ instance of OsConfigResource as $OsConfigResource162ref
 instance of OsConfigResource as $OsConfigResource163ref
 {
     ResourceID = "EnsureRloginServiceIsDisabled";
-    ClassKey = "EnsureRloginServiceIsDisabled";
+    PayloadKey = "EnsureRloginServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureRloginServiceIsDisabled";
     DesiredObjectName = "remediateEnsureRloginServiceIsDisabled";
@@ -2297,7 +2297,7 @@ instance of OsConfigResource as $OsConfigResource163ref
 instance of OsConfigResource as $OsConfigResource164ref
 {
     ResourceID = "EnsureUnnecessaryAccountsAreRemoved";
-    ClassKey = "EnsureUnnecessaryAccountsAreRemoved";
+    PayloadKey = "EnsureUnnecessaryAccountsAreRemoved";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureUnnecessaryAccountsAreRemoved";
     DesiredObjectName = "remediateEnsureUnnecessaryAccountsAreRemoved";
@@ -2313,6 +2313,6 @@ instance of OMI_ConfigurationDocument
     Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="9/18/2023 11:00:00";
+    GenerationDate="9/18/2023 18:42:00";
     Name="OsConfigResource";
 };
