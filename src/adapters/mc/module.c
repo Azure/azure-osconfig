@@ -28,7 +28,9 @@ MI_EXTERN_C MI_EXPORT MI_Module* MI_MAIN_CALL MI_Main(MI_Server* server)
     OsConfigLogInfo(GetLog(), "[OsConfigResource] MI module main (PID: %d, server: 0x%p)", getpid(), server);
     
     static MI_Module module;
-    MI_EXTERN_C MI_Server* __mi_server = server;
+    MI_EXTERN_C MI_Server* __mi_server;
+    
+    __mi_server = server;
 
     module.flags |= MI_MODULE_FLAG_DESCRIPTIONS;
     module.flags |= MI_MODULE_FLAG_VALUES;
