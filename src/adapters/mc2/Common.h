@@ -23,6 +23,6 @@
 #include "MI.h"
 #include "MSFT_Credential.h"
 #include "OMI_BaseResource.h"
-#include "OsConfigResource.h"
+#include "LinuxOsConfigResource.h"
 
 #endif
