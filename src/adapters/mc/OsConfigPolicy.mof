@@ -2313,6 +2313,6 @@ instance of OMI_ConfigurationDocument
     Version="2.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="9/18/2023 18:42:00";
-    Name="OsConfigResource";
+    GenerationDate="9/19/2023 09:02:00";
+    Name="OsConfigSecurityBaseline";
 };
