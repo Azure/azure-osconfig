@@ -13,7 +13,8 @@
 #define MPI_SERVER "osconfig-platform"
 
 static const char* g_mpiClientName = "OSConfig NRP";
-static const char* g_defaultValue = "<default>";
+static const char* g_defaultValue = "-";
+static const char* g_failValue = "FAIL";
 
 // Desired (write; also reported together with read group)
 static char* g_classKey = NULL;
@@ -75,7 +76,7 @@ void __attribute__((constructor)) Initialize()
     g_componentName = DuplicateString(g_defaultValue);
     g_reportedObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
-    g_desiredObjectValue = DuplicateString(g_defaultValue);
+    g_desiredObjectValue = DuplicateString(g_failValue);
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
@@ -792,7 +793,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
-        g_desiredObjectValue = DuplicateString(g_defaultValue);
+        g_desiredObjectValue = DuplicateString(g_failValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
