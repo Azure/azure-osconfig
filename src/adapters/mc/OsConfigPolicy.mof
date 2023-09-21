@@ -616,7 +616,7 @@ instance of OsConfigResource as $OsConfigResource43ref
 
 instance of OsConfigResource as $OsConfigResource44ref
 {
-    ResourceID = ".";
+    ResourceID = "EnsureNodevOptionOnVarTmpPartition";
     PayloadKey = "EnsureNodevOptionOnVarTmpPartition";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNodevOptionOnVarTmpPartition";
