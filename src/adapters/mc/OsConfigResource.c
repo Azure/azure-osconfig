@@ -342,7 +342,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         { "PayloadKey", MI_STRING, in->InputResource.value->PayloadKey.value, 0 },
         { "ComponentName", MI_STRING, in->InputResource.value->ComponentName.value, 0 },
         { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
-        { "ReportedObjectValue", MI_STRING, in->InputResource.value->ReportedObjectValue.value, 0 },
+        { "ReportedObjectValue", MI_STRING, g_reportedObjectValue, 0 },
         { "DesiredObjectName", MI_STRING, in->InputResource.value->DesiredObjectName.value, 0 },
         { "DesiredObjectValue", MI_STRING, g_desiredObjectValue, 0 },
         { "ReportedMpiResult", MI_UINT32, NULL, g_reportedMpiResult }
