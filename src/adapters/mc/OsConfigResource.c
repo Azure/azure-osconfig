@@ -344,8 +344,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
         { "ReportedObjectValue", MI_STRING, in->InputResource.value->ReportedObjectValue.value, 0 },
         { "DesiredObjectName", MI_STRING, in->InputResource.value->DesiredObjectName.value, 0 },
-        { "DesiredObjectValue", MI_STRING, in->InputResource.value->DesiredObjectValue, 0 },
-        { "ReportedMpiResult", MI_UINT32, NULL, in->InputResource.value->ReportedMpiResult }
+        { "DesiredObjectValue", MI_STRING, g_desiredObjectValue, 0 },
+        { "ReportedMpiResult", MI_UINT32, NULL, g_reportedMpiResult }
     };
 
     int allParametersSize = ARRAY_SIZE(allParameters);
