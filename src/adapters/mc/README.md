@@ -105,53 +105,14 @@ Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-
 
 #### 7.1.1. Generating the policy definition
 
-Customize the following commands script with the package URL:
+Customize the following command with the package SAS token URL and a new GUID for this policy:
 
 ```bash
 sudo pwsh
-$PolicyParameterInfo = @(
-    @{
-        Name = 'ComponentName' 
-        DisplayName = 'ComponentName'
-        Description = 'Name of the MIM component'
-        ResourceType = 'OsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'ComponentName'
-        DefaultValue = 'SecurityBaseline'
-    },
-    @{
-        Name = 'DesiredObjectName' 
-        DisplayName = 'DesiredObjectName'
-        Description = 'Name of the desired MIM object'
-        ResourceType = 'OsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'DesiredObjectName'
-        DefaultValue = 'RemediateSecurityBaseline'
-    },
-    @{
-        Name = 'DesiredObjectValue' 
-        DisplayName = 'DesiredObjectValue'
-        Description = 'Value of the desired MIM object'
-        ResourceType = 'OsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'DesiredObjectValue'
-        DefaultValue = 'true'
-    },
-    @{
-        Name = 'ReportedObjectName' 
-        DisplayName = 'ReportedObjectName'
-        Description = 'Value of the reported MIM object'
-        ResourceType = 'OsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'ReportedObjectName'
-        DefaultValue = 'AuditSecurityBaseline'
-    }
-)
-
 New-GuestConfigurationPolicy `
-    -ContentUri `<insert here the SAS token URL>' `
-    -DisplayName 'Ensure that the configured OSConfig policy is applied on the Linux device' `
-    -Description 'Ensure that the configured OSConfig policy is applied on the Linux device' `
+    -ContentUri '<SAS token URL for the artifacts package>' `
+    -DisplayName 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
+    -Description 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
     -Path .\policies\ `
     -Platform Linux `
     -Verbose -PolicyId '<GUID for this policy>' -PolicyVersion 1.0.0.0 -Parameter $PolicyParameterInfo -Mode ApplyAndAutoCorrect
@@ -159,7 +120,7 @@ New-GuestConfigurationPolicy `
 
 The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this the policy will be audit-only (default).
 
-Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
+Run this command on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
 > **Important** 
 > Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (because of a new artifacts ZIP package, for example).
