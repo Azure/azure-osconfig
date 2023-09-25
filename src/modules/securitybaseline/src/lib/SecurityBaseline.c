@@ -1442,7 +1442,13 @@ static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? ENOENT : 0;
+    if (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) 
+    {
+        OsConfigLogInfo(SecurityBaselineGetLog(), "auditEnsureUnnecessaryAccountsAreRemoved found user account 'games'");
+        return ENOENT;
+    }
+
+    return 0;
 }
 
 AuditRemediate g_auditChecks[] =
