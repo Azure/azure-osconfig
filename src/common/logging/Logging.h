@@ -6,8 +6,8 @@
 
 #include <string.h>
 
-// Maximum log size (131072 is 128KB aka 1024 * 128), increase or decrease as needed
-#define MAX_LOG_SIZE 131072
+// Maximum log size (262144 is 256KB aka 1024 * 256), increase or decrease as needed
+#define MAX_LOG_SIZE 262144
 
 #define TIME_FORMAT_STRING_LENGTH 20
 

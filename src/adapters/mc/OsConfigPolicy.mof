@@ -700,7 +700,7 @@ instance of OsConfigResource as $OsConfigResource49ref
 
 instance of OsConfigResource as $OsConfigResource50ref
 {
-    ResourceID = "Ensure file permissions on /etc/group are configured";
+    ResourceID = "Ensure file permissions on /etc/group- are configured";
     PayloadKey = "EnsurePermissionsOnEtcGroupDash";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsurePermissionsOnEtcGroupDash";
