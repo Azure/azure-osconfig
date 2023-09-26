@@ -1441,6 +1441,7 @@ static int AuditEnsureRloginServiceIsDisabled(void)
 static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
+
     return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? ENOENT : 0;
 }
 
