@@ -68,38 +68,6 @@ static bool RefreshMpiClientSession(void)
     return status;
 }
 
-static char* GetReasonForFailure(const char* keyName, void* log)
-{
-    const char* commandTemplate = "cat /var/log/osconfig_securitybaseline.log | grep %s";
-    char* command = NULL;
-    char* textResult = NULL;
-    size_t commandLength = 0;
-    int status = ENOENT;
-
-    if (NULL == keyName)
-    {
-        OsConfigLogError(log, "GetReasonForFailure called with invalid argument");
-        return NULL;
-    }
-
-    commandLength = strlen(commandTemplate) + strlen(keyName) + 1;
-
-    if (NULL == (command = (char*)malloc(commandLength)))
-    {
-        OsConfigLogError(log, "GetReasonForFailure: out of memory");
-        return NULL;
-    }
-
-    memset(command, 0, commandLength);
-    snprintf(command, commandLength, commandTemplate, keyName);
-
-    status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log);
-
-    FREE_MEMORY(command);
-
-    return textResult;
-}
-
 void __attribute__((constructor)) Initialize()
 {
     RefreshMpiClientSession();
@@ -480,15 +448,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    ///////////////////////////////////
-    if (0 == strcmp(g_reportedObjectValue, g_failValue))
-    {
-        char* reason = GetReasonForFailure(g_classKey, GetLog());
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason for failure: '%s'", g_reportedObjectName, reason);
-        FREE_MEMORY(reason);
-    }
-    ///////////////////////////////////
-
     miValueResource.instance = resultResourceObject;
 
     for (int i = 0; i < allParametersSize; i++)
@@ -660,15 +619,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         goto Exit;
     }
-
-    ///////////////////////////////////
-    if (0 == strcmp(g_reportedObjectValue, g_failValue))
-    {
-        char* reason = GetReasonForFailure(g_classKey, GetLog());
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s reason for failure: '%s'", g_reportedObjectName, reason);
-        FREE_MEMORY(reason);
-    }
-    ///////////////////////////////////
 
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
@@ -893,15 +843,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         {
             g_reportedMpiResult = mpiResult;
         }
-
-        ///////////////////////////////////
-        if (MPI_OK != mpiResult)
-        {
-            char* reason = GetReasonForFailure(g_classKey, GetLog());
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] %s reason for failure: '%s'", g_desiredObjectName, reason);
-            FREE_MEMORY(reason);
-        }
-        ///////////////////////////////////
     }
 
     // Set results to report back
