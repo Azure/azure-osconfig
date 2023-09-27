@@ -535,14 +535,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
     miValue.string = (MI_Char*)MI_T(reasonCode);
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Code"), &miValue, MI_STRING, 0)))
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
         goto Exit;
     }
 
     miValue.string = (MI_Char*)MI_T(reasonText);
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Phrase"), &miValue, MI_STRING, 0)))
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
         goto Exit;
