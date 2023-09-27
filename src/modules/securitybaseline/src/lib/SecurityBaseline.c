@@ -1051,12 +1051,25 @@ static int AuditEnsurePermissionsOnBootloaderConfig(void)
 static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
+    int status = (4 < option) ? 0 : ENOENT;
+    if (status)
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "EnsurePasswordReuseIsLimited: audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
+    }
+    return status;
 }
 
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    int status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    if (status)
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "EnsureMountingOfUsbStorageDevicesIsDisabled: audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
+    }
+    return status;
 }
 
 static int AuditEnsureCoreDumpsAreRestricted(void)
