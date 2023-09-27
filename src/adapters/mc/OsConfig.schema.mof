@@ -4,6 +4,16 @@
 #pragma include ("MSFT_Credential.mof")
 
 [ClassVersion("1.0.0")]
+class ReasonClass
+{
+    [read]
+    string Phrase;
+
+    [read]
+    string Code;
+};
+
+[ClassVersion("1.0.0")]
 class OsConfigResource : OMI_BaseResource
 {
   [key] 
@@ -26,6 +36,9 @@ class OsConfigResource : OMI_BaseResource
 
   [read, Description ("Reported MPI result (for audit and remediation)")]
   uint32 ReportedMpiResult;
+
+  [read, EmbeddedInstance("ReasonClass")] 
+  string Reasons[];
 
   [static, Description ("Get resource state based on input configuration.")]
   uint32 GetTargetResource(
