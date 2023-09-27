@@ -552,8 +552,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     miValueReasonResult.instancea.data = reasonObject;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason object with Code '%s' and Phrase '%s' members) failed with %d",
-            reasonCodeString, reasonPhraseText, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason object with Code '%s' and Phrase '%s' members) failed with %d", reasonCode, reasonText, miResult);
         goto Exit;
     }
 
