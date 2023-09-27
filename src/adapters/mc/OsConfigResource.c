@@ -524,7 +524,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Create the reason MI instance
     char* reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
     char* reasonText = GetReasonForFailure(g_classKey, GetLog());
-    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason phrase: '%s'", g_reportedObjectName, reason);
+    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason phrase: '%s'", g_reportedObjectName, reasonText);
 
     MI_Value miValueReasonResult;
 
