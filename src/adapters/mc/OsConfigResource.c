@@ -530,9 +530,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Create the reason MI instance
     reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
     reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog());
-    LogInfo(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason code '%', reason phrase: '%s'", g_reportedObjectName, reasonText);
-
-    MI_Value miValueReasonResult;
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s reason code '%s', reason phrase: '%s'", g_reportedObjectName, reasonCode, reasonText);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
