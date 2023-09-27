@@ -70,7 +70,7 @@ static bool RefreshMpiClientSession(void)
 
 static char* GetReasonForFailure(const char* keyName, void* log)
 {
-    const char* commandTemplate = "cat /var/log/osconfig_securitybaseline.log | grep %s";
+    const char* commandTemplate = "cat /var/log/osconfig_securitybaseline.log | grep \"%s:\"";
     char* command = NULL;
     char* textResult = NULL;
     size_t commandLength = 0;
@@ -370,9 +370,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
 
-    // Reasons for audit failure  TODO: merge into OsConfigResourceParameters allParameters?
-    const int numReasons = 1;
-    MI_Instance* reasons[numReasons] = {0};
+    // Reason for audit failure
+    MI_Instance* reasonObject = NULL;
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -484,15 +483,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    ///////////////////////////////////
-    if (0 == strcmp(g_reportedObjectValue, g_failValue))
-    {
-        char* reason = GetReasonForFailure(g_classKey, GetLog());
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason for failure: '%s'", g_reportedObjectName, reason);
-        FREE_MEMORY(reason);
-    }
-    ///////////////////////////////////
-
     miValueResource.instance = resultResourceObject;
 
     for (int i = 0; i < allParametersSize; i++)
@@ -532,39 +522,42 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     //////////////////////////////////////////////////////////////////////
     // Create the reason MI instance
-    MI_Value miValueReasonCode;
-    MI_Value miValueReasonPhrase;
+    char* reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
+    char* reasonText = GetReasonForFailure(g_classKey, GetLog());
+    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason phrase: '%s'", g_reportedObjectName, reason);
+
     MI_Value miValueReasonResult;
 
-    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasons[0])))
+    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
-        MI_Context_PostError(context, MI_RESULT_INVALID_PARAMETER, MI_RESULT_TYPE_MI, MI_T("Failed to create a reason instance."));
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance for a reasons class instance failed with %d", miResult);
         goto Exit;
     }
 
-    miValueReasonCode.string = (MI_Char*)MI_T("Hardcoded reason code 123");
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Code"), &miValueReasonCode, MI_STRING, 0)))
+    miValue.string = (MI_Char*)MI_T(reasonCode);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Code"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
         goto Exit;
     }
 
-    miValueReasonPhrase.string = (MI_Char*)MI_T("Hardcoded reason phrase, why this audit failed or passed ABC 123");
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Phrase"), &miValueReasonPhrase, MI_STRING, 0)))
+    miValue.string = (MI_Char*)MI_T(reasonText);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasons[0], MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
         goto Exit;
     }
 
     miValueReasonResult.instancea.size = 1;
-    miValueReasonResult.instancea.data = reasons;
+    miValueReasonResult.instancea.data = reasonObject;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason with Code '%s' and Phrase '%s') failed with %d",
-            miValueReasonCode.string, miValueReasonPhrase.string, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason object with Code '%s' and Phrase '%s' members) failed with %d",
+            reasonCodeString, reasonPhraseText, miResult);
         goto Exit;
     }
+
+    FREE_MEMORY(reasonText);
     //////////////////////////////////////////////////////////////////////
 
     // Set the created output resource instance as the output resource in the GetTargetResource instance
@@ -589,9 +582,9 @@ Exit:
     }
 
     // Clean up the reasons class instance
-    if ((NULL != reasons[0]) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasons[0]))))
+    if ((NULL != reasonClass) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonClass))))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasons[0]) failed");
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonClass) failed");
     }
 
     // Clean up the Result MI value instance if needed
