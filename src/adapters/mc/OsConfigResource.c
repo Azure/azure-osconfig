@@ -581,9 +581,9 @@ Exit:
     }
 
     // Clean up the reasons class instance
-    if ((NULL != reasonClass) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonClass))))
+    if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonClass) failed");
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed");
     }
 
     // Clean up the Result MI value instance if needed
