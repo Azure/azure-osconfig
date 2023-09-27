@@ -68,17 +68,16 @@ static bool RefreshMpiClientSession(void)
     return status;
 }
 
-static char* GetReasonForFailure(const char* keyName, void* log)
+static char* GetReasonFromLog(const char* commandTemplate, const char* keyName, void* log)
 {
-    const char* commandTemplate = "cat /var/log/osconfig_securitybaseline.log | grep \"%s:\"";
     char* command = NULL;
     char* textResult = NULL;
     size_t commandLength = 0;
     int status = ENOENT;
 
-    if (NULL == keyName)
+    if ((NULL == commandTemplate) || (NULL == keyName))
     {
-        OsConfigLogError(log, "GetReasonForFailure called with invalid argument");
+        OsConfigLogError(log, "GetReasonFromLog called with invalid argument");
         return NULL;
     }
 
@@ -86,7 +85,7 @@ static char* GetReasonForFailure(const char* keyName, void* log)
 
     if (NULL == (command = (char*)malloc(commandLength)))
     {
-        OsConfigLogError(log, "GetReasonForFailure: out of memory");
+        OsConfigLogError(log, "GetReasonFromLog: out of memory");
         return NULL;
     }
 
@@ -96,6 +95,11 @@ static char* GetReasonForFailure(const char* keyName, void* log)
     status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, log);
 
     FREE_MEMORY(command);
+
+    if (NULL == textResult)
+    {
+        textResult = DuplicateString("See /var/log/osconfig* logs on device");
+    }
 
     return textResult;
 }
@@ -365,13 +369,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(instanceName);
 
     MI_Result miResult = MI_RESULT_OK;
-    MI_Instance *resultResourceObject = NULL;
+    MI_Instance* resultResourceObject = NULL;
+    MI_Instance* reasonObject = NULL;
     MI_Value miValue = {0};
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
+    MI_Value miValueReasonResult = {0};
 
-    // Reason for audit failure
-    MI_Instance* reasonObject = NULL;
+    char* reasonCode = NULL;
+    char* reasonText = NULL;
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -522,9 +528,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     //////////////////////////////////////////////////////////////////////
     // Create the reason MI instance
-    char* reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
-    char* reasonText = GetReasonForFailure(g_classKey, GetLog());
-    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason phrase: '%s'", g_reportedObjectName, reasonText);
+    reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
+    reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog());
+    LogInfo(context, miResult, GetLog(), "[OsConfigResource.Get] %s reason code '%', reason phrase: '%s'", g_reportedObjectName, reasonText);
 
     MI_Value miValueReasonResult;
 
@@ -705,15 +711,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         goto Exit;
     }
-
-    ///////////////////////////////////
-    if (0 == strcmp(g_reportedObjectValue, g_failValue))
-    {
-        char* reason = GetReasonForFailure(g_classKey, GetLog());
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s reason for failure: '%s'", g_reportedObjectName, reason);
-        FREE_MEMORY(reason);
-    }
-    ///////////////////////////////////
 
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
@@ -938,15 +935,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         {
             g_reportedMpiResult = mpiResult;
         }
-
-        ///////////////////////////////////
-        if (MPI_OK != mpiResult)
-        {
-            char* reason = GetReasonForFailure(g_classKey, GetLog());
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] %s reason for failure: '%s'", g_desiredObjectName, reason);
-            FREE_MEMORY(reason);
-        }
-        ///////////////////////////////////
     }
 
     // Set results to report back
