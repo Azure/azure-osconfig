@@ -561,7 +561,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Generate and report a reason for the result of this audit
 
-    if (MI_TRUE == isCompliant))
+    if (MI_TRUE == isCompliant)
     {
         reasonCode = DuplicateString(passCode);
         reasonPhrase = DuplicateString(auditPassed);
