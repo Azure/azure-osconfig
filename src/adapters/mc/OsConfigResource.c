@@ -538,12 +538,12 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue))
     {
-        reasonCode = passCode;
+        reasonCode = DuplicateString(passCode);
         reasonPhrase = DuplicateString(auditPassed);
     }
     else
     {
-        reasonCode = failCode;
+        reasonCode = DuplicateString(failCode);
         
         // Search in the OSConfig logs for a trace that starts with this key name followed by reasonPhraseSeparator
         if (NULL == (reasonPhrase = GetReasonFromLog(reasonPhraseTemplate, reasonPhraseSeparator, g_classKey, GetLog())))
@@ -599,6 +599,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
 Exit:
     FREE_MEMORY(reasonPhrase);
+    FREE_MEMORY(reasonCode);
     
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
