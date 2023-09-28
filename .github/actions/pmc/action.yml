@@ -1,0 +1,15 @@
+name: PMC
+
+inputs:
+  command:
+    description: 'Arguments to pass to the PMC CLI'
+    required: true
+outputs:
+  result:
+    description: 'The result of the PMC CLI command'
+
+runs:
+  using: 'docker'
+  image: Dockerfile
+  args:
+    - ${{ inputs.command }}
