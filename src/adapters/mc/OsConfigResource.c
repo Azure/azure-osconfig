@@ -334,7 +334,7 @@ static char* GetReasonFromLog(const char* commandTemplate, char separator, const
     }
 
     memset(command, 0, commandLength);
-    snprintf(command, commandLength, commandTemplate, keyName);
+    snprintf(command, commandLength, commandTemplate, keyName, separator);
 
     status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
 
@@ -374,7 +374,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* failCode = "FAIL";
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
-    const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s:";
+    const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s%c";
     char reasonPhraseSeparator = '@';
 
     MI_Result miResult = MI_RESULT_OK;
