@@ -96,11 +96,6 @@ static char* GetReasonFromLog(const char* commandTemplate, const char* keyName, 
 
     FREE_MEMORY(command);
 
-    if (NULL == textResult)
-    {
-        textResult = DuplicateString("See /var/log/osconfig* logs on device");
-    }
-
     return textResult;
 }
 
@@ -376,8 +371,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResource = {0};
     MI_Value miValueReasonResult = {0};
 
-    char* reasonCode = NULL;
-    char* reasonText = NULL;
+    char* reasonCode = "<<< reason code >>>";
+    char* reasonText = "<<< reason phrase >>>";
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -528,15 +523,15 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     //////////////////////////////////////////////////////////////////////
     // Create the reason MI instance
-    reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
+    /*reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
     if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog())))
     {
         if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s", g_classKey, GetLog())))
         {
-            reasonText = DuplicateString("Reason phrase not found. See /var/log/osconfig* on device");
+            reasonText = DuplicateString("Reason phrase not found");
         }
-    }
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s reason code '%s', reason phrase: '%s'", g_reportedObjectName, reasonCode, reasonText);
+    }*/
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s ### reason code '%s', ### reason phrase: '%s'", g_reportedObjectName, reasonCode, reasonText);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
@@ -582,7 +577,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
         
 Exit:
-    FREE_MEMORY(reasonText);
+    //////////////FREE_MEMORY(reasonText);
     
     // Clean up the reasons MI value instance if needed
     if ((NULL != miValueReasonResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueReasonResult.instance))))
