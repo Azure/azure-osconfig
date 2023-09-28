@@ -371,8 +371,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResource = {0};
     MI_Value miValueReasonResult = {0};
 
-    char* reasonCode = "<<< reason code >>>";
-    char* reasonText = "<<< reason phrase >>>";
+    char* reasonCode = NULL;
+    char* reasonText = NULL;
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -523,14 +523,11 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Create the reason MI instance
-    /*reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
+    reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
     if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog())))
     {
-        if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s", g_classKey, GetLog())))
-        {
-            reasonText = DuplicateString("Reason phrase not found");
-        }
-    }*/
+        reasonText = DuplicateString("Reason phrase not found");
+    }
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s ### reason code '%s', ### reason phrase: '%s'", g_reportedObjectName, reasonCode, reasonText);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
@@ -584,15 +581,17 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] OsConfigResource_GetTargetResource_Post failed with %d", miResult);
         goto Exit;
     }
-        
+
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] ### Past OsConfigResource_GetTargetResource_Post");
+
 Exit:
-    //////////////FREE_MEMORY(reasonText);
+    FREE_MEMORY(reasonText);
     
     // Clean up the reasons MI value instance if needed
-    if ((NULL != miValueReasonResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueReasonResult.instance))))
+    /*if ((NULL != miValueReasonResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueReasonResult.instance))))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(miValueReasonResult) failed");
-    }
+    }*/
 
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
