@@ -342,6 +342,7 @@ static char* GetReasonFromLog(const char* commandTemplate, char separator, const
 
     if (NULL != textResult)
     {
+        RemovePrefixUpTo(textResult, separator);
         RemovePrefixBlanks(textResult);
         TruncateAtFirst(textResult, '\n');
     }
@@ -374,7 +375,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
     const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s:";
-    char reasonPhraseSeparator = ':';
+    char reasonPhraseSeparator = '@';
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Instance* resultResourceObject = NULL;

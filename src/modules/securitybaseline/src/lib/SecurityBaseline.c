@@ -1058,7 +1058,7 @@ static int AuditEnsurePasswordReuseIsLimited(void)
     int status = (4 < option) ? 0 : ENOENT;
     if (status)
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "EnsurePasswordReuseIsLimited: audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
+        OsConfigLogError(SecurityBaselineGetLog(), "EnsurePasswordReuseIsLimited@ Audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
     }
     return status;
 }
@@ -1071,7 +1071,7 @@ static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
     int status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
     if (status)
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "EnsureMountingOfUsbStorageDevicesIsDisabled: audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
+        OsConfigLogError(SecurityBaselineGetLog(), "EnsureMountingOfUsbStorageDevicesIsDisabled@ Audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
     }
     return status;
 }
