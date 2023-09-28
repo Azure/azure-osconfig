@@ -529,7 +529,13 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     //////////////////////////////////////////////////////////////////////
     // Create the reason MI instance
     reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
-    reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog());
+    if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog())))
+    {
+        if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s", g_classKey, GetLog())))
+        {
+            reasonText = DuplicateString("Reason phrase not found. See /var/log/osconfig* on device");
+        }
+    }
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s reason code '%s', reason phrase: '%s'", g_reportedObjectName, reasonCode, reasonText);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
@@ -559,8 +565,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason object with Code '%s' and Phrase '%s' members) failed with %d", reasonCode, reasonText, miResult);
         goto Exit;
     }
-
-    FREE_MEMORY(reasonText);
     //////////////////////////////////////////////////////////////////////
 
     // Set the created output resource instance as the output resource in the GetTargetResource instance
@@ -578,6 +582,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
         
 Exit:
+    FREE_MEMORY(reasonText);
+    
     // Clean up the reasons MI value instance if needed
     if ((NULL != miValueReasonResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueReasonResult.instance))))
     {
