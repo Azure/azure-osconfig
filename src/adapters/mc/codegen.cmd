@@ -3,7 +3,7 @@ REM copy CIM-2.2.60 CIM schema (http://www.dmtf.org/standards/cim/cim_schema_v22
 REM copy Convert-MofToprovider.exe to ProviderGenerationTool folder.
 REM use -OldRcPath to retain old rc resource numbers
 "convert-moftoprovider.exe" ^
-   -MofFile D:\ProviderGenerationTool\LinuxOsConfig.schema.mof ^
-   -ClassList LinuxOSConfigResource^
+   -MofFile D:\ProviderGenerationTool\OsConfig.schema.mof ^
+   -ClassList OsConfigResource^
    -IncludePath CIM-2.26.0 ^
-   -OutPath D:\ProviderGenerationTool\LinuxOsConfig\
+   -OutPath D:\ProviderGenerationTool\OsConfig\

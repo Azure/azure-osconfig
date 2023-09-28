@@ -4,6 +4,7 @@
 #include "Common.h"
 
 /* @migen@ */
+
 /*
 **==============================================================================
 **
@@ -87,48 +88,48 @@ OMI_BaseResource_ConstArrayRef;
 MI_EXTERN_C MI_CONST MI_ClassDecl OMI_BaseResource_rtti;
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Construct(
-    _Out_ OMI_BaseResource* self,
-    _In_ MI_Context* context)
+    OMI_BaseResource* self,
+    MI_Context* context)
 {
     return MI_Context_ConstructInstance(context, &OMI_BaseResource_rtti,
         (MI_Instance*)&self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clone(
-    _In_ const OMI_BaseResource* self,
-    _Outptr_ OMI_BaseResource** newInstance)
+    const OMI_BaseResource* self,
+    OMI_BaseResource** newInstance)
 {
     return MI_Instance_Clone(
         &self->__instance, (MI_Instance**)newInstance);
 }
 
 MI_INLINE MI_Boolean MI_CALL OMI_BaseResource_IsA(
-    _In_ const MI_Instance* self)
+    const MI_Instance* self)
 {
     MI_Boolean res = MI_FALSE;
     return MI_Instance_IsA(self, &OMI_BaseResource_rtti, &res) == MI_RESULT_OK && res;
 }
 
-MI_INLINE MI_Result MI_CALL OMI_BaseResource_Destruct(_Inout_ OMI_BaseResource* self)
+MI_INLINE MI_Result MI_CALL OMI_BaseResource_Destruct(OMI_BaseResource* self)
 {
     return MI_Instance_Destruct(&self->__instance);
 }
 
-MI_INLINE MI_Result MI_CALL OMI_BaseResource_Delete(_Inout_ OMI_BaseResource* self)
+MI_INLINE MI_Result MI_CALL OMI_BaseResource_Delete(OMI_BaseResource* self)
 {
     return MI_Instance_Delete(&self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Post(
-    _In_ const OMI_BaseResource* self,
-    _In_ MI_Context* context)
+    const OMI_BaseResource* self,
+    MI_Context* context)
 {
     return MI_Context_PostInstance(context, &self->__instance);
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ResourceId(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -139,8 +140,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ResourceId(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ResourceId(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -151,7 +152,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ResourceId(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ResourceId(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -159,8 +160,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ResourceId(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_SourceInfo(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -171,8 +172,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_SourceInfo(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_SourceInfo(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -183,7 +184,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_SourceInfo(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_SourceInfo(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -191,9 +192,9 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_SourceInfo(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_DependsOn(
-    _Inout_ OMI_BaseResource* self,
-    _In_reads_opt_(size) const MI_Char** data,
-    _In_ MI_Uint32 size)
+    OMI_BaseResource* self,
+    const MI_Char** data,
+    MI_Uint32 size)
 {
     MI_Array arr;
     arr.data = (void*)data;
@@ -207,9 +208,9 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_DependsOn(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_DependsOn(
-    _Inout_ OMI_BaseResource* self,
-    _In_reads_opt_(size) const MI_Char** data,
-    _In_ MI_Uint32 size)
+    OMI_BaseResource* self,
+    const MI_Char** data,
+    MI_Uint32 size)
 {
     MI_Array arr;
     arr.data = (void*)data;
@@ -223,7 +224,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_DependsOn(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_DependsOn(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -231,8 +232,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_DependsOn(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ModuleName(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -243,8 +244,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ModuleName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ModuleName(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -255,7 +256,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ModuleName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ModuleName(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -263,8 +264,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ModuleName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ModuleVersion(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -275,8 +276,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ModuleVersion(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ModuleVersion(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -287,7 +288,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ModuleVersion(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ModuleVersion(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -295,8 +296,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ModuleVersion(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ConfigurationName(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -307,8 +308,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_ConfigurationName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ConfigurationName(
-    _Inout_ OMI_BaseResource* self,
-    _In_z_ const MI_Char* str)
+    OMI_BaseResource* self,
+    const MI_Char* str)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -319,7 +320,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_ConfigurationName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ConfigurationName(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,
@@ -327,8 +328,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_ConfigurationName(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_PsDscRunAsCredential(
-    _Inout_ OMI_BaseResource* self,
-    _In_ const MSFT_Credential* x)
+    OMI_BaseResource* self,
+    const MSFT_Credential* x)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -339,8 +340,8 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_Set_PsDscRunAsCredential(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_PsDscRunAsCredential(
-    _Inout_ OMI_BaseResource* self,
-    _In_ const MSFT_Credential* x)
+    OMI_BaseResource* self,
+    const MSFT_Credential* x)
 {
     return self->__instance.ft->SetElementAt(
         (MI_Instance*)&self->__instance,
@@ -351,7 +352,7 @@ MI_INLINE MI_Result MI_CALL OMI_BaseResource_SetPtr_PsDscRunAsCredential(
 }
 
 MI_INLINE MI_Result MI_CALL OMI_BaseResource_Clear_PsDscRunAsCredential(
-    _Inout_ OMI_BaseResource* self)
+    OMI_BaseResource* self)
 {
     return self->__instance.ft->ClearElementAt(
         (MI_Instance*)&self->__instance,

@@ -2,19 +2,19 @@
 # Licensed under the MIT License.
 
 # SO binary name must match the class name in MOF with a "lib" prefix added
-project(LinuxOsConfigResource)
+project(OsConfigResource)
 
-add_library(LinuxOsConfigResource 
+add_library(OsConfigResource 
     SHARED 
         module.c
         schema.c
-        LinuxOsConfigResource.c)
+        OsConfigResource.c)
 
-target_include_directories(LinuxOsConfigResource 
+target_include_directories(OsConfigResource 
     PUBLIC
         ${PLATFORM_INC_DIR})
 
-target_link_libraries(LinuxOsConfigResource
+target_link_libraries(OsConfigResource
     PRIVATE
         commonutils
         logging
@@ -25,13 +25,13 @@ target_link_libraries(LinuxOsConfigResource
 
 add_custom_target(stage_create_zip
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/Staging
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxOsConfigPolicy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/LinuxOsConfigPolicy.mof" ${PROJECT_BINARY_DIR}/Staging/
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:LinuxOsConfigResource> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/LinuxOsConfigResource/libLinuxOsConfigResource.so
-    DEPENDS LinuxOsConfigResource)
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.metaconfig.json" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/OsConfigPolicy.mof" ${PROJECT_BINARY_DIR}/Staging/
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:OsConfigResource> ${PROJECT_BINARY_DIR}/Staging/Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
+    DEPENDS OsConfigResource)
 
 add_custom_target(create_zip ALL
-    BYPRODUCTS ${OsConfigRootBinaryDir}/LinuxOsConfigPolicy.zip
-    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/LinuxOsConfigPolicy.zip" --format=zip .
+    BYPRODUCTS ${OsConfigRootBinaryDir}/OsConfigPolicy.zip
+    COMMAND ${CMAKE_COMMAND} -E tar "cfv" "${OsConfigRootBinaryDir}/OsConfigPolicy.zip" --format=zip .
     DEPENDS stage_create_zip
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/Staging/)

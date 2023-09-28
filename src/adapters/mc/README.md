@@ -11,11 +11,11 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
  > **Warning** 
  > Regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
-## 3. Building the Universal NRP
+## 3. Building the OSConfig NRP
 
-The Universal NRP binary (libLinuxOsConfigResource.so) is built with rest of OSConfig.
+The OSConfig NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
 
-## 4. Validating the Universal NRP locally with PowerShell and the MC Agent
+## 4. Validating the OSConfig NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
 
@@ -42,18 +42,18 @@ Get-Command -Module 'GuestConfiguration'
 
 ### 4.3. Running the validation
 
-Copy the build generated artifacts ZIP package LinuxOsConfigPolicy.zip to a new folder or invoke it directly from the build location.
+Copy the build generated artifacts ZIP package OsConfigPolicy.zip to a new folder or invoke it directly from the build location.
 
 ```bash
 sudo pwsh
-Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
-Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
+Start-GuestConfigurationPackageRemediation -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
+Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
 ```
 To view the resource class parameters returned by the Get function:
 
 ```bash
 sudo pwsh
-$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/LinuxOsConfigPolicy.zip -Verbose
+$x = Get-GuestConfigurationPackageComplianceStatus -path <path to the ZIP>/OsConfigPolicy.zip -Verbose
 $x.resources[0].properties
 ```
 In addition to the MC traces written to the the PowerShell console, you can also see the NRP's own log at `/var/log/osconfig_mc_nrp.log`.
@@ -84,16 +84,16 @@ sudo azcmagent connect --resource-group "$resourceGroup" --tenant-id "$tenantId"
 
 ## 6. Uploading the ZIP artifacts package
 
-The generated artifacts ZIP package LinuxOsConfigPolicy.zip needs to be uploaded to Azure.
+The generated artifacts ZIP package OsConfigPolicy.zip needs to be uploaded to Azure.
 
-Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package LinuxOsConfigPolicy.zip.
+Go to Azure Portal and create a Storage Account. In there, go to Containers and create a new container. Then inside of that container upload the artifacts ZIP package OsConfigPolicy.zip.
 
 > **Important** 
 > After each update of the ZIP package the policy definition will need to be updated.
 
 Once uploaded, generate a SAS token for the package. Two strings will be generated, the first being the token. Copy the second string, which is the URL of the package. This URL string will start with the following:
 
-`https://<storage account>.blob.core.windows.net/<container name>/LinuxOsConfigPolicy.zip...`
+`https://<storage account>.blob.core.windows.net/<container name>/OsConfigPolicy.zip...`
 
 Validate that the URL is correct by pasting that URL string into a Web browser and see if the ZIP package gets downloaded.
 
@@ -105,53 +105,14 @@ Read about [creating an Azure Policy definition](https://learn.microsoft.com/en-
 
 #### 7.1.1. Generating the policy definition
 
-Customize the following commands script with the package URL:
+Customize the following command with the package SAS token URL and a new GUID for this policy:
 
 ```bash
 sudo pwsh
-$PolicyParameterInfo = @(
-    @{
-        Name = 'ComponentName' 
-        DisplayName = 'ComponentName'
-        Description = 'Name of the MIM component'
-        ResourceType = 'LinuxOsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'ComponentName'
-        DefaultValue = 'SecurityBaseline'
-    },
-    @{
-        Name = 'DesiredObjectName' 
-        DisplayName = 'DesiredObjectName'
-        Description = 'Name of the desired MIM object'
-        ResourceType = 'LinuxOsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'DesiredObjectName'
-        DefaultValue = 'RemediateSecurityBaseline'
-    },
-    @{
-        Name = 'DesiredObjectValue' 
-        DisplayName = 'DesiredObjectValue'
-        Description = 'Value of the desired MIM object'
-        ResourceType = 'LinuxOsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'DesiredObjectValue'
-        DefaultValue = 'true'
-    },
-    @{
-        Name = 'ReportedObjectName' 
-        DisplayName = 'ReportedObjectName'
-        Description = 'Value of the reported MIM object'
-        ResourceType = 'LinuxOsConfigResource'
-        ResourceId = 'Ensure that the configured OSConfig policy is applied on the Linux device'
-        ResourcePropertyName = 'ReportedObjectName'
-        DefaultValue = 'AuditSecurityBaseline'
-    }
-)
-
 New-GuestConfigurationPolicy `
-    -ContentUri `<insert here the SAS token URL>' `
-    -DisplayName 'Ensure that the configured OSConfig policy is applied on the Linux device' `
-    -Description 'Ensure that the configured OSConfig policy is applied on the Linux device' `
+    -ContentUri '<SAS token URL for the artifacts package>' `
+    -DisplayName 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
+    -Description 'Ensure that the Linux device is compliant with the Azure Security Baseline.' `
     -Path .\policies\ `
     -Platform Linux `
     -Verbose -PolicyId '<GUID for this policy>' -PolicyVersion 1.0.0.0 -Parameter $PolicyParameterInfo -Mode ApplyAndAutoCorrect
@@ -159,7 +120,7 @@ New-GuestConfigurationPolicy `
 
 The last argument (`-Mode ApplyAndAutoCorrect`) is for remediation, without this the policy will be audit-only (default).
 
-Run these script commands on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
+Run this command on the Arc device in PowerShell. This will produce a JSON holding the policy definition, copy that JSON, it will be needed for creating the new policy in Azure Portal.
 
 > **Important** 
 > Save a copy of the generated JSON (with the policy definition) in case the policy definition will need to be updated later (because of a new artifacts ZIP package, for example).
