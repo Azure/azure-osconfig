@@ -68,44 +68,6 @@ static bool RefreshMpiClientSession(void)
     return status;
 }
 
-static char* GetReasonFromLog(const char* commandTemplate, char separator, const char* keyName, void* log)
-{
-    char* command = NULL;
-    char* textResult = NULL;
-    size_t commandLength = 0;
-    int status = ENOENT;
-
-    if ((NULL == commandTemplate) || (NULL == keyName))
-    {
-        OsConfigLogError(log, "GetReasonFromLog called with invalid argument");
-        return NULL;
-    }
-
-    commandLength = strlen(commandTemplate) + strlen(keyName) + 1;
-
-    if (NULL == (command = (char*)malloc(commandLength)))
-    {
-        OsConfigLogError(log, "GetReasonFromLog: out of memory");
-        return NULL;
-    }
-
-    memset(command, 0, commandLength);
-    snprintf(command, commandLength, commandTemplate, keyName);
-
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
-
-    FREE_MEMORY(command);
-
-    if (NULL != textResult)
-    {
-        RemovePrefixUpTo(textResult, separator);
-        RemovePrefixBlanks(textResult);
-        TruncateAtFirst(textResult, '\n');
-    }
-
-    return textResult;
-}
-
 void __attribute__((constructor)) Initialize()
 {
     RefreshMpiClientSession();
@@ -348,6 +310,43 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     FREE_MEMORY(payloadString);
 
     return miResult;
+}
+
+static char* GetReasonFromLog(const char* commandTemplate, char separator, const char* keyName, void* log)
+{
+    char* command = NULL;
+    char* textResult = NULL;
+    size_t commandLength = 0;
+    int status = ENOENT;
+
+    if ((NULL == commandTemplate) || (NULL == keyName))
+    {
+        OsConfigLogError(log, "GetReasonFromLog called with invalid argument");
+        return NULL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(keyName) + 1;
+
+    if (NULL == (command = (char*)malloc(commandLength)))
+    {
+        OsConfigLogError(log, "GetReasonFromLog: out of memory");
+        return NULL;
+    }
+
+    memset(command, 0, commandLength);
+    snprintf(command, commandLength, commandTemplate, keyName);
+
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
+
+    FREE_MEMORY(command);
+
+    if (NULL != textResult)
+    {
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirst(textResult, '\n');
+    }
+
+    return textResult;
 }
 
 struct OsConfigResourceParameters
