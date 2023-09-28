@@ -369,7 +369,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    const char* pass = "PASS";
+    const char* passCode = "PASS";
+    const char* failCode = "FAIL";
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
     const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s:";
@@ -384,7 +385,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueReasonResult = {0};
 
     char* reasonCode = NULL;
-    char* reasonText = NULL;
+    char* reasonPhrase = NULL;
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -535,17 +536,24 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Generate and report a reason for the result of this audit:
 
-    reasonCode = g_reportedObjectValue;
-    if (0 == strcmp(reasonCode, pass))
+    if (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue))
     {
-        reasonText = DuplicateString(auditPassed);
+        reasonCode = passCode;
+        reasonPhrase = DuplicateString(auditPassed);
     }
-    else if (NULL == (reasonText = GetReasonFromLog(reasonPhraseTemplate, reasonPhraseSeparator, g_classKey, GetLog())))
+    else
     {
-        reasonText = DuplicateString(auditFailed);
+        reasonCode = failCode;
+        
+        // Search in the OSConfig logs for a trace that starts with this key name followed by reasonPhraseSeparator
+        if (NULL == (reasonPhrase = GetReasonFromLog(reasonPhraseTemplate, reasonPhraseSeparator, g_classKey, GetLog())))
+        {
+            reasonPhrase = DuplicateString(auditFailed);
+        }
     }
     
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonText);
+    
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
@@ -560,7 +568,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)reasonText;
+    miValue.string = (MI_Char*)reasonPhrase;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
@@ -571,7 +579,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     miValueReasonResult.instancea.data = &reasonObject;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonText, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
         goto Exit;
     }
     
@@ -590,7 +598,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
-    FREE_MEMORY(reasonText);
+    FREE_MEMORY(reasonPhrase);
     
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))

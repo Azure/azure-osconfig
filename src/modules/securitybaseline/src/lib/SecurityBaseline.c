@@ -1052,6 +1052,8 @@ static int AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
     //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+
+    // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
     int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
     int status = (4 < option) ? 0 : ENOENT;
     if (status)
@@ -1064,6 +1066,8 @@ static int AuditEnsurePasswordReuseIsLimited(void)
 static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    
+    // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
     int status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
     if (status)
     {
