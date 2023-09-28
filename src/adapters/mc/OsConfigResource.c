@@ -384,6 +384,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
     MI_Value miValueReasonResult = {0};
+    MI_Boolean isCompliant = MI_FALSE;
 
     char* reasonCode = NULL;
     char* reasonPhrase = NULL;
@@ -535,9 +536,32 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         memset(&miValue, 0, sizeof(miValue));
     }
 
-    // Generate and report a reason for the result of this audit:
+    // Check if this audit is pass or fail by comparing reported to desired object values
 
-    if (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue))
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        {
+            isCompliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' matches the current local value",
+                in->InputResource.value->DesiredObjectValue.value);
+        }
+        else
+        {
+            isCompliant = MI_FALSE;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' does not match the current local value '%s'",
+                in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
+        }
+    }
+    else
+    {
+        isCompliant = MI_TRUE;
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] No DesiredString value, assuming compliance");
+    }
+
+    // Generate and report a reason for the result of this audit
+
+    if (MI_TRUE == isCompliant))
     {
         reasonCode = DuplicateString(passCode);
         reasonPhrase = DuplicateString(auditPassed);
@@ -552,7 +576,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             reasonPhrase = DuplicateString(auditFailed);
         }
     }
-    
     
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
@@ -646,7 +669,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     OsConfigResource_TestTargetResource test_result_object = {0};
 
     MI_Result miResult = MI_RESULT_OK;
-    MI_Boolean is_compliant = MI_FALSE;
+    MI_Boolean isCompliant = MI_FALSE;
 
     MI_Value miValueResult;
     memset(&miValueResult, 0, sizeof(MI_Value));
@@ -732,20 +755,20 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
-            is_compliant = MI_TRUE;
+            isCompliant = MI_TRUE;
             LogInfo(context, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' matches the current local value",
                 in->InputResource.value->DesiredObjectValue.value);
         }
         else
         {
-            is_compliant = MI_FALSE;
+            isCompliant = MI_FALSE;
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value '%s'",
                 in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
         }
     }
     else
     {
-        is_compliant = MI_TRUE;
+        isCompliant = MI_TRUE;
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No DesiredString value, assuming compliance");
     }
 
@@ -761,7 +784,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    OsConfigResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
+    OsConfigResource_TestTargetResource_Set_Result(&test_result_object, isCompliant);
     MI_Context_PostInstance(context, &(test_result_object.__instance));
 
 Exit:
