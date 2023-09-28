@@ -521,7 +521,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         memset(&miValue, 0, sizeof(miValue));
     }
 
-    //////////////////////////////////////////////////////////////////////
+    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // Create the reason MI instance
     /*reasonCode = (0 == g_reportedMpiResult) ? "Audit passed" : "Audit failed";
     if (NULL == (reasonText = GetReasonFromLog("cat /var/log/osconfig* | grep %s:", g_classKey, GetLog())))
@@ -539,19 +539,25 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)MI_T(reasonCode);
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] ### Past MI_Context_NewInstance");
+
+    miValue.string = (MI_Char*)reasonCode;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)MI_T(reasonText);
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] ### Past MI_Instance_SetElement(Code)");
+
+    miValue.string = (MI_Char*)reasonText;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
         goto Exit;
     }
+
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] ### Past MI_Instance_SetElement(Phrase)");
 
     miValueReasonResult.instancea.size = 1;
     miValueReasonResult.instancea.data = &reasonObject;
@@ -560,7 +566,10 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(Reason object with Code '%s' and Phrase '%s' members) failed with %d", reasonCode, reasonText, miResult);
         goto Exit;
     }
-    //////////////////////////////////////////////////////////////////////
+    
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] ### Past MI_Instance_SetElement(Reasons)");
+
+    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     // Set the created output resource instance as the output resource in the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(&get_result_object.__instance, MI_T("OutputResource"), &miValueResource, MI_INSTANCE, 0)))
