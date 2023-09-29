@@ -18,10 +18,10 @@ jobs:
     runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=ubuntu-22.04]
     environment: ${{ inputs.channel }}
     env:
-      PMC_CLI_BASE_URL: ${{ secrets.PMC_CLI_BASE_URL }}
-      PMC_CLI_MSAL_CLIENT_ID: ${{ secrets.PMC_CLI_MSAL_CLIENT_ID }}
-      PMC_CLI_MSAL_SCOPE: ${{ secrets.PMC_CLI_MSAL_SCOPE }}
-      PMC_CLI_MSAL_AUTHORITY: ${{ secrets.PMC_CLI_MSAL_AUTHORITY }}
+      PMC_CLI_BASE_URL: https://pmc-ingest.trafficmanager.net/api/v4
+      PMC_CLI_MSAL_CLIENT_ID: 7497d560-834a-4326-9750-ead7c3894d19
+      PMC_CLI_MSAL_SCOPE: api://d48bb382-20ec-41b9-a0ea-07758a21ccd0/.default
+      PMC_CLI_MSAL_AUTHORITY: https://login.microsoftonline.com/MSAzureCloud.onmicrosoft.com
       PMC_CLI_MSAL_CERT_PATH: auth.pem
 
     steps:
@@ -38,7 +38,7 @@ jobs:
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           TENANT_ID: ${{ secrets.TENANT_ID }}
           AZURE_VAULT: ${{ secrets.AZURE_VAULT }}
-          PMC_MSAL_CERT_NAME: ${{ secrets.PMC_MSAL_CERT_NAME }}
+          PMC_MSAL_CERT_NAME: pmc-onecert
         run: |
           az login --service-principal --username "$CLIENT_ID" --password "$CLIENT_SECRET" --tenant "$TENANT_ID"
           az keyvault secret download --vault-name "$AZURE_VAULT" --name "$PMC_MSAL_CERT_NAME" --file "${{ github.workspace }}/auth.pem"
@@ -46,10 +46,10 @@ jobs:
       - name: Set target
         id: target
         env:
-          REPO_ID_ubuntu_1804: ${{ secrets.REPO_ID_BIONIC }}
-          REPO_ID_ubuntu_2004: ${{ secrets.REPO_ID_FOCAL }}
-          REPO_ID_debian_10: ${{ secrets.REPO_ID_BUSTER }}
-          REPO_ID_debian_11: ${{ secrets.REPO_ID_BULLSEYE }}
+          REPO_ID_ubuntu_1804: ${{ vars.REPO_ID_BIONIC }}
+          REPO_ID_ubuntu_2004: ${{ vars.REPO_ID_FOCAL }}
+          REPO_ID_debian_10: ${{ vars.REPO_ID_BUSTER }}
+          REPO_ID_debian_11: ${{ vars.REPO_ID_BULLSEYE }}
         run: |
           target=$(echo ${{ inputs.target }} | tr - _ | tr -d .)
           repo_id=$(eval echo "\$REPO_ID_$target")
