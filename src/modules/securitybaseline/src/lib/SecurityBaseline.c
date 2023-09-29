@@ -459,10 +459,15 @@ static OSCONFIG_LOG_HANDLE g_log = NULL;
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
+static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
+{
+    return g_log;
+}
+
+#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
 static char* FormatAllocateString(const char* format, ...)
 {
-    const int maxFormatAllocateStringLength = 512;
-    char buffer[maxFormatAllocateStringLength] = {0};
+    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = { 0 };
     int formatResult = 0;
     char* stringToReturn = NULL;
 
@@ -474,10 +479,10 @@ static char* FormatAllocateString(const char* format, ...)
 
     va_list arguments;
     va_start(arguments, format);
-    formatResult = vsnprintf(buffer, maxFormatAllocateStringLength, format, arguments);
+    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING_LENGTH, format, arguments);
     va_end(arguments);
 
-    if ((formatResult > 0) && (formatResult < maxFormatAllocateStringLength))
+    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
     {
         if (0 != mallocAndStrcpy_s(&stringToReturn, buffer))
         {
@@ -486,16 +491,11 @@ static char* FormatAllocateString(const char* format, ...)
     }
     else
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)", 
-            formatResult, maxFormatAllocateStringLength);
+        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)",
+            formatResult, MAX_FORMAT_ALLOCATE_STRING_LENGTH);
     }
 
     return stringToReturn;
-}
-
-static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
-{
-    return g_log;
 }
 
 void SecurityBaselineInitialize(void)
