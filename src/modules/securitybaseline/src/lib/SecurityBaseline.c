@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdarg.h>
-#include <string.h>
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
@@ -466,10 +465,49 @@ static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
     return g_log;
 }
 
+static int mallocAndStrcpy_s(char** destination, const char* source)
+{
+    size_t l = 0;
+    char* temp = NULL;
+    int result = ENOENT;
+    int copied_result = 0;
+
+    if ((destination == NULL) || (source == NULL))
+    {
+        result = EINVAL;
+    }
+    else
+    {
+        l = strlen(source);
+        temp = (char*)malloc(l + 1);
+
+        if (temp == NULL)
+        {
+            result = ENOMEM;
+        }
+        else
+        {
+            *destination = temp;
+            copied_result = strcpy_s(*destination, l + 1, source);
+            if (copied_result)
+            {
+                free(*destination);
+                *destination = NULL;
+                result = copied_result;
+            }
+            else
+            {
+                result = 0;
+            }
+        }
+    }
+    return result;
+}
+
 #define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
 static char* FormatAllocateString(const char* format, ...)
 {
-    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = { 0 };
+    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
     int formatResult = 0;
     char* stringToReturn = NULL;
 
@@ -486,9 +524,9 @@ static char* FormatAllocateString(const char* format, ...)
 
     if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
     {
-        if (0 != mallocAndStrcpy_s(&stringToReturn, buffer))
+        if (NULL == (stringToReturn = DuplicateString(buffer)))
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: out of memory");
+            OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: DuplicateString failed");
         }
     }
     else
