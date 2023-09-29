@@ -2755,7 +2755,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     int status = MMI_OK;
     char* buffer = NULL;
     char* result = NULL;
-    const size_t length = 0;
+    size_t length = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
