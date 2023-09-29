@@ -790,7 +790,7 @@ static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
     return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && 
-        (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? 0 : EACCES;
+        (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
 static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
@@ -920,7 +920,7 @@ static char* AuditEnsureAutomountingDisabled(void)
 
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 {
-    return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? 0 : 1;
+    return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
