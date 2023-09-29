@@ -14,7 +14,8 @@
 
 #include "SecurityBaseline.h"
 
-typedef int(*AuditRemediate)(void);
+typedef int(*RemediationCall)(void);
+typedef char*(*AuditCall)(void);
 
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
@@ -477,390 +478,390 @@ void SecurityBaselineShutdown(void)
     CloseLog(&g_log);
 }
 
-static int AuditEnsurePermissionsOnEtcIssue(void)
+static char* AuditEnsurePermissionsOnEtcIssue(void)
 {
-    return CheckFileAccess(g_etcIssue, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcIssue, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcIssueNet(void)
+static char* AuditEnsurePermissionsOnEtcIssueNet(void)
 {
-    return CheckFileAccess(g_etcIssueNet, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcIssueNet, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcHostsAllow(void)
+static char* AuditEnsurePermissionsOnEtcHostsAllow(void)
 {
-    return CheckFileAccess(g_etcHostsAllow, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcHostsAllow, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcHostsDeny(void)
+static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
-    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcSshSshdConfig(void)
+static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcShadow(void)
+static char* AuditEnsurePermissionsOnEtcShadow(void)
 {
-    return CheckFileAccess(g_etcShadow, 0, 42, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcShadow, 0, 42, 400, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcShadowDash(void)
+static char* AuditEnsurePermissionsOnEtcShadowDash(void)
 {
-    return CheckFileAccess(g_etcShadowDash, 0, 42, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcShadowDash, 0, 42, 400, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcGShadow(void)
+static char* AuditEnsurePermissionsOnEtcGShadow(void)
 {
-    return CheckFileAccess(g_etcGShadow, 0, 42, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGShadow, 0, 42, 400, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcGShadowDash(void)
+static char* AuditEnsurePermissionsOnEtcGShadowDash(void)
 {
-    return CheckFileAccess(g_etcGShadowDash, 0, 42, 400, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGShadowDash, 0, 42, 400, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcPasswd(void)
+static char* AuditEnsurePermissionsOnEtcPasswd(void)
 {
-    return CheckFileAccess(g_etcPasswd, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcPasswd, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcPasswdDash(void)
+static char* AuditEnsurePermissionsOnEtcPasswdDash(void)
 {
-    return CheckFileAccess(g_etcPasswdDash, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcPasswdDash, 0, 0, 600, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcGroup(void)
+static char* AuditEnsurePermissionsOnEtcGroup(void)
 {
-    return CheckFileAccess(g_etcGroup, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGroup, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcGroupDash(void)
+static char* AuditEnsurePermissionsOnEtcGroupDash(void)
 {
-    return CheckFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcGroupDash, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcAnacronTab(void)
+static char* AuditEnsurePermissionsOnEtcAnacronTab(void)
 {
-    return CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcAnacronTab, 0, 0, 600, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcCronD(void)
+static char* AuditEnsurePermissionsOnEtcCronD(void)
 {
-    return CheckFileAccess(g_etcCronD, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronD, 0, 0, 700, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcCronDaily(void)
+static char* AuditEnsurePermissionsOnEtcCronDaily(void)
 {
-    return CheckFileAccess(g_etcCronDaily, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronDaily, 0, 0, 700, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcCronHourly(void)
+static char* AuditEnsurePermissionsOnEtcCronHourly(void)
 {
-    return CheckFileAccess(g_etcCronHourly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronHourly, 0, 0, 700, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcCronMonthly(void)
+static char* AuditEnsurePermissionsOnEtcCronMonthly(void)
 {
-    return CheckFileAccess(g_etcCronMonthly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronMonthly, 0, 0, 700, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcCronWeekly(void)
+static char* AuditEnsurePermissionsOnEtcCronWeekly(void)
 {
-    return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcCronWeekly, 0, 0, 700, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsurePermissionsOnEtcMotd(void)
+static char* AuditEnsurePermissionsOnEtcMotd(void)
 {
-    return CheckFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog());
+    return CheckFileAccess(g_etcMotd, 0, 0, 644, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 };
 
-static int AuditEnsureKernelSupportForCpuNx(void)
+static char* AuditEnsureKernelSupportForCpuNx(void)
 {
-    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return IsCpuFlagSupported("nx", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureNodevOptionOnHomePartition(void)
+static char* AuditEnsureNodevOptionOnHomePartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNodevOptionOnTmpPartition(void)
+static char* AuditEnsureNodevOptionOnTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNodevOptionOnVarTmpPartition(void)
+static char* AuditEnsureNodevOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNosuidOptionOnTmpPartition(void)
+static char* AuditEnsureNosuidOptionOnTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNosuidOptionOnVarTmpPartition(void)
+static char* AuditEnsureNosuidOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoexecOptionOnVarTmpPartition(void)
+static char* AuditEnsureNoexecOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoexecOptionOnDevShmPartition(void)
+static char* AuditEnsureNoexecOptionOnDevShmPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
+static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
+static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
+static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, SecurityBaselineGetLog());
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
+static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
 
     return ((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureInetdNotInstalled(void)
+static char* AuditEnsureInetdNotInstalled(void)
 {
     return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? 0 : ENOENT;
+        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureXinetdNotInstalled(void)
+static char* AuditEnsureXinetdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAllTelnetdPackagesUninstalled(void)
+static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureRshServerNotInstalled(void)
+static char* AuditEnsureRshServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureNisNotInstalled(void)
+static char* AuditEnsureNisNotInstalled(void)
 {
-    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureTftpdNotInstalled(void)
+static char* AuditEnsureTftpdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureReadaheadFedoraNotInstalled(void)
+static char* AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureBluetoothHiddNotInstalled(void)
+static char* AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIsdnUtilsBaseNotInstalled(void)
+static char* AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
+static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIscDhcpdServerNotInstalled(void)
+static char* AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSendmailNotInstalled(void)
+static char* AuditEnsureSendmailNotInstalled(void)
 {
-    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSldapdNotInstalled(void)
+static char* AuditEnsureSldapdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureBind9NotInstalled(void)
+static char* AuditEnsureBind9NotInstalled(void)
 {
-    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureDovecotCoreNotInstalled(void)
+static char* AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAuditdInstalled(void)
+static char* AuditEnsureAuditdInstalled(void)
 {
-    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog());
+    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
+static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
     return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNoDuplicateUidsExist(void)
+static char* AuditEnsureNoDuplicateUidsExist(void)
 {
     return CheckNoDuplicateUidsExist(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNoDuplicateGidsExist(void)
+static char* AuditEnsureNoDuplicateGidsExist(void)
 {
     return CheckNoDuplicateGidsExist(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNoDuplicateUserNamesExist(void)
+static char* AuditEnsureNoDuplicateUserNamesExist(void)
 {
     return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNoDuplicateGroupsExist(void)
+static char* AuditEnsureNoDuplicateGroupsExist(void)
 {
     return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureShadowGroupIsEmpty(void)
+static char* AuditEnsureShadowGroupIsEmpty(void)
 {
     return CheckShadowGroupIsEmpty(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureRootGroupExists(void)
+static char* AuditEnsureRootGroupExists(void)
 {
     return CheckRootGroupExists(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureAllAccountsHavePasswords(void)
+static char* AuditEnsureAllAccountsHavePasswords(void)
 {
     return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
+static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
     return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
+static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog());
+    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDefaultRootAccountGroupIsGidZero(void)
+static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
     return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureRootIsOnlyUidZeroAccount(void)
+static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
     return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && 
         (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? 0 : EACCES;
 }
 
-static int AuditEnsureAllUsersHomeDirectoriesExist(void)
+static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
     return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureUsersOwnTheirHomeDirectories(void)
+static char* AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
     return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureRestrictedUserHomeDirectories(void)
+static char* AuditEnsureRestrictedUserHomeDirectories(void)
 {
     unsigned int modes[] = {700, 750};
     
-    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
+    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsurePasswordHashingAlgorithm(void)
+static char* AuditEnsurePasswordHashingAlgorithm(void)
 {
-    return CheckPasswordHashingAlgorithm(sha512, SecurityBaselineGetLog());
+    return CheckPasswordHashingAlgorithm(sha512, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureMinDaysBetweenPasswordChanges(void)
+static char* AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog());
+    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureInactivePasswordLockPeriod(void)
+static char* AuditEnsureInactivePasswordLockPeriod(void)
 {
     return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
-        (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureMaxDaysBetweenPasswordChanges(void)
+static char* AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog());
+    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsurePasswordExpiration(void)
+static char* AuditEnsurePasswordExpiration(void)
 {
-    return CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog());
+    return CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsurePasswordExpirationWarning(void)
+static char* AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog());
+    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureSystemAccountsAreNonLogin(void)
+static char* AuditEnsureSystemAccountsAreNonLogin(void)
 {
     return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog());
 }
 
-static int AuditEnsureAuthenticationRequiredForSingleUserMode(void)
+static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
     return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog());
 }
 
-static int AuditEnsurePrelinkIsDisabled(void)
+static char* AuditEnsurePrelinkIsDisabled(void)
 {
-    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureTalkClientIsNotInstalled(void)
+static char* AuditEnsureTalkClientIsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureDotDoesNotAppearInRootsPath(void)
+static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
     const char* path = "PATH";
     const char* dot = ".";
@@ -869,77 +870,77 @@ static int AuditEnsureDotDoesNotAppearInRootsPath(void)
         (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, SecurityBaselineGetLog())) &&
         (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, SecurityBaselineGetLog())) &&
         (0 != FindMarkedTextInFile(g_etcProfile, path, dot, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? 0 : ENOENT;
+        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureCronServiceIsEnabled(void)
+static char* AuditEnsureCronServiceIsEnabled(void)
 {
     return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? 0 : ENOENT;
+        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
+static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
 {
     return ((0 != FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureLocalLoginWarningBannerIsConfigured(void)
+static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 {
     return ((0 != FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAuditdServiceIsRunning(void)
+static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSuRestrictedToRootGroup(void)
+static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
-    return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog());
+    return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDefaultUmaskForAllUsers(void)
+static char* AuditEnsureDefaultUmaskForAllUsers(void)
 {
-    return CheckLoginUmask("077", SecurityBaselineGetLog());
+    return CheckLoginUmask("077", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureAutomountingDisabled(void)
+static char* AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
 
     return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
-        (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureKernelCompiledFromApprovedSources(void)
+static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 {
     return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? 0 : 1;
 }
 
-static int AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
+static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
     const char* readIpTables = "iptables -S";
 
     return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePacketRedirectSendingIsDisabled(void)
+static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
 
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIcmpRedirectsIsDisabled(void)
+static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
 
@@ -948,144 +949,144 @@ static int AuditEnsureIcmpRedirectsIsDisabled(void)
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
         (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSourceRoutedPacketsIsDisabled(void)
+static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
+static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
+static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
+static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureMartianPacketLoggingIsEnabled(void)
+static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
 
     return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureReversePathSourceValidationIsEnabled(void)
+static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureTcpSynCookiesAreEnabled(void)
+static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSystemNotActingAsNetworkSniffer(void)
+static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
 {
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
 
     return (FindTextInCommandOutput(command, text, SecurityBaselineGetLog()) &&
         (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAllWirelessInterfacesAreDisabled(void)
+static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureIpv6ProtocolIsEnabled(void)
+static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     const char* etcSysCtlConf = "/etc/sysctl.conf";
 
     return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureDccpIsDisabled(void)
+static char* AuditEnsureDccpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureSctpIsDisabled(void)
+static char* AuditEnsureSctpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDisabledSupportForRds(void)
+static char* AuditEnsureDisabledSupportForRds(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureTipcIsDisabled(void)
+static char* AuditEnsureTipcIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureZeroconfNetworkingIsDisabled(void)
+static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsurePermissionsOnBootloaderConfig(void)
+static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 {
     return ((0 == CheckFileAccess("/boot/grub/grub.conf", 0, 0, 400, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess("/boot/grub/grub.cfg", 0, 0, 400, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileAccess("/boot/grub2/grub.cfg", 0, 0, 400, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePasswordReuseIsLimited(void)
+static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
+    //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 
     // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
-    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
-    int status = (4 < option) ? 0 : ENOENT;
-    if (status)
+    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* status = (4 < option) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    if (strcmp(g_pass, status))
     {
         OsConfigLogError(SecurityBaselineGetLog(), "EnsurePasswordReuseIsLimited@ Audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
     }
     return status;
 }
 
-static int AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
+static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
+    //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
     
     // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
-    int status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog());
-    if (status)
+    char* status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    if (strcmp(g_pass, status))
     {
         OsConfigLogError(SecurityBaselineGetLog(), "EnsureMountingOfUsbStorageDevicesIsDisabled@ Audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
     }
     return status;
 }
 
-static int AuditEnsureCoreDumpsAreRestricted(void)
+static char* AuditEnsureCoreDumpsAreRestricted(void)
 {
     const char* fsSuidDumpable = "fs.suid_dumpable = 0";
 
     return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePasswordCreationRequirements(void)
+static char* AuditEnsurePasswordCreationRequirements(void)
 {
     //TBD: expand to other distros
     return ((14 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog())) &&
@@ -1093,10 +1094,10 @@ static int AuditEnsurePasswordCreationRequirements(void)
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog())) &&
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog())) &&
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog())) &&
-        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureLockoutForFailedPasswordAttempts(void)
+static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
     //TBD: expand to other distros
     const char* passwordAuth = "/etc/pam.d/password-auth";
@@ -1106,109 +1107,109 @@ static int AuditEnsureLockoutForFailedPasswordAttempts(void)
         (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "pam_tally2.so", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(passwordAuth, '#', "file=/var/log/tallylog", SecurityBaselineGetLog())) &&
         (0 < GetIntegerOptionFromFile(passwordAuth, "deny", '=', SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(passwordAuth, "unlock_time", '=', SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 < GetIntegerOptionFromFile(passwordAuth, "unlock_time", '=', SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
+static char* AuditEnsureDisabledInstallationOfCramfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install cramfs", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
+static char* AuditEnsureDisabledInstallationOfFreevxfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install freevxfs", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDisabledInstallationOfHfsFileSystem(void)
+static char* AuditEnsureDisabledInstallationOfHfsFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfs", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
+static char* AuditEnsureDisabledInstallationOfHfsplusFileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install hfsplus", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
+static char* AuditEnsureDisabledInstallationOfJffs2FileSystem(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog());
+    return FindTextInFolder(g_etcModProbeD, "install jffs2", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
+static char* AuditEnsureVirtualMemoryRandomizationIsEnabled(void)
 {
     return ((0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "2", SecurityBaselineGetLog())) ||
-        (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CompareFileContents("/proc/sys/kernel/randomize_va_space", "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
+static char* AuditEnsureAllBootloadersHavePasswordProtectionEnabled(void)
 {
     const char* password = "password";
 
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.cfg", '#', password, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub/grub.conf", '#', password, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/boot/grub2/grub.conf", '#', password, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureLoggingIsConfigured(void)
+static char* AuditEnsureLoggingIsConfigured(void)
 {
-    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog());
+    return CheckFileExists("/var/log/syslog", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureSyslogPackageIsInstalled(void)
+static char* AuditEnsureSyslogPackageIsInstalled(void)
 {
     return ((0 == CheckPackageInstalled(g_syslog, SecurityBaselineGetLog())) ||
         (0 == CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog())) ||
-        (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
+static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
     return ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureALoggingServiceIsEnabled(void)
+static char* AuditEnsureALoggingServiceIsEnabled(void)
 {
     return ((CheckPackageInstalled(g_syslogNg, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_rsyslog, SecurityBaselineGetLog())) ||
         (CheckPackageInstalled(g_rsyslog, SecurityBaselineGetLog()) && CheckPackageInstalled(g_systemd, SecurityBaselineGetLog()) && CheckIfDaemonActive(g_syslogNg, SecurityBaselineGetLog())) ||
-        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive(g_systemdJournald, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && CheckIfDaemonActive(g_systemdJournald, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
+static char* AuditEnsureFilePermissionsForAllRsyslogLogFiles(void)
 {
     const char* fileCreateMode = "$FileCreateMode";
     int mode = 0, modeNg = 0;
     
     return ((600 == (mode = GetIntegerOptionFromFile(g_etcRsyslogConf, fileCreateMode, ' ', SecurityBaselineGetLog())) || (640 == mode)) &&
         ((EEXIST == CheckFileExists(g_etcSyslogNgSyslogNgConf, SecurityBaselineGetLog())) ||
-        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? 0 : ENOENT;
+        ((600 == (modeNg = GetIntegerOptionFromFile(g_etcSyslogNgSyslogNgConf, fileCreateMode, ' ', SecurityBaselineGetLog()))) || (640 == modeNg)))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureLoggerConfigurationFilesAreRestricted(void)
+static char* AuditEnsureLoggerConfigurationFilesAreRestricted(void)
 {
     return ((0 == CheckFileAccess(g_etcSyslogNgSyslogNgConf, 0, 0, 640, SecurityBaselineGetLog())) && 
-        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileAccess(g_etcRsyslogConf, 0, 0, 640, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileGroup adm", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileGroup adm", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
+static char* AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser(void)
 {
     return ((0 == FindTextInFile(g_etcRsyslogConf, "FileOwner syslog", SecurityBaselineGetLog())) &&
-        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "FileOwner syslog", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
+static char* AuditEnsureRsyslogNotAcceptingRemoteMessages(void)
 {
     return ((0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imudp", SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckLineNotFoundOrCommentedOut(g_etcRsyslogConf, '#', "ModLoad imtcp", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
+static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
 {
     const char* version = "18.04"; 
     char* osName = NULL;
@@ -1218,25 +1219,25 @@ static int AuditEnsureSyslogRotaterServiceIsEnabled(void)
         ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
         ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
         CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureTelnetServiceIsDisabled(void)
+static char* AuditEnsureTelnetServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "telnet", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureRcprshServiceIsDisabled(void)
+static char* AuditEnsureRcprshServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "shell", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureTftpServiceisDisabled(void)
+static char* AuditEnsureTftpServiceisDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "tftp", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
+static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 {
     const char* etcCronAllow = "/etc/cron.allow";
     const char* etcAtAllow = "/etc/at.allow";
@@ -1246,223 +1247,223 @@ static int AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
         (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, SecurityBaselineGetLog())) &&
-        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshBestPracticeProtocol(void)
+static char* AuditEnsureSshBestPracticeProtocol(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshBestPracticeIgnoreRhosts(void)
+static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "IgnoreRhosts yes", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "IgnoreRhosts yes", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshLogLevelIsSet(void)
+static char* AuditEnsureSshLogLevelIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LogLevel INFO", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LogLevel INFO", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshMaxAuthTriesIsSet(void)
+static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MaxAuthTries 6", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MaxAuthTries 6", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshAccessIsLimited(void)
+static char* AuditEnsureSshAccessIsLimited(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowUsers", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowGroups", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyUsers", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyGroups", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyGroups", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
+static char* AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "RhostsRSAAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "RhostsRSAAuthentication no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
+static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "HostbasedAuthentication no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "HostbasedAuthentication no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshPermitRootLoginIsDisabled(void)
+static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
+static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitEmptyPasswords no", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitEmptyPasswords no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
+static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) || 
         ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog())))) ? 0 : ENOENT;
+        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSshLoginGraceTimeIsSet(void)
+static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
+static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, SecurityBaselineGetLog());
+    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureSshWarningBannerIsEnabled(void)
+static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
+static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitUserEnvironment yes", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitUserEnvironment yes", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureAppropriateCiphersForSsh(void)
+static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes128-ctr", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes192-ctr", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureAvahiDaemonServiceIsDisabled(void)
+static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
 {
-    return (false == CheckIfDaemonActive(g_avahiDaemon, SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return (false == CheckIfDaemonActive(g_avahiDaemon, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureCupsServiceisDisabled(void)
+static char* AuditEnsureCupsServiceisDisabled(void)
 {
     return (CheckPackageInstalled(g_cups, SecurityBaselineGetLog()) &&
-        (false == CheckIfDaemonActive(g_cups, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(g_cups, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePostfixPackageIsUninstalled(void)
+static char* AuditEnsurePostfixPackageIsUninstalled(void)
 {
-    return CheckPackageInstalled(g_postfix, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckPackageInstalled(g_postfix, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePostfixNetworkListeningIsDisabled(void)
+static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
     return (0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) ? 
         FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
 }
 
-static int AuditEnsureRpcgssdServiceIsDisabled(void)
+static char* AuditEnsureRpcgssdServiceIsDisabled(void)
 {
     return ((false == CheckIfDaemonActive(g_rpcgssd, SecurityBaselineGetLog())) && 
-        (false == CheckIfDaemonActive(g_rpcGssd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(g_rpcGssd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureRpcidmapdServiceIsDisabled(void)
+static char* AuditEnsureRpcidmapdServiceIsDisabled(void)
 {
     return ((false == CheckIfDaemonActive(g_rpcidmapd, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_nfsIdmapd, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(g_nfsIdmapd, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsurePortmapServiceIsDisabled(void)
+static char* AuditEnsurePortmapServiceIsDisabled(void)
 {
     return ((false == CheckIfDaemonActive(g_rpcbind, SecurityBaselineGetLog())) &&
         (false == CheckIfDaemonActive(g_rpcbindService, SecurityBaselineGetLog())) &&
-        (false == CheckIfDaemonActive(g_rpcbindSocket, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (false == CheckIfDaemonActive(g_rpcbindSocket, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureNetworkFileSystemServiceIsDisabled(void)
+static char* AuditEnsureNetworkFileSystemServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_nfsServer, SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_nfsServer, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureRpcsvcgssdServiceIsDisabled(void)
+static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog());
+    return CheckLineNotFoundOrCommentedOut(g_etcInetdConf, '#', "NEED_SVCGSSD = yes", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureSnmpServerIsDisabled(void)
+static char* AuditEnsureSnmpServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureRsynServiceIsDisabled(void)
+static char* AuditEnsureRsynServiceIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_rsync, SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_rsync, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNisServerIsDisabled(void)
+static char* AuditEnsureNisServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_ypserv, SecurityBaselineGetLog()) ? ENOENT : 0;
+    return CheckIfDaemonActive(g_ypserv, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureRshClientNotInstalled(void)
+static char* AuditEnsureRshClientNotInstalled(void)
 {
     return ((0 != CheckPackageInstalled(g_rsh, SecurityBaselineGetLog())) && 
-        (0 != CheckPackageInstalled(g_rshClient, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 != CheckPackageInstalled(g_rshClient, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureSmbWithSambaIsDisabled(void)
+static char* AuditEnsureSmbWithSambaIsDisabled(void)
 {
     const char* etcSambaConf = "/etc/samba/smb.conf";
     const char* minProtocol = "min protocol = SMB2";
 
     return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
         ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? 0 : ENOENT;
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
+static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
     unsigned int modes[] = {600, 644, 664, 700, 744};
     
-    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog());
+    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoUsersHaveDotForwardFiles(void)
+static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoUsersHaveDotNetrcFiles(void)
+static char* AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureNoUsersHaveDotRhostsFiles(void)
+static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-static int AuditEnsureRloginServiceIsDisabled(void)
+static char* AuditEnsureRloginServiceIsDisabled(void)
 {
     return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
         CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog()) &&
-        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? 0: ENOENT;
+        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
 }
 
-static int AuditEnsureUnnecessaryAccountsAreRemoved(void)
+static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? ENOENT : 0;
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
-AuditRemediate g_auditChecks[] =
+AuditCall g_auditChecks[] =
 {
     &AuditEnsurePermissionsOnEtcIssue,
     &AuditEnsurePermissionsOnEtcIssueNet,
@@ -1630,18 +1631,21 @@ AuditRemediate g_auditChecks[] =
     &AuditEnsureUnnecessaryAccountsAreRemoved
 };
 
-int AuditSecurityBaseline(void)
+char* AuditSecurityBaseline(void)
 {
     size_t numChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
-    int status = 0;
+    char* status = NULL, _status = NULL;
 
     for (i = 0; i < numChecks; i++)
     {
-        if ((0 != g_auditChecks[i]()) && (0 == status))
+        _status = DuplicateString(g_auditChecks[i]());
+        if (strcmp(_status, g_pass))
         {
-            status = ENOENT;
+            FREE_MEMORY(status);
+            status = DuplicateString(_status);
         }
+        FREE_MEMORY(_status);
     }
 
     return status;
@@ -2499,7 +2503,7 @@ static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
     return RemoveUserAccounts(names, ARRAY_SIZE(names), SecurityBaselineGetLog());
 }
 
-AuditRemediate g_remediateChecks[] =
+RemediationCall g_remediateChecks[] =
 {
     &RemediateEnsurePermissionsOnEtcIssue,
     &RemediateEnsurePermissionsOnEtcIssueNet,
@@ -2749,8 +2753,8 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 {
     int status = MMI_OK;
     char* buffer = NULL;
-    const char* result = NULL;
-    const size_t length = strlen(g_pass) + 1;
+    char* result = NULL;
+    const size_t length = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -2761,15 +2765,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
     *payload = NULL;
     *payloadSizeBytes = 0;
-
-    if (NULL == (buffer = malloc(length)))
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
-        status = ENOMEM;
-        return status;
-    }
-
-    memset(buffer, 0, length);
 
     if (!IsValidSession(clientSession))
     {
@@ -2785,663 +2780,663 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     {
         if (0 == strcmp(objectName, g_auditSecurityBaselineObject))
         {
-            result = AuditSecurityBaseline() ? g_fail : g_pass;
+            result = AuditSecurityBaseline();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssue() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcIssue();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueNetObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssueNet() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcIssueNet();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsAllowObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsAllow() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcHostsAllow();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsDenyObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcHostsDeny();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
         {
-            result = AuditEnsurePermissionsOnEtcSshSshdConfig() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcSshSshdConfig();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadow() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcShadow();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadowDash() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcShadowDash();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadow() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcGShadow();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadowDash() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcGShadowDash();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswd() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcPasswd();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswdDash() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcPasswdDash();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroup() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcGroup();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroupDash() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcGroupDash();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnacronTabObject))
         {
-            result = AuditEnsurePermissionsOnEtcAnacronTab() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcAnacronTab();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronD() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcCronD();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDailyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronDaily() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcCronDaily();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronHourly() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcCronHourly();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronMonthly() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcCronMonthly();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeeklyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronWeekly() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcCronWeekly();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcMotdObject))
         {
-            result = AuditEnsurePermissionsOnEtcMotd() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnEtcMotd();
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelSupportForCpuNxObject))
         {
-            result = AuditEnsureKernelSupportForCpuNx() ? g_fail : g_pass;
+            result = AuditEnsureKernelSupportForCpuNx();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnHomePartitionObject))
         {
-            result = AuditEnsureNodevOptionOnHomePartition() ? g_fail : g_pass;
+            result = AuditEnsureNodevOptionOnHomePartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnTmpPartition() ? g_fail : g_pass;
+            result = AuditEnsureNodevOptionOnTmpPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnVarTmpPartition() ? g_fail : g_pass;
+            result = AuditEnsureNodevOptionOnVarTmpPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnTmpPartition() ? g_fail : g_pass;
+            result = AuditEnsureNosuidOptionOnTmpPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnVarTmpPartition() ? g_fail : g_pass;
+            result = AuditEnsureNosuidOptionOnVarTmpPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnVarTmpPartition() ? g_fail : g_pass;
+            result = AuditEnsureNoexecOptionOnVarTmpPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnDevShmPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnDevShmPartition() ? g_fail : g_pass;
+            result = AuditEnsureNoexecOptionOnDevShmPartition();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
+            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
         {
-            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts() ? g_fail : g_pass;
+            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts();
         }
         else if (0 == strcmp(objectName, g_auditEnsureInetdNotInstalledObject))
         {
-            result = AuditEnsureInetdNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureInetdNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureXinetdNotInstalledObject))
         {
-            result = AuditEnsureXinetdNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureXinetdNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
-            result = AuditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
+            result = AuditEnsureAllTelnetdPackagesUninstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
-            result = AuditEnsureRshServerNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureRshServerNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisNotInstalledObject))
         {
-            result = AuditEnsureNisNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureNisNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpdNotInstalledObject))
         {
-            result = AuditEnsureTftpdNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureTftpdNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureReadaheadFedoraNotInstalledObject))
         {
-            result = AuditEnsureReadaheadFedoraNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureReadaheadFedoraNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureBluetoothHiddNotInstalledObject))
         {
-            result = AuditEnsureBluetoothHiddNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureBluetoothHiddNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsBaseNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsBaseNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureIsdnUtilsBaseNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIscDhcpdServerNotInstalledObject))
         {
-            result = AuditEnsureIscDhcpdServerNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureIscDhcpdServerNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSendmailNotInstalledObject))
         {
-            result = AuditEnsureSendmailNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureSendmailNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSldapdNotInstalledObject))
         {
-            result = AuditEnsureSldapdNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureSldapdNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureBind9NotInstalledObject))
         {
-            result = AuditEnsureBind9NotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureBind9NotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDovecotCoreNotInstalledObject))
         {
-            result = AuditEnsureDovecotCoreNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureDovecotCoreNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdInstalledObject))
         {
-            result = AuditEnsureAuditdInstalled() ? g_fail : g_pass;
+            result = AuditEnsureAuditdInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
         {
-            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup() ? g_fail : g_pass;
+            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExistObject))
         {
-            result = AuditEnsureNoDuplicateUidsExist() ? g_fail : g_pass;
+            result = AuditEnsureNoDuplicateUidsExist();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExistObject))
         {
-            result = AuditEnsureNoDuplicateGidsExist() ? g_fail : g_pass;
+            result = AuditEnsureNoDuplicateGidsExist();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExistObject))
         {
-            result = AuditEnsureNoDuplicateUserNamesExist() ? g_fail : g_pass;
+            result = AuditEnsureNoDuplicateUserNamesExist();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExistObject))
         {
-            result = AuditEnsureNoDuplicateGroupsExist() ? g_fail : g_pass;
+            result = AuditEnsureNoDuplicateGroupsExist();
         }
         else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmptyObject))
         {
-            result = AuditEnsureShadowGroupIsEmpty() ? g_fail : g_pass;
+            result = AuditEnsureShadowGroupIsEmpty();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootGroupExistsObject))
         {
-            result = AuditEnsureRootGroupExists() ? g_fail : g_pass;
+            result = AuditEnsureRootGroupExists();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswordsObject))
         {
-            result = AuditEnsureAllAccountsHavePasswords() ? g_fail : g_pass;
+            result = AuditEnsureAllAccountsHavePasswords();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
         {
-            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero() ? g_fail : g_pass;
+            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd() ? g_fail : g_pass;
+            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadowObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow() ? g_fail : g_pass;
+            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroupObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
+            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZeroObject))
         {
-            result = AuditEnsureDefaultRootAccountGroupIsGidZero() ? g_fail : g_pass;
+            result = AuditEnsureDefaultRootAccountGroupIsGidZero();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccountObject))
         {
-            result = AuditEnsureRootIsOnlyUidZeroAccount() ? g_fail : g_pass;
+            result = AuditEnsureRootIsOnlyUidZeroAccount();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExistObject))
         {
-            result = AuditEnsureAllUsersHomeDirectoriesExist() ? g_fail : g_pass;
+            result = AuditEnsureAllUsersHomeDirectoriesExist();
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectoriesObject))
         {
-            result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
+            result = AuditEnsureUsersOwnTheirHomeDirectories();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectoriesObject))
         {
-            result = AuditEnsureRestrictedUserHomeDirectories() ? g_fail : g_pass;
+            result = AuditEnsureRestrictedUserHomeDirectories();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithmObject))
         {
-            result = AuditEnsurePasswordHashingAlgorithm() ? g_fail : g_pass;
+            result = AuditEnsurePasswordHashingAlgorithm();
         }
         else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMinDaysBetweenPasswordChanges() ? g_fail : g_pass;
+            result = AuditEnsureMinDaysBetweenPasswordChanges();
         }
         else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriodObject))
         {
-            result = AuditEnsureInactivePasswordLockPeriod() ? g_fail : g_pass;
+            result = AuditEnsureInactivePasswordLockPeriod();
         }
         else if (0 == strcmp(objectName, g_auditMaxDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMaxDaysBetweenPasswordChanges() ? g_fail : g_pass;
+            result = AuditEnsureMaxDaysBetweenPasswordChanges();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationObject))
         {
-            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
+            result = AuditEnsurePasswordExpiration();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {
-            result = AuditEnsurePasswordExpirationWarning() ? g_fail : g_pass;
+            result = AuditEnsurePasswordExpirationWarning();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLoginObject))
         {
-            result = AuditEnsureSystemAccountsAreNonLogin() ? g_fail : g_pass;
+            result = AuditEnsureSystemAccountsAreNonLogin();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuthenticationRequiredForSingleUserModeObject))
         {
-            result = AuditEnsureAuthenticationRequiredForSingleUserMode() ? g_fail : g_pass;
+            result = AuditEnsureAuthenticationRequiredForSingleUserMode();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePrelinkIsDisabledObject))
         {
-            result = AuditEnsurePrelinkIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsurePrelinkIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTalkClientIsNotInstalledObject))
         {
-            result = AuditEnsureTalkClientIsNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureTalkClientIsNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDotDoesNotAppearInRootsPathObject))
         {
-            result = AuditEnsureDotDoesNotAppearInRootsPath() ? g_fail : g_pass;
+            result = AuditEnsureDotDoesNotAppearInRootsPath();
         }
         else if (0 == strcmp(objectName, g_auditEnsureCronServiceIsEnabledObject))
         {
-            result = AuditEnsureCronServiceIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureCronServiceIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureRemoteLoginWarningBannerIsConfigured() ? g_fail : g_pass;
+            result = AuditEnsureRemoteLoginWarningBannerIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureLocalLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureLocalLoginWarningBannerIsConfigured() ? g_fail : g_pass;
+            result = AuditEnsureLocalLoginWarningBannerIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdServiceIsRunningObject))
         {
-            result = AuditEnsureAuditdServiceIsRunning() ? g_fail : g_pass;
+            result = AuditEnsureAuditdServiceIsRunning();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSuRestrictedToRootGroupObject))
         {
-            result = AuditEnsureSuRestrictedToRootGroup() ? g_fail : g_pass;
+            result = AuditEnsureSuRestrictedToRootGroup();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultUmaskForAllUsersObject))
         {
-            result = AuditEnsureDefaultUmaskForAllUsers() ? g_fail : g_pass;
+            result = AuditEnsureDefaultUmaskForAllUsers();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAutomountingDisabledObject))
         {
-            result = AuditEnsureAutomountingDisabled() ? g_fail : g_pass;
+            result = AuditEnsureAutomountingDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelCompiledFromApprovedSourcesObject))
         {
-            result = AuditEnsureKernelCompiledFromApprovedSources() ? g_fail : g_pass;
+            result = AuditEnsureKernelCompiledFromApprovedSources();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSetObject))
         {
-            result = AuditEnsureDefaultDenyFirewallPolicyIsSet() ? g_fail : g_pass;
+            result = AuditEnsureDefaultDenyFirewallPolicyIsSet();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabledObject))
         {
-            result = AuditEnsurePacketRedirectSendingIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsurePacketRedirectSendingIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIcmpRedirectsIsDisabledObject))
         {
-            result = AuditEnsureIcmpRedirectsIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureIcmpRedirectsIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSourceRoutedPacketsIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject))
         {
-            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses() ? g_fail : g_pass;
+            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastObject))
         {
-            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast() ? g_fail : g_pass;
+            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast();
         }
         else if (0 == strcmp(objectName, g_auditEnsureMartianPacketLoggingIsEnabledObject))
         {
-            result = AuditEnsureMartianPacketLoggingIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureMartianPacketLoggingIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureReversePathSourceValidationIsEnabledObject))
         {
-            result = AuditEnsureReversePathSourceValidationIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureReversePathSourceValidationIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabledObject))
         {
-            result = AuditEnsureTcpSynCookiesAreEnabled() ? g_fail : g_pass;
+            result = AuditEnsureTcpSynCookiesAreEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSnifferObject))
         {
-            result = AuditEnsureSystemNotActingAsNetworkSniffer() ? g_fail : g_pass;
+            result = AuditEnsureSystemNotActingAsNetworkSniffer();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabledObject))
         {
-            result = AuditEnsureAllWirelessInterfacesAreDisabled() ? g_fail : g_pass;
+            result = AuditEnsureAllWirelessInterfacesAreDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabledObject))
         {
-            result = AuditEnsureIpv6ProtocolIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureIpv6ProtocolIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabledObject))
         {
-            result = AuditEnsureDccpIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureDccpIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabledObject))
         {
-            result = AuditEnsureSctpIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSctpIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRdsObject))
         {
-            result = AuditEnsureDisabledSupportForRds() ? g_fail : g_pass;
+            result = AuditEnsureDisabledSupportForRds();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabledObject))
         {
-            result = AuditEnsureTipcIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureTipcIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabledObject))
         {
-            result = AuditEnsureZeroconfNetworkingIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureZeroconfNetworkingIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigObject))
         {
-            result = AuditEnsurePermissionsOnBootloaderConfig() ? g_fail : g_pass;
+            result = AuditEnsurePermissionsOnBootloaderConfig();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimitedObject))
         {
-            result = AuditEnsurePasswordReuseIsLimited() ? g_fail : g_pass;
+            result = AuditEnsurePasswordReuseIsLimited();
         }
         else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject))
         {
-            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestrictedObject))
         {
-            result = AuditEnsureCoreDumpsAreRestricted() ? g_fail : g_pass;
+            result = AuditEnsureCoreDumpsAreRestricted();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsObject))
         {
-            result = AuditEnsurePasswordCreationRequirements() ? g_fail : g_pass;
+            result = AuditEnsurePasswordCreationRequirements();
         }
         else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsObject))
         {
-            result = AuditEnsureLockoutForFailedPasswordAttempts() ? g_fail : g_pass;
+            result = AuditEnsureLockoutForFailedPasswordAttempts();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfCramfsFileSystem() ? g_fail : g_pass;
+            result = AuditEnsureDisabledInstallationOfCramfsFileSystem();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem() ? g_fail : g_pass;
+            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsFileSystem() ? g_fail : g_pass;
+            result = AuditEnsureDisabledInstallationOfHfsFileSystem();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem() ? g_fail : g_pass;
+            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem();
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfJffs2FileSystem() ? g_fail : g_pass;
+            result = AuditEnsureDisabledInstallationOfJffs2FileSystem();
         }
         else if (0 == strcmp(objectName, g_auditEnsureVirtualMemoryRandomizationIsEnabledObject))
         {
-            result = AuditEnsureVirtualMemoryRandomizationIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureVirtualMemoryRandomizationIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {
-            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled() ? g_fail : g_pass;
+            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfiguredObject))
         {
-            result = AuditEnsureLoggingIsConfigured() ? g_fail : g_pass;
+            result = AuditEnsureLoggingIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalledObject))
         {
-            result = AuditEnsureSyslogPackageIsInstalled() ? g_fail : g_pass;
+            result = AuditEnsureSyslogPackageIsInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject))
         {
-            result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
+            result = AuditEnsureSystemdJournaldServicePersistsLogMessages();
         }
         else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsEnabledObject))
         {
-            result = AuditEnsureALoggingServiceIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureALoggingServiceIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
-            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles() ? g_fail : g_pass;
+            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles();
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestrictedObject))
         {
-            result = AuditEnsureLoggerConfigurationFilesAreRestricted() ? g_fail : g_pass;
+            result = AuditEnsureLoggerConfigurationFilesAreRestricted();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup() ? g_fail : g_pass;
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser() ? g_fail : g_pass;
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessagesObject))
         {
-            result = AuditEnsureRsyslogNotAcceptingRemoteMessages() ? g_fail : g_pass;
+            result = AuditEnsureRsyslogNotAcceptingRemoteMessages();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabledObject))
         {
-            result = AuditEnsureSyslogRotaterServiceIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureSyslogRotaterServiceIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabledObject))
         {
-            result = AuditEnsureTelnetServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureTelnetServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabledObject))
         {
-            result = AuditEnsureRcprshServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRcprshServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabledObject))
         {
-            result = AuditEnsureTftpServiceisDisabled() ? g_fail : g_pass;
+            result = AuditEnsureTftpServiceisDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
-            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers() ? g_fail : g_pass;
+            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
-            result = AuditEnsureSshBestPracticeProtocol() ? g_fail : g_pass;
+            result = AuditEnsureSshBestPracticeProtocol();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
         {
-            result = AuditEnsureSshBestPracticeIgnoreRhosts() ? g_fail : g_pass;
+            result = AuditEnsureSshBestPracticeIgnoreRhosts();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSetObject))
         {
-            result = AuditEnsureSshLogLevelIsSet() ? g_fail : g_pass;
+            result = AuditEnsureSshLogLevelIsSet();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSetObject))
         {
-            result = AuditEnsureSshMaxAuthTriesIsSet() ? g_fail : g_pass;
+            result = AuditEnsureSshMaxAuthTriesIsSet();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimitedObject))
         {
-            result = AuditEnsureSshAccessIsLimited() ? g_fail : g_pass;
+            result = AuditEnsureSshAccessIsLimited();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject))
         {
-            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
-            result = AuditEnsureSshHostbasedAuthenticationIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSshHostbasedAuthenticationIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabledObject))
         {
-            result = AuditEnsureSshPermitRootLoginIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSshPermitRootLoginIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
-            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject))
         {
-            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured() ? g_fail : g_pass;
+            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSetObject))
         {
-            result = AuditEnsureSshLoginGraceTimeIsSet() ? g_fail : g_pass;
+            result = AuditEnsureSshLoginGraceTimeIsSet();
         }
         else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
-            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed() ? g_fail : g_pass;
+            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabledObject))
         {
-            result = AuditEnsureSshWarningBannerIsEnabled() ? g_fail : g_pass;
+            result = AuditEnsureSshWarningBannerIsEnabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
-            result = AuditEnsureUsersCannotSetSshEnvironmentOptions() ? g_fail : g_pass;
+            result = AuditEnsureUsersCannotSetSshEnvironmentOptions();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSshObject))
         {
-            result = AuditEnsureAppropriateCiphersForSsh() ? g_fail : g_pass;
+            result = AuditEnsureAppropriateCiphersForSsh();
         }
         else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabledObject))
         {
-            result = AuditEnsureAvahiDaemonServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureAvahiDaemonServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabledObject))
         {
-            result = AuditEnsureCupsServiceisDisabled() ? g_fail : g_pass;
+            result = AuditEnsureCupsServiceisDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalledObject))
         {
-            result = AuditEnsurePostfixPackageIsUninstalled() ? g_fail : g_pass;
+            result = AuditEnsurePostfixPackageIsUninstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabledObject))
         {
-            result = AuditEnsurePostfixNetworkListeningIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsurePostfixNetworkListeningIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcgssdServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRpcgssdServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcidmapdServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRpcidmapdServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabledObject))
         {
-            result = AuditEnsurePortmapServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsurePortmapServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabledObject))
         {
-            result = AuditEnsureNetworkFileSystemServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureNetworkFileSystemServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcsvcgssdServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRpcsvcgssdServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabledObject))
         {
-            result = AuditEnsureSnmpServerIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSnmpServerIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabledObject))
         {
-            result = AuditEnsureRsynServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRsynServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabledObject))
         {
-            result = AuditEnsureNisServerIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureNisServerIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalledObject))
         {
-            result = AuditEnsureRshClientNotInstalled() ? g_fail : g_pass;
+            result = AuditEnsureRshClientNotInstalled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabledObject))
         {
-            result = AuditEnsureSmbWithSambaIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureSmbWithSambaIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
-            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable() ? g_fail : g_pass;
+            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotForwardFiles() ? g_fail : g_pass;
+            result = AuditEnsureNoUsersHaveDotForwardFiles();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotNetrcFiles() ? g_fail : g_pass;
+            result = AuditEnsureNoUsersHaveDotNetrcFiles();
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotRhostsFiles() ? g_fail : g_pass;
+            result = AuditEnsureNoUsersHaveDotRhostsFiles();
         }
         else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabledObject))
         {
-            result = AuditEnsureRloginServiceIsDisabled() ? g_fail : g_pass;
+            result = AuditEnsureRloginServiceIsDisabled();
         }
         else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemovedObject))
         {
-            result = AuditEnsureUnnecessaryAccountsAreRemoved() ? g_fail : g_pass;
+            result = AuditEnsureUnnecessaryAccountsAreRemoved();
         }
         else
         {
@@ -3452,31 +3447,59 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
 
     if (MMI_OK == status)
     {
-        *payloadSizeBytes = strlen(result);
-
-        if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+        if (NULL == result)
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
-                componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) encountered a null internal result, this audit call will fail", componentName, objectName);
+            result = DuplicateString(g_fail);
 
-            *payloadSizeBytes = g_maxPayloadSizeBytes;
+            if (NULL == result)
+            {
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: DuplicateString failed");
+                status = ENOMEM;
+            }
         }
+        
+        if (MMI_OK == status)
+        {
+            length = strlen(result);
 
-        *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
-        if (*payload)
-        {
-            memcpy(*payload, result, *payloadSizeBytes);
-        }
-        else
-        {
-            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-            *payloadSizeBytes = 0;
-            status = ENOMEM;
+            if (NULL == (buffer = malloc(length + 1)))
+            {
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
+                status = ENOMEM;
+            }
+            else
+            {
+                memset(buffer, 0, length + 1);
+
+                *payloadSizeBytes = length;
+
+                if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                        componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                    *payloadSizeBytes = g_maxPayloadSizeBytes;
+                }
+
+                *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
+                if (*payload)
+                {
+                    memcpy(*payload, result, *payloadSizeBytes);
+                }
+                else
+                {
+                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                    *payloadSizeBytes = 0;
+                    status = ENOMEM;
+                }
+            }
         }
     }    
 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
+    FREE_MEMORY(result);
     FREE_MEMORY(buffer);
 
     return status;
