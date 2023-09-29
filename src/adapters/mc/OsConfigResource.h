@@ -44,6 +44,7 @@ typedef struct _OsConfigResource /* extends OMI_BaseResource */
     MI_ConstStringField DesiredObjectName;
     MI_ConstStringField DesiredObjectValue;
     MI_ConstUint32Field ReportedMpiResult;
+    ReasonClass_ConstArrayRef Reasons;
 }
 OsConfigResource;
 
@@ -573,6 +574,46 @@ MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_ReportedMpiResult(
 {
     memset((void*)&self->ReportedMpiResult, 0, sizeof(self->ReportedMpiResult));
     return MI_RESULT_OK;
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_Set_Reasons(
+    OsConfigResource* self,
+    const ReasonClass * const * data,
+    MI_Uint32 size)
+{
+    MI_Array arr;
+    arr.data = (void*)data;
+    arr.size = size;
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        14,
+        (MI_Value*)&arr,
+        MI_INSTANCEA,
+        0);
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_SetPtr_Reasons(
+    OsConfigResource* self,
+    const ReasonClass * const * data,
+    MI_Uint32 size)
+{
+    MI_Array arr;
+    arr.data = (void*)data;
+    arr.size = size;
+    return self->__instance.ft->SetElementAt(
+        (MI_Instance*)&self->__instance,
+        14,
+        (MI_Value*)&arr,
+        MI_INSTANCEA,
+        MI_FLAG_BORROW);
+}
+
+MI_INLINE MI_Result MI_CALL OsConfigResource_Clear_Reasons(
+    OsConfigResource* self)
+{
+    return self->__instance.ft->ClearElementAt(
+        (MI_Instance*)&self->__instance,
+        14);
 }
 
 /*

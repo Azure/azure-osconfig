@@ -312,6 +312,44 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     return miResult;
 }
 
+static char* GetReasonFromLog(const char* commandTemplate, char separator, const char* keyName, void* log)
+{
+    char* command = NULL;
+    char* textResult = NULL;
+    size_t commandLength = 0;
+    int status = ENOENT;
+
+    if ((NULL == commandTemplate) || (NULL == keyName))
+    {
+        OsConfigLogError(log, "GetReasonFromLog called with invalid argument");
+        return NULL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(keyName) + 1;
+
+    if (NULL == (command = (char*)malloc(commandLength)))
+    {
+        OsConfigLogError(log, "GetReasonFromLog: out of memory");
+        return NULL;
+    }
+
+    memset(command, 0, commandLength);
+    snprintf(command, commandLength, commandTemplate, keyName);
+
+    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
+
+    FREE_MEMORY(command);
+
+    if (NULL != textResult)
+    {
+        RemovePrefixUpTo(textResult, separator);
+        RemovePrefixBlanks(textResult);
+        TruncateAtFirst(textResult, '\n');
+    }
+
+    return textResult;
+}
+
 struct OsConfigResourceParameters
 {
     const char* name;
@@ -332,11 +370,24 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
+    const char* passCode = "PASS";
+    const char* failCode = "FAIL";
+    const char* auditPassed = "Audit passed";
+    const char* auditFailed = "Audit failed. See /var/log/osconfig*";
+    const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s@";
+    char reasonPhraseSeparator = '@';
+
     MI_Result miResult = MI_RESULT_OK;
-    MI_Instance *resultResourceObject = NULL;
+    MI_Instance* resultResourceObject = NULL;
+    MI_Instance* reasonObject = NULL;
     MI_Value miValue = {0};
     MI_Value miValueResult = {0};
     MI_Value miValueResource = {0};
+    MI_Value miValueReasonResult = {0};
+    MI_Boolean isCompliant = MI_FALSE;
+
+    char* reasonCode = NULL;
+    char* reasonPhrase = NULL;
 
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
@@ -484,6 +535,77 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
         memset(&miValue, 0, sizeof(miValue));
     }
+
+    // Check if this audit is pass or fail by comparing reported to desired object values
+
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        {
+            isCompliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' matches the current local value",
+                in->InputResource.value->DesiredObjectValue.value);
+        }
+        else
+        {
+            isCompliant = MI_FALSE;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' does not match the current local value '%s'",
+                in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
+        }
+    }
+    else
+    {
+        isCompliant = MI_TRUE;
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] No DesiredString value, assuming compliance");
+    }
+
+    // Generate and report a reason for the result of this audit
+
+    if (MI_TRUE == isCompliant)
+    {
+        reasonCode = DuplicateString(passCode);
+        reasonPhrase = DuplicateString(auditPassed);
+    }
+    else
+    {
+        reasonCode = DuplicateString(failCode);
+        
+        // Search in the OSConfig logs for a trace that starts with this key name followed by reasonPhraseSeparator
+        if (NULL == (reasonPhrase = GetReasonFromLog(reasonPhraseTemplate, reasonPhraseSeparator, g_classKey, GetLog())))
+        {
+            reasonPhrase = DuplicateString(auditFailed);
+        }
+    }
+    
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
+
+    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance for a reasons class instance failed with %d", miResult);
+        goto Exit;
+    }
+
+    miValue.string = (MI_Char*)reasonCode;
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
+        goto Exit;
+    }
+
+    miValue.string = (MI_Char*)reasonPhrase;
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
+        goto Exit;
+    }
+
+    miValueReasonResult.instancea.size = 1;
+    miValueReasonResult.instancea.data = &reasonObject;
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
+        goto Exit;
+    }
     
     // Set the created output resource instance as the output resource in the GetTargetResource instance
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(&get_result_object.__instance, MI_T("OutputResource"), &miValueResource, MI_INSTANCE, 0)))
@@ -498,8 +620,17 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] OsConfigResource_GetTargetResource_Post failed with %d", miResult);
         goto Exit;
     }
-        
+
 Exit:
+    FREE_MEMORY(reasonPhrase);
+    FREE_MEMORY(reasonCode);
+    
+    // Clean up the reasons class instance
+    if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed");
+    }
+
     // Clean up the Result MI value instance if needed
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
     {
@@ -538,7 +669,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     OsConfigResource_TestTargetResource test_result_object = {0};
 
     MI_Result miResult = MI_RESULT_OK;
-    MI_Boolean is_compliant = MI_FALSE;
+    MI_Boolean isCompliant = MI_FALSE;
 
     MI_Value miValueResult;
     memset(&miValueResult, 0, sizeof(MI_Value));
@@ -624,20 +755,20 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     {
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
-            is_compliant = MI_TRUE;
+            isCompliant = MI_TRUE;
             LogInfo(context, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' matches the current local value",
                 in->InputResource.value->DesiredObjectValue.value);
         }
         else
         {
-            is_compliant = MI_FALSE;
+            isCompliant = MI_FALSE;
             LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value '%s'",
                 in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
         }
     }
     else
     {
-        is_compliant = MI_TRUE;
+        isCompliant = MI_TRUE;
         LogInfo(context, GetLog(), "[OsConfigResource.Test] No DesiredString value, assuming compliance");
     }
 
@@ -653,7 +784,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    OsConfigResource_TestTargetResource_Set_Result(&test_result_object, is_compliant);
+    OsConfigResource_TestTargetResource_Set_Result(&test_result_object, isCompliant);
     MI_Context_PostInstance(context, &(test_result_object.__instance));
 
 Exit:
