@@ -2427,7 +2427,7 @@ static int RemediateEnsurePortmapServiceIsDisabled(void)
     StopAndDisableDaemon(g_rpcbind, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindService, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindSocket, SecurityBaselineGetLog());
-    return (0 == strcmp(g_pass, AuditEnsurePortmapServiceIsDisabled() ? 0 : ENOENT;
+    return (0 == strcmp(g_pass, AuditEnsurePortmapServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
