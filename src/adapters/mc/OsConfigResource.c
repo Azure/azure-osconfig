@@ -312,44 +312,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     return miResult;
 }
 
-static char* GetReasonFromLog(const char* commandTemplate, char separator, const char* keyName, void* log)
-{
-    char* command = NULL;
-    char* textResult = NULL;
-    size_t commandLength = 0;
-    int status = ENOENT;
-
-    if ((NULL == commandTemplate) || (NULL == keyName))
-    {
-        OsConfigLogError(log, "GetReasonFromLog called with invalid argument");
-        return NULL;
-    }
-
-    commandLength = strlen(commandTemplate) + strlen(keyName) + 1;
-
-    if (NULL == (command = (char*)malloc(commandLength)))
-    {
-        OsConfigLogError(log, "GetReasonFromLog: out of memory");
-        return NULL;
-    }
-
-    memset(command, 0, commandLength);
-    snprintf(command, commandLength, commandTemplate, keyName);
-
-    status = ExecuteCommand(NULL, command, false, false, 0, 0, &textResult, NULL, log);
-
-    FREE_MEMORY(command);
-
-    if (NULL != textResult)
-    {
-        RemovePrefixUpTo(textResult, separator);
-        RemovePrefixBlanks(textResult);
-        TruncateAtFirst(textResult, '\n');
-    }
-
-    return textResult;
-}
-
 struct OsConfigResourceParameters
 {
     const char* name;
@@ -569,12 +531,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     else
     {
         reasonCode = DuplicateString(failCode);
-        
-        // Search in the OSConfig logs for a trace that starts with this key name followed by reasonPhraseSeparator
-        if (NULL == (reasonPhrase = GetReasonFromLog(reasonPhraseTemplate, reasonPhraseSeparator, g_classKey, GetLog())))
-        {
-            reasonPhrase = DuplicateString(auditFailed);
-        }
+        reasonPhrase = DuplicateString(g_reportedObjectValue);
     }
     
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonPhrase);

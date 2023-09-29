@@ -459,6 +459,40 @@ static OSCONFIG_LOG_HANDLE g_log = NULL;
 static atomic_int g_referenceCount = 0;
 static unsigned int g_maxPayloadSizeBytes = 0;
 
+static char* FormatAllocateString(const char* format, ...)
+{
+    const int maxFormatAllocateStringLength = 512;
+    char buffer[MAX_FORMAT_ALLOCATE_STRING] = {0};
+    int formatResult = 0;
+    char* stringToReturn = NULL;
+
+    if (NULL == format)
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: invalid argument");
+        return stringToReturn;
+    }
+
+    va_list arguments;
+    va_start(arguments, format);
+    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING, format, arguments);
+    va_end(arguments);
+
+    if ((formatResult > 0) && (formatResult < maxFormatAllocateStringLength))
+    {
+        if (0 != mallocAndStrcpy_s(&stringToReturn, buffer))
+        {
+            OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: out of memory");
+        }
+    }
+    else
+    {
+        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)", 
+            formatResult, maxFormatAllocateStringLength);
+    }
+
+    return stringToReturn;
+}
+
 static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
 {
     return g_log;
@@ -902,7 +936,20 @@ static char* AuditEnsureAuditdServiceIsRunning(void)
 
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
-    return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    //return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    
+    // Temporary replacement for Machine Configuration
+    char* status = NULL;
+    if (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()))
+    {
+        status = DuplicateString(g_pass);
+    }
+    else
+    {
+        status = FormatAllocateString("Audit did not find '%s' in '%s'", "use_uid", "/etc/pam.d/su");
+    }
+
+    return status;
 }
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
@@ -1054,13 +1101,19 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
     //TBD: refine this and expand to other distros
     //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 
-    // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
+    // Temporary replacement for Machine Configuration 
     int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
-    char* status = (4 < option) ? DuplicateString(g_pass) : DuplicateString(g_fail);
-    if (strcmp(g_pass, status))
+    char* status = NULL;
+    
+    if (4 < option)
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "EnsurePasswordReuseIsLimited@ Audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
+        status = DuplicateString(g_pass);
     }
+    else
+    {
+        status = FormatAllocateString("Audit found in %s a 'remember' option of %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4);
+    }
+
     return status;
 }
 
@@ -1068,12 +1121,18 @@ static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? ENOENT : 0;
     
-    // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
-    char* status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
-    if (strcmp(g_pass, status))
+    // Temporary replacement for Machine Configuration
+    char* status = NULL;
+    
+    if (0 == FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog())
     {
-        OsConfigLogError(SecurityBaselineGetLog(), "EnsureMountingOfUsbStorageDevicesIsDisabled@ Audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
+        status = DuplicateString(g_pass);
     }
+    else
+    {
+        status = FormatAllocateString("Audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD);
+    }
+
     return status;
 }
 
