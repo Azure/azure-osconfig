@@ -462,7 +462,7 @@ static unsigned int g_maxPayloadSizeBytes = 0;
 static char* FormatAllocateString(const char* format, ...)
 {
     const int maxFormatAllocateStringLength = 512;
-    char buffer[MAX_FORMAT_ALLOCATE_STRING] = {0};
+    char buffer[maxFormatAllocateStringLength] = {0};
     int formatResult = 0;
     char* stringToReturn = NULL;
 
@@ -474,7 +474,7 @@ static char* FormatAllocateString(const char* format, ...)
 
     va_list arguments;
     va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING, format, arguments);
+    formatResult = vsnprintf(buffer, maxFormatAllocateStringLength, format, arguments);
     va_end(arguments);
 
     if ((formatResult > 0) && (formatResult < maxFormatAllocateStringLength))
