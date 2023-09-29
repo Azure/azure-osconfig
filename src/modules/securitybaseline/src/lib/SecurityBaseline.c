@@ -14,8 +14,8 @@
 
 #include "SecurityBaseline.h"
 
-typedef (const char*)(*Audit)(void);
-typedef int(*Remediation)(void);
+typedef (const char*)(*AuditCall)(void);
+typedef int(*RemediationCall)(void);
 
 static const char* g_securityBaselineModuleName = "OSConfig SecurityBaseline module";
 static const char* g_securityBaselineComponentName = "SecurityBaseline";
@@ -1463,7 +1463,7 @@ static const char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
     return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? g_fail : g_pass;
 }
 
-Audit g_auditChecks[] =
+AuditCall g_auditChecks[] =
 {
     &AuditEnsurePermissionsOnEtcIssue,
     &AuditEnsurePermissionsOnEtcIssueNet,
@@ -2500,7 +2500,7 @@ static int RemediateEnsureUnnecessaryAccountsAreRemoved(void)
     return RemoveUserAccounts(names, ARRAY_SIZE(names), SecurityBaselineGetLog());
 }
 
-Remediation g_remediateChecks[] =
+RemediationCall g_remediateChecks[] =
 {
     &RemediateEnsurePermissionsOnEtcIssue,
     &RemediateEnsurePermissionsOnEtcIssueNet,
