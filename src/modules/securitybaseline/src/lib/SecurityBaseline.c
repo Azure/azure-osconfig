@@ -1363,8 +1363,8 @@ static char* AuditEnsurePostfixPackageIsUninstalled(void)
 
 static char* AuditEnsurePostfixNetworkListeningIsDisabled(void)
 {
-    return (0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) ? 
-        FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog()) : 0;
+    return ((0 == CheckFileExists("/etc/postfix/main.cf", SecurityBaselineGetLog())) && 
+        ((0 == FindTextInFile("/etc/postfix/main.cf", "inet_interfaces localhost", SecurityBaselineGetLog())))) ? DuplicateText(g_pass) : DuplicateText(g_fail);
 }
 
 static char* AuditEnsureRpcgssdServiceIsDisabled(void)
@@ -1635,7 +1635,8 @@ char* AuditSecurityBaseline(void)
 {
     size_t numChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
-    char* status = NULL, _status = NULL;
+    char* status = NULL; 
+    char* _status = NULL;
 
     for (i = 0; i < numChecks; i++)
     {
