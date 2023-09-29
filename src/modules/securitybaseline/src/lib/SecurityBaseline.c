@@ -1052,10 +1052,10 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
 
     // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
-    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
     char* status = (4 < option) ? DuplicateString(g_pass) : DuplicateString(g_fail);
     if (strcmp(g_pass, status))
     {
@@ -1066,7 +1066,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
-    //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? ENOENT : 0;
     
     // Temporary replacement with a variant that logs a reason for Machine Configuration to be picked up
     char* status = FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
