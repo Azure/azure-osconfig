@@ -724,47 +724,47 @@ static char* AuditEnsureAuditdInstalled(void)
 
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog());
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateUidsExist(void)
 {
-    return CheckNoDuplicateUidsExist(SecurityBaselineGetLog());
+    return CheckNoDuplicateUidsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void)
 {
-    return CheckNoDuplicateGidsExist(SecurityBaselineGetLog());
+    return CheckNoDuplicateGidsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void)
 {
-    return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog());
+    return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void)
 {
-    return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog());
+    return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void)
 {
-    return CheckShadowGroupIsEmpty(SecurityBaselineGetLog());
+    return CheckShadowGroupIsEmpty(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRootGroupExists(void)
 {
-    return CheckRootGroupExists(SecurityBaselineGetLog());
+    return CheckRootGroupExists(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAllAccountsHavePasswords(void)
 {
-    return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog());
+    return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
-    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog());
+    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
@@ -784,7 +784,7 @@ static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 
 static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
-    return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog());
+    return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
@@ -795,12 +795,12 @@ static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 
 static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
-    return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog());
+    return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
-    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog());
+    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRestrictedUserHomeDirectories(void)
@@ -843,12 +843,12 @@ static char* AuditEnsurePasswordExpirationWarning(void)
 
 static char* AuditEnsureSystemAccountsAreNonLogin(void)
 {
-    return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog());
+    return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
-    return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog());
+    return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePrelinkIsDisabled(void)
