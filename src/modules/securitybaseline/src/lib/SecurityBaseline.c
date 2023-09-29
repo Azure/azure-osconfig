@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <string.h>
 #include <version.h>
 #include <parson.h>
 #include <CommonUtils.h>
@@ -1125,7 +1126,7 @@ static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
     // Temporary replacement for Machine Configuration
     char* status = NULL;
     
-    if (0 == FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog())
+    if (0 == FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()))
     {
         status = DuplicateString(g_pass);
     }
