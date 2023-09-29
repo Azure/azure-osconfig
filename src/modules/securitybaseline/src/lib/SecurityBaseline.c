@@ -2385,7 +2385,7 @@ static int RemediateEnsureAppropriateCiphersForSsh(void)
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_avahiDaemon, SecurityBaselineGetLog());
-    return AuditEnsureAvahiDaemonServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureAvahiDaemonServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureCupsServiceisDisabled(void)
@@ -2408,14 +2408,14 @@ static int RemediateEnsureRpcgssdServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_rpcgssd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcGssd, SecurityBaselineGetLog());
-    return AuditEnsureRpcgssdServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureRpcgssdServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcidmapdServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_rpcidmapd, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_nfsIdmapd, SecurityBaselineGetLog());
-    return AuditEnsureRpcidmapdServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureRpcidmapdServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePortmapServiceIsDisabled(void)
@@ -2423,13 +2423,13 @@ static int RemediateEnsurePortmapServiceIsDisabled(void)
     StopAndDisableDaemon(g_rpcbind, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindService, SecurityBaselineGetLog());
     StopAndDisableDaemon(g_rpcbindSocket, SecurityBaselineGetLog());
-    return AuditEnsurePortmapServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsurePortmapServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNetworkFileSystemServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_nfsServer, SecurityBaselineGetLog());
-    return AuditEnsureNetworkFileSystemServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureNetworkFileSystemServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
@@ -2440,19 +2440,19 @@ static int RemediateEnsureRpcsvcgssdServiceIsDisabled(void)
 static int RemediateEnsureSnmpServerIsDisabled(void)
 {
     StopAndDisableDaemon(g_snmpd, SecurityBaselineGetLog());
-    return AuditEnsureSnmpServerIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureSnmpServerIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRsynServiceIsDisabled(void)
 {
     StopAndDisableDaemon(g_rsync, SecurityBaselineGetLog());
-    return AuditEnsureRsynServiceIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureRsynServiceIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureNisServerIsDisabled(void)
 {
     StopAndDisableDaemon(g_ypserv, SecurityBaselineGetLog());
-    return AuditEnsureNisServerIsDisabled();
+    return (0 == strcmp(g_pass, AuditEnsureNisServerIsDisabled())) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureRshClientNotInstalled(void)
