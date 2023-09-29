@@ -6,4 +6,5 @@ REM use -OldRcPath to retain old rc resource numbers
    -MofFile D:\ProviderGenerationTool\OsConfig.schema.mof ^
    -ClassList OsConfigResource^
    -IncludePath CIM-2.26.0 ^
-   -OutPath D:\ProviderGenerationTool\OsConfig\
+   -OutPath D:\ProviderGenerationTool\OsConfig\ ^
+   -NoSAL

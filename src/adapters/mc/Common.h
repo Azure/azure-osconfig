@@ -23,6 +23,7 @@
 #include "MI.h"
 #include "MSFT_Credential.h"
 #include "OMI_BaseResource.h"
+#include "ReasonClass.h"
 #include "OsConfigResource.h"
 
 #define LogWithMiContext(context, miResult, log, FORMAT, ...) {\
