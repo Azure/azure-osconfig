@@ -2785,663 +2785,663 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     {
         if (0 == strcmp(objectName, g_auditSecurityBaselineObject))
         {
-            result = AuditSecurityBaseline();
+            result = AuditSecurityBaseline() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssue();
+            result = AuditEnsurePermissionsOnEtcIssue() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcIssueNetObject))
         {
-            result = AuditEnsurePermissionsOnEtcIssueNet();
+            result = AuditEnsurePermissionsOnEtcIssueNet() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsAllowObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsAllow();
+            result = AuditEnsurePermissionsOnEtcHostsAllow() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcHostsDenyObject))
         {
-            result = AuditEnsurePermissionsOnEtcHostsDeny();
+            result = AuditEnsurePermissionsOnEtcHostsDeny() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
         {
-            result = AuditEnsurePermissionsOnEtcSshSshdConfig();
+            result = AuditEnsurePermissionsOnEtcSshSshdConfig() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadow();
+            result = AuditEnsurePermissionsOnEtcShadow() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcShadowDash();
+            result = AuditEnsurePermissionsOnEtcShadowDash() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadow();
+            result = AuditEnsurePermissionsOnEtcGShadow() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGShadowDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGShadowDash();
+            result = AuditEnsurePermissionsOnEtcGShadowDash() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswd();
+            result = AuditEnsurePermissionsOnEtcPasswd() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcPasswdDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcPasswdDash();
+            result = AuditEnsurePermissionsOnEtcPasswdDash() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroup();
+            result = AuditEnsurePermissionsOnEtcGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcGroupDashObject))
         {
-            result = AuditEnsurePermissionsOnEtcGroupDash();
+            result = AuditEnsurePermissionsOnEtcGroupDash() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcAnacronTabObject))
         {
-            result = AuditEnsurePermissionsOnEtcAnacronTab();
+            result = AuditEnsurePermissionsOnEtcAnacronTab() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronD();
+            result = AuditEnsurePermissionsOnEtcCronD() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronDailyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronDaily();
+            result = AuditEnsurePermissionsOnEtcCronDaily() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronHourlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronHourly();
+            result = AuditEnsurePermissionsOnEtcCronHourly() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronMonthlyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronMonthly();
+            result = AuditEnsurePermissionsOnEtcCronMonthly() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcCronWeeklyObject))
         {
-            result = AuditEnsurePermissionsOnEtcCronWeekly();
+            result = AuditEnsurePermissionsOnEtcCronWeekly() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnEtcMotdObject))
         {
-            result = AuditEnsurePermissionsOnEtcMotd();
+            result = AuditEnsurePermissionsOnEtcMotd() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelSupportForCpuNxObject))
         {
-            result = AuditEnsureKernelSupportForCpuNx();
+            result = AuditEnsureKernelSupportForCpuNx() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnHomePartitionObject))
         {
-            result = AuditEnsureNodevOptionOnHomePartition();
+            result = AuditEnsureNodevOptionOnHomePartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnTmpPartition();
+            result = AuditEnsureNodevOptionOnTmpPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNodevOptionOnVarTmpPartition();
+            result = AuditEnsureNodevOptionOnVarTmpPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnTmpPartition();
+            result = AuditEnsureNosuidOptionOnTmpPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNosuidOptionOnVarTmpPartition();
+            result = AuditEnsureNosuidOptionOnVarTmpPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnVarTmpPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnVarTmpPartition();
+            result = AuditEnsureNoexecOptionOnVarTmpPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionOnDevShmPartitionObject))
         {
-            result = AuditEnsureNoexecOptionOnDevShmPartition();
+            result = AuditEnsureNoexecOptionOnDevShmPartition() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNodevOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia();
+            result = AuditEnsureNodevOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia();
+            result = AuditEnsureNoexecOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNosuidOptionEnabledForAllRemovableMediaObject))
         {
-            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia();
+            result = AuditEnsureNosuidOptionEnabledForAllRemovableMedia() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoexecNosuidOptionsEnabledForAllNfsMountsObject))
         {
-            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts();
+            result = AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureInetdNotInstalledObject))
         {
-            result = AuditEnsureInetdNotInstalled();
+            result = AuditEnsureInetdNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureXinetdNotInstalledObject))
         {
-            result = AuditEnsureXinetdNotInstalled();
+            result = AuditEnsureXinetdNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllTelnetdPackagesUninstalledObject))
         {
-            result = AuditEnsureAllTelnetdPackagesUninstalled();
+            result = AuditEnsureAllTelnetdPackagesUninstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshServerNotInstalledObject))
         {
-            result = AuditEnsureRshServerNotInstalled();
+            result = AuditEnsureRshServerNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisNotInstalledObject))
         {
-            result = AuditEnsureNisNotInstalled();
+            result = AuditEnsureNisNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpdNotInstalledObject))
         {
-            result = AuditEnsureTftpdNotInstalled();
+            result = AuditEnsureTftpdNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureReadaheadFedoraNotInstalledObject))
         {
-            result = AuditEnsureReadaheadFedoraNotInstalled();
+            result = AuditEnsureReadaheadFedoraNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureBluetoothHiddNotInstalledObject))
         {
-            result = AuditEnsureBluetoothHiddNotInstalled();
+            result = AuditEnsureBluetoothHiddNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsBaseNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsBaseNotInstalled();
+            result = AuditEnsureIsdnUtilsBaseNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIsdnUtilsKdumpToolsNotInstalledObject))
         {
-            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled();
+            result = AuditEnsureIsdnUtilsKdumpToolsNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIscDhcpdServerNotInstalledObject))
         {
-            result = AuditEnsureIscDhcpdServerNotInstalled();
+            result = AuditEnsureIscDhcpdServerNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSendmailNotInstalledObject))
         {
-            result = AuditEnsureSendmailNotInstalled();
+            result = AuditEnsureSendmailNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSldapdNotInstalledObject))
         {
-            result = AuditEnsureSldapdNotInstalled();
+            result = AuditEnsureSldapdNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureBind9NotInstalledObject))
         {
-            result = AuditEnsureBind9NotInstalled();
+            result = AuditEnsureBind9NotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDovecotCoreNotInstalledObject))
         {
-            result = AuditEnsureDovecotCoreNotInstalled();
+            result = AuditEnsureDovecotCoreNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdInstalledObject))
         {
-            result = AuditEnsureAuditdInstalled();
+            result = AuditEnsureAuditdInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllEtcPasswdGroupsExistInEtcGroupObject))
         {
-            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup();
+            result = AuditEnsureAllEtcPasswdGroupsExistInEtcGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUidsExistObject))
         {
-            result = AuditEnsureNoDuplicateUidsExist();
+            result = AuditEnsureNoDuplicateUidsExist() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGidsExistObject))
         {
-            result = AuditEnsureNoDuplicateGidsExist();
+            result = AuditEnsureNoDuplicateGidsExist() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateUserNamesExistObject))
         {
-            result = AuditEnsureNoDuplicateUserNamesExist();
+            result = AuditEnsureNoDuplicateUserNamesExist() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoDuplicateGroupsExistObject))
         {
-            result = AuditEnsureNoDuplicateGroupsExist();
+            result = AuditEnsureNoDuplicateGroupsExist() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureShadowGroupIsEmptyObject))
         {
-            result = AuditEnsureShadowGroupIsEmpty();
+            result = AuditEnsureShadowGroupIsEmpty() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootGroupExistsObject))
         {
-            result = AuditEnsureRootGroupExists();
+            result = AuditEnsureRootGroupExists() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllAccountsHavePasswordsObject))
         {
-            result = AuditEnsureAllAccountsHavePasswords();
+            result = AuditEnsureAllAccountsHavePasswords() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZeroObject))
         {
-            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero();
+            result = AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcPasswdObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd();
+            result = AuditEnsureNoLegacyPlusEntriesInEtcPasswd() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcShadowObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow();
+            result = AuditEnsureNoLegacyPlusEntriesInEtcShadow() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoLegacyPlusEntriesInEtcGroupObject))
         {
-            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup();
+            result = AuditEnsureNoLegacyPlusEntriesInEtcGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultRootAccountGroupIsGidZeroObject))
         {
-            result = AuditEnsureDefaultRootAccountGroupIsGidZero();
+            result = AuditEnsureDefaultRootAccountGroupIsGidZero() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRootIsOnlyUidZeroAccountObject))
         {
-            result = AuditEnsureRootIsOnlyUidZeroAccount();
+            result = AuditEnsureRootIsOnlyUidZeroAccount() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllUsersHomeDirectoriesExistObject))
         {
-            result = AuditEnsureAllUsersHomeDirectoriesExist();
+            result = AuditEnsureAllUsersHomeDirectoriesExist() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersOwnTheirHomeDirectoriesObject))
         {
-            result = AuditEnsureUsersOwnTheirHomeDirectories();
+            result = AuditEnsureUsersOwnTheirHomeDirectories() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRestrictedUserHomeDirectoriesObject))
         {
-            result = AuditEnsureRestrictedUserHomeDirectories();
+            result = AuditEnsureRestrictedUserHomeDirectories() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordHashingAlgorithmObject))
         {
-            result = AuditEnsurePasswordHashingAlgorithm();
+            result = AuditEnsurePasswordHashingAlgorithm() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureMinDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMinDaysBetweenPasswordChanges();
+            result = AuditEnsureMinDaysBetweenPasswordChanges() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureInactivePasswordLockPeriodObject))
         {
-            result = AuditEnsureInactivePasswordLockPeriod();
+            result = AuditEnsureInactivePasswordLockPeriod() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditMaxDaysBetweenPasswordChangesObject))
         {
-            result = AuditEnsureMaxDaysBetweenPasswordChanges();
+            result = AuditEnsureMaxDaysBetweenPasswordChanges() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationObject))
         {
-            result = AuditEnsurePasswordExpiration();
+            result = AuditEnsurePasswordExpiration() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordExpirationWarningObject))
         {
-            result = AuditEnsurePasswordExpirationWarning();
+            result = AuditEnsurePasswordExpirationWarning() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemAccountsAreNonLoginObject))
         {
-            result = AuditEnsureSystemAccountsAreNonLogin();
+            result = AuditEnsureSystemAccountsAreNonLogin() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuthenticationRequiredForSingleUserModeObject))
         {
-            result = AuditEnsureAuthenticationRequiredForSingleUserMode();
+            result = AuditEnsureAuthenticationRequiredForSingleUserMode() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePrelinkIsDisabledObject))
         {
-            result = AuditEnsurePrelinkIsDisabled();
+            result = AuditEnsurePrelinkIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTalkClientIsNotInstalledObject))
         {
-            result = AuditEnsureTalkClientIsNotInstalled();
+            result = AuditEnsureTalkClientIsNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDotDoesNotAppearInRootsPathObject))
         {
-            result = AuditEnsureDotDoesNotAppearInRootsPath();
+            result = AuditEnsureDotDoesNotAppearInRootsPath() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureCronServiceIsEnabledObject))
         {
-            result = AuditEnsureCronServiceIsEnabled();
+            result = AuditEnsureCronServiceIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRemoteLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureRemoteLoginWarningBannerIsConfigured();
+            result = AuditEnsureRemoteLoginWarningBannerIsConfigured() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureLocalLoginWarningBannerIsConfiguredObject))
         {
-            result = AuditEnsureLocalLoginWarningBannerIsConfigured();
+            result = AuditEnsureLocalLoginWarningBannerIsConfigured() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAuditdServiceIsRunningObject))
         {
-            result = AuditEnsureAuditdServiceIsRunning();
+            result = AuditEnsureAuditdServiceIsRunning() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSuRestrictedToRootGroupObject))
         {
-            result = AuditEnsureSuRestrictedToRootGroup();
+            result = AuditEnsureSuRestrictedToRootGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultUmaskForAllUsersObject))
         {
-            result = AuditEnsureDefaultUmaskForAllUsers();
+            result = AuditEnsureDefaultUmaskForAllUsers() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAutomountingDisabledObject))
         {
-            result = AuditEnsureAutomountingDisabled();
+            result = AuditEnsureAutomountingDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureKernelCompiledFromApprovedSourcesObject))
         {
-            result = AuditEnsureKernelCompiledFromApprovedSources();
+            result = AuditEnsureKernelCompiledFromApprovedSources() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDefaultDenyFirewallPolicyIsSetObject))
         {
-            result = AuditEnsureDefaultDenyFirewallPolicyIsSet();
+            result = AuditEnsureDefaultDenyFirewallPolicyIsSet() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePacketRedirectSendingIsDisabledObject))
         {
-            result = AuditEnsurePacketRedirectSendingIsDisabled();
+            result = AuditEnsurePacketRedirectSendingIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIcmpRedirectsIsDisabledObject))
         {
-            result = AuditEnsureIcmpRedirectsIsDisabled();
+            result = AuditEnsureIcmpRedirectsIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureSourceRoutedPacketsIsDisabled();
+            result = AuditEnsureSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAcceptingSourceRoutedPacketsIsDisabledObject))
         {
-            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled();
+            result = AuditEnsureAcceptingSourceRoutedPacketsIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringBogusIcmpBroadcastResponsesObject))
         {
-            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses();
+            result = AuditEnsureIgnoringBogusIcmpBroadcastResponses() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIgnoringIcmpEchoPingsToMulticastObject))
         {
-            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast();
+            result = AuditEnsureIgnoringIcmpEchoPingsToMulticast() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureMartianPacketLoggingIsEnabledObject))
         {
-            result = AuditEnsureMartianPacketLoggingIsEnabled();
+            result = AuditEnsureMartianPacketLoggingIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureReversePathSourceValidationIsEnabledObject))
         {
-            result = AuditEnsureReversePathSourceValidationIsEnabled();
+            result = AuditEnsureReversePathSourceValidationIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTcpSynCookiesAreEnabledObject))
         {
-            result = AuditEnsureTcpSynCookiesAreEnabled();
+            result = AuditEnsureTcpSynCookiesAreEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemNotActingAsNetworkSnifferObject))
         {
-            result = AuditEnsureSystemNotActingAsNetworkSniffer();
+            result = AuditEnsureSystemNotActingAsNetworkSniffer() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllWirelessInterfacesAreDisabledObject))
         {
-            result = AuditEnsureAllWirelessInterfacesAreDisabled();
+            result = AuditEnsureAllWirelessInterfacesAreDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureIpv6ProtocolIsEnabledObject))
         {
-            result = AuditEnsureIpv6ProtocolIsEnabled();
+            result = AuditEnsureIpv6ProtocolIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDccpIsDisabledObject))
         {
-            result = AuditEnsureDccpIsDisabled();
+            result = AuditEnsureDccpIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSctpIsDisabledObject))
         {
-            result = AuditEnsureSctpIsDisabled();
+            result = AuditEnsureSctpIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledSupportForRdsObject))
         {
-            result = AuditEnsureDisabledSupportForRds();
+            result = AuditEnsureDisabledSupportForRds() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTipcIsDisabledObject))
         {
-            result = AuditEnsureTipcIsDisabled();
+            result = AuditEnsureTipcIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureZeroconfNetworkingIsDisabledObject))
         {
-            result = AuditEnsureZeroconfNetworkingIsDisabled();
+            result = AuditEnsureZeroconfNetworkingIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePermissionsOnBootloaderConfigObject))
         {
-            result = AuditEnsurePermissionsOnBootloaderConfig();
+            result = AuditEnsurePermissionsOnBootloaderConfig() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordReuseIsLimitedObject))
         {
-            result = AuditEnsurePasswordReuseIsLimited();
+            result = AuditEnsurePasswordReuseIsLimited() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureMountingOfUsbStorageDevicesIsDisabledObject))
         {
-            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled();
+            result = AuditEnsureMountingOfUsbStorageDevicesIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureCoreDumpsAreRestrictedObject))
         {
-            result = AuditEnsureCoreDumpsAreRestricted();
+            result = AuditEnsureCoreDumpsAreRestricted() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePasswordCreationRequirementsObject))
         {
-            result = AuditEnsurePasswordCreationRequirements();
+            result = AuditEnsurePasswordCreationRequirements() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureLockoutForFailedPasswordAttemptsObject))
         {
-            result = AuditEnsureLockoutForFailedPasswordAttempts();
+            result = AuditEnsureLockoutForFailedPasswordAttempts() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfCramfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfCramfsFileSystem();
+            result = AuditEnsureDisabledInstallationOfCramfsFileSystem() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfFreevxfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem();
+            result = AuditEnsureDisabledInstallationOfFreevxfsFileSystem() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsFileSystem();
+            result = AuditEnsureDisabledInstallationOfHfsFileSystem() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfHfsplusFileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem();
+            result = AuditEnsureDisabledInstallationOfHfsplusFileSystem() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureDisabledInstallationOfJffs2FileSystemObject))
         {
-            result = AuditEnsureDisabledInstallationOfJffs2FileSystem();
+            result = AuditEnsureDisabledInstallationOfJffs2FileSystem() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureVirtualMemoryRandomizationIsEnabledObject))
         {
-            result = AuditEnsureVirtualMemoryRandomizationIsEnabled();
+            result = AuditEnsureVirtualMemoryRandomizationIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllBootloadersHavePasswordProtectionEnabledObject))
         {
-            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled();
+            result = AuditEnsureAllBootloadersHavePasswordProtectionEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggingIsConfiguredObject))
         {
-            result = AuditEnsureLoggingIsConfigured();
+            result = AuditEnsureLoggingIsConfigured() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogPackageIsInstalledObject))
         {
-            result = AuditEnsureSyslogPackageIsInstalled();
+            result = AuditEnsureSyslogPackageIsInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSystemdJournaldServicePersistsLogMessagesObject))
         {
-            result = AuditEnsureSystemdJournaldServicePersistsLogMessages();
+            result = AuditEnsureSystemdJournaldServicePersistsLogMessages() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureALoggingServiceIsEnabledObject))
         {
-            result = AuditEnsureALoggingServiceIsEnabled();
+            result = AuditEnsureALoggingServiceIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureFilePermissionsForAllRsyslogLogFilesObject))
         {
-            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles();
+            result = AuditEnsureFilePermissionsForAllRsyslogLogFiles() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureLoggerConfigurationFilesAreRestrictedObject))
         {
-            result = AuditEnsureLoggerConfigurationFilesAreRestricted();
+            result = AuditEnsureLoggerConfigurationFilesAreRestricted() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedByAdmGroupObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup();
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedByAdmGroup() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAllRsyslogLogFilesAreOwnedBySyslogUserObject))
         {
-            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser();
+            result = AuditEnsureAllRsyslogLogFilesAreOwnedBySyslogUser() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsyslogNotAcceptingRemoteMessagesObject))
         {
-            result = AuditEnsureRsyslogNotAcceptingRemoteMessages();
+            result = AuditEnsureRsyslogNotAcceptingRemoteMessages() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSyslogRotaterServiceIsEnabledObject))
         {
-            result = AuditEnsureSyslogRotaterServiceIsEnabled();
+            result = AuditEnsureSyslogRotaterServiceIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTelnetServiceIsDisabledObject))
         {
-            result = AuditEnsureTelnetServiceIsDisabled();
+            result = AuditEnsureTelnetServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRcprshServiceIsDisabledObject))
         {
-            result = AuditEnsureRcprshServiceIsDisabled();
+            result = AuditEnsureRcprshServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureTftpServiceisDisabledObject))
         {
-            result = AuditEnsureTftpServiceisDisabled();
+            result = AuditEnsureTftpServiceisDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAtCronIsRestrictedToAuthorizedUsersObject))
         {
-            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers();
+            result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
-            result = AuditEnsureSshBestPracticeProtocol();
+            result = AuditEnsureSshBestPracticeProtocol() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
         {
-            result = AuditEnsureSshBestPracticeIgnoreRhosts();
+            result = AuditEnsureSshBestPracticeIgnoreRhosts() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLogLevelIsSetObject))
         {
-            result = AuditEnsureSshLogLevelIsSet();
+            result = AuditEnsureSshLogLevelIsSet() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshMaxAuthTriesIsSetObject))
         {
-            result = AuditEnsureSshMaxAuthTriesIsSet();
+            result = AuditEnsureSshMaxAuthTriesIsSet() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimitedObject))
         {
-            result = AuditEnsureSshAccessIsLimited();
+            result = AuditEnsureSshAccessIsLimited() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject))
         {
-            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled();
+            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
-            result = AuditEnsureSshHostbasedAuthenticationIsDisabled();
+            result = AuditEnsureSshHostbasedAuthenticationIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitRootLoginIsDisabledObject))
         {
-            result = AuditEnsureSshPermitRootLoginIsDisabled();
+            result = AuditEnsureSshPermitRootLoginIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
         {
-            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled();
+            result = AuditEnsureSshPermitEmptyPasswordsIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject))
         {
-            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured();
+            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSetObject))
         {
-            result = AuditEnsureSshLoginGraceTimeIsSet();
+            result = AuditEnsureSshLoginGraceTimeIsSet() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
         {
-            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed();
+            result = AuditEnsureOnlyApprovedMacAlgorithmsAreUsed() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshWarningBannerIsEnabledObject))
         {
-            result = AuditEnsureSshWarningBannerIsEnabled();
+            result = AuditEnsureSshWarningBannerIsEnabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
         {
-            result = AuditEnsureUsersCannotSetSshEnvironmentOptions();
+            result = AuditEnsureUsersCannotSetSshEnvironmentOptions() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAppropriateCiphersForSshObject))
         {
-            result = AuditEnsureAppropriateCiphersForSsh();
+            result = AuditEnsureAppropriateCiphersForSsh() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureAvahiDaemonServiceIsDisabledObject))
         {
-            result = AuditEnsureAvahiDaemonServiceIsDisabled();
+            result = AuditEnsureAvahiDaemonServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureCupsServiceisDisabledObject))
         {
-            result = AuditEnsureCupsServiceisDisabled();
+            result = AuditEnsureCupsServiceisDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixPackageIsUninstalledObject))
         {
-            result = AuditEnsurePostfixPackageIsUninstalled();
+            result = AuditEnsurePostfixPackageIsUninstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePostfixNetworkListeningIsDisabledObject))
         {
-            result = AuditEnsurePostfixNetworkListeningIsDisabled();
+            result = AuditEnsurePostfixNetworkListeningIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcgssdServiceIsDisabled();
+            result = AuditEnsureRpcgssdServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcidmapdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcidmapdServiceIsDisabled();
+            result = AuditEnsureRpcidmapdServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsurePortmapServiceIsDisabledObject))
         {
-            result = AuditEnsurePortmapServiceIsDisabled();
+            result = AuditEnsurePortmapServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNetworkFileSystemServiceIsDisabledObject))
         {
-            result = AuditEnsureNetworkFileSystemServiceIsDisabled();
+            result = AuditEnsureNetworkFileSystemServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRpcsvcgssdServiceIsDisabledObject))
         {
-            result = AuditEnsureRpcsvcgssdServiceIsDisabled();
+            result = AuditEnsureRpcsvcgssdServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSnmpServerIsDisabledObject))
         {
-            result = AuditEnsureSnmpServerIsDisabled();
+            result = AuditEnsureSnmpServerIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRsynServiceIsDisabledObject))
         {
-            result = AuditEnsureRsynServiceIsDisabled();
+            result = AuditEnsureRsynServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNisServerIsDisabledObject))
         {
-            result = AuditEnsureNisServerIsDisabled();
+            result = AuditEnsureNisServerIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRshClientNotInstalledObject))
         {
-            result = AuditEnsureRshClientNotInstalled();
+            result = AuditEnsureRshClientNotInstalled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureSmbWithSambaIsDisabledObject))
         {
-            result = AuditEnsureSmbWithSambaIsDisabled();
+            result = AuditEnsureSmbWithSambaIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureUsersDotFilesArentGroupOrWorldWritableObject))
         {
-            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable();
+            result = AuditEnsureUsersDotFilesArentGroupOrWorldWritable() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotForwardFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotForwardFiles();
+            result = AuditEnsureNoUsersHaveDotForwardFiles() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotNetrcFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotNetrcFiles();
+            result = AuditEnsureNoUsersHaveDotNetrcFiles() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureNoUsersHaveDotRhostsFilesObject))
         {
-            result = AuditEnsureNoUsersHaveDotRhostsFiles();
+            result = AuditEnsureNoUsersHaveDotRhostsFiles() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureRloginServiceIsDisabledObject))
         {
-            result = AuditEnsureRloginServiceIsDisabled();
+            result = AuditEnsureRloginServiceIsDisabled() ? g_fail : g_pass;
         }
         else if (0 == strcmp(objectName, g_auditEnsureUnnecessaryAccountsAreRemovedObject))
         {
-            result = AuditEnsureUnnecessaryAccountsAreRemoved();
+            result = AuditEnsureUnnecessaryAccountsAreRemoved() ? g_fail : g_pass;
         }
         else
         {
