@@ -453,7 +453,8 @@ static long g_passwordExpiration = 365;
 static long g_maxInactiveDays = 30;
 
 static const char* g_pass = "\"PASS\"";
-static const char* g_fail = "\"FAIL\"";
+//static const char* g_fail = "\"FAIL\"";
+static const char* g_fail = "FAIL";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
@@ -3522,7 +3523,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         
         if (MMI_OK == status)
         {
-            length = strlen(result);
+            length = strlen(result) + 4;
 
             if (NULL == (buffer = malloc(length + 1)))
             {
@@ -3546,8 +3547,8 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
                 *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
                 if (*payload)
                 {
-                    memcpy(*payload, result, *payloadSizeBytes);
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "### MpiGet returned payload: '%.*s', %d ('%s') ###", *payloadSizeBytes, *payload, *payloadSizeBytes, *payload);
+                    snprintf(*payload, *payloadSizeBytes, "\"%s\"", result);
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "### MpiGet payload: '%.*s' (%d), '%s'", *payloadSizeBytes, *payload, *payloadSizeBytes, result); //////////////
                 }
                 else
                 {
