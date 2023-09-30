@@ -3547,6 +3547,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
                 if (*payload)
                 {
                     memcpy(*payload, result, *payloadSizeBytes);
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "### MpiGet returned payload: '%.*s', %d ('%s') ###", *payloadSizeBytes, *payload, *payloadSizeBytes, *payload);
                 }
                 else
                 {
