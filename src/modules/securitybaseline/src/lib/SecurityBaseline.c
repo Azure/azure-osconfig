@@ -3537,7 +3537,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             {
                 memset(*payload, 0, *payloadSizeBytes + 1);
                 snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", result);
-                OsConfigLogInfo(SecurityBaselineGetLog(), "### MmiGet payload: '%.*s' (%d), '%s'", *payloadSizeBytes, *payload, *payloadSizeBytes, result); //////////////
             }
             else
             {
