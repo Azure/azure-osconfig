@@ -452,8 +452,9 @@ static long g_passwordExpirationWarning = 7;
 static long g_passwordExpiration = 365;
 static long g_maxInactiveDays = 30;
 
-static const char* g_pass = "\"PASS\"";
+//static const char* g_pass = "\"PASS\"";
 //static const char* g_fail = "\"FAIL\"";
+static const char* g_pass = "PASS";
 static const char* g_fail = "FAIL";
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
@@ -2814,9 +2815,7 @@ int SecurityBaselineMmiGetInfo(const char* clientName, MMI_JSON_STRING* payload,
 int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, const char* objectName, MMI_JSON_STRING* payload, int* payloadSizeBytes)
 {
     int status = MMI_OK;
-    char* buffer = NULL;
     char* result = NULL;
-    size_t length = 0;
 
     if ((NULL == componentName) || (NULL == objectName) || (NULL == payload) || (NULL == payloadSizeBytes))
     {
@@ -3521,41 +3520,30 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
             }
         }
         
-        if (MMI_OK == status)
+        if (result)
         {
-            length = strlen(result) + 4;
+            *payloadSizeBytes = strlen(result) + 2;
 
-            if (NULL == (buffer = malloc(length + 1)))
+            if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) failed due to out of memory condition", componentName, objectName);
-                status = ENOMEM;
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
+                    componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
+
+                *payloadSizeBytes = g_maxPayloadSizeBytes;
+            }
+
+            *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes + 1);
+            if (*payload)
+            {
+                memset(*payload, 0, *payloadSizeBytes + 1);
+                snprintf(*payload, *payloadSizeBytes + 1, "\"%s\"", result);
+                OsConfigLogInfo(SecurityBaselineGetLog(), "### MmiGet payload: '%.*s' (%d), '%s'", *payloadSizeBytes, *payload, *payloadSizeBytes, result); //////////////
             }
             else
             {
-                memset(buffer, 0, length + 1);
-
-                *payloadSizeBytes = length;
-
-                if ((g_maxPayloadSizeBytes > 0) && ((unsigned)*payloadSizeBytes > g_maxPayloadSizeBytes))
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) insufficient max size (%d bytes) vs actual size (%d bytes), report will be truncated",
-                        componentName, objectName, g_maxPayloadSizeBytes, *payloadSizeBytes);
-
-                    *payloadSizeBytes = g_maxPayloadSizeBytes;
-                }
-
-                *payload = (MMI_JSON_STRING)malloc(*payloadSizeBytes);
-                if (*payload)
-                {
-                    snprintf(*payload, *payloadSizeBytes, "\"%s\"", result);
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "### MpiGet payload: '%.*s' (%d), '%s'", *payloadSizeBytes, *payload, *payloadSizeBytes, result); //////////////
-                }
-                else
-                {
-                    OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
-                    *payloadSizeBytes = 0;
-                    status = ENOMEM;
-                }
+                OsConfigLogError(SecurityBaselineGetLog(), "MmiGet: failed to allocate %d bytes", *payloadSizeBytes + 1);
+                *payloadSizeBytes = 0;
+                status = ENOMEM;
             }
         }
     }    
@@ -3563,7 +3551,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     OsConfigLogInfo(SecurityBaselineGetLog(), "MmiGet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     FREE_MEMORY(result);
-    FREE_MEMORY(buffer);
 
     return status;
 }
