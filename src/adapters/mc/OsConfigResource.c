@@ -518,7 +518,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     else
     {
         reasonCode = DuplicateString(failCode);
-        reasonPhrase = DuplicateString(g_reportedObjectValue);
+        if (0 == strcmp(g_reportedObjectValue, g_failValue))
+        {
+            reasonPhrase = DuplicateString(auditFailed);
+        }
+        else
+        {
+            reasonPhrase = DuplicateString(g_reportedObjectValue);
+        }
     }
     
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
@@ -566,14 +573,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
+    FREE_MEMORY(reasonPhrase);
+    FREE_MEMORY(reasonCode);
+
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed");
     }
-
-    FREE_MEMORY(reasonPhrase);
-    FREE_MEMORY(reasonCode);
 
     // Clean up the Result MI value instance if needed
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
