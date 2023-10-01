@@ -247,13 +247,12 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             {
                 mpiResult = ENODATA;
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned no payload ('%s', %d) (%d)", 
+                LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload ('%s', %d) (%d)", 
                     who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
             }
             else
             {
-                LogInfo(context, GetLog(), "[%s] CallMpiGet for '%s' and '%s' returned '%s' (%d long)",
-                    who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
                 
                 if (NULL != (payloadString = malloc(objectValueLength + 1)))
                 {
@@ -299,7 +298,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                     LogError(context, miResult, GetLog(), "[%s] Failed to allocate %d bytes", who, objectValueLength + 1);
                 }
 
-                LogInfo(context, GetLog(), "[%s] ReportedObjectValue value: '%s'", who, g_reportedObjectValue);
                 CallMpiFree(objectValue);
             }
         }
@@ -358,15 +356,13 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
         { "ReportedObjectValue", MI_STRING, g_reportedObjectValue, 0 },
         { "DesiredObjectName", MI_STRING, in->InputResource.value->DesiredObjectName.value, 0 },
-        { "DesiredObjectValue", MI_STRING, g_desiredObjectValue, 0 },
+        { "DesiredObjectValue", MI_STRING, in->InputResource.value->DesiredObjectValue.value, 0 },
         { "ReportedMpiResult", MI_UINT32, NULL, g_reportedMpiResult }
     };
 
     int allParametersSize = ARRAY_SIZE(allParameters);
 
     OsConfigResource_GetTargetResource get_result_object = {0};
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] Starting Get");
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
@@ -394,8 +390,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] Processing key '%s'", g_classKey);
-
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
@@ -415,8 +409,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] Processing ComponentName '%s'", g_componentName);
-
     // Read the MIM reported object name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
@@ -435,8 +427,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] Processing ReportedObjectName '%s'", g_reportedObjectName);
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
     {
@@ -498,21 +488,18 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         memset(&miValue, 0, sizeof(miValue));
     }
 
-    // Check if this audit is pass or fail by comparing reported to desired object values
-
+    // Check if this audit is pass or fail by comparing reported object value (from device) to desired object value (from the input resource values)
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
             isCompliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' matches the current local value",
-                in->InputResource.value->DesiredObjectValue.value);
         }
         else
         {
             isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' does not match the current local value '%s'",
-                in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' does not match the current local value",
+                in->InputResource.value->DesiredObjectValue.value);
         }
     }
     else
@@ -534,7 +521,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         reasonPhrase = DuplicateString(g_reportedObjectValue);
     }
     
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s has reason code '%s' and reason phrase '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
@@ -579,14 +566,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
-    FREE_MEMORY(reasonPhrase);
-    FREE_MEMORY(reasonCode);
-    
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_Delete(reasonObject) failed");
     }
+
+    FREE_MEMORY(reasonPhrase);
+    FREE_MEMORY(reasonCode);
 
     // Clean up the Result MI value instance if needed
     if ((NULL != miValueResult.instance) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(miValueResult.instance))))
@@ -607,7 +594,12 @@ Exit:
     }
 
     // Post MI result back to MI to finish
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] Get complete with miResult %d", miResult);
+    
+    if (MI_RESULT_OK != miResult)
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] Get complete with miResult %d", miResult);
+    }
+    
     MI_Context_PostResult(context, miResult);
 }
 
@@ -630,8 +622,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     MI_Value miValueResult;
     memset(&miValueResult, 0, sizeof(MI_Value));
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] Starting Test");
 
     if ((in == NULL) || (in->InputResource.exists == MI_FALSE) || (in->InputResource.value == NULL))
     {
@@ -659,8 +649,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] Processing key '%s'", g_classKey);
-
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
@@ -679,8 +667,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] Processing ComponentName '%s'", g_componentName);
 
     // Read the MIM reported object name from the input resource values
 
@@ -701,8 +687,6 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] Processing ReportedObjectName '%s'", g_reportedObjectName);
-
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", context)))
     {
         goto Exit;
@@ -713,14 +697,12 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
             isCompliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' matches the current local value",
-                in->InputResource.value->DesiredObjectValue.value);
         }
         else
         {
             isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value '%s'",
-                in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value",
+                in->InputResource.value->DesiredObjectValue.value);
         }
     }
     else
@@ -755,7 +737,11 @@ Exit:
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] TestTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Test] Test complete with miResult %d", miResult);
+    if (MI_RESULT_OK != miResult)
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] Test complete with miResult %d", miResult);
+    }
+
     MI_Context_PostResult(context, miResult);
 
 }
@@ -780,8 +766,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     int payloadSize = 0;
 
     OsConfigResource_SetTargetResource set_result_object = {0};
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Starting Set");
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
     {
@@ -823,8 +807,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Processing key '%s'", g_classKey);
-
     // Read the MIM component name from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
@@ -843,8 +825,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Processing ComponentName '%s'", g_componentName);
 
     // Read the MIM desired object name from the input resource values
 
@@ -865,8 +845,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Processing DesiredObjectName '%s'", g_desiredObjectName);
-
     // Read the MIM desired object value from the input resource values
 
     if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
@@ -885,8 +863,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
-
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Processing DesiredObjectValue '%s'", g_desiredObjectValue);
 
     if (NULL == g_mpiHandle)
     {
@@ -908,14 +884,14 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
             if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
             {
-                LogInfo(context, GetLog(), "[OsConfigResource.Set] DesiredString value '%s' successfully applied to device as '%.*s', %d bytes",
-                    g_desiredObjectValue, payloadSize, payloadString, payloadSize);
+                LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) ok",
+                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Failed to apply DesiredString value '%s' to device as '%.*s' (%d bytes), miResult %d",
-                    g_desiredObjectValue, payloadSize, payloadString, payloadSize, miResult);
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
+                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
             }
 
             FREE_MEMORY(payloadString);
@@ -947,7 +923,11 @@ Exit:
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] SetTargetResource_Destruct failed");
     }
 
-    LogInfo(context, GetLog(), "[OsConfigResource.Set] Set complete with miResult %d", miResult);
+    if (MI_RESULT_OK != miResult)
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Set complete with miResult %d", miResult);
+    }
+
     MI_Context_PostResult(context, miResult);
 }
 
