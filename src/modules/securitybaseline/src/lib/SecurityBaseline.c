@@ -1086,7 +1086,8 @@ static char* AuditEnsurePermissionsOnBootloaderConfig(void)
 static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
-    return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ?
+    int option = 0;
+    return (4 < (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ?
         FormatAllocateString("Audit found in %s a 'remember' option set to %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4) : 
         DuplicateString(g_pass);
 }
@@ -1184,8 +1185,10 @@ static char* AuditEnsureSyslogPackageIsInstalled(void)
 
 static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
+    char* reason = NULL;
     return ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (FormatAllocateString("Package %s is not installed, or: %s", g_systemd, reason) && FreeAndReturn(reason));
 }
 
 static char* AuditEnsureALoggingServiceIsEnabled(void)
