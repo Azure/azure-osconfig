@@ -1186,9 +1186,11 @@ static char* AuditEnsureSyslogPackageIsInstalled(void)
 static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
 {
     char* reason = NULL;
-    return ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
-        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        (FormatAllocateString("Package %s is not installed, or: %s", g_systemd, reason) && FreeAndReturnTrue(reason));
+    char* status = ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
+        (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? 
+        DuplicateString(g_pass) : FormatAllocateString("Package %s is not installed, or: %s", g_systemd, reason);
+    FREE_MEMORY(reason);
+    return status;
 }
 
 static char* AuditEnsureALoggingServiceIsEnabled(void)
@@ -1239,13 +1241,14 @@ static char* AuditEnsureSyslogRotaterServiceIsEnabled(void)
     char* osName = NULL;
     char* osVersion = NULL;
     char* reason = NULL;
-
-    return ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
+    char* status = ((0 == CheckPackageInstalled("logrotate", SecurityBaselineGetLog())) &&
         ((((NULL != (osName = GetOsName(SecurityBaselineGetLog()))) && (0 == strcmp(osName, "Ubuntu")) && FreeAndReturnTrue(osName)) &&
         ((NULL != (osVersion = GetOsVersion(SecurityBaselineGetLog()))) && (0 == strncmp(osVersion, version, strlen(version))) && FreeAndReturnTrue(osVersion))) ||
         CheckIfDaemonActive("logrotate.timer", SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess("/etc/cron.daily/logrotate", 0, 0, 755, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        (FormatAllocateString("The logrotate package is not installed, or the logrotate.timer daemon is not running, or: %s", reason) && FreeAndReturnTrue(reason));
+        FormatAllocateString("The logrotate package is not installed, or the logrotate.timer daemon is not running, or: %s", reason);
+    FREE_MEMORY(reason);
+    return status;
 }
 
 static char* AuditEnsureTelnetServiceIsDisabled(void)
@@ -1268,14 +1271,15 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
     const char* etcCronAllow = "/etc/cron.allow";
     const char* etcAtAllow = "/etc/at.allow";
     char* reason = NULL;
-
-    return ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
+    char* status = ((EEXIST == CheckFileExists("/etc/cron.deny", SecurityBaselineGetLog())) &&
         (EEXIST == CheckFileExists("/etc/at.deny", SecurityBaselineGetLog())) &&
         (0 == CheckFileExists(etcCronAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        (FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s does not exist, or: %s", etcCronAllow, etcAtAllow, reason) && FreeAndReturnTrue(reason));
+        FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s does not exist, or: %s", etcCronAllow, etcAtAllow, reason);
+    FREE_MEMORY(reason);
+    return status;
 }
 
 static char* AuditEnsureSshBestPracticeProtocol(void)
