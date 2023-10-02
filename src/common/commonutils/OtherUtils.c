@@ -25,7 +25,7 @@ char* DuplicateString(const char* source)
 }
 
 #define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
-static char* FormatAllocateString(const char* format, ...)
+char* FormatAllocateString(const char* format, ...)
 {
     char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
     int formatResult = 0;
