@@ -90,6 +90,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
 char* DuplicateString(const char* source);
+char* FormatAllocateString(const char* format, ...);
 
 size_t HashString(const char* source);
 char* HashCommand(const char* source, void* log);

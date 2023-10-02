@@ -452,8 +452,6 @@ static long g_passwordExpirationWarning = 7;
 static long g_passwordExpiration = 365;
 static long g_maxInactiveDays = 30;
 
-//static const char* g_pass = "\"PASS\"";
-//static const char* g_fail = "\"FAIL\"";
 static const char* g_pass = "PASS";
 static const char* g_fail = "FAIL";
 
@@ -465,40 +463,6 @@ static unsigned int g_maxPayloadSizeBytes = 0;
 static OSCONFIG_LOG_HANDLE SecurityBaselineGetLog(void)
 {
     return g_log;
-}
-
-#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
-static char* FormatAllocateString(const char* format, ...)
-{
-    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
-    int formatResult = 0;
-    char* stringToReturn = NULL;
-
-    if (NULL == format)
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: invalid argument");
-        return stringToReturn;
-    }
-
-    va_list arguments;
-    va_start(arguments, format);
-    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING_LENGTH, format, arguments);
-    va_end(arguments);
-
-    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
-    {
-        if (NULL == (stringToReturn = DuplicateString(buffer)))
-        {
-            OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: DuplicateString failed");
-        }
-    }
-    else
-    {
-        OsConfigLogError(SecurityBaselineGetLog(), "FormatAllocateString: vsnprintf failed with %d (expected value between 0 and %d)",
-            formatResult, MAX_FORMAT_ALLOCATE_STRING_LENGTH);
-    }
-
-    return stringToReturn;
 }
 
 void SecurityBaselineInitialize(void)

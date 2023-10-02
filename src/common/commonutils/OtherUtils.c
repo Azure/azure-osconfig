@@ -24,6 +24,31 @@ char* DuplicateString(const char* source)
     return duplicate;
 }
 
+#define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
+static char* FormatAllocateString(const char* format, ...)
+{
+    char buffer[MAX_FORMAT_ALLOCATE_STRING_LENGTH] = {0};
+    int formatResult = 0;
+    char* stringToReturn = NULL;
+
+    if (NULL == format)
+    {
+        return stringToReturn;
+    }
+
+    va_list arguments;
+    va_start(arguments, format);
+    formatResult = vsnprintf(buffer, MAX_FORMAT_ALLOCATE_STRING_LENGTH, format, arguments);
+    va_end(arguments);
+
+    if ((formatResult > 0) && (formatResult < MAX_FORMAT_ALLOCATE_STRING_LENGTH))
+    {
+        stringToReturn = DuplicateString(buffer);
+    }
+
+    return stringToReturn;
+}
+
 int SleepMilliseconds(long milliseconds)
 {
     struct timespec remaining = {0};

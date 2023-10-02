@@ -1008,6 +1008,17 @@ TEST_F(CommonUtilsTest, DuplicateString)
     FREE_MEMORY(duplicate);
 }
 
+TEST_F(CommonUtilsTest, FormatAllocateString)
+{
+    char* formattted = nullptr;
+    EXPECT_EQ(nullptr, formattted = FormatAllocateString(nullptr));
+    EXPECT_STREQ(m_data, formattted = FormatAllocateString(m_data));
+    FREE_MEMORY(formattted);
+    EXPECT_STREQ("Test ABC 123", formattted = FormatAllocateString("Test %s %d", "ABC", 123));
+    FREE_MEMORY(formattted);
+}
+
+
 TEST_F(CommonUtilsTest, HashCommand)
 {
     EXPECT_EQ(nullptr, HashCommand(nullptr, nullptr));
