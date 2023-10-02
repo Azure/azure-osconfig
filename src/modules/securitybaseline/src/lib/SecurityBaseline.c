@@ -1188,7 +1188,7 @@ static char* AuditEnsureSystemdJournaldServicePersistsLogMessages(void)
     char* reason = NULL;
     return ((0 == CheckPackageInstalled(g_systemd, SecurityBaselineGetLog())) && 
         (0 == CheckDirectoryAccess("/var/log/journal", 0, -1, 2775, false, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        (FormatAllocateString("Package %s is not installed, or: %s", g_systemd, reason) && FreeAndReturn(reason));
+        (FormatAllocateString("Package %s is not installed, or: %s", g_systemd, reason) && FreeAndReturnTrue(reason));
 }
 
 static char* AuditEnsureALoggingServiceIsEnabled(void)
