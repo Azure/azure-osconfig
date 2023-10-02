@@ -1290,7 +1290,8 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
         (0 == CheckFileExists(etcAtAllow, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcCronAllow, 0, 0, 600, &reason, SecurityBaselineGetLog())) &&
         (0 == CheckFileAccess(etcAtAllow, 0, 0, 600, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s does not exist, or: %s", etcCronAllow, etcAtAllow, reason);
+        FormatAllocateString("/etc/cron.deny, or /etc/at.deny, or %s, or %s does not exist, or: %s", 
+            etcCronAllow, etcAtAllow, reason ? reason : "/etc/at.allow access not set to 600");
     FREE_MEMORY(reason);
     return status;
 }

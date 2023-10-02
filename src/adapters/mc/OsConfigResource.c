@@ -696,16 +696,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
-        {
-            isCompliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);
-        }
-        else
-        {
-            isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s: incompliant", g_classKey);
-        }
+        isCompliant = (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
     }
     else
     {
