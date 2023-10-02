@@ -196,7 +196,7 @@ static int OctalToDecimal(int octal)
     return decimal;
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -209,6 +209,11 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
         return EINVAL;
     }
 
+    if (reason)
+    {
+        *reason = NULL;
+    }
+
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
         if (0 == (result = stat(name, &statStruct)))
@@ -218,6 +223,13 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+
+                if (reason)
+                {
+                    *reason = FormatAllocateString("Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                }
+
                 result = ENOENT;
             }
             else
@@ -265,6 +277,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (currentMode > desiredMode))
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    }
+                    
                     result = ENOENT;
                 }
                 else
@@ -343,9 +361,9 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
@@ -353,9 +371,9 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
 {
-    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)

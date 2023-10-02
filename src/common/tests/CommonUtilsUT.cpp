@@ -1178,13 +1178,13 @@ TEST_F(CommonUtilsTest, SetAndCheckFileAccess)
     for (int i = 0; i < numTestModes; i++)
     {
         EXPECT_EQ(0, SetFileAccess(m_path, 0, 0, testModes[i], nullptr));
-        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, testModes[i], nullptr));
+        EXPECT_EQ(0, CheckFileAccess(m_path, 0, 0, testModes[i], nullptr, nullptr));
     }
 
     EXPECT_TRUE(Cleanup(m_path));
     
     EXPECT_EQ(EINVAL, SetFileAccess(nullptr, 0, 0, 777, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileAccess(nullptr, 0, 0, 777, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
@@ -1196,12 +1196,12 @@ TEST_F(CommonUtilsTest, SetAndCheckDirectoryAccess)
     for (int i = 0; i < numTestModes; i++)
     {
         EXPECT_EQ(0, SetDirectoryAccess("~test", 0, 0, testModes[i], nullptr));
-        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, testModes[i], false, nullptr));
+        EXPECT_EQ(0, CheckDirectoryAccess("~test", 0, 0, testModes[i], false, nullptr, nullptr));
     }
     EXPECT_EQ(0, ExecuteCommand(nullptr, "rm -r ~test", false, false, 0, 0, nullptr, nullptr, nullptr));
 
     EXPECT_EQ(EINVAL, SetDirectoryAccess(nullptr, 0, 0, 777, nullptr));
-    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 777, false, nullptr));
+    EXPECT_EQ(EINVAL, CheckDirectoryAccess(nullptr, 0, 0, 777, false, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
