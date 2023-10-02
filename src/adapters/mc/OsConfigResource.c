@@ -461,9 +461,11 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
                 if (NULL != allParameters[i].stringValue)
                 {
                     miValue.string = (MI_Char*)(allParameters[i].stringValue);
-                    miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0);
-                    LogInfo(context, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d", 
-                        allParameters[i].name, miValue.string, miResult);
+                    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0)))
+                    {
+                        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' failed with miResult %d",
+                            allParameters[i].name, miValue.string, miResult);
+                    }
                 }
                 else
                 {
@@ -475,9 +477,11 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             case MI_UINT32:
             default:
                 miValue.uint32 = (MI_Uint32)(allParameters[i].integerValue);
-                miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_UINT32, 0);
-                LogInfo(context, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to integer value '%d' complete with miResult %d", 
-                    allParameters[i].name, miValue.uint32, miResult);
+                if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_UINT32, 0)))
+                {
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to integer value '%d' failed with miResult %d",
+                        allParameters[i].name, miValue.uint32, miResult);
+                }
         }
 
         if (MI_RESULT_OK != miResult)
@@ -491,16 +495,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Check if this audit is pass or fail by comparing reported object value (from device) to desired object value (from the input resource values)
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
-        {
-            isCompliant = MI_TRUE;
-        }
-        else
-        {
-            isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DesiredObjectValue value '%s' does not match the current local value",
-                in->InputResource.value->DesiredObjectValue.value);
-        }
+        isCompliant = (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
     }
     else
     {
@@ -704,18 +699,18 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
         {
             isCompliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);
         }
         else
         {
             isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DesiredObjectValue value '%s' does not match the current local value",
-                in->InputResource.value->DesiredObjectValue.value);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s: incompliant", g_classKey);
         }
     }
     else
     {
         isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] No DesiredString value, assuming compliance");
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no DesiredString value, assuming compliance", g_classKey);
     }
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_TestTargetResource_Construct(&test_result_object, context)))

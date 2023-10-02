@@ -904,8 +904,7 @@ static char* AuditEnsureAuditdServiceIsRunning(void)
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
     //return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
-    
-    // Temporary replacement for Machine Configuration
+    // Prototype replacement for Machine Configuration
     char* status = NULL;
     if (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()))
     {
@@ -913,7 +912,7 @@ static char* AuditEnsureSuRestrictedToRootGroup(void)
     }
     else
     {
-        status = FormatAllocateString("Audit did not find '%s' in '%s'", "use_uid", "/etc/pam.d/su");
+        status = DuplicateString("Audit did not find 'use_uid' in /etc/pam.d/su");
     }
 
     return status;
@@ -1067,12 +1066,11 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 {
     //TBD: refine this and expand to other distros
     //return (4 < GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())) ? 0 : ENOENT;
-
-    // Temporary replacement for Machine Configuration 
-    int option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog());
+    // Prototype replacement for Machine Configuration 
     char* status = NULL;
-    
-    if (4 < option)
+    int option = 0;;
+
+    if (4 < (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog())))
     {
         status = DuplicateString(g_pass);
     }
@@ -1087,8 +1085,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     //return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? ENOENT : 0;
-    
-    // Temporary replacement for Machine Configuration
+    // Prototype replacement for Machine Configuration
     char* status = NULL;
     
     if (0 == FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()))
