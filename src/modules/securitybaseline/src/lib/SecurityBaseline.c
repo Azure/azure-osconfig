@@ -1104,19 +1104,31 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
 
     return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        DuplicateString("Line 'hard core 0' not found in /etc/security/limits.conf, or 'fs.suid_dumpable = 0' not found in /etc/security/limits.d or in output from 'sysctl -a'");
 }
 
 static char* AuditEnsurePasswordCreationRequirements(void)
 {
+    int minlenOption = 0;
+    int minclassOption = 0;
+    int dcreditOption = 0;
+    int ucreditOption = 0;
+    int ocreditOption = 0;
+    int lcreditOption = 0;
+    
     //TBD: expand to other distros
     return ((14 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minlen", '=', SecurityBaselineGetLog())) &&
         (4 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "minclass", '=', SecurityBaselineGetLog())) &&
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "dcredit", '=', SecurityBaselineGetLog())) &&
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ucredit", '=', SecurityBaselineGetLog())) &&
         (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "ocredit", '=', SecurityBaselineGetLog())) &&
-        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (-1 == GetIntegerOptionFromFile(g_etcPamdCommonPassword, "lcredit", '=', SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("In %s, minlen missing or set to %d instead of 14, minclass missing or set to %d instead of 4, "
+            "or: dcredit, ucredit, ocredit or lcredit missing or set to %d, %d, %d, %d respectively instead of -1 each");
 }
+
+// HERE
 
 static char* AuditEnsureLockoutForFailedPasswordAttempts(void)
 {
