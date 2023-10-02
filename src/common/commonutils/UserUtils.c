@@ -2040,7 +2040,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has proper restricted access (%u) set for their dot file '%s'",
                                     userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
