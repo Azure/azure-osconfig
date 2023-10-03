@@ -503,7 +503,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     else
     {
         isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] No DesiredString value, assuming compliance");
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no DesiredString value, assuming compliance", g_classKey);
     }
 
     // Generate and report a reason for the result of this audit
@@ -695,7 +695,16 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        isCompliant = (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
+        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        {
+            isCompliant = MI_TRUE;
+            LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);
+        }
+        else
+        {
+            isCompliant = MI_FALSE;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s: incompliant", g_classKey);
+        }
     }
     else
     {
@@ -735,7 +744,6 @@ Exit:
     }
 
     MI_Context_PostResult(context, miResult);
-
 }
 
 void MI_CALL OsConfigResource_Invoke_SetTargetResource(
