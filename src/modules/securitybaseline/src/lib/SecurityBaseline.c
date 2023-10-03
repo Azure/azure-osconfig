@@ -1088,14 +1088,14 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
     //TBD: refine this and expand to other distros
     int option = 0;
     return (4 < (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ?
-        FormatAllocateString("Audit found in %s a 'remember' option set to %d instead of expected %d or greater", g_etcPamdCommonPassword, option, 4) : 
+        FormatAllocateString("A 'remember' option was not found or set to %d in %s instead of expected %d or greater", g_etcPamdCommonPassword, option, 4) : 
         DuplicateString(g_pass);
 }
 
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("Audit did not find 'install usb-storage /bin/true' in %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install usb-storage /bin/true' not found in %s", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureCoreDumpsAreRestricted(void)

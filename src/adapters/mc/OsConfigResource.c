@@ -334,8 +334,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* failCode = "FAIL";
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
-    const char* reasonPhraseTemplate = "cat /var/log/osconfig* | grep %s@";
-    char reasonPhraseSeparator = '@';
 
     MI_Result miResult = MI_RESULT_OK;
     MI_Instance* resultResourceObject = NULL;
@@ -513,14 +511,11 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     else
     {
         reasonCode = DuplicateString(failCode);
-        if (0 == strcmp(g_reportedObjectValue, g_failValue))
+        reasonPhrase = DuplicateString(auditFailed);
+        /*if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
-        }
-        else
-        {
-            reasonPhrase = DuplicateString(g_reportedObjectValue);
-        }
+        }*/
     }
     
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
