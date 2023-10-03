@@ -255,12 +255,12 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             {
                 mpiResult = ENODATA;
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload ('%s', %d) (%d)", 
+                LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s): no payload (%s, %d) (%d)", 
                     who, g_componentName, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
             }
             else
             {
-                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): %s (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
                 
                 if (NULL != (payloadString = malloc(objectValueLength + 1)))
                 {
@@ -519,7 +519,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     else
     {
         g_reasonCode = DuplicateString(failCode);
-        if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
+        if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (g_reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             g_reasonPhrase = DuplicateString(auditFailed);
         }
@@ -551,7 +551,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     miValueReasonResult.instancea.data = &reasonObject;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", g_reasonCode, g_reasonPhrase, miResult);
         goto Exit;
     }
     
@@ -876,13 +876,13 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
             if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
             {
-                LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) ok",
+                LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) ok",
                     g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) failed with %d, miResult %d",
                     g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
             }
 
