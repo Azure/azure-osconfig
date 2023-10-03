@@ -932,7 +932,7 @@ static char* AuditEnsureSuRestrictedToRootGroup(void)
     }
     else
     {
-        status = DuplicateString("Audit did not find 'use_uid' in /etc/pam.d/su");
+        status = DuplicateString("'use_uid' not found in /etc/pam.d/su");
     }
 
     return status;
