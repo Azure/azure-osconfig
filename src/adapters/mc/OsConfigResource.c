@@ -27,6 +27,10 @@ static char* g_desiredObjectValue = NULL;
 static char* g_reportedObjectValue = NULL;
 static unsigned int g_reportedMpiResult = 0;
 
+// Reported (reason code and phrase)
+static char* g_reasonCode = NULL;
+static char* g_reasonPhrase = NULL;
+
 MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
@@ -77,6 +81,8 @@ void __attribute__((constructor)) Initialize()
     g_reportedObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
+    g_reasonCode = DuplicateString(g_failValue);
+    g_reasonPhrase = DuplicateString(g_failValue);
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
@@ -99,6 +105,8 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_desiredObjectName);
     FREE_MEMORY(g_desiredObjectValue);
     FREE_MEMORY(g_reportedObjectValue);
+    FREE_MEMORY(g_reasonCode);
+    FREE_MEMORY(g_reasonPhrase);
 }
 
 void MI_CALL OsConfigResource_Load(
@@ -344,9 +352,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueReasonResult = {0};
     MI_Boolean isCompliant = MI_FALSE;
 
-    char* reasonCode = NULL;
-    char* reasonPhrase = NULL;
-
     // Reported values
     struct OsConfigResourceParameters allParameters[] = {
         { "PayloadKey", MI_STRING, in->InputResource.value->PayloadKey.value, 0 },
@@ -503,22 +508,24 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Generate and report a reason for the result of this audit
 
+    FREE_MEMORY(g_reasonCode);
+    FREE_MEMORY(g_reasonPhrase);
+    
     if (MI_TRUE == isCompliant)
     {
-        reasonCode = DuplicateString(passCode);
-        reasonPhrase = DuplicateString(auditPassed);
+        g_reasonCode = DuplicateString(passCode);
+        g_reasonPhrase = DuplicateString(auditPassed);
     }
     else
     {
-        reasonCode = DuplicateString(failCode);
-        reasonPhrase = DuplicateString(auditFailed);
-        /*if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
+        g_reasonCode = DuplicateString(failCode);
+        if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
-            reasonPhrase = DuplicateString(auditFailed);
-        }*/
+            g_reasonPhrase = DuplicateString(auditFailed);
+        }
     }
     
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, g_reasonCode, g_reasonPhrase);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
@@ -526,14 +533,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)reasonCode;
+    miValue.string = (MI_Char*)g_reasonCode;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)reasonPhrase;
+    miValue.string = (MI_Char*)g_reasonPhrase;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
@@ -563,9 +570,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
-    FREE_MEMORY(reasonPhrase);
-    FREE_MEMORY(reasonCode);
-
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
     {
