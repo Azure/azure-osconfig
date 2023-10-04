@@ -584,14 +584,14 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
                         {
                             if ((NULL == *reason) || (0 == strlen(*reason)))
                             {
-                                reason = FormatAllocateString("Group '%s' (%u) of user '%s' (%u) not found in /etc/group",
+                                *reason = FormatAllocateString("Group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                                     userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                             }
                             else
                             {
                                 temp = DuplicateString(*reason);
                                 FREE_MEMORY(*reason);
-                                reason = FormatAllocateString("%s, also group '%s' (%u) of user '%s' (%u)",
+                                *reason = FormatAllocateString("%s, also group '%s' (%u) of user '%s' (%u)",
                                     temp, userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                                 FREE_MEMORY(temp);
                             }
