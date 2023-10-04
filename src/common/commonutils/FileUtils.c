@@ -1155,7 +1155,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     return status;
 }
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;
     char* macsValue = NULL;
@@ -1174,11 +1174,21 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
         status = ENOENT;
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Cannot read from '%s'", fileName);
+        }
     }
     else if (NULL == (macsValue = GetStringOptionFromBuffer(contents, "MACs", ' ', log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'MACs' not found in '%s'", fileName);
         status = ENOENT;
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("'MACs' not found in '%s'", fileName);
+        }
     }
     else
     {
@@ -1202,6 +1212,11 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
                 {
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("Unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                    }
                 }
 
                 i += strlen(value);

@@ -1805,20 +1805,20 @@ TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
 
     int i = 0;
 
-    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(nullptr, nullptr));
-    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed("~file_that_does_not_exist", nullptr));
+    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(nullptr, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed("~file_that_does_not_exist", nullptr, nullptr));
 
     for (i = 0; i < goodTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, goodTestFileContents[i]));
-        EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr));
+        EXPECT_EQ(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 
     for (i = 0; i < badTestFileContentsSize; i++)
     {
         EXPECT_TRUE(CreateTestFile(m_path, badTestFileContents[i]));
-        EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr));
+        EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
 }

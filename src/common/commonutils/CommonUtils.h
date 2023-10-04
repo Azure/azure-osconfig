@@ -84,7 +84,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 int FindTextInCommandOutput(const char* command, const char* text, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log);
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
