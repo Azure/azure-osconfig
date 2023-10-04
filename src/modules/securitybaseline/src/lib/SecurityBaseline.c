@@ -606,142 +606,167 @@ static char* AuditEnsureKernelSupportForCpuNx(void)
 
 static char* AuditEnsureNodevOptionOnHomePartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, "/home", NULL, g_nodev, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNodevOptionOnTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNosuidOptionOnTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNosuidOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_nosuid, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoexecOptionOnVarTmpPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_varTmp, NULL, g_noexec, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoexecOptionOnDevShmPartition(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, "/dev/shm", NULL, g_noexec, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNodevOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nodev, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoexecOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_noexec, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNosuidOptionEnabledForAllRemovableMedia(void)
 {
-    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckFileSystemMountingOption(g_etcFstab, g_media, NULL, g_nosuid, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoexecNosuidOptionsEnabledForAllNfsMounts(void)
 {
     const char* nfs = "nfs";
+    char* reason = NULL;
 
-    return ((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, SecurityBaselineGetLog())) &&
-        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_noexec, &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckFileSystemMountingOption(g_etcFstab, NULL, nfs, g_nosuid, &reason, SecurityBaselineGetLog()))) ? 
+        DuplicateString(g_pass) : (reason ? reason : DuplicateString("CheckFileSystemMountingOption failed for an unknown reason"));
 }
 
 static char* AuditEnsureInetdNotInstalled(void)
 {
     return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
-        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        FormatAllocateString("%s is installed or %s is installed", g_inetd, g_inetUtilsInetd);
 }
 
 static char* AuditEnsureXinetdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_xinetd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_xinetd);
 }
 
 static char* AuditEnsureAllTelnetdPackagesUninstalled(void)
 {
-    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled("*telnetd*", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString("telnetd package found installed");
 }
 
 static char* AuditEnsureRshServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_rshServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_rshServer);
 }
 
 static char* AuditEnsureNisNotInstalled(void)
 {
-    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_nis, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_nis);
 }
 
 static char* AuditEnsureTftpdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_tftpd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_tftpd);
 }
 
 static char* AuditEnsureReadaheadFedoraNotInstalled(void)
 {
-    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_readAheadFedora, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_readAheadFedora);
 }
 
 static char* AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_bluetooth);
 }
 
 static char* AuditEnsureIsdnUtilsBaseNotInstalled(void)
 {
-    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_isdnUtilsBase, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_isdnUtilsBase);
 }
 
 static char* AuditEnsureIsdnUtilsKdumpToolsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_kdumpTools, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_kdumpTools);
 }
 
 static char* AuditEnsureIscDhcpdServerNotInstalled(void)
 {
-    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_iscDhcpServer, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_iscDhcpServer);
 }
 
 static char* AuditEnsureSendmailNotInstalled(void)
 {
-    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_sendmail, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_sendmail);
 }
 
 static char* AuditEnsureSldapdNotInstalled(void)
 {
-    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_slapd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_slapd);
 }
 
 static char* AuditEnsureBind9NotInstalled(void)
 {
-    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_bind9, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_bind9);
 }
 
 static char* AuditEnsureDovecotCoreNotInstalled(void)
 {
-    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_dovecotCore, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("%s is installed", g_dovecotCore);
 }
 
 static char* AuditEnsureAuditdInstalled(void)
 {
-    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? FormatAllocateString("%s is not installed", g_auditd) : DuplicateString(g_pass);
 }
+
+// HERE
 
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {

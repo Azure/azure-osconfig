@@ -1891,7 +1891,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, ch
 
                         if (reason)
                         {
-                            if (0 == strlen(*reason))
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
                             {
                                 *reason = FormatAllocateString("User '%s' (%u, %u) has file '.%s' ('%s')", userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
                             }
@@ -1991,7 +1991,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                             if (reason)
                             {
-                                if (0 == strlen(*reason))
+                                if ((NULL == *reason) || (0 == strlen(*reason)))
                                 {
                                     *reason = FormatAllocateString("User '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'", 
                                         userList[i].username, userList[i].userId, userList[i].groupId, path);

@@ -66,7 +66,7 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
 int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log);
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 
 int CheckPackageInstalled(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);

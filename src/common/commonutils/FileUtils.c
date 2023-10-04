@@ -381,12 +381,13 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log)
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 0;
+    char* temp = NULL;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
@@ -421,6 +422,23 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("Option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                                desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                                temp, desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
 
                 if (IsFullLoggingEnabled())
@@ -438,6 +456,23 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         {
             OsConfigLogInfo(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s', nothing to check", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+
+            if (reason)
+            {
+                if ((NULL == *reason) || (0 == strlen(*reason)))
+                {
+                    *reason = FormatAllocateString("Directory '%s' or mount type '%s' not found in file '%s', nothing to check",
+                        mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                }
+                else
+                {
+                    temp = DuplicateString(*reason);
+                    FREE_MEMORY(*reason);
+                    *reason = FormatAllocateString("%s, also directory '%s' or mount type '%s' not found in file '%s'",
+                        temp, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                    FREE_MEMORY(temp);
+                }
+            }
         }
 
         endmntent(mountFileHandle);
@@ -452,6 +487,11 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         }
         
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+        }
     }
 
     return status;

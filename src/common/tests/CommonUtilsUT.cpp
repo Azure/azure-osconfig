@@ -1229,40 +1229,40 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
 
     EXPECT_TRUE(CreateTestFile(m_path, testFstab));
 
-    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", nullptr, nullptr, nullptr));
-    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(nullptr, "none", "swap", "sw", nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", "swap", nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(m_path, "none", nullptr, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckFileSystemMountingOption(nullptr, "none", "swap", "sw", nullptr, nullptr));
 
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr, nullptr));
 
     // The requested option is present in all matching mounting points
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "udf", "noexec", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noexec", nullptr, nullptr));
 
     // The requested option is missing from one of the matching mounting points
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", "iso9660", "noauto", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "iso9660", "noauto", nullptr));
-    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", "iso9660", "noauto", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "iso9660", "noauto", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "/media", nullptr, "noauto", nullptr, nullptr));
 
     // The requested option is present in all matching mounting points
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr));
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", "ext6", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, nullptr, "ext6", "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test", nullptr, "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/test/root", nullptr, "123", nullptr, nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
 
     EXPECT_TRUE(CreateTestFile(m_path, m_data));
     // No such lines found, nothing to checksrc/adapters/pnp/daemon/osconfig.json
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr, nullptr));
     EXPECT_TRUE(Cleanup(m_path));
 
     // No such file found, nothing to check
-    EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr));
+    EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
