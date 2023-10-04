@@ -273,12 +273,15 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                         if (jsonString)
                         {
                             FREE_MEMORY(g_reportedObjectValue);
-                            g_reportedObjectValue = DuplicateString(jsonString);
-                            if (NULL == g_reportedObjectValue)
+                            if (NULL == (g_reportedObjectValue = DuplicateString(jsonString)))
                             {
                                 mpiResult = ENOMEM;
                                 miResult = MI_RESULT_FAILED;
                                 LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, jsonString);
+                            }
+                            else
+                            {
+                                LogInfo(context, GetLog(), "[%s] Reported object value: %s", who, g_reportedObjectValue);
                             }
                         }
                         else
@@ -357,7 +360,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         { "PayloadKey", MI_STRING, in->InputResource.value->PayloadKey.value, 0 },
         { "ComponentName", MI_STRING, in->InputResource.value->ComponentName.value, 0 },
         { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
-        { "ReportedObjectValue", MI_STRING, g_reportedObjectValue, 0 },
+        { "ReportedObjectValue", MI_STRING, &g_reportedObjectValue[0], 0 },
         { "DesiredObjectName", MI_STRING, in->InputResource.value->DesiredObjectName.value, 0 },
         { "DesiredObjectValue", MI_STRING, in->InputResource.value->DesiredObjectValue.value, 0 },
         { "ReportedMpiResult", MI_UINT32, NULL, g_reportedMpiResult }
@@ -456,6 +459,39 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     miValueResource.instance = resultResourceObject;
 
+    /*
+    CallMpiGet(SecurityBaseline, auditEnsureMountingOfUsbStorageDevicesIsDisabled): "Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d" (71)
+    MI_Instance_SetElement('PayloadKey') to string value 'EnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
+    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('ReportedObjectValue') to string value '/etc/localtime' complete with miResult 0 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
+    auditEnsureMountingOfUsbStorageDevicesIsDisabled: 'FAIL', 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d'
+
+    CallMpiGet(SecurityBaseline, auditEnsureMountingOfUsbStorageDevicesIsDisabled): "Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d" (71)
+    Reported object value: Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d
+    ************ reportedObjectValue: 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d' ***********
+    MI_Instance_SetElement('PayloadKey') to string value 'EnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
+    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('ReportedObjectValue') to string value '/etc/localtime' complete with miResult 0 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
+    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
+    auditEnsureMountingOfUsbStorageDevicesIsDisabled: 'FAIL', 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d'
+
+    CallMpiGet(SecurityBaseline, auditEnsureLockoutForFailedPasswordAttempts): "FAIL" (6)
+    Reported object value: FAIL
+    MI_Instance_SetElement('PayloadKey') to string value 'EnsureLockoutForFailedPasswordAttempts' complete with miResult 0
+    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
+    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureLockoutForFailedPasswordAttempts' complete with miResult 0
+    ************ 'ReportedObjectValue': '��' ('��') ***********
+    MI_Instance_SetElement('ReportedObjectValue') to string value '��' complete with miResult 0
+    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureLockoutForFailedPasswordAttempts' complete with miResult 0
+    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
+    auditEnsureLockoutForFailedPasswordAttempts: 'FAIL', 'Audit failed. See /var/log/osconfig*'
+    */
+
     for (int i = 0; i < allParametersSize; i++)
     {
         switch (allParameters[i].miType)
@@ -464,9 +500,22 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
                 if (NULL != allParameters[i].stringValue)
                 {
                     miValue.string = (MI_Char*)(allParameters[i].stringValue);
+                    
+                    ////////////////////////////////
+                    if (0 == strcmp("ReportedObjectValue", allParameters[i].name))
+                    {
+                        LogInfo(context, GetLog(), "[OsConfigResource.Get] ************ '%s': '%s' ('%s') ***********", allParameters[i].name, allParameters[i].stringValue, miValue.string);
+                    }
+                    ////////////////////////////////
+
                     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0)))
                     {
                         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' failed with miResult %d",
+                            allParameters[i].name, miValue.string, miResult);
+                    }
+                    else
+                    {
+                        LogInfo(context, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d",
                             allParameters[i].name, miValue.string, miResult);
                     }
                 }
