@@ -419,6 +419,12 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No DesiredObjectName");
     }
 
+    // Read the reported MIM object value from the local device
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
+    {
+        goto Exit;
+    }
+
     // Read the desired MIM object value from the input resource values, we'll use this to determine compliance
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
@@ -436,12 +442,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         isCompliant = MI_TRUE;
         LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no DesiredString value, assuming compliance", g_classKey);
-    }
-
-    // Read the reported MIM object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
-    {
-        goto Exit;
     }
 
     // Create the output resource
