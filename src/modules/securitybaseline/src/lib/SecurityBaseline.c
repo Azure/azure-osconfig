@@ -899,12 +899,12 @@ static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 
 static char* AuditEnsurePrelinkIsDisabled(void)
 {
-    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_prelink, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("Package %s is installed", g_prelink);
 }
 
 static char* AuditEnsureTalkClientIsNotInstalled(void)
 {
-    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckPackageInstalled(g_talk, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("Package %s is installed", g_talk);
 }
 
 static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
@@ -922,7 +922,8 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
 static char* AuditEnsureCronServiceIsEnabled(void)
 {
     return (0 == CheckPackageInstalled(g_cron, SecurityBaselineGetLog()) &&
-        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        CheckIfDaemonActive(g_cron, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        FormatAllocateString("Package %s is not installed or service %s is not running", g_cron, g_cron);
 }
 
 static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
@@ -943,24 +944,12 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : FormatAllocateString("Service %s is not running", g_auditd);
 }
 
 static char* AuditEnsureSuRestrictedToRootGroup(void)
 {
-    //return FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
-    // Prototype replacement for Machine Configuration
-    char* status = NULL;
-    if (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog()))
-    {
-        status = DuplicateString(g_pass);
-    }
-    else
-    {
-        status = DuplicateString("'use_uid' not found in /etc/pam.d/su");
-    }
-
-    return status;
+    return (0 == FindTextInFile("/etc/pam.d/su", "use_uid", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString("'use_uid' not found in /etc/pam.d/su");
 }
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
