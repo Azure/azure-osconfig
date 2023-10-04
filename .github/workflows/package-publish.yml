@@ -59,9 +59,9 @@ jobs:
         id: upload
         uses: ./.github/actions/pmc
         with:
-          command: package upload ./packages
+          command: --id-only package upload ./packages
 
       - name: Update repo
         uses: ./.github/actions/pmc
         with:
-          command: repo package update --add-packages ${{ steps.upload.outputs.result }} ${{ steps.target.outputs.id }}
+          command: repo package update --add-packages '${{ steps.upload.outputs.result }}' ${{ steps.target.outputs.id }}
