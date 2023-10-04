@@ -61,7 +61,13 @@ jobs:
         with:
           command: --id-only package upload ./packages
 
+      # Associates the uploaded package with the target repo
       - name: Update repo
         uses: ./.github/actions/pmc
         with:
           command: repo package update --add-packages '${{ steps.upload.outputs.result }}' ${{ steps.target.outputs.id }}
+
+      - name: Publish package
+        uses: ./.github/actions/pmc
+        with:
+          command: repo publish ${{ steps.target.outputs.id }}
