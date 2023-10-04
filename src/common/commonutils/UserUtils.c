@@ -1829,7 +1829,7 @@ int CheckRootPasswordForSingleUserMode(void* log)
     return status;
 }
 
-int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, void* log)
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, void* log)
 {
     const char* templateDotPath = "%s/.%s";
 
@@ -1837,6 +1837,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
     unsigned int userListSize = 0, i = 0;
     size_t templateLength = 0, length = 0;
     char* dotPath = NULL;
+    char* temp = NULL;
     int status = 0;
 
     if (NULL == name)
@@ -1887,6 +1888,21 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
                         OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
                             userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
                         status = ENOENT;
+
+                        if (reason)
+                        {
+                            if (0 == strlen(*reason))
+                            {
+                                *reason = FormatAllocateString("User '%s' (%u, %u) has file '.%s' ('%s')", userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also user '%s' (%u, %u) has '.%s' ('%s')", temp, userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                                FREE_MEMORY(temp);
+                            }
+                        }
                     }
                 }
 
@@ -1905,7 +1921,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
     return status;
 }
 
-int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log)
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log)
 {
     const char* pathTemplate = "%s/%s";
     
@@ -1914,6 +1930,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     DIR* home = NULL;
     struct dirent* entry = NULL;
     char* path = NULL;
+    char* temp = NULL;
     size_t length = 0;
     bool oneGoodMode = false;
     int status = 0;
@@ -1970,6 +1987,22 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                             if (0 == status)
                             {
                                 status = ENOENT;
+                            }
+
+                            if (reason)
+                            {
+                                if (0 == strlen(*reason))
+                                {
+                                    *reason = FormatAllocateString("User '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'", 
+                                        userList[i].username, userList[i].userId, userList[i].groupId, path);
+                                }
+                                else
+                                {
+                                    temp = DuplicateString(*reason);
+                                    FREE_MEMORY(*reason);
+                                    *reason = FormatAllocateString("%s, also user '%s' (%u, %u) for file '%s'", temp, userList[i].username, userList[i].userId, userList[i].groupId, path);
+                                    FREE_MEMORY(temp);
+                                }
                             }
                         }
 

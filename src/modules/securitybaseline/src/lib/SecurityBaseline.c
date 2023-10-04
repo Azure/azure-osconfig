@@ -1486,7 +1486,8 @@ static char* AuditEnsureRpcsvcgssdServiceIsDisabled(void)
 
 static char* AuditEnsureSnmpServerIsDisabled(void)
 {
-    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckIfDaemonActive(g_snmpd, SecurityBaselineGetLog()) ? 
+        FormatAllocateString("%s is not running", g_snmpd) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRsynServiceIsDisabled(void)
@@ -1519,42 +1520,50 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void)
         FormatAllocateString("samba is not installed or '%s' not found in %s", minProtocol);
 }
 
-//HERE
-
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 {
     unsigned int modes[] = {600, 644, 664, 700, 744};
-    
-    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+
+    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateSteing("Not all users who can login have all their dot files with proper restricted access")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_forward)) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_netrc)) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog()) ? 
+        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_rhosts)) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
 {
     return (CheckPackageInstalled(g_inetd, SecurityBaselineGetLog()) && 
         CheckPackageInstalled(g_inetUtilsInetd, SecurityBaselineGetLog()) &&
-        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        FindTextInFile(g_etcInetdConf, "login", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        FormatAllocateString("%s is not installed, or %s is not installed, or 'login' not found in %s", g_inetd, g_inetUtilsInetd, g_etcInetdConf);
 }
 
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? DuplicateString(g_fail) : 
+        FormatAllocateString("Account '%s' exists", names[0]);
 }
 
 AuditCall g_auditChecks[] =
