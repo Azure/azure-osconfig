@@ -1526,7 +1526,7 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
     char* reason = NULL;
 
     return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : DuplicateSteing("Not all users who can login have all their dot files with proper restricted access")) : DuplicateString(g_pass);
+        (reason ? reason : DuplicateString("Not all users who can login have all their dot files with proper restricted access")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
@@ -2582,17 +2582,17 @@ static int RemediateEnsureUsersDotFilesArentGroupOrWorldWritable(void)
 
 static int RemediateEnsureNoUsersHaveDotForwardFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, true, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureNoUsersHaveDotNetrcFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, true, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureNoUsersHaveDotRhostsFiles(void)
 {
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, SecurityBaselineGetLog());
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, true, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureRloginServiceIsDisabled(void)
