@@ -650,7 +650,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     // Read the MIM component name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ComponentName");
         miResult = MI_RESULT_FAILED;
@@ -669,7 +669,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
 
     // Read the MIM reported object name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) || (NULL == in->InputResource.value->ReportedObjectName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ReportedObjectName");
         miResult = MI_RESULT_FAILED;
@@ -807,7 +807,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     // Read the MIM component name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ComponentName");
         miResult = MI_RESULT_FAILED;
@@ -826,7 +826,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     // Read the MIM desired object name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
+    if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) || (NULL == in->InputResource.value->DesiredObjectName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No DesiredObjectName");
         miResult = MI_RESULT_FAILED;
@@ -845,7 +845,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     // Read the MIM desired object value from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
+    if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) || (NULL == in->InputResource.value->DesiredObjectValue.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No DesiredObjectValue");
         miResult = MI_RESULT_FAILED;
