@@ -446,7 +446,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Create the output resource
 
-    if (MI_RESULT_OK !== (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
+    if (MI_RESULT_OK != (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] GetTargetResource_Construct failed with %d", miResult);
         goto Exit;
@@ -458,7 +458,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    if (MI_RESULT_OK !== (miResult = MI_Context_NewInstance(context, &OsConfigResource_rtti, &resultResourceObject)))
+    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &OsConfigResource_rtti, &resultResourceObject)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance failed with %d", miResult);
         goto Exit;
