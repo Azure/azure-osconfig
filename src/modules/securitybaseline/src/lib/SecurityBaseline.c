@@ -1562,8 +1562,8 @@ static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? DuplicateString(g_fail) : 
-        FormatAllocateString("Account '%s' exists", names[0]);
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? 
+        FormatAllocateString("Account '%s' exists", names[0]) : DuplicateString(g_pass);
 }
 
 AuditCall g_auditChecks[] =
