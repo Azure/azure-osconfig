@@ -347,66 +347,106 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Read and refresh the class key from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
+    // Read the class key from the input resource values
+    if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
+    {
+        FREE_MEMORY(g_classKey);
+        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
+            g_classKey = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_classKey);
-
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-        g_classKey = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM component name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
+    if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        FREE_MEMORY(g_componentName);
+        if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+            g_componentName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_componentName);
-
-    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
-        g_componentName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM reported object name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) || (NULL == in->InputResource.value->ReportedObjectName.value))
+    if ((MI_TRUE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    {
+        FREE_MEMORY(g_reportedObjectName);
+        if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
+            g_reportedObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ReportedObjectName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_reportedObjectName);
-
-    if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
+    // Read the MIM desired object name from the input resource values
+    if ((MI_TRUE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
-        g_reportedObjectName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
+        FREE_MEMORY(g_desiredObjectName);
+        if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
+            g_desiredObjectName = DuplicateString(g_defaultValue);
+        }
+    }
+    else
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No DesiredObjectName");
+    }
+
+    // Read the desired MIM object value from the input resource values, we'll use this to determine compliance
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        FREE_MEMORY(g_desiredObjectValue);
+
+        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+            g_desiredObjectValue = DuplicateString(g_failValue);
+        }
+
+        isCompliant = (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
+    }
+    else
+    {
+        isCompliant = MI_TRUE;
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no DesiredString value, assuming compliance", g_classKey);
+    }
+
+    // Read the reported MIM object value from the local device
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
+    {
         goto Exit;
     }
 
-    // Start preparing the response
-       
-    if (MI_RESULT_OK != (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
+    // Create the output resource
+
+    if (MI_RESULT_OK !== (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] GetTargetResource_Construct failed with %d", miResult);
         goto Exit;
@@ -418,7 +458,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &OsConfigResource_rtti, &resultResourceObject)))
+    if (MI_RESULT_OK !== (miResult = MI_Context_NewInstance(context, &OsConfigResource_rtti, &resultResourceObject)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance failed with %d", miResult);
         goto Exit;
@@ -426,39 +466,33 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     miValueResource.instance = resultResourceObject;
 
-    // Read the reported object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
-    {
-        goto Exit;
-    }
-
-    // Report back the payload key
-    miValue.string = (MI_Char*)(in->InputResource.value->PayloadKey.value);
+    // Write the payload key to the output resource values
+    miValue.string = (MI_Char*)(g_classKey);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("PayloadKey"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(PayloadKey) to string value '%s' failed with miResult %d", miValue.string, miResult);
         goto Exit;
     }
 
-    // Report back the component name
+    // Write the MIM component name to the output resource values
     memset(&miValue, 0, sizeof(miValue));
-    miValue.string = (MI_Char*)(in->InputResource.value->ComponentName.value);
+    miValue.string = (MI_Char*)(g_componentName);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ComponentName"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ComponentName) to string value '%s' failed with miResult %d", miValue.string, miResult);
         goto Exit;
     }
 
-    // Report back the reported object name
+    // Write the reported MIM object name to the output resource values
     memset(&miValue, 0, sizeof(miValue));
-    miValue.string = (MI_Char*)(in->InputResource.value->ReportedObjectName.value);
+    miValue.string = (MI_Char*)(g_reportedObjectName);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedObjectName"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReportedObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
         goto Exit;
     }
 
-    // Report the reported object value retrieved from the local device
+    // Write the reported MIM object value read from local device to the output resource values
     memset(&miValue, 0, sizeof(miValue));
     miValue.string = (MI_Char*)(g_reportedObjectValue);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedObjectValue"), &miValue, MI_STRING, 0)))
@@ -467,44 +501,40 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Report back the desired object name
-    memset(&miValue, 0, sizeof(miValue));
-    miValue.string = (MI_Char*)(in->InputResource.value->DesiredObjectName.value);
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectName"), &miValue, MI_STRING, 0)))
+    // Write the desired MIM object name to the output resource values if present in input resource values
+    if ((MI_TRUE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
-        goto Exit;
+        memset(&miValue, 0, sizeof(miValue));
+        miValue.string = (MI_Char*)(g_desiredObjectName);
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectName"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+            goto Exit;
+        }
     }
 
-    // Report back the reported object value
-    memset(&miValue, 0, sizeof(miValue));
-    miValue.string = (MI_Char*)(in->InputResource.value->DesiredObjectValue.value);
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectValue"), &miValue, MI_STRING, 0)))
+    // Write the desired MIM object value to the output resource values if present in input resource values
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (NULL != in->InputResource.value->DesiredObjectValue.value))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
-        goto Exit;
+        memset(&miValue, 0, sizeof(miValue));
+        miValue.string = (MI_Char*)(g_desiredObjectValue);
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectValue"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
+            goto Exit;
+        }
     }
 
-    // Report the MPI result for the MpiGet that returned the reported object value
+    // Write the MPI result for the MpiGet that returned the reported MIM object value to the output resource values
     memset(&miValue, 0, sizeof(miValue));
     miValue.uint32 = (MI_Uint32)(g_reportedMpiResult);
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedMpiResult"), &miValue, MI_UINT32, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReportedMpiResult) to integer value '%d' failed with miResult %d", miValue.uint32, miResult);
+        goto Exit;
     }
 
-    // Check if this audit is pass or fail by comparing reported object value (from device) to desired object value (from the input resource values)
-    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
-    {
-        isCompliant = (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
-    }
-    else
-    {
-        isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no DesiredString value, assuming compliance", g_classKey);
-    }
-
-    // Generate and report a reason for the result of this audit
+    // Generate and report the reason for the result of this audit to the output resource values
 
     if (MI_TRUE == isCompliant)
     {
@@ -629,68 +659,70 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
-    // Read and refresh the class key from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
+    // Read the class key from the input resource values
+    if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
+    {
+        FREE_MEMORY(g_classKey);
+        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
+            g_classKey = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_classKey);
-
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-        g_classKey = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM component name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
+    if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        FREE_MEMORY(g_componentName);
+        if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+            g_componentName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_componentName);
-
-    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
-        g_componentName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM reported object name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) || (NULL == in->InputResource.value->ReportedObjectName.value))
+    if ((MI_TRUE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    {
+        FREE_MEMORY(g_reportedObjectName);
+        if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
+            g_reportedObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ReportedObjectName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_reportedObjectName);
-
-    if (NULL == (g_reportedObjectName = DuplicateString(in->InputResource.value->ReportedObjectName.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->ReportedObjectName.value);
-        g_reportedObjectName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
+    // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", context)))
     {
         goto Exit;
     }
 
+    // Determine compliance
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
         if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
@@ -778,7 +810,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         goto Exit;
     }
 
-    if (MI_RESULT_OK != (miResult =OsConfigResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
+    if (MI_RESULT_OK != (miResult = OsConfigResource_SetTargetResource_Set_MIReturn(&set_result_object, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] SetTargetResource_Set_MIReturn failed with %d", miResult);
         goto Exit;
@@ -786,78 +818,78 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     MI_Context_PostInstance(context, &(set_result_object.__instance));
 
-    // Read and refresh the class key from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->PayloadKey.exists) || (NULL == in->InputResource.value->PayloadKey.value))
+    // Read the class key from the input resource values
+    if ((MI_TRUE == in->InputResource.value->PayloadKey.exists) && (NULL != in->InputResource.value->PayloadKey.value))
+    {
+        FREE_MEMORY(g_classKey);
+        if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
+            g_classKey = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No PayloadKey");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_classKey);
-
-    if (NULL == (g_classKey = DuplicateString(in->InputResource.value->PayloadKey.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->PayloadKey.value);
-        g_classKey = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM component name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
+    if ((MI_TRUE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    {
+        FREE_MEMORY(g_componentName);
+        if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
+            g_componentName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No ComponentName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_componentName);
-
-    if (NULL == (g_componentName = DuplicateString(in->InputResource.value->ComponentName.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->ComponentName.value);
-        g_componentName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM desired object name from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->DesiredObjectName.exists) || (NULL == in->InputResource.value->DesiredObjectName.value))
+    if ((MI_TRUE == in->InputResource.value->DesiredObjectName.exists) && (NULL != in->InputResource.value->DesiredObjectName.value))
+    {
+        FREE_MEMORY(g_desiredObjectName);
+        if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
+            g_desiredObjectName = DuplicateString(g_defaultValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No DesiredObjectName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
 
-    FREE_MEMORY(g_desiredObjectName);
-
-    if (NULL == (g_desiredObjectName = DuplicateString(in->InputResource.value->DesiredObjectName.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectName.value);
-        g_desiredObjectName = DuplicateString(g_defaultValue);
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
     // Read the MIM desired object value from the input resource values
-
-    if ((MI_FALSE == in->InputResource.value->DesiredObjectValue.exists) || (NULL == in->InputResource.value->DesiredObjectValue.value))
+    if ((MI_TRUE == in->InputResource.value->DesiredObjectValue.exists) && (NULL != in->InputResource.value->DesiredObjectValue.value))
+    {
+        FREE_MEMORY(g_desiredObjectValue);
+        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+            g_desiredObjectValue = DuplicateString(g_failValue);
+            miResult = MI_RESULT_FAILED;
+            goto Exit;
+        }
+    }
+    else
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Set] No DesiredObjectValue");
-        miResult = MI_RESULT_FAILED;
-        goto Exit;
-    }
-
-    FREE_MEMORY(g_desiredObjectValue);
-
-    if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Set] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
-        g_desiredObjectValue = DuplicateString(g_failValue);
         miResult = MI_RESULT_FAILED;
         goto Exit;
     }
