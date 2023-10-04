@@ -27,10 +27,6 @@ static char* g_desiredObjectValue = NULL;
 static char* g_reportedObjectValue = NULL;
 static unsigned int g_reportedMpiResult = 0;
 
-// Reported (reason code and phrase)
-static char* g_reasonCode = NULL;
-static char* g_reasonPhrase = NULL;
-
 MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
@@ -81,8 +77,6 @@ void __attribute__((constructor)) Initialize()
     g_reportedObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
-    g_reasonCode = DuplicateString(g_failValue);
-    g_reasonPhrase = DuplicateString(g_failValue);
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
@@ -105,8 +99,6 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_desiredObjectName);
     FREE_MEMORY(g_desiredObjectValue);
     FREE_MEMORY(g_reportedObjectValue);
-    FREE_MEMORY(g_reasonCode);
-    FREE_MEMORY(g_reasonPhrase);
 }
 
 void MI_CALL OsConfigResource_Load(
@@ -279,10 +271,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                                 miResult = MI_RESULT_FAILED;
                                 LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, jsonString);
                             }
-                            else
-                            {
-                                LogInfo(context, GetLog(), "[%s] Reported object value: %s", who, g_reportedObjectValue);
-                            }
                         }
                         else
                         {
@@ -321,14 +309,6 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     return miResult;
 }
 
-struct OsConfigResourceParameters
-{
-    const char* name;
-    int miType;
-    const char* stringValue;
-    const int integerValue;
-};
-
 void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     OsConfigResource_Self* self,
     MI_Context* context,
@@ -346,6 +326,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
 
+    char* reasonCode = NULL;
+    char* reasonPhrase = NULL;
+
     MI_Result miResult = MI_RESULT_OK;
     MI_Instance* resultResourceObject = NULL;
     MI_Instance* reasonObject = NULL;
@@ -354,19 +337,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_Value miValueResource = {0};
     MI_Value miValueReasonResult = {0};
     MI_Boolean isCompliant = MI_FALSE;
-
-    // Reported values
-    struct OsConfigResourceParameters allParameters[] = {
-        { "PayloadKey", MI_STRING, in->InputResource.value->PayloadKey.value, 0 },
-        { "ComponentName", MI_STRING, in->InputResource.value->ComponentName.value, 0 },
-        { "ReportedObjectName", MI_STRING, in->InputResource.value->ReportedObjectName.value, 0 },
-        { "ReportedObjectValue", MI_STRING, &g_reportedObjectValue[0], 0 },
-        { "DesiredObjectName", MI_STRING, in->InputResource.value->DesiredObjectName.value, 0 },
-        { "DesiredObjectValue", MI_STRING, in->InputResource.value->DesiredObjectValue.value, 0 },
-        { "ReportedMpiResult", MI_UINT32, NULL, g_reportedMpiResult }
-    };
-
-    int allParametersSize = ARRAY_SIZE(allParameters);
 
     OsConfigResource_GetTargetResource get_result_object = {0};
 
@@ -398,7 +368,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Read the MIM component name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) && (NULL != in->InputResource.value->ComponentName.value))
+    if ((MI_FALSE == in->InputResource.value->ComponentName.exists) || (NULL == in->InputResource.value->ComponentName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ComponentName");
         miResult = MI_RESULT_FAILED;
@@ -417,7 +387,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Read the MIM reported object name from the input resource values
 
-    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) && (NULL != in->InputResource.value->ReportedObjectName.value))
+    if ((MI_FALSE == in->InputResource.value->ReportedObjectName.exists) || (NULL == in->InputResource.value->ReportedObjectName.value))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No ReportedObjectName");
         miResult = MI_RESULT_FAILED;
@@ -434,6 +404,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    // Start preparing the response
+       
     if (MI_RESULT_OK != (miResult = OsConfigResource_GetTargetResource_Construct(&get_result_object, context)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] GetTargetResource_Construct failed with %d", miResult);
@@ -452,96 +424,73 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
+    miValueResource.instance = resultResourceObject;
+
+    // Read the reported object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
     {
         goto Exit;
     }
 
-    miValueResource.instance = resultResourceObject;
-
-    /*
-    CallMpiGet(SecurityBaseline, auditEnsureMountingOfUsbStorageDevicesIsDisabled): "Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d" (71)
-    MI_Instance_SetElement('PayloadKey') to string value 'EnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
-    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('ReportedObjectValue') to string value '/etc/localtime' complete with miResult 0 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
-    auditEnsureMountingOfUsbStorageDevicesIsDisabled: 'FAIL', 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d'
-
-    CallMpiGet(SecurityBaseline, auditEnsureMountingOfUsbStorageDevicesIsDisabled): "Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d" (71)
-    Reported object value: Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d
-    ************ reportedObjectValue: 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d' ***********
-    MI_Instance_SetElement('PayloadKey') to string value 'EnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
-    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('ReportedObjectValue') to string value '/etc/localtime' complete with miResult 0 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureMountingOfUsbStorageDevicesIsDisabled' complete with miResult 0
-    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
-    auditEnsureMountingOfUsbStorageDevicesIsDisabled: 'FAIL', 'Audit did not find 'install usb-storage /bin/true' in /etc/modprobe.d'
-
-    CallMpiGet(SecurityBaseline, auditEnsureLockoutForFailedPasswordAttempts): "FAIL" (6)
-    Reported object value: FAIL
-    MI_Instance_SetElement('PayloadKey') to string value 'EnsureLockoutForFailedPasswordAttempts' complete with miResult 0
-    MI_Instance_SetElement('ComponentName') to string value 'SecurityBaseline' complete with miResult 0
-    MI_Instance_SetElement('ReportedObjectName') to string value 'auditEnsureLockoutForFailedPasswordAttempts' complete with miResult 0
-    ************ 'ReportedObjectValue': '��' ('��') ***********
-    MI_Instance_SetElement('ReportedObjectValue') to string value '��' complete with miResult 0
-    MI_Instance_SetElement('DesiredObjectName') to string value 'remediateEnsureLockoutForFailedPasswordAttempts' complete with miResult 0
-    MI_Instance_SetElement('DesiredObjectValue') to string value 'PASS' complete with miResult 0
-    auditEnsureLockoutForFailedPasswordAttempts: 'FAIL', 'Audit failed. See /var/log/osconfig*'
-    */
-
-    for (int i = 0; i < allParametersSize; i++)
+    // Report back the payload key
+    miValue.string = (MI_Char*)(in->InputResource.value->PayloadKey.value);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("PayloadKey"), &miValue, MI_STRING, 0)))
     {
-        switch (allParameters[i].miType)
-        {
-            case MI_STRING:
-                if (NULL != allParameters[i].stringValue)
-                {
-                    miValue.string = (MI_Char*)(allParameters[i].stringValue);
-                    
-                    ////////////////////////////////
-                    if (0 == strcmp("ReportedObjectValue", allParameters[i].name))
-                    {
-                        LogInfo(context, GetLog(), "[OsConfigResource.Get] ************ '%s': '%s' ('%s') ***********", allParameters[i].name, allParameters[i].stringValue, miValue.string);
-                    }
-                    ////////////////////////////////
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(PayloadKey) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
 
-                    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_STRING, 0)))
-                    {
-                        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' failed with miResult %d",
-                            allParameters[i].name, miValue.string, miResult);
-                    }
-                    else
-                    {
-                        LogInfo(context, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to string value '%s' complete with miResult %d",
-                            allParameters[i].name, miValue.string, miResult);
-                    }
-                }
-                else
-                {
-                    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No string value for '%s'", allParameters[i].name);
-                    miResult = MI_RESULT_FAILED;
-                }
-                break;
+    // Report back the component name
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.string = (MI_Char*)(in->InputResource.value->ComponentName.value);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ComponentName"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ComponentName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
 
-            case MI_UINT32:
-            default:
-                miValue.uint32 = (MI_Uint32)(allParameters[i].integerValue);
-                if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T(allParameters[i].name), &miValue, MI_UINT32, 0)))
-                {
-                    LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') to integer value '%d' failed with miResult %d",
-                        allParameters[i].name, miValue.uint32, miResult);
-                }
-        }
+    // Report back the reported object name
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.string = (MI_Char*)(in->InputResource.value->ReportedObjectName.value);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedObjectName"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReportedObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
 
-        if (MI_RESULT_OK != miResult)
-        {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement('%s') failed with %d", allParameters[i].name, miResult);
-        }
+    // Report the reported object value retrieved from the local device
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.string = (MI_Char*)(g_reportedObjectValue);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedObjectValue"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReportedObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
 
-        memset(&miValue, 0, sizeof(miValue));
+    // Report back the desired object name
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.string = (MI_Char*)(in->InputResource.value->DesiredObjectName.value);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectName"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectName) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
+
+    // Report back the reported object value
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.string = (MI_Char*)(in->InputResource.value->DesiredObjectValue.value);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("DesiredObjectValue"), &miValue, MI_STRING, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(DesiredObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
+        goto Exit;
+    }
+
+    // Report the MPI result for the MpiGet that returned the reported object value
+    memset(&miValue, 0, sizeof(miValue));
+    miValue.uint32 = (MI_Uint32)(g_reportedMpiResult);
+    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ReportedMpiResult"), &miValue, MI_UINT32, 0)))
+    {
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReportedMpiResult) to integer value '%d' failed with miResult %d", miValue.uint32, miResult);
     }
 
     // Check if this audit is pass or fail by comparing reported object value (from device) to desired object value (from the input resource values)
@@ -557,24 +506,21 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     // Generate and report a reason for the result of this audit
 
-    FREE_MEMORY(g_reasonCode);
-    FREE_MEMORY(g_reasonPhrase);
-    
     if (MI_TRUE == isCompliant)
     {
-        g_reasonCode = DuplicateString(passCode);
-        g_reasonPhrase = DuplicateString(auditPassed);
+        reasonCode = DuplicateString(passCode);
+        reasonPhrase = DuplicateString(auditPassed);
     }
     else
     {
-        g_reasonCode = DuplicateString(failCode);
-        if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (g_reasonPhrase = DuplicateString(g_reportedObjectValue))))
+        reasonCode = DuplicateString(failCode);
+        if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
-            g_reasonPhrase = DuplicateString(auditFailed);
+            reasonPhrase = DuplicateString(auditFailed);
         }
     }
     
-    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, g_reasonCode, g_reasonPhrase);
+    LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
     if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
     {
@@ -582,14 +528,14 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)g_reasonCode;
+    miValue.string = (MI_Char*)reasonCode;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
         goto Exit;
     }
 
-    miValue.string = (MI_Char*)g_reasonPhrase;
+    miValue.string = (MI_Char*)reasonPhrase;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
     {
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
@@ -600,7 +546,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     miValueReasonResult.instancea.data = &reasonObject;
     if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", g_reasonCode, g_reasonPhrase, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
         goto Exit;
     }
     
@@ -619,6 +565,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
 
 Exit:
+    FREE_MEMORY(reasonCode);
+    FREE_MEMORY(reasonPhrase);
+    
     // Clean up the reasons class instance
     if ((NULL != reasonObject) && (MI_RESULT_OK != (miResult = MI_Instance_Delete(reasonObject))))
     {
