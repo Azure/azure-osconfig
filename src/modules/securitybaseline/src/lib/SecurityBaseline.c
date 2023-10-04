@@ -769,7 +769,7 @@ static char* AuditEnsureAuditdInstalled(void)
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog()) ? 
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog()) ? 
         (reason ? reason : DuplicateString("At least one group in /etc/passwd is not found in /etc/group")) : DuplicateString(g_pass);
 }
 
