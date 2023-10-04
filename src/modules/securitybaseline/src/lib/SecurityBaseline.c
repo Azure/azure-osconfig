@@ -766,11 +766,11 @@ static char* AuditEnsureAuditdInstalled(void)
     return CheckPackageInstalled(g_auditd, SecurityBaselineGetLog()) ? FormatAllocateString("%s is not installed", g_auditd) : DuplicateString(g_pass);
 }
 
-// HERE
-
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(SecurityBaselineGetLog()) ? 
+        (reason ? reason : DuplicateString("At least one group in /etc/passwd is not found in /etc/group")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateUidsExist(void)

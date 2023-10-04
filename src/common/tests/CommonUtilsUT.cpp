@@ -1359,7 +1359,7 @@ TEST_F(CommonUtilsTest, EnumerateAllGroups)
 
 TEST_F(CommonUtilsTest, CheckUsersAndGroups)
 {
-    EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr));
+    EXPECT_EQ(0, CheckAllEtcPasswdGroupsExistInEtcGroup(nullptr, nullptr));
     EXPECT_EQ(0, CheckSystemAccountsAreNonLogin(nullptr));
     EXPECT_EQ(0, CheckShadowGroupIsEmpty(nullptr));
 }

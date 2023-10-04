@@ -535,7 +535,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
     return status;
 }
 
-int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
+int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
@@ -544,6 +544,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
     struct SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0, k = 0;
+    char* temp = NULL;
     bool found = false;
     int status = 0;
 
@@ -578,6 +579,23 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
                         OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                         status = ENOENT;
+
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                reason = FormatAllocateString("Group '%s' (%u) of user '%s' (%u) not found in /etc/group",
+                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                reason = FormatAllocateString("%s, also group '%s' (%u) of user '%s' (%u)",
+                                    temp, userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                FREE_MEMORY(temp);
+                            }
+                        }
                         break;
                     }
                 }
