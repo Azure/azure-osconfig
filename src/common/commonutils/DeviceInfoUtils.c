@@ -634,7 +634,7 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
 
             if (reason)
             {
-                reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
+                *reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
             }
         }
     }

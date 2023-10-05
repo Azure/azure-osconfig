@@ -1121,13 +1121,15 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
                 {
                     if ((NULL == *reason) || (0 == strlen(*reason)))
                     {
-                        *reason = FormatAllocateString("Group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
+                        *reason = FormatAllocateString("User '%s' (%u, %u) home directory '%s' not found or is not a directory", 
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     }
                     else
                     {
                         temp = DuplicateString(*reason);
                         FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also group '%s'", temp, groupList[i].groupName);
+                        *reason = FormatAllocateString("%s, al;so user '%s' (%u, %u) home '%s'", 
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                         FREE_MEMORY(temp);
                     }
                 }
@@ -1223,7 +1225,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, void* log)
                             temp = DuplicateString(*reason);
                             FREE_MEMORY(*reason);
                             *reason = FormatAllocateString("%s, user '%s' (%u, %u) does not own their assigned home directory '%s'",
-                                home, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                             FREE_MEMORY(temp);
                         }
                     }
@@ -1247,7 +1249,7 @@ int CheckUsersOwnTheirHomeDirectories(char** reason, void* log)
                         temp = DuplicateString(*reason);
                         FREE_MEMORY(*reason);
                         *reason = FormatAllocateString("%s, user '%s' (%u, %u) assigned home directory '%s' does not exist",
-                            home, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                         FREE_MEMORY(temp);
                     }
                 }
@@ -2432,7 +2434,6 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     DIR* home = NULL;
     struct dirent* entry = NULL;
     char* path = NULL;
-    char* temp = NULL;
     size_t length = 0;
     bool oneGoodMode = false;
     int status = 0, _status = 0;

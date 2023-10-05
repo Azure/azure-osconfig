@@ -1442,13 +1442,13 @@ TEST_F(CommonUtilsTest, CheckUserHomeDirectories)
 
 TEST_F(CommonUtilsTest, CheckOrEnsureUsersDontHaveDotFiles)
 {
-    EXPECT_EQ(EINVAL, CheckOrEnsureUsersDontHaveDotFiles(nullptr, false, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", false, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", false, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", false, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", true, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", true, nullptr, nullptr, nullptr));
-    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", true, nullptr, nullptr, nullptr));
+    EXPECT_EQ(EINVAL, CheckOrEnsureUsersDontHaveDotFiles(nullptr, false, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", false, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", false, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", false, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("foo", true, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("blah", true, nullptr, nullptr));
+    EXPECT_EQ(0, CheckOrEnsureUsersDontHaveDotFiles("test123", true, nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, FindTextInFile)
@@ -1517,7 +1517,7 @@ TEST_F(CommonUtilsTest, FindTextInEnvironmentVariable)
     EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable("PATH", nullptr, false, nullptr, nullptr));
     EXPECT_EQ(EINVAL, FindTextInEnvironmentVariable(nullptr, nullptr, false, nullptr, nullptr));
 
-    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", false, nullptr));
+    EXPECT_EQ(0, FindTextInEnvironmentVariable("PATH", ":", false, nullptr, nullptr));
 
     EXPECT_EQ(0, setenv("TESTVAR", "0", 1));
     EXPECT_EQ(0, FindTextInEnvironmentVariable("TESTVAR", "0", false, nullptr, nullptr));
@@ -1833,7 +1833,7 @@ TEST_F(CommonUtilsTest, ReasonPattern)
     EXPECT_NE(nullptr, temp = DuplicateString(reason));
     EXPECT_STREQ(temp, reason);
     FREE_MEMORY(reason);
-    EXPECT_NE(nullptr, reason = FormatAllocateString("%s, and also '%s'is %d", temp, "Test B", 789));
+    EXPECT_NE(nullptr, reason = FormatAllocateString("%s, and also '%s' is %d", temp, "Test B", 789));
     FREE_MEMORY(temp);
     EXPECT_STREQ(reason, "'Test 123': 456, and also 'Test B' is 789");
     FREE_MEMORY(reason);

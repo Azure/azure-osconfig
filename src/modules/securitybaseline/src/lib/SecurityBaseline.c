@@ -817,7 +817,7 @@ static char* AuditEnsureAllAccountsHavePasswords(void)
 static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
     char* reason = NULL;
-    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
@@ -1157,7 +1157,7 @@ static char* AuditEnsureCoreDumpsAreRestricted(void)
 
     return (((EEXIST == CheckLineNotFoundOrCommentedOut("/etc/security/limits.conf", '#', "hard core 0", SecurityBaselineGetLog())) ||
         (0 == FindTextInFolder("/etc/security/limits.d", fsSuidDumpable, SecurityBaselineGetLog()))) &&
-        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (0 == FindTextInCommandOutput("sysctl -a", fsSuidDumpable, NULL, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
         DuplicateString("Line 'hard core 0' not found in /etc/security/limits.conf, or 'fs.suid_dumpable = 0' not found in /etc/security/limits.d or in output from 'sysctl -a'");
 }
 
@@ -2177,7 +2177,7 @@ static int RemediateEnsurePasswordExpiration(void)
 {
     return ((0 == SetMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
         (0 == SetMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog())) &&
-        (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == CheckPasswordExpirationLessThan(g_passwordExpiration, NULL, SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsurePasswordExpirationWarning(void)
