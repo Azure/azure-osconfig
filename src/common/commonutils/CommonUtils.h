@@ -76,12 +76,12 @@ unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log);
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, void* log);
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
-int FindTextInCommandOutput(const char* command, const char* text, void* log);
+int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
@@ -119,7 +119,7 @@ char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
 bool CheckOsAndKernelMatchDistro(void* log);
 char* GetLoginUmask(void* log);
-int CheckLoginUmask(const char* desired, void* log);
+int CheckLoginUmask(const char* desired, char** reason, void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);

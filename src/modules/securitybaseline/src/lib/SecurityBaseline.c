@@ -769,132 +769,152 @@ static char* AuditEnsureAuditdInstalled(void)
 static char* AuditEnsureAllEtcPasswdGroupsExistInEtcGroup(void)
 {
     char* reason = NULL;
-    return CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : DuplicateString("At least one group in /etc/passwd is not found in /etc/group")) : DuplicateString(g_pass);
+    return CheckAllEtcPasswdGroupsExistInEtcGroup(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateUidsExist(void)
 {
-    return CheckNoDuplicateUidsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckNoDuplicateUidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateGidsExist(void)
 {
-    return CheckNoDuplicateGidsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckNoDuplicateGidsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateUserNamesExist(void)
 {
-    return CheckNoDuplicateUserNamesExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckNoDuplicateUserNamesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoDuplicateGroupsExist(void)
 {
-    return CheckNoDuplicateGroupsExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckNoDuplicateGroupsExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureShadowGroupIsEmpty(void)
 {
-    return CheckShadowGroupIsEmpty(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckShadowGroupIsEmpty(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRootGroupExists(void)
 {
-    return CheckRootGroupExists(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckRootGroupExists(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAllAccountsHavePasswords(void)
 {
-    return CheckAllUsersHavePasswordsSet(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckAllUsersHavePasswordsSet(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNonRootAccountsHaveUniqueUidsGreaterThanZero(void)
 {
-    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcPasswd(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckNoLegacyPlusEntriesInFile("etc/passwd", SecurityBaselineGetLog()) ? DuplicateString("+ lines found in /etc/passwd") : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcShadow(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckNoLegacyPlusEntriesInFile("etc/shadow", SecurityBaselineGetLog()) ? DuplicateString(DuplicateString("+ lines found in /etc/shadow")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoLegacyPlusEntriesInEtcGroup(void)
 {
-    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckNoLegacyPlusEntriesInFile("etc/group", SecurityBaselineGetLog()) ? DuplicateString(DuplicateString("+ lines found in /etc/group")) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDefaultRootAccountGroupIsGidZero(void)
 {
-    return CheckDefaultRootAccountGroupIsGidZero(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckDefaultRootAccountGroupIsGidZero(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRootIsOnlyUidZeroAccount(void)
 {
-    return ((0 == CheckRootGroupExists(SecurityBaselineGetLog())) && 
-        (0 == CheckRootIsOnlyUidZeroAccount(SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    char* reason = NULL;
+    return ((0 == CheckRootGroupExists(&reason, SecurityBaselineGetLog())) && 
+        (0 == CheckRootIsOnlyUidZeroAccount(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureAllUsersHomeDirectoriesExist(void)
 {
-    return CheckAllUsersHomeDirectoriesExist(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckAllUsersHomeDirectoriesExist(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureUsersOwnTheirHomeDirectories(void)
 {
-    return CheckUsersOwnTheirHomeDirectories(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckUsersOwnTheirHomeDirectories(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRestrictedUserHomeDirectories(void)
 {
     unsigned int modes[] = {700, 750};
+    char* reason = NULL;
     
-    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckRestrictedUserHomeDirectories(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePasswordHashingAlgorithm(void)
 {
-    return CheckPasswordHashingAlgorithm(sha512, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckPasswordHashingAlgorithm(sha512, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureMinDaysBetweenPasswordChanges(void)
 {
-    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckMinDaysBetweenPasswordChanges(g_minDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureInactivePasswordLockPeriod(void)
 {
-    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, SecurityBaselineGetLog())) &&
-        (0 == CheckUsersRecordedPasswordChangeDates(SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    char* reason = NULL;
+    return ((0 == CheckLockoutAfterInactivityLessThan(g_maxInactiveDays, &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckUsersRecordedPasswordChangeDates(&reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureMaxDaysBetweenPasswordChanges(void)
 {
-    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckMaxDaysBetweenPasswordChanges(g_maxDaysBetweenPasswordChanges, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePasswordExpiration(void)
 {
-    return CheckPasswordExpirationLessThan(g_passwordExpiration, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckPasswordExpirationLessThan(g_passwordExpiration, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePasswordExpirationWarning(void)
 {
-    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSystemAccountsAreNonLogin(void)
 {
-    return CheckSystemAccountsAreNonLogin(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckSystemAccountsAreNonLogin(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAuthenticationRequiredForSingleUserMode(void)
 {
-    return CheckRootPasswordForSingleUserMode(SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckRootPasswordForSingleUserMode(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePrelinkIsDisabled(void)
@@ -911,12 +931,13 @@ static char* AuditEnsureDotDoesNotAppearInRootsPath(void)
 {
     const char* path = "PATH";
     const char* dot = ".";
+    char* reason = NULL;
 
-    return ((0 != FindTextInEnvironmentVariable(path, dot, false, SecurityBaselineGetLog()) &&
-        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, SecurityBaselineGetLog())) &&
-        (0 != FindMarkedTextInFile("/root/.profile", path, dot, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 != FindTextInEnvironmentVariable(path, dot, false, &reason, SecurityBaselineGetLog()) &&
+        (0 != FindMarkedTextInFile("/etc/sudoers", "secure_path", dot, &reason, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcEnvironment, path, dot, &reason, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile(g_etcProfile, path, dot, &reason, SecurityBaselineGetLog())) &&
+        (0 != FindMarkedTextInFile("/root/.profile", path, dot, &reason, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureCronServiceIsEnabled(void)
@@ -954,15 +975,16 @@ static char* AuditEnsureSuRestrictedToRootGroup(void)
 
 static char* AuditEnsureDefaultUmaskForAllUsers(void)
 {
-    return CheckLoginUmask("077", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckLoginUmask("077", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAutomountingDisabled(void)
 {
     const char* autofs = "autofs";
-
-    return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) && 
-        (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return (CheckPackageInstalled(autofs, SecurityBaselineGetLog()) 
+        && (false == CheckIfDaemonActive(autofs, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("Package '%s' is not installed or service '%s' is not running", autofs, autofs);
 }
 
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
@@ -973,30 +995,33 @@ static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
 {
     const char* readIpTables = "iptables -S";
+    char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 == FindTextInCommandOutput(readIpTables, "-P INPUT DROP", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P FORWARD DROP", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(readIpTables, "-P OUTPUT DROP", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsurePacketRedirectSendingIsDisabled(void)
 {
     const char* command = "sysctl -a";
+    char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.send_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.send_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 {
     const char* command = "sysctl -a";
+    char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.default.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv6.conf.all.accept_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.secure_redirects = 0", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.secure_redirects = 0", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
@@ -1008,36 +1033,42 @@ static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/default/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        DuplicateString("0 not found in /proc/sys/net/ipv4/conf/all/accept_source_route and/or in /proc/sys/net/ipv6/conf/default/accept_source_route");
 }
 
 static char* AuditEnsureIgnoringBogusIcmpBroadcastResponses(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        DuplicateString("1 not found in /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses");
 }
 
 static char* AuditEnsureIgnoringIcmpEchoPingsToMulticast(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        DuplicateString("1 not found in /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts");
 }
 
 static char* AuditEnsureMartianPacketLoggingIsEnabled(void)
 {
     const char* command = "sysctl -a";
+    char* reason = NULL;
 
-    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", SecurityBaselineGetLog())) &&
-        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return ((0 == FindTextInCommandOutput(command, "net.ipv4.conf.all.log_martians = 1", &reason, SecurityBaselineGetLog())) &&
+        (0 == FindTextInCommandOutput(command, "net.ipv4.conf.default.log_martians = 1", &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        DuplicateString("1 not found in /proc/sys/net/ipv4/conf/all/rp_filter and/or in /proc/sys/net/ipv4/conf/default/rp_filter");
 }
 
 static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
-    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
+        DuplicateString("1 not found in /proc/sys/net/ipv4/tcp_syncookies");
 }
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
@@ -1045,14 +1076,16 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
     const char* command = "/sbin/ip addr list";
     const char* text = "PROMISC";
 
-    return (FindTextInCommandOutput(command, text, SecurityBaselineGetLog()) &&
+    return (FindTextInCommandOutput(command, text, NULL, SecurityBaselineGetLog()) &&
         (0 == CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', text, SecurityBaselineGetLog())) &&
-        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (0 == CheckLineNotFoundOrCommentedOut("/etc/rc.local", '#', text, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("'%s' not found in command '%s' output or found in /etc/network/interfaces or in /etc/rc.local", text, command);
 }
 
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", SecurityBaselineGetLog()) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    char* reason = NULL;
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureIpv6ProtocolIsEnabled(void)
@@ -1061,32 +1094,38 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 
     return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("/proc/net/if_inet6 not found, or either 'net.ipv6.conf.all.disable_ipv6 = 0' or 'net.ipv6.conf.default.disable_ipv6 = 0' not found in %s", etcSysCtlConf);
 }
 
 static char* AuditEnsureDccpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return FindTextInFolder(g_etcModProbeD, "install dccp /bin/true", SecurityBaselineGetLog()) ? 
+        FormatAllocateString("'%s' not found in any file under %s", "install dccp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSctpIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return FindTextInFolder(g_etcModProbeD, "install sctp /bin/true", SecurityBaselineGetLog()) ? 
+        FormatAllocateString("'%s' not found in any file under %s", "install sctp /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDisabledSupportForRds(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return FindTextInFolder(g_etcModProbeD, "install rds /bin/true", SecurityBaselineGetLog()) ? 
+        FormatAllocateString("'%s' not found in any file under %s", "install rds /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureTipcIsDisabled(void)
 {
-    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return FindTextInFolder(g_etcModProbeD, "install tipc /bin/true", SecurityBaselineGetLog()) ? 
+        FormatAllocateString("'%s' not found in any file under %s", "install tipc /bin/true", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureZeroconfNetworkingIsDisabled(void)
 {
-    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckLineNotFoundOrCommentedOut("/etc/network/interfaces", '#', "ipv4ll", SecurityBaselineGetLog()) ? 
+        DuplicateString("'ipv4ll' found in /etc/network/interfaces") : DuplicateString(g_pass);
 }
 
 static char* AuditEnsurePermissionsOnBootloaderConfig(void)
@@ -1411,8 +1450,7 @@ static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
     char* reason = NULL;
-    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : DuplicateString(g_fail)) : DuplicateString(g_pass);
+    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
@@ -1539,29 +1577,25 @@ static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
     unsigned int modes[] = {600, 644, 664, 700, 744};
     char* reason = NULL;
 
-    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : DuplicateString("Not all users who can login have all their dot files with proper restricted access")) : DuplicateString(g_pass);
+    return CheckUsersRestrictedDotFiles(modes, ARRAY_SIZE(modes), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotForwardFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_forward)) : DuplicateString(g_pass);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_forward, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotNetrcFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_netrc)) : DuplicateString(g_pass);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_netrc, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureNoUsersHaveDotRhostsFiles(void)
 {
     char* reason = NULL;
-    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog()) ? 
-        (reason ? reason : FormatAllocateString("There are users who have '.%s' files", g_rhosts)) : DuplicateString(g_pass);
+    return CheckOrEnsureUsersDontHaveDotFiles(g_rhosts, false, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureRloginServiceIsDisabled(void)
@@ -1575,9 +1609,9 @@ static char* AuditEnsureRloginServiceIsDisabled(void)
 static char* AuditEnsureUnnecessaryAccountsAreRemoved(void)
 {
     const char* names[] = {"games"};
+    char* reason = NULL;
 
-    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), SecurityBaselineGetLog())) ? 
-        FormatAllocateString("Account '%s' exists", names[0]) : DuplicateString(g_pass);
+    return (0 == CheckIfUserAccountsExist(names, ARRAY_SIZE(names), &reason, SecurityBaselineGetLog())) ? reason : DuplicateString(g_pass);
 }
 
 AuditCall g_auditChecks[] =
@@ -3565,7 +3599,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
     {
         if (NULL == result)
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s) encountered a null internal result, this audit call will fail", componentName, objectName);
+            OsConfigLogError(SecurityBaselineGetLog(), "MmiGet(%s, %s): audit failure without a reason", componentName, objectName);
             result = DuplicateString(g_fail);
 
             if (NULL == result)

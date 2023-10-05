@@ -696,7 +696,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log)
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
@@ -743,12 +743,22 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                status = ENOENT;
+                status = ENOENT; 
+
+                if (reason)
+                {
+                    *reason = FormatAllocateString("'%s' containing '%s' not found in '%s'", text, marker, fileName);
+                }
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+
+            if (reason)
+            {
+                *reason = FormatAllocateString("'%s' not found in '%s' (%d)", text, fileName, status);
+            }
         }
 
         FREE_MEMORY(results);
@@ -758,7 +768,7 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
     return status;
 }
 
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, void* log)
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, void* log)
 {
     const char* commandTemplate = "printenv %s";
     char* command = NULL;
@@ -797,6 +807,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("'%s' not found set for '%s' ('%s')", text, variableName, variableValue);
+                    }
                 }
             }
             else
@@ -820,6 +835,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("'%s' not found in '%s'", text, variableName);
+                    }
                 }
             }
         }
@@ -994,7 +1014,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     return status;
 }
 
-int FindTextInCommandOutput(const char* command, const char* text, void* log)
+int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)
 {
     char* results = NULL;
     int status = 0;
@@ -1015,6 +1035,11 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
             status = ENOENT;
+
+            if (reason)
+            {
+                *reason = FormatAllocateString("'%s' not found in command '%s' output", text, command);
+            }
         }
 
         FREE_MEMORY(results);
@@ -1022,6 +1047,11 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Command '%s' failed with %d", command, status);
+        }
     }
 
     return status;

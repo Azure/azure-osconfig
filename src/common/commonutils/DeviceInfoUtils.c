@@ -604,7 +604,7 @@ char* GetLoginUmask(void* log)
     return result;
 }
 
-int CheckLoginUmask(const char* desired, void* log)
+int CheckLoginUmask(const char* desired, char** reason, void* log)
 {
     char* current = NULL;
     size_t length = 0;
@@ -631,6 +631,11 @@ int CheckLoginUmask(const char* desired, void* log)
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
+
+            if (reason)
+            {
+                reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
+            }
         }
     }
 
