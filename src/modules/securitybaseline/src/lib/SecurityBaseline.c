@@ -953,7 +953,7 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
         (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\m', '\r', '\s' or '\v' found in %s", g_etcIssueNet);
+        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' found in %s", g_etcIssueNet);
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
@@ -962,7 +962,7 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
         (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'\m', '\r', '\s' or '\v' found in %s", g_etcIssue);
+        FormatAllocateString("'\\m', '\\r', '\\s' or '\\v' found in %s", g_etcIssue);
 }
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
