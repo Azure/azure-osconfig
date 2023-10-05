@@ -500,7 +500,7 @@ static char* AuditEnsurePermissionsOnEtcHostsAllow(void)
 static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 {
     char* reason = NULL;
-    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? DuplicateString(g_fail) : DuplicateString(g_pass);
+    return CheckFileAccess(g_etcHostsDeny, 0, 0, 644, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 };
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
@@ -952,7 +952,8 @@ static char* AuditEnsureRemoteLoginWarningBannerIsConfigured(void)
     return ((0 != FindTextInFile(g_etcIssueNet, "\\m", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssueNet, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (0 != FindTextInFile(g_etcIssueNet, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("'\m', '\r', '\s' or '\v' found in %s", g_etcIssueNet);
 }
 
 static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
@@ -960,7 +961,8 @@ static char* AuditEnsureLocalLoginWarningBannerIsConfigured(void)
     return ((0 != FindTextInFile(g_etcIssue, "\\m", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\r", SecurityBaselineGetLog())) &&
         (0 != FindTextInFile(g_etcIssue, "\\s", SecurityBaselineGetLog())) &&
-        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (0 != FindTextInFile(g_etcIssue, "\\v", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        FormatAllocateString("'\m', '\r', '\s' or '\v' found in %s", g_etcIssue);
 }
 
 static char* AuditEnsureAuditdServiceIsRunning(void)
@@ -989,7 +991,8 @@ static char* AuditEnsureAutomountingDisabled(void)
 
 static char* AuditEnsureKernelCompiledFromApprovedSources(void)
 {
-    return (true == CheckOsAndKernelMatchDistro(SecurityBaselineGetLog())) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+    char* reason = NULL;
+    return (true == CheckOsAndKernelMatchDistro(&reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureDefaultDenyFirewallPolicyIsSet(void)
@@ -1027,7 +1030,8 @@ static char* AuditEnsureIcmpRedirectsIsDisabled(void)
 static char* AuditEnsureSourceRoutedPacketsIsDisabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : DuplicateString(g_fail);
+        (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv6/conf/all/accept_source_route", '#', "0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        DuplicateString("0 not found in /proc/sys/net/ipv4/conf/all/accept_source_route and/or in /proc/sys/net/ipv6/conf/all/accept_source_route");
 }
 
 static char* AuditEnsureAcceptingSourceRoutedPacketsIsDisabled(void)

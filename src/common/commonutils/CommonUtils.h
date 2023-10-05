@@ -117,7 +117,7 @@ char* GetProductVendor(void* log);
 char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
-bool CheckOsAndKernelMatchDistro(void* log);
+bool CheckOsAndKernelMatchDistro(char** reason, void* log);
 char* GetLoginUmask(void* log);
 int CheckLoginUmask(const char* desired, char** reason, void* log);
 

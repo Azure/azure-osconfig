@@ -1547,7 +1547,7 @@ TEST_F(CommonUtilsTest, CompareFileContents)
 
 TEST_F(CommonUtilsTest, OtherOptionalTests)
 {
-    CheckOsAndKernelMatchDistro(nullptr);
+    CheckOsAndKernelMatchDistro(nullptr, nullptr);
 }
 
 TEST_F(CommonUtilsTest, FindTextInFolder)
