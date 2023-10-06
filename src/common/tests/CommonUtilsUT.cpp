@@ -1018,6 +1018,21 @@ TEST_F(CommonUtilsTest, FormatAllocateString)
     FREE_MEMORY(formattted);
 }
 
+TEST_F(CommonUtilsTest, DuplicateAndFormatAllocateString)
+{
+    char* reason = NULL;
+    char* temp = NULL;
+
+    EXPECT_NE(nullptr, reason = FormatAllocateString("'%s': %d", "Test 123", 456));
+    EXPECT_STREQ(reason, "'Test 123': 456");
+    EXPECT_NE(nullptr, temp = DuplicateString(reason));
+    EXPECT_STREQ(temp, reason);
+    FREE_MEMORY(reason);
+    EXPECT_NE(nullptr, reason = FormatAllocateString("%s, and also '%s' is %d", temp, "Test B", 789));
+    FREE_MEMORY(temp);
+    EXPECT_STREQ(reason, "'Test 123': 456, and also 'Test B' is 789");
+    FREE_MEMORY(reason);
+}
 
 TEST_F(CommonUtilsTest, HashCommand)
 {
@@ -1821,20 +1836,4 @@ TEST_F(CommonUtilsTest, CheckOnlyApprovedMacAlgorithmsAreUsed)
         EXPECT_NE(0, CheckOnlyApprovedMacAlgorithmsAreUsed(m_path, nullptr, nullptr));
         EXPECT_TRUE(Cleanup(m_path));
     }
-}
-
-TEST_F(CommonUtilsTest, ReasonPattern)
-{
-    char* reason = NULL;
-    char* temp = NULL;
-
-    EXPECT_NE(nullptr, reason = FormatAllocateString("'%s': %d", "Test 123", 456));
-    EXPECT_STREQ(reason, "'Test 123': 456");
-    EXPECT_NE(nullptr, temp = DuplicateString(reason));
-    EXPECT_STREQ(temp, reason);
-    FREE_MEMORY(reason);
-    EXPECT_NE(nullptr, reason = FormatAllocateString("%s, and also '%s' is %d", temp, "Test B", 789));
-    FREE_MEMORY(temp);
-    EXPECT_STREQ(reason, "'Test 123': 456, and also 'Test B' is 789");
-    FREE_MEMORY(reason);
 }
