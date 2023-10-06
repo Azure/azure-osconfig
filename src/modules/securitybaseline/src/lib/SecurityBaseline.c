@@ -1107,7 +1107,7 @@ static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     char* reason = NULL;
-    return (0 == FindTextInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog()) ? DuplicateString(g_pass) : reason;
+    return (0 == FindTextInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
 
     /* This check fails when IPv6 is enabled on Ubuntu 22.04, exploring above replacement that is expected to be more universal
     const char* etcSysCtlConf = "/etc/sysctl.conf";
