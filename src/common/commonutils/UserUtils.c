@@ -1128,7 +1128,7 @@ int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
                     {
                         temp = DuplicateString(*reason);
                         FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, al;so user '%s' (%u, %u) home '%s'", 
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u) home '%s'", 
                             temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                         FREE_MEMORY(temp);
                     }
