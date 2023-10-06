@@ -209,11 +209,6 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
         return EINVAL;
     }
 
-    if (reason)
-    {
-        *reason = NULL;
-    }
-
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
         if (0 == (result = stat(name, &statStruct)))
