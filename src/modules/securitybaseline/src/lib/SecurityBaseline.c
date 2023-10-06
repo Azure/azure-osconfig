@@ -1078,13 +1078,13 @@ static char* AuditEnsureReversePathSourceValidationIsEnabled(void)
 {
     return ((EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/all/rp_filter", '#', "1", SecurityBaselineGetLog())) && 
         (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/conf/default/rp_filter", '#', "1", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        DuplicateString("1 not found in /proc/sys/net/ipv4/conf/all/rp_filter or in /proc/sys/net/ipv4/conf/default/rp_filter");
+        DuplicateString("'1' not found in /proc/sys/net/ipv4/conf/all/rp_filter or in /proc/sys/net/ipv4/conf/default/rp_filter");
 }
 
 static char* AuditEnsureTcpSynCookiesAreEnabled(void)
 {
     return (EEXIST == CheckLineNotFoundOrCommentedOut("/proc/sys/net/ipv4/tcp_syncookies", '#', "1", SecurityBaselineGetLog())) ? DuplicateString(g_pass) : 
-        DuplicateString("1 not found in /proc/sys/net/ipv4/tcp_syncookies");
+        DuplicateString("'1' not found in /proc/sys/net/ipv4/tcp_syncookies");
 }
 
 static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
@@ -1164,7 +1164,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
 static char* AuditEnsureMountingOfUsbStorageDevicesIsDisabled(void)
 {
     return FindTextInFolder(g_etcModProbeD, "install usb-storage /bin/true", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'install usb-storage /bin/true' is not found in %s", g_etcModProbeD) : DuplicateString(g_pass);
+        FormatAllocateString("'install usb-storage /bin/true' is not found in any file under %s", g_etcModProbeD) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureCoreDumpsAreRestricted(void)
