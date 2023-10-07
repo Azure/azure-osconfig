@@ -196,7 +196,7 @@ static int OctalToDecimal(int octal)
     return decimal;
 }
 
-static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
 {
     struct stat statStruct = {0};
     mode_t currentMode = 0;
@@ -218,6 +218,13 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+
+                if (reason)
+                {
+                    *reason = FormatAllocateString("Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
+                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
+                }
+
                 result = ENOENT;
             }
             else
@@ -265,6 +272,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (currentMode > desiredMode))
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
+                    }
+                    
                     result = ENOENT;
                 }
                 else
@@ -306,7 +319,7 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
 
     if (directory ? DirectoryExists(name) : FileExists(name))
     {
-        if (0 == (result = CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, log)))
+        if (0 == (result = CheckAccess(directory, name, desiredOwnerId, desiredGroupId, desiredAccess, false, NULL, log)))
         {
             OsConfigLogInfo(log, "SetAccess: desired '%s' ownership (owner %u, group %u with access %u) already set",
                 name, desiredOwnerId, desiredGroupId, desiredAccess);
@@ -343,9 +356,9 @@ static int SetAccess(bool directory, const char* name, unsigned int desiredOwner
     return result;
 }
 
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log)
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log)
 {
-    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, log);
+    return CheckAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, false, reason, log);
 }
 
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
@@ -353,9 +366,9 @@ int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned in
     return SetAccess(false, fileName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log)
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log)
 {
-    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, log);
+    return CheckAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, rootCanOverwriteOwnership, reason, log);
 }
 
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log)
@@ -363,12 +376,13 @@ int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, u
     return SetAccess(true, directoryName, desiredOwnerId, desiredGroupId, desiredAccess, log);
 }
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log)
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log)
 {
     FILE* mountFileHandle = NULL;
     struct mntent* mountStruct = NULL;
     bool matchFound = false;
     int lineNumber = 0;
+    char* temp = NULL;
     int status = 0;
     
     if ((NULL == mountFileName) || ((NULL == mountDirectory) && (NULL == mountType)) || (NULL == desiredOption))
@@ -403,6 +417,23 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
                     OsConfigLogError(log, "CheckFileSystemMountingOption: option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
                         desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("Option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                                desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also option '%s' for directory '%s' or mount type '%s' missing from file '%s' at line %d",
+                                temp, desiredOption, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName, lineNumber);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
 
                 if (IsFullLoggingEnabled())
@@ -420,6 +451,23 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         {
             OsConfigLogInfo(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s', nothing to check", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+
+            if (reason)
+            {
+                if ((NULL == *reason) || (0 == strlen(*reason)))
+                {
+                    *reason = FormatAllocateString("Directory '%s' or mount type '%s' not found in file '%s', nothing to check",
+                        mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                }
+                else
+                {
+                    temp = DuplicateString(*reason);
+                    FREE_MEMORY(*reason);
+                    *reason = FormatAllocateString("%s, also directory '%s' or mount type '%s' not found in file '%s'",
+                        temp, mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
+                    FREE_MEMORY(temp);
+                }
+            }
         }
 
         endmntent(mountFileHandle);
@@ -434,6 +482,11 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
         }
         
         OsConfigLogError(log, "CheckFileSystemMountingOption: could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Could not open file '%s', setmntent() failed (%d)", mountFileName, status);
+        }
     }
 
     return status;
@@ -638,7 +691,7 @@ int FindTextInFile(const char* fileName, const char* text, void* log)
     return status;
 }
 
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log)
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log)
 {
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
@@ -685,12 +738,22 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
-                status = ENOENT;
+                status = ENOENT; 
+
+                if (reason)
+                {
+                    *reason = FormatAllocateString("'%s' containing '%s' not found in '%s'", text, marker, fileName);
+                }
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
+
+            if (reason)
+            {
+                *reason = FormatAllocateString("'%s' not found in '%s' (%d)", text, fileName, status);
+            }
         }
 
         FREE_MEMORY(results);
@@ -700,7 +763,7 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
     return status;
 }
 
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, void* log)
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictCompare, char** reason, void* log)
 {
     const char* commandTemplate = "printenv %s";
     char* command = NULL;
@@ -739,6 +802,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("'%s' not found set for '%s' ('%s')", text, variableName, variableValue);
+                    }
                 }
             }
             else
@@ -762,6 +830,11 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("'%s' not found in '%s'", text, variableName);
+                    }
                 }
             }
         }
@@ -936,7 +1009,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
     return status;
 }
 
-int FindTextInCommandOutput(const char* command, const char* text, void* log)
+int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)
 {
     char* results = NULL;
     int status = 0;
@@ -957,6 +1030,11 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
             status = ENOENT;
+
+            if (reason)
+            {
+                *reason = FormatAllocateString("'%s' not found in command '%s' output", text, command);
+            }
         }
 
         FREE_MEMORY(results);
@@ -964,6 +1042,11 @@ int FindTextInCommandOutput(const char* command, const char* text, void* log)
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Command '%s' failed with %d", command, status);
+        }
     }
 
     return status;
@@ -1137,7 +1220,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     return status;
 }
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
 {
     char* contents = NULL;
     char* macsValue = NULL;
@@ -1156,11 +1239,21 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
         status = ENOENT;
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Cannot read from '%s'", fileName);
+        }
     }
     else if (NULL == (macsValue = GetStringOptionFromBuffer(contents, "MACs", ' ', log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'MACs' not found in '%s'", fileName);
         status = ENOENT;
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("'MACs' not found in '%s'", fileName);
+        }
     }
     else
     {
@@ -1184,6 +1277,11 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log)
                 {
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        *reason = FormatAllocateString("Unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                    }
                 }
 
                 i += strlen(value);

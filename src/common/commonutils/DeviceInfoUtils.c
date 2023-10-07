@@ -510,7 +510,7 @@ static void ClearOsDistroInfo(OS_DISTRO_INFO* info)
     }
 }
 
-bool CheckOsAndKernelMatchDistro(void* log)
+bool CheckOsAndKernelMatchDistro(char** reason, void* log)
 {
     const char* linuxName = "Linux";
     const char* none = "<null>";
@@ -570,6 +570,12 @@ bool CheckOsAndKernelMatchDistro(void* log)
     {
         OsConfigLogError(log, "CheckOsAndKernelMatchDistro: distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
             distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+
+        if (reason)
+        {
+            *reason = FormatAllocateString("Distro ('%s', '%s', '%s', '%s', '%s') and installed image ('%s', '%s', '%s', '%s', '%s') do not match",
+                distro.id, distro.release, distro.codename, distro.description, linuxName, os.id, os.release, os.codename, os.description, kernelName);
+        }
     }
 
     FREE_MEMORY(kernelName);
@@ -604,7 +610,7 @@ char* GetLoginUmask(void* log)
     return result;
 }
 
-int CheckLoginUmask(const char* desired, void* log)
+int CheckLoginUmask(const char* desired, char** reason, void* log)
 {
     char* current = NULL;
     size_t length = 0;
@@ -631,6 +637,11 @@ int CheckLoginUmask(const char* desired, void* log)
         {
             OsConfigLogError(log, "CheckLoginUmask: current login UMASK '%s' does not match desired '%s'", current, desired);
             status = ENOENT;
+
+            if (reason)
+            {
+                *reason = FormatAllocateString("Current login UMASK '%s' does not match desired '%s'", current, desired);
+            }
         }
     }
 

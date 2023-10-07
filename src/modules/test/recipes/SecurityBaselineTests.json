@@ -854,11 +854,6 @@
     "ObjectName": "remediateEnsureUnnecessaryAccountsAreRemoved"
   },
   {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateSecurityBaseline"
-  },
-  {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsurePermissionsOnEtcIssue",
@@ -1834,12 +1829,6 @@
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureUnnecessaryAccountsAreRemoved",
-    "Payload": "PASS"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditSecurityBaseline",
     "Payload": "PASS"
   },
   {
