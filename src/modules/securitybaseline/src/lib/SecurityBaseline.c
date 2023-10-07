@@ -1798,16 +1798,15 @@ char* AuditSecurityBaseline(void)
 {
     size_t numChecks = ARRAY_SIZE(g_auditChecks);
     size_t i = 0;
-    char* status = NULL; 
     char* _status = NULL;
+    char* status = DuplicateString(g_pass);
 
     for (i = 0; i < numChecks; i++)
     {
-        _status = DuplicateString(g_auditChecks[i]());
-        if (strcmp(_status, g_pass))
+        if ((NULL == (_status = g_auditChecks[i]())) || strcmp(_status, g_pass))
         {
             FREE_MEMORY(status);
-            status = DuplicateString(_status);
+            status = DuplicateString(_status ? _status : g_fail);
         }
         FREE_MEMORY(_status);
     }
