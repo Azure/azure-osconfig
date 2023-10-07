@@ -1108,13 +1108,6 @@ static char* AuditEnsureIpv6ProtocolIsEnabled(void)
 {
     char* reason = NULL;
     return (0 == FindTextInCommandOutput("cat /sys/module/ipv6/parameters/disable", "0", &reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
-
-    /* This check fails when IPv6 is enabled on Ubuntu 22.04, exploring above replacement that is expected to be more universal
-    const char* etcSysCtlConf = "/etc/sysctl.conf";
-    return ((0 == CheckFileExists("/proc/net/if_inet6", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.all.disable_ipv6 = 0", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(etcSysCtlConf, '#', "net.ipv6.conf.default.disable_ipv6 = 0", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("/proc/net/if_inet6 not found, or either 'net.ipv6.conf.all.disable_ipv6 = 0' or 'net.ipv6.conf.default.disable_ipv6 = 0' is not found in %s", etcSysCtlConf);*/
 }
 
 static char* AuditEnsureDccpIsDisabled(void)
