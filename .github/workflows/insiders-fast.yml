@@ -30,8 +30,17 @@ jobs:
     uses: ./.github/workflows/publish.yml
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, debian-10, debian-11]
+        target:
+          [
+            { os: ubuntu, version: 18.04, dist: bionic },
+            { os: ubuntu, version: 20.04, dist: focal },
+            { os: debian, version: 10, dist: buster },
+            { os: debian, version: 11, dist: bullseye },
+          ]
+        arch: [arm, arm64, amd64]
     with:
-      os: ${{ matrix.os }}
-      channel: insiders-fast
+      target: ${{ matrix.target.os }}-${{ matrix.target.version }}
+      arch: ${{ matrix.arch }}
+      repo: microsoft-${{ matrix.target.os }}-${{ matrix.target.dist }}-prod-apt
+      dist: insiders-fast
     secrets: inherit
