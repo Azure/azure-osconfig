@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  esrp:
+  sign:
     runs-on: [self-hosted, 1ES.Pool=release-pool, 1ES.ImageOverride=windows-2022]
     steps:
       - uses: actions/checkout@v3

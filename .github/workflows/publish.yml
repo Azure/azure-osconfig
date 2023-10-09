@@ -3,39 +3,40 @@ name: Publish
 on:
   workflow_call:
     inputs:
-      os:
+      target:
         type: string
         required: true
-      channel:
+      arch:
+        type: string
+        required: true
+      repo:
+        type: string
+        required: true
+      dist:
         type: string
         required: true
 
 jobs:
   package:
-    name: package ${{ matrix.arch }}
     uses: ./.github/workflows/package-build.yml
-    strategy:
-      matrix:
-        arch: [amd64, arm64, arm]
     with:
-      os: ${{ inputs.os }}
-      arch: ${{ matrix.arch }}
-      artifact: ${{ inputs.os }}
-      display-name: package ${{ inputs.os }}-${{ matrix.arch }}
+      target: ${{ inputs.target }}
+      arch: ${{ inputs.arch }}
+      artifact: ${{ inputs.target }}-${{ inputs.arch }}
       release: true
 
-  signing:
+  sign:
     uses: ./.github/workflows/package-sign.yml
     needs: package
     with:
-      artifact: ${{ inputs.os }}
+      artifact: ${{ inputs.target }}-${{ inputs.arch }}
     secrets: inherit
 
   publish:
     uses: ./.github/workflows/package-publish.yml
-    needs: signing
+    needs: sign
     with:
-      artifact: ${{ inputs.os }}-signed
-      target: ${{ inputs.os }}
-      channel: ${{ inputs.channel }}
+      repo: ${{ inputs.repo }}
+      dist: ${{ inputs.dist }}
+      artifact: ${{ inputs.target }}-${{ inputs.arch }}-signed
     secrets: inherit

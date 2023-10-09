@@ -13,8 +13,8 @@ on:
         type: string
         required: false
         default: 'Release'
-      os:
-        description: The operating system to build for.
+      target:
+        description: The operating system target to build for.
         type: string
         required: true
       arch:
@@ -26,11 +26,6 @@ on:
         type: boolean
         required: false
         default: false
-      display-name:
-        description: The name of the job to display.
-        type: string
-        required: false
-        default: package
       release:
         type: boolean
         required: false
@@ -43,7 +38,6 @@ env:
 
 jobs:
   package:
-    name: ${{ inputs.display-name }}
     runs-on: ${{ inputs.release == true && fromJSON('["self-hosted", "1ES.Pool=release-pool", "1ES.ImageOverride=ubuntu-22.04"]') || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v3
@@ -56,7 +50,7 @@ jobs:
         uses: ./.github/actions/container-run
         with:
           registry: ${{ env.REGISTRY }}
-          container: azure/azure-osconfig/${{ inputs.os }}-${{ inputs.arch }}
+          container: azure/azure-osconfig/${{ inputs.target }}-${{ inputs.arch }}
           mount: ${{ github.workspace }}:${{ env.MOUNT }}
 
       - name: Set tweak
