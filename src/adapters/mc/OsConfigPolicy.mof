@@ -1946,7 +1946,7 @@ instance of OsConfigResource as $OsConfigResource138ref
 
 instance of OsConfigResource as $OsConfigResource139ref
 {
-    ResourceID = "Ensurethe Network File System (NFS) service is disabled";
+    ResourceID = "Ensure the Network File System (NFS) service is disabled";
     PayloadKey = "EnsureNetworkFileSystemServiceIsDisabled";
     ComponentName = "SecurityBaseline";
     ReportedObjectName = "auditEnsureNetworkFileSystemServiceIsDisabled";

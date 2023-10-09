@@ -535,7 +535,7 @@ int EnumerateAllGroups(SIMPLIFIED_GROUP** groupList, unsigned int* size, void* l
     return status;
 }
 
-int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
+int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
@@ -544,6 +544,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
     struct SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0, k = 0;
+    char* temp = NULL;
     bool found = false;
     int status = 0;
 
@@ -578,6 +579,23 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
                         OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                         status = ENOENT;
+
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("Group '%s' (%u) of user '%s' (%u) not found in /etc/group",
+                                    userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also group '%s' (%u) of user '%s' (%u)",
+                                    temp, userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
+                                FREE_MEMORY(temp);
+                            }
+                        }
                         break;
                     }
                 }
@@ -598,12 +616,13 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(void* log)
     return status;
 }
 
-int CheckNoDuplicateUidsExist(void* log)
+int CheckNoDuplicateUidsExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -622,6 +641,22 @@ int CheckNoDuplicateUidsExist(void* log)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateUidsExist: UID %u appears more than a single time in /etc/passwd", userList[i].userId);
                         status = EEXIST;
+                        
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("UID %u appears more than a single time in /etc/passwd", userList[i].userId);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also UID %u", temp, userList[i].userId);
+                                FREE_MEMORY(temp);
+                            }
+                        }
+                        
                         break;
                     }
                 }
@@ -639,12 +674,13 @@ int CheckNoDuplicateUidsExist(void* log)
     return status;
 }
 
-int CheckNoDuplicateGidsExist(void* log)
+int CheckNoDuplicateGidsExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
@@ -663,6 +699,22 @@ int CheckNoDuplicateGidsExist(void* log)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateGidsExist: GID %u appears more than a single time in /etc/group", groupList[i].groupId);
                         status = EEXIST;
+                        
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("GID %u appears more than a single time in /etc/group", groupList[i].groupId);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also GID %u",temp, groupList[i].groupId);
+                                FREE_MEMORY(temp);
+                            }
+                        }
+
                         break;
                     }
                 }
@@ -680,12 +732,13 @@ int CheckNoDuplicateGidsExist(void* log)
     return status;
 }
 
-int CheckNoDuplicateUserNamesExist(void* log)
+int CheckNoDuplicateUserNamesExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -704,6 +757,22 @@ int CheckNoDuplicateUserNamesExist(void* log)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateUserNamesExist: username '%s' appears more than a single time in /etc/passwd", userList[i].username);
                         status = EEXIST;
+
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("Username '%s' appears more than a single time in /etc/passwd", userList[i].username);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also username '%s'", temp, userList[i].username);
+                                FREE_MEMORY(temp);
+                            }
+                        }
+
                         break;
                     }
                 }
@@ -721,12 +790,13 @@ int CheckNoDuplicateUserNamesExist(void* log)
     return status;
 }
 
-int CheckNoDuplicateGroupsExist(void* log)
+int CheckNoDuplicateGroupsExist(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0, j = 0;
     unsigned int hits = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
@@ -745,6 +815,22 @@ int CheckNoDuplicateGroupsExist(void* log)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateGroupsExist: group name '%s' appears more than a single time in /etc/group", groupList[i].groupName);
                         status = EEXIST;
+
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("Group name '%s' appears more than a single time in /etc/group", groupList[i].groupName);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also group name '%s'", temp, groupList[i].groupName);
+                                FREE_MEMORY(temp);
+                            }
+                        }
+
                         break;
                     }
                 }
@@ -762,7 +848,7 @@ int CheckNoDuplicateGroupsExist(void* log)
     return status;
 }
 
-int CheckShadowGroupIsEmpty(void* log)
+int CheckShadowGroupIsEmpty(char** reason, void* log)
 {
     const char* shadow = "shadow";
 
@@ -770,6 +856,7 @@ int CheckShadowGroupIsEmpty(void* log)
     unsigned int groupListSize = 0;
     unsigned int i = 0;
     bool found = false;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
@@ -780,6 +867,22 @@ int CheckShadowGroupIsEmpty(void* log)
             {
                 OsConfigLogError(log, "CheckShadowGroupIsEmpty: group shadow (%u) is not empty", groupList[i].groupId);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("Group shadow is not empty: %u", groupList[i].groupId);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also %u", temp, groupList[i].groupId);
+                        FREE_MEMORY(temp);
+                    }
+                }
+
                 break;
             }
         }
@@ -795,7 +898,7 @@ int CheckShadowGroupIsEmpty(void* log)
     return status;
 }
 
-int CheckRootGroupExists(void* log)
+int CheckRootGroupExists(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
@@ -822,15 +925,21 @@ int CheckRootGroupExists(void* log)
     {
         OsConfigLogError(log, "CheckRootGroupExists: root group with GID 0 not found");
         status = ENOENT;
+
+        if (reason)
+        {
+            *reason = DuplicateString("Root group with GID 0 not found");
+        }
     }
 
     return status;
 }
 
-int CheckAllUsersHavePasswordsSet(void* log)
+int CheckAllUsersHavePasswordsSet(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -862,6 +971,23 @@ int CheckAllUsersHavePasswordsSet(void* log)
                 OsConfigLogError(log, "CheckAllUsersHavePasswordsSet: user '%s' (%u, %u) not found to have a password set", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u) not found to have a password set",
+                            userList[i].username, userList[i].userId, userList[i].groupId);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u)", 
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -876,10 +1002,11 @@ int CheckAllUsersHavePasswordsSet(void* log)
     return status;
 }
 
-int CheckRootIsOnlyUidZeroAccount(void* log)
+int CheckRootIsOnlyUidZeroAccount(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -891,6 +1018,23 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
                 OsConfigLogError(log, "CheckRootIsOnlyUidZeroAccount: user '%s' (%u, %u) is not root but has UID 0", 
                     userList[i].username, userList[i].userId, userList[i].groupId);
                 status = EACCES;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u) is not root but has UID 0",
+                            userList[i].username, userList[i].userId, userList[i].groupId);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u)", 
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -905,11 +1049,12 @@ int CheckRootIsOnlyUidZeroAccount(void* log)
     return status;
 }
 
-int CheckDefaultRootAccountGroupIsGidZero(void* log)
+int CheckDefaultRootAccountGroupIsGidZero(char** reason, void* log)
 {
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int groupListSize = 0;
     unsigned int i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateAllGroups(&groupList, &groupListSize, log)))
@@ -920,6 +1065,22 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
             {
                 OsConfigLogError(log, "CheckDefaultRootAccountGroupIsGidZero: group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
                 status = EACCES;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("Group '%s' is GID %u", groupList[i].groupName, groupList[i].groupId);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also group '%s'", temp, groupList[i].groupName);
+                        FREE_MEMORY(temp);
+                    }
+                }
+
                 break;
             }
         }
@@ -935,10 +1096,11 @@ int CheckDefaultRootAccountGroupIsGidZero(void* log)
     return status;
 }
 
-int CheckAllUsersHomeDirectoriesExist(void* log)
+int CheckAllUsersHomeDirectoriesExist(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -954,6 +1116,23 @@ int CheckAllUsersHomeDirectoriesExist(void* log)
                 OsConfigLogError(log, "CheckAllUsersHomeDirectoriesExist: user '%s' (%u, %u) home directory '%s' not found or is not a directory", 
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u) home directory '%s' not found or is not a directory", 
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u) home '%s'", 
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -1001,10 +1180,11 @@ static int CheckHomeDirectoryOwnership(SIMPLIFIED_USER* user, void* log)
     return status;
 }
 
-int CheckUsersOwnTheirHomeDirectories(void* log)
+int CheckUsersOwnTheirHomeDirectories(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1032,6 +1212,23 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                     OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) does not own their assigned home directory '%s'",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) does not own their assigned home directory '%s'",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, user '%s' (%u, %u) does not own their assigned home directory '%s'",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
             else
@@ -1039,6 +1236,23 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
                 OsConfigLogError(log, "CheckUsersOwnTheirHomeDirectories: user '%s' (%u, %u) assigned home directory '%s' does not exist",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u) assigned home directory '%s' does not exist",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, user '%s' (%u, %u) assigned home directory '%s' does not exist",
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -1053,11 +1267,12 @@ int CheckUsersOwnTheirHomeDirectories(void* log)
     return status;
 }
 
-int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, void* log)
+int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0, j = 0;
     bool oneGoodMode = false;
+    char* temp = NULL;
     int status = 0;
 
     if ((NULL == modes) || (0 == numberOfModes))
@@ -1080,7 +1295,7 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
                     {
                         OsConfigLogInfo(log, "CheckRestrictedUserHomeDirectories: user '%s' (%u, %u) has proper restricted access (%u) for their assigned home directory '%s'",
                             userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
@@ -1097,6 +1312,23 @@ int CheckRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberO
                     if (0 == status)
                     {
                         status = ENOENT;
+                    }
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) does not have proper restricted access for their assigned home directory '%s'",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also user '%s' (%u, %u) for their home '%s'",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home);
+                            FREE_MEMORY(temp);
+                        }
                     }
                 }
             }
@@ -1140,7 +1372,7 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
 
                 for (j = 0; j < numberOfModes; j++)
                 {
-                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, log))
+                    if (0 == CheckDirectoryAccess(userList[i].home, userList[i].userId, userList[i].groupId, modes[j], true, NULL, log))
                     {
                         OsConfigLogInfo(log, "SetRestrictedUserHomeDirectories: user '%s' (%u, %u) already has proper restricted access (%u) for their assigned home directory '%s'",
                             userList[i].username, userList[i].userId, userList[i].groupId, modes[j], userList[i].home);
@@ -1181,10 +1413,11 @@ int SetRestrictedUserHomeDirectories(unsigned int* modes, unsigned int numberOfM
     return status;
 }
 
-int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
+int CheckPasswordHashingAlgorithm(unsigned int algorithm, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1208,6 +1441,25 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, EncryptionName(userList[i].passwordEncryption), 
                         algorithm, EncryptionName(algorithm));
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) has a password encrypted with algorithm %d (%s) instead of %d (%s)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, 
+                                EncryptionName(userList[i].passwordEncryption), algorithm, EncryptionName(algorithm));
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also user '%s' (%u, %u) with algorithm %d (%s) instead of %d (%s)",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].passwordEncryption, 
+                                EncryptionName(userList[i].passwordEncryption), algorithm, EncryptionName(algorithm));
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -1224,10 +1476,11 @@ int CheckPasswordHashingAlgorithm(unsigned int algorithm, void* log)
     return status;
 }
 
-int CheckMinDaysBetweenPasswordChanges(long days, void* log)
+int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1250,6 +1503,23 @@ int CheckMinDaysBetweenPasswordChanges(long days, void* log)
                     OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: user '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) minimum time between password changes of %ld days is less than requested %ld days",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also for user '%s' (%u, %u) %ld days is less than requested %ld days",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].minimumPasswordAge, days);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -1328,10 +1598,11 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
-int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
+int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1360,6 +1631,23 @@ int CheckMaxDaysBetweenPasswordChanges(long days, void* log)
                     OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: user '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) maximum time between password changes of %ld days is more than requested %ld days",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also for user '%s' (%u, %u) %ld days is more than requested %ld days",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge, days);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -1438,11 +1726,12 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
     return status;
 }
 
-int CheckPasswordExpirationLessThan(long days, void* log)
+int CheckPasswordExpirationLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     long timer = 0;
+    char* temp = NULL;
     int status = 0;
     long passwordExpirationDate = 0;
     long currentDate = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
@@ -1462,6 +1751,23 @@ int CheckPasswordExpirationLessThan(long days, void* log)
                     OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) has no expiration date (%ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("Password for user '%s' (%u, %u) has no expiration date (%ld)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, password for user '%s' (%u, %u) has no expiration date (%ld)",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].maximumPasswordAge);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
                 else
                 {
@@ -1479,6 +1785,23 @@ int CheckPasswordExpirationLessThan(long days, void* log)
                             OsConfigLogError(log, "CheckPasswordExpirationLessThan: password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
                                 userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
                             status = ENOENT;
+
+                            if (reason)
+                            {
+                                if ((NULL == *reason) || (0 == strlen(*reason)))
+                                {
+                                    *reason = FormatAllocateString("Password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
+                                        userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
+                                }
+                                else
+                                {
+                                    temp = DuplicateString(*reason);
+                                    FREE_MEMORY(*reason);
+                                    *reason = FormatAllocateString("%s, password for user '%s' (%u, %u) will expire in %ld days, more than requested maximum of %ld days",
+                                        temp, userList[i].username, userList[i].userId, userList[i].groupId, passwordExpirationDate - currentDate, days);
+                                    FREE_MEMORY(temp);
+                                }
+                            }
                         }
                     }
                     else if (passwordExpirationDate < currentDate)
@@ -1501,10 +1824,11 @@ int CheckPasswordExpirationLessThan(long days, void* log)
     return status;
 }
 
-int CheckPasswordExpirationWarning(long days, void* log)
+int CheckPasswordExpirationWarning(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1527,6 +1851,23 @@ int CheckPasswordExpirationWarning(long days, void* log)
                     OsConfigLogError(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) password expiration warning time is %ld days, less than requested %ld days",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also user '%s' (%u, %u) %ld days is less than requested %ld days",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -1605,11 +1946,12 @@ int SetPasswordExpirationWarning(long days, void* log)
     return status;
 }
 
-int CheckUsersRecordedPasswordChangeDates(void* log)
+int CheckUsersRecordedPasswordChangeDates(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     long timer = 0;
+    char* temp = NULL;
     int status = 0;
     long daysCurrent = time(&timer) / NUMBER_OF_SECONDS_IN_A_DAY;
 
@@ -1633,6 +1975,23 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
                     OsConfigLogError(log, "CheckUsersRecordedPasswordChangeDates: user '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
                     status = ENOENT;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' (%u, %u) last recorded password change is in the future (next %ld days)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, also user '%s' (%u, %u) in next %ld days",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].lastPasswordChange - daysCurrent);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -1648,10 +2007,11 @@ int CheckUsersRecordedPasswordChangeDates(void* log)
     return status;
 }
 
-int CheckLockoutAfterInactivityLessThan(long days, void* log)
+int CheckLockoutAfterInactivityLessThan(long days, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1667,6 +2027,23 @@ int CheckLockoutAfterInactivityLessThan(long days, void* log)
                 OsConfigLogInfo(log, "CheckLockoutAfterInactivityLessThan: user '%s' (%u, %u) period of inactivity before lockout is %ld days, more than requested %ld days",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u) period of inactivity before lockout is %ld days, more than requested %ld days",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u) %ld days is more than requested %ld days",
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].inactivityPeriod, days);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -1744,10 +2121,11 @@ int SetLockoutAfterInactivityLessThan(long days, void* log)
     return status;
 }
 
-int CheckSystemAccountsAreNonLogin(void* log)
+int CheckSystemAccountsAreNonLogin(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
     int status = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
@@ -1759,6 +2137,23 @@ int CheckSystemAccountsAreNonLogin(void* log)
                 OsConfigLogError(log, "CheckSystemAccountsAreNonLogin: user '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
                     userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
                 status = ENOENT;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("User '%s' (%u, %u, '%s', '%s') appears system but can login with a password",
+                            userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, also user '%s' (%u, %u, '%s', '%s')",
+                            temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, userList[i].shell);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -1773,7 +2168,7 @@ int CheckSystemAccountsAreNonLogin(void* log)
     return status;
 }
 
-int CheckRootPasswordForSingleUserMode(void* log)
+int CheckRootPasswordForSingleUserMode(char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
@@ -1823,13 +2218,18 @@ int CheckRootPasswordForSingleUserMode(void* log)
         {
             OsConfigLogError(log, "CheckRootPasswordForSingleUserMode: single user more and root does not have password");
             status = ENOENT;
+
+            if (reason)
+            {
+                *reason = DuplicateString("Single user more and the root account does not have a password set");
+            }
         }
     }
 
     return status;
 }
 
-int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, void* log)
+int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, char** reason, void* log)
 {
     const char* templateDotPath = "%s/.%s";
 
@@ -1837,6 +2237,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
     unsigned int userListSize = 0, i = 0;
     size_t templateLength = 0, length = 0;
     char* dotPath = NULL;
+    char* temp = NULL;
     int status = 0;
 
     if (NULL == name)
@@ -1887,6 +2288,21 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
                         OsConfigLogError(log, "CheckOrEnsureUsersDontHaveDotFiles: user '%s' (%u, %u) has file '.%s' ('%s')",
                             userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
                         status = ENOENT;
+
+                        if (reason)
+                        {
+                            if ((NULL == *reason) || (0 == strlen(*reason)))
+                            {
+                                *reason = FormatAllocateString("User '%s' (%u, %u) has file '.%s' ('%s')", userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                            }
+                            else
+                            {
+                                temp = DuplicateString(*reason);
+                                FREE_MEMORY(*reason);
+                                *reason = FormatAllocateString("%s, also user '%s' (%u, %u) has '.%s' ('%s')", temp, userList[i].username, userList[i].userId, userList[i].groupId, name, dotPath);
+                                FREE_MEMORY(temp);
+                            }
+                        }
                     }
                 }
 
@@ -1905,7 +2321,7 @@ int CheckOrEnsureUsersDontHaveDotFiles(const char* name, bool removeDotFiles, vo
     return status;
 }
 
-int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, void* log)
+int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, char** reason, void* log)
 {
     const char* pathTemplate = "%s/%s";
     
@@ -1914,6 +2330,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
     DIR* home = NULL;
     struct dirent* entry = NULL;
     char* path = NULL;
+    char* temp = NULL;
     size_t length = 0;
     bool oneGoodMode = false;
     int status = 0;
@@ -1953,7 +2370,7 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "CheckUsersRestrictedDotFiles: user '%s' (%u, %u) has proper restricted access (%u) for their dot file '%s'",
                                     userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
@@ -1970,6 +2387,22 @@ int CheckUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes
                             if (0 == status)
                             {
                                 status = ENOENT;
+                            }
+
+                            if (reason)
+                            {
+                                if ((NULL == *reason) || (0 == strlen(*reason)))
+                                {
+                                    *reason = FormatAllocateString("User '%s' (%u, %u) does not has have proper restricted access for their dot file '%s'", 
+                                        userList[i].username, userList[i].userId, userList[i].groupId, path);
+                                }
+                                else
+                                {
+                                    temp = DuplicateString(*reason);
+                                    FREE_MEMORY(*reason);
+                                    *reason = FormatAllocateString("%s, also user '%s' (%u, %u) for file '%s'", temp, userList[i].username, userList[i].userId, userList[i].groupId, path);
+                                    FREE_MEMORY(temp);
+                                }
                             }
                         }
 
@@ -2040,7 +2473,7 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
 
                         for (j = 0; j < numberOfModes; j++)
                         {
-                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], log))
+                            if (0 == CheckFileAccess(path, userList[i].userId, userList[i].groupId, modes[j], NULL, log))
                             {
                                 OsConfigLogInfo(log, "SetUsersRestrictedDotFiles: user '%s' (%u, %u) already has proper restricted access (%u) set for their dot file '%s'",
                                     userList[i].username, userList[i].userId, userList[i].groupId, modes[j], path);
@@ -2087,11 +2520,12 @@ int SetUsersRestrictedDotFiles(unsigned int* modes, unsigned int numberOfModes, 
     return status;
 }
 
-int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, void* log)
+int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, char** reason, void* log)
 {
     SIMPLIFIED_USER* userList = NULL;
     SIMPLIFIED_GROUP* groupList = NULL;
     unsigned int userListSize = 0, groupListSize = 0, i = 0, j = 0;
+    char* temp = NULL;
     int status = ENOENT;
 
     if ((NULL == names) || (0 == numberOfNames))
@@ -2122,6 +2556,23 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
                     }
 
                     status = 0;
+
+                    if (reason)
+                    {
+                        if ((NULL == *reason) || (0 == strlen(*reason)))
+                        {
+                            *reason = FormatAllocateString("User '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
+                                userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+                        }
+                        else
+                        {
+                            temp = DuplicateString(*reason);
+                            FREE_MEMORY(*reason);
+                            *reason = FormatAllocateString("%s, user '%s' found with id %u, gid %u, home '%s' and present in %u group(s)",
+                                temp, userList[i].username, userList[i].userId, userList[i].groupId, userList[i].home, groupListSize);
+                            FREE_MEMORY(temp);
+                        }
+                    }
                 }
             }
         }
@@ -2138,6 +2589,21 @@ int CheckIfUserAccountsExist(const char** names, unsigned int numberOfNames, voi
                 (0 == FindTextInFile("/etc/group", names[j], log)))
             {
                 status = 0;
+
+                if (reason)
+                {
+                    if ((NULL == *reason) || (0 == strlen(*reason)))
+                    {
+                        *reason = FormatAllocateString("Account '%s' found mentioned in /etc/passwd, /etc/shadow and/or /etc/group", names[j]);
+                    }
+                    else
+                    {
+                        temp = DuplicateString(*reason);
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%s, account '%s' found mentioned in /etc/passwd, /etc/shadow and/or /etc/group", temp, names[j]);
+                        FREE_MEMORY(temp);
+                    }
+                }
             }
         }
     }
@@ -2160,7 +2626,7 @@ int RemoveUserAccounts(const char** names, unsigned int numberOfNames, void* log
         return EINVAL;
     }
 
-    if (0 != CheckIfUserAccountsExist(names, numberOfNames, log))
+    if (0 != CheckIfUserAccountsExist(names, numberOfNames, NULL, log))
     {
         OsConfigLogError(log, "RemoveUserAccounts: no such user accounts exist");
         return 0;

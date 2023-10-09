@@ -60,13 +60,13 @@ bool FileExists(const char* fileName);
 bool DirectoryExists(const char* directoryName);
 int CheckFileExists(const char* fileName, void* log);
 
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
-int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, void* log);
+int CheckDirectoryAccess(const char* directoryName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, bool rootCanOverwriteOwnership, char** reason, void* log);
 int SetDirectoryAccess(const char* directoryName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 
-int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, void* log);
+int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDirectory, const char* mountType, const char* desiredOption, char** reason, void* log);
 
 int CheckPackageInstalled(const char* packageName, void* log);
 int InstallPackage(const char* packageName, void* log);
@@ -76,20 +76,21 @@ unsigned int GetNumberOfLinesInFile(const char* fileName);
 bool CharacterFoundInFile(const char* fileName, char what);
 int CheckNoLegacyPlusEntriesInFile(const char* fileName, void* log);
 int FindTextInFile(const char* fileName, const char* text, void* log);
-int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, void* log);
-int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, void* log);
+int FindMarkedTextInFile(const char* fileName, const char* text, const char* marker, char** reason, void* log);
+int FindTextInEnvironmentVariable(const char* variableName, const char* text, bool strictComparison, char** reason, void* log);
 int CompareFileContents(const char* fileName, const char* text, void* log);
 int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
-int FindTextInCommandOutput(const char* command, const char* text, void* log);
+int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, void* log);
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
 char* DuplicateString(const char* source);
+char* FormatAllocateString(const char* format, ...);
 
 size_t HashString(const char* source);
 char* HashCommand(const char* source, void* log);
@@ -116,9 +117,9 @@ char* GetProductVendor(void* log);
 char* GetProductVersion(void* log);
 char* GetSystemCapabilities(void* log);
 char* GetSystemConfiguration(void* log);
-bool CheckOsAndKernelMatchDistro(void* log);
+bool CheckOsAndKernelMatchDistro(char** reason, void* log);
 char* GetLoginUmask(void* log);
-int CheckLoginUmask(const char* desired, void* log);
+int CheckLoginUmask(const char* desired, char** reason, void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
