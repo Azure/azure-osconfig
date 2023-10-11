@@ -719,7 +719,7 @@ static char* AuditEnsureReadaheadFedoraNotInstalled(void)
 
 static char* AuditEnsureBluetoothHiddNotInstalled(void)
 {
-    return ((0 != CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog())) && (false == IsDaemonActive(g_bluetooth))) ?
+    return ((0 != CheckPackageInstalled(g_bluetooth, SecurityBaselineGetLog())) && (false == IsDaemonActive(g_bluetooth, SecurityBaselineGetLog()))) ?
         DuplicateString(g_pass) : FormatAllocateString("Package '%s' is installed or service '%s' is active", g_bluetooth, g_bluetooth);
 }
 
