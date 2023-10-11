@@ -1947,6 +1947,7 @@ static int RemediateEnsureReadaheadFedoraNotInstalled(void)
 
 static int RemediateEnsureBluetoothHiddNotInstalled(void)
 {
+    StopAndDisableDaemon(g_bluetooth, SecurityBaselineGetLog());
     return UninstallPackage(g_bluetooth, SecurityBaselineGetLog());
 }
 
