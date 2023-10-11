@@ -1153,7 +1153,7 @@ static char* AuditEnsurePasswordReuseIsLimited(void)
     //TBD: refine this and expand to other distros
     int option = 0;
     return (5 >= (option = GetIntegerOptionFromFile(g_etcPamdCommonPassword, "remember", '=', SecurityBaselineGetLog()))) ?
-        FormatAllocateString("A 'remember' option is not found or is set to '%d' in %s instead of expected '%d' or greater", g_etcPamdCommonPassword, option, 5) : 
+        FormatAllocateString("A 'remember' option is not found or is set to '%d' in %s instead of expected '%d' or greater", option, g_etcPamdCommonPassword, option, 5) : 
         DuplicateString(g_pass);
 }
 
