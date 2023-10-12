@@ -618,8 +618,8 @@ static char* AuditEnsureNodevOptionOnHomePartition(void)
 static char* AuditEnsureNodevOptionOnTmpPartition(void)
 {
     char* reason = NULL;
-    return ((0 == g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()) &&
-        (0 == g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) ? DuplicateString(g_pass) : reason;
+    return ((0 == CheckFileSystemMountingOption(g_etcFstab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog())) &&
+        (0 == CheckFileSystemMountingOption(g_etcMtab, g_tmp, NULL, g_nodev, &reason, SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : reason;
 }
 
 static char* AuditEnsureNodevOptionOnVarTmpPartition(void)
