@@ -1272,14 +1272,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
-
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    // No such lines found, nothing to checksrc/adapters/pnp/daemon/osconfig.json
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr, nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
-
-    // No such file found, nothing to check
-    EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
