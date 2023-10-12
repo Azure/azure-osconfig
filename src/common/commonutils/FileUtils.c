@@ -449,14 +449,16 @@ int CheckFileSystemMountingOption(const char* mountFileName, const char* mountDi
 
         if (false == matchFound)
         {
-            OsConfigLogInfo(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s', nothing to check", 
+            status = ENOENT;
+
+            OsConfigLogError(log, "CheckFileSystemMountingOption: directory '%s' or mount type '%s' not found in file '%s'", 
                 mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
 
             if (reason)
             {
                 if ((NULL == *reason) || (0 == strlen(*reason)))
                 {
-                    *reason = FormatAllocateString("Directory '%s' or mount type '%s' not found in file '%s', nothing to check",
+                    *reason = FormatAllocateString("Directory '%s' or mount type '%s' not found in file '%s'",
                         mountDirectory ? mountDirectory : "-", mountType ? mountType : "-", mountFileName);
                 }
                 else

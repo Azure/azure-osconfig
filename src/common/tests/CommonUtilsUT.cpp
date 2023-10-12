@@ -1251,6 +1251,8 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", "swap", "does_not_exist", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "none", nullptr, "this_neither", nullptr, nullptr));
     EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "swap", "also_not_this", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, "doesnotexist", nullptr, "doesnotexist", nullptr, nullptr));
+    EXPECT_EQ(ENOENT, CheckFileSystemMountingOption(m_path, nullptr, "doesnotexist", "doesnotexist", nullptr, nullptr));
 
     // The requested option is present in all matching mounting points
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/media", "udf", "noexec", nullptr, nullptr));
@@ -1270,14 +1272,6 @@ TEST_F(CommonUtilsTest, CheckFileSystemMountingOption)
     EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "/root", nullptr, "123", nullptr, nullptr));
 
     EXPECT_TRUE(Cleanup(m_path));
-
-    EXPECT_TRUE(CreateTestFile(m_path, m_data));
-    // No such lines found, nothing to checksrc/adapters/pnp/daemon/osconfig.json
-    EXPECT_EQ(0, CheckFileSystemMountingOption(m_path, "none", "swap", "sw", nullptr, nullptr));
-    EXPECT_TRUE(Cleanup(m_path));
-
-    // No such file found, nothing to check
-    EXPECT_EQ(0, CheckFileSystemMountingOption("/etc/~does_not_exist", "", "", "", nullptr, nullptr));
 }
 
 TEST_F(CommonUtilsTest, CheckInstallUninstallPackage)
