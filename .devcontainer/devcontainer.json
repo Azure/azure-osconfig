@@ -1,26 +1,21 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
 	"name": "azure-osconfig",
-	"dockerFile": "Dockerfile",
-	"features": {
-		"github-cli": "latest"
+	"build": {
+		"dockerfile": "Dockerfile"
 	},
-	"workspaceFolder": "/azure-osconfig",
-	"mounts": ["source=${localWorkspaceFolder},target=/azure-osconfig,type=bind,consistency=cached"],
-	"overrideCommand": true,
-	"postCreateCommand": "git config --global --add safe.directory /azure-osconfig && git submodule update --init --recursive",
-	"extensions": [
-		"eamodio.gitlens",
-		"GitHub.copilot",
-		"GitHub.vscode-pull-request-github",
-		"hashicorp.terraform",
-		"ms-azure-devops.azure-pipelines",
-		"ms-azuretools.vscode-azureterraform",
-		"ms-dotnettools.csharp",
-		"twxs.cmake",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.cpptools",
-		"mhutchie.git-graph",
-		"me-dutour-mathieu.vscode-github-actions"
-    ]
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"postCreateCommand": "git submodule update --init",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"github.copilot"
+			]
+		}
+	},
+	"remoteUser": "root"
 }
