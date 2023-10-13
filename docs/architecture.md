@@ -323,4 +323,4 @@ The Universal NRP is currently used with the SecurityBaseline module to audit an
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
 
-For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.md) and the [src/modules/securitybaseline/README.md](../src/modules/securitybaseline/README.md).
+For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.md) and [src/modules/securitybaseline/README.md](../src/modules/securitybaseline/README.md).
