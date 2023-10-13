@@ -4,7 +4,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular configuration stack for Ubuntu/Debian/Mariner Light Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from OOBE).
+Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from Out Of Box Experience, OOBE).
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
@@ -29,7 +29,7 @@ In general:
 - If orchestrated functionality of multiple modules is needed, the Platform can be invoked over MPI.
 - If remote reach over Azure and IoT Hub is needed, only then the Agent becomes necessary.
 
-The main way of contributing to and extending OSConfig is via developing new [OSConfig Management Modules](modules.md).
+The main way to extend OSConfig is via developing new [OSConfig Management Modules](modules.md).
 
 # 2. Overall OSConfig Architecture
 
@@ -313,20 +313,14 @@ In general, we can adapt OSConfig Management Modules to MC and Azure Policy by f
 
 A new kind of OSConfig Management Module can be added: an Orchestrator Module loads other modules and execute combination of standard OSConfig module scenarios, without dealing itself with any direct OS configuration. There can be one or multiple Orchestrator Modules, each one of them using a different combination of standard modules, and/or using same modules but in different ways. The power of Orchestrator Modules is that they can wrap more complex scenarios in simple MIM models and thus work better with Azure Policy. 
 
-# 6. OSConfig Native Resource Provider (NRP)
+# 6. OSConfig Universal Native Resource Provider (NRP)
 
-The OSConfig Native Resource Provider is an univeral NRP that links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
+The OSConfig Universal Native Resource Provider adapter links OSConfig to the [Azure Automanage Machine Configuration (MC)](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/). 
 
-Using MC and this NRP, we can create Azure Policies that will automatically target for compliance audit or remediation all Arc devices in a particular Azure subscription or Azure resource group. Each Azure Policy can audit/remediate one read-write pair of MIM settings and multiple Policies can audit/remediate multiple read-write pairs of MIM settings, aka whole device configuration.
+Using MC and the OSConfig Universal NRP, we can create Azure Policies that automatically target for compliance audit or remediation all Arc devices in a particular Azure subscription or Azure resource group. 
 
-The NRP can have resource class parameters such as:
-
-- Component (for Set/Get/Audit): the name of the MIM component/object.
-- DesiredObject (for Set/Audit): the name of the desired MIM object/setting.
-- DesiredValue (for Set/Audit): the value of the desired MIM object/setting.
-- ReportedObject (for Get/Audit): the name of the reported MIM object/setting.
-- ReportedValue (for Get/Audit): the value of the reported MIM object/setting.
-
-Last two are not used by Azure Policy, can be omitted from the resource class parameters and only used internally for auditing.
+The Universal NRP is currently used with the SecurityBaseline module to audit and remediate the [Azure Security Baseline for Linux](https://learn.microsoft.com/en-us/azure/governance/policy/samples/guest-configuration-baseline-linux). In the future the Universal NRP could be used for other scenarios.
 
 <img src="assets/5_guestconfig.png" alt="OSConfig NRP" width=70%/>
+
+For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.md) and [src/modules/securitybaseline/README.md](../src/modules/securitybaseline/README.md).

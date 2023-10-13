@@ -11,11 +11,11 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
  > **Warning** 
  > Regenerating code will overwrite all customizations and additions specific to OSConfig. 
 
-## 3. Building the OSConfig NRP
+## 3. Building the OSConfig Universal NRP
 
-The OSConfig NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
+The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
 
-## 4. Validating the OSConfig NRP locally with PowerShell and the MC Agent
+## 4. Validating the OSConfig Universal NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
 
