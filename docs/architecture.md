@@ -4,7 +4,7 @@ Author: [MariusNi](https://github.com/MariusNi)
 
 # 1. Introduction
 
-Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from OOBE).
+Azure Device OS Configuration (OSConfig) is a modular configuration stack for Linux Edge devices. OSConfig supports multi-authority device management over Azure and Azure Portal/CLI (via Azure PnP, IoT Hub, Azure Policy), GitOps, as well as local management (such as from Out Of Box Experience, OOBE).
 
 <img src="assets/bigpicture.png" alt="OSConfig" width=80%/>
 
