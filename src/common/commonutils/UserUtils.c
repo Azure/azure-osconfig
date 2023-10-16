@@ -1619,7 +1619,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+        OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct have correct password expiration warning time of %ld days", days);
     }
 
     if (-1 == etcLoginDefsDays)
