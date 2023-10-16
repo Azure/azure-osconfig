@@ -723,7 +723,6 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
                 else if (0 == isalpha(found[0]))
                 {
                     OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
-                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", "%s, also '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
                     foundMarker = true;
                 } 
             } 
@@ -812,10 +811,6 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
                     OsConfigCaptureReason(reason, "'%s' not found in '%s'", "%s, also '%s' not found in '%s'", text, variableName);
                     status = ENOENT;
-                }
-                else
-                {
-                    OsConfigCaptureReason(reason, "'%s' found in '%s'", "%s, also '%s' found in '%s'", text, variableName);
                 }
             }
         }
