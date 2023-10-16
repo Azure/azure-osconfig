@@ -691,7 +691,7 @@ static long GetPasswordDays(const char* name, void* log)
         OsConfigLogInfo(log, "%s: %ld", name, days);
     }
 
-    return result;
+    return days;
 }
 
 long GetPassMinDays(void* log)
