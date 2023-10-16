@@ -673,7 +673,7 @@ static long GetPasswordDays(const char* name, void* log)
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, name);
 
-        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+        if (0 == ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log))
         {
             RemovePrefixUpTo(result, ' ');
             RemovePrefixBlanks(result);
