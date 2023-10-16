@@ -1262,6 +1262,7 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
+    long etcLoginDefsDays = GetPassMinDays(log);
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1296,6 +1297,20 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
+    }
+
+    if (-1 == etcLoginDefsDays)
+    {
+        OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: there is no configured PASS_MIN_DAYS in /etc/login.defs");
+        OsConfigCaptureReason(reason, "There is no configured PASS_MIN_DAYS in /etc/login.defs", "%s, also there is no configured PASS_MIN_DAYS in /etc/login.defs");
+        status = ENOENT;
+    }
+    else if (etcLoginDefsDays < days)
+    {
+        OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: configured PASS_MIN_DAYS in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
+        OsConfigCaptureReason(reason, "Configured PASS_MIN_DAYS in /etc/login.defs %ld days is less than requested %ld days", 
+            "%s, and also configured PASS_MIN_DAYS in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
+        status = ENOENT;
     }
 
     return status;
@@ -1361,6 +1376,8 @@ int SetMinDaysBetweenPasswordChanges(long days, void* log)
         OsConfigLogInfo(log, "SetMinDaysBetweenPasswordChanges: all users who have passwords have correct number of minimum days (%ld) between changes", days);
     }
 
+    //TODO: add set for PASS_MIN_DAYS in /etc/login.defs
+
     return status;
 }
 
@@ -1369,6 +1386,7 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
+    long etcLoginDefsDays = GetPassMaxDays(log);
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1409,6 +1427,20 @@ int CheckMaxDaysBetweenPasswordChanges(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+    }
+
+    if (-1 == etcLoginDefsDays)
+    {
+        OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: there is no configured PASS_MAX_DAYS in /etc/login.defs");
+        OsConfigCaptureReason(reason, "There is no configured PASS_MAX_DAYS in /etc/login.defs", "%s, also there is no configured PASS_MAX_DAYS in /etc/login.defs");
+        status = ENOENT;
+    }
+    else if (etcLoginDefsDays > days)
+    {
+        OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: configured PASS_MAX_DAYS in /etc/login.defs %ld days is more than requested %ld days", etcLoginDefsDays, days);
+        OsConfigCaptureReason(reason, "Configured PASS_MAX_DAYS in /etc/login.defs %ld days is more than requested %ld days",
+            "%s, and also configured PASS_MAX_DAYS in /etc/login.defs %ld days is more than requested %ld days", etcLoginDefsDays, days);
+        status = ENOENT;
     }
 
     return status;
@@ -1473,6 +1505,8 @@ int SetMaxDaysBetweenPasswordChanges(long days, void* log)
     {
         OsConfigLogInfo(log, "SetMaxDaysBetweenPasswordChanges: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
+
+    //TODO: add set for PASS_MAX_DAYS in /etc/login.defs
 
     return status;
 }
@@ -1551,6 +1585,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
     int status = 0;
+    long etcLoginDefsDays = GetPassWarnAge(log);
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -1585,6 +1620,20 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
+    }
+
+    if (-1 == etcLoginDefsDays)
+    {
+        OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: there is no configured PASS_WARN_AGE in /etc/login.defs");
+        OsConfigCaptureReason(reason, "There is no configured PASS_WARN_AGE in /etc/login.defs", "%s, also there is no configured PASS_WARN_AGE in /etc/login.defs");
+        status = ENOENT;
+    }
+    else if (etcLoginDefsDays < days)
+    {
+        OsConfigLogError(log, "CheckMaxDaysBetweenPasswordChanges: configured PASS_WARN_AGE in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
+        OsConfigCaptureReason(reason, "Configured PASS_WARN_AGE in /etc/login.defs %ld days is less than requested %ld days",
+            "%s, and also configured PASS_WARN_AGE in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
+        status = ENOENT;
     }
 
     return status;

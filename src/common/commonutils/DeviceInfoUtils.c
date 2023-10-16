@@ -647,3 +647,64 @@ int CheckLoginUmask(const char* desired, char** reason, void* log)
 
     return status;
 }
+
+static long GetPasswordDays(const char* name, void* log)
+{
+    const char* commandTemplate = "cat /etc/login.defs | grep %s | grep -v ^#";
+    size_t commandLength = 0;
+    char* command = NULL;
+    char* result = NULL;
+    long days = -1;
+
+    if ((NULL == name) || (0 == strlen(name)))
+    {
+        OsConfigLogError(log, "GetPasswordDays: invalid argument");
+        return NULL;
+    }
+
+    commandLength = strlen(commandTemplate) + strlen(name) + 1;
+
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "GetPasswordDays: out of memory");
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, name);
+
+        if (0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &result, NULL, log)))
+        {
+            RemovePrefixUpTo(result, ' ');
+            RemovePrefixBlanks(result);
+            RemoveTrailingBlanks(result);
+
+            days = atol(result);
+        }
+
+        FREE_MEMORY(result);
+        FREE_MEMORY(command);
+    }
+
+    //if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "%s: %ld", name, days);
+    }
+
+    return result;
+}
+
+long GetPassMinDays(void* log)
+{
+    return GetPasswordDays("PASS_MIN_DAYS", log);
+}
+
+long GetPassMaxDays(void* log)
+{
+    return GetPasswordDays("PASS_MAX_DAYS", log);
+}
+
+long GetPassWarnAge(void* log)
+{
+    return GetPasswordDays("PASS_WARN_AGE", log);
+}

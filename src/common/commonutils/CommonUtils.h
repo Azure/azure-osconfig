@@ -134,6 +134,9 @@ char* GetSystemConfiguration(void* log);
 bool CheckOsAndKernelMatchDistro(char** reason, void* log);
 char* GetLoginUmask(void* log);
 int CheckLoginUmask(const char* desired, char** reason, void* log);
+long GetPassMinDays(void* log);
+long GetPassMaxDays(void* log);
+long GetPassWarnAge(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
