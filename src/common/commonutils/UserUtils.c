@@ -577,7 +577,7 @@ int CheckAllEtcPasswdGroupsExistInEtcGroup(char** reason, void* log)
                     {
                         OsConfigLogError(log, "CheckAllEtcPasswdGroupsExistInEtcGroup: group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
-                        OsConfigCaptureReason(reason, "Group '%s' (%u) of user '%s' (%u) not found in /etc/group", "%s, also group '%s' (%u) of user '%s' (%u)",
+                        OsConfigCaptureReason(reason, "Group '%s' (%u) of user '%s' (%u) not found in /etc/group", "%s, also group '%s' (%u) of user '%s' (%u) not found in /etc/group",
                             userList[i].username, userList[i].userId, userGroupList[j].groupName, userGroupList[j].groupId);
                         status = ENOENT;
                         break;
@@ -623,7 +623,8 @@ int CheckNoDuplicateUidsExist(char** reason, void* log)
                     if (hits > 1)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateUidsExist: UID %u appears more than a single time in /etc/passwd", userList[i].userId);
-                        OsConfigCaptureReason(reason, "UID %u appears more than a single time in /etc/passwd", "%s, also UID %u", userList[i].userId);
+                        OsConfigCaptureReason(reason, "UID %u appears more than a single time in /etc/passwd", 
+                            "%s, also UID %u appears more than a single time in /etc/passwd", userList[i].userId);
                         status = EEXIST;
                         break;
                     }
@@ -665,7 +666,8 @@ int CheckNoDuplicateGidsExist(char** reason, void* log)
                     if (hits > 1)
                     {
                         OsConfigLogError(log, "CheckNoDuplicateGidsExist: GID %u appears more than a single time in /etc/group", groupList[i].groupId);
-                        OsConfigCaptureReason(reason, "GID %u appears more than a single time in /etc/group", "%s, also GID %u", groupList[i].groupId);
+                        OsConfigCaptureReason(reason, "GID %u appears more than a single time in /etc/group", 
+                            "%s, also GID %u appears more than a single time in /etc/group", groupList[i].groupId);
                         status = EEXIST;
                         break;
                     }
