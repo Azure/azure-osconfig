@@ -686,7 +686,7 @@ static long GetPasswordDays(const char* name, void* log)
         FREE_MEMORY(command);
     }
 
-    //if (IsFullLoggingEnabled())
+    if (IsFullLoggingEnabled())
     {
         OsConfigLogInfo(log, "%s: %ld", name, days);
     }

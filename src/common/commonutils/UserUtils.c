@@ -1305,6 +1305,13 @@ int CheckMinDaysBetweenPasswordChanges(long days, char** reason, void* log)
         OsConfigCaptureReason(reason, "There is no configured PASS_MIN_DAYS in /etc/login.defs", "%s, also there is no configured PASS_MIN_DAYS in /etc/login.defs");
         status = ENOENT;
     }
+    else if (0 == etcLoginDefsDays)
+    {
+        OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: PASS_MIN_DAYS is configured to default 0 in /etc/login.defs meaning disabled restriction");
+        OsConfigCaptureReason(reason, "PASS_MIN_DAYS is configured to default 0 in /etc/login.defs meaning disabled restriction", 
+            "%s, also PASS_MIN_DAYS is configured to default 0 in /etc/login.defs meaning disabled restriction");
+        status = ENOENT;
+    }
     else if (etcLoginDefsDays < days)
     {
         OsConfigLogError(log, "CheckMinDaysBetweenPasswordChanges: configured PASS_MIN_DAYS in /etc/login.defs %ld days is less than requested %ld days", etcLoginDefsDays, days);
