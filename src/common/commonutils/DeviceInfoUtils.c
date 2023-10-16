@@ -659,7 +659,7 @@ static long GetPasswordDays(const char* name, void* log)
     if ((NULL == name) || (0 == strlen(name)))
     {
         OsConfigLogError(log, "GetPasswordDays: invalid argument");
-        return NULL;
+        return -1;
     }
 
     commandLength = strlen(commandTemplate) + strlen(name) + 1;
