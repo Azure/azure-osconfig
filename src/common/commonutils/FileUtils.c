@@ -1007,7 +1007,6 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         if (NULL != strstr(results, text))
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' found in '%s' output", text, command);
-            OsConfigCaptureReason(reason, "'%s' found in '%s' output", "%s, also '%s' found in '%s' output", text, command);
         }
         else
         {
