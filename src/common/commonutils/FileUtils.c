@@ -201,6 +201,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
+    char* temp = NULL;
     int result = ENOENT;
 
     if (NULL == name)
@@ -719,6 +720,7 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
     char* results = NULL;
+    char* temp = NULL;
     char* found = 0;
     size_t commandLength = 0;
     bool foundMarker = false;
@@ -764,7 +766,7 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
                     {
                         temp = DuplicateString(*reason);
                         FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also '%s' containing '%s' found in '%s' ('%s')", tempo, text, marker, fileName, found);
+                        *reason = FormatAllocateString("%s, also '%s' containing '%s' found in '%s' ('%s')", temp, text, marker, fileName, found);
                         FREE_MEMORY(temp);
                     }
                 } 
@@ -819,6 +821,7 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
     size_t commandLength = 0;
     char* variableValue = NULL;
     char* found = NULL;
+    char* temp = NULL;
     bool foundText = false;
     int status = 0;
 
@@ -1127,7 +1130,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
                 *reason = FormatAllocateString("%s, also '%s' found in '%s' output", temp, text, command);
                 FREE_MEMORY(temp);
             }*/
-            OsConfigCaptureReason(reason, "'%s' found in '%s' output", "%s, also '%s' found in '%s' output", text, command);
+            OsConfigCaptureReason(reason, temp, "'%s' found in '%s' output", "%s, also '%s' found in '%s' output", text, command);
         }
         else
         {

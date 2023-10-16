@@ -20,8 +20,7 @@
     }\
 }\
 
-#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
-
+#define OsConfigCaptureReason(reason, temp, FORMAT1, FORMAT2, ...) {\
     if ((NULL == *reason) || (0 == strlen(*reason))) {\
         *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
     } else {\
