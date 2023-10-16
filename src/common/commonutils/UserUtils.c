@@ -1699,6 +1699,8 @@ int SetPasswordExpirationWarning(long days, void* log)
         OsConfigLogInfo(log, "SetPasswordExpirationWarning: all users who have passwords have correct number of maximum days (%ld) between changes", days);
     }
 
+    //TODO: add set for PASS_WARN_AGE in /etc/login.defs
+
     return status;
 }
 
