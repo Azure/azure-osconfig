@@ -201,7 +201,6 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     struct stat statStruct = {0};
     mode_t currentMode = 0;
     mode_t desiredMode = 0;
-    char* temp = NULL;
     int result = ENOENT;
 
     if (NULL == name)
@@ -219,27 +218,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
             {
                 OsConfigLogError(log, "CheckAccess: ownership of '%s' (%d, %d) does not match expected (%d, %d)",
                     name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-
-                if (reason)
-                {
-                    *reason = FormatAllocateString("Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                }
-
-                if ((NULL == *reason) || (0 == strlen(*reason)))
-                {
-                    *reason = FormatAllocateString("Ownership of '%s' (%d, %d) does not match expected (%d, %d)",
-                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                }
-                else
-                {
-                    temp = DuplicateString(*reason);
-                    FREE_MEMORY(*reason);
-                    *reason = FormatAllocateString("%s, also ownership of '%s' (%d, %d) does not match expected(%d, %d)",
-                        name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
-                    FREE_MEMORY(temp);
-                }
-
+                OsConfigCaptureReason(reason, "Ownership of '%s' (%d, %d) does not match expected (%d, %d)", "%s, also ownership of '%s' (%d, %d) does not match expected (%d, %d)", 
+                    name, statStruct.st_uid, statStruct.st_gid, desiredOwnerId, desiredGroupId);
                 result = ENOENT;
             }
             else
@@ -287,19 +267,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     (currentMode > desiredMode))
                 {
                     OsConfigLogError(log, "CheckAccess: access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    
-                    if ((NULL == *reason) || (0 == strlen(*reason)))
-                    {
-                        *reason = FormatAllocateString("Access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
-                    }
-                    else
-                    {
-                        temp = DuplicateString(*reason);
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also access to '%s' (%d) does not match expected (%d)", temp, name, currentMode, desiredMode);
-                        FREE_MEMORY(temp);
-                    }
-                    
+                    OsConfigCaptureReason(reason, "Access to '%s' (%d) does not match expected (%d)", "%s, also access to '%s' (%d) does not match expected (%d)", name, currentMode, desiredMode);
                     result = ENOENT;
                 }
                 else
@@ -720,7 +688,6 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
     const char* commandTemplate = "cat %s | grep %s";
     char* command = NULL;
     char* results = NULL;
-    char* temp = NULL;
     char* found = 0;
     size_t commandLength = 0;
     bool foundMarker = false;
@@ -756,55 +723,22 @@ int FindMarkedTextInFile(const char* fileName, const char* text, const char* mar
                 else if (0 == isalpha(found[0]))
                 {
                     OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
+                    OsConfigCaptureReason(reason, "'%s' containing '%s' found in '%s' ('%s')", "%s, also '%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
                     foundMarker = true;
-
-                    if ((NULL == *reason) || (0 == strlen(*reason)))
-                    {
-                        *reason = FormatAllocateString("'%s' containing '%s' found in '%s' ('%s')", text, marker, fileName, found);
-                    }
-                    else
-                    {
-                        temp = DuplicateString(*reason);
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also '%s' containing '%s' found in '%s' ('%s')", temp, text, marker, fileName, found);
-                        FREE_MEMORY(temp);
-                    }
                 } 
             } 
             
             if (false == foundMarker)
             {
                 OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' containing '%s' not found in '%s'", text, marker, fileName);
+                OsConfigCaptureReason(reason, "'%s' containing '%s' not found in '%s'", "%s, also '%s' containing '%s' not found in '%s'", text, marker, fileName);
                 status = ENOENT; 
-
-                if ((NULL == *reason) || (0 == strlen(*reason)))
-                {
-                    *reason = FormatAllocateString("'%s' containing '%s' not found in '%s'", text, marker, fileName);
-                }
-                else
-                {
-                    temp = DuplicateString(*reason);
-                    FREE_MEMORY(*reason);
-                    *reason = FormatAllocateString("%s, also '%s' containing '%s' not found in '%s'", temp, text, marker, fileName);
-                    FREE_MEMORY(temp);
-                }
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindMarkedTextInFile: '%s' not found in '%s' (%d)", text, fileName, status);
-
-            if ((NULL == *reason) || (0 == strlen(*reason)))
-            {
-                *reason = FormatAllocateString("'%s' not found in '%s' (%d)", text, fileName, status);
-            }
-            else
-            {
-                temp = DuplicateString(*reason);
-                FREE_MEMORY(*reason);
-                *reason = FormatAllocateString("%s, also '%s' not found in '%s' (%d)", temp, text, fileName, status);
-                FREE_MEMORY(temp);
-            }
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' (%d)", "%s, also '%s' not found in '%s' (%d)", text, fileName, status);
         }
 
         FREE_MEMORY(results);
@@ -821,7 +755,6 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
     size_t commandLength = 0;
     char* variableValue = NULL;
     char* found = NULL;
-    char* temp = NULL;
     bool foundText = false;
     int status = 0;
 
@@ -853,19 +786,8 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 else
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
+                    OsConfigCaptureReason(reason, "'%s' not found set for '%s' ('%s')", "%s, also '%s' not found set for '%s' ('%s')", text, variableName, variableValue);
                     status = ENOENT;
-
-                    if ((NULL == *reason) || (0 == strlen(*reason)))
-                    {
-                        *reason = FormatAllocateString("'%s' not found set for '%s' ('%s')", text, variableName, variableValue);
-                    }
-                    else
-                    {
-                        temp = DuplicateString(*reason);
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also '%s' not found set for '%s' ('%s')", temp, text, variableName, variableValue);
-                        FREE_MEMORY(temp);
-                    }
                 }
             }
             else
@@ -888,51 +810,19 @@ int FindTextInEnvironmentVariable(const char* variableName, const char* text, bo
                 if (false == foundText)
                 {
                     OsConfigLogInfo(log, "FindTextInEnvironmentVariable: '%s' not found in '%s'", text, variableName);
+                    OsConfigCaptureReason(reason, "'%s' not found in '%s'", "%s, also '%s' not found in '%s'", text, variableName);
                     status = ENOENT;
-
-                    if ((NULL == *reason) || (0 == strlen(*reason)))
-                    {
-                        *reason = FormatAllocateString("'%s' not found in '%s'", text, variableName);
-                    }
-                    else
-                    {
-                        temp = DuplicateString(*reason);
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also '%s' not found in '%s'", temp, text, variableName);
-                        FREE_MEMORY(temp);
-                    }
                 }
                 else
                 {
-                    if ((NULL == *reason) || (0 == strlen(*reason)))
-                    {
-                        *reason = FormatAllocateString("'%s' found in '%s'", text, variableName);
-                    }
-                    else
-                    {
-                        temp = DuplicateString(*reason);
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%s, also '%s' found in '%s'", temp, text, variableName);
-                        FREE_MEMORY(temp);
-                    }
+                    OsConfigCaptureReason(reason, "'%s' found in '%s'", "%s, also '%s' found in '%s'", text, variableName);
                 }
             }
         }
         else
         {
             OsConfigLogInfo(log, "FindTextInEnvironmentVariable: variable '%s' not found (%d)", variableName, status);
-
-            if ((NULL == *reason) || (0 == strlen(*reason)))
-            {
-                *reason = FormatAllocateString("Environment variable '%s' not found (%d)", variableName, status);
-            }
-            else
-            {
-                temp = DuplicateString(*reason);
-                FREE_MEMORY(*reason);
-                *reason = FormatAllocateString("%s, also variable '%s' not found (%d)", temp, variableName, status);
-                FREE_MEMORY(temp);
-            }
+            OsConfigCaptureReason(reason, "Environment variable '%s' not found (%d)", "%s, also variable '%s' not found (%d)", variableName, status);
         }
 
         FREE_MEMORY(command);
@@ -1104,7 +994,6 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log)
 {
     char* results = NULL;
-    char* temp = NULL;
     int status = 0;
 
     if ((NULL == command) || (NULL == text))
@@ -1118,36 +1007,13 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
         if (NULL != strstr(results, text))
         {
             OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' found in '%s' output", text, command);
-
-            /*if ((NULL == *reason) || (0 == strlen(*reason)))
-            {
-                *reason = FormatAllocateString("'%s' found in '%s' output", text, command);
-            }
-            else
-            {
-                temp = DuplicateString(*reason);
-                FREE_MEMORY(*reason);
-                *reason = FormatAllocateString("%s, also '%s' found in '%s' output", temp, text, command);
-                FREE_MEMORY(temp);
-            }*/
-            OsConfigCaptureReason(reason, temp, "'%s' found in '%s' output", "%s, also '%s' found in '%s' output", text, command);
+            OsConfigCaptureReason(reason, "'%s' found in '%s' output", "%s, also '%s' found in '%s' output", text, command);
         }
         else
         {
-            OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
             status = ENOENT;
-
-            if ((NULL == *reason) || (0 == strlen(*reason)))
-            {
-                *reason = FormatAllocateString("'%s' not found in '%s' output", text, command);
-            }
-            else
-            {
-                temp = DuplicateString(*reason);
-                FREE_MEMORY(*reason);
-                *reason = FormatAllocateString("%s, also '%s' not found in '%s' output", temp, text, command);
-                FREE_MEMORY(temp);
-            }
+            OsConfigLogInfo(log, "FindTextInCommandOutput: '%s' not found in '%s' output", text, command);
+            OsConfigCaptureReason(reason, "'%s' not found in '%s' output", "%s, also '%s' not found in '%s' output", text, command);
         }
 
         FREE_MEMORY(results);
@@ -1155,18 +1021,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
     else
     {
         OsConfigLogInfo(log, "FindTextInCommandOutput: command '%s' failed with %d", command, status);
-
-        if ((NULL == *reason) || (0 == strlen(*reason)))
-        {
-            *reason = FormatAllocateString("Command '%s' failed with %d", command, status);
-        }
-        else
-        {
-            temp = DuplicateString(*reason);
-            FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("%s, also command '%s' failed with %d", temp, command, status);
-            FREE_MEMORY(temp);
-        }
+        OsConfigCaptureReason(reason, "Command '%s' failed with %d", "%s, also command '%s' failed with %d", command, status);
     }
 
     return status;
@@ -1395,13 +1250,9 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
                 if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && 
                     strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
                 {
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                     status = ENOENT;
-
-                    if (reason)
-                    {
-                        *reason = FormatAllocateString("Unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
-                    }
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                    OsConfigCaptureReason(reason, "Unapproved algorithm '%s' found on 'MACs' line in '%s'", "%s, also algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                 }
 
                 i += strlen(value);

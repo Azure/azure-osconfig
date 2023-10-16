@@ -20,14 +20,17 @@
     }\
 }\
 
-#define OsConfigCaptureReason(reason, temp, FORMAT1, FORMAT2, ...) {\
-    if ((NULL == *reason) || (0 == strlen(*reason))) {\
-        *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
-    } else {\
-        temp = DuplicateString(*reason);\
-        FREE_MEMORY(*reason);\
-        *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__); \
-        FREE_MEMORY(temp);\
+#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
+    char* temp = NULL;\
+    if (NULL != reason) {\
+        if ((NULL == *reason) || (0 == strlen(*reason))) {\
+            *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
+        } else {\
+            temp = DuplicateString(*reason);\
+            FREE_MEMORY(*reason);\
+            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__); \
+            FREE_MEMORY(temp);\
+        }\
     }\
 }\
 
