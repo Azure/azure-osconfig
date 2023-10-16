@@ -1115,7 +1115,7 @@ static char* AuditEnsureSystemNotActingAsNetworkSniffer(void)
 
 static char* AuditEnsureAllWirelessInterfacesAreDisabled(void)
 {
-    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", &reason, SecurityBaselineGetLog()) ? 
+    return FindTextInCommandOutput("/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found'", "Frequency", NULL, SecurityBaselineGetLog()) ? 
         DuplicateString(g_pass) : DuplicateString("'Frequency' found in '/sbin/iwconfig 2>&1 | /bin/egrep -v 'no wireless extensions|not found' output, indicating at least one active wireless interface");
 }
 
