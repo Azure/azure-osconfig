@@ -1398,28 +1398,28 @@ static char* AuditEnsureSshBestPracticeProtocol(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found or is not containing 'Protocol 2' ", g_etcSshSshdConfig);
+        FormatAllocateString("'Protocol 2' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "IgnoreRhosts yes", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found or is not containing 'IgnoreRhosts yes'", g_etcSshSshdConfig);
+        FormatAllocateString("'IgnoreRhosts yes' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LogLevel INFO", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found or is not containing 'LogLevel INFO'", g_etcSshSshdConfig);
+        FormatAllocateString("'LogLevel INFO' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "MaxAuthTries 6", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found or is not containing 'MaxAuthTries 6'", g_etcSshSshdConfig);
+        FormatAllocateString("'MaxAuthTries 6' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshAccessIsLimited(void)
@@ -1429,35 +1429,35 @@ static char* AuditEnsureSshAccessIsLimited(void)
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowGroups", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyUsers", SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyGroups", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'AllowUsers', 'AllowGroups', 'DenyUsers' and 'DenyGroups'", g_etcSshSshdConfig);
+        FormatAllocateString("'AllowUsers', 'AllowGroups', 'DenyUsers' and 'DenyGroups' are not all found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "RhostsRSAAuthentication no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'RhostsRSAAuthentication no'", g_etcSshSshdConfig);
+        FormatAllocateString("'RhostsRSAAuthentication no' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "HostbasedAuthentication no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'HostbasedAuthentication no'", g_etcSshSshdConfig);
+        FormatAllocateString("'HostbasedAuthentication no' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'PermitRootLogin no'", g_etcSshSshdConfig);
+        FormatAllocateString("'PermitRootLogin no' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitEmptyPasswords no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'PermitEmptyPasswords no'", g_etcSshSshdConfig);
+        FormatAllocateString("'PermitEmptyPasswords no' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
@@ -1465,14 +1465,14 @@ static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) || 
         ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
         (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'ClientAliveCountMax' set to 0 and 'ClientAliveInterval' set to a positive value", g_etcSshSshdConfig);
+        FormatAllocateString("'ClientAliveCountMax' set to 0 and 'ClientAliveInterval' set to a positive value are not both found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'LoginGraceTime'", g_etcSshSshdConfig);
+        FormatAllocateString("'LoginGraceTime' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
@@ -1485,13 +1485,13 @@ static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'Banner /etc/azsec/banner.txt'", g_etcSshSshdConfig);
+        FormatAllocateString("'Banner /etc/azsec/banner.txt' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
     return CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitUserEnvironment yes", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'PermitUserEnvironment yes' is not found in %s", g_etcSshSshdConfig) : DuplicateString(g_pass);
+        FormatAllocateString("'PermitUserEnvironment yes' is not found uncommented with '#' in %s", g_etcSshSshdConfig) : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
@@ -1501,7 +1501,7 @@ static char* AuditEnsureAppropriateCiphersForSsh(void)
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes128-ctr", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes192-ctr", SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("%s is not found, or is not containing 'AllowUsers', 'Ciphers', 'aes128-ctr', 'aes192-ctr' and 'aes256-ctr'", g_etcSshSshdConfig);
+        FormatAllocateString("'AllowUsers', 'Ciphers', 'aes128-ctr', 'aes192-ctr' and 'aes256-ctr' are not all found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
