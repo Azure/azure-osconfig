@@ -20,6 +20,20 @@
     }\
 }\
 
+#define OsConfigCaptureReason(reason, FORMAT1, FORMAT2, ...) {\
+    char* temp = NULL;\
+    if (NULL != reason) {\
+        if ((NULL == *reason) || (0 == strlen(*reason))) {\
+            *reason = FormatAllocateString(FORMAT1, ##__VA_ARGS__);\
+        } else {\
+            temp = DuplicateString(*reason);\
+            FREE_MEMORY(*reason);\
+            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__); \
+            FREE_MEMORY(temp);\
+        }\
+    }\
+}\
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
@@ -120,6 +134,9 @@ char* GetSystemConfiguration(void* log);
 bool CheckOsAndKernelMatchDistro(char** reason, void* log);
 char* GetLoginUmask(void* log);
 int CheckLoginUmask(const char* desired, char** reason, void* log);
+long GetPassMinDays(void* log);
+long GetPassMaxDays(void* log);
+long GetPassWarnAge(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
