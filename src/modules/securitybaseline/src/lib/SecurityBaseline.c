@@ -1478,7 +1478,8 @@ static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
     char* reason = NULL;
-    return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    //return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return _CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)

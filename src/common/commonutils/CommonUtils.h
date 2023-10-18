@@ -28,7 +28,7 @@
         } else {\
             temp = DuplicateString(*reason);\
             FREE_MEMORY(*reason);\
-            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__); \
+            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__);\
             FREE_MEMORY(temp);\
         }\
     }\
@@ -68,6 +68,8 @@ typedef int(*CommandCallback)(void* context);
 // If called from the main process thread the timeoutSeconds and callback arguments are ignored
 int ExecuteCommand(void* context, const char* command, bool replaceEol, bool forJson, unsigned int maxTextResultBytes, unsigned int timeoutSeconds, char** textResult, CommandCallback callback, void* log);
 
+char* ExecuteCommandAndGetTextResult(const char* commandTemplate, ...);
+
 int RestrictFileAccessToCurrentAccountOnly(const char* fileName);
 
 bool FileExists(const char* fileName);
@@ -99,6 +101,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

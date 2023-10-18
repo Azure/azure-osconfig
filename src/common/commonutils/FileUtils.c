@@ -1207,22 +1207,14 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
     if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
+        OsConfigCaptureReason(reason, "Cannot read from '%s'", "%s, also cannot read from '%s'", fileName);
         status = ENOENT;
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("Cannot read from '%s'", fileName);
-        }
     }
     else if (NULL == (macsValue = GetStringOptionFromBuffer(contents, "MACs", ' ', log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'MACs' not found in '%s'", fileName);
+        OsConfigCaptureReason(reason, "'MACs' not found in '%s'", "%s, also 'MACs' not found in '%s'", fileName);
         status = ENOENT;
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("'MACs' not found in '%s'", fileName);
-        }
     }
     else
     {
@@ -1247,6 +1239,100 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
                     status = ENOENT;
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
                     OsConfigCaptureReason(reason, "Unapproved algorithm '%s' found on 'MACs' line in '%s'", "%s, also algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                }
+
+                i += strlen(value);
+
+                FREE_MEMORY(value);
+            }
+        }
+    }
+
+    FREE_MEMORY(macsValue);
+    FREE_MEMORY(contents);
+
+    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
+
+///////////////////////////////////
+static char* GetSshServerState(const char* name, void* log)
+{
+    const char* commandTemplate = "sshd -T | grep %s";
+    const char* sshServer = "sshd";
+    char* command = NULL;
+    char* textResult = NULL;
+    int status = 0;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "GetSshServerState: invalid name argument");
+        return testResult;
+    }
+
+    /* Called has to do this before calling this function
+    if (false == IsDaemonActive(sshServer, log))
+    {
+        OsConfigLogInfo(log, "GetSshServerState: SSH Server daemon '%s' is not running");
+        return testResults;
+    }*/
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, name)))
+    {
+        if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+        {
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
+    }
+
+    FREE_MEMORY(command);
+
+    return textResult;
+}
+
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
+{
+    char* contents = NULL;
+    char* macsValue = NULL;
+    char* value = NULL;
+    size_t macsValueLength = 0;
+    size_t i = 0;
+    int status = 0;
+
+    if (NULL == (macsValue = GetSshServerState("macs", log)))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'macs' not found in SSH Server response from 'sshd -T'");
+        OsConfigCaptureReason(reason, "'macs' not found in SSH Server response from 'sshd -T'");
+        status = ENOENT;
+    }
+    else
+    {
+        macsValueLength = strlen(macsValue);
+
+        for (i = 0; i < macsValueLength; i++)
+        {
+            if (NULL == (value = DuplicateString(&(macsValue[i]))))
+            {
+                OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(value, ',');
+
+                // The only allowed values are these 4 below
+                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") &&
+                    strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                {
+                    status = ENOENT;
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
+                    OsConfigCaptureReason(reason, "Unapproved algorithm '%s' found on 'MACs' line '%s'", "%s, also algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
                 }
 
                 i += strlen(value);
