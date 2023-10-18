@@ -1256,7 +1256,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
     return status;
 }
 
-///////////////////////////////////
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* commandTemplate = "sshd -T | grep %s";
@@ -1268,15 +1267,8 @@ static char* GetSshServerState(const char* name, void* log)
     if (NULL == name)
     {
         OsConfigLogError(log, "GetSshServerState: invalid name argument");
-        return testResult;
+        return textResult;
     }
-
-    /* Called has to do this before calling this function
-    if (false == IsDaemonActive(sshServer, log))
-    {
-        OsConfigLogInfo(log, "GetSshServerState: SSH Server daemon '%s' is not running");
-        return testResults;
-    }*/
 
     if (NULL != (command = FormatAllocateString(commandTemplate, name)))
     {
@@ -1303,6 +1295,12 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, 
     size_t macsValueLength = 0;
     size_t i = 0;
     int status = 0;
+
+    if (false == IsDaemonActive(sshServer, log))
+    {
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device");
+        return status;
+    }
 
     if (NULL == (macsValue = GetSshServerState("macs", log)))
     {
