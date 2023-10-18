@@ -33,20 +33,11 @@ jobs:
           certutil -f -importpfx out.pfx
           Remove-Item -Path out.pfx
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.artifact }}
-          path: unsigned
-
       - name: Sign package
+        uses: ./.github/actions/sign-package
         env:
           AAD_ID: ${{ secrets.ESRP_AAD_ID }}
           LINUX_KEY_CODE: ${{ secrets.ESRP_LINUX_KEY_CODE }}
           LINUX_OP_CODE: ${{ secrets.ESRP_LINUX_OP_CODE }}
-        run: |
-          python devops\scripts\run-esrp-signing.py unsigned $env:LINUX_KEY_CODE $env:LINUX_OP_CODE
-
-      - uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.artifact }}-signed
-          path: signed
+          artifact: ${{ inputs.artifact }}
