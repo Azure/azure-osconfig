@@ -101,7 +101,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
-int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

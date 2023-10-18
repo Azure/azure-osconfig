@@ -1286,7 +1286,7 @@ static char* GetSshServerState(const char* name, void* log)
     return textResult;
 }
 
-int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log)
 {
     const char* sshServer = "sshd";
     char* contents = NULL;
@@ -1305,7 +1305,7 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, 
     if (NULL == (macsValue = GetSshServerState("macs", log)))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'macs' not found in SSH Server response from 'sshd -T'");
-        OsConfigCaptureReason(reason, "'macs' not found in SSH Server response from 'sshd -T'");
+        OsConfigCaptureReason(reason, "'macs' not found in SSH Server response from 'sshd -T'", "%s, also 'macs' not found in SSH Server response from 'sshd -T'");
         status = ENOENT;
     }
     else
