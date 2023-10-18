@@ -1259,7 +1259,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* commandTemplate = "sshd -T | grep %s";
-    const char* sshServer = "sshd";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
@@ -1289,6 +1288,7 @@ static char* GetSshServerState(const char* name, void* log)
 
 int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
 {
+    const char* sshServer = "sshd";
     char* contents = NULL;
     char* macsValue = NULL;
     char* value = NULL;
@@ -1298,7 +1298,7 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, 
 
     if (false == IsDaemonActive(sshServer, log))
     {
-        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device");
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device", sshServer);
         return status;
     }
 
