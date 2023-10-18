@@ -1330,7 +1330,7 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log)
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
-                    OsConfigCaptureReason(reason, "Unapproved algorithm '%s' found on 'MACs' line '%s'", "%s, also algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
+                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also unapproved MAC algorithm '%s' found in SSH Server response", value, macsValue);
                 }
 
                 i += strlen(value);
