@@ -1339,8 +1339,6 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numbe
                     }
                 }
                     
-                // The only allowed values are these 4 below
-                
                 if (false == macFound)
                 {
                     status = ENOENT;
