@@ -1224,7 +1224,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     const char* sshServer = "sshd";
     const char* sshMacs = "macs";
 
-    char* contents = NULL;
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
@@ -1293,7 +1292,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     }
 
     FREE_MEMORY(macsValue);
-    FREE_MEMORY(contents);
 
     OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
 
@@ -1305,7 +1303,6 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     const char* sshServer = "sshd";
     const char* sshCiphers = "ciphers"
 
-    char* contents = NULL;
     char* ciphersValue = NULL;
     char* value = NULL;
     size_t ciphersValueLength = 0;
@@ -1315,7 +1312,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
 
     if ((NULL == ciphers) || (0 == numberOfCiphers))
     {
-        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", macs, numberOfMacs);
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", ciphers, numberOfCiphers);
         return EINVAL;
     }
     else if (false == IsDaemonActive(sshServer, log))
@@ -1359,7 +1356,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", value, ciphersValue, sshCiphers);
-                    OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", value, macsValue);
+                    OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", value, ciphersValue);
                 }
 
                 i += strlen(value);
@@ -1374,7 +1371,6 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     }
 
     FREE_MEMORY(ciphersValue);
-    FREE_MEMORY(contents);
 
     OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", status ? "failed" : "passed", status);
 
