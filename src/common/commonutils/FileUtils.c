@@ -1307,7 +1307,6 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     char* value = NULL;
     size_t ciphersValueLength = 0;
     size_t i = 0, j = 0;
-    bool cipherFound = false;
     int status = 0;
 
     if ((NULL == ciphers) || (0 == numberOfCiphers))
@@ -1345,23 +1344,15 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
 
                 for (j = 0; j < numberOfCiphers; j++)
                 {
-                    if (0 == strcmp(value, ciphers[j]))
+                    if (0 != strcmp(value, ciphers[j]))
                     {
-                        cipherFound = true;
-                        break;
+                        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
+                        OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", ciphers[j]);
+                        status = ENOENT;
                     }
                 }
 
-                if (false == cipherFound)
-                {
-                    status = ENOENT;
-                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", value, sshCiphers);
-                    OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", value);
-                }
-
                 i += strlen(value);
-
-                cipherFound = false;
 
                 FREE_MEMORY(value);
 
