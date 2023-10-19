@@ -1286,7 +1286,7 @@ static char* GetSshServerState(const char* name, void* log)
     return textResult;
 }
 
-int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log)
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int numberOfAlgorithms, char** reason, void* log)
 {
     const char* sshServer = "sshd";
     char* contents = NULL;
@@ -1296,7 +1296,12 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log)
     size_t i = 0;
     int status = 0;
 
-    if (false == IsDaemonActive(sshServer, log))
+    if ((NULL == names) || (0 == numberOfNames))
+    {
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", algorithms, numberOfAlgorithms);
+        return EINVAL;
+    }
+    else if (false == IsDaemonActive(sshServer, log))
     {
         OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device", sshServer);
         return status;
@@ -1324,13 +1329,22 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(char** reason, void* log)
             {
                 TruncateAtFirst(value, ',');
 
+                for (j = 0; j < numberOfAlgorithms; j++)
+                {
+                    if (0 == strcmp(value, algorithms[j]))
+                    {
+                        found = TRUE;
+                        break;
+                    }
+                }
+                    
                 // The only allowed values are these 4 below
-                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") &&
-                    strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                
+                if (FALSE == found)
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
-                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also unapproved MAC algorithm '%s' found in SSH Server response", value, macsValue);
+                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value, macsValue);
                 }
 
                 i += strlen(value);

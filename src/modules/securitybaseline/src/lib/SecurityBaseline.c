@@ -1477,9 +1477,10 @@ static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
+    const char* algorithms[] = {"hmac-sha2-256", "hmac-sha2-256-etm@openssh.com", "hmac-sha2-512", "hmac-sha2-512-etm@openssh.com"};
     char* reason = NULL;
     //return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
-    return _CheckOnlyApprovedMacAlgorithmsAreUsed(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return _CheckOnlyApprovedMacAlgorithmsAreUsed(algorithms, ARRAY_SIZE(algorithms), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
