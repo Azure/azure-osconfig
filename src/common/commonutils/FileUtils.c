@@ -1286,7 +1286,7 @@ static char* GetSshServerState(const char* name, void* log)
     return textResult;
 }
 
-int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int numberOfAlgorithms, char** reason, void* log)
+int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
 {
     const char* sshServer = "sshd";
     char* contents = NULL;
@@ -1294,12 +1294,12 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int
     char* value = NULL;
     size_t macsValueLength = 0;
     size_t i = 0, j = 0;
-    bool found = FALSE;
+    bool macFound = false;
     int status = 0;
 
-    if ((NULL == algorithms) || (0 == numberOfAlgorithms))
+    if ((NULL == macs) || (0 == numberOfMacs))
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", algorithms, numberOfAlgorithms);
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", macs, numberOfMacs);
         return EINVAL;
     }
     else if (false == IsDaemonActive(sshServer, log))
@@ -1310,8 +1310,8 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int
 
     if (NULL == (macsValue = GetSshServerState("macs", log)))
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'macs' not found in SSH Server response from 'sshd -T'");
-        OsConfigCaptureReason(reason, "'macs' not found in SSH Server response from 'sshd -T'", "%s, also 'macs' not found in SSH Server response from 'sshd -T'");
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'macs' not macFound in SSH Server response from 'sshd -T'");
+        OsConfigCaptureReason(reason, "'macs' not macFound in SSH Server response from 'sshd -T'", "%s, also 'macs' not macFound in SSH Server response from 'sshd -T'");
         status = ENOENT;
     }
     else
@@ -1330,22 +1330,22 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int
             {
                 TruncateAtFirst(value, ',');
 
-                for (j = 0; j < numberOfAlgorithms; j++)
+                for (j = 0; j < numberOfMacs; j++)
                 {
-                    if (0 == strcmp(value, algorithms[j]))
+                    if (0 == strcmp(value, macs[j]))
                     {
-                        found = TRUE;
+                        macFound = TRUE;
                         break;
                     }
                 }
                     
                 // The only allowed values are these 4 below
                 
-                if (FALSE == found)
+                if (false == macFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
-                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value, macsValue);
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' macFound on 'MACs' line '%s'", value, macsValue);
+                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' macFound in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value, macsValue);
                 }
 
                 i += strlen(value);
