@@ -28,7 +28,7 @@
         } else {\
             temp = DuplicateString(*reason);\
             FREE_MEMORY(*reason);\
-            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__); \
+            *reason = FormatAllocateString(FORMAT2, temp, ##__VA_ARGS__);\
             FREE_MEMORY(temp);\
         }\
     }\
@@ -98,7 +98,8 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
 int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log);
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
+int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

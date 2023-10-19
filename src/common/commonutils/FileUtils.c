@@ -1189,40 +1189,69 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
     return status;
 }
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, void* log)
+static char* GetSshServerState(const char* name, void* log)
 {
-    char* contents = NULL;
+    const char* commandTemplate = "sshd -T | grep %s";
+    char* command = NULL;
+    char* textResult = NULL;
+    int status = 0;
+
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "GetSshServerState: invalid name argument");
+        return textResult;
+    }
+
+    if (NULL != (command = FormatAllocateString(commandTemplate, name)))
+    {
+        if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+        {
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
+        }
+        else if (NULL != textResult)
+        {
+            RemovePrefixUpTo(textResult, ' ');
+            RemovePrefixBlanks(textResult);
+        }
+    }
+    else
+    {
+        OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
+    }
+
+    FREE_MEMORY(command);
+
+    return textResult;
+}
+
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
+{
+    const char* sshServer = "sshd";
+    const char* sshMacs = "macs";
+
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
-    size_t i = 0;
+    size_t i = 0, j = 0;
+    bool macFound = false;
     int status = 0;
 
-    if (!FileExists(fileName))
+    if ((NULL == macs) || (0 == numberOfMacs))
     {
-        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found, nothing to check", fileName);
-        return 0;
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", macs, numberOfMacs);
+        return EINVAL;
+    }
+    else if (false == IsDaemonActive(sshServer, log))
+    {
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device", sshServer);
+        return status;
     }
 
-    if (NULL == (contents = LoadStringFromFile(fileName, false, log)))
+    if (NULL == (macsValue = GetSshServerState(sshMacs, log)))
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: cannot read from '%s'", fileName);
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: '%s' not found in SSH Server response from 'sshd -T'", sshMacs);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' not found in SSH Server response", sshMacs);
         status = ENOENT;
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("Cannot read from '%s'", fileName);
-        }
-    }
-    else if (NULL == (macsValue = GetStringOptionFromBuffer(contents, "MACs", ' ', log)))
-    {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: 'MACs' not found in '%s'", fileName);
-        status = ENOENT;
-
-        if (reason)
-        {
-            *reason = FormatAllocateString("'MACs' not found in '%s'", fileName);
-        }
     }
     else
     {
@@ -1240,26 +1269,129 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* fileName, char** reason, v
             {
                 TruncateAtFirst(value, ',');
 
-                // The only allowed values are these 4 below
-                if (strcmp(value, "hmac-sha2-256") && strcmp(value, "hmac-sha2-256-etm@openssh.com") && 
-                    strcmp(value, "hmac-sha2-512") && strcmp(value, "hmac-sha2-512-etm@openssh.com"))
+                for (j = 0; j < numberOfMacs; j++)
+                {
+                    if (0 == strcmp(value, macs[j]))
+                    {
+                        macFound = true;
+                        break;
+                    }
+                }
+                    
+                if (false == macFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
-                    OsConfigCaptureReason(reason, "Unapproved algorithm '%s' found on 'MACs' line in '%s'", "%s, also algorithm '%s' found on 'MACs' line in '%s'", value, fileName);
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found in SSH Server response", value);
+                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value);
                 }
 
                 i += strlen(value);
 
+                macFound = false;
+
                 FREE_MEMORY(value);
+
+                continue;
             }
         }
     }
 
     FREE_MEMORY(macsValue);
-    FREE_MEMORY(contents);
 
     OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
+
+int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log)
+{
+    const char* sshServer = "sshd";
+    const char* sshCiphers = "ciphers";
+
+    char* ciphersValue = NULL;
+    char* value = NULL;
+    size_t ciphersValueLength = 0;
+    size_t i = 0, j = 0;
+    bool cipherFound = false;
+    int status = 0;
+
+    if ((NULL == ciphers) || (0 == numberOfCiphers))
+    {
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", ciphers, numberOfCiphers);
+        return EINVAL;
+    }
+    else if (false == IsDaemonActive(sshServer, log))
+    {
+        OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: SSH Server daemon '%s' is not active on this device", sshServer);
+        return status;
+    }
+
+    if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
+    {
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' not found in SSH Server response", sshCiphers);
+        status = ENOENT;
+    }
+    else
+    {
+        ciphersValueLength = strlen(ciphersValue);
+
+        for (i = 0; i < ciphersValueLength; i++)
+        {
+            if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
+            {
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(value, ',');
+
+                for (j = 0; j < numberOfCiphers; j++)
+                {
+                    if (0 == strcmp(value, ciphers[j]))
+                    {
+                        cipherFound = true;
+                        break;
+                    }
+                }
+
+                if (false == cipherFound)
+                {
+                    status = ENOENT;
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found in SSH Server response", value);
+                    OsConfigCaptureReason(reason, "Unapproved cipher '%s' found in SSH Server response", "%s, also cipher '%s' is unapproved", value);
+                }
+
+                i += strlen(value);
+
+                cipherFound = false;
+
+                FREE_MEMORY(value);
+
+                continue;
+            }
+        }
+
+        for (j = 0; j < numberOfCiphers; j++)
+        {
+            if (NULL == strstr(ciphersValue, ciphers[j]))
+            {
+                status = ENOENT;
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", ciphers[j]);
+                OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[j]);
+            }
+            else
+            {
+                OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: required cipher '%s' found in SSH Server response", ciphers[j]);
+            }
+        }
+    }
+
+    FREE_MEMORY(ciphersValue);
+
+    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
 }
