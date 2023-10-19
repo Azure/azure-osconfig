@@ -1281,7 +1281,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
                 if (false == macFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found on '%s' line reported the the SSH Server", value, sshMacs);
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found in SSH Server response", value);
                     OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value);
                 }
 
@@ -1360,7 +1360,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
                 if (false == cipherFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found on '%s' line reported by the the SSH Server", value, sshCiphers);
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found in SSH Server response", value);
                     OsConfigCaptureReason(reason, "Unapproved cipher '%s' found in SSH Server response", "%s, also cipher '%s' is unapproved", value);
                 }
 
@@ -1379,7 +1379,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
             if (NULL == strstr(ciphersValue, ciphers[j]))
             {
                 status = ENOENT;
-                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", ciphers[j]);
                 OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[j]);
             }
         }
