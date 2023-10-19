@@ -1330,33 +1330,31 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     {
         ciphersValueLength = strlen(ciphersValue);
 
-        for (i = 0; i < ciphersValueLength; i++)
+        for (j = 0; j < numberOfCiphers; j++)
         {
-            if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
+            for (i = 0; i < ciphersValueLength; i++)
             {
-                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
-                status = ENOMEM;
-                break;
-            }
-            else
-            {
-                TruncateAtFirst(value, ',');
-
-                for (j = 0; j < numberOfCiphers; j++)
+                if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
                 {
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
+                    status = ENOMEM;
+                    break;
+                }
+                else
+                {
+                    TruncateAtFirst(value, ',');
+
                     if (0 != strcmp(value, ciphers[j]))
                     {
                         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
                         OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", ciphers[j]);
                         status = ENOENT;
                     }
+
+                    i += strlen(value);
+
+                    FREE_MEMORY(value);
                 }
-
-                i += strlen(value);
-
-                FREE_MEMORY(value);
-
-                continue;
             }
         }
     }
