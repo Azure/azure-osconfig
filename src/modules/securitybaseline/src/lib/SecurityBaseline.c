@@ -1479,8 +1479,7 @@ static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
     const char* macs[] = {"hmac-sha2-256", "hmac-sha2-256-etm@openssh.com", "hmac-sha2-512", "hmac-sha2-512-etm@openssh.com"};
     char* reason = NULL;
-    //return CheckOnlyApprovedMacAlgorithmsAreUsed(g_etcSshSshdConfig, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
-    return _CheckOnlyApprovedMacAlgorithmsAreUsed(macs, ARRAY_SIZE(macs), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckOnlyApprovedMacAlgorithmsAreUsed(macs, ARRAY_SIZE(macs), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
@@ -1498,12 +1497,9 @@ static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        ((EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Ciphers", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes128-ctr", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes192-ctr", SecurityBaselineGetLog())) &&
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "aes256-ctr", SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'AllowUsers', 'Ciphers', 'aes128-ctr', 'aes192-ctr' and 'aes256-ctr' are not all found uncommented with '#' in %s", g_etcSshSshdConfig);
+    const char* ciphers[] = {"aes128 - ctr", "aes192-ctr", "aes256-ctr", "aes256-ctr"};
+    char* reason = NULL;
+    return CheckAppropriateCiphersForSsh(ciphers, ARRAY_SIZE(ciphers), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
