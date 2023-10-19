@@ -1382,6 +1382,10 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", ciphers[j]);
                 OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[j]);
             }
+            else
+            {
+                OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: required cipher '%s' found in SSH Server response", ciphers[j]);
+            }
         }
     }
 
