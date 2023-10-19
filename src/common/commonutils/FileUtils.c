@@ -1371,7 +1371,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
 
         for (j = 0; j < numberOfCiphers; j++)
         {
-            if (NULL == strstr(value, ciphers[j]))
+            if (NULL == strstr(ciphersValue, ciphers[j]))
             {
                 status = ENOENT;
                 OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
