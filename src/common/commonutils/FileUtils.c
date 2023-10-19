@@ -1307,7 +1307,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     char* value = NULL;
     size_t ciphersValueLength = 0;
     size_t i = 0, j = 0;
-    bool requiredCipherNotFound = false;
+    bool cipherFound = false;
     int status = 0;
 
     if ((NULL == ciphers) || (0 == numberOfCiphers))
@@ -1331,38 +1331,51 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     {
         ciphersValueLength = strlen(ciphersValue);
 
-        for (j = 0; j < numberOfCiphers; j++)
+        for (i = 0; i < ciphersValueLength; i++)
         {
-            for (i = 0; i < ciphersValueLength; i++)
+            if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
             {
-                if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
+                status = ENOMEM;
+                break;
+            }
+            else
+            {
+                TruncateAtFirst(value, ',');
+
+                for (j = 0; j < numberOfCiphers; j++)
                 {
-                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate string");
-                    status = ENOMEM;
-                    break;
-                }
-                else
-                {
-                    TruncateAtFirst(value, ',');
-
-                    if (0 != strcmp(value, ciphers[j]))
+                    if (0 == strcmp(value, ciphers[j]))
                     {
-                        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
-                        OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", ciphers[j], sshCiphers);
-                        requiredCipherNotFound = true;
-                        status = ENOENT;
-                    }
-
-                    i += strlen(value);
-
-                    FREE_MEMORY(value);
-
-                    if (true == requiredCipherNotFound)
-                    {
-                        requiredCipherNotFound = false;
+                        cipherFound = true;
                         break;
                     }
                 }
+
+                if (false == cipherFound)
+                {
+                    status = ENOENT;
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found on '%s' line reported by the the SSH Server", value, sshCiphers);
+                    OsConfigCaptureReason(reason, "Unapproved cipher '%s' found in SSH Server response", "%s, also cipher '%s' is unapproved", value);
+                }
+
+                i += strlen(value);
+
+                cipherFound = false;
+
+                FREE_MEMORY(value);
+
+                continue;
+            }
+        }
+
+        for (j = 0; j < numberOfCiphers; j++)
+        {
+            if (NULL == strstr(value, ciphers[j]))
+            {
+                status = ENOENT;
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", ciphers[j], sshCiphers);
+                OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[j]);
             }
         }
     }

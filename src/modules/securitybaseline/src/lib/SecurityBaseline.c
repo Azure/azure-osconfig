@@ -1497,7 +1497,7 @@ static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
-    const char* ciphers[] = {"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes256-ctr"};
+    const char* ciphers[] = {"aes128-ctr", "aes192-ctr", "aes256-ctr"};
     char* reason = NULL;
     return CheckAppropriateCiphersForSsh(ciphers, ARRAY_SIZE(ciphers), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
