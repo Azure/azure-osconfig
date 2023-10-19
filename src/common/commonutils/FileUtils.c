@@ -1334,7 +1334,7 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numbe
                 {
                     if (0 == strcmp(value, macs[j]))
                     {
-                        macFound = TRUE;
+                        macFound = true;
                         break;
                     }
                 }
