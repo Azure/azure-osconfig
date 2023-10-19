@@ -1276,8 +1276,8 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
                 if (false == macFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found on '%s' line reported the the SSH Server", value, macsValue, sshMacs);
-                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value, macsValue);
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found on '%s' line reported the the SSH Server", value, sshMacs);
+                    OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' found in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value);
                 }
 
                 i += strlen(value);
@@ -1355,8 +1355,8 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
                 if (false == cipherFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", value, ciphersValue, sshCiphers);
-                    OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", value, ciphersValue);
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found on '%s' line reported by the the SSH Server", value, sshCiphers);
+                    OsConfigCaptureReason(reason, "Required cipher '%s' not found on '%s' line reported by the the SSH Server", "%s, also cipher '%s' is not found", value);
                 }
 
                 i += strlen(value);
