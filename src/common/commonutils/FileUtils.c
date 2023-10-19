@@ -1293,10 +1293,11 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** algorithms, unsigned int
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
-    size_t i = 0;
+    size_t i = 0, j = 0;
+    bool found = FALSE;
     int status = 0;
 
-    if ((NULL == names) || (0 == numberOfNames))
+    if ((NULL == algorithms) || (0 == numberOfAlgorithms))
     {
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", algorithms, numberOfAlgorithms);
         return EINVAL;
