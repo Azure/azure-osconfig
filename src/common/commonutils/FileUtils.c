@@ -1208,6 +1208,11 @@ static char* GetSshServerState(const char* name, void* log)
         {
             OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
         }
+        else if (NULL != textResult)
+        {
+            RemovePrefixUpTo(textResult, ' ');
+            RemovePrefixBlanks(textResult);
+        }
     }
     else
     {
