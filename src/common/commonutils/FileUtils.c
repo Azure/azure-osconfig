@@ -1342,13 +1342,17 @@ int _CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numbe
                 if (false == macFound)
                 {
                     status = ENOENT;
-                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' macFound on 'MACs' line '%s'", value, macsValue);
+                    OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved algorithm '%s' found on 'MACs' line '%s'", value, macsValue);
                     OsConfigCaptureReason(reason, "Unapproved MAC algorithm '%s' macFound in SSH Server response", "%s, also MAC algorithm '%s' is unapproved", value, macsValue);
                 }
 
                 i += strlen(value);
 
+                macFound = false;
+
                 FREE_MEMORY(value);
+
+                continue;
             }
         }
     }
