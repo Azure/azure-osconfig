@@ -1301,7 +1301,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log)
 {
     const char* sshServer = "sshd";
-    const char* sshCiphers = "ciphers"
+    const char* sshCiphers = "ciphers";
 
     char* ciphersValue = NULL;
     char* value = NULL;
@@ -1321,7 +1321,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
         return status;
     }
 
-    if (NULL == (macsValue = GetSshServerState(sshCiphers, log)))
+    if (NULL == (ciphersValue = GetSshServerState(sshCiphers, log)))
     {
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: '%s' not found in SSH Server response", sshCiphers);
         OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' not found in SSH Server response", sshCiphers);
