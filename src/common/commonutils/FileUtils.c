@@ -1541,7 +1541,7 @@ int CheckSshIdleTimeoutCountMax(char** reason, void* log)
         clientAliveCountMaxValue = atoi(value);
         OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: '%s' found in SSH Server response set to '%s' (%d)", clientAliveCountMax, value, clientAliveCountMaxValue);
 
-        if (0 != clientAliveIntervalValue)
+        if (0 != clientAliveCountMaxValue)
         {
             OsConfigLogError(log, "CheckSshIdleTimeoutCountMax: '%s' is not set to zero value in SSH Server response (but to %d)", clientAliveCountMax, clientAliveCountMaxValue);
             OsConfigCaptureReason(reason, "'%s' is not set to zero value in SSH Server response (but to %d)",
