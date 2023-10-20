@@ -1514,7 +1514,7 @@ int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* act
         {
             *actualValue = integerValue;
         }
-        else if (integerValue != expectedValue))
+        else if (integerValue != expectedValue)
         {
             OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' is not set to %d in SSH Server response (but to %d)", option, expectedValue, integerValue);
             OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
@@ -1543,9 +1543,9 @@ int CheckSshIdleTimeoutInterval(char** reason, void* log)
     
     if (actualValue <= 0)
     {
-        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, actualValue);
+        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
-            "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, actualValue);
+            "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         status = ENOENT;
     }
 
