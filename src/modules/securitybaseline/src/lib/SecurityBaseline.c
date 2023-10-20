@@ -1445,9 +1445,8 @@ static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitRootLogin no", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'PermitRootLogin no' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
+    char* reason = NULL;
+    return CheckRootLoginViaSshIsDisabled(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)

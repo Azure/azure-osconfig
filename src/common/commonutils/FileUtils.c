@@ -1444,3 +1444,45 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
 
     return status;
 }
+
+int CheckRootLoginViaSshIsDisabled(char** reason, void* log)
+{
+    const char* permitRootLogin = "permitrootlogin";
+    const char* no = "no";
+    
+    char* value = NULL;
+    size_t i = 0;
+    bool oneFound = false;
+    int status = 0;
+
+    if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    if (NULL != (value = GetSshServerState(permitRootLogin, log)))
+    {
+        OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: '%s' found in SSH Server response set to '%s'", permitRootLogin, value);
+
+        if (0 != strcmp(value, no))
+        {
+            OsConfigLogError(log, "CheckRootLoginViaSshIsDisabled: '%s' is not set to '%s' in SSH Server response (but to '%s')", permitRootLogin, no, value);
+            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')", 
+                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", permitRootLogin, no, value);
+            status = ENOENT;
+        }
+        
+        FREE_MEMORY(value);
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckRootLoginViaSshIsDisabled: '%s' not found in SSH Server response", permitRootLogin);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", permitRootLogin);
+        status = ENOENT;
+    }
+
+    OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
