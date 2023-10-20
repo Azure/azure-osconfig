@@ -14,6 +14,7 @@ add_library(commonutils STATIC
     OtherUtils.c
     ProxyUtils.c
     SocketUtils.c
+    SshUtils.c
     UrlUtils.c
     UserUtils.c
     CommonUtils.cpp)
