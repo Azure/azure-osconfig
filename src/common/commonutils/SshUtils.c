@@ -46,7 +46,10 @@ static char* GetSshServerState(const char* name, void* log)
 
 static bool IsSshServerActive(void* log)
 {
-    return IsDaemonActive("sshd", log);
+    const char* sshServerConfiguration = "/etc/ssh/sshd_config";
+    const char* sshServerService = "sshd";
+
+    return (CheckFileExists(sshServerConfiguration, log) && CheckIfDaemonActive(sshServerService, log)) ? true : false;
 }
 
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
