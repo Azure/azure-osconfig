@@ -1216,6 +1216,7 @@ static char* GetSshServerState(const char* name, void* log)
             {
                 RemovePrefixUpTo(textResult, ' ');
                 RemovePrefixBlanks(textResult);
+                RemoveTrailingBlanks(textResult);
             }
         }
         else
