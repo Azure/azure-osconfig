@@ -63,5 +63,5 @@ if (BUILD_MODULETEST)
 endif()
 
 if (BUILD_SAMPLES)
-    add_subdirectory(samples/cpp)
+    add_subdirectory(samples)
 endif()

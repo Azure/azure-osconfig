@@ -99,6 +99,17 @@ if (BUILD_TESTS)
     set (GTEST_OUTPUT_DIR ${CMAKE_BINARY_DIR}/gtest-output)
 endif()
 
+if (BUILD_SAMPLES)
+    include(FetchContent)
+
+    FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v0.4
+    )
+    FetchContent_MakeAvailable(Corrosion)
+endif()
+
 add_subdirectory(common)
 if (BUILD_ADAPTERS)
     add_subdirectory(adapters)

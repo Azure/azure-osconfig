@@ -1,0 +1,12 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rust_sample"
+crate-type = ["cdylib"]
+
+[dependencies]
+osc = { path = "../../../common/rust/osc" }
+serde = { version = "1.0.189", features = ["derive"] }
