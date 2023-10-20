@@ -103,7 +103,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
 int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log);
 int CheckRootLoginViaSshIsDisabled(char** reason, void* log);
 int CheckSshIdleTimeoutInterval(char** reason, void* log);
-int CheckSshIdleTimeoutCountMax(char** reason, void* log)
+int CheckSshIdleTimeoutCountMax(char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
