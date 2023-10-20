@@ -1191,42 +1191,51 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
 
 static char* GetSshServerState(const char* name, void* log)
 {
-    const char* commandTemplate = "sshd -T | grep %s";
+    const char* commandForAll = "sshd -T";
+    const char* commandTemplateOne = "sshd -T | grep %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
 
     if (NULL == name)
     {
-        OsConfigLogError(log, "GetSshServerState: invalid name argument");
-        return textResult;
-    }
-
-    if (NULL != (command = FormatAllocateString(commandTemplate, name)))
-    {
-        if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+        if (0 != (status = ExecuteCommand(NULL, commandForAll, true, false, 0, 0, &textResult, NULL, NULL)))
         {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
-        }
-        else if (NULL != textResult)
-        {
-            RemovePrefixUpTo(textResult, ' ');
-            RemovePrefixBlanks(textResult);
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", commandForAll, status);
         }
     }
     else
     {
-        OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
-    }
+        if (NULL != (command = FormatAllocateString(commandTemplate, name)))
+        {
+            if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
+            {
+                OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
+            }
+            else if (NULL != textResult)
+            {
+                RemovePrefixUpTo(textResult, ' ');
+                RemovePrefixBlanks(textResult);
+            }
+        }
+        else
+        {
+            OsConfigLogError(log, "GetSshServerState: FormatAllocateString failed");
+        }
 
-    FREE_MEMORY(command);
+        FREE_MEMORY(command);
+    }
 
     return textResult;
 }
 
+static bool IsSshServerActive(void* log)
+{
+    return IsDaemonActive("sshd", log);
+}
+
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
 {
-    const char* sshServer = "sshd";
     const char* sshMacs = "macs";
 
     char* macsValue = NULL;
@@ -1241,9 +1250,9 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", macs, numberOfMacs);
         return EINVAL;
     }
-    else if (false == IsDaemonActive(sshServer, log))
+    else if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: SSH Server daemon '%s' is not active on this device", sshServer);
+        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -1305,7 +1314,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
 
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log)
 {
-    const char* sshServer = "sshd";
     const char* sshCiphers = "ciphers";
 
     char* ciphersValue = NULL;
@@ -1320,9 +1328,9 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", ciphers, numberOfCiphers);
         return EINVAL;
     }
-    else if (false == IsDaemonActive(sshServer, log))
+    else if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: SSH Server daemon '%s' is not active on this device", sshServer);
+        OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -1392,6 +1400,47 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     FREE_MEMORY(ciphersValue);
 
     OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
+
+int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log)
+{
+    char* value = NULL;
+    size_t i = 0;
+    bool oneFound = false;
+    int status = 0;
+
+    if ((NULL == values) || (0 == numberOfValues))
+    {
+        OsConfigLogError(log, "CheckLimitedUserAcccessForSsh: invalid arguments (%p, %u)", values, numberOfValues);
+        return EINVAL;
+    }
+    else if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    for (i = 0; i < numberOfValues; i++)
+    {
+        if (NULL != (value = GetSshServerState(values[i], log)))
+        {
+            OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: '%s' found in SSH Server response set to '%s'", values[i], value);
+            FREE_MEMORY(value);
+            oneFound = true;
+            break;
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckLimitedUserAcccessForSsh: '%s' not found in SSH Server response", values[i]);
+            OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", values[i]);
+        }
+    }
+
+    status = oneFound ? 0 : ENOENT;
+
+    OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
 }

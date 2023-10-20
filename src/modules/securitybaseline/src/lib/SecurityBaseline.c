@@ -1424,12 +1424,9 @@ static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 
 static char* AuditEnsureSshAccessIsLimited(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowUsers", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "AllowGroups", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyUsers", SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "DenyGroups", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'AllowUsers', 'AllowGroups', 'DenyUsers' and 'DenyGroups' are not all found uncommented with '#' in %s", g_etcSshSshdConfig);
+    const char* values[] = {"allowusers", "allowgroups", "denyusers", "denygroups"};
+    char* reason = NULL;
+    return CheckLimitedUserAcccessForSsh(values, ARRAY_SIZE(values), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)

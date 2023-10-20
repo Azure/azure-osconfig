@@ -100,6 +100,7 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
+int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
