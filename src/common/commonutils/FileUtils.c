@@ -1192,7 +1192,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* commandForAll = "sshd -T";
-    const char* commandTemplateOne = "sshd -T | grep %s";
+    const char* commandTemplateForOne = "sshd -T | grep %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
@@ -1206,7 +1206,7 @@ static char* GetSshServerState(const char* name, void* log)
     }
     else
     {
-        if (NULL != (command = FormatAllocateString(commandTemplate, name)))
+        if (NULL != (command = FormatAllocateString(commandTemplateForOne, name)))
         {
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
