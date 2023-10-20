@@ -358,7 +358,7 @@ int CheckSshIdleTimeoutInterval(char** reason, void* log)
     int actualValue = 0;
     int status = CheckSshOptionIsSetToInteger("clientaliveinterval", 0, &actualValue, reason, log);
     
-    if (actualValue <= 0)
+    if (IsSshServerActive(log) && (actualValue <= 0))
     {
         OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
@@ -376,7 +376,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     int actualValue = 0;
     int status = CheckSshOptionIsSetToInteger("logingracetime", 0, &actualValue, reason, log);
 
-    if (actualValue > 60)
+    if (IsSshServerActive(log) && (actualValue > 60))
     {
         OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",
