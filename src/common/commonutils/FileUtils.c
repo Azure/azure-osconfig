@@ -1237,7 +1237,6 @@ static bool IsSshServerActive(void* log)
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
 {
     const char* sshMacs = "macs";
-
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
@@ -1315,7 +1314,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log)
 {
     const char* sshCiphers = "ciphers";
-
     char* ciphersValue = NULL;
     char* value = NULL;
     size_t ciphersValueLength = 0;
@@ -1449,10 +1447,7 @@ int CheckRootLoginViaSshIsDisabled(char** reason, void* log)
 {
     const char* permitRootLogin = "permitrootlogin";
     const char* no = "no";
-    
     char* value = NULL;
-    size_t i = 0;
-    bool oneFound = false;
     int status = 0;
 
     if (false == IsSshServerActive(log))
