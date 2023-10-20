@@ -1446,7 +1446,6 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
 
 int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, char** reason, void* log)
 {
-    const char* permitRootLogin = "permitrootlogin";
     char* value = NULL;
     int status = 0;
 
@@ -1490,7 +1489,6 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
 
 int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log)
 {
-    const char* permitRootLogin = "permitrootlogin";
     char* value = NULL;
     int integerValue = 0;
     int status = 0;
@@ -1516,7 +1514,7 @@ int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* act
         {
             *actualValue = integerValue;
         }
-        else if (integgerValue != expectedValue))
+        else if (integerValue != expectedValue))
         {
             OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' is not set to %d in SSH Server response (but to %d)", option, expectedValue, integerValue);
             OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
