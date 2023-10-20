@@ -1444,77 +1444,110 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
     return status;
 }
 
-int CheckRootLoginViaSshIsDisabled(char** reason, void* log)
+int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, char** reason, void* log)
 {
     const char* permitRootLogin = "permitrootlogin";
-    const char* no = "no";
     char* value = NULL;
     int status = 0;
 
+    if ((NULL == option) || (NULL == expectedValue))
+    {
+        OsConfigLogError(log, "CheckSshOptionIsSetToString: invalid arguments (%s, %s)", option, expectedValue);
+        return EINVAL;
+    }
+
     if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: the SSH Server daemon is not active on this device");
+        OsConfigLogInfo(log, "CheckSshOptionIsSetToString: the SSH Server daemon is not active on this device");
         return status;
     }
 
-    if (NULL != (value = GetSshServerState(permitRootLogin, log)))
+    if (NULL != (value = GetSshServerState(option, log)))
     {
-        OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: '%s' found in SSH Server response set to '%s'", permitRootLogin, value);
+        OsConfigLogInfo(log, "CheckSshOptionIsSetToString: '%s' found in SSH Server response set to '%s'", option, value);
 
-        if (0 != strcmp(value, no))
+        if (0 != strcmp(value, expectedValue))
         {
-            OsConfigLogError(log, "CheckRootLoginViaSshIsDisabled: '%s' is not set to '%s' in SSH Server response (but to '%s')", permitRootLogin, no, value);
-            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')", 
-                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", permitRootLogin, no, value);
+            OsConfigLogError(log, "CheckSshOptionIsSetToString: '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
+            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
+                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
             status = ENOENT;
         }
-        
+
         FREE_MEMORY(value);
     }
     else
     {
-        OsConfigLogError(log, "CheckRootLoginViaSshIsDisabled: '%s' not found in SSH Server response", permitRootLogin);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", permitRootLogin);
+        OsConfigLogError(log, "CheckSshOptionIsSetToString: '%s' not found in SSH Server response", option);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", option);
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckRootLoginViaSshIsDisabled: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshOptionIsSetToString: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
+
+int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log)
+{
+    const char* permitRootLogin = "permitrootlogin";
+    char* value = NULL;
+    int integerValue = 0;
+    int status = 0;
+
+    if (NULL == option)
+    {
+        OsConfigLogError(log, "CheckSshOptionIsSetToInteger: invalid argument");
+        return EINVAL;
+    }
+
+    if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    if (NULL != (value = GetSshServerState(option, log)))
+    {
+        integerValue = atoi(value);
+        OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: '%s' found in SSH Server response set to '%s' (%d)", option, value, integerValue);
+
+        if (actualValue)
+        {
+            *actualValue = integerValue;
+        }
+        else if (integgerValue != expectedValue))
+        {
+            OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' is not set to %d in SSH Server response (but to %d)", option, expectedValue, integerValue);
+            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
+                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, integerValue);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(value);
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' not found in SSH Server response", option);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", option);
+        status = ENOENT;
+    }
+
+    OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
 }
 
 int CheckSshIdleTimeoutInterval(char** reason, void* log)
 {
-    const char* clientAliveInterval = "clientaliveinterval";
-    int clientAliveIntervalValue = 0;
-    char* value = NULL;
-    int status = 0;
-
-    if (false == IsSshServerActive(log))
+    int actualValue = 0;
+    int status = CheckSshOptionIsSetToInteger("clientaliveinterval", 0, &actualValue, reason, log);
+    
+    if (actualValue <= 0)
     {
-        OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: the SSH Server daemon is not active on this device");
-        return status;
-    }
-
-    if (NULL != (value = GetSshServerState(clientAliveInterval, log)))
-    {
-        clientAliveIntervalValue = atoi(value);
-        OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: '%s' found in SSH Server response set to '%s' (%d)", clientAliveInterval, value, clientAliveIntervalValue);
-        
-        if (clientAliveIntervalValue <= 0)
-        {
-            OsConfigLogError(log, "CheckSshIdleTimeoutInterval: '%s' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, clientAliveIntervalValue);
-            OsConfigCaptureReason(reason, "'%s' is not set to a greater than zero value in SSH Server response (but to %d)",
-                "%s, also '%s' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, clientAliveIntervalValue);
-            status = ENOENT;
-        }
-
-        FREE_MEMORY(value);
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: '%s' not found in SSH Server response", clientAliveInterval);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", clientAliveInterval);
+        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, actualValue);
+        OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
+            "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, actualValue);
         status = ENOENT;
     }
 
@@ -1523,78 +1556,16 @@ int CheckSshIdleTimeoutInterval(char** reason, void* log)
     return status;
 }
 
-int CheckSshIdleTimeoutCountMax(char** reason, void* log)
-{
-    const char* clientAliveCountMax = "clientalivecountmax";
-    int clientAliveCountMaxValue = 0;
-    char* value = NULL;
-    int status = 0;
-
-    if (false == IsSshServerActive(log))
-    {
-        OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: the SSH Server daemon is not active on this device");
-        return status;
-    }
-
-    if (NULL != (value = GetSshServerState(clientAliveCountMax, log)))
-    {
-        clientAliveCountMaxValue = atoi(value);
-        OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: '%s' found in SSH Server response set to '%s' (%d)", clientAliveCountMax, value, clientAliveCountMaxValue);
-
-        if (0 != clientAliveCountMaxValue)
-        {
-            OsConfigLogError(log, "CheckSshIdleTimeoutCountMax: '%s' is not set to zero value in SSH Server response (but to %d)", clientAliveCountMax, clientAliveCountMaxValue);
-            OsConfigCaptureReason(reason, "'%s' is not set to zero value in SSH Server response (but to %d)",
-                "%s, also '%s' is not set to zero value in SSH Server response (but to %d)", clientAliveCountMax, clientAliveCountMaxValue);
-            status = ENOENT;
-        }
-
-        FREE_MEMORY(value);
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckSshIdleTimeoutCountMax: '%s' not found in SSH Server response", clientAliveCountMax);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", clientAliveCountMax);
-        status = ENOENT;
-    }
-
-    OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: %s (%d)", status ? "failed" : "passed", status);
-
-    return status;
-}
-
 int CheckSshLoginGraceTime(char** reason, void* log)
 {
-    const char* loginGraceTime = "logingracetime";
-    int loginGraceTimeValue = 0;
-    char* value = NULL;
-    int status = 0;
+    int actualValue = 0;
+    int status = CheckSshOptionIsSetToInteger("logingracetime", 0, &actualValue, reason, log);
 
-    if (false == IsSshServerActive(log))
+    if (actualValue > 60)
     {
-        OsConfigLogInfo(log, "CheckSshLoginGraceTime: the SSH Server daemon is not active on this device");
-        return status;
-    }
-
-    if (NULL != (value = GetSshServerState(loginGraceTime, log)))
-    {
-        loginGraceTimeValue = atoi(value);
-        OsConfigLogInfo(log, "CheckSshLoginGraceTime: '%s' found in SSH Server response set to '%s' (%d)", loginGraceTime, value, loginGraceTimeValue);
-
-        if (loginGraceTimeValue > 60)
-        {
-            OsConfigLogError(log, "CheckSshLoginGraceTime: '%s' is not set to 60 or less in SSH Server response (but to %d)", loginGraceTime, loginGraceTimeValue);
-            OsConfigCaptureReason(reason, "'%s' is not set to a value of 60 or less in SSH Server response (but to %d)",
-                "%s, also '%s' is not set to a value of 60 or less in SSH Server response (but to %d)", loginGraceTime, loginGraceTimeValue);
-            status = ENOENT;
-        }
-
-        FREE_MEMORY(value);
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckSshLoginGraceTime: '%s' not found in SSH Server response", loginGraceTime);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", loginGraceTime);
+        OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
+        OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",
+            "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", actualValue);
         status = ENOENT;
     }
 

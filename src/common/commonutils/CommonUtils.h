@@ -101,9 +101,9 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
 int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log);
-int CheckRootLoginViaSshIsDisabled(char** reason, void* log);
+int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, char** reason, void* log);
+int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log);
 int CheckSshIdleTimeoutInterval(char** reason, void* log);
-int CheckSshIdleTimeoutCountMax(char** reason, void* log);
 int CheckSshLoginGraceTime(char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);

@@ -1446,7 +1446,7 @@ static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckRootLoginViaSshIsDisabled(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSetToString("permitrootlogin", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
@@ -1460,7 +1460,7 @@ static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
     char* reason = NULL;
     return ((0 != CheckSshIdleTimeoutInterval(&reason, SecurityBaselineGetLog())) || 
-        (0 != CheckSshIdleTimeoutCountMax(&reason, SecurityBaselineGetLog()))) ? reason : DuplicateString(g_pass);
+        (0 != CheckSshOptionIsSetToInteger("clientalivecountmax", 0, NULL, &reason, SecurityBaselineGetLog()))) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
