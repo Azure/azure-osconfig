@@ -1458,10 +1458,9 @@ static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 
 static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) || 
-        ((0 == GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveCountMax", ' ', SecurityBaselineGetLog())) &&
-        (0 < GetIntegerOptionFromFile(g_etcSshSshdConfig, "ClientAliveInterval", ' ', SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'ClientAliveCountMax' set to 0 and 'ClientAliveInterval' set to a positive value are not both found uncommented with '#' in %s", g_etcSshSshdConfig);
+    char* reason = NULL;
+    return ((0 != CheckSshIdleTimeoutInterval(&reason, SecurityBaselineGetLog())) || 
+        (0 != CheckSshIdleTimeoutCountMax(&reason, SecurityBaselineGetLog()))) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)

@@ -1482,3 +1482,83 @@ int CheckRootLoginViaSshIsDisabled(char** reason, void* log)
 
     return status;
 }
+
+int CheckSshIdleTimeoutInterval(char** reason, void* log)
+{
+    const char* clientAliveInterval = "clientaliveinterval";
+    int clientAliveIntervalValue = 0;
+    char* value = NULL;
+    int status = 0;
+
+    if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    if (NULL != (value = GetSshServerState(clientAliveInterval, log)))
+    {
+        clientAliveIntervalValue = atoi(value);
+        OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: '%s' found in SSH Server response set to '%s' (%d)", clientAliveInterval, value, clientAliveIntervalValue);
+        
+        if (clientAliveIntervalValue <= 0)
+        {
+            OsConfigLogError(log, "CheckSshIdleTimeoutInterval: '%s' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, clientAliveIntervalValue);
+            OsConfigCaptureReason(reason, "'%s' is not set to a greater than zero value in SSH Server response (but to %d)",
+                "%s, also '%s' is not set to a greater than zero value in SSH Server response (but to %d)", clientAliveInterval, clientAliveIntervalValue);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(value);
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: '%s' not found in SSH Server response", clientAliveInterval);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", clientAliveInterval);
+        status = ENOENT;
+    }
+
+    OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
+
+int CheckSshIdleTimeoutCountMax(char** reason, void* log)
+{
+    const char* clientAliveCountMax = "clientalivecountmax";
+    int clientAliveCountMaxValue = 0;
+    char* value = NULL;
+    int status = 0;
+
+    if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    if (NULL != (value = GetSshServerState(clientAliveCountMax, log)))
+    {
+        clientAliveCountMaxValue = atoi(value);
+        OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: '%s' found in SSH Server response set to '%s' (%d)", clientAliveCountMax, value, clientAliveCountMaxValue);
+
+        if (0 != clientAliveIntervalValue)
+        {
+            OsConfigLogError(log, "CheckSshIdleTimeoutCountMax: '%s' is not set to zero value in SSH Server response (but to %d)", clientAliveCountMax, clientAliveCountMaxValue);
+            OsConfigCaptureReason(reason, "'%s' is not set to zero value in SSH Server response (but to %d)",
+                "%s, also '%s' is not set to zero value in SSH Server response (but to %d)", clientAliveCountMax, clientAliveCountMaxValue);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(value);
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckSshIdleTimeoutCountMax: '%s' not found in SSH Server response", clientAliveCountMax);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", clientAliveCountMax);
+        status = ENOENT;
+    }
+
+    OsConfigLogInfo(log, "CheckSshIdleTimeoutCountMax: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
