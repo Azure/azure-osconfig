@@ -1465,9 +1465,8 @@ static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "LoginGraceTime", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'LoginGraceTime' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
+    char* reason = NULL;
+    return CheckSshLoginGraceTime(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)

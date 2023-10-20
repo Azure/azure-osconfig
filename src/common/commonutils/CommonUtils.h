@@ -104,6 +104,7 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
 int CheckRootLoginViaSshIsDisabled(char** reason, void* log);
 int CheckSshIdleTimeoutInterval(char** reason, void* log);
 int CheckSshIdleTimeoutCountMax(char** reason, void* log);
+int CheckSshLoginGraceTime(char** reason, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);

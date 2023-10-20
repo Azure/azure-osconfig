@@ -1562,3 +1562,43 @@ int CheckSshIdleTimeoutCountMax(char** reason, void* log)
 
     return status;
 }
+
+int CheckSshLoginGraceTime(char** reason, void* log)
+{
+    const char* loginGraceTime = "logingracetime";
+    int loginGraceTimeValue = 0;
+    char* value = NULL;
+    int status = 0;
+
+    if (false == IsSshServerActive(log))
+    {
+        OsConfigLogInfo(log, "CheckSshLoginGraceTime: the SSH Server daemon is not active on this device");
+        return status;
+    }
+
+    if (NULL != (value = GetSshServerState(loginGraceTime, log)))
+    {
+        loginGraceTimeValue = atoi(value);
+        OsConfigLogInfo(log, "CheckSshLoginGraceTime: '%s' found in SSH Server response set to '%s' (%d)", loginGraceTime, value, loginGraceTimeValue);
+
+        if (loginGraceTimeValue > 60)
+        {
+            OsConfigLogError(log, "CheckSshLoginGraceTime: '%s' is not set to 60 or less in SSH Server response (but to %d)", loginGraceTime, loginGraceTimeValue);
+            OsConfigCaptureReason(reason, "'%s' is not set to a value of 60 or less in SSH Server response (but to %d)",
+                "%s, also '%s' is not set to a value of 60 or less in SSH Server response (but to %d)", loginGraceTime, loginGraceTimeValue);
+            status = ENOENT;
+        }
+
+        FREE_MEMORY(value);
+    }
+    else
+    {
+        OsConfigLogError(log, "CheckSshLoginGraceTime: '%s' not found in SSH Server response", loginGraceTime);
+        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", loginGraceTime);
+        status = ENOENT;
+    }
+
+    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", status ? "failed" : "passed", status);
+
+    return status;
+}
