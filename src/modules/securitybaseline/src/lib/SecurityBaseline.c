@@ -1478,9 +1478,8 @@ static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Banner /etc/azsec/banner.txt", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("'Banner /etc/azsec/banner.txt' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
+    char* reason = NULL;
+    return CheckSshOptionIsSetToString("banner", "/etc/azsec/banner.txt", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
