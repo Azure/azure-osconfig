@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y dotnet-sdk-5.0
 
 WORKDIR /git
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
 # CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b v3.21.7
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake

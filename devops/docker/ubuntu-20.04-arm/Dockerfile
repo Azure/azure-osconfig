@@ -25,8 +25,13 @@ RUN apt -y update && apt-get -y install \
 ENV OPENSSL_ROOT_DIR=/usr/lib/arm-linux-gnueabihf/
 
 WORKDIR /git
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# CMake
 RUN git clone https://github.com/Kitware/CMake --recursive -b v3.22.0-rc1
 RUN cd CMake && ./bootstrap && make -j$(nproc) && make install && hash -r && rm -rf /git/CMake
-WORKDIR /git
+
+# rapidjson
 RUN git clone https://github.com/Tencent/rapidjson --recursive
 RUN cd rapidjson && cmake . -G Ninja && cmake --build . --target install && rm -rf /git/rapidjson
