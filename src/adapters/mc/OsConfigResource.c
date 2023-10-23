@@ -14,6 +14,7 @@
 
 static const char* g_mpiClientName = "OSConfig NRP";
 static const char* g_defaultValue = "-";
+static const char* g_passValue = "PASS";
 static const char* g_failValue = "FAIL";
 
 // Desired (write; also reported together with read group)
@@ -436,7 +437,8 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             g_desiredObjectValue = DuplicateString(g_failValue);
         }
 
-        isCompliant = (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
+        //isCompliant = (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
+        isCompliant = ('+' == g_desiredObjectValue[0]) ? MI_TRUE : MI_FALSE;
     }
     else
     {
@@ -539,7 +541,12 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     if (MI_TRUE == isCompliant)
     {
         reasonCode = DuplicateString(passCode);
-        reasonPhrase = DuplicateString(auditPassed);
+        //reasonPhrase = DuplicateString(auditPassed);
+
+        if ((0 == strcmp(g_reportedObjectValue, g_passValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + 1))))
+        {
+            reasonPhrase = DuplicateString(auditPassed);
+        }
     }
     else
     {
@@ -725,7 +732,8 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Determine compliance
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        //if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        if ('+' == g_desiredObjectValue[0])
         {
             isCompliant = MI_TRUE;
             LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);

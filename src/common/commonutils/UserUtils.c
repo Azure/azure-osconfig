@@ -1611,6 +1611,9 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
                 {
                     OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
+                    OsConfigCaptureReason(reason, "+User '%s' (%u, %u) has a password expiration warning time of %ld days",
+                        "+%s, also user '%s' (%u, %u) has a password expiration warning time of %ld days",
+                        userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod);
                 }
                 else
                 {
@@ -1630,6 +1633,8 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
     if (0 == status)
     {
         OsConfigLogInfo(log, "CheckPasswordExpirationWarning: all users who have passwords have correct have correct password expiration warning time of %ld days", days);
+        OsConfigCaptureReason(reason, "+All users who have passwords have correct have correct password expiration warning time of %ld days", 
+            "+%s, so all users who have passwords have correct have correct password expiration warning time of %ld days", days);
     }
 
     if (-1 == etcLoginDefsDays)
