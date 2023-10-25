@@ -20,15 +20,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [cpp]
         # CodeQL language support https://aka.ms/codeql-docs/language-support
+        language: [cpp, csharp]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        if: matrix.language == 'cpp'
         with:
           submodules: recursive
           clean: true
+
+      - uses: actions/checkout@v3
+        if: matrix.language == 'csharp'
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
@@ -36,14 +39,27 @@ jobs:
           languages: ${{ matrix.language }}
 
       - run: mkdir build
+        if: matrix.language == 'cpp'
 
       - name: Generate build
+        if: matrix.language == 'cpp'
         working-directory: build
         run: cmake ../src -DCMAKE_build-type=Release -Duse_prov_client=ON -Dhsm_type_symm_key=ON -DCOMPILE_WITH_STRICTNESS=ON -DBUILD_TESTS=OFF -DBUILD_SAMPLES=ON -DBUILD_ADAPTERS=ON -G Ninja
 
       - name: Build azure-osconfig
+        if: matrix.language == 'cpp'
         working-directory: build
         run: cmake --build . --config Release
+
+      - name: Setup dotnet
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Autobuild
+        if: matrix.language == 'csharp'
+        uses: github/codeql-action/autobuild@v2
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
