@@ -925,7 +925,9 @@ static char* AuditEnsurePasswordExpiration(void)
 static char* AuditEnsurePasswordExpirationWarning(void)
 {
     char* reason = NULL;
-    return CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    //return CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckPasswordExpirationWarning(g_passwordExpirationWarning, &reason, SecurityBaselineGetLog()); 
+    return (reason ? reason : DuplicateString(g_pass));
 }
 
 static char* AuditEnsureSystemAccountsAreNonLogin(void)
