@@ -1612,7 +1612,7 @@ int CheckPasswordExpirationWarning(long days, char** reason, void* log)
                     OsConfigLogInfo(log, "CheckPasswordExpirationWarning: user '%s' (%u, %u) has a password expiration warning time of %ld days (requested: %ld)",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod, days);
                     OsConfigCaptureReason(reason, "+User '%s' (%u, %u) has a password expiration warning time of %ld days",
-                        "+%s, also user '%s' (%u, %u) has a password expiration warning time of %ld days",
+                        "%s, also user '%s' (%u, %u) has a password expiration warning time of %ld days",
                         userList[i].username, userList[i].userId, userList[i].groupId, userList[i].warningPeriod);
                 }
                 else
