@@ -438,7 +438,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         }
 
         //isCompliant = (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
-        isCompliant = ('+' == g_desiredObjectValue[0]) ? MI_TRUE : MI_FALSE;
+        isCompliant = (('+' == g_reportedObjectValue[0]) || (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue))) ? MI_TRUE : MI_FALSE;
     }
     else
     {
