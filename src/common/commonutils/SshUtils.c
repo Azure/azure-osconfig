@@ -402,7 +402,7 @@ int SetSshOption(const char* option, const char* value, void* log)
 {
     //const char* simpleRegex = "\\w+";
     //const char* commaSeparatedRegex = "\\w+(,\\s\\w+)*$";
-    constr char* regex = "^(.+)\/([^\/]+)$"; //path regex
+    const char* regex = "^(.+)\\/([^\\/]+)$"; //path regex
     const char* commandTemplate = "sed -E 's/#%s\\s%s/%s %s/;s/%s\\s%s/%s %s/' %s";
     //const char* commandTemplate = "sed -E 's/#%s\\s\\w+(, \\w+)*$/.+?[\|$]/g/%s %s/;s/%s\\s\\w+(, \\w+)*$/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
