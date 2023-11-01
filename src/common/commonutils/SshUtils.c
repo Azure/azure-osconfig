@@ -441,15 +441,7 @@ int SetSshOption(const char* option, const char* value, void* log)
                 {
                     OsConfigLogInfo(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
 
-                    if (SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
-                    {
-                        if (false == RestartDaemon(g_sshServerService, log))
-                        {
-                            OsConfigLogError(log, "SetSshOption: failed to signal to the SSH Server service '%s' to reload configuration", g_sshServerService);
-                            status = ENOENT;
-                        }
-                    }
-                    else
+                    if (false == SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
                     {
                         OsConfigLogError(log, "SetSshOption: failed saving the updated configuration to '%s'", g_sshServerConfiguration);
                         status = ENOENT;

@@ -2555,7 +2555,8 @@ static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", SecurityBaselineGetLog());
+    return ((0 == SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", SecurityBaselineGetLog())) && 
+        (0 = RestartDaemon("sshd", , SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
