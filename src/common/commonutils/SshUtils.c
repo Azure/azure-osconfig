@@ -57,7 +57,7 @@ static bool IsSshServerActive(void* log)
         result = false;
     }
     
-    if (false == IsDaemonActive(g_sshServerService, log)))
+    if (false == IsDaemonActive(g_sshServerService, log))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
         result = false;
@@ -400,7 +400,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 
 int SetSshOption(const char* option, const char* value, void* log)
 {
-    const char* commandTemplate = "sed -E 's/#%s\s\w+/%s %s/' %s";
+    const char* commandTemplate = "sed -E 's/#%s\\s\\w+/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
     char* command = NULL;
@@ -435,11 +435,12 @@ int SetSshOption(const char* option, const char* value, void* log)
 
         if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &commandResult, NULL, log))) && commandResult)
         {
-            if (NULL != originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))
+            if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
             {
                 if (SavePayloadToFile(configurationBackup, originalConfiguration, strlen(originalConfiguration), log))
                 {
-                    OsConfigLogInfi(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
+                    OsConfigLogInfo(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
+
                     if (SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
                     {
                         if (false == RestartDaemon(g_sshServerService, log))
@@ -469,7 +470,7 @@ int SetSshOption(const char* option, const char* value, void* log)
         }
         else
         {
-            OsConfigLogInfo(log, "SetSshOption: failed setting '%s' to '%s' in '%s' (%d)", option, value, g_sshServerConfigurationstatus, status);
+            OsConfigLogInfo(log, "SetSshOption: failed setting '%s' to '%s' in '%s' (%d)", option, value, g_sshServerConfiguration, status);
         }
     }
 
