@@ -400,7 +400,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 
 int SetSshOption(const char* option, const char* value, void* log)
 {
-    const char* commandTemplate = "sed -E 's/#%s\\s\\w+/%s %s/' %s";
+    const char* commandTemplate = "sed -E 's/#%s\\s\\w+/%s %s/;s/%s\\s\\w+/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
     char* command = NULL;
@@ -421,7 +421,7 @@ int SetSshOption(const char* option, const char* value, void* log)
         return ENOENT;
     }
 
-    commandLength = strlen(commandTemplate) + (2 * strlen(option)) + strlen(value) + strlen(g_sshServerConfiguration) + 1;
+    commandLength = strlen(commandTemplate) + (4 * strlen(option)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
 
     if (NULL == (command = malloc(commandLength)))
     {
@@ -431,7 +431,7 @@ int SetSshOption(const char* option, const char* value, void* log)
     else
     {
         memset(command, 0, commandLength);
-        snprintf(command, commandLength, commandTemplate, option, option, value, g_sshServerConfiguration);
+        snprintf(command, commandLength, commandTemplate, option, option, value, option, option, value, g_sshServerConfiguration);
 
         if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &commandResult, NULL, log))) && commandResult)
         {
