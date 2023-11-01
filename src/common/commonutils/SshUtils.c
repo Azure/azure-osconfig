@@ -3,6 +3,9 @@
 
 #include "Internal.h"
 
+const char* g_sshServerService = "sshd";
+const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* commandForAll = "sshd -T";
@@ -46,10 +49,21 @@ static char* GetSshServerState(const char* name, void* log)
 
 static bool IsSshServerActive(void* log)
 {
-    const char* sshServerConfiguration = "/etc/ssh/sshd_config";
-    const char* sshServerService = "sshd";
+    bool result = true;
     
-    return (FileExists(sshServerConfiguration) && IsDaemonActive(sshServerService, log)) ? true : false;
+    if (false == FileExists(g_sshServerConfiguration))
+    {
+        OsConfigLogInfo(log, "IsSshServerActive: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
+        result = false;
+    }
+    
+    if (false == IsDaemonActive(g_sshServerService, log)))
+    {
+        OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
+        result = false;
+    }
+    
+    return result;
 }
 
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
@@ -69,7 +83,6 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     }
     else if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -146,7 +159,6 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     }
     else if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -234,7 +246,6 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
     }
     else if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -274,7 +285,6 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
 
     if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckSshOptionIsSetToString: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -318,7 +328,6 @@ int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* act
 
     if (false == IsSshServerActive(log))
     {
-        OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: the SSH Server daemon is not active on this device");
         return status;
     }
 
@@ -388,3 +397,87 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 
     return status;
 }
+
+int SetSshOption(const char* option, const char* value, void* log)
+{
+    const char* commandTemplate = "sed -E 's/#%s\s\w+/%s %s/' %s";
+    const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
+
+    char* command = NULL;
+    char* commandResult = NULL;
+    char* originalConfiguration = NULL;
+    size_t commandLength = 0;
+    int status = 0;
+
+    if ((NULL == option) || (NULL == value))
+    {
+        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s)", option, value);
+        return EINVAL;
+    }
+    else if (false == FileExists(g_sshServerConfiguration))
+    {
+        OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s'", 
+            g_sshServerConfiguration, option, value);
+        return ENOENT;
+    }
+
+    commandLength = strlen(commandTemplate) + (2 * strlen(option)) + strlen(value) + strlen(g_sshServerConfiguration) + 1;
+
+    if (NULL == (command = malloc(commandLength)))
+    {
+        OsConfigLogError(log, "SetSshOption: out of memory");
+        status = ENOMEM;
+    }
+    else
+    {
+        memset(command, 0, commandLength);
+        snprintf(command, commandLength, commandTemplate, option, option, value, g_sshServerConfiguration);
+
+        if ((0 == (status = ExecuteCommand(NULL, command, true, false, 0, 0, &commandResult, NULL, log))) && commandResult)
+        {
+            if (NULL != originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))
+            {
+                if (SavePayloadToFile(configurationBackup, originalConfiguration, strlen(originalConfiguration), log))
+                {
+                    OsConfigLogInfi(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
+                    if (SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
+                    {
+                        if (false == RestartDaemon(g_sshServerService, log))
+                        {
+                            OsConfigLogError(log, "SetSshOption: failed to signal to the SSH Server service '%s' to reload configuration", g_sshServerService);
+                            status = ENOENT;
+                        }
+                    }
+                    else
+                    {
+                        OsConfigLogError(log, "SetSshOption: failed saving the updated configuration to '%s'", g_sshServerConfiguration);
+                        status = ENOENT;
+                    }
+                }
+                else
+                {
+                    OsConfigLogError(log, "SetSshOption: cannot make a copy of '%s' as '%s", g_sshServerConfiguration, configurationBackup);
+                    remove(configurationBackup);
+                    status = ENOENT;
+                }
+            }
+            else
+            {
+                OsConfigLogError(log, "SetSshOption: failed to read current SSH Server configuration from '%s'", g_sshServerConfiguration);
+                status = ENOENT;
+            }
+        }
+        else
+        {
+            OsConfigLogInfo(log, "SetSshOption: failed setting '%s' to '%s' in '%s' (%d)", option, value, g_sshServerConfigurationstatus, status);
+        }
+    }
+
+    FREE_MEMORY(originalConfiguration);
+    FREE_MEMORY(commandResult);
+    FREE_MEMORY(command);
+
+    OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, status ? "failed" : "passed", status);
+
+    return status;
+} 

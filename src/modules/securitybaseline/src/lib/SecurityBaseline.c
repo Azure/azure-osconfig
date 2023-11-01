@@ -2482,72 +2482,80 @@ static int RemediateEnsureSshBestPracticeProtocol(void)
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("IgnoreRhosts", "yes", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLogLevelIsSet(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("LogLevel", "INFO", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("MaxAuthTries", "6", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshAccessIsLimited(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    //TODO: cannot do automatic remediation for this check, we need user and group names to allow or deny
+    //{"allowusers", "allowgroups", "denyusers", "denygroups"};
+    //Also, looks we should split this check in 4:
+    // EnsureAllowedUsersAreConfigured
+    // EnsureDeniedUsersAreConfigured
+    // EnsureAllowedGroupsAreConfigured
+    // EnsureDeniedGroupsAreConfigured
+    return 0;
 }
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("RhostsRSAAuthentication", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("HostBasedAuthentication", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("PermitRootLogin", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("PermitEmptyPasswords", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return ((0 == SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog())) && 
+        (0 == SetSshOption("ClientAliveInterval", "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("LoginGraceTime", "60", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("MACs", "hmac-sha2-256, hmac-sha2-256-etm@openssh.com, hmac-sha2-512, hmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("Banner", "/etc/azsec/banner.txt", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("PermitUserEnvironment", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
