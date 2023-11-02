@@ -438,6 +438,8 @@ int SetSshOption(const char* option, const char* value, void* log)
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, option, regex, option, value, option, regex, option, value, g_sshServerConfiguration);
 
+        OsConfigLogInfo(log, "SetSshOption: command: '%s'", command); ///////////////
+
         if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &commandResult, NULL, log))) && commandResult)
         {
             if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
