@@ -2555,7 +2555,7 @@ static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return ((0 == SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", "\\w+(,\\s\\w+)*$", SecurityBaselineGetLog())) &&
+    return ((0 == SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", "[\\w-]+(,\\s[\\w-]+)*", SecurityBaselineGetLog())) &&
         RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
