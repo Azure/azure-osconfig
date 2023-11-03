@@ -398,16 +398,14 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     return status;
 }
 
-int SetSshOption(const char* option, const char* value, void* log)
+// Callers must supply a regular expression (via the regex parameter) that mathes the value to be set:
+// "\\w+" for simple alphanumeric single word or number values such as "Foo", or "123" or "A1b23"
+// "\\w+(,\\s\\w+)*$" for space and comma separated alphanumeric values such as "foo1, foo2, foo3"
+// "(.+)\\/([^\\/]+)$" for path names such as "/etc/foo/foo.txt"
+// ..and so on
+int SetSshOption(const char* option, const char* value, const char* regex, void* log)
 {
-    //sed -E 's/#Banner\s^(.+)\/([^\/]+)$/Banner etc\/log\/blah/' /etc/ssh/sshd_config <<<    
-
-    //const char* simpleRegex = "\\w+";
-    //const char* commaSeparatedRegex = "\\w+(,\\s\\w+)*$";
-    //const char* regex = "^(.+)\\/([^\\/]+)$"; //path regex with beginning and ending of string (^ and $)
-    const char* regex = "(.+)\\/([^\\/]+)$"; //path regex
     const char* commandTemplate = "sed -E 's/#%s\\s%s/%s %s/;s/%s\\s%s/%s %s/' %s";
-    //const char* commandTemplate = "sed -E 's/#%s\\s\\w+(, \\w+)*$/.+?[\|$]/g/%s %s/;s/%s\\s\\w+(, \\w+)*$/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
     char* command = NULL;
@@ -416,15 +414,15 @@ int SetSshOption(const char* option, const char* value, void* log)
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == option) || (NULL == value))
+    if ((NULL == option) || (NULL == value) || (NULL == regex))
     {
-        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s)", option, value);
+        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s, %s)", option, value, regex);
         return EINVAL;
     }
     else if (false == FileExists(g_sshServerConfiguration))
     {
-        OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s'", 
-            g_sshServerConfiguration, option, value);
+        OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s' via '%s'", 
+            g_sshServerConfiguration, option, value, regex);
         return ENOENT;
     }
 
@@ -440,7 +438,7 @@ int SetSshOption(const char* option, const char* value, void* log)
         memset(command, 0, commandLength);
         snprintf(command, commandLength, commandTemplate, option, regex, option, value, option, regex, option, value, g_sshServerConfiguration);
 
-        OsConfigLogInfo(log, "SetSshOption: command: '%s'", command); ///////////////
+        OsConfigLogInfo(log, "SetSshOption: command: '%s'", command); /////////////// temporary, to be removed
 
         if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &commandResult, NULL, log))) && commandResult)
         {
@@ -449,8 +447,6 @@ int SetSshOption(const char* option, const char* value, void* log)
                 if (SavePayloadToFile(configurationBackup, originalConfiguration, strlen(originalConfiguration), log))
                 {
                     OsConfigLogInfo(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
-
-                    OsConfigLogInfo(log, "SetSshOption: payload: >>>%s<<<", commandResult); ///////////////
 
                     if (false == SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
                     {

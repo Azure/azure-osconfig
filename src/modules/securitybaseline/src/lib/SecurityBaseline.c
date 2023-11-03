@@ -2482,17 +2482,17 @@ static int RemediateEnsureSshBestPracticeProtocol(void)
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return SetSshOption("IgnoreRhosts", "yes", SecurityBaselineGetLog());
+    return SetSshOption("IgnoreRhosts", "yes", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLogLevelIsSet(void)
 {
-    return SetSshOption("LogLevel", "INFO", SecurityBaselineGetLog());
+    return SetSshOption("LogLevel", "INFO", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 {
-    return SetSshOption("MaxAuthTries", "6", SecurityBaselineGetLog());
+    return SetSshOption("MaxAuthTries", "6", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshAccessIsLimited(void)
@@ -2509,53 +2509,53 @@ static int RemediateEnsureSshAccessIsLimited(void)
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return SetSshOption("RhostsRSAAuthentication", "no", SecurityBaselineGetLog());
+    return SetSshOption("RhostsRSAAuthentication", "no", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return SetSshOption("HostBasedAuthentication", "no", SecurityBaselineGetLog());
+    return SetSshOption("HostBasedAuthentication", "no", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return SetSshOption("PermitRootLogin", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitRootLogin", "no", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return SetSshOption("PermitEmptyPasswords", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitEmptyPasswords", "no", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((0 == SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog())) && 
-        (0 == SetSshOption("ClientAliveInterval", "0", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == SetSshOption("ClientAliveCountMax", "0", "\\w+", SecurityBaselineGetLog())) &&
+        (0 == SetSshOption("ClientAliveInterval", "0", "\\w+", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 {
-    return SetSshOption("LoginGraceTime", "60", SecurityBaselineGetLog());
+    return SetSshOption("LoginGraceTime", "60", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return SetSshOption("MACs", "hmac-sha2-256, hmac-sha2-256-etm@openssh.com, hmac-sha2-512, hmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog());
+    return SetSshOption("MACs", "hmac-sha2-256, hmac-sha2-256-etm@openssh.com, hmac-sha2-512, hmac-sha2-512-etm@openssh.com", "\\w+(,\\s\\w+)*$", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    return SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", SecurityBaselineGetLog());
+    return SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", "(.+)\\/([^\\/]+)$", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return SetSshOption("PermitUserEnvironment", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitUserEnvironment", "no", "\\w+", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return ((0 == SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", SecurityBaselineGetLog())) && 
+    return ((0 == SetSshOption("Ciphers", "aes128-ctr, aes192-ctr, aes256-ctr", "\\w+(,\\s\\w+)*$", SecurityBaselineGetLog())) &&
         RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT;
 }
 
