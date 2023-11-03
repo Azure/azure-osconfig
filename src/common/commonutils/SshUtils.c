@@ -399,9 +399,9 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 }
 
 // Callers must supply a regular expression (via the regex parameter) that mathes the value to be set:
-// "\\w+" for simple alphanumeric single word or number values such as "Foo", or "123" or "A1b23"
-// "\\w+(,\\s\\w+)*$" for space and comma separated alphanumeric values such as "foo1, foo2, foo3"
-// "[\\w-]+(,\\s[\\w-]+)*" for space and comma separated alphanumeric values with dashes such as "foo-1, foo, foo-3"
+// "[:alnum:]+" for simple alphanumeric single word or number values such as "Foo", or "123" or "A1b23"
+// "[:alnum:]+(,\\s[:alnum:]+)*$" for space and comma separated alphanumeric values such as "foo1, foo2, foo3"
+// "[[:alnum:]-]+(,\\s[[:alnum:]-]+)*" for space and comma separated alphanumeric values with dashes such as "foo-1, foo, foo-3"
 // "(.+)\\/([^\\/]+)$" for path names such as "/etc/foo/foo.txt"
 // ..and so on
 int SetSshOption(const char* option, const char* value, const char* regex, void* log)
