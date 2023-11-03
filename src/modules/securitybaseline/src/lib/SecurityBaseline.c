@@ -2530,7 +2530,7 @@ static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
 static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
     return ((0 == SetSshOption("ClientAliveCountMax", "0", "\\w+", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("ClientAliveInterval", "0", "\\w+", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+        (0 == SetSshOption("ClientAliveInterval", "3600", "\\w+", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
