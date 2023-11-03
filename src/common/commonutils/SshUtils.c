@@ -400,6 +400,8 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 
 int SetSshOption(const char* option, const char* value, void* log)
 {
+    //sed -E 's/#Banner\s^(.+)\/([^\/]+)$/Banner etc\/log\/blah/' /etc/ssh/sshd_config <<<    
+
     //const char* simpleRegex = "\\w+";
     //const char* commaSeparatedRegex = "\\w+(,\\s\\w+)*$";
     //const char* regex = "^(.+)\\/([^\\/]+)$"; //path regex with beginning and ending of string (^ and $)
