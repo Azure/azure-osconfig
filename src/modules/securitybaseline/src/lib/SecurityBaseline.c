@@ -2545,7 +2545,7 @@ static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    return SetSshOption("Banner", "\/etc\/azsec\/banner.txt", SecurityBaselineGetLog());
+    return SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
