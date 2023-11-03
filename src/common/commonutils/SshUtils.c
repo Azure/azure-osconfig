@@ -398,6 +398,8 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     return status;
 }
 
+//TODO: add code to apppend an option when it cannot be found ###############################
+
 // Callers must supply a regular expression (via the regex parameter) that mathes the value to be set:
 // "[[:alnum:]]+" for simple alphanumeric single word or number values such as "Foo", or "123" or "A1b23"
 // "[[:alnum:]]+(,\\s[[:alnum:]]+)*$" for space and comma separated alphanumeric values such as "foo1, foo2, foo3"

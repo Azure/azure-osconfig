@@ -2545,7 +2545,20 @@ static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    return SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", "(.+)\\/([^\\/]+)$", SecurityBaselineGetLog());
+    int status = ENOENT;
+    char* currentBanner = NULL; 
+    
+    //TODO: append options when they do not exist in file ####################
+    if (NULL == (currentBanner = GetStringOptionFromFile(g_etcSshSshdConfig, "Banner", " ", SecurityBaselineGetLog())))
+    {
+        status = ENOENT;
+    }
+    else
+    {
+        status = SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", (strchr(currentBanner, '/')) ? "(.+)\\/([^\\/]+)$" : "[[:alnum:]]+", SecurityBaselineGetLog());
+        FREE_MEMORY(currentBanner);
+    }
+    return status;
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
