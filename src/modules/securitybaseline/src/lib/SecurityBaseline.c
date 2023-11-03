@@ -2549,7 +2549,7 @@ static int RemediateEnsureSshWarningBannerIsEnabled(void)
     char* currentBanner = NULL; 
     
     //TODO: append options when they do not exist in file ####################
-    if (NULL == (currentBanner = GetStringOptionFromFile(g_etcSshSshdConfig, "Banner", " ", SecurityBaselineGetLog())))
+    if (NULL == (currentBanner = GetStringOptionFromFile(g_etcSshSshdConfig, "Banner", ' ', SecurityBaselineGetLog())))
     {
         status = ENOENT;
     }
