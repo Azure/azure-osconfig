@@ -450,6 +450,8 @@ int SetSshOption(const char* option, const char* value, void* log)
                 {
                     OsConfigLogInfo(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
 
+                    OsConfigLogInfo(log, "SetSshOption: payload: >>>%s<<<", commandResult); ///////////////
+
                     if (false == SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
                     {
                         OsConfigLogError(log, "SetSshOption: failed saving the updated configuration to '%s'", g_sshServerConfiguration);
