@@ -912,6 +912,38 @@ TEST_F(CommonUtilsTest, RemovePrefixUpTo)
     }
 }
 
+struct MarkedTestStringTargets
+{
+    const char* target;
+    const char* marker;
+    const char* expected;
+};
+
+TEST_F(CommonUtilsTest, RemovePrefixUpToString)
+{
+    MarkedTestStringTargets targets[] = {
+        { "Test", "&", "Test" },
+        { "123=Test", "=Te", "=Test" },
+        { "jshsaHGFsajhgksajge27u313987yhjsA,NSQ.I3U21P903PUDSJQ#Test", "NSQ.I", "NSQ.I3U21P903PUDSJQ#Test" },
+        { "1$Test", "$T", "$Test" },
+        { "Test$Test=Test", "$Test", "$Test=Test" },
+        { "@Test", "@", "@Test" },
+        { "123456789Test", "89", "89Test" },
+        { "!@!#@$#$^%^^%&^*&()(_)(+-Test", "+-", "+-Test" }
+    };
+
+    int numTargets = ARRAY_SIZE(targets);
+    char* testString = nullptr;
+
+    for (int i = 0; i < numTargets; i++)
+    {
+        EXPECT_NE(nullptr, testString = AllocateAndCopyTestString(targets[i].target));
+        RemovePrefixUpToString(testString, targets[i].marker);
+        EXPECT_STREQ(testString, targets[i].expected);
+        FREE_MEMORY(testString);
+    }
+}
+
 TEST_F(CommonUtilsTest, TruncateAtFirst)
 {
     MarkedTestTargets targets[] = {
