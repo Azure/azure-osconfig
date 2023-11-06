@@ -483,9 +483,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
             }
             else
             {
-                OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: ### %s ###", userList[i].username);
-
-                if (0 == numberOfUsers)
+                if (0 == *numberOfUsers)
                 {
                     *users = DuplicateString(userList[i].username);
                 }
