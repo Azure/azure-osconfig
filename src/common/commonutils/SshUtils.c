@@ -28,6 +28,7 @@ static char* GetSshServerState(const char* name, void* log)
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
                 OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
+                FREE_MEMORY(textResult);
             }
             else if ((NULL != textResult) && (NULL != strstr(textResult, name)))
             {
