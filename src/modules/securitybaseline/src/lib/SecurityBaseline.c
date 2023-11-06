@@ -2552,7 +2552,7 @@ static int RemediateEnsureSshWarningBannerIsEnabled(void)
         "Authorized access only!\n\n"
         "If you are not authorized to access or use this system, disconnect now!\n\n"
         "############################################################\n";
-    SavePayloadToFile(bannerFile, bannerText, , SecurityBaselineGetLog());
+    SavePayloadToFile(bannerFile, bannerText, SecurityBaselineGetLog());
     return SetSshOption("Banner", escapedBannerFile, SecurityBaselineGetLog());
 }
 
