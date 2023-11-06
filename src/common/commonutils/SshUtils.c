@@ -29,7 +29,7 @@ static char* GetSshServerState(const char* name, void* log)
             {
                 OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
             }
-            else if (NULL != textResult)
+            else if ((NULL != textResult) && (NULL != strstr((textResult, name))))
             {
                 RemovePrefixUpToString(textResult, name);
                 RemovePrefixUpTo(textResult, ' ');

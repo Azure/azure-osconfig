@@ -1430,7 +1430,7 @@ static char* AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
     /*char* reason = NULL;
     return CheckSshOptionIsSetToString("rhostsrsaauthentication", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);*/
-    return 0; //TODO: remove this check, OpenSSH does not support this option
+    return DuplicateString(g_pass); //TODO: remove this check, OpenSSH does not support this option
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
