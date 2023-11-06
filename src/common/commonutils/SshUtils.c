@@ -492,7 +492,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
                 {
                     temp = DuplicateString(*users);
                     FREE_MEMORY(*users);
-                    *users = FormatAllocateString("%s,%s", temp, userList[i].username);
+                    *users = FormatAllocateString("%s %s", temp, userList[i].username);
                     FREE_MEMORY(temp);
                 }
 
