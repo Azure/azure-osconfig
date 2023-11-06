@@ -488,7 +488,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
             {
                 if (0 == *numberOfUsers)
                 {
-                    *users = DuplicateString(userList[i].username);
+                    *users = FormatAllocateString("%s@%s", userList[i].username, hostName);
                 }
                 else
                 {
