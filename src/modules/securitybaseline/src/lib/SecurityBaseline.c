@@ -2498,14 +2498,13 @@ static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 
 static int RemediateEnsureSshAccessIsLimited(void)
 {
-    //TODO: cannot do automatic remediation for this check, we need user and group names to allow or deny
-    //{"allowusers", "allowgroups", "denyusers", "denygroups"};
-    //Also, looks we should split this check in 4:
+    return SetDefaultAllowedUsersForSsh(SecurityBaselineGetLog());
+    
+    // TODO: split this check in 4:
     // EnsureAllowedUsersAreConfigured
     // EnsureDeniedUsersAreConfigured
     // EnsureAllowedGroupsAreConfigured
     // EnsureDeniedGroupsAreConfigured
-    return 0;
 }
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)

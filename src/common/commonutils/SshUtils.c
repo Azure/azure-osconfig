@@ -454,4 +454,80 @@ int SetSshOption(const char* option, const char* value, void* log)
     OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, status ? "failed" : "passed", status);
 
     return status;
-} 
+}
+
+static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, void* log)
+{
+    SIMPLIFIED_USER* userList = NULL;
+    unsigned int userListSize = 0, i = 0;
+    char* temp = NULL;
+    int status = 0;
+
+    if ((NULL == uesrs) || (0 == numberOfUsers))
+    {
+        OsConfigLogError(log, "GetListOfUsersToBeAllowedForShh: invalid arguments (%p, %u)", users, numberOfUsers);
+        return EINVAL;
+    }
+
+    *users = NULL;
+    numberOfUsers = 0;
+
+    if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
+    {
+        for (i = 0; i < userListSize; i++)
+        {
+            //TODO: add root
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || (false == userList[i].hasPassword))
+            {
+                continue;
+            }
+            else
+            {
+                if (0 == numberOfUsers)
+                {
+                    *users = DuplicateString(userList[i].name);
+                }
+                else
+                {
+                    temp = DuplicateString(*users);
+                    FREE_MEMORY(*users);
+                    *users = FormatAllocateString("%s,%s", temp, userList[i].name);
+                    FREE_MEMORY(temp);
+                }
+
+                numberOfUsers += 1;
+            }
+        }
+
+        if (0 == numberOfUsers)
+        {
+            OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: no such users found");
+            status = ENOENT;
+        }
+    }
+
+    FreeUsersList(&userList, userListSize);
+
+    if (0 == status)
+    {
+        OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: '%s', %d users");
+    }
+
+    return status;
+}
+
+int SetDefaultAllowedUsersForSsh(void* log)
+{
+    char* users = NULL;
+    int numberOfUsers = 0;
+    int status = 0;
+
+    if (0 == (status = GetListOfUsersToBeAllowedForShh(&users, &numberOfUsers, log)))
+    {
+        status = SetSshOption("AllowedUsers", users ? users : "", log);
+    }
+
+    FREE_MEMORY(users);
+
+    return status;
+}
