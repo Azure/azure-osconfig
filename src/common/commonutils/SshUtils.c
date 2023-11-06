@@ -31,6 +31,7 @@ static char* GetSshServerState(const char* name, void* log)
             }
             else if (NULL != textResult)
             {
+                RemovePrefixUpToString(textResult, name);
                 RemovePrefixUpTo(textResult, ' ');
                 RemovePrefixBlanks(textResult);
                 RemoveTrailingBlanks(textResult);

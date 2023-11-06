@@ -147,6 +147,7 @@ long GetPassWarnAge(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
+void RemovePrefixUpToString(char* target, char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
