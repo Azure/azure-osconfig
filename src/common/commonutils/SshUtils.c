@@ -513,7 +513,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: '%s', %d users", *users, *numberOfUsers);
+        OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: '%s', %d user(s)", *users, *numberOfUsers);
     }
 
     return status;

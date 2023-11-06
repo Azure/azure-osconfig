@@ -2478,7 +2478,7 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 
 static int RemediateEnsureSshBestPracticeProtocol(void)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
+    return SetSshOption("Protocol", "2", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
