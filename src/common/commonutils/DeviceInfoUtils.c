@@ -48,7 +48,7 @@ void RemovePrefixUpTo(char* target, char marker)
     }
 }
 
-void RemovePrefixUpToString(char* target, char* marker)
+void RemovePrefixUpToString(char* target, const char* marker)
 {
     if ((NULL == target) || (NULL == marker))
     {
