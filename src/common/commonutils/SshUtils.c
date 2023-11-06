@@ -31,15 +31,10 @@ static char* GetSshServerState(const char* name, void* log)
             }
             else if ((NULL != textResult) && (NULL != strstr(textResult, name)))
             {
-                OsConfigLogInfo(log, "### 1 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixUpToString(textResult, name);
-                OsConfigLogInfo(log, "### 2 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixUpTo(textResult, ' ');
-                OsConfigLogInfo(log, "### 3 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixBlanks(textResult);
-                OsConfigLogInfo(log, "### 4 #### GetSshServerState: '%s'", textResult);
                 RemoveTrailingBlanks(textResult);
-                OsConfigLogInfo(log, "### 5 #### GetSshServerState: '%s'", textResult);
             }
         }
         else
@@ -404,20 +399,10 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     return status;
 }
 
-//TODO: add code to apppend an option when it cannot be found ###############################
-
-// Callers must supply a regular expression (via the regex parameter) that mathes the value to be set:
-// "[[:alnum:]]+" for simple alphanumeric single word or number values such as "Foo", or "123" or "A1b23"
-// "[[:alnum:]]+(,\\s[[:alnum:]]+)*$" for space and comma separated alphanumeric values such as "foo1, foo2, foo3"
-// "[[[:alnum:]]-]+(,\\s[[[:alnum:]]-]+)*" for space and comma separated alphanumeric values with dashes such as "foo-1, foo, foo-3"
-// "(.+)\\/([^\\/]+)$" for path names such as "/etc/foo/foo.txt"
-// ..and so on
-int SetSshOption(const char* option, const char* value, const char* regex, void* log)
+int SetSshOption(const char* option, const char* value, void* log)
 {
-    //const char* commandTemplate = "sed 's/.*%s .*/%s %s/' %s";
+    // SED command template that replaces any instances of '*option' with 'option value' or adds 'option value' when 'option' is missing from sshd_config
     const char* commandTemplate = "sed '/^%s /{h;s/ .*/ %s/};${x;/^$/{s//%s %s/;H};x}' %s";
-
-    //const char* commandTemplate = "sed -E 's/#%s\\s%s/%s %s/;s/%s\\s%s/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
     char* command = NULL;
@@ -438,48 +423,18 @@ int SetSshOption(const char* option, const char* value, const char* regex, void*
         return ENOENT;
     }
 
-    //commandLength = strlen(commandTemplate) + (4 * strlen(option)) + (2 * strlen(regex)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
-    //commandLength = strlen(commandTemplate) + (2 * strlen(option)) + strlen(value) + strlen(g_sshServerConfiguration) + 1;
     commandLength = strlen(commandTemplate) + (2 * strlen(option)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
 
-    if (NULL == (command = malloc(commandLength)))
-    {
-        OsConfigLogError(log, "SetSshOption: out of memory");
-        status = ENOMEM;
-    }
-    else
+    if (NULL != (command = malloc(commandLength)))
     {
         memset(command, 0, commandLength);
-        //snprintf(command, commandLength, commandTemplate, option, regex, option, value, option, regex, option, value, g_sshServerConfiguration);
-        //snprintf(command, commandLength, commandTemplate, option, option, value, g_sshServerConfiguration);
         snprintf(command, commandLength, commandTemplate, option, value, option, value, g_sshServerConfiguration);
-
-        OsConfigLogInfo(log, "SetSshOption: command: '%s'", command); /////////////// temporary, to be removed
 
         if ((0 == (status = ExecuteCommand(NULL, command, false, false, 0, 0, &commandResult, NULL, log))) && commandResult)
         {
-            if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+            if (false == SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
             {
-                if (SavePayloadToFile(configurationBackup, originalConfiguration, strlen(originalConfiguration), log))
-                {
-                    OsConfigLogInfo(log, "SetSshOption: saved a backup copy of '%s' to '%s", g_sshServerConfiguration, configurationBackup);
-
-                    if (false == SavePayloadToFile(g_sshServerConfiguration, commandResult, strlen(commandResult), log))
-                    {
-                        OsConfigLogError(log, "SetSshOption: failed saving the updated configuration to '%s'", g_sshServerConfiguration);
-                        status = ENOENT;
-                    }
-                }
-                else
-                {
-                    OsConfigLogError(log, "SetSshOption: cannot make a copy of '%s' as '%s", g_sshServerConfiguration, configurationBackup);
-                    remove(configurationBackup);
-                    status = ENOENT;
-                }
-            }
-            else
-            {
-                OsConfigLogError(log, "SetSshOption: failed to read current SSH Server configuration from '%s'", g_sshServerConfiguration);
+                OsConfigLogError(log, "SetSshOption: failed saving the updated configuration to '%s'", g_sshServerConfiguration);
                 status = ENOENT;
             }
         }
@@ -487,6 +442,11 @@ int SetSshOption(const char* option, const char* value, const char* regex, void*
         {
             OsConfigLogInfo(log, "SetSshOption: failed setting '%s' to '%s' in '%s' (%d)", option, value, g_sshServerConfiguration, status);
         }
+    }
+    else
+    {
+        OsConfigLogError(log, "SetSshOption: out of memory");
+        status = ENOMEM;
     }
 
     FREE_MEMORY(originalConfiguration);

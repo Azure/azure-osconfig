@@ -2483,17 +2483,17 @@ static int RemediateEnsureSshBestPracticeProtocol(void)
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return SetSshOption("IgnoreRhosts", "yes", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("IgnoreRhosts", "yes", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLogLevelIsSet(void)
 {
-    return SetSshOption("LogLevel", "INFO", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("LogLevel", "INFO", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 {
-    return SetSshOption("MaxAuthTries", "6", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("MaxAuthTries", "6", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshAccessIsLimited(void)
@@ -2510,28 +2510,28 @@ static int RemediateEnsureSshAccessIsLimited(void)
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
 {
-    return SetSshOption("#RhostsRSAAuthentication", "no", "[[:alnum:]]+", SecurityBaselineGetLog()); //TODO: REMOVE, RhostsRSAAuthentication is deprecated in OpenSSH
+    return SetSshOption("#RhostsRSAAuthentication", "no", SecurityBaselineGetLog()); //TODO: REMOVE, RhostsRSAAuthentication is deprecated in OpenSSH
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return SetSshOption("HostBasedAuthentication", "no", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("HostBasedAuthentication", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return SetSshOption("PermitRootLogin", "no", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("PermitRootLogin", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return SetSshOption("PermitEmptyPasswords", "no", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("PermitEmptyPasswords", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 {
-    return ((0 == SetSshOption("ClientAliveCountMax", "0", "[[:alnum:]]+", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("ClientAliveInterval", "3600", "[[:alnum:]]+", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return ((0 == SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog())) &&
+        (0 == SetSshOption("ClientAliveInterval", "3600", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
@@ -2541,36 +2541,23 @@ static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return SetSshOption("MACs", "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com", "[[:alnum:]]+(,\\s[[:alnum:]]+)*$", SecurityBaselineGetLog());
+    return SetSshOption("MACs", "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    int status = ENOENT;
-    char* currentBanner = NULL; 
-    
-    //TODO: append options when they do not exist in file ####################
-    if (NULL == (currentBanner = GetStringOptionFromFile(g_etcSshSshdConfig, "Banner", ' ', SecurityBaselineGetLog())))
-    {
-        status = ENOENT;
-    }
-    else
-    {
-        status = SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", (strchr(currentBanner, '/')) ? "(.+)\\/([^\\/]+)$" : "[[:alnum:]]+", SecurityBaselineGetLog());
-        FREE_MEMORY(currentBanner);
-    }
-    return status;
+    rerturn SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return SetSshOption("PermitUserEnvironment", "no", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("PermitUserEnvironment", "no", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
-    return ((0 == SetSshOption("Ciphers", "aes128-ctr,aes192-ctr,aes256-ctr", "[[[:alnum:]]-]+(,\\s[[[:alnum:]]-]+)*", SecurityBaselineGetLog())) &&
-        RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT;
+    return ((0 == SetSshOption("Ciphers", "aes128-ctr,aes192-ctr,aes256-ctr", SecurityBaselineGetLog())) &&
+        RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT; //TODO: move this restart somewhere else
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)

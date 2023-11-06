@@ -105,7 +105,7 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
 int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log);
 int CheckSshIdleTimeoutInterval(char** reason, void* log);
 int CheckSshLoginGraceTime(char** reason, void* log);
-int SetSshOption(const char* option, const char* value, const char* regex, void* log);
+int SetSshOption(const char* option, const char* value, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
