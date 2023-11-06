@@ -408,7 +408,9 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 // ..and so on
 int SetSshOption(const char* option, const char* value, const char* regex, void* log)
 {
-    const char* commandTemplate = "sed 's/.*%s .*/%s %s/' %s";
+    //const char* commandTemplate = "sed 's/.*%s .*/%s %s/' %s";
+    const char* commandTemplate = "sed '/^%s /{h;s/ .*/ %s/};${x;/^$/{s//%s %s/;H};x}' %s";
+
     //const char* commandTemplate = "sed -E 's/#%s\\s%s/%s %s/;s/%s\\s%s/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
@@ -431,7 +433,8 @@ int SetSshOption(const char* option, const char* value, const char* regex, void*
     }
 
     //commandLength = strlen(commandTemplate) + (4 * strlen(option)) + (2 * strlen(regex)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
-    commandLength = strlen(commandTemplate) + (2 * strlen(option)) + strlen(value) + strlen(g_sshServerConfiguration) + 1;
+    //commandLength = strlen(commandTemplate) + (2 * strlen(option)) + strlen(value) + strlen(g_sshServerConfiguration) + 1;
+    commandLength = strlen(commandTemplate) + (2 * strlen(option)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
 
     if (NULL == (command = malloc(commandLength)))
     {
@@ -442,7 +445,8 @@ int SetSshOption(const char* option, const char* value, const char* regex, void*
     {
         memset(command, 0, commandLength);
         //snprintf(command, commandLength, commandTemplate, option, regex, option, value, option, regex, option, value, g_sshServerConfiguration);
-        snprintf(command, commandLength, commandTemplate, option, option, value, g_sshServerConfiguration);
+        //snprintf(command, commandLength, commandTemplate, option, option, value, g_sshServerConfiguration);
+        snprintf(command, commandLength, commandTemplate, option, value, option, value, g_sshServerConfiguration);
 
         OsConfigLogInfo(log, "SetSshOption: command: '%s'", command); /////////////// temporary, to be removed
 
