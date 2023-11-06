@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Internal.h"
+#include "UserUtils.h"
 
 const char* g_sshServerService = "sshd";
 const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
