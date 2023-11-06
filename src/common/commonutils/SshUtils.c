@@ -31,10 +31,15 @@ static char* GetSshServerState(const char* name, void* log)
             }
             else if ((NULL != textResult) && (NULL != strstr(textResult, name)))
             {
+                OsConfigLogInfo(log, "### 1 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixUpToString(textResult, name);
+                OsConfigLogInfo(log, "### 2 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixUpTo(textResult, ' ');
+                OsConfigLogInfo(log, "### 3 #### GetSshServerState: '%s'", textResult);
                 RemovePrefixBlanks(textResult);
+                OsConfigLogInfo(log, "### 4 #### GetSshServerState: '%s'", textResult);
                 RemoveTrailingBlanks(textResult);
+                OsConfigLogInfo(log, "### 5 #### GetSshServerState: '%s'", textResult);
             }
         }
         else
