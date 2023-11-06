@@ -2536,7 +2536,7 @@ static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 {
-    return SetSshOption("LoginGraceTime", "60", "[[:alnum:]]+", SecurityBaselineGetLog());
+    return SetSshOption("LoginGraceTime", "60", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
@@ -2546,7 +2546,7 @@ static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    rerturn SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", SecurityBaselineGetLog());
+    return SetSshOption("Banner", "\\/etc\\/azsec\\/banner.txt", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
