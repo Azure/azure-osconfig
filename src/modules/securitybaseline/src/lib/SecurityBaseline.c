@@ -2540,7 +2540,7 @@ static int RemediateEnsureSshLoginGraceTimeIsSet(void)
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return SetSshOption("MACs", "hmac-sha2-256, hmac-sha2-256-etm@openssh.com, hmac-sha2-512, hmac-sha2-512-etm@openssh.com", "[[:alnum:]]+(,\\s[[:alnum:]]+)*$", SecurityBaselineGetLog());
+    return SetSshOption("MACs", "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com", "[[:alnum:]]+(,\\s[[:alnum:]]+)*$", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
