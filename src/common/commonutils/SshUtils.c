@@ -403,11 +403,9 @@ int SetSshOption(const char* option, const char* value, void* log)
 {
     // SED command template that replaces any instances of '*option' with 'option value' or adds 'option value' when 'option' is missing from sshd_config
     const char* commandTemplate = "sed '/^%s /{h;s/ .*/ %s/};${x;/^$/{s//%s %s/;H};x}' %s";
-    const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
     char* command = NULL;
     char* commandResult = NULL;
-    char* originalConfiguration = NULL;
     size_t commandLength = 0;
     int status = 0;
 
@@ -449,7 +447,6 @@ int SetSshOption(const char* option, const char* value, void* log)
         status = ENOMEM;
     }
 
-    FREE_MEMORY(originalConfiguration);
     FREE_MEMORY(commandResult);
     FREE_MEMORY(command);
 
