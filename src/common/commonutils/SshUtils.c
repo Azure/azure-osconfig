@@ -477,13 +477,14 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
     {
         for (i = 0; i < userListSize; i++)
         {
-            //TODO: add root
-            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || (false == userList[i].hasPassword))
+            if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].isRoot || (false == userList[i].hasPassword) || (NULL == userList[i].username))
             {
                 continue;
             }
             else
             {
+                OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: ### %s ###", userList[i].username);
+
                 if (0 == numberOfUsers)
                 {
                     *users = DuplicateString(userList[i].username);
@@ -525,7 +526,7 @@ int SetDefaultAllowedUsersForSsh(void* log)
 
     if (0 == (status = GetListOfUsersToBeAllowedForShh(&users, &numberOfUsers, log)))
     {
-        status = SetSshOption("AllowedUsers", users ? users : "", log);
+        status = SetSshOption("AllowUsers", users ? users : "@", log);
     }
 
     FREE_MEMORY(users);
