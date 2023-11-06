@@ -408,7 +408,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 // ..and so on
 int SetSshOption(const char* option, const char* value, const char* regex, void* log)
 {
-    const char* commandTemplate = "sed 's/%s .*/%s %s/' %s";
+    const char* commandTemplate = "sed 's/.*%s .*/%s %s/' %s";
     //const char* commandTemplate = "sed -E 's/#%s\\s%s/%s %s/;s/%s\\s%s/%s %s/' %s";
     const char* configurationBackup = "/etc/ssh/~sshd_config.bak";
 
