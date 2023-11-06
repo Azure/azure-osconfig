@@ -471,7 +471,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
     }
 
     *users = NULL;
-    numberOfUsers = 0;
+    *numberOfUsers = 0;
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
@@ -496,7 +496,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
                     FREE_MEMORY(temp);
                 }
 
-                numberOfUsers += 1;
+                *numberOfUsers += 1;
             }
         }
 
@@ -511,7 +511,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
 
     if (0 == status)
     {
-        OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: '%s', %d users");
+        OsConfigLogInfo(log, "GetListOfUsersToBeAllowedForShh: '%s', %d users", *users, *numberOfUsers);
     }
 
     return status;
