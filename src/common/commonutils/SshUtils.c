@@ -461,6 +461,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
 {
     SIMPLIFIED_USER* userList = NULL;
     unsigned int userListSize = 0, i = 0;
+    char hostName[1024] = {0};
     char* temp = NULL;
     int status = 0;
 
@@ -475,6 +476,8 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
 
     if (0 == (status = EnumerateUsers(&userList, &userListSize, log)))
     {
+        gethostname(hostname, ARRAY_SIZE(hostName) - 1);
+        
         for (i = 0; i < userListSize; i++)
         {
             if (userList[i].noLogin || userList[i].cannotLogin || userList[i].isLocked || userList[i].isRoot || (false == userList[i].hasPassword) || (NULL == userList[i].username))
@@ -491,7 +494,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
                 {
                     temp = DuplicateString(*users);
                     FREE_MEMORY(*users);
-                    *users = FormatAllocateString("%s %s", temp, userList[i].username);
+                    *users = FormatAllocateString("%s %s@%s", temp, userList[i].username, hostname);
                     FREE_MEMORY(temp);
                 }
 
