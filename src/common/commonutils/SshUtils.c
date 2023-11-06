@@ -466,7 +466,7 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
 
     if ((NULL == users) || (0 == numberOfUsers))
     {
-        OsConfigLogError(log, "GetListOfUsersToBeAllowedForShh: invalid arguments (%p, %d)", users, numberOfUsers);
+        OsConfigLogError(log, "GetListOfUsersToBeAllowedForShh: invalid arguments (%p, %p)", users, numberOfUsers);
         return EINVAL;
     }
 
