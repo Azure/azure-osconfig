@@ -464,9 +464,9 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
     char* temp = NULL;
     int status = 0;
 
-    if ((NULL == uesrs) || (0 == numberOfUsers))
+    if ((NULL == users) || (0 == numberOfUsers))
     {
-        OsConfigLogError(log, "GetListOfUsersToBeAllowedForShh: invalid arguments (%p, %u)", users, numberOfUsers);
+        OsConfigLogError(log, "GetListOfUsersToBeAllowedForShh: invalid arguments (%p, %d)", users, numberOfUsers);
         return EINVAL;
     }
 
@@ -486,13 +486,13 @@ static int GetListOfUsersToBeAllowedForShh(char** users, int* numberOfUsers, voi
             {
                 if (0 == numberOfUsers)
                 {
-                    *users = DuplicateString(userList[i].name);
+                    *users = DuplicateString(userList[i].username);
                 }
                 else
                 {
                     temp = DuplicateString(*users);
                     FREE_MEMORY(*users);
-                    *users = FormatAllocateString("%s,%s", temp, userList[i].name);
+                    *users = FormatAllocateString("%s,%s", temp, userList[i].username);
                     FREE_MEMORY(temp);
                 }
 
