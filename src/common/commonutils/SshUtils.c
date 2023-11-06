@@ -409,15 +409,15 @@ int SetSshOption(const char* option, const char* value, void* log)
     size_t commandLength = 0;
     int status = 0;
 
-    if ((NULL == option) || (NULL == value) || (NULL == regex))
+    if ((NULL == option) || (NULL == value))
     {
-        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s, %s)", option, value, regex);
+        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s)", option, value);
         return EINVAL;
     }
     else if (false == FileExists(g_sshServerConfiguration))
     {
-        OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s' via '%s'", 
-            g_sshServerConfiguration, option, value, regex);
+        OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s'", 
+            g_sshServerConfiguration, option, value);
         return ENOENT;
     }
 
