@@ -42,8 +42,8 @@ void RemovePrefixUpTo(char* target, char marker)
 
     if (equalSign)
     {
-        targetLength = strlen(equalSign + 1);
-        memcpy(target, equalSign + 1, targetLength);
+        targetLength = strlen(equalSign);
+        memcpy(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
 }
