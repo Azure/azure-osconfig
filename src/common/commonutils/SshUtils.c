@@ -540,7 +540,6 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
     const char* etcAzSec = "/etc/azsec/";
     const char* bannerFile = "/etc/azsec/banner.txt";
     const char* escapedPath = "\\/etc\\/azsec\\/banner.txt";
-
     int status = 0;
 
     if (NULL == bannerText)
