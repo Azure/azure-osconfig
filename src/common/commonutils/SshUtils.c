@@ -53,9 +53,8 @@ static char* GetSshServerState(const char* name, void* log)
 
 static int IsSshServerActive(void* log)
 {
-    char* sshdState = NULL;
     int result = 0;
-    
+   
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
@@ -64,11 +63,7 @@ static int IsSshServerActive(void* log)
     else if (false == IsDaemonActive(g_sshServerService, log))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
-        if (NULL != (sshdState = GetSshServerState(NULL, log)))
-        {
-            result = ENOENT;
-        }
-        FREE_MEMORY(sshdState);
+        result = EnableAndStartDaemon(g_sshServerService, log) ? 0 : ENOENT;
     }
 
     return result;
