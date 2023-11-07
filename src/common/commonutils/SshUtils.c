@@ -534,3 +534,34 @@ int SetDefaultAllowedUsersForSsh(void* log)
 
     return status;
 }
+
+int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
+{
+    const char* etcAzSec = "/etc/azsec/";
+    const char* bannerFile = "/etc/azsec/banner.txt";
+    const char* escapedBannerFile = "\\/etc\\/azsec\\/banner.txt";
+
+    int status = 0;
+
+    if (NULL == bannerText)
+    {
+        OsConfigLogError(log, "SetSshWarningBanner: invalid argument");
+        return EINVAL;
+    }
+    
+    if (false == DirectoryExists(etcAzSec))
+    {
+        mkdir(etcAzSec, desiredBannerFileAccess);
+    }
+
+    if (false == SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), SecurityBaselineGetLog()))
+    {
+        status = SetSshOption("Banner", escapedPath, log);
+    }
+    else
+    {
+        status = ENOENT;
+    }
+
+    return status;
+}

@@ -2545,24 +2545,12 @@ static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 
 static int RemediateEnsureSshWarningBannerIsEnabled(void)
 {
-    const char* etcAzSec = "/etc/azsec/";
-    const char* bannerFile = "/etc/azsec/banner.txt";
-    const char* escapedBannerFile = "\\/etc\\/azsec\\/banner.txt";
     const char* bannerText = "\n"
-        "############################################################\n\n"
+        "#######################################################################\n\n"
         "Authorized access only!\n\n"
         "If you are not authorized to access or use this system, disconnect now!\n\n"
-        "############################################################\n";
-
-    struct stat st = {0};
-    if (-1 == stat(etcAzSec, &st))
-    {
-        mkdir(etcAzSec, 0600);
-    }
-
-    SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), SecurityBaselineGetLog());
-
-    return SetSshOption("Banner", escapedBannerFile, SecurityBaselineGetLog());
+        "#######################################################################\n";
+    return SetSshWarningBanner(600, bannerText, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
