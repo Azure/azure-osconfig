@@ -52,8 +52,7 @@ static char* GetSshServerState(const char* name, void* log)
 
 static int IsSshServerActive(void* log)
 {
-    const char* command = "sshd -T";
-    char commandResult = NULL;
+    char* sshdState = NULL;
     int result = 0;
     
     if (false == FileExists(g_sshServerConfiguration))
@@ -66,17 +65,9 @@ static int IsSshServerActive(void* log)
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
         
-        if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
-        {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", g_sshdDashTCommand, status);
-        }
-        else
-        {
-            OsConfigLogError(log, "GetSshServerState: '%s' returned '%s'", g_sshdDashTCommand, textResult);
-            result = ENOENT;
-        }
-
-        FREE_MEMORY(textResult);
+        sshdState = GetSshServerState(NULL, log);
+        OsConfigLogError(log, "GetSshServerState: '%s' returned '%s'", g_sshdDashTCommand, textResult);
+        FREE_MEMORY(sshdState);
     }
     
     return result;
