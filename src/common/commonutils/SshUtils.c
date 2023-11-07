@@ -539,7 +539,7 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
 {
     const char* etcAzSec = "/etc/azsec/";
     const char* bannerFile = "/etc/azsec/banner.txt";
-    const char* escapedBannerFile = "\\/etc\\/azsec\\/banner.txt";
+    const char* escapedPath = "\\/etc\\/azsec\\/banner.txt";
 
     int status = 0;
 
@@ -554,7 +554,7 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
         mkdir(etcAzSec, desiredBannerFileAccess);
     }
 
-    if (false == SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), SecurityBaselineGetLog()))
+    if (false == SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), log))
     {
         status = SetSshOption("Banner", escapedPath, log);
     }
