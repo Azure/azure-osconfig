@@ -4381,10 +4381,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
             status = EINVAL;
         }
     }
+    
+    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %s, %d) returning %d", clientSession, componentName, objectName, , payloadString, payloadSizeBytes, status);
 
     FREE_MEMORY(payloadString);
-
-    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, payloadSizeBytes, payload, payloadSizeBytes, status);
 
     return status;
 }
