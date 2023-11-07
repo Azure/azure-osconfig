@@ -66,7 +66,7 @@ static int IsSshServerActive(void* log)
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
         
         sshdState = GetSshServerState(NULL, log);
-        OsConfigLogError(log, "GetSshServerState: '%s' returned '%s'", g_sshdDashTCommand, textResult);
+        OsConfigLogError(log, "GetSshServerState: '%s' returned '%s'", g_sshdDashTCommand, sshdState);
         FREE_MEMORY(sshdState);
     }
     
