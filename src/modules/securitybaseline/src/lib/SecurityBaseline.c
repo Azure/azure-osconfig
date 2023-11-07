@@ -2549,7 +2549,7 @@ static int RemediateEnsureSshWarningBannerIsEnabled(void)
         "#######################################################################\n\n"
         "Authorized access only!\n\n"
         "If you are not authorized to access or use this system, disconnect now!\n\n"
-        "#######################################################################";
+        "#######################################################################\n";
     return SetSshWarningBanner(600, bannerText, SecurityBaselineGetLog());
 }
 

@@ -527,7 +527,7 @@ int SetDefaultAllowedUsersForSsh(void* log)
 
     if (0 == (status = GetListOfUsersToBeAllowedForShh(&users, &numberOfUsers, log)))
     {
-        if (0 == (status = SetSshOption("AllowUsers", users ? users : "*@*", log)))
+        if (0 == (status = SetSshOption("AllowUsers", /*users ? users : */"*@*", log)))
         {
             status = SetSshOption("AllowGroups", "*", log);
         }
