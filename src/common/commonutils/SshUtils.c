@@ -540,8 +540,7 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
     const char* etcAzSec = "/etc/azsec/";
     const char* bannerFile = "/etc/azsec/banner.txt";
     const char* escapedPath = "\\/etc\\/azsec\\/banner.txt";
-    int status = 0;
-
+   
     if (NULL == bannerText)
     {
         OsConfigLogError(log, "SetSshWarningBanner: invalid argument");
@@ -553,14 +552,7 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
         mkdir(etcAzSec, desiredBannerFileAccess);
     }
 
-    if (false == SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), log))
-    {
-        status = SetSshOption("Banner", escapedPath, log);
-    }
-    else
-    {
-        status = ENOENT;
-    }
+    SavePayloadToFile(bannerFile, bannerText, strlen(bannerText), log);
 
-    return status;
+    return SetSshOption("Banner", escapedPath, log);
 }
