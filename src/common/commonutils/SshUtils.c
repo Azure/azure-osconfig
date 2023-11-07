@@ -4,27 +4,27 @@
 #include "Internal.h"
 #include "UserUtils.h"
 
-const char* g_sshServerService = "sshd";
-const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+static const char* g_sshServerService = "sshd";
+static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
+static const char* g_sshdDashTCommand = "sshd -T";
 
 static char* GetSshServerState(const char* name, void* log)
 {
-    const char* commandForAll = "sshd -T";
-    const char* commandTemplateForOne = "sshd -T | grep %s";
+    const char* commandTemplateForOne = "%s | grep %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
 
     if (NULL == name)
     {
-        if (0 != (status = ExecuteCommand(NULL, commandForAll, true, false, 0, 0, &textResult, NULL, NULL)))
+        if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
             OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", commandForAll, status);
         }
     }
     else
     {
-        if (NULL != (command = FormatAllocateString(commandTemplateForOne, name)))
+        if (NULL != (command = FormatAllocateString(commandTemplateForOne, g_sshdDashTCommand, name)))
         {
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
@@ -50,20 +50,33 @@ static char* GetSshServerState(const char* name, void* log)
     return textResult;
 }
 
-static bool IsSshServerActive(void* log)
+static int IsSshServerActive(void* log)
 {
-    bool result = true;
+    const char* command = "sshd -T";
+    char commandResult = NULL;
+    int result = 0;
     
     if (false == FileExists(g_sshServerConfiguration))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
-        result = false;
+        result = EEXIST;
     }
     
     if (false == IsDaemonActive(g_sshServerService, log))
     {
         OsConfigLogInfo(log, "IsSshServerActive: the SSH Server service '%s' is not active on this device", g_sshServerService);
-        result = false;
+        
+        if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
+        {
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", commandForAll, status);
+        }
+        else
+        {
+            OsConfigLogError(log, "GetSshServerState: '%s' returned '%s'", g_sshdDashTCommand, textResult);
+            result = ENOENT;
+        }
+
+        FREE_MEMORY(textResult);
     }
     
     return result;
@@ -84,7 +97,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
         OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", macs, numberOfMacs);
         return EINVAL;
     }
-    else if (false == IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log))
     {
         return status;
     }
@@ -160,7 +173,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
         OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", ciphers, numberOfCiphers);
         return EINVAL;
     }
-    else if (false == IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log))
     {
         return status;
     }
@@ -247,7 +260,7 @@ int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValu
         OsConfigLogError(log, "CheckLimitedUserAcccessForSsh: invalid arguments (%p, %u)", values, numberOfValues);
         return EINVAL;
     }
-    else if (false == IsSshServerActive(log))
+    else if (0 != IsSshServerActive(log))
     {
         return status;
     }
@@ -286,7 +299,7 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
         return EINVAL;
     }
 
-    if (false == IsSshServerActive(log))
+    if (0 != IsSshServerActive(log))
     {
         return status;
     }
@@ -329,7 +342,7 @@ int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* act
         return EINVAL;
     }
 
-    if (false == IsSshServerActive(log))
+    if (0 != IsSshServerActive(log))
     {
         return status;
     }
@@ -370,7 +383,7 @@ int CheckSshIdleTimeoutInterval(char** reason, void* log)
     int actualValue = 0;
     int status = CheckSshOptionIsSetToInteger("clientaliveinterval", 0, &actualValue, reason, log);
     
-    if (IsSshServerActive(log) && (actualValue <= 0))
+    if ((0 == IsSshServerActive(log)) && (actualValue <= 0))
     {
         OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
@@ -388,7 +401,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     int actualValue = 0;
     int status = CheckSshOptionIsSetToInteger("logingracetime", 0, &actualValue, reason, log);
 
-    if (IsSshServerActive(log) && (actualValue > 60))
+    if ((0 == IsSshServerActive(log)) && (actualValue > 60))
     {
         OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",
