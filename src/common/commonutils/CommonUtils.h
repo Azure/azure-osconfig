@@ -106,7 +106,6 @@ int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* act
 int CheckSshIdleTimeoutInterval(char** reason, void* log);
 int CheckSshLoginGraceTime(char** reason, void* log);
 int SetSshOption(const char* option, const char* value, void* log);
-int SetDefaultAllowedUsersForSsh(void* log);
 int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);

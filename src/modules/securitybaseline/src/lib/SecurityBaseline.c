@@ -2498,13 +2498,16 @@ static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 
 static int RemediateEnsureSshAccessIsLimited(void)
 {
-    return SetDefaultAllowedUsersForSsh(SecurityBaselineGetLog());
-    
     // TODO: split this check in 4:
     // EnsureAllowedUsersAreConfigured
     // EnsureDeniedUsersAreConfigured
     // EnsureAllowedGroupsAreConfigured
     // EnsureDeniedGroupsAreConfigured
+
+    return ((0 == SetSshOption("AllowUsers", "*@*", SecurityBaselineGetLog())) &&
+        (0 == SetSshOption("AllowGroups", "*", SecurityBaselineGetLog())) &&
+        (0 == SetSshOption("DenyUsers", "root", SecurityBaselineGetLog())) &&
+        (0 == SetSshOption("DenyGroups", "root", SecurityBaselineGetLog()))) ? 0 : ENOENT;
 }
 
 static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
