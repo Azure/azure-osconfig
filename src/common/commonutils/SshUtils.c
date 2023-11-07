@@ -19,7 +19,7 @@ static char* GetSshServerState(const char* name, void* log)
     {
         if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", commandForAll, status);
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", g_sshdDashTCommand, status);
         }
     }
     else
@@ -68,7 +68,7 @@ static int IsSshServerActive(void* log)
         
         if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", commandForAll, status);
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", g_sshdDashTCommand, status);
         }
         else
         {
