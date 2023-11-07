@@ -19,7 +19,7 @@ static char* GetSshServerState(const char* name, void* log)
     {
         if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d and '%'", g_sshdDashTCommand, status, textResult);
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d and '%s'", g_sshdDashTCommand, status, textResult);
             FREE_MEMORY(textResult);
         }
     }
@@ -29,7 +29,7 @@ static char* GetSshServerState(const char* name, void* log)
         {
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
-                OsConfigLogError(log, "GetSshServerState: '%s' failed with %d", command, status);
+                OsConfigLogError(log, "GetSshServerState: '%s' failed with %d and '%s'", command, status, textResult);
                 FREE_MEMORY(textResult);
             }
             else if ((NULL != textResult) && (NULL != strstr(textResult, name)))
