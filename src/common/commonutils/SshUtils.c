@@ -68,7 +68,8 @@ static int IsSshServerInstalled(void* log)
     }
     else if (false == IsDaemonActive(g_sshServerService, log))
     {
-        result = EnableAndStartDaemon(g_sshServerService, log) ? 0 : ENOENT;
+        OsConfigLogInfo(log, "IsSshServerInstalled: the OpenSSH Server service '%s' is not active on this device", g_sshServerService);
+        result = EEXIST;
     }
 
     return result;
