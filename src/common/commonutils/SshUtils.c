@@ -426,7 +426,7 @@ int SetSshOption(const char* option, const char* value, void* log)
     {
         OsConfigLogError(log, "SetSshOption: the SSH Server configuration file '%s' is not present on this device, no place to set '%s' to '%s'", 
             g_sshServerConfiguration, option, value);
-        return ENOENT;
+        return status;
     }
 
     commandLength = strlen(commandTemplate) + (2 * strlen(option)) + (2 * strlen(value)) + strlen(g_sshServerConfiguration) + 1;
