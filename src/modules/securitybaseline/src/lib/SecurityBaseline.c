@@ -156,11 +156,11 @@ static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsure
 static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
 static const char* g_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
 static const char* g_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
-static const char* g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
 static const char* g_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
 static const char* g_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
 static const char* g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
-static const char* g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
+static const char* g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject = "auditEnsureSshClientIntervalCountMaxIsConfigured";
+static const char* g_auditEnsureSshClientAliveIntervalIsConfiguredObject = "auditEnsureSshClientAliveIntervalIsConfigured";
 static const char* g_auditEnsureSshLoginGraceTimeIsSetObject = "auditEnsureSshLoginGraceTimeIsSet";
 static const char* g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
 static const char* g_auditEnsureSshWarningBannerIsEnabledObject = "auditEnsureSshWarningBannerIsEnabled";
@@ -323,11 +323,11 @@ static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remedia
 static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
 static const char* g_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
 static const char* g_remediateEnsureSshAccessIsLimitedObject = "remediateEnsureSshAccessIsLimited";
-static const char* g_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject = "remediateEnsureSshRhostsRsaAuthenticationIsDisabled";
 static const char* g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
 static const char* g_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
 static const char* g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
-static const char* g_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject = "remediateEnsureSshIdleTimeoutIntervalIsConfigured";
+static const char* g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
+static const char* g_remediateEnsureSshClientAliveIntervalIsConfiguredObject = "remediateEnsureSshClientAliveIntervalIsConfigured";
 static const char* g_remediateEnsureSshLoginGraceTimeIsSetObject = "remediateEnsureSshLoginGraceTimeIsSet";
 static const char* g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
 static const char* g_remediateEnsureSshWarningBannerIsEnabledObject = "remediateEnsureSshWarningBannerIsEnabled";
@@ -1426,13 +1426,6 @@ static char* AuditEnsureSshAccessIsLimited(void)
     return CheckLimitedUserAcccessForSsh(values, ARRAY_SIZE(values), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
-static char* AuditEnsureSshRhostsRsaAuthenticationIsDisabled(void)
-{
-    /*char* reason = NULL;
-    return CheckSshOptionIsSetToString("rhostsrsaauthentication", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);*/
-    return DuplicateString(g_pass); //TODO: remove this check, OpenSSH does not support this option
-}
-
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
     char* reason = NULL;
@@ -1451,11 +1444,16 @@ static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
     return CheckSshOptionIsSetToString("permitemptypasswords", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
-static char* AuditEnsureSshIdleTimeoutIntervalIsConfigured(void)
+static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
 {
     char* reason = NULL;
-    return ((0 != CheckSshIdleTimeoutInterval(&reason, SecurityBaselineGetLog())) || 
-        (0 != CheckSshOptionIsSetToInteger("clientalivecountmax", 0, NULL, &reason, SecurityBaselineGetLog()))) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSetToInteger("clientalivecountmax", 0, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+}
+
+static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
+{
+    char* reason = NULL;
+    return CheckSshIdleTimeoutInterval(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
@@ -1764,11 +1762,11 @@ AuditCall g_auditChecks[] =
     &AuditEnsureSshLogLevelIsSet,
     &AuditEnsureSshMaxAuthTriesIsSet,
     &AuditEnsureSshAccessIsLimited,
-    &AuditEnsureSshRhostsRsaAuthenticationIsDisabled,
     &AuditEnsureSshHostbasedAuthenticationIsDisabled,
     &AuditEnsureSshPermitRootLoginIsDisabled,
     &AuditEnsureSshPermitEmptyPasswordsIsDisabled,
-    &AuditEnsureSshIdleTimeoutIntervalIsConfigured,
+    &AuditEnsureSshClientIntervalCountMaxIsConfigured,
+    &AuditEnsureSshClientAliveIntervalIsConfigured,
     &AuditEnsureSshLoginGraceTimeIsSet,
     &AuditEnsureOnlyApprovedMacAlgorithmsAreUsed,
     &AuditEnsureSshWarningBannerIsEnabled,
@@ -2499,20 +2497,15 @@ static int RemediateEnsureSshMaxAuthTriesIsSet(void)
 static int RemediateEnsureSshAccessIsLimited(void)
 {
     // TODO: split this check in 4:
-    // EnsureAllowedUsersAreConfigured
-    // EnsureDeniedUsersAreConfigured
-    // EnsureAllowedGroupsAreConfigured
-    // EnsureDeniedGroupsAreConfigured
+    // EnsureAllowUsersIsConfigured
+    // EnsureDenyUsersIsConfigured
+    // EnsureAllowGroupsIsConfigured
+    // EnsureDenyGroupsIsConfigured
 
     return ((0 == SetSshOption("AllowUsers", "*@*", SecurityBaselineGetLog())) &&
         (0 == SetSshOption("AllowGroups", "*", SecurityBaselineGetLog())) &&
         (0 == SetSshOption("DenyUsers", "root", SecurityBaselineGetLog())) &&
         (0 == SetSshOption("DenyGroups", "root", SecurityBaselineGetLog()))) ? 0 : ENOENT;
-}
-
-static int RemediateEnsureSshRhostsRsaAuthenticationIsDisabled(void)
-{
-    return SetSshOption("#RhostsRSAAuthentication", "no", SecurityBaselineGetLog()); //TODO: REMOVE, RhostsRSAAuthentication is deprecated in OpenSSH
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
@@ -2530,10 +2523,14 @@ static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(void)
     return SetSshOption("PermitEmptyPasswords", "no", SecurityBaselineGetLog());
 }
 
-static int RemediateEnsureSshIdleTimeoutIntervalIsConfigured(void)
+static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(void)
 {
-    return ((0 == SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("ClientAliveInterval", "3600", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+    return SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureSshClientAliveIntervalIsConfigured(void)
+{
+    return SetSshOption("ClientAliveInterval", "3600", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(void)
@@ -2564,7 +2561,7 @@ static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(void)
 static int RemediateEnsureAppropriateCiphersForSsh(void)
 {
     return ((0 == SetSshOption("Ciphers", "aes128-ctr,aes192-ctr,aes256-ctr", SecurityBaselineGetLog())) &&
-        RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT; //TODO: move this restart somewhere else
+        RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT; //TODO: move this restart to the NRP as part of the fallback layer
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(void)
@@ -2821,11 +2818,11 @@ RemediationCall g_remediateChecks[] =
     &RemediateEnsureSshLogLevelIsSet,
     &RemediateEnsureSshMaxAuthTriesIsSet,
     &RemediateEnsureSshAccessIsLimited,
-    &RemediateEnsureSshRhostsRsaAuthenticationIsDisabled,
     &RemediateEnsureSshHostbasedAuthenticationIsDisabled,
     &RemediateEnsureSshPermitRootLoginIsDisabled,
     &RemediateEnsureSshPermitEmptyPasswordsIsDisabled,
-    &RemediateEnsureSshIdleTimeoutIntervalIsConfigured,
+    &RemediateEnsureSshClientIntervalCountMaxIsConfigured,
+    &RemediateEnsureSshClientAliveIntervalIsConfigured,
     &RemediateEnsureSshLoginGraceTimeIsSet,
     &RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed,
     &RemediateEnsureSshWarningBannerIsEnabled,
@@ -3498,10 +3495,6 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureSshAccessIsLimited();
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshRhostsRsaAuthenticationIsDisabledObject))
-        {
-            result = AuditEnsureSshRhostsRsaAuthenticationIsDisabled();
-        }
         else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
             result = AuditEnsureSshHostbasedAuthenticationIsDisabled();
@@ -3514,9 +3507,13 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureSshPermitEmptyPasswordsIsDisabled();
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshIdleTimeoutIntervalIsConfiguredObject))
+        else if (0 == strcmp(objectName, g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject))
         {
-            result = AuditEnsureSshIdleTimeoutIntervalIsConfigured();
+            result = AuditEnsureSshClientIntervalCountMaxIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureSshClientAliveIntervalIsConfiguredObject))
+        {
+            result = AuditEnsureSshClientAliveIntervalIsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshLoginGraceTimeIsSetObject))
         {
@@ -4258,10 +4255,6 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSshAccessIsLimited();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsureSshRhostsRsaAuthenticationIsDisabledObject))
-        {
-            status = RemediateEnsureSshRhostsRsaAuthenticationIsDisabled();
-        }
         else if (0 == strcmp(objectName, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
             status = RemediateEnsureSshHostbasedAuthenticationIsDisabled();
@@ -4274,9 +4267,9 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSshPermitEmptyPasswordsIsDisabled();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsureSshIdleTimeoutIntervalIsConfiguredObject))
+        else if (0 == strcmp(objectName, g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject))
         {
-            status = RemediateEnsureSshIdleTimeoutIntervalIsConfigured();
+            status = RemediateEnsureSshClientIntervalCountMaxIsConfigured();
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshLoginGraceTimeIsSetObject))
         {

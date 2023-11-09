@@ -811,12 +811,6 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
-          "type": "mimObject",
-          "desired": false,
-          "schema": "string"
-        },
-        {
           "name": "auditEnsureSshHostbasedAuthenticationIsDisabled",
           "type": "mimObject",
           "desired": false,
@@ -835,7 +829,13 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+          "name": "auditEnsureSshClientIntervalCountMaxIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureSshClientAliveIntervalIsConfigured",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -1801,12 +1801,6 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshRhostsRsaAuthenticationIsDisabled",
-          "type": "mimObject",
-          "desired": true,
-          "schema": "string"
-        },
-        {
           "name": "remediateEnsureSshHostbasedAuthenticationIsDisabled",
           "type": "mimObject",
           "desired": true,
@@ -1825,7 +1819,13 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshIdleTimeoutIntervalIsConfigured",
+          "name": "remediateEnsureSshClientIntervalCountMaxIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureSshClientAliveIntervalIsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

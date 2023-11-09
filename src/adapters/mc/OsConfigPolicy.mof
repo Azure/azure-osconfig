@@ -1636,19 +1636,7 @@ instance of OsConfigResource as $OsConfigResource116ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource117ref
-{
-    ResourceID = "Ensure the emulation of the rsh command through the ssh server is disabled";
-    PayloadKey = "EnsureSshRhostsRsaAuthenticationIsDisabled";
-    ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshRhostsRsaAuthenticationIsDisabled";
-    DesiredObjectName = "remediateEnsureSshRhostsRsaAuthenticationIsDisabled";
-    DesiredObjectValue = "PASS";
-    ModuleName = "GuestConfiguration";
-    ModuleVersion = "1.0.0";
-    ConfigurationName = "OsConfigSecurityBaseline";
-    SourceInfo = "::4::5::OsConfigResource";
-};
+//HERE
 
 instance of OsConfigResource as $OsConfigResource118ref
 {
@@ -1694,11 +1682,27 @@ instance of OsConfigResource as $OsConfigResource120ref
 
 instance of OsConfigResource as $OsConfigResource121ref
 {
-    ResourceID = "Ensure the SSH Idle Timeout Interval is configured";
-    PayloadKey = "EnsureSshIdleTimeoutIntervalIsConfigured";
+    ResourceID = "Ensure the SSH Client Interval Count Maximum is configured";
+    PayloadKey = "EnsureSshClientIntervalCountMaxIsConfigured";
     ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshIdleTimeoutIntervalIsConfigured";
-    DesiredObjectName = "remediateEnsureSshIdleTimeoutIntervalIsConfigured";
+    ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
+    DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
+    DesiredObjectValue = "PASS";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "OsConfigSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+//HERE
+
+instance of OsConfigResource as $OsConfigResource122ref
+{
+    ResourceID = "Ensure the SSH Client Alive interval Interval is configured";
+    PayloadKey = "EnsureSshClientAliveIntervalIsConfigured";
+    ComponentName = "SecurityBaseline";
+    ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
+    DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";

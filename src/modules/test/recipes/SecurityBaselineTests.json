@@ -706,11 +706,6 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureSshRhostsRsaAuthenticationIsDisabled"
-  },
-  {
-    "ObjectType": "Desired",
-    "ComponentName": "SecurityBaseline",
     "ObjectName": "remediateEnsureSshHostbasedAuthenticationIsDisabled"
   },
   {
@@ -726,7 +721,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureSshIdleTimeoutIntervalIsConfigured"
+    "ObjectName": "remediateEnsureSshClientIntervalCountMaxIsConfigured"
   },
   {
     "ObjectType": "Desired",
@@ -1659,12 +1654,6 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
-    "Payload": "PASS"
-  },
-  {
-    "ObjectType": "Reported",
-    "ComponentName": "SecurityBaseline",
     "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled",
     "Payload": "PASS"
   },
@@ -1683,7 +1672,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+    "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured",
     "Payload": "PASS"
   },
   {

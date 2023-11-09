@@ -702,10 +702,6 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled"
-    },
-    {
-      "ComponentName": "SecurityBaseline",
       "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled"
     },
     {
@@ -718,7 +714,11 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured"
+      "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshClientAliveIntervalIsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",
