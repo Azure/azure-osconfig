@@ -4271,6 +4271,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSshClientIntervalCountMaxIsConfigured();
         }
+        else if (0 == strcmp(objectName, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject))
+        {
+            status = RemediateEnsureSshClientAliveIntervalIsConfigured();
+        }
         else if (0 == strcmp(objectName, g_remediateEnsureSshLoginGraceTimeIsSetObject))
         {
             status = RemediateEnsureSshLoginGraceTimeIsSet();
