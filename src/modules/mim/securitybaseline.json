@@ -805,7 +805,25 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshAccessIsLimited",
+          "name": "auditEnsureAllowUsersIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDenyUsersIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAllowGroupsIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDenyGroupsConfigured",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -1795,7 +1813,25 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshAccessIsLimited",
+          "name": "remediateEnsureAllowUsersIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureDenyUsersIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureAllowGroupsIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureDenyGroupsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

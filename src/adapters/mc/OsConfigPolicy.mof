@@ -1624,11 +1624,55 @@ instance of OsConfigResource as $OsConfigResource115ref
 
 instance of OsConfigResource as $OsConfigResource116ref
 {
-    ResourceID = "Ensure SSH access is limited";
-    PayloadKey = "EnsureSshAccessIsLimited";
+    ResourceID = "Ensure allowed users for SSH access are configured";
+    PayloadKey = "EnsureAllowUsersIsConfigured";
     ComponentName = "SecurityBaseline";
-    ReportedObjectName = "auditEnsureSshAccessIsLimited";
-    DesiredObjectName = "remediateEnsureSshAccessIsLimited";
+    ReportedObjectName = "auditEnsureAllowUsersIsConfigured";
+    DesiredObjectName = "remediateEnsureAllowUsersIsConfigured";
+    DesiredObjectValue = "PASS";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "OsConfigSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+//HERE
+
+instance of OsConfigResource as $OsConfigResource116ref
+{
+    ResourceID = "Ensure denied users for SSH are configured";
+    PayloadKey = "EnsureDenyUsersIsConfigured";
+    ComponentName = "SecurityBaseline";
+    ReportedObjectName = "auditEnsureDenyUsersIsConfigured";
+    DesiredObjectName = "remediateEnsureDenyUsersIsConfigured";
+    DesiredObjectValue = "PASS";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "OsConfigSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource116ref
+{
+    ResourceID = "Ensure allowed groups for SSH are configured";
+    PayloadKey = "EnsureAllowGroupsIsConfigured";
+    ComponentName = "SecurityBaseline";
+    ReportedObjectName = "auditEnsureAllowGroupsIsConfigured";
+    DesiredObjectName = "remediateEnsureAllowGroupsIsConfigured";
+    DesiredObjectValue = "PASS";
+    ModuleName = "GuestConfiguration";
+    ModuleVersion = "1.0.0";
+    ConfigurationName = "OsConfigSecurityBaseline";
+    SourceInfo = "::4::5::OsConfigResource";
+};
+
+instance of OsConfigResource as $OsConfigResource116ref
+{
+    ResourceID = "Ensure denied groups for SSH are configured";
+    PayloadKey = "EnsureDenyGroupsConfigured";
+    ComponentName = "SecurityBaseline";
+    ReportedObjectName = "auditEnsureDenyGroupsConfigured";
+    DesiredObjectName = "remediateEnsureDenyGroupsConfigured";
     DesiredObjectValue = "PASS";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";

@@ -155,7 +155,10 @@ static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshB
 static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
 static const char* g_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
-static const char* g_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
+static const char* g_auditEnsureAllowUsersIsConfiguredObject = "auditEnsureAllowUsersIsConfigured";
+static const char* g_auditEnsureDenyUsersIsConfiguredObject = "auditEnsureDenyUsersIsConfigured";
+static const char* g_auditEnsureAllowGroupsIsConfiguredObject = "auditEnsureAllowGroupsIsConfigured";
+static const char* g_auditEnsureDenyGroupsConfiguredObject = "auditEnsureDenyGroupsConfigured";
 static const char* g_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
 static const char* g_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
 static const char* g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -322,7 +325,10 @@ static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEn
 static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
 static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
 static const char* g_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
-static const char* g_remediateEnsureSshAccessIsLimitedObject = "remediateEnsureSshAccessIsLimited";
+static const char* g_remediateEnsureAllowUsersIsConfiguredObject = "remediateEnsureAllowUsersIsConfigured";
+static const char* g_remediateEnsureDenyUsersIsConfiguredObject = "remediateEnsureDenyUsersIsConfigured";
+static const char* g_remediateEnsureAllowGroupsIsConfiguredObject = "remediateEnsureAllowGroupsIsConfigured";
+static const char* g_remediateEnsureDenyGroupsConfiguredObject = "remediateEnsureDenyGroupsConfigured";
 static const char* g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
 static const char* g_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
 static const char* g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -1404,13 +1410,13 @@ static char* AuditEnsureSshBestPracticeProtocol(void)
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("ignorerhosts", "yes", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("ignorerhosts", "yes", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("loglevel", "INFO", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("loglevel", "INFO", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
@@ -1419,29 +1425,46 @@ static char* AuditEnsureSshMaxAuthTriesIsSet(void)
     return CheckSshOptionIsSetToInteger("maxauthtries", 6, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
-static char* AuditEnsureSshAccessIsLimited(void)
+static char* AuditEnsureAllowUsersIsConfigured(void)
 {
-    const char* values[] = {"allowusers", "allowgroups", "denyusers", "denygroups"};
     char* reason = NULL;
-    return CheckLimitedUserAcccessForSsh(values, ARRAY_SIZE(values), &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("allowusers", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+}
+
+static char* AuditEnsureDenyUsersIsConfigured(void)
+{
+    char* reason = NULL;
+    return CheckSshOptionIsSet("denyusers", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+}
+
+static char* AuditEnsureAllowGroupsIsConfigured(void)
+{
+    char* reason = NULL;
+    return CheckSshOptionIsSet("allowgroups", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+}
+
+static char* AuditEnsureDenyGroupsConfigured(void)
+{
+    char* reason = NULL;
+    return CheckSshOptionIsSet("denygroups", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("hostbasedauthentication", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("hostbasedauthentication", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("permitrootlogin", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("permitrootlogin", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("permitemptypasswords", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("permitemptypasswords", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
@@ -1472,7 +1495,7 @@ static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToString("banner", "/etc/azsec/banner.txt", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("banner", "/etc/azsec/banner.txt", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
@@ -1761,7 +1784,10 @@ AuditCall g_auditChecks[] =
     &AuditEnsureSshBestPracticeIgnoreRhosts,
     &AuditEnsureSshLogLevelIsSet,
     &AuditEnsureSshMaxAuthTriesIsSet,
-    &AuditEnsureSshAccessIsLimited,
+    &AuditEnsureAllowUsersIsConfigured,
+    &AuditEnsureDenyUsersIsConfigured,
+    &AuditEnsureAllowGroupsIsConfigured,
+    &AuditEnsureDenyGroupsConfigured,
     &AuditEnsureSshHostbasedAuthenticationIsDisabled,
     &AuditEnsureSshPermitRootLoginIsDisabled,
     &AuditEnsureSshPermitEmptyPasswordsIsDisabled,
@@ -2494,18 +2520,24 @@ static int RemediateEnsureSshMaxAuthTriesIsSet(void)
     return SetSshOption("MaxAuthTries", "6", SecurityBaselineGetLog());
 }
 
-static int RemediateEnsureSshAccessIsLimited(void)
+static int RemediateEnsureAllowUsersIsConfigured(void)
 {
-    // TODO: split this check in 4:
-    // EnsureAllowUsersIsConfigured
-    // EnsureDenyUsersIsConfigured
-    // EnsureAllowGroupsIsConfigured
-    // EnsureDenyGroupsIsConfigured
+    return SetSshOption("AllowUsers", "*@*", SecurityBaselineGetLog());
+}
 
-    return ((0 == SetSshOption("AllowUsers", "*@*", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("AllowGroups", "*", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("DenyUsers", "root", SecurityBaselineGetLog())) &&
-        (0 == SetSshOption("DenyGroups", "root", SecurityBaselineGetLog()))) ? 0 : ENOENT;
+static int RemediateEnsureDenyUsersIsConfigured(void)
+{
+    return SetSshOption("DenyUsers", "root", SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureAllowGroupsIsConfigured(void)
+{
+    return SetSshOption("AllowGroups", "*", SecurityBaselineGetLog());
+}
+
+static int RemediateEnsureDenyGroupsConfigured(void)
+{
+    SetSshOption("DenyGroups", "root", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
@@ -2817,7 +2849,10 @@ RemediationCall g_remediateChecks[] =
     &RemediateEnsureSshBestPracticeIgnoreRhosts,
     &RemediateEnsureSshLogLevelIsSet,
     &RemediateEnsureSshMaxAuthTriesIsSet,
-    &RemediateEnsureSshAccessIsLimited,
+    &RemediateEnsureAllowUsersIsConfigured,
+    &RemediateEnsureDenyUsersIsConfigured,
+    &RemediateEnsureAllowGroupsIsConfigured,
+    &RemediateEnsureDenyGroupsConfigured,
     &RemediateEnsureSshHostbasedAuthenticationIsDisabled,
     &RemediateEnsureSshPermitRootLoginIsDisabled,
     &RemediateEnsureSshPermitEmptyPasswordsIsDisabled,
@@ -3491,9 +3526,21 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureSshMaxAuthTriesIsSet();
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshAccessIsLimitedObject))
+        else if (0 == strcmp(objectName, g_auditEnsureAllowUsersIsConfiguredObject))
         {
-            result = AuditEnsureSshAccessIsLimited();
+            result = AuditEnsureAllowUsersIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDenyUsersIsConfiguredObject))
+        {
+            result = AuditEnsureDenyUsersIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureAllowGroupsIsConfiguredObject))
+        {
+            result = AuditEnsureAllowGroupsIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_auditEnsureDenyGroupsConfiguredObject))
+        {
+            result = AuditEnsureDenyGroupsConfigured();
         }
         else if (0 == strcmp(objectName, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
         {
@@ -4251,9 +4298,21 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         {
             status = RemediateEnsureSshMaxAuthTriesIsSet();
         }
-        else if (0 == strcmp(objectName, g_remediateEnsureSshAccessIsLimitedObject))
+        else if (0 == strcmp(objectName, g_remediateEnsureAllowUsersIsConfiguredObject))
         {
-            status = RemediateEnsureSshAccessIsLimited();
+            status = RemediateEnsureAllowUsersIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDenyUsersIsConfiguredObject))
+        {
+            status = RemediateEnsureDenyUsersIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureAllowGroupsIsConfiguredObject))
+        {
+            status = RemediateEnsureAllowGroupsIsConfigured();
+        }
+        else if (0 == strcmp(objectName, g_remediateEnsureDenyGroupsConfiguredObject))
+        {
+            status = RemediateEnsureDenyGroupsConfigured();
         }
         else if (0 == strcmp(objectName, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
         {

@@ -159,7 +159,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
         const char* m_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
         const char* m_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
-        const char* m_auditEnsureSshAccessIsLimitedObject = "auditEnsureSshAccessIsLimited";
+        const char* m_auditEnsureAllowUsersIsConfiguredObject = "auditEnsureAllowUsersIsConfigured";
+        const char* m_auditEnsureDenyUsersIsConfiguredObject = "auditEnsureDenyUsersIsConfigured";
+        const char* m_auditEnsureAllowGroupsIsConfiguredObject = "auditEnsureAllowGroupsIsConfigured";
+        const char* m_auditEnsureDenyGroupsConfiguredObject = "auditEnsureDenyGroupsConfigured";
         const char* m_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
         const char* m_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
         const char* m_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -325,7 +328,10 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
         const char* m_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
         const char* m_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
-        const char* m_remediateEnsureSshAccessIsLimitedObject = "remediateEnsureSshAccessIsLimited";
+        const char* m_remediateEnsureAllowUsersIsConfiguredObject = "remediateEnsureAllowUsersIsConfigured";
+        const char* m_remediateEnsureDenyUsersIsConfiguredObject = "remediateEnsureDenyUsersIsConfigured";
+        const char* m_remediateEnsureAllowGroupsIsConfiguredObject = "remediateEnsureAllowGroupsIsConfigured";
+        const char* m_remediateEnsureDenyGroupsConfiguredObject = "remediateEnsureDenyGroupsConfigured";
         const char* m_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
         const char* m_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
         const char* m_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
@@ -557,7 +563,10 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureSshBestPracticeIgnoreRhostsObject,
         m_remediateEnsureSshLogLevelIsSetObject,
         m_remediateEnsureSshMaxAuthTriesIsSetObject,
-        m_remediateEnsureSshAccessIsLimitedObject,
+        m_remediateEnsureAllowUsersIsConfiguredObject,
+        m_remediateEnsureDenyUsersIsConfiguredObject,
+        m_remediateEnsureAllowGroupsIsConfiguredObject,
+        m_remediateEnsureDenyGroupsConfiguredObject,
         m_remediateEnsureSshHostbasedAuthenticationIsDisabledObject,
         m_remediateEnsureSshPermitRootLoginIsDisabledObject,
         m_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject,
@@ -779,7 +788,10 @@ TEST_F(SecurityBaselineTest, MmiGet)
         m_auditEnsureSshBestPracticeIgnoreRhostsObject,
         m_auditEnsureSshLogLevelIsSetObject,
         m_auditEnsureSshMaxAuthTriesIsSetObject,
-        m_auditEnsureSshAccessIsLimitedObject,
+        m_auditEnsureAllowUsersIsConfiguredObject,
+        m_auditEnsureDenyUsersIsConfiguredObject,
+        m_auditEnsureAllowGroupsIsConfiguredObject,
+        m_auditEnsureDenyGroupsConfiguredObject,
         m_auditEnsureSshHostbasedAuthenticationIsDisabledObject,
         m_auditEnsureSshPermitRootLoginIsDisabledObject,
         m_auditEnsureSshPermitEmptyPasswordsIsDisabledObject,

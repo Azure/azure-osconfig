@@ -235,54 +235,14 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     return status;
 }
 
-int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log)
-{
-    char* value = NULL;
-    size_t i = 0;
-    bool oneFound = false;
-    int status = 0;
-
-    if ((NULL == values) || (0 == numberOfValues))
-    {
-        OsConfigLogError(log, "CheckLimitedUserAcccessForSsh: invalid arguments (%p, %u)", values, numberOfValues);
-        return EINVAL;
-    }
-    else if (0 != IsSshServerActive(log))
-    {
-        return status;
-    }
-
-    for (i = 0; i < numberOfValues; i++)
-    {
-        if (NULL != (value = GetSshServerState(values[i], log)))
-        {
-            OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: '%s' found in SSH Server response set to '%s'", values[i], value);
-            FREE_MEMORY(value);
-            oneFound = true;
-            break;
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckLimitedUserAcccessForSsh: '%s' not found in SSH Server response", values[i]);
-            OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", values[i]);
-        }
-    }
-
-    status = oneFound ? 0 : ENOENT;
-
-    OsConfigLogInfo(log, "CheckLimitedUserAcccessForSsh: %s (%d)", status ? "failed" : "passed", status);
-
-    return status;
-}
-
-int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, char** reason, void* log)
+int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** reason, void* log)
 {
     char* value = NULL;
     int status = 0;
 
-    if ((NULL == option) || (NULL == expectedValue))
+    if (NULL == option)
     {
-        OsConfigLogError(log, "CheckSshOptionIsSetToString: invalid arguments (%s, %s)", option, expectedValue);
+        OsConfigLogError(log, "CheckSshOptionIsSet: invalid argument", option);
         return EINVAL;
     }
 
@@ -293,11 +253,11 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
 
     if (NULL != (value = GetSshServerState(option, log)))
     {
-        OsConfigLogInfo(log, "CheckSshOptionIsSetToString: '%s' found in SSH Server response set to '%s'", option, value);
+        OsConfigLogInfo(log, "CheckSshOptionIsSet: '%s' found in SSH Server response set to '%s'", option, value);
 
-        if (0 != strcmp(value, expectedValue))
+        if ((NULL != expectedValue) && (0 != strcmp(value, expectedValue)))
         {
-            OsConfigLogError(log, "CheckSshOptionIsSetToString: '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
+            OsConfigLogError(log, "CheckSshOptionIsSet: '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
             OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
                 "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
             status = ENOENT;
@@ -307,12 +267,12 @@ int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, c
     }
     else
     {
-        OsConfigLogError(log, "CheckSshOptionIsSetToString: '%s' not found in SSH Server response", option);
+        OsConfigLogError(log, "CheckSshOptionIsSet: '%s' not found in SSH Server response", option);
         OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", option);
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckSshOptionIsSetToString: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
 }
