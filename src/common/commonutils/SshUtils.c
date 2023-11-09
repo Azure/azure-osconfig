@@ -242,7 +242,7 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** re
 
     if (NULL == option)
     {
-        OsConfigLogError(log, "CheckSshOptionIsSet: invalid argument", option);
+        OsConfigLogError(log, "CheckSshOptionIsSet: invalid argument");
         return EINVAL;
     }
 
