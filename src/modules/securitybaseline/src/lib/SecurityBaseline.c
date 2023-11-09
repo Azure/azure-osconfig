@@ -2537,7 +2537,7 @@ static int RemediateEnsureAllowGroupsIsConfigured(void)
 
 static int RemediateEnsureDenyGroupsConfigured(void)
 {
-    SetSshOption("DenyGroups", "root", SecurityBaselineGetLog());
+    return SetSshOption("DenyGroups", "root", SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(void)
