@@ -235,7 +235,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     return status;
 }
 
-int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** reason, void* log)
+int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log)
 {
     char* value = NULL;
     int status = 0;
@@ -263,6 +263,11 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** re
             status = ENOENT;
         }
 
+        if (NULL != actualValue)
+        {
+            *actualValue = DuplicateString(value);
+        }
+
         FREE_MEMORY(value);
     }
     else
@@ -277,50 +282,19 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** re
     return status;
 }
 
-int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log)
+static int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log)
 {
-    char* value = NULL;
-    int integerValue = 0;
-    int status = 0;
+    char* actualValueString = NULL;
+    char* expectedValueString = FormatAllocateString("%d", expectedValue);
+    int status = CheckSshOptionIsSet(option, expectedValueString, &actualValueString, reason, log);
 
-    if (NULL == option)
+    if ((0 == status) && (NULL != actualValue))
     {
-        OsConfigLogError(log, "CheckSshOptionIsSetToInteger: invalid argument");
-        return EINVAL;
+        *actualValue = (NULL != actualValueString) ? atoi(actualValueString) : -1;
     }
 
-    if (0 != IsSshServerActive(log))
-    {
-        return status;
-    }
-
-    if (NULL != (value = GetSshServerState(option, log)))
-    {
-        integerValue = atoi(value);
-        OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: '%s' found in SSH Server response set to '%s' (%d)", option, value, integerValue);
-
-        if (actualValue)
-        {
-            *actualValue = integerValue;
-        }
-        else if (integerValue != expectedValue)
-        {
-            OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' is not set to %d in SSH Server response (but to %d)", option, expectedValue, integerValue);
-            OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response (but to '%s')",
-                "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, integerValue);
-            status = ENOENT;
-        }
-
-        FREE_MEMORY(value);
-    }
-    else
-    {
-        OsConfigLogError(log, "CheckSshOptionIsSetToInteger: '%s' not found in SSH Server response", option);
-        OsConfigCaptureReason(reason, "'%s' not found in SSH Server response", "%s, also '%s' is not found in SSH server response", option);
-        status = ENOENT;
-    }
-
-    OsConfigLogInfo(log, "CheckSshOptionIsSetToInteger: %s (%d)", status ? "failed" : "passed", status);
+    FREE_MEMORY(actualValueString);
+    FREE_MEMORY(expectedValueString);
 
     return status;
 }

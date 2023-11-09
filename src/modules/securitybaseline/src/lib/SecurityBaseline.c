@@ -1410,67 +1410,67 @@ static char* AuditEnsureSshBestPracticeProtocol(void)
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("ignorerhosts", "yes", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("ignorerhosts", "yes", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("loglevel", "INFO", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("loglevel", "INFO", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToInteger("maxauthtries", 6, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("maxauthtries", "6", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAllowUsersIsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("allowusers", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("allowusers", NULL, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDenyUsersIsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("denyusers", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("denyusers", NULL, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAllowGroupsIsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("allowgroups", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("allowgroups", NULL, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureDenyGroupsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("denygroups", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("denygroups", NULL, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("hostbasedauthentication", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("hostbasedauthentication", "no", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("permitrootlogin", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("permitrootlogin", "no", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("permitemptypasswords", "no", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("permitemptypasswords", "no", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSetToInteger("clientalivecountmax", 0, NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("clientalivecountmax", "0", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
@@ -1495,7 +1495,7 @@ static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("banner", "/etc/azsec/banner.txt", &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("banner", "/etc/azsec/banner.txt", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
