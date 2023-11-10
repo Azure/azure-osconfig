@@ -2014,7 +2014,7 @@ instance of OsConfigResource as $OsConfigResource143ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource141ref
+instance of OsConfigResource as $OsConfigResource144ref
 {
     ResourceID = "Ensure the bind9 package is not installed";
     PayloadKey = "EnsureBind9NotInstalled";
@@ -2028,7 +2028,7 @@ instance of OsConfigResource as $OsConfigResource141ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource144ref
+instance of OsConfigResource as $OsConfigResource145ref
 {
     ResourceID = "Ensure the dovecot-core package is not installed";
     PayloadKey = "EnsureDovecotCoreNotInstalled";
@@ -2042,7 +2042,7 @@ instance of OsConfigResource as $OsConfigResource144ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource145ref
+instance of OsConfigResource as $OsConfigResource146ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/passwd";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcPasswd";
@@ -2056,7 +2056,7 @@ instance of OsConfigResource as $OsConfigResource145ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource146ref
+instance of OsConfigResource as $OsConfigResource147ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/shadow";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcShadow";
@@ -2070,7 +2070,7 @@ instance of OsConfigResource as $OsConfigResource146ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource147ref
+instance of OsConfigResource as $OsConfigResource148ref
 {
     ResourceID = "Ensure no legacy + entries exist in /etc/group";
     PayloadKey = "EnsureNoLegacyPlusEntriesInEtcGroup";
@@ -2084,7 +2084,7 @@ instance of OsConfigResource as $OsConfigResource147ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource148ref
+instance of OsConfigResource as $OsConfigResource149ref
 {
     ResourceID = "Ensure password expiration is configured";
     PayloadKey = "EnsurePasswordExpiration";
@@ -2098,7 +2098,7 @@ instance of OsConfigResource as $OsConfigResource148ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource149ref
+instance of OsConfigResource as $OsConfigResource150ref
 {
     ResourceID = "Ensure password expiration warning days is configured";
     PayloadKey = "EnsurePasswordExpirationWarning";
@@ -2112,7 +2112,7 @@ instance of OsConfigResource as $OsConfigResource149ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource150ref
+instance of OsConfigResource as $OsConfigResource151ref
 {
     ResourceID = "Ensure password reuse is limited";
     PayloadKey = "EnsurePasswordReuseIsLimited";
@@ -2126,7 +2126,7 @@ instance of OsConfigResource as $OsConfigResource150ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource151ref
+instance of OsConfigResource as $OsConfigResource152ref
 {
     ResourceID = "Ensure the password hashing algorithm is SHA-512";
     PayloadKey = "EnsurePasswordHashingAlgorithm";
@@ -2140,7 +2140,7 @@ instance of OsConfigResource as $OsConfigResource151ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource152ref
+instance of OsConfigResource as $OsConfigResource153ref
 {
     ResourceID = "Ensure the minimum days between password changes is configured";
     PayloadKey = "EnsureMinDaysBetweenPasswordChanges";
@@ -2154,7 +2154,7 @@ instance of OsConfigResource as $OsConfigResource152ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource153ref
+instance of OsConfigResource as $OsConfigResource154ref
 {
     ResourceID = "Ensure the maximum days between password changes is configured";
     PayloadKey = "EnsureMaxDaysBetweenPasswordChanges";
@@ -2168,7 +2168,7 @@ instance of OsConfigResource as $OsConfigResource153ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource154ref
+instance of OsConfigResource as $OsConfigResource155ref
 {
     ResourceID = "Ensure the inactive password lock period is configured";
     PayloadKey = "EnsureInactivePasswordLockPeriod";
@@ -2182,7 +2182,7 @@ instance of OsConfigResource as $OsConfigResource154ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource155ref
+instance of OsConfigResource as $OsConfigResource156ref
 {
     ResourceID = "Ensure all system accounts are non-login";
     PayloadKey = "EnsureSystemAccountsAreNonLogin";
@@ -2196,7 +2196,7 @@ instance of OsConfigResource as $OsConfigResource155ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource156ref
+instance of OsConfigResource as $OsConfigResource157ref
 {
     ResourceID = "Ensure default group for the root account is GID 0";
     PayloadKey = "EnsureDefaultRootAccountGroupIsGidZero";
@@ -2210,7 +2210,7 @@ instance of OsConfigResource as $OsConfigResource156ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource157ref
+instance of OsConfigResource as $OsConfigResource158ref
 {
     ResourceID = "Ensure root is the only UID 0 account";
     PayloadKey = "EnsureRootIsOnlyUidZeroAccount";
@@ -2224,7 +2224,7 @@ instance of OsConfigResource as $OsConfigResource157ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource158ref
+instance of OsConfigResource as $OsConfigResource159ref
 {
     ResourceID = "Ensure unnecessary accounts are removed";
     PayloadKey = "EnsureUnnecessaryAccountsAreRemoved";
@@ -2238,7 +2238,7 @@ instance of OsConfigResource as $OsConfigResource158ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource159ref
+instance of OsConfigResource as $OsConfigResource160ref
 {
     ResourceID = "Ensure the auditd package is installed";
     PayloadKey = "EnsureAuditdInstalled";
@@ -2252,7 +2252,7 @@ instance of OsConfigResource as $OsConfigResource159ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource160ref
+instance of OsConfigResource as $OsConfigResource161ref
 {
     ResourceID = "Ensure the auditd service is running";
     PayloadKey = "EnsureAuditdServiceIsRunning";
@@ -2266,7 +2266,7 @@ instance of OsConfigResource as $OsConfigResource160ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource161ref
+instance of OsConfigResource as $OsConfigResource162ref
 {
     ResourceID = "Ensure the SNMP Server is not enabled";
     PayloadKey = "EnsureSnmpServerIsDisabled";
@@ -2280,7 +2280,7 @@ instance of OsConfigResource as $OsConfigResource161ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource162ref
+instance of OsConfigResource as $OsConfigResource163ref
 {
     ResourceID = "Ensure the rsync service is not enabled";
     PayloadKey = "EnsureRsynServiceIsDisabled";
@@ -2294,7 +2294,7 @@ instance of OsConfigResource as $OsConfigResource162ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource163ref
+instance of OsConfigResource as $OsConfigResource164ref
 {
     ResourceID = "Ensure the NIS server is not enabled";
     PayloadKey = "EnsureNisServerIsDisabled";
@@ -2308,7 +2308,7 @@ instance of OsConfigResource as $OsConfigResource163ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource164ref
+instance of OsConfigResource as $OsConfigResource165ref
 {
     ResourceID = "Ensure the rsh client is not installed";
     PayloadKey = "EnsureRshClientNotInstalled";
@@ -2322,7 +2322,7 @@ instance of OsConfigResource as $OsConfigResource164ref
     SourceInfo = "::4::5::OsConfigResource";
 };
 
-instance of OsConfigResource as $OsConfigResource165ref
+instance of OsConfigResource as $OsConfigResource166ref
 {
     ResourceID = "Ensure SMB V1 with Samba is disabled";
     PayloadKey = "EnsureSmbWithSambaIsDisabled";
