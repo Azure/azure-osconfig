@@ -55,12 +55,12 @@ void RemovePrefixUpToString(char* target, const char* marker)
         return;
     }
 
-    int targetLength = (int)strlen(target);
+    int targetLength = 0;
     char* equalSign = strstr(target, marker);
 
     if (equalSign)
     {
-        targetLength = strlen(equalSign);
+        targetLength = (int)strlen(equalSign);
         memcpy(target, equalSign, targetLength);
         target[targetLength] = 0;
     }
