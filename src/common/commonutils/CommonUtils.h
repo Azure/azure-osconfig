@@ -101,7 +101,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
 int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log);
-int CheckSshIdleTimeoutInterval(char** reason, void* log);
+int CheckSshClientAliveInterval(char** reason, void* log);
 int CheckSshLoginGraceTime(char** reason, void* log);
 int SetSshOption(const char* option, const char* value, void* log);
 int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);

@@ -1476,7 +1476,7 @@ static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
 static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
 {
     char* reason = NULL;
-    return CheckSshIdleTimeoutInterval(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshClientAliveInterval(&reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)

@@ -282,10 +282,10 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
     return status;
 }
 
-static int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log)
+static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, int* actualValue, char** reason, void* log)
 {
     char* actualValueString = NULL;
-    char* expectedValueString = FormatAllocateString("%d", expectedValue);
+    char* expectedValueString = expectedValue ? FormatAllocateString("%d", *expectedValue) : NULL;
     int status = CheckSshOptionIsSet(option, expectedValueString, &actualValueString, reason, log);
 
     if ((0 == status) && (NULL != actualValue))
@@ -299,20 +299,20 @@ static int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, i
     return status;
 }
 
-int CheckSshIdleTimeoutInterval(char** reason, void* log)
+int CheckSshClientAliveInterval(char** reason, void* log)
 {
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("clientaliveinterval", 0, &actualValue, reason, log);
+    int status = CheckSshOptionIsSetToInteger("clientaliveinterval", NULL, &actualValue, reason, log);
     
     if ((0 == IsSshServerActive(log)) && (actualValue <= 0))
     {
-        OsConfigLogError(log, "CheckSshIdleTimeoutInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+        OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
             "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckSshIdleTimeoutInterval: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", status ? "failed" : "passed", status);
 
     return status;
 }
@@ -320,7 +320,7 @@ int CheckSshIdleTimeoutInterval(char** reason, void* log)
 int CheckSshLoginGraceTime(char** reason, void* log)
 {
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("logingracetime", 0, &actualValue, reason, log);
+    int status = CheckSshOptionIsSetToInteger("logingracetime", NULL, &actualValue, reason, log);
 
     if ((0 == IsSshServerActive(log)) && (actualValue > 60))
     {
