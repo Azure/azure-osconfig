@@ -698,11 +698,19 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureSshAccessIsLimited"
+      "ObjectName": "auditEnsureAllowUsersIsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled"
+      "ObjectName": "auditEnsureDenyUsersIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureAllowGroupsIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureDenyGroupsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",
@@ -718,7 +726,11 @@
     },
     {
       "ComponentName": "SecurityBaseline",
-      "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured"
+      "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured"
+    },
+    {
+      "ComponentName": "SecurityBaseline",
+      "ObjectName": "auditEnsureSshClientAliveIntervalIsConfigured"
     },
     {
       "ComponentName": "SecurityBaseline",

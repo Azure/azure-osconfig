@@ -701,12 +701,22 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureSshAccessIsLimited"
+    "ObjectName": "remediateEnsureAllowUsersIsConfigured"
   },
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureSshRhostsRsaAuthenticationIsDisabled"
+    "ObjectName": "remediateEnsureDenyUsersIsConfigured"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureAllowGroupsIsConfigured"
+  },
+  {
+    "ObjectType": "Desired",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "remediateEnsureDenyGroupsConfigured"
   },
   {
     "ObjectType": "Desired",
@@ -726,7 +736,7 @@
   {
     "ObjectType": "Desired",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "remediateEnsureSshIdleTimeoutIntervalIsConfigured"
+    "ObjectName": "remediateEnsureSshClientIntervalCountMaxIsConfigured"
   },
   {
     "ObjectType": "Desired",
@@ -1653,13 +1663,25 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshAccessIsLimited",
+    "ObjectName": "auditEnsureAllowUsersIsConfigured",
     "Payload": "PASS"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
+    "ObjectName": "auditEnsureDenyUsersIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureAllowGroupsIsConfigured",
+    "Payload": "PASS"
+  },
+  {
+    "ObjectType": "Reported",
+    "ComponentName": "SecurityBaseline",
+    "ObjectName": "auditEnsureDenyGroupsConfigured",
     "Payload": "PASS"
   },
   {
@@ -1683,7 +1705,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+    "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured",
     "Payload": "PASS"
   },
   {

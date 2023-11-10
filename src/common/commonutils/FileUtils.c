@@ -54,14 +54,13 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 {
     FILE* file = NULL;
     int i = 0;
-    bool result = false;
+    bool result = true;
 
     if (fileName && payload && (0 < payloadSizeBytes))
     {
         if (NULL != (file = fopen(fileName, "w")))
         {
-            result = LockFile(file, log);
-            if (result)
+            if (true == (result = LockFile(file, log)))
             {
                 for (i = 0; i < payloadSizeBytes; i++)
                 {
@@ -74,12 +73,23 @@ bool SavePayloadToFile(const char* fileName, const char* payload, const int payl
 
                 UnlockFile(file, log);
             }
+            else
+            {
+                OsConfigLogError(log, "SavePayloadToFile: cannot lock '%s' for exclusive access while writing (%d)", fileName, errno);
+            }
+            
             fclose(file);
         }
         else
         {
+            result = false;
             OsConfigLogError(log, "SavePayloadToFile: cannot open for write '%s' (%d)", fileName, errno);
         }
+    }
+    else
+    {
+        result = false;
+        OsConfigLogError(log, "SavePayloadToFile: invalid arguments (%s, '%s', %d)", fileName, payload, payloadSizeBytes);
     }
 
     return result;
@@ -148,17 +158,11 @@ static bool LockUnlockFile(FILE* file, bool lock, void* log)
 
     if (-1 == (fileDescriptor = fileno(file)))
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
-        }
+        OsConfigLogError(log, "LockFile: fileno failed with %d", errno);
     }
     else if (0 != (lockResult = flock(fileDescriptor, lockOperation)))
     {
-        if (IsFullLoggingEnabled())
-        {
-            OsConfigLogError(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
-        }
+        OsConfigLogError(log, "LockFile: flock(%d) failed with %d", lockOperation, errno);
     }
 
     return (0 == lockResult) ? true : false;
@@ -960,7 +964,7 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
                 else
                 {
                     foundUncommented = true;
-                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld uncommented with '%c'", 
+                    OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' found in '%s' at position %ld and it's not commented out with '%c'", 
                         text, fileName, (long)(found - contents), commentMark);
                 }
 
@@ -968,11 +972,6 @@ int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, cons
             }
 
             status = foundUncommented ? EEXIST : 0;
-
-            if (EEXIST == status)
-            {
-                OsConfigLogInfo(log, "CheckLineNotFoundOrCommentedOut: '%s' not found uncommented with '%c' in '%s'", text, commentMark, fileName);
-            }
 
             FREE_MEMORY(contents);
         }

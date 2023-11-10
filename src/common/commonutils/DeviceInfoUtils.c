@@ -48,6 +48,24 @@ void RemovePrefixUpTo(char* target, char marker)
     }
 }
 
+void RemovePrefixUpToString(char* target, const char* marker)
+{
+    if ((NULL == target) || (NULL == marker))
+    {
+        return;
+    }
+
+    int targetLength = 0;
+    char* equalSign = strstr(target, marker);
+
+    if (equalSign)
+    {
+        targetLength = (int)strlen(equalSign);
+        memcpy(target, equalSign, targetLength);
+        target[targetLength] = 0;
+    }
+}
+
 void RemoveTrailingBlanks(char* target)
 {
     if (NULL == target)

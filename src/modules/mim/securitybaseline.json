@@ -805,13 +805,25 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshAccessIsLimited",
+          "name": "auditEnsureAllowUsersIsConfigured",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshRhostsRsaAuthenticationIsDisabled",
+          "name": "auditEnsureDenyUsersIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureAllowGroupsIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureDenyGroupsConfigured",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -835,7 +847,13 @@
           "schema": "string"
         },
         {
-          "name": "auditEnsureSshIdleTimeoutIntervalIsConfigured",
+          "name": "auditEnsureSshClientIntervalCountMaxIsConfigured",
+          "type": "mimObject",
+          "desired": false,
+          "schema": "string"
+        },
+        {
+          "name": "auditEnsureSshClientAliveIntervalIsConfigured",
           "type": "mimObject",
           "desired": false,
           "schema": "string"
@@ -1795,13 +1813,25 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshAccessIsLimited",
+          "name": "remediateEnsureAllowUsersIsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshRhostsRsaAuthenticationIsDisabled",
+          "name": "remediateEnsureDenyUsersIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureAllowGroupsIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureDenyGroupsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"
@@ -1825,7 +1855,13 @@
           "schema": "string"
         },
         {
-          "name": "remediateEnsureSshIdleTimeoutIntervalIsConfigured",
+          "name": "remediateEnsureSshClientIntervalCountMaxIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "remediateEnsureSshClientAliveIntervalIsConfigured",
           "type": "mimObject",
           "desired": true,
           "schema": "string"

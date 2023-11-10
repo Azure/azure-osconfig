@@ -100,11 +100,11 @@ int FindTextInCommandOutput(const char* command, const char* text, char** reason
 int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
 int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
 int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
-int CheckLimitedUserAcccessForSsh(const char** values, unsigned int numberOfValues, char** reason, void* log);
-int CheckSshOptionIsSetToString(const char* option, const char* expectedValue, char** reason, void* log);
-int CheckSshOptionIsSetToInteger(const char* option, int expectedValue, int* actualValue, char** reason, void* log);
-int CheckSshIdleTimeoutInterval(char** reason, void* log);
+int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log);
+int CheckSshClientAliveInterval(char** reason, void* log);
 int CheckSshLoginGraceTime(char** reason, void* log);
+int SetSshOption(const char* option, const char* value, void* log);
+int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);
 
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
@@ -146,6 +146,7 @@ long GetPassWarnAge(void* log);
 
 void RemovePrefixBlanks(char* target);
 void RemovePrefixUpTo(char* target, char marker);
+void RemovePrefixUpToString(char* target, const char* marker);
 void RemoveTrailingBlanks(char* target);
 void TruncateAtFirst(char* target, char marker);
 
