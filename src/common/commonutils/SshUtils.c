@@ -337,7 +337,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
 
 int SetSshOption(const char* option, const char* value, void* log)
 {
-    // SED command template that replaces any instances of '*option' with 'option value' or adds 'option value' when 'option' is missing from sshd_config
+    // Replaces any instances of 'option foo' with 'option value' and adds 'option value' when 'option' is missing
     const char* commandTemplate = "sed '/^%s /{h;s/ .*/ %s/};${x;/^$/{s//%s %s/;H};x}' %s";
 
     char* command = NULL;
