@@ -1500,8 +1500,8 @@ static char* AuditEnsureSshWarningBannerIsEnabled(void)
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "PermitUserEnvironment yes", SecurityBaselineGetLog()) ? 
-        FormatAllocateString("'PermitUserEnvironment yes' is not found uncommented with '#' in %s", g_etcSshSshdConfig) : DuplicateString(g_pass);
+    char* reason = NULL;
+    return CheckSshOptionIsSet("permituserenvironment", "yes", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
