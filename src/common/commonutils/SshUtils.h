@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#ifndef COMMONUTILS_H
-#define COMMONUTILS_H
+#ifndef SSHUTILS_H
+#define SSHUTILS_H
 
 // Include CommonUtils.h in the target source before including this header
 
@@ -23,4 +23,4 @@ int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* banner
 }
 #endif
 
-#endif // COMMONUTILS_H
+#endif // SSHUTILS_H
