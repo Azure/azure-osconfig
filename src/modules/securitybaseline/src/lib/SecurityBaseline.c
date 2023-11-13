@@ -1502,7 +1502,7 @@ static char* AuditEnsureSshWarningBannerIsEnabled(void)
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("permituserenvironment", "yes", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    return CheckSshOptionIsSet("permituserenvironment", "no", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
 }
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
