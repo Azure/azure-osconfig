@@ -20,6 +20,7 @@ static const char* g_failValue = "FAIL";
 static char* g_classKey = NULL;
 static char* g_componentName = NULL;
 static char* g_reportedObjectName = NULL;
+static char* g_expectedObjectValue = NULL;
 static char* g_desiredObjectName = NULL;
 static char* g_desiredObjectValue = NULL;
 
@@ -75,6 +76,7 @@ void __attribute__((constructor)) Initialize()
     g_classKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
     g_reportedObjectName = DuplicateString(g_defaultValue);
+    g_expectedObjectValue = DuplicateString(g_defaultValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
 
@@ -96,6 +98,7 @@ void __attribute__((destructor)) Destroy()
     FREE_MEMORY(g_classKey);
     FREE_MEMORY(g_componentName);
     FREE_MEMORY(g_reportedObjectName);
+    FREE_MEMORY(g_expectedObjectValue);
     FREE_MEMORY(g_desiredObjectName);
     FREE_MEMORY(g_desiredObjectValue);
     FREE_MEMORY(g_reportedObjectValue);
@@ -425,18 +428,18 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         goto Exit;
     }
 
-    // Read the desired MIM object value from the input resource values, we'll use this to determine compliance
-    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    // Read the expected MIM object value from the input resource values, we'll use this to determine compliance
+    if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
-        FREE_MEMORY(g_desiredObjectValue);
+        FREE_MEMORY(g_expectedObjectValue);
 
-        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
-            g_desiredObjectValue = DuplicateString(g_failValue);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
+            g_expectedObjectValue = DuplicateString(g_failValue);
         }
 
-        isCompliant = (0 == strcmp(g_desiredObjectValue, g_reportedObjectValue)) ? MI_TRUE : MI_FALSE;
+        isCompliant = (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue))) ? MI_TRUE : MI_FALSE;
     }
     else
     {
@@ -723,9 +726,9 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     }
 
     // Determine compliance
-    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
-        if (0 == strcmp(in->InputResource.value->DesiredObjectValue.value, g_reportedObjectValue))
+        if (0 == strncmp(in->InputResource.value->ExpectedObjectValue.value, g_reportedObjectValue, strlen(in->InputResource.value->ExpectedObjectValue.value)))
         {
             isCompliant = MI_TRUE;
             LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);
@@ -739,7 +742,7 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     else
     {
         isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no DesiredString value, assuming compliance", g_classKey);
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedString value, assuming compliance", g_classKey);
     }
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_TestTargetResource_Construct(&test_result_object, context)))

@@ -13,7 +13,7 @@ class ReasonClass
     string Code;
 };
 
-[ClassVersion("1.0.0")]
+[ClassVersion("2.0.0")]
 class OsConfigResource : OMI_BaseResource
 {
   [key] 
@@ -27,6 +27,9 @@ class OsConfigResource : OMI_BaseResource
 
   [read, Description ("Reported MIM Setting value (for audit)")]
   string ReportedObjectValue;
+
+  [write, Description ("Expected MIM Setting value (for audit)")]
+  string ExpectedObjectValue;
 
   [write, Description ("Desired MIM Object (for remediation)")]
   string DesiredObjectName;
