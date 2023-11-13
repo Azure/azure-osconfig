@@ -97,15 +97,6 @@ int FindTextInFolder(const char* directory, const char* text, void* log);
 int CheckLineNotFoundOrCommentedOut(const char* fileName, char commentMark, const char* text, void* log);
 int FindTextInCommandOutput(const char* command, const char* text, char** reason, void* log);
 
-int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log);
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
-int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
-int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log);
-int CheckSshClientAliveInterval(char** reason, void* log);
-int CheckSshLoginGraceTime(char** reason, void* log);
-int SetSshOption(const char* option, const char* value, void* log);
-int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);
-
 char* GetStringOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 

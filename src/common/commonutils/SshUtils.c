@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Internal.h"
+#include "SshUtils.h"
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
@@ -300,10 +301,11 @@ static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, 
 
 int CheckSshClientAliveInterval(char** reason, void* log)
 {
+    const char* clientAliveInterval = "clientaliveinterval";
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("clientaliveinterval", NULL, &actualValue, reason, log);
+    int status = 0; 
     
-    if ((0 == IsSshServerActive(log)) && (actualValue <= 0))
+    if ((0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) && (actualValue <= 0))
     {
         OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
@@ -318,10 +320,11 @@ int CheckSshClientAliveInterval(char** reason, void* log)
 
 int CheckSshLoginGraceTime(char** reason, void* log)
 {
+    const char* loginGraceTime = "logingracetime";
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("logingracetime", NULL, &actualValue, reason, log);
+    int status = 0; 
 
-    if ((0 == IsSshServerActive(log)) && (actualValue > 60))
+    if ((0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log))) && (actualValue > 60))
     {
         OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",

@@ -10,6 +10,7 @@
 #include <parson.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
+#include <SshUtils.h>
 #include <Logging.h>
 #include <Mmi.h>
 
