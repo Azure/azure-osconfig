@@ -1404,26 +1404,30 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 static char* AuditEnsureSshBestPracticeProtocol(void)
 {
     return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? DuplicateString(g_pass) : 
+        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? 
+        FormatAllocateString("PASS'Protocol 2' is uncommented in %s", g_etcSshSshdConfig) : 
         FormatAllocateString("'Protocol 2' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
 }
 
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("ignorerhosts", "yes", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckSshOptionIsSet("ignorerhosts", "yes", NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("loglevel", "INFO", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckSshOptionIsSet("loglevel", "INFO", NULL, &reason, SecurityBaselineGetLog()); 
+    return reason;
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
     char* reason = NULL;
-    return CheckSshOptionIsSet("maxauthtries", "6", NULL, &reason, SecurityBaselineGetLog()) ? reason : DuplicateString(g_pass);
+    CheckSshOptionIsSet("maxauthtries", "6", NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllowUsersIsConfigured(void)
