@@ -434,7 +434,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     {
         FREE_MEMORY(g_desiredObjectValue);
 
-        if (NULL == (g_DesiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
             g_DesiredObjectValue = DuplicateString(g_failValue);
