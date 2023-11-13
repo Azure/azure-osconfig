@@ -283,6 +283,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     }
                     
                     result = 0;
+
+                    if (reason)
+                    {
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("PASSAccess to '%s' matches required %d", name, desiredMode)
+                    }
                 }
             }
         }
@@ -295,6 +301,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     {
         OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
         result = 0;
+
+        if (reason)
+        {
+            FREE_MEMORY(*reason);
+            *reason = FormatAllocateString("PASS'%s' not found, nothing to check", name)
+        }
     }
 
     return result;
