@@ -287,7 +287,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     if (reason)
                     {
                         FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("PASSAccess to '%s' matches required %d", name, desiredMode)
+                        *reason = FormatAllocateString("PASSAccess to '%s' matches required %d", name, desiredMode);
                     }
                 }
             }
@@ -305,7 +305,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
         if (reason)
         {
             FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("PASS'%s' not found, nothing to check", name)
+            *reason = FormatAllocateString("PASS'%s' not found, nothing to check", name);
         }
     }
 
