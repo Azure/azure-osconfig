@@ -432,7 +432,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     // Read the desired MIM object value from the input resource values
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
-        FREE_MEMORY(g_DesiredObjectValue);
+        FREE_MEMORY(g_desiredObjectValue);
 
         if (NULL == (g_DesiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
@@ -521,7 +521,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (NULL != in->InputResource.value->ExpectedObjectValue.value))
     {
         memset(&miValue, 0, sizeof(miValue));
-        miValue.string = (MI_Char*)(g_ExpectedObjectValue);
+        miValue.string = (MI_Char*)(g_expectedObjectValue);
         if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("ExpectedObjectValue"), &miValue, MI_STRING, 0)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ExpectedObjectValue) to string value '%s' failed with miResult %d", miValue.string, miResult);
