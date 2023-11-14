@@ -28,6 +28,8 @@
 #include <Logging.h>
 #include <CommonUtils.h>
 
+#define SECURITY_AUDIT_PASS "PASS"
+
 #if ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 30))
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)

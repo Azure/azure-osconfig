@@ -287,7 +287,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     if (reason)
                     {
                         FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("PASSAccess to '%s' matches required %d", name, desiredMode);
+                        *reason = FormatAllocateString("%sAccess to '%s' matches required access (%d) and ownership (UID: %d, GID: %u)", 
+                            SECURITY_AUDIT_PASS, name, desiredMode, desiredOwnerId, desiredGroupId);
                     }
                 }
             }

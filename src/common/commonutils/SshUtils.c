@@ -141,7 +141,8 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASSThe SSH Server response contains all approved MAC algorithms: '%s'", macsValue);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (all approved MAC algorithms)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, sshMacs, macsValue);
     }
 
     FREE_MEMORY(macsValue);
@@ -237,7 +238,8 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASSThe SSH Server response contains only the approved ciphers: '%s'", ciphersValue);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (only approved ciphers)",
+            SECURITY_AUDIT_PASS, g_sshServerService, sshCiphers, ciphersValue);
     }
 
     FREE_MEMORY(ciphersValue);
@@ -283,7 +285,7 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
         if ((0 == status) && reason)
         {
             FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("PASS'%s' is set to '%s' in the SSH Server response", option, value);
+            *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s'", SECURITY_AUDIT_PASS, g_sshServerService, option, value);
         }
 
         FREE_MEMORY(value);
@@ -333,7 +335,8 @@ int CheckSshClientAliveInterval(char** reason, void* log)
     else if (reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASS'clientaliveinterval' is set to %d (greater than zero) in the SSH Server response", actualValue);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, clientAliveInterval, actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", status ? "failed" : "passed", status);
@@ -357,7 +360,8 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     else if (reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASS'logingracetime' is set to %d (60 or less) in the SSH Server response", actualValue);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is 60 or less)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", status ? "failed" : "passed", status);
