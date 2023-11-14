@@ -141,7 +141,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASSThe SSH Server response contains all approved MAC algorithms '%s'", macsValue);
+        *reason = FormatAllocateString("PASSThe SSH Server response contains all approved MAC algorithms: '%s'", macsValue);
     }
 
     FREE_MEMORY(macsValue);
@@ -237,7 +237,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASSThe SSH Server response contains only the approved ciphers '%s'", ciphersValue);
+        *reason = FormatAllocateString("PASSThe SSH Server response contains only the approved ciphers: '%s'", ciphersValue);
     }
 
     FREE_MEMORY(ciphersValue);
@@ -283,7 +283,7 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
         if ((0 == status) && reason)
         {
             FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("PASS'%s' is set to '%s' in SSH Server response", option, value);
+            *reason = FormatAllocateString("PASS'%s' is set to '%s' in the SSH Server response", option, value);
         }
 
         FREE_MEMORY(value);
@@ -333,7 +333,7 @@ int CheckSshClientAliveInterval(char** reason, void* log)
     else if (reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASS'clientaliveinterval' is set to %d (greater than zero) in SSH Server response", actualValue);
+        *reason = FormatAllocateString("PASS'clientaliveinterval' is set to %d (greater than zero) in the SSH Server response", actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", status ? "failed" : "passed", status);
@@ -357,7 +357,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
     else if (reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("PASS'logingracetime' is set to %d (that is 60 or less) in SSH Server response", actualValue);
+        *reason = FormatAllocateString("PASS'logingracetime' is set to %d (60 or less) in the SSH Server response", actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", status ? "failed" : "passed", status);
