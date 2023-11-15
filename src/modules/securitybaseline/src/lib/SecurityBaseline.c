@@ -1624,7 +1624,7 @@ static char* AuditEnsureSmbWithSambaIsDisabled(void)
     return (CheckPackageInstalled("samba", SecurityBaselineGetLog()) || 
         ((EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, '#', minProtocol, SecurityBaselineGetLog())) &&
         (EEXIST == CheckLineNotFoundOrCommentedOut(etcSambaConf, ';', minProtocol, SecurityBaselineGetLog())))) ? DuplicateString(g_pass) : 
-        FormatAllocateString("Package 'samba' is not installed or '%s' is not found in %s", minProtocol);
+        FormatAllocateString("Package 'samba' is not installed or '%s' is not found in %s", minProtocol, etcSambaConf);
 }
 
 static char* AuditEnsureUsersDotFilesArentGroupOrWorldWritable(void)
