@@ -895,8 +895,7 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsurePermissionsOnEtcSshSshdConfig",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsurePermissionsOnEtcSshSshdConfig"
   },
   {
     "ObjectType": "Reported",
@@ -1639,104 +1638,87 @@
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshBestPracticeProtocol",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshBestPracticeProtocol"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshBestPracticeIgnoreRhosts",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshBestPracticeIgnoreRhosts"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshLogLevelIsSet",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshLogLevelIsSet"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshMaxAuthTriesIsSet",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshMaxAuthTriesIsSet"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAllowUsersIsConfigured",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureAllowUsersIsConfigured"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureDenyUsersIsConfigured",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureDenyUsersIsConfigured"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAllowGroupsIsConfigured",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureAllowGroupsIsConfigured"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureDenyGroupsConfigured",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureDenyGroupsConfigured"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshHostbasedAuthenticationIsDisabled"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshPermitRootLoginIsDisabled",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshPermitRootLoginIsDisabled"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshPermitEmptyPasswordsIsDisabled",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshPermitEmptyPasswordsIsDisabled"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshClientIntervalCountMaxIsConfigured"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshLoginGraceTimeIsSet",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshLoginGraceTimeIsSet"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureOnlyApprovedMacAlgorithmsAreUsed"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureSshWarningBannerIsEnabled",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureSshWarningBannerIsEnabled"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureUsersCannotSetSshEnvironmentOptions",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureUsersCannotSetSshEnvironmentOptions"
   },
   {
     "ObjectType": "Reported",
     "ComponentName": "SecurityBaseline",
-    "ObjectName": "auditEnsureAppropriateCiphersForSsh",
-    "Payload": "PASS"
+    "ObjectName": "auditEnsureAppropriateCiphersForSsh"
   },
   {
     "ObjectType": "Reported",

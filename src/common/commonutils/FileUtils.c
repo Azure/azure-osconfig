@@ -283,6 +283,13 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                     }
                     
                     result = 0;
+
+                    if (reason)
+                    {
+                        FREE_MEMORY(*reason);
+                        *reason = FormatAllocateString("%sAccess to '%s' matches required access (%d) and ownership (UID: %d, GID: %u)", 
+                            SECURITY_AUDIT_PASS, name, desiredMode, desiredOwnerId, desiredGroupId);
+                    }
                 }
             }
         }
@@ -295,6 +302,12 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     {
         OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
         result = 0;
+
+        if (reason)
+        {
+            FREE_MEMORY(*reason);
+            *reason = FormatAllocateString("%s'%s' not found, nothing to check", SECURITY_AUDIT_PASS, name);
+        }
     }
 
     return result;
@@ -1183,7 +1196,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         }
     }
 
-    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }

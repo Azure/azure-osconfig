@@ -13,62 +13,65 @@ class ReasonClass
     string Code;
 };
 
-[ClassVersion("1.0.0")]
+[ClassVersion("2.0.0")]
 class OsConfigResource : OMI_BaseResource
 {
   [key] 
   string  PayloadKey;
 
-  [write, Description ("MIM Component (for audit and remediation)")]
+  [write, Description("MIM Component (for audit and remediation)")]
   string ComponentName;
 
-  [write, Description ("Reported MIM Object (for audit)")]
+  [write, Description("Reported MIM Object (for audit)")]
   string ReportedObjectName;
 
-  [read, Description ("Reported MIM Setting value (for audit)")]
+  [read, Description("Reported MIM Setting value (for audit)")]
   string ReportedObjectValue;
 
-  [write, Description ("Desired MIM Object (for remediation)")]
+  [write, Description("Expected MIM Setting value (for audit)")]
+  string ExpectedObjectValue;
+
+  [write, Description("Desired MIM Object (for remediation)")]
   string DesiredObjectName;
 
-  [write, Description ("Desired MIM Setting value (for remediation)")]
+  [write, Description("Desired MIM Setting value (for remediation)")]
   string DesiredObjectValue;
 
-  [read, Description ("Reported MPI result (for audit and remediation)")]
+  [read, Description("Reported MPI result (for audit and remediation)")]
   uint32 ReportedMpiResult;
 
   [read, EmbeddedInstance("ReasonClass")] 
   string Reasons[];
 
-  [static, Description ("Get resource state based on input configuration.")]
+  [static, Description("Get resource state based on input configuration.")]
   uint32 GetTargetResource(
-    [in, EmbeddedInstance ("OsConfigResource"), Description ("Desired configuration to be applied.")]
+    [in, EmbeddedInstance("OsConfigResource"), Description("Desired configuration to be applied.")]
     string InputResource,
-    [in, Description ("Flags passed to the providers. Reserved for future use.")] 
+    [in, Description("Flags passed to the providers. Reserved for future use.")] 
     uint32 Flags,
-    [out, EmbeddedInstance ("OsConfigResource"), Description ("The current configuration state.")]
+    [out, EmbeddedInstance("OsConfigResource"), Description("The current configuration state.")]
     string OutputResource
   );
     
-  [static, Description ("Test resource state based on input configuration.")]
+  [static, Description("Test resource state based on input configuration.")]
   uint32 TestTargetResource(
-    [in, EmbeddedInstance("OsConfigResource"), Description ("Desired configuration to be applied.")]
+    [in, EmbeddedInstance("OsConfigResource"), Description("Desired configuration to be applied.")]
     string InputResource,
-    [in, Description ("Flags passed to the providers. Reserved for future use.")]
+    [in, Description("Flags passed to the providers. Reserved for future use.")]
     uint32 Flags,
-    [out, Description ("True if identical. False otherwise.")]
+    [out, Description("True if identical. False otherwise.")]
     boolean Result,
-    [out, Description ("Context information that the provider can use to optimize the set. This is optional.")]
+    [out, Description("Context information that the provider can use to optimize the set. This is optional.")]
     uint64 ProviderContext
   );
 
-  [static, Description ("Set desired configuration based on input configuration.")]
+  [static, Description("Set desired configuration based on input configuration.")]
   uint32 SetTargetResource(
-    [in, EmbeddedInstance ("OsConfigResource"), Description ("Desired configuration to be applied.")]
+    [in, EmbeddedInstance("OsConfigResource"), Description("Desired configuration to be applied.")]
     string InputResource,
-    [in, Description ("Context information that the provider can use to optimize the set. This is optional.")]
+    [in, Description("Context information that the provider can use to optimize the set. This is optional.")]
     uint64 ProviderContext,
-    [in, Description ("Flags passed to the providers. Reserved for future use.")]
+    [in, Description("Flags passed to the providers. Reserved for future use.")]
     uint32 Flags
   );
 };

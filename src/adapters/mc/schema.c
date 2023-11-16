@@ -1708,6 +1708,49 @@ static MI_CONST MI_PropertyDecl OsConfigResource_ReportedObjectValue_prop =
     NULL,
 };
 
+static MI_CONST MI_Boolean OsConfigResource_ExpectedObjectValue_Write_qual_value = 1;
+
+static MI_CONST MI_Qualifier OsConfigResource_ExpectedObjectValue_Write_qual =
+{
+    MI_T("Write"),
+    MI_BOOLEAN,
+    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS,
+    &OsConfigResource_ExpectedObjectValue_Write_qual_value
+};
+
+static MI_CONST MI_Char* OsConfigResource_ExpectedObjectValue_Description_qual_value = MI_T("15");
+
+static MI_CONST MI_Qualifier OsConfigResource_ExpectedObjectValue_Description_qual =
+{
+    MI_T("Description"),
+    MI_STRING,
+    MI_FLAG_ENABLEOVERRIDE|MI_FLAG_TOSUBCLASS|MI_FLAG_TRANSLATABLE,
+    &OsConfigResource_ExpectedObjectValue_Description_qual_value
+};
+
+static MI_Qualifier MI_CONST* MI_CONST OsConfigResource_ExpectedObjectValue_quals[] =
+{
+    &OsConfigResource_ExpectedObjectValue_Write_qual,
+    &OsConfigResource_ExpectedObjectValue_Description_qual,
+};
+
+/* property OsConfigResource.ExpectedObjectValue */
+static MI_CONST MI_PropertyDecl OsConfigResource_ExpectedObjectValue_prop =
+{
+    MI_FLAG_PROPERTY, /* flags */
+    0x00656513, /* code */
+    MI_T("ExpectedObjectValue"), /* name */
+    OsConfigResource_ExpectedObjectValue_quals, /* qualifiers */
+    MI_COUNT(OsConfigResource_ExpectedObjectValue_quals), /* numQualifiers */
+    MI_STRING, /* type */
+    NULL, /* className */
+    0, /* subscript */
+    offsetof(OsConfigResource, ExpectedObjectValue), /* offset */
+    MI_T("OsConfigResource"), /* origin */
+    MI_T("OsConfigResource"), /* propagator */
+    NULL,
+};
+
 static MI_CONST MI_Boolean OsConfigResource_DesiredObjectName_Write_qual_value = 1;
 
 static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectName_Write_qual =
@@ -1718,7 +1761,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectName_Write_qual =
     &OsConfigResource_DesiredObjectName_Write_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_DesiredObjectName_Description_qual_value = MI_T("15");
+static MI_CONST MI_Char* OsConfigResource_DesiredObjectName_Description_qual_value = MI_T("16");
 
 static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectName_Description_qual =
 {
@@ -1761,7 +1804,7 @@ static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectValue_Write_qual =
     &OsConfigResource_DesiredObjectValue_Write_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_DesiredObjectValue_Description_qual_value = MI_T("16");
+static MI_CONST MI_Char* OsConfigResource_DesiredObjectValue_Description_qual_value = MI_T("17");
 
 static MI_CONST MI_Qualifier OsConfigResource_DesiredObjectValue_Description_qual =
 {
@@ -1804,7 +1847,7 @@ static MI_CONST MI_Qualifier OsConfigResource_ReportedMpiResult_Read_qual =
     &OsConfigResource_ReportedMpiResult_Read_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_ReportedMpiResult_Description_qual_value = MI_T("17");
+static MI_CONST MI_Char* OsConfigResource_ReportedMpiResult_Description_qual_value = MI_T("18");
 
 static MI_CONST MI_Qualifier OsConfigResource_ReportedMpiResult_Description_qual =
 {
@@ -1893,6 +1936,7 @@ static MI_PropertyDecl MI_CONST* MI_CONST OsConfigResource_props[] =
     &OsConfigResource_ComponentName_prop,
     &OsConfigResource_ReportedObjectName_prop,
     &OsConfigResource_ReportedObjectValue_prop,
+    &OsConfigResource_ExpectedObjectValue_prop,
     &OsConfigResource_DesiredObjectName_prop,
     &OsConfigResource_DesiredObjectValue_prop,
     &OsConfigResource_ReportedMpiResult_prop,
@@ -1909,7 +1953,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Static_qual =
     &OsConfigResource_GetTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_GetTargetResource_Description_qual_value = MI_T("18");
+static MI_CONST MI_Char* OsConfigResource_GetTargetResource_Description_qual_value = MI_T("19");
 
 static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Description_qual =
 {
@@ -1945,7 +1989,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_InputResource_Em
     &OsConfigResource_GetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_GetTargetResource_InputResource_Description_qual_value = MI_T("19");
+static MI_CONST MI_Char* OsConfigResource_GetTargetResource_InputResource_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_InputResource_Description_qual =
 {
@@ -1986,7 +2030,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Flags_In_qual =
     &OsConfigResource_GetTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_GetTargetResource_Flags_Description_qual_value = MI_T("20");
+static MI_CONST MI_Char* OsConfigResource_GetTargetResource_Flags_Description_qual_value = MI_T("21");
 
 static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_Flags_Description_qual =
 {
@@ -2036,7 +2080,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_OutputResource_E
     &OsConfigResource_GetTargetResource_OutputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_GetTargetResource_OutputResource_Description_qual_value = MI_T("21");
+static MI_CONST MI_Char* OsConfigResource_GetTargetResource_OutputResource_Description_qual_value = MI_T("22");
 
 static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_OutputResource_Description_qual =
 {
@@ -2077,7 +2121,7 @@ static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_MIReturn_Static_
     &OsConfigResource_GetTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_GetTargetResource_MIReturn_Description_qual_value = MI_T("18");
+static MI_CONST MI_Char* OsConfigResource_GetTargetResource_MIReturn_Description_qual_value = MI_T("19");
 
 static MI_CONST MI_Qualifier OsConfigResource_GetTargetResource_MIReturn_Description_qual =
 {
@@ -2143,7 +2187,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Static_qual =
     &OsConfigResource_TestTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Description_qual_value = MI_T("22");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Description_qual_value = MI_T("23");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Description_qual =
 {
@@ -2179,7 +2223,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_InputResource_E
     &OsConfigResource_TestTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_InputResource_Description_qual_value = MI_T("19");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_InputResource_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_InputResource_Description_qual =
 {
@@ -2220,7 +2264,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Flags_In_qual =
     &OsConfigResource_TestTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Flags_Description_qual_value = MI_T("20");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Flags_Description_qual_value = MI_T("21");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Flags_Description_qual =
 {
@@ -2260,7 +2304,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Result_Out_qual
     &OsConfigResource_TestTargetResource_Result_Out_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Result_Description_qual_value = MI_T("23");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_Result_Description_qual_value = MI_T("24");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_Result_Description_qual =
 {
@@ -2300,7 +2344,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_ProviderContext
     &OsConfigResource_TestTargetResource_ProviderContext_Out_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_ProviderContext_Description_qual_value = MI_T("24");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_ProviderContext_Description_qual_value = MI_T("25");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_ProviderContext_Description_qual =
 {
@@ -2340,7 +2384,7 @@ static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_MIReturn_Static
     &OsConfigResource_TestTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_TestTargetResource_MIReturn_Description_qual_value = MI_T("22");
+static MI_CONST MI_Char* OsConfigResource_TestTargetResource_MIReturn_Description_qual_value = MI_T("23");
 
 static MI_CONST MI_Qualifier OsConfigResource_TestTargetResource_MIReturn_Description_qual =
 {
@@ -2407,7 +2451,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Static_qual =
     &OsConfigResource_SetTargetResource_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_SetTargetResource_Description_qual_value = MI_T("25");
+static MI_CONST MI_Char* OsConfigResource_SetTargetResource_Description_qual_value = MI_T("26");
 
 static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Description_qual =
 {
@@ -2443,7 +2487,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_InputResource_Em
     &OsConfigResource_SetTargetResource_InputResource_EmbeddedInstance_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_SetTargetResource_InputResource_Description_qual_value = MI_T("19");
+static MI_CONST MI_Char* OsConfigResource_SetTargetResource_InputResource_Description_qual_value = MI_T("20");
 
 static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_InputResource_Description_qual =
 {
@@ -2484,7 +2528,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_ProviderContext_
     &OsConfigResource_SetTargetResource_ProviderContext_In_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_SetTargetResource_ProviderContext_Description_qual_value = MI_T("24");
+static MI_CONST MI_Char* OsConfigResource_SetTargetResource_ProviderContext_Description_qual_value = MI_T("25");
 
 static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_ProviderContext_Description_qual =
 {
@@ -2524,7 +2568,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Flags_In_qual =
     &OsConfigResource_SetTargetResource_Flags_In_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_SetTargetResource_Flags_Description_qual_value = MI_T("20");
+static MI_CONST MI_Char* OsConfigResource_SetTargetResource_Flags_Description_qual_value = MI_T("21");
 
 static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_Flags_Description_qual =
 {
@@ -2564,7 +2608,7 @@ static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_MIReturn_Static_
     &OsConfigResource_SetTargetResource_MIReturn_Static_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_SetTargetResource_MIReturn_Description_qual_value = MI_T("25");
+static MI_CONST MI_Char* OsConfigResource_SetTargetResource_MIReturn_Description_qual_value = MI_T("26");
 
 static MI_CONST MI_Qualifier OsConfigResource_SetTargetResource_MIReturn_Description_qual =
 {
@@ -2655,7 +2699,7 @@ static MI_CONST MI_Qualifier OsConfigResource_Description_qual =
     &OsConfigResource_Description_qual_value
 };
 
-static MI_CONST MI_Char* OsConfigResource_ClassVersion_qual_value = MI_T("1.0.0");
+static MI_CONST MI_Char* OsConfigResource_ClassVersion_qual_value = MI_T("2.0.0");
 
 static MI_CONST MI_Qualifier OsConfigResource_ClassVersion_qual =
 {

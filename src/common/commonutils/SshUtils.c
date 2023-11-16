@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "Internal.h"
+#include "SshUtils.h"
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
@@ -137,9 +138,16 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
         }
     }
 
+    if ((0 == status) && reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (all approved MAC algorithms)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, sshMacs, macsValue);
+    }
+
     FREE_MEMORY(macsValue);
 
-    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -227,9 +235,16 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
         }
     }
 
+    if ((0 == status) && reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (only approved ciphers)",
+            SECURITY_AUDIT_PASS, g_sshServerService, sshCiphers, ciphersValue);
+    }
+
     FREE_MEMORY(ciphersValue);
 
-    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -267,6 +282,12 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
             *actualValue = DuplicateString(value);
         }
 
+        if ((0 == status) && reason)
+        {
+            FREE_MEMORY(*reason);
+            *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s'", SECURITY_AUDIT_PASS, g_sshServerService, option, value);
+        }
+
         FREE_MEMORY(value);
     }
     else
@@ -276,7 +297,7 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -300,36 +321,50 @@ static int CheckSshOptionIsSetToInteger(const char* option, int* expectedValue, 
 
 int CheckSshClientAliveInterval(char** reason, void* log)
 {
+    const char* clientAliveInterval = "clientaliveinterval";
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("clientaliveinterval", NULL, &actualValue, reason, log);
+    int status = 0; 
     
-    if ((0 == IsSshServerActive(log)) && (actualValue <= 0))
+    if ((0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) && (actualValue <= 0))
     {
         OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
             "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
         status = ENOENT;
     }
+    else if (reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, clientAliveInterval, actualValue);
+    }
 
-    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
 
 int CheckSshLoginGraceTime(char** reason, void* log)
 {
+    const char* loginGraceTime = "logingracetime";
     int actualValue = 0;
-    int status = CheckSshOptionIsSetToInteger("logingracetime", NULL, &actualValue, reason, log);
+    int status = 0; 
 
-    if ((0 == IsSshServerActive(log)) && (actualValue > 60))
+    if ((0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log))) && (actualValue > 60))
     {
         OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
         OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",
             "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", actualValue);
         status = ENOENT;
     }
+    else if (reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is 60 or less)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, actualValue);
+    }
 
-    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -385,7 +420,7 @@ int SetSshOption(const char* option, const char* value, void* log)
     FREE_MEMORY(commandResult);
     FREE_MEMORY(command);
 
-    OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }

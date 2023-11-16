@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include <CommonUtils.h>
 #include <UserUtils.h>
+#include <SshUtils.h>
 
 using namespace std;
 
