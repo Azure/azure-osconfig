@@ -433,7 +433,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
         FREE_MEMORY(g_desiredObjectValue);
-
         if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
@@ -445,19 +444,18 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
         FREE_MEMORY(g_expectedObjectValue);
-
         if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
             g_expectedObjectValue = DuplicateString(g_passValue);
         }
 
-        isCompliant = (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue))) ? MI_TRUE : MI_FALSE;
+        isCompliant = (g_expectedObjectValue && (0 == strncmp(g_expectedObjectValue, g_reportedObjectValue, strlen(g_expectedObjectValue)))) ? MI_TRUE : MI_FALSE;
     }
     else
     {
         isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no DesiredString value, assuming compliance", g_classKey);
+        LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: no ExpectedObjectValue, assuming compliance", g_classKey);
     }
 
     // Create the output resource
@@ -584,31 +582,40 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     
     LogInfo(context, GetLog(), "[OsConfigResource.Get] %s: '%s', '%s'", g_reportedObjectName, reasonCode, reasonPhrase);
 
-    if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
+    if (reasonCode && reasonPhrase)
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance for a reasons class instance failed with %d", miResult);
-        goto Exit;
-    }
+        if (MI_RESULT_OK != (miResult = MI_Context_NewInstance(context, &ReasonClass_rtti, &reasonObject)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Context_NewInstance for a reasons class instance failed with %d", miResult);
+            goto Exit;
+        }
 
-    miValue.string = (MI_Char*)reasonCode;
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
-        goto Exit;
-    }
+        miValue.string = (MI_Char*)reasonCode;
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Code"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Code) failed with %d", miResult);
+            goto Exit;
+        }
 
-    miValue.string = (MI_Char*)reasonPhrase;
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
-    {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
-        goto Exit;
-    }
+        miValue.string = (MI_Char*)reasonPhrase;
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(reasonObject, MI_T("Phrase"), &miValue, MI_STRING, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(ReasonClass.Phrase) failed with %d", miResult);
+            goto Exit;
+        }
 
-    miValueReasonResult.instancea.size = 1;
-    miValueReasonResult.instancea.data = &reasonObject;
-    if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
+        miValueReasonResult.instancea.size = 1;
+        miValueReasonResult.instancea.data = &reasonObject;
+        if (MI_RESULT_OK != (miResult = MI_Instance_SetElement(resultResourceObject, MI_T("Reasons"), &miValueReasonResult, MI_INSTANCEA, 0)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
+            goto Exit;
+        }
+    }
+    else
     {
-        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] MI_Instance_SetElement(reason code '%s', phrase '%s') failed with %d", reasonCode, reasonPhrase, miResult);
+        LogError(context, miResult, GetLog(), "[OsConfigResource.Get] Failed reporting a reason code and phrase due to low memory");
+        miResult = MI_RESULT_FAILED;
         goto Exit;
     }
     
@@ -757,21 +764,13 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
     // Determine compliance
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
-        if (0 == strncmp(in->InputResource.value->ExpectedObjectValue.value, g_reportedObjectValue, strlen(in->InputResource.value->ExpectedObjectValue.value)))
-        {
-            isCompliant = MI_TRUE;
-            LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: compliant", g_classKey);
-        }
-        else
-        {
-            isCompliant = MI_FALSE;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] %s: incompliant", g_classKey);
-        }
+        isCompliant = (g_reportedObjectValue && (0 == strncmp(in->InputResource.value->ExpectedObjectValue.value, g_reportedObjectValue, strlen(in->InputResource.value->ExpectedObjectValue.value)))) ? MI_TRUE : MI_FALSE;
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: %s", g_classKey, isCompliant ? "compliant" : "incompliant");
     }
     else
     {
         isCompliant = MI_TRUE;
-        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedString value, assuming compliance", g_classKey);
+        LogInfo(context, GetLog(), "[OsConfigResource.Test] %s: no ExpectedObjectValue, assuming compliance", g_classKey);
     }
 
     if (MI_RESULT_OK != (miResult = OsConfigResource_TestTargetResource_Construct(&test_result_object, context)))

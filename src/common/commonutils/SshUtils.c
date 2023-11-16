@@ -147,7 +147,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
 
     FREE_MEMORY(macsValue);
 
-    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -244,7 +244,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
 
     FREE_MEMORY(ciphersValue);
 
-    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -297,7 +297,7 @@ int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** ac
         status = ENOENT;
     }
 
-    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshOptionIsSet: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -339,7 +339,7 @@ int CheckSshClientAliveInterval(char** reason, void* log)
             SECURITY_AUDIT_PASS, g_sshServerService, clientAliveInterval, actualValue);
     }
 
-    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -364,7 +364,7 @@ int CheckSshLoginGraceTime(char** reason, void* log)
             SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, actualValue);
     }
 
-    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -420,7 +420,7 @@ int SetSshOption(const char* option, const char* value, void* log)
     FREE_MEMORY(commandResult);
     FREE_MEMORY(command);
 
-    OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "SetSshOption('%s' to '%s'): %s (%d)", option, value, PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }

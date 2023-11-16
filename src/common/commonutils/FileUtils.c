@@ -1196,7 +1196,7 @@ int CheckLockoutForFailedPasswordAttempts(const char* fileName, void* log)
         }
     }
 
-    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", status ? "failed" : "passed", status);
+    OsConfigLogInfo(log, "CheckLockoutForFailedPasswordAttempts: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }

@@ -34,6 +34,8 @@
     }\
 }\
 
+#define PLAIN_STATUS_FROM_ERRNO(a) ((0 == a) ? "passed" : "failed")
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
