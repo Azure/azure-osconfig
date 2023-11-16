@@ -306,7 +306,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
         if (reason)
         {
             FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("PASS'%s' not found, nothing to check", name);
+            *reason = FormatAllocateString("%s'%s' not found, nothing to check", SECURITY_AUDIT_PASS, name);
         }
     }
 
