@@ -463,6 +463,27 @@ static long g_maxInactiveDays = 30;
 static const char* g_pass = "PASS";
 static const char* g_fail = "FAIL";
 
+static char* g_defaultSshSshdConfigAccess = "600";
+static char* g_defaultSshProtocol = "2";
+static char* g_defaultSshYes = "yes";
+static char* g_defaultSshNo = "no";
+static char* g_defaultSshLogLevel = "INFO";
+static char* g_defaultSshMaxAuthTries = "6";
+static char* g_defaultSshAllowUsers = "*@*";
+static char* g_defaultSshDenyUsers = "root";
+static char* g_defaultSshAllowGroups = "*";
+static char* g_defaultSshDenyGroups = "root";
+static char* g_defaultSshClientIntervalCountMax = "0";
+static char* g_defaultSshClientAliveInterval = "3600";
+static char* g_defaultSshLoginGraceTime = "60";
+static char* g_defaultSshMacs = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
+static char* g_defaultSsCiphers = "aes128-ctr,aes192-ctr,aes256-ctr";
+static char* g_defaultSshBannerText =
+    "#######################################################################\n\n"
+    "Authorized access only!\n\n"
+    "If you are not authorized to access or use this system, disconnect now!\n\n"
+    "#######################################################################\n";
+
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
 static atomic_int g_referenceCount = 0;
@@ -1886,8 +1907,7 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value)
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value)
 {
-    UNUSED(value);
-    return SetFileAccess(g_etcSshSshdConfig, 0, 0, 600, SecurityBaselineGetLog());
+    return SetFileAccess(g_etcSshSshdConfig, 0, 0, atoi(value ? value : g_defaultSshSshdConfigAccess), SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadow(char* value)
@@ -2650,115 +2670,92 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value)
 
 static int RemediateEnsureSshBestPracticeProtocol(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("Protocol", "2", SecurityBaselineGetLog());
+    return SetSshOption("Protocol", value ? value : g_defaultSshProtocol, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("IgnoreRhosts", "yes", SecurityBaselineGetLog());
+    return SetSshOption("IgnoreRhosts", value ? value : g_defaultSshYes, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLogLevelIsSet(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("LogLevel", "INFO", SecurityBaselineGetLog());
+    return SetSshOption("LogLevel", value ? value : g_defaultSshLogLevel, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("MaxAuthTries", "6", SecurityBaselineGetLog());
+    return SetSshOption("MaxAuthTries", value ? value : g_defaultSshMaxAuthTries, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAllowUsersIsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("AllowUsers", "*@*", SecurityBaselineGetLog());
+    return SetSshOption("AllowUsers", value ? value : g_defaultSshAllowUsers, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureDenyUsersIsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("DenyUsers", "root", SecurityBaselineGetLog());
+    return SetSshOption("DenyUsers", value ? value : g_defaultSshDenyUsers, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAllowGroupsIsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("AllowGroups", "*", SecurityBaselineGetLog());
+    return SetSshOption("AllowGroups", value ? value : g_defaultSshAllowGroups, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureDenyGroupsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("DenyGroups", "root", SecurityBaselineGetLog());
+    return SetSshOption("DenyGroups", value ? value : g_defaultSshDenyGroups, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("HostBasedAuthentication", "no", SecurityBaselineGetLog());
+    return SetSshOption("HostBasedAuthentication", value ? value : g_defaultSshNo, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("PermitRootLogin", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitRootLogin", value ? value : g_defaultSshNo, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("PermitEmptyPasswords", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitEmptyPasswords", value ? value : g_defaultSshNo, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("ClientAliveCountMax", "0", SecurityBaselineGetLog());
+    return SetSshOption("ClientAliveCountMax", value ? value : g_defaultSshClientIntervalCountMax, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("ClientAliveInterval", "3600", SecurityBaselineGetLog());
+    return SetSshOption("ClientAliveInterval", value ? value : g_defaultSshClientAliveInterval, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("LoginGraceTime", "60", SecurityBaselineGetLog());
+    return SetSshOption("LoginGraceTime", value ? value : g_defaultSshLoginGraceTime, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("MACs", "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com", SecurityBaselineGetLog());
+    return SetSshOption("MACs", value ? value : g_defaultSshMacs, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(char* value)
 {
-    const char* bannerText = 
-        "#######################################################################\n\n"
-        "Authorized access only!\n\n"
-        "If you are not authorized to access or use this system, disconnect now!\n\n"
-        "#######################################################################\n";
-    UNUSED(value);
-    return SetSshWarningBanner(600, bannerText, SecurityBaselineGetLog());
+    return SetSshWarningBanner(atoi(g_defaultSshSshdConfigAccess), value ? value : g_defaultSshBannerText, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value)
 {
-    UNUSED(value);
-    return SetSshOption("PermitUserEnvironment", "no", SecurityBaselineGetLog());
+    return SetSshOption("PermitUserEnvironment", value ? value : g_defaultSshNo, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(char* value)
 {
-    UNUSED(value);
-    return ((0 == SetSshOption("Ciphers", "aes128-ctr,aes192-ctr,aes256-ctr", SecurityBaselineGetLog())) &&
+    return ((0 == SetSshOption("Ciphers", value ? value : g_defaultSsCiphers, SecurityBaselineGetLog())) &&
         RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT; //TODO: move this restart to the NRP as part of the fallback layer
 }
 
