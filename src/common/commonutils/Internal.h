@@ -35,6 +35,8 @@
 #define gettid() syscall(SYS_gettid)
 #endif
 
+#define PLAIN_STATUS_FROM_ERRNO(a) ((0 == a) ? "passed" : "failed")
+
 #ifdef __cplusplus
 
 #include <algorithm>
