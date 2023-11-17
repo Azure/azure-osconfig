@@ -2822,6 +2822,7 @@ static int RemediateEnsureNetworkFileSystemServiceIsDisabled(char* value)
 
 static int RemediateEnsureRpcsvcgssdServiceIsDisabled(char* value)
 {
+    UNUSED(value);
     return 0; //TODO: add remediation respecting all existing patterns    
 }
 
