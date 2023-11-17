@@ -2849,7 +2849,7 @@ static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value)
 
 static int RemediateEnsureAppropriateCiphersForSsh(char* value)
 {
-    FREE_MMEORY(g_desiredAppropriateCiphersForSsh);
+    FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
     return (NULL != (g_desiredAppropriateCiphersForSsh = DuplicateString(value ? value : DEFAULT_SSH_CIPHERS))) ?
         (((0 == SetSshOption("Ciphers", g_desiredAppropriateCiphersForSsh, SecurityBaselineGetLog())) &&
         RestartDaemon("sshd", SecurityBaselineGetLog())) ? 0 : ENOENT) : ENOMEM; //TODO: move this restart to the NRP as part of the fallback layer

@@ -21,7 +21,7 @@
 #define DEFAULT_SSH_LOGIN_GRACE_TIME "60"
 #define DEFAULT_SSH_MACS "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
 #define DEFAULT_SSH_CIPHERS "aes128-ctr,aes192-ctr,aes256-ctr"
-#define DEFAULT_SSH_BANNER_TEXT =\
+#define DEFAULT_SSH_BANNER_TEXT \
     "#######################################################################\n\n"\
     "Authorized access only!\n\n"\
     "If you are not authorized to access or use this system, disconnect now!\n\n"\
