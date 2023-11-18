@@ -1568,7 +1568,7 @@ static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
     char* reason = NULL;
-    CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : DEFAULT_SSH_MACS, ARRAY_SIZE(macs), &reason, SecurityBaselineGetLog());
+    CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : DEFAULT_SSH_MACS, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
