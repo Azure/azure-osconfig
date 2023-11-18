@@ -364,7 +364,7 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
     char* contents = NULL;
     int status = 0;
 
-    if ((bannerFile) || (NULL == bannerText))
+    if ((NULL == bannerFile) || (NULL == bannerText))
     {
         OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
         return EINVAL;
