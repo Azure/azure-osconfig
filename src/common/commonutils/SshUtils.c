@@ -389,7 +389,8 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text", SECURITY_AUDIT_PASS, banner, actualValue);
+        *reason = FormatAllocateString("%s The sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", 
+            SECURITY_AUDIT_PASS, banner, actualValue);
     }
 
     FREE_MEMORY(contents);
