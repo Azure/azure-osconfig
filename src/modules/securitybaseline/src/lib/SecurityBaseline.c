@@ -573,9 +573,8 @@ static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    //TODO: switch to g_desiredPermissionsOnEtcSshSshdConfig here
     char* reason = NULL;
-    CheckFileAccess(g_etcSshSshdConfig, 0, 0, 600, &reason, SecurityBaselineGetLog());
+    CheckFileAccess(g_etcSshSshdConfig, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : DEFAULT_SSH_SSHD_CONFIG_ACCESS), &reason, SecurityBaselineGetLog());
     return reason;
 };
 
@@ -1465,34 +1464,33 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 
 static char* AuditEnsureSshBestPracticeProtocol(void)
 {
-    //TODO: switch to g_desiredSshBestPracticeProtocol here
-    return ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
-        (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', "Protocol 2", SecurityBaselineGetLog()))) ? 
-        FormatAllocateString("PASS'Protocol 2' is found uncommented in %s", g_etcSshSshdConfig) : 
-        FormatAllocateString("'Protocol 2' is not found uncommented with '#' in %s", g_etcSshSshdConfig);
+    char* desiredProtocol = FormatAllocateString("Protocol %s", g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : DEFAULT_SSH_PROTOCOL);
+    char* reason = ((EEXIST == CheckFileExists(g_etcSshSshdConfig, SecurityBaselineGetLog())) ||
+        (desiredProtocol && (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', desiredProtocol, SecurityBaselineGetLog())))) ?
+        FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_etcSshSshdConfig) :
+        FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_etcSshSshdConfig);
+    FREE_MEMORY(desiredProtocol);
+    return reason;
 }
 
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    //TODO: switch to g_desiredSshBestPracticeIgnoreRhosts here
     char* reason = NULL;
-    CheckSshOptionIsSet("ignorerhosts", "yes", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("ignorerhosts", g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : DEFAULT_SSH_YES, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
-    //TODO: switch to g_desiredSshLogLevelIsSet here
     char* reason = NULL;
-    CheckSshOptionIsSet("loglevel", "INFO", NULL, &reason, SecurityBaselineGetLog()); 
+    CheckSshOptionIsSet("loglevel", g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : DEFAULT_SSH_LOG_LEVEL, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
-    //TODO: switch to g_desiredSshMaxAuthTriesIsSet here
     char* reason = NULL;
-    CheckSshOptionIsSet("maxauthtries", "6", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("maxauthtries", g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : DEFAULT_SSH_MAX_AUTH_TRIES, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
@@ -1500,69 +1498,61 @@ static char* AuditEnsureAllowUsersIsConfigured(void)
 {
     //TODO: switch to g_desiredAllowUsersIsConfigured here
     char* reason = NULL;
-    CheckSshOptionIsSet("allowusers", NULL, NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("allowusers", g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : DEFAULT_SSH_ALLOW_USERS, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureDenyUsersIsConfigured(void)
 {
-    //TODO: switch to g_desiredDenyUsersIsConfigured here
     char* reason = NULL;
-    CheckSshOptionIsSet("denyusers", NULL, NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("denyusers", g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : DEFAULT_SSH_DENY_USERS, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureAllowGroupsIsConfigured(void)
 {
-    //TODO: switch to g_desiredAllowGroupsIsConfigured here
     char* reason = NULL;
-    CheckSshOptionIsSet("allowgroups", NULL, NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("allowgroups", g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : DEFAULT_SSH_ALLOW_GROUPS, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureDenyGroupsConfigured(void)
 {
-    //TODO: switch to g_desiredDenyGroupsConfigured here
     char* reason = NULL;
-    CheckSshOptionIsSet("denygroups", NULL, NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("denygroups", g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : DEFAULT_SSH_DENY_GROUPS, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    //TODO: switch to g_desiredSshHostbasedAuthenticationIsDisabled here
     char* reason = NULL;
-    CheckSshOptionIsSet("hostbasedauthentication", "no", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("hostbasedauthentication", g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : DEFAULT_SSH_NO, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
-    //TODO: switch to g_desiredSshPermitRootLoginIsDisabled here
     char* reason = NULL;
-    CheckSshOptionIsSet("permitrootlogin", "no", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("permitrootlogin", g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : DEFAULT_SSH_NO, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    //TODO: switch to g_desiredSshPermitEmptyPasswordsIsDisabled here
     char* reason = NULL;
-    CheckSshOptionIsSet("permitemptypasswords", "no", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("permitemptypasswords", g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : DEFAULT_SSH_NO, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
 {
-    //TODO: switch to g_desiredSshClientIntervalCountMaxIsConfigured here
     char* reason = NULL;
-    CheckSshOptionIsSet("clientalivecountmax", "0", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("clientalivecountmax", g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : DEFAULT_SSH_CLIENT_INTERVAL_COUNT_MAX, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
 {
-    //TODO: switch to g_desiredSshClientAliveIntervalIsConfigured here
     char* reason = NULL;
     CheckSshClientAliveInterval(&reason, SecurityBaselineGetLog());
     return reason;
@@ -1570,43 +1560,37 @@ static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 {
-    //TODO: switch to g_desiredSshLoginGraceTimeIsSet here
     char* reason = NULL;
-    CheckSshLoginGraceTime(&reason, SecurityBaselineGetLog());
+    CheckSshLoginGraceTime(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : DEFAULT_SSH_LOGIN_GRACE_TIME, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    //TODO: switch to g_desiredOnlyApprovedMacAlgorithmsAreUsed here
-    const char* macs[] = {"hmac-sha2-256", "hmac-sha2-256-etm@openssh.com", "hmac-sha2-512", "hmac-sha2-512-etm@openssh.com"};
     char* reason = NULL;
-    CheckOnlyApprovedMacAlgorithmsAreUsed(macs, ARRAY_SIZE(macs), &reason, SecurityBaselineGetLog());
+    CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : DEFAULT_SSH_MACS, ARRAY_SIZE(macs), &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
-    //TODO: switch to g_desiredSshWarningBannerIsEnabled here
+    const char* bannerFile = "/etc/azsec/banner.txt";
     char* reason = NULL;
-    CheckSshOptionIsSet("banner", "/etc/azsec/banner.txt", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshWarningBanner(bannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : DEFAULT_SSH_BANNER_TEXT, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    //TODO: switch to g_desiredUsersCannotSetSshEnvironmentOptions here
     char* reason = NULL;
-    CheckSshOptionIsSet("permituserenvironment", "no", NULL, &reason, SecurityBaselineGetLog());
+    CheckSshOptionIsSet("permituserenvironment", g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : DEFAULT_SSH_NO, NULL, &reason, SecurityBaselineGetLog());
     return reason;
 }
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
-    //TODO: switch to g_desiredAppropriateCiphersForSsh here
-    const char* ciphers[] = {"aes128-ctr", "aes192-ctr", "aes256-ctr"};
     char* reason = NULL;
-    CheckAppropriateCiphersForSsh(ciphers, ARRAY_SIZE(ciphers), &reason, SecurityBaselineGetLog());
+    CheckAppropriateCiphersForSsh(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : DEFAULT_SSH_CIPHERS, &reason, SecurityBaselineGetLog());
     return reason;
 }
 

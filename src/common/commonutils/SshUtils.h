@@ -32,11 +32,12 @@ extern "C"
 {
 #endif
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log);
-int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log);
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log);
+int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, void* log);
 int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log);
 int CheckSshClientAliveInterval(char** reason, void* log);
-int CheckSshLoginGraceTime(char** reason, void* log);
+int CheckSshLoginGraceTime(const char* value, char** reason, void* log);
+int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char** reason, void* log);
 int SetSshOption(const char* option, const char* value, void* log);
 int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);
 

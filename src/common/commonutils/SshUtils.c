@@ -69,19 +69,18 @@ static int IsSshServerActive(void* log)
     return result;
 }
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int numberOfMacs, char** reason, void* log)
+int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log)
 {
     const char* sshMacs = "macs";
     char* macsValue = NULL;
     char* value = NULL;
     size_t macsValueLength = 0;
-    size_t i = 0, j = 0;
-    bool macFound = false;
+    size_t i = 0;
     int status = 0;
 
-    if ((NULL == macs) || (0 == numberOfMacs))
+    if (NULL == macs)
     {
-        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments (%p, %u)", macs, numberOfMacs);
+        OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: invalid arguments");
         return EINVAL;
     }
     else if (0 != IsSshServerActive(log))
@@ -111,16 +110,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
             {
                 TruncateAtFirst(value, ',');
 
-                for (j = 0; j < numberOfMacs; j++)
-                {
-                    if (0 == strcmp(value, macs[j]))
-                    {
-                        macFound = true;
-                        break;
-                    }
-                }
-                    
-                if (false == macFound)
+                if (NULL == strstr(macs, value))
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckOnlyApprovedMacAlgorithmsAreUsed: unapproved MAC algorithm '%s' found in SSH Server response", value);
@@ -128,11 +118,7 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
                 }
 
                 i += strlen(value);
-
-                macFound = false;
-
                 FREE_MEMORY(value);
-
                 continue;
             }
         }
@@ -152,19 +138,18 @@ int CheckOnlyApprovedMacAlgorithmsAreUsed(const char** macs, unsigned int number
     return status;
 }
 
-int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCiphers, char** reason, void* log)
+int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, void* log)
 {
     const char* sshCiphers = "ciphers";
     char* ciphersValue = NULL;
     char* value = NULL;
     size_t ciphersValueLength = 0;
-    size_t i = 0, j = 0;
-    bool cipherFound = false;
+    size_t i = 0;
     int status = 0;
 
-    if ((NULL == ciphers) || (0 == numberOfCiphers))
+    if (NULL == ciphers)
     {
-        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid arguments (%p, %u)", ciphers, numberOfCiphers);
+        OsConfigLogError(log, "CheckAppropriateCiphersForSsh: invalid argument");
         return EINVAL;
     }
     else if (0 != IsSshServerActive(log))
@@ -182,6 +167,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
     {
         ciphersValueLength = strlen(ciphersValue);
 
+        // Check that no unapproved ciphers are configured
         for (i = 0; i < ciphersValueLength; i++)
         {
             if (NULL == (value = DuplicateString(&(ciphersValue[i]))))
@@ -194,16 +180,7 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
             {
                 TruncateAtFirst(value, ',');
 
-                for (j = 0; j < numberOfCiphers; j++)
-                {
-                    if (0 == strcmp(value, ciphers[j]))
-                    {
-                        cipherFound = true;
-                        break;
-                    }
-                }
-
-                if (false == cipherFound)
+                if (NULL == strstr(ciphers, value))
                 {
                     status = ENOENT;
                     OsConfigLogError(log, "CheckAppropriateCiphersForSsh: unapproved cipher '%s' found in SSH Server response", value);
@@ -211,26 +188,36 @@ int CheckAppropriateCiphersForSsh(const char** ciphers, unsigned int numberOfCip
                 }
 
                 i += strlen(value);
-
-                cipherFound = false;
-
                 FREE_MEMORY(value);
-
                 continue;
             }
         }
 
-        for (j = 0; j < numberOfCiphers; j++)
+        ciphersValueLength = strlen(ciphers);
+
+        // Check that all required ciphers are configured
+        for (i = 0; i < ciphersValueLength; i++)
         {
-            if (NULL == strstr(ciphersValue, ciphers[j]))
+            if (NULL == (value = DuplicateString(&(ciphers[i]))))
             {
-                status = ENOENT;
-                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", ciphers[j]);
-                OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[j]);
+                OsConfigLogError(log, "CheckAppropriateCiphersForSsh: failed to duplicate ciphers string");
+                status = ENOMEM;
+                break;
             }
             else
             {
-                OsConfigLogInfo(log, "CheckAppropriateCiphersForSsh: required cipher '%s' found in SSH Server response", ciphers[j]);
+                TruncateAtFirst(value, ',');
+
+                if (NULL == strstr(ciphersValue, value))
+                {
+                    status = ENOENT;
+                    OsConfigLogError(log, "CheckAppropriateCiphersForSsh: required cipher '%s' not found in SSH Server response", ciphers[i]);
+                    OsConfigCaptureReason(reason, "Required cipher '%s' not found in SSH Server response", "%s, also required cipher '%s' is not found", ciphers[i]);
+                }
+
+                i += strlen(value);
+                FREE_MEMORY(value);
+                continue;
             }
         }
     }
@@ -344,27 +331,72 @@ int CheckSshClientAliveInterval(char** reason, void* log)
     return status;
 }
 
-int CheckSshLoginGraceTime(char** reason, void* log)
+int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
 {
     const char* loginGraceTime = "logingracetime";
+    int targetValue = atoi(value ? value : DEFAULT_SSH_LOGIN_GRACE_TIME);
     int actualValue = 0;
     int status = 0; 
 
     if ((0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log))) && (actualValue > 60))
     {
-        OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to 60 or less in SSH Server response (but to %d)", actualValue);
-        OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)",
-            "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", actualValue);
+        OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValuem, actualValue);
+        OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
+            "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", targetValue, actualValue);
         status = ENOENT;
     }
     else if (reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is 60 or less)", 
-            SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, actualValue);
+        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", 
+            SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, targetValue, actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+
+    return status;
+}
+
+int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char** reason, void* log)
+{
+    const char* banner = "banner";
+    char* actualValue = NULL;
+    char* contents = NULL;
+    int status = 0;
+
+    if ((bannerFile) || (NULL == bannerText))
+    {
+        OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
+        return EINVAL;
+    }
+
+    if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
+    {
+        if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
+        {
+            OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
+            OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read",
+                "%s, also '%s' is set to '%s' but the file cannot be read", banner, actualValue);
+            status = ENOENT;
+        }
+        else  if (0 != strcmp(contents, bannerText))
+        {
+            OsConfigLogInfo(log, "CheckSshWarningBanner: banner text is:\n'%s' instead of:\n'%s'", contents, bannerText);
+            OsConfigCaptureReason(reason, "banner text is:\n'%s' instead of:\n'%s'",
+                "%s, also banner text is:\n'%s' instead of:\n'%s'", contents, bannerText);
+            status = ENOENT;
+        }
+    }
+
+    if ((0 == status) && reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text '%s'",
+            SECURITY_AUDIT_PASS, banner, actualValue, contents);
+    }
+
+    FREE_MEMORY(contents);
+    FREE_MEMORY(actualValue);
 
     return status;
 }
