@@ -323,7 +323,6 @@ int CheckSshClientAliveInterval(char** reason, void* log)
     {
         FREE_MEMORY(*reason);
         *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", SECURITY_AUDIT_PASS, g_sshServerService, clientAliveInterval, actualValue);
-        OsConfigLogInfo(log, "CheckSshClientAliveInterval: the %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshClientAliveInterval: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
@@ -349,7 +348,6 @@ int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     {
         FREE_MEMORY(*reason);
         *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, targetValue, actualValue);
-        OsConfigLogInfo(log, "CheckSshLoginGraceTime: the %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
     }
 
     OsConfigLogInfo(log, "CheckSshLoginGraceTime: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
@@ -391,8 +389,7 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text:\n%s", SECURITY_AUDIT_PASS, banner, actualValue, contents);
-        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' is set to '%s' and this file contains the expected banner text:\n%s", banner, actualValue, contents);
+        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text", SECURITY_AUDIT_PASS, banner, actualValue);
     }
 
     FREE_MEMORY(contents);
