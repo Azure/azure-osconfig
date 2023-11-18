@@ -381,9 +381,9 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
         }
         else  if (0 != strcmp(contents, bannerText))
         {
-            OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n'%s' instead of:\n'%s'", contents, bannerText);
-            OsConfigCaptureReason(reason, "banner text is:\n'%s' instead of:\n'%s'",
-                "%s, also banner text is:\n'%s' instead of:\n'%s'", contents, bannerText);
+            OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
+            OsConfigCaptureReason(reason, "banner text is:\n%s instead of:\n%s",
+                "%s, also banner text is:\n%s instead of:\n%s", contents, bannerText);
             status = ENOENT;
         }
     }
@@ -391,8 +391,8 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text:\n'%s'", SECURITY_AUDIT_PASS, banner, actualValue, contents);
-        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' is set to '%s' and this file contains the expected banner text:\n'%s'", banner, actualValue, contents);
+        *reason = FormatAllocateString("%s'%s' is set to '%s' and this file contains the expected banner text:\n%s", SECURITY_AUDIT_PASS, banner, actualValue, contents);
+        OsConfigLogInfo(log, "CheckSshWarningBanner: '%s' is set to '%s' and this file contains the expected banner text:\n%s", banner, actualValue, contents);
     }
 
     FREE_MEMORY(contents);
