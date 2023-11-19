@@ -382,8 +382,8 @@ int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char**
         else  if (0 != strcmp(contents, bannerText))
         {
             OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
-            OsConfigCaptureReason(reason, "banner text is:\n%s instead of:\n%s",
-                "%s, also banner text is:\n%s instead of:\n%s", contents, bannerText);
+            OsConfigCaptureReason(reason, "Banner text from file '%s'is different from not the expected text",
+                "%s, also the banner text from '%s' is different from the expected text", bannerFile);
             status = ENOENT;
         }
     }
