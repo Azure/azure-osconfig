@@ -454,7 +454,7 @@ static int SetSshOption(const char* option, const char* value, void* log)
 
     if ((NULL == option) || (NULL == value))
     {
-        OsConfigLogError(log, "SetSshOption: invalid arguments (%s, %s)", option, value);
+        OsConfigLogError(log, "SetSshOption: invalid arguments");
         return EINVAL;
     }
     else if (false == FileExists(g_sshServerConfiguration))
