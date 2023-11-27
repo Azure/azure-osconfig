@@ -27,7 +27,7 @@ static const char* g_sshDefaultSshBannerText =
     "#######################################################################\n\n"
     "Authorized access only!\n\n"
     "If you are not authorized to access or use this system, disconnect now!\n\n"
-    "#######################################################################\n"
+    "#######################################################################\n";
 
 static char* g_desiredPermissionsOnEtcSshSshdConfig = NULL;
 static char* g_desiredSshBestPracticeProtocol = NULL;
