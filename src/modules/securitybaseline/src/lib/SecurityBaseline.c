@@ -378,7 +378,6 @@ static const char* g_etcIssue = "/etc/issue";
 static const char* g_etcIssueNet = "/etc/issue.net";
 static const char* g_etcHostsAllow = "/etc/hosts.allow";
 static const char* g_etcHostsDeny = "/etc/hosts.deny";
-static const char* g_etcSshSshdConfig = "/etc/ssh/sshd_config";
 static const char* g_etcShadow = "/etc/shadow";
 static const char* g_etcShadowDash = "/etc/shadow-";
 static const char* g_etcGShadow = "/etc/gshadow";

@@ -577,17 +577,17 @@ void SshAuditCleanup(void)
 char* SshUtilsAuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
 {
     char* reason = NULL;
-    CheckFileAccess(g_etcSshSshdConfig, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), &reason, log);
+    CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), &reason, log);
     return reason;
 };
 
 char* SshUtilsAuditEnsureSshBestPracticeProtocol(void* log)
 {
     char* desiredProtocol = FormatAllocateString("Protocol %s", g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol);
-    char* reason = ((EEXIST == CheckFileExists(g_etcSshSshdConfig, log)) ||
-        (desiredProtocol && (EEXIST == CheckLineNotFoundOrCommentedOut(g_etcSshSshdConfig, '#', desiredProtocol, log)))) ?
-        FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_etcSshSshdConfig) :
-        FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_etcSshSshdConfig);
+    char* reason = ((EEXIST == CheckFileExists(g_sshServerConfiguration, log)) ||
+        (desiredProtocol && (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', desiredProtocol, log)))) ?
+        FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_sshServerConfiguration) :
+        FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_sshServerConfiguration);
     FREE_MEMORY(desiredProtocol);
     return reason;
 }
@@ -716,7 +716,7 @@ int SshUtilsRemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
 {
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
     return (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(value ? value : g_sshDefaultSshSshdConfigAccess))) ?
-        SetFileAccess(g_etcSshSshdConfig, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log) : ENOMEM;
+        SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log) : ENOMEM;
 };
 
 int SshUtilsRemediateEnsureSshBestPracticeProtocol(char* value, void* log)
