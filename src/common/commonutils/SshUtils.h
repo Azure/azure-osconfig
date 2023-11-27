@@ -4,42 +4,53 @@
 #ifndef SSHUTILS_H
 #define SSHUTILS_H
 
-// Include CommonUtils.h in the target source before including this header
-
-#define DEFAULT_SSH_SSHD_CONFIG_ACCESS "600"
-#define DEFAULT_SSH_PROTOCOL "2"
-#define DEFAULT_SSH_YES "yes"
-#define DEFAULT_SSH_NO "no"
-#define DEFAULT_SSH_LOG_LEVEL "INFO"
-#define DEFAULT_SSH_MAX_AUTH_TRIES "6"
-#define DEFAULT_SSH_ALLOW_USERS "*@*"
-#define DEFAULT_SSH_DENY_USERS "root"
-#define DEFAULT_SSH_ALLOW_GROUPS "*"
-#define DEFAULT_SSH_DENY_GROUPS "root"
-#define DEFAULT_SSH_CLIENT_INTERVAL_COUNT_MAX "0"
-#define DEFAULT_SSH_CLIENT_ALIVE_INTERVAL "3600"
-#define DEFAULT_SSH_LOGIN_GRACE_TIME "60"
-#define DEFAULT_SSH_MACS "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com"
-#define DEFAULT_SSH_CIPHERS "aes128-ctr,aes192-ctr,aes256-ctr"
-#define DEFAULT_SSH_BANNER_TEXT \
-    "#######################################################################\n\n"\
-    "Authorized access only!\n\n"\
-    "If you are not authorized to access or use this system, disconnect now!\n\n"\
-    "#######################################################################\n"
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason, void* log);
-int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, void* log);
-int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log);
-int CheckSshClientAliveInterval(char** reason, void* log);
-int CheckSshLoginGraceTime(const char* value, char** reason, void* log);
-int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char** reason, void* log);
-int SetSshOption(const char* option, const char* value, void* log);
-int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log);
+int InitializeSshAudit(void* log);
+void SshAuditCleanup(void);
+
+char* SshUtilsAuditEnsurePermissionsOnEtcSshSshdConfig(void* log);
+char* SshUtilsAuditEnsureSshBestPracticeProtocol(void* log);
+char* SshUtilsAuditEnsureSshBestPracticeIgnoreRhosts(void* log);
+char* SshUtilsAuditEnsureSshLogLevelIsSet(void* log);
+char* SshUtilsAuditEnsureSshMaxAuthTriesIsSet(void* log);
+char* SshUtilsAuditEnsureAllowUsersIsConfigured(void* log);
+char* SshUtilsAuditEnsureDenyUsersIsConfigured(void* log);
+char* SshUtilsAuditEnsureAllowGroupsIsConfigured(void* log);
+char* SshUtilsAuditEnsureDenyGroupsConfigured(void* log);
+char* SshUtilsAuditEnsureSshHostbasedAuthenticationIsDisabled(void* log);
+char* SshUtilsAuditEnsureSshPermitRootLoginIsDisabled(void* log);
+char* SshUtilsAuditEnsureSshPermitEmptyPasswordsIsDisabled(void* log);
+char* SshUtilsAuditEnsureSshClientIntervalCountMaxIsConfigured(void* log);
+char* SshUtilsAuditEnsureSshClientAliveIntervalIsConfigured(void* log);
+char* SshUtilsAuditEnsureSshLoginGraceTimeIsSet(void* log);
+char* SshUtilsAuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void* log);
+char* SshUtilsAuditEnsureSshWarningBannerIsEnabled(void* log);
+char* SshUtilsAuditEnsureUsersCannotSetSshEnvironmentOptions(void* log);
+char* SshUtilsAuditEnsureAppropriateCiphersForSsh(void* log);
+
+int SshUtilsRemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log);
+int SshUtilsRemediateEnsureSshBestPracticeProtocol(char* value, void* log);
+int SshUtilsRemediateEnsureSshBestPracticeIgnoreRhosts(char* value, void* log);
+int SshUtilsRemediateEnsureSshLogLevelIsSet(char* value, void* log);
+int SshUtilsRemediateEnsureSshMaxAuthTriesIsSet(char* value, void* log);
+int SshUtilsRemediateEnsureAllowUsersIsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureDenyUsersIsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureAllowGroupsIsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureDenyGroupsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, void* log);
+int SshUtilsRemediateEnsureSshPermitRootLoginIsDisabled(char* value, void* log);
+int SshUtilsRemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, void* log);
+int SshUtilsRemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureSshClientAliveIntervalIsConfigured(char* value, void* log);
+int SshUtilsRemediateEnsureSshLoginGraceTimeIsSet(char* value, void* log);
+int SshUtilsRemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, void* log);
+int SshUtilsRemediateEnsureSshWarningBannerIsEnabled(char* value, void* log);
+int SshUtilsRemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, void* log);
+int SshUtilsRemediateEnsureAppropriateCiphersForSsh(char* value, void* log);
 
 #ifdef __cplusplus
 }
