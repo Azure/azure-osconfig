@@ -551,8 +551,11 @@ int InitializeSshAudit(void* log)
     return status;
 }
 
-void SshAuditCleanup(void)
+void SshAuditCleanup(void* log)
 {
+    // Signal the SSH Server service to reload configuration
+    RestartDaemon(g_sshServerService, log);
+    
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
     FREE_MEMORY(g_desiredSshBestPracticeProtocol);
     FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
@@ -842,6 +845,5 @@ int SshUtilsRemediateEnsureAppropriateCiphersForSsh(char* value, void* log)
 {
     FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
     return (NULL != (g_desiredAppropriateCiphersForSsh = DuplicateString(value ? value : g_sshDefaultSshCiphers))) ?
-        (((0 == SetSshOption("Ciphers", g_desiredAppropriateCiphersForSsh, log)) &&
-        RestartDaemon("sshd", log)) ? 0 : ENOENT) : ENOMEM;
+        SetSshOption("Ciphers", g_desiredAppropriateCiphersForSsh, log) : ENOMEM;
 }

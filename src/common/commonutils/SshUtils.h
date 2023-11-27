@@ -10,7 +10,7 @@ extern "C"
 #endif
 
 int InitializeSshAudit(void* log);
-void SshAuditCleanup(void);
+void SshAuditCleanup(void* log);
 
 char* SshUtilsAuditEnsurePermissionsOnEtcSshSshdConfig(void* log);
 char* SshUtilsAuditEnsureSshBestPracticeProtocol(void* log);

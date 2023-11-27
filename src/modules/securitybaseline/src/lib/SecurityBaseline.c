@@ -482,7 +482,7 @@ void SecurityBaselineInitialize(void)
 void SecurityBaselineShutdown(void)
 {
     OsConfigLogInfo(SecurityBaselineGetLog(), "%s shutting down", g_securityBaselineModuleName);
-    SshAuditCleanup();
+    SshAuditCleanup(SecurityBaselineGetLog());
     CloseLog(&g_log);
 }
 
