@@ -1486,7 +1486,7 @@ static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
-    return SshUtilsAuditEnsureAppropriateCiphersForSshSecurityBaselineGetLog());
+    return SshUtilsAuditEnsureAppropriateCiphersForSsh(SecurityBaselineGetLog());
 }
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
