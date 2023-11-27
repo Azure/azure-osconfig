@@ -655,7 +655,7 @@ char* SshUtilsAuditEnsureSshPermitRootLoginIsDisabled(void* log)
     return reason;
 }
 
-static char* SshUtilsAuditEnsureSshPermitEmptyPasswordsIsDisabled(void* log)
+char* SshUtilsAuditEnsureSshPermitEmptyPasswordsIsDisabled(void* log)
 {
     char* reason = NULL;
     CheckSshOptionIsSet("permitemptypasswords", g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo, NULL, &reason, log);
