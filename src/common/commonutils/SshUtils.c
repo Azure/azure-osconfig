@@ -501,7 +501,7 @@ int CheckShhProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckShhProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log))
     {
         OsConfigLogInfo(log, "CheckShhProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         if (reason)
@@ -659,6 +659,8 @@ void SshAuditCleanup(void* log)
 
 int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log)
 {
+    int status = 0;
+
     if (NULL == name)
     {
         OsConfigLogError(log, "ProcessSshAuditCheck: invalid check name argument");
