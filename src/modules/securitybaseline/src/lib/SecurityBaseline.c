@@ -3665,7 +3665,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers();
         }
-        else if ((0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
+        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
             result = AuditEnsureSshBestPracticeProtocol();
         }
