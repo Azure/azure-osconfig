@@ -487,6 +487,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
 
 int CheckShhProtocol(char** reason, void* log)
 {
+    const char* protocolTemplate = "Protocol %s";
     char* protocol = NULL;
     int status = 0;
 
@@ -495,23 +496,25 @@ int CheckShhProtocol(char** reason, void* log)
         return status;
     }
 
-    if (NULL == (protocol = FormatAllocateString("Protocol %s", g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol)))
+    if (NULL == (protocol = FormatAllocateString(protocolTemplate, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol)))
     {
         OsConfigLogError(log, "CheckShhProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', desiredProtocol, log)))
+    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
     {
+        OsConfigLogInfo(log, "CheckShhProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         if (reason)
         {
-            *reason = FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_sshServerConfiguration);
+            *reason = FormatAllocateString("PASS'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         }
     }
     else
     {
+        OsConfigLogError(log, "CheckShhProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         if (reason)
         {
-            *reason = FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_sshServerConfiguration);
+            *reason = FormatAllocateString("'%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         }
         status = ENOENT;
     }
