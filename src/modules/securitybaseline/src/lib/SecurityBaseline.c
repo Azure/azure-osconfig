@@ -512,7 +512,9 @@ static char* AuditEnsurePermissionsOnEtcHostsDeny(void)
 
 static char* AuditEnsurePermissionsOnEtcSshSshdConfig(void)
 {
-    return SshUtilsAuditEnsurePermissionsOnEtcSshSshdConfig(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsurePermissionsOnEtcSshSshdConfigObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 };
 
 static char* AuditEnsurePermissionsOnEtcShadow(void)
@@ -1401,92 +1403,128 @@ static char* AuditEnsureAtCronIsRestrictedToAuthorizedUsers(void)
 
 static char* AuditEnsureSshBestPracticeProtocol(void)
 {
-    return SshUtilsAuditEnsureSshBestPracticeProtocol(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeProtocolObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshBestPracticeIgnoreRhosts(void)
 {
-    return SshUtilsAuditEnsureSshBestPracticeIgnoreRhosts(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshBestPracticeIgnoreRhostsObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshLogLevelIsSet(void)
 {
-    return SshUtilsAuditEnsureSshLogLevelIsSet(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshLogLevelIsSetObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshMaxAuthTriesIsSet(void)
 {
-    return SshUtilsAuditEnsureSshMaxAuthTriesIsSet(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshMaxAuthTriesIsSetObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllowUsersIsConfigured(void)
 {
-    return SshUtilsAuditEnsureAllowUsersIsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureAllowUsersIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDenyUsersIsConfigured(void)
 {
-    return SshUtilsAuditEnsureDenyUsersIsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureDenyUsersIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAllowGroupsIsConfigured(void)
 {
-    return SshUtilsAuditEnsureAllowGroupsIsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureAllowGroupsIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureDenyGroupsConfigured(void)
 {
-    return SshUtilsAuditEnsureDenyGroupsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureDenyGroupsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshHostbasedAuthenticationIsDisabled(void)
 {
-    return SshUtilsAuditEnsureSshHostbasedAuthenticationIsDisabled(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshHostbasedAuthenticationIsDisabledObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshPermitRootLoginIsDisabled(void)
 {
-    return SshUtilsAuditEnsureSshPermitRootLoginIsDisabled(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshPermitRootLoginIsDisabledObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshPermitEmptyPasswordsIsDisabled(void)
 {
-    return SshUtilsAuditEnsureSshPermitEmptyPasswordsIsDisabled(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshClientIntervalCountMaxIsConfigured(void)
 {
-    return SshUtilsAuditEnsureSshClientIntervalCountMaxIsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshClientAliveIntervalIsConfigured(void)
 {
-    return SshUtilsAuditEnsureSshClientAliveIntervalIsConfigured(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshClientAliveIntervalIsConfiguredObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshLoginGraceTimeIsSet(void)
 {
-    return SshUtilsAuditEnsureSshLoginGraceTimeIsSet(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshLoginGraceTimeIsSetObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void)
 {
-    return SshUtilsAuditEnsureOnlyApprovedMacAlgorithmsAreUsed(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureSshWarningBannerIsEnabled(void)
 {
-    return SshUtilsAuditEnsureSshWarningBannerIsEnabled(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureSshWarningBannerIsEnabledObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureUsersCannotSetSshEnvironmentOptions(void)
 {
-    return SshUtilsAuditEnsureUsersCannotSetSshEnvironmentOptions(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAppropriateCiphersForSsh(void)
 {
-    return SshUtilsAuditEnsureAppropriateCiphersForSsh(SecurityBaselineGetLog());
+    char* reason = NULL;
+    ProcessSshAuditCheck(g_auditEnsureAppropriateCiphersForSshObject, NULL, &reason, SecurityBaselineGetLog());
+    return reason;
 }
 
 static char* AuditEnsureAvahiDaemonServiceIsDisabled(void)
@@ -1844,7 +1882,7 @@ static int RemediateEnsurePermissionsOnEtcHostsDeny(char* value)
 
 static int RemediateEnsurePermissionsOnEtcSshSshdConfig(char* value)
 {
-    return SshUtilsRemediateEnsurePermissionsOnEtcSshSshdConfig(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsurePermissionsOnEtcSshSshdConfigObject, value, NULL, SecurityBaselineGetLog());
 };
 
 static int RemediateEnsurePermissionsOnEtcShadow(char* value)
@@ -2607,92 +2645,92 @@ static int RemediateEnsureAtCronIsRestrictedToAuthorizedUsers(char* value)
 
 static int RemediateEnsureSshBestPracticeProtocol(char* value)
 {
-    return SshUtilsRemediateEnsureSshBestPracticeProtocol(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeProtocolObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshBestPracticeIgnoreRhosts(char* value)
 {
-    return SshUtilsRemediateEnsureSshBestPracticeIgnoreRhosts(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshBestPracticeIgnoreRhostsObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLogLevelIsSet(char* value)
 {
-    return SshUtilsRemediateEnsureSshLogLevelIsSet(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshLogLevelIsSetObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshMaxAuthTriesIsSet(char* value)
 {
-    return SshUtilsRemediateEnsureSshMaxAuthTriesIsSet(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshMaxAuthTriesIsSetObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAllowUsersIsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureAllowUsersIsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureAllowUsersIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureDenyUsersIsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureDenyUsersIsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureDenyUsersIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAllowGroupsIsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureAllowGroupsIsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureAllowGroupsIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureDenyGroupsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureDenyGroupsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureDenyGroupsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value)
 {
-    return SshUtilsRemediateEnsureSshHostbasedAuthenticationIsDisabled(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitRootLoginIsDisabled(char* value)
 {
-    return SshUtilsRemediateEnsureSshPermitRootLoginIsDisabled(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshPermitRootLoginIsDisabledObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value)
 {
-    return SshUtilsRemediateEnsureSshPermitEmptyPasswordsIsDisabled(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureSshClientIntervalCountMaxIsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshClientAliveIntervalIsConfigured(char* value)
 {
-    return SshUtilsRemediateEnsureSshClientAliveIntervalIsConfigured(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshClientAliveIntervalIsConfiguredObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshLoginGraceTimeIsSet(char* value)
 {
-    return SshUtilsRemediateEnsureSshLoginGraceTimeIsSet(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshLoginGraceTimeIsSetObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value)
 {
-    return SshUtilsRemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureSshWarningBannerIsEnabled(char* value)
 {
-    return SshUtilsRemediateEnsureSshWarningBannerIsEnabled(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureSshWarningBannerIsEnabledObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value)
 {
-    return SshUtilsRemediateEnsureUsersCannotSetSshEnvironmentOptions(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAppropriateCiphersForSsh(char* value)
 {
-    return SshUtilsRemediateEnsureAppropriateCiphersForSsh(value, SecurityBaselineGetLog());
+    return ProcessSshAuditCheck(g_remediateEnsureAppropriateCiphersForSshObject, value, NULL, SecurityBaselineGetLog());
 }
 
 static int RemediateEnsureAvahiDaemonServiceIsDisabled(char* value)
@@ -3627,7 +3665,7 @@ int SecurityBaselineMmiGet(MMI_HANDLE clientSession, const char* componentName, 
         {
             result = AuditEnsureAtCronIsRestrictedToAuthorizedUsers();
         }
-        else if (0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
+        else if ((0 == strcmp(objectName, g_auditEnsureSshBestPracticeProtocolObject))
         {
             result = AuditEnsureSshBestPracticeProtocol();
         }

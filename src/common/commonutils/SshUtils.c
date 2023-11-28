@@ -32,6 +32,46 @@ static const char* g_sshDefaultSshBannerText =
     "If you are not authorized to access or use this system, disconnect now!\n\n"
     "#######################################################################\n";
 
+static const char* g_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
+static const char* g_auditEnsureSshBestPracticeIgnoreRhostsObject = "auditEnsureSshBestPracticeIgnoreRhosts";
+static const char* g_auditEnsureSshLogLevelIsSetObject = "auditEnsureSshLogLevelIsSet";
+static const char* g_auditEnsureSshMaxAuthTriesIsSetObject = "auditEnsureSshMaxAuthTriesIsSet";
+static const char* g_auditEnsureAllowUsersIsConfiguredObject = "auditEnsureAllowUsersIsConfigured";
+static const char* g_auditEnsureDenyUsersIsConfiguredObject = "auditEnsureDenyUsersIsConfigured";
+static const char* g_auditEnsureAllowGroupsIsConfiguredObject = "auditEnsureAllowGroupsIsConfigured";
+static const char* g_auditEnsureDenyGroupsConfiguredObject = "auditEnsureDenyGroupsConfigured";
+static const char* g_auditEnsureSshHostbasedAuthenticationIsDisabledObject = "auditEnsureSshHostbasedAuthenticationIsDisabled";
+static const char* g_auditEnsureSshPermitRootLoginIsDisabledObject = "auditEnsureSshPermitRootLoginIsDisabled";
+static const char* g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
+static const char* g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject = "auditEnsureSshClientIntervalCountMaxIsConfigured";
+static const char* g_auditEnsureSshClientAliveIntervalIsConfiguredObject = "auditEnsureSshClientAliveIntervalIsConfigured";
+static const char* g_auditEnsureSshLoginGraceTimeIsSetObject = "auditEnsureSshLoginGraceTimeIsSet";
+static const char* g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
+static const char* g_auditEnsureSshWarningBannerIsEnabledObject = "auditEnsureSshWarningBannerIsEnabled";
+static const char* g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject = "auditEnsureUsersCannotSetSshEnvironmentOptions";
+static const char* g_auditEnsureAppropriateCiphersForSshObject = "auditEnsureAppropriateCiphersForSsh";
+
+static const char* g_remediateEnsurePermissionsOnEtcSshSshdConfigObject = "remediateEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_remediateEnsureSshBestPracticeProtocolObject = "remediateEnsureSshBestPracticeProtocol";
+static const char* g_remediateEnsureSshBestPracticeIgnoreRhostsObject = "remediateEnsureSshBestPracticeIgnoreRhosts";
+static const char* g_remediateEnsureSshLogLevelIsSetObject = "remediateEnsureSshLogLevelIsSet";
+static const char* g_remediateEnsureSshMaxAuthTriesIsSetObject = "remediateEnsureSshMaxAuthTriesIsSet";
+static const char* g_remediateEnsureAllowUsersIsConfiguredObject = "remediateEnsureAllowUsersIsConfigured";
+static const char* g_remediateEnsureDenyUsersIsConfiguredObject = "remediateEnsureDenyUsersIsConfigured";
+static const char* g_remediateEnsureAllowGroupsIsConfiguredObject = "remediateEnsureAllowGroupsIsConfigured";
+static const char* g_remediateEnsureDenyGroupsConfiguredObject = "remediateEnsureDenyGroupsConfigured";
+static const char* g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
+static const char* g_remediateEnsureSshPermitRootLoginIsDisabledObject = "remediateEnsureSshPermitRootLoginIsDisabled";
+static const char* g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
+static const char* g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
+static const char* g_remediateEnsureSshClientAliveIntervalIsConfiguredObject = "remediateEnsureSshClientAliveIntervalIsConfigured";
+static const char* g_remediateEnsureSshLoginGraceTimeIsSetObject = "remediateEnsureSshLoginGraceTimeIsSet";
+static const char* g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
+static const char* g_remediateEnsureSshWarningBannerIsEnabledObject = "remediateEnsureSshWarningBannerIsEnabled";
+static const char* g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
+static const char* g_remediateEnsureAppropriateCiphersForSshObject = "remediateEnsureAppropriateCiphersForSsh";
+
 static char* g_desiredPermissionsOnEtcSshSshdConfig = NULL;
 static char* g_desiredSshBestPracticeProtocol = NULL;
 static char* g_desiredSshBestPracticeIgnoreRhosts = NULL;
@@ -445,6 +485,42 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     return status;
 }
 
+int CheckShhProtocol(char** reason, void* log)
+{
+    char* protocol = NULL;
+    int status = 0;
+
+    if (0 != IsSshServerActive(log))
+    {
+        return status;
+    }
+
+    if (NULL == (protocol = FormatAllocateString("Protocol %s", g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol)))
+    {
+        OsConfigLogError(log, "CheckShhProtocol: FormatAllocateString failed");
+        status = ENOMEM;
+    }
+    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', desiredProtocol, log)))
+    {
+        if (reason)
+        {
+            *reason = FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_sshServerConfiguration);
+        }
+    }
+    else
+    {
+        if (reason)
+        {
+            *reason = FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_sshServerConfiguration);
+        }
+        status = ENOENT;
+    }
+
+    FREE_MEMORY(protocol);
+
+    return status;
+}
+
 static int SetSshOption(const char* option, const char* value, void* log)
 {
     // Replaces any instances of 'option foo' with 'option value' and adds 'option value' when 'option' is missing
@@ -554,7 +630,7 @@ int InitializeSshAudit(void* log)
 
 void SshAuditCleanup(void* log)
 {
-    // Signal the SSH Server service to reload configuration
+    // Signal to the SSH Server service to reload configuration
     RestartDaemon(g_sshServerService, log);
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
@@ -578,301 +654,216 @@ void SshAuditCleanup(void* log)
     FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
 }
 
-char* SshUtilsAuditEnsurePermissionsOnEtcSshSshdConfig(void* log)
+int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log)
 {
-    char* reason = NULL;
-    CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), &reason, log);
-    return reason;
-};
+    if (NULL == name)
+    {
+        OsConfigLogError(log, "ProcessSshAuditCheck: invalid check name argument");
+        return EINVAL;
+    }
 
-char* SshUtilsAuditEnsureSshBestPracticeProtocol(void* log)
-{
-    char* desiredProtocol = FormatAllocateString("Protocol %s", g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol);
-    char* reason = ((EEXIST == CheckFileExists(g_sshServerConfiguration, log)) ||
-        (desiredProtocol && (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', desiredProtocol, log)))) ?
-        FormatAllocateString("PASS'%s' is found uncommented in %s", desiredProtocol, g_sshServerConfiguration) :
-        FormatAllocateString("'%s' is not found uncommented with '#' in %s", desiredProtocol, g_sshServerConfiguration);
-    FREE_MEMORY(desiredProtocol);
-    return reason;
-}
+    if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
+    {
+        status = CheckFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? 
+            g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshBestPracticeProtocolObject))
+    {
+        status = CheckShhProtocol(reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
+    {
+        status = CheckSshOptionIsSet("ignorerhosts", g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshLogLevelIsSetObject))
+    {
+        status = CheckSshOptionIsSet("loglevel", g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshMaxAuthTriesIsSetObject))
+    {
+        status = CheckSshOptionIsSet("maxauthtries", g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureAllowUsersIsConfiguredObject))
+    {
+        status = CheckSshOptionIsSet("allowusers", g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureDenyUsersIsConfiguredObject))
+    {
+        status = CheckSshOptionIsSet("denyusers", g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureAllowGroupsIsConfiguredObject))
+    {
+        status = CheckSshOptionIsSet("allowgroups", g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureDenyGroupsConfiguredObject))
+    {
+        status = CheckSshOptionIsSet("denygroups", g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshHostbasedAuthenticationIsDisabledObject))
+    {
+        status = CheckSshOptionIsSet("hostbasedauthentication", g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshPermitRootLoginIsDisabledObject))
+    {
+        status = CheckSshOptionIsSet("permitrootlogin", g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshPermitEmptyPasswordsIsDisabledObject))
+    {
+        status = CheckSshOptionIsSet("permitemptypasswords", g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshClientIntervalCountMaxIsConfiguredObject))
+    {
+        status = CheckSshOptionIsSet("clientalivecountmax", g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshClientAliveIntervalIsConfiguredObject))
+    {
+        status = CheckSshClientAliveInterval(reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshLoginGraceTimeIsSetObject))
+    {
+        status = CheckSshLoginGraceTime(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
+    {
+        status = CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
+    {
+        status = CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
+    {
+        status = CheckSshOptionIsSet("permituserenvironment", g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo, NULL, reason, log);
+    }
+    else if (0 == strcmp(name, g_auditEnsureAppropriateCiphersForSshObject))
+    {
+        status = CheckAppropriateCiphersForSsh(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers, reason, log);
+    }
+    else if (0 == strcmp(name, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject))
+    {
+        FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
+        status = (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(value ? value : g_sshDefaultSshSshdConfigAccess))) ?
+            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshBestPracticeProtocolObject))
+    {
+        FREE_MEMORY(g_desiredSshBestPracticeProtocol);
+        status = (NULL != (g_desiredSshBestPracticeProtocol = DuplicateString(value ? value : g_sshDefaultSshProtocol))) ?
+            SetSshOption("Protocol", g_desiredSshBestPracticeProtocol, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshBestPracticeIgnoreRhostsObject))
+    {
+        FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
+        status = (NULL != (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(value ? value : g_sshDefaultSshYes))) ?
+            SetSshOption("IgnoreRhosts", value ? value : g_sshDefaultSshYes, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshLogLevelIsSetObject))
+    {
+        FREE_MEMORY(g_desiredSshLogLevelIsSet);
+        status = (NULL != (g_desiredSshLogLevelIsSet = DuplicateString(value ? value : g_sshDefaultSshLogLevel))) ?
+            SetSshOption("LogLevel", g_desiredSshLogLevelIsSet, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshMaxAuthTriesIsSetObject))
+    {
+        FREE_MEMORY(g_desiredSshMaxAuthTriesIsSet);
+        status = (NULL != (g_desiredSshMaxAuthTriesIsSet = DuplicateString(value ? value : g_sshDefaultSshMaxAuthTries))) ?
+            SetSshOption("MaxAuthTries", g_desiredSshMaxAuthTriesIsSet, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureAllowUsersIsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredAllowUsersIsConfigured);
+        status = (NULL != (g_desiredAllowUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshAllowUsers))) ?
+            SetSshOption("AllowUsers", g_desiredAllowUsersIsConfigured, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureSshBestPracticeIgnoreRhosts(void* log)
-{
-    const char* option = "ignorerhosts";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureDenyUsersIsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredDenyUsersIsConfigured);
+        status = (NULL != (g_desiredDenyUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshDenyUsers))) ?
+            SetSshOption("DenyUsers", g_desiredDenyUsersIsConfigured, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureSshLogLevelIsSet(void* log)
-{
-    const char* option = "loglevel";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureAllowGroupsIsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredAllowGroupsIsConfigured);
+        status = (NULL != (g_desiredAllowGroupsIsConfigured = DuplicateString(value ? value : g_sshDefaultSshAllowGroups))) ?
+            SetSshOption("AllowGroups", g_desiredAllowGroupsIsConfigured, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureDenyGroupsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredDenyGroupsConfigured);
+        status = (NULL != (g_desiredDenyGroupsConfigured = DuplicateString(value ? value : g_sshDefaultSshDenyGroups))) ?
+            SetSshOption("DenyGroups", g_desiredDenyGroupsConfigured, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
+    {
+        FREE_MEMORY(g_desiredSshHostbasedAuthenticationIsDisabled);
+        status = (NULL != (g_desiredSshHostbasedAuthenticationIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
+            SetSshOption("HostBasedAuthentication", g_desiredSshHostbasedAuthenticationIsDisabled, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshPermitRootLoginIsDisabledObject))
+    {
+        FREE_MEMORY(g_desiredSshPermitRootLoginIsDisabled);
+        status = (NULL != (g_desiredSshPermitRootLoginIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
+            SetSshOption("PermitRootLogin", g_desiredSshPermitRootLoginIsDisabled, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureSshMaxAuthTriesIsSet(void* log)
-{
-    const char* option = "maxauthtries";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshMaxAuthTriesIsSet ? g_desiredSshMaxAuthTriesIsSet : g_sshDefaultSshMaxAuthTries, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject))
+    {
+        FREE_MEMORY(g_desiredSshPermitEmptyPasswordsIsDisabled);
+        status = (NULL != (g_desiredSshPermitEmptyPasswordsIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
+            SetSshOption("PermitEmptyPasswords", g_desiredSshPermitEmptyPasswordsIsDisabled, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredSshClientIntervalCountMaxIsConfigured);
+        status = (NULL != (g_desiredSshClientIntervalCountMaxIsConfigured = DuplicateString(value ? value : g_sshDefaultSshClientIntervalCountMax))) ?
+            SetSshOption("ClientAliveCountMax", g_desiredSshClientIntervalCountMaxIsConfigured, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject))
+    {
+        FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
+        status = (NULL != (g_desiredSshLoginGraceTimeIsSet = DuplicateString(value ? value : g_sshDefaultSshLoginGraceTime))) ?
+            SetSshOption("LoginGraceTime", g_desiredSshLoginGraceTimeIsSet, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshLoginGraceTimeIsSetObject))
+    {
+        FREE_MEMORY(g_desiredSshClientAliveIntervalIsConfigured);
+        status = (NULL != (g_desiredSshClientAliveIntervalIsConfigured = DuplicateString(value ? value : g_sshDefaultSshClientAliveInterval))) ?
+            SetSshOption("ClientAliveInterval", g_desiredSshClientAliveIntervalIsConfigured, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureAllowUsersIsConfigured(void* log)
-{
-    const char* option = "allowusers";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredAllowUsersIsConfigured ? g_desiredAllowUsersIsConfigured : g_sshDefaultSshAllowUsers, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
+    {
+        FREE_MEMORY(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
+        status = (NULL != (g_desiredOnlyApprovedMacAlgorithmsAreUsed = DuplicateString(value ? value : g_sshDefaultSshMacs))) ?
+            SetSshOption("MACs", g_desiredOnlyApprovedMacAlgorithmsAreUsed, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureDenyUsersIsConfigured(void* log)
-{
-    const char* option = "denyusers";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredDenyUsersIsConfigured ? g_desiredDenyUsersIsConfigured : g_sshDefaultSshDenyUsers, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject))
+    {
+        FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
+        status = (NULL != (g_desiredSshWarningBannerIsEnabled = DuplicateString(value ? value : g_sshDefaultSshBannerText))) ?
+            SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig), g_desiredSshWarningBannerIsEnabled, log) : ENOMEM;
 
-char* SshUtilsAuditEnsureAllowGroupsIsConfigured(void* log)
-{
-    const char* option = "allowgroups";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredAllowGroupsIsConfigured ? g_desiredAllowGroupsIsConfigured : g_sshDefaultSshAllowGroups, NULL, &reason, log);
-    return reason;
-}
+    }
+    else if (0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject))
+    {
+        FREE_MEMORY(g_desiredUsersCannotSetSshEnvironmentOptions);
+        status = (NULL != (g_desiredUsersCannotSetSshEnvironmentOptions = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
+            SetSshOption("PermitUserEnvironment", g_desiredUsersCannotSetSshEnvironmentOptions, log) : ENOMEM;
+    }
+    else if (0 == strcmp(name, g_remediateEnsureAppropriateCiphersForSshObject))
+    {
+        FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
+        status = (NULL != (g_desiredAppropriateCiphersForSsh = DuplicateString(value ? value : g_sshDefaultSshCiphers))) ?
+            SetSshOption("Ciphers", g_desiredAppropriateCiphersForSsh, log) : ENOMEM;
+    }
+    else
+    {
+        OsConfigLogError(log, "ProcessSshAuditCheck: unsupported check name '%s'", name);
+        status = EINVAL;
+    }
 
-char* SshUtilsAuditEnsureDenyGroupsConfigured(void* log)
-{
-    const char* option = "denygroups";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredDenyGroupsConfigured ? g_desiredDenyGroupsConfigured : g_sshDefaultSshDenyGroups, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshHostbasedAuthenticationIsDisabled(void* log)
-{
-    const char* option = "hostbasedauthentication";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshHostbasedAuthenticationIsDisabled ? g_desiredSshHostbasedAuthenticationIsDisabled : g_sshDefaultSshNo, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshPermitRootLoginIsDisabled(void* log)
-{
-    const char* option = "permitrootlogin";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshPermitRootLoginIsDisabled ? g_desiredSshPermitRootLoginIsDisabled : g_sshDefaultSshNo, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshPermitEmptyPasswordsIsDisabled(void* log)
-{
-    const char* option = "permitemptypasswords";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshPermitEmptyPasswordsIsDisabled ? g_desiredSshPermitEmptyPasswordsIsDisabled : g_sshDefaultSshNo, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshClientIntervalCountMaxIsConfigured(void* log)
-{
-    const char* option = "clientalivecountmax";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredSshClientIntervalCountMaxIsConfigured ? g_desiredSshClientIntervalCountMaxIsConfigured : g_sshDefaultSshClientIntervalCountMax, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshClientAliveIntervalIsConfigured(void* log)
-{
-    char* reason = NULL;
-    CheckSshClientAliveInterval(&reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshLoginGraceTimeIsSet(void* log)
-{
-    char* reason = NULL;
-    CheckSshLoginGraceTime(g_desiredSshLoginGraceTimeIsSet ? g_desiredSshLoginGraceTimeIsSet : g_sshDefaultSshLoginGraceTime, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureOnlyApprovedMacAlgorithmsAreUsed(void* log)
-{
-    char* reason = NULL;
-    CheckOnlyApprovedMacAlgorithmsAreUsed(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureSshWarningBannerIsEnabled(void* log)
-{
-    char* reason = NULL;
-    CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureUsersCannotSetSshEnvironmentOptions(void* log)
-{
-    const char* option = "permituserenvironment";
-    char* reason = NULL;
-    CheckSshOptionIsSet(option, g_desiredUsersCannotSetSshEnvironmentOptions ? g_desiredUsersCannotSetSshEnvironmentOptions : g_sshDefaultSshNo, NULL, &reason, log);
-    return reason;
-}
-
-char* SshUtilsAuditEnsureAppropriateCiphersForSsh(void* log)
-{
-    char* reason = NULL;
-    CheckAppropriateCiphersForSsh(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers, &reason, log);
-    return reason;
-}
-
-int SshUtilsRemediateEnsurePermissionsOnEtcSshSshdConfig(char* value, void* log)
-{
-    FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
-    return (NULL != (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(value ? value : g_sshDefaultSshSshdConfigAccess))) ?
-        SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig), log) : ENOMEM;
-};
-
-int SshUtilsRemediateEnsureSshBestPracticeProtocol(char* value, void* log)
-{
-    const char* option = "Protocol";
-    FREE_MEMORY(g_desiredSshBestPracticeProtocol);
-    return (NULL != (g_desiredSshBestPracticeProtocol = DuplicateString(value ? value : g_sshDefaultSshProtocol))) ?
-        SetSshOption(option, g_desiredSshBestPracticeProtocol, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshBestPracticeIgnoreRhosts(char* value, void* log)
-{
-    const char* option = "IgnoreRhosts";
-    FREE_MEMORY(g_desiredSshBestPracticeIgnoreRhosts);
-    return (NULL != (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(value ? value : g_sshDefaultSshYes))) ?
-        SetSshOption(option, value ? value : g_sshDefaultSshYes, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshLogLevelIsSet(char* value, void* log)
-{
-    const char* option = "LogLevel";
-    FREE_MEMORY(g_desiredSshLogLevelIsSet);
-    return (NULL != (g_desiredSshLogLevelIsSet = DuplicateString(value ? value : g_sshDefaultSshLogLevel))) ?
-        SetSshOption(option, g_desiredSshLogLevelIsSet, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshMaxAuthTriesIsSet(char* value, void* log)
-{
-    const char* option = "MaxAuthTries";
-    FREE_MEMORY(g_desiredSshMaxAuthTriesIsSet);
-    return (NULL != (g_desiredSshMaxAuthTriesIsSet = DuplicateString(value ? value : g_sshDefaultSshMaxAuthTries))) ?
-        SetSshOption(option, g_desiredSshMaxAuthTriesIsSet, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureAllowUsersIsConfigured(char* value, void* log)
-{
-    const char* option = "AllowUsers";
-    FREE_MEMORY(g_desiredAllowUsersIsConfigured);
-    return (NULL != (g_desiredAllowUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshAllowUsers))) ?
-        SetSshOption(option, g_desiredAllowUsersIsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureDenyUsersIsConfigured(char* value, void* log)
-{
-    const char* option = "DenyUsers";
-    FREE_MEMORY(g_desiredDenyUsersIsConfigured);
-    return (NULL != (g_desiredDenyUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshDenyUsers))) ?
-        SetSshOption(option, g_desiredDenyUsersIsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureAllowGroupsIsConfigured(char* value, void* log)
-{
-    const char* option = "AllowGroups";
-    FREE_MEMORY(g_desiredAllowGroupsIsConfigured);
-    return (NULL != (g_desiredAllowGroupsIsConfigured = DuplicateString(value ? value : g_sshDefaultSshAllowGroups))) ?
-        SetSshOption(option, g_desiredAllowGroupsIsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureDenyGroupsConfigured(char* value, void* log)
-{
-    const char* option = "DenyGroups";
-    FREE_MEMORY(g_desiredDenyGroupsConfigured);
-    return (NULL != (g_desiredDenyGroupsConfigured = DuplicateString(value ? value : g_sshDefaultSshDenyGroups))) ?
-        SetSshOption(option, g_desiredDenyGroupsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshHostbasedAuthenticationIsDisabled(char* value, void* log)
-{
-    const char* option = "HostBasedAuthentication";
-    FREE_MEMORY(g_desiredSshHostbasedAuthenticationIsDisabled);
-    return (NULL != (g_desiredSshHostbasedAuthenticationIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
-        SetSshOption(option, g_desiredSshHostbasedAuthenticationIsDisabled, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshPermitRootLoginIsDisabled(char* value, void* log)
-{
-    const char* option = "PermitRootLogin";
-    FREE_MEMORY(g_desiredSshPermitRootLoginIsDisabled);
-    return (NULL != (g_desiredSshPermitRootLoginIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
-        SetSshOption(option, g_desiredSshPermitRootLoginIsDisabled, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshPermitEmptyPasswordsIsDisabled(char* value, void* log)
-{
-    const char* option = "PermitEmptyPasswords";
-    FREE_MEMORY(g_desiredSshPermitEmptyPasswordsIsDisabled);
-    return (NULL != (g_desiredSshPermitEmptyPasswordsIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
-        SetSshOption(option, g_desiredSshPermitEmptyPasswordsIsDisabled, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshClientIntervalCountMaxIsConfigured(char* value, void* log)
-{
-    const char* option = "ClientAliveCountMax";
-    FREE_MEMORY(g_desiredSshClientIntervalCountMaxIsConfigured);
-    return (NULL != (g_desiredSshClientIntervalCountMaxIsConfigured = DuplicateString(value ? value : g_sshDefaultSshClientIntervalCountMax))) ?
-        SetSshOption(option, g_desiredSshClientIntervalCountMaxIsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshClientAliveIntervalIsConfigured(char* value, void* log)
-{
-    const char* option = "ClientAliveInterval";
-    FREE_MEMORY(g_desiredSshClientAliveIntervalIsConfigured);
-    return (NULL != (g_desiredSshClientAliveIntervalIsConfigured = DuplicateString(value ? value : g_sshDefaultSshClientAliveInterval))) ?
-        SetSshOption(option, g_desiredSshClientAliveIntervalIsConfigured, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshLoginGraceTimeIsSet(char* value, void* log)
-{
-    const char* option = "LoginGraceTime";
-    FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
-    return (NULL != (g_desiredSshLoginGraceTimeIsSet = DuplicateString(value ? value : g_sshDefaultSshLoginGraceTime))) ?
-        SetSshOption(option, g_desiredSshLoginGraceTimeIsSet, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value, void* log)
-{
-    const char* option = "MACs";
-    FREE_MEMORY(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
-    return (NULL != (g_desiredOnlyApprovedMacAlgorithmsAreUsed = DuplicateString(value ? value : g_sshDefaultSshMacs))) ?
-        SetSshOption(option, g_desiredOnlyApprovedMacAlgorithmsAreUsed, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureSshWarningBannerIsEnabled(char* value, void* log)
-{
-    FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
-    return (NULL != (g_desiredSshWarningBannerIsEnabled = DuplicateString(value ? value : g_sshDefaultSshBannerText))) ?
-        SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig), g_desiredSshWarningBannerIsEnabled, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureUsersCannotSetSshEnvironmentOptions(char* value, void* log)
-{
-    const char* option = "PermitUserEnvironment";
-    FREE_MEMORY(g_desiredUsersCannotSetSshEnvironmentOptions);
-    return (NULL != (g_desiredUsersCannotSetSshEnvironmentOptions = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
-        SetSshOption(option, g_desiredUsersCannotSetSshEnvironmentOptions, log) : ENOMEM;
-}
-
-int SshUtilsRemediateEnsureAppropriateCiphersForSsh(char* value, void* log)
-{
-    const char* option = "Ciphers";
-    FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
-    return (NULL != (g_desiredAppropriateCiphersForSsh = DuplicateString(value ? value : g_sshDefaultSshCiphers))) ?
-        SetSshOption(option, g_desiredAppropriateCiphersForSsh, log) : ENOMEM;
+    return status;
 }
