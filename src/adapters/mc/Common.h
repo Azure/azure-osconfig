@@ -20,6 +20,9 @@
 #include <Mpi.h>
 #include <MpiClient.h>
 
+// Fallback for SSH policy
+#include <SshUtils.h>
+
 #include "MI.h"
 #include "MSFT_Credential.h"
 #include "OMI_BaseResource.h"

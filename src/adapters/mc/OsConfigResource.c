@@ -74,7 +74,7 @@ void __attribute__((constructor)) Initialize()
 {
     RefreshMpiClientSession();
 
-    // Fallback for SSH policy    
+    // Fallback for SSH policy
     InitializeSshAudit(GetLog());
 
     g_classKey = DuplicateString(g_defaultValue);
