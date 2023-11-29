@@ -3,6 +3,9 @@
 
 #include "Common.h"
 
+// Fallback for SSH policy
+#include <SshUtils.h>
+
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_nrp.bak"
@@ -305,6 +308,11 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                 CallMpiFree(objectValue);
             }
         }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
+        }
     }
     else
     {
@@ -332,6 +340,11 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
                 FREE_MEMORY(objectValue);
             }
+        }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
         }
     }
 
@@ -999,12 +1012,10 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         else
         {
             miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, %s) failed with %d, miResult %d",
-                g_desiredObjectName, g_desiredObjectValue, mpiResult, miResult);
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') failed with %d", g_desiredObjectName, g_desiredObjectValue, mpiResult);
             g_reportedMpiResult = mpiResult;
         }
     }
-
 
     // Set results to report back
     g_reportedMpiResult = 0;
