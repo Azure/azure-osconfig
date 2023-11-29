@@ -527,9 +527,10 @@ int CheckShhProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckShhProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log))
+    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
     {
         OsConfigLogInfo(log, "CheckShhProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+        status = 0;
     }
     else
     {
