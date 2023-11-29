@@ -27,17 +27,15 @@ char* DuplicateString(const char* source)
 char* DuplicateStringToLowercase(const char* source)
 {
     int length = 0, i = 0;
-    char* duplicate = DuplicateString(source);
+    char* duplicate = NULL;
 
-    if (NULL == duplicate)
+    if (NULL != (duplicate = DuplicateString(source)))
     {
-        return duplicate;
-    }
-
-    length = (int)strlen(duplicate);
-    for (i = 0; i < length; i++)
-    {
-        duplicate[i] = tolower(duplicate[i]);
+        length = (int)strlen(duplicate);
+        for (i = 0; i < length; i++)
+        {
+            duplicate[i] = tolower(duplicate[i]);
+        }
     }
 
     return duplicate;

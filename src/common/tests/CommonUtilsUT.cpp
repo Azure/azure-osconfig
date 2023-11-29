@@ -25,6 +25,7 @@ class CommonUtilsTest : public ::testing::Test
         const char* m_path = "~test.test";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
+        const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
 
         bool CreateTestFile(const char* path, const char* data)
         {
@@ -1045,8 +1046,8 @@ TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
 {
     char* duplicate = nullptr;
     EXPECT_EQ(nullptr, duplicate = DuplicateStringToLowercase(nullptr));
-    EXPECT_NE(nullptr, duplicate = DuplicateStringToLowercase("AB123Cd$E"));
-    EXPECT_STREQ("ab123cd$e", duplicate);
+    EXPECT_NE(nullptr, duplicate = DuplicateStringToLowercase(m_data));
+    EXPECT_STREQ(m_dataLowercase, duplicate);
     FREE_MEMORY(duplicate);
 }
 
