@@ -24,6 +24,25 @@ char* DuplicateString(const char* source)
     return duplicate;
 }
 
+char* DuplicateStringToLowercase(const char* source)
+{
+    int length = 0, i = 0;
+    char* duplicate = DuplicateString(source);
+
+    if (NULL == duplicate)
+    {
+        return duplicate;
+    }
+
+    length = (int)strlen(duplicate);
+    for (i = 0; i < length; i++)
+    {
+        duplicate[i] = tolower(duplicate[i]);
+    }
+
+    return duplicate;
+}
+
 #define MAX_FORMAT_ALLOCATE_STRING_LENGTH 512
 char* FormatAllocateString(const char* format, ...)
 {

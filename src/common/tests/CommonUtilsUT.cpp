@@ -1041,6 +1041,15 @@ TEST_F(CommonUtilsTest, DuplicateString)
     FREE_MEMORY(duplicate);
 }
 
+TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
+{
+    char* duplicate = nullptr;
+    EXPECT_EQ(nullptr, duplicate = DuplicateStringToLowercase(nullptr));
+    EXPECT_NE(nullptr, duplicate = DuplicateStringToLowercase("AB123Cd$E"));
+    EXPECT_STREQ("ab123cd$e", duplicate);
+    FREE_MEMORY(duplicate);
+}
+
 TEST_F(CommonUtilsTest, FormatAllocateString)
 {
     char* formattted = nullptr;
