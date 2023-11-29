@@ -912,5 +912,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     FREE_MEMORY(lowercase);
 
+    OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", reason ? *reason : "", status);
+
     return status;
 }
