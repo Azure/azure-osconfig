@@ -543,7 +543,7 @@ int CheckShhProtocol(char** reason, void* log)
     if ((0 == status) && reason)
     {
         FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+        *reason = FormatAllocateString("%s'%s' is found uncommented in %s", SECURITY_AUDIT_PASS, protocol, g_sshServerConfiguration);
     }
 
     FREE_MEMORY(protocol);
