@@ -530,19 +530,19 @@ int CheckShhProtocol(char** reason, void* log)
     else if (EEXIST == CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log))
     {
         OsConfigLogInfo(log, "CheckShhProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        if (reason)
-        {
-            *reason = FormatAllocateString("PASS'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        }
     }
     else
     {
         OsConfigLogError(log, "CheckShhProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        if (reason)
-        {
-            *reason = FormatAllocateString("'%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
-        }
+        OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
+            "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
+    }
+
+    if ((0 == status) && reason)
+    {
+        FREE_MEMORY(*reason);
+        *reason = FormatAllocateString("%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
     }
 
     FREE_MEMORY(protocol);

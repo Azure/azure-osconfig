@@ -459,8 +459,8 @@ static long g_passwordExpirationWarning = 7;
 static long g_passwordExpiration = 365;
 static long g_maxInactiveDays = 30;
 
-static const char* g_pass = "PASS";
-static const char* g_fail = "FAIL";
+static const char* g_pass = SECURITY_AUDIT_PASS;
+static const char* g_fail = SECURITY_AUDIT_FAIL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 

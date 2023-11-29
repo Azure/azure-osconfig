@@ -51,6 +51,9 @@
 //#define PROTOCOL_MQTT 1 
 #define PROTOCOL_MQTT_WS 2
 
+#define SECURITY_AUDIT_PASS "PASS"
+#define SECURITY_AUDIT_FAIL "FAIL"
+
 #ifdef __cplusplus
 extern "C"
 {
