@@ -12,10 +12,8 @@
 
 #define MAX_PAYLOAD_LENGTH 0
 
-// OSConfig's MPI server
-#define MPI_SERVER "osconfig-platform"
+#define MPI_CLIENT_NAME "OSConfig Universal NRP"
 
-static const char* g_mpiClientName = "OSConfig NRP";
 static const char* g_defaultValue = "-";
 static const char* g_passValue = SECURITY_AUDIT_PASS;
 static const char* g_failValue = SECURITY_AUDIT_FAIL;
@@ -48,18 +46,19 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 static bool RefreshMpiClientSession(void)
 {
+    const char* mpiServer = "osconfig-platform";
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(MPI_SERVER, GetLog()))
+    if (g_mpiHandle && IsDaemonActive(mpiServer, GetLog()))
     {
         return status;
     }
 
-    if (true == (status = EnableAndStartDaemon(MPI_SERVER, GetLog())))
+    if (true == (status = EnableAndStartDaemon(mpiServer, GetLog())))
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_mpiClientName, MAX_PAYLOAD_LENGTH, GetLog())))
+        if (NULL == (g_mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
             status = false;
@@ -67,7 +66,7 @@ static bool RefreshMpiClientSession(void)
     }
     else
     {
-        OsConfigLogError(GetLog(), "[OsConfigResource] MPI server could not be started");
+        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", mpiServer);
     }
 
     return status;
@@ -77,15 +76,15 @@ void __attribute__((constructor)) Initialize()
 {
     RefreshMpiClientSession();
 
-    // Fallback for SSH policy
-    InitializeSshAudit(GetLog());
-
     g_classKey = DuplicateString(g_defaultValue);
     g_componentName = DuplicateString(g_defaultValue);
     g_reportedObjectName = DuplicateString(g_defaultValue);
     g_expectedObjectValue = DuplicateString(g_passValue);
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
+
+    // Fallback for SSH policy
+    InitializeSshAudit(GetLog());
 
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }

@@ -6,7 +6,6 @@
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
-static const char* g_sshdDashTCommand = "sshd -T";
 
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
@@ -113,6 +112,7 @@ static char* g_desiredAppropriateCiphersForSsh = NULL;
 
 static char* GetSshServerState(const char* name, void* log)
 {
+    const char* sshdDashTCommand = "sshd -T";
     const char* commandTemplateForOne = "%s | grep %s";
     char* command = NULL;
     char* textResult = NULL;
@@ -120,15 +120,15 @@ static char* GetSshServerState(const char* name, void* log)
 
     if (NULL == name)
     {
-        if (0 != (status = ExecuteCommand(NULL, g_sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
+        if (0 != (status = ExecuteCommand(NULL, sshdDashTCommand, true, false, 0, 0, &textResult, NULL, NULL)))
         {
-            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d and '%s'", g_sshdDashTCommand, status, textResult);
+            OsConfigLogError(log, "GetSshServerState: '%s' failed with %d and '%s'", sshdDashTCommand, status, textResult);
             FREE_MEMORY(textResult);
         }
     }
     else
     {
-        if (NULL != (command = FormatAllocateString(commandTemplateForOne, g_sshdDashTCommand, name)))
+        if (NULL != (command = FormatAllocateString(commandTemplateForOne, sshdDashTCommand, name)))
         {
             if (0 != (status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL)))
             {
