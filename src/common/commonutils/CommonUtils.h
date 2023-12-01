@@ -34,8 +34,6 @@
     }\
 }\
 
-#define PLAIN_STATUS_FROM_ERRNO(a) ((0 == a) ? "passed" : "failed")
-
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
@@ -52,6 +50,9 @@
 // Uncomment next line when the PROTOCOL_MQTT macro will be needed (compiling with -Werror-unused-macros)
 //#define PROTOCOL_MQTT 1 
 #define PROTOCOL_MQTT_WS 2
+
+#define SECURITY_AUDIT_PASS "PASS"
+#define SECURITY_AUDIT_FAIL "FAIL"
 
 #ifdef __cplusplus
 extern "C"
@@ -105,6 +106,7 @@ char* GetStringOptionFromFile(const char* fileName, const char* option, char sep
 int GetIntegerOptionFromFile(const char* fileName, const char* option, char separator, void* log);
 
 char* DuplicateString(const char* source);
+char* DuplicateStringToLowercase(const char* source);
 char* FormatAllocateString(const char* format, ...);
 
 size_t HashString(const char* source);

@@ -3,19 +3,20 @@
 
 #include "Common.h"
 
+// Fallback for SSH policy
+#include <SshUtils.h>
+
 // The log file for the NRP
 #define LOG_FILE "/var/log/osconfig_nrp.log"
 #define ROLLED_LOG_FILE "/var/log/osconfig_nrp.bak"
 
 #define MAX_PAYLOAD_LENGTH 0
 
-// OSConfig's MPI server
-#define MPI_SERVER "osconfig-platform"
+#define MPI_CLIENT_NAME "OSConfig Universal NRP"
 
-static const char* g_mpiClientName = "OSConfig NRP";
 static const char* g_defaultValue = "-";
-static const char* g_passValue = "PASS";
-static const char* g_failValue = "FAIL";
+static const char* g_passValue = SECURITY_AUDIT_PASS;
+static const char* g_failValue = SECURITY_AUDIT_FAIL;
 
 // Desired (write; also reported together with read group)
 static char* g_classKey = NULL;
@@ -45,18 +46,19 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 static bool RefreshMpiClientSession(void)
 {
+    const char* mpiServer = "osconfig-platform";
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(MPI_SERVER, GetLog()))
+    if (g_mpiHandle && IsDaemonActive(mpiServer, GetLog()))
     {
         return status;
     }
 
-    if (true == (status = EnableAndStartDaemon(MPI_SERVER, GetLog())))
+    if (true == (status = EnableAndStartDaemon(mpiServer, GetLog())))
     {
         sleep(1);
 
-        if (NULL == (g_mpiHandle = CallMpiOpen(g_mpiClientName, MAX_PAYLOAD_LENGTH, GetLog())))
+        if (NULL == (g_mpiHandle = CallMpiOpen(MPI_CLIENT_NAME, MAX_PAYLOAD_LENGTH, GetLog())))
         {
             OsConfigLogError(GetLog(), "[OsConfigResource] MpiOpen failed");
             status = false;
@@ -64,7 +66,7 @@ static bool RefreshMpiClientSession(void)
     }
     else
     {
-        OsConfigLogError(GetLog(), "[OsConfigResource] MPI server could not be started");
+        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", mpiServer);
     }
 
     return status;
@@ -81,6 +83,9 @@ void __attribute__((constructor)) Initialize()
     g_desiredObjectName = DuplicateString(g_defaultValue);
     g_desiredObjectValue = DuplicateString(g_failValue);
 
+    // Fallback for SSH policy
+    InitializeSshAudit(GetLog());
+
     OsConfigLogInfo(GetLog(), "[OsConfigResource] Initialized (PID: %d, MPI handle: %p)", getpid(), g_mpiHandle);
 }
 
@@ -93,6 +98,9 @@ void __attribute__((destructor)) Destroy()
         CallMpiClose(g_mpiHandle, GetLog());
         g_mpiHandle = NULL;
     }
+
+    // Fallback for SSH policy
+    SshAuditCleanup(GetLog());
 
     CloseLog(&g_log);
 
@@ -235,15 +243,10 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
     if (NULL == g_mpiHandle)
     {
-        if (!RefreshMpiClientSession())
-        {
-            mpiResult = ESRCH;
-            miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] Failed to start the MPI server (%d)", who, mpiResult);
-        }
+        RefreshMpiClientSession();
     }
 
-    if (g_mpiHandle)
+    if (NULL != g_mpiHandle)
     {
         if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
         {
@@ -256,7 +259,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             }
             else
             {
-                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): %s (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
+                LogInfo(context, GetLog(), "[%s] CallMpiGet(%s, %s): '%s' (%d)", who, g_componentName, g_reportedObjectName, objectValue, objectValueLength);
                 
                 if (NULL != (payloadString = malloc(objectValueLength + 1)))
                 {
@@ -304,11 +307,47 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
                 CallMpiFree(objectValue);
             }
         }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
+        }
+    }
+    else
+    {
+        // Fallback for SSH policy
+        if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
+        {
+            if (NULL == objectValue)
+            {
+                mpiResult = ENODATA;
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
+                    who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
+            }
+            else
+            {
+                LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
+
+                FREE_MEMORY(g_reportedObjectValue);
+                if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
+                {
+                    mpiResult = ENOMEM;
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
+                }
+
+                FREE_MEMORY(objectValue);
+            }
+        }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
+        }
     }
 
     g_reportedMpiResult = mpiResult;
-
-    FREE_MEMORY(payloadString);
 
     return miResult;
 }
@@ -325,8 +364,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    const char* passCode = "PASS";
-    const char* failCode = "FAIL";
     const char* auditPassed = "Audit passed";
     const char* auditFailed = "Audit failed. See /var/log/osconfig*";
 
@@ -444,7 +481,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     if ((in->InputResource.value->ExpectedObjectValue.exists == MI_TRUE) && (in->InputResource.value->ExpectedObjectValue.value != NULL))
     {
         FREE_MEMORY(g_expectedObjectValue);
-        if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        if (NULL == (g_expectedObjectValue = DuplicateString(in->InputResource.value->ExpectedObjectValue.value)))
         {
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->ExpectedObjectValue.value);
             g_expectedObjectValue = DuplicateString(g_passValue);
@@ -564,7 +601,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        reasonCode = DuplicateString(passCode);
+        reasonCode = DuplicateString(g_passValue);
         if ((0 == strcmp(g_reportedObjectValue, g_passValue)) || 
             ((strlen(g_reportedObjectValue) > strlen(g_passValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_passValue))))))
         {
@@ -573,7 +610,7 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
     }
     else
     {
-        reasonCode = DuplicateString(failCode);
+        reasonCode = DuplicateString(g_failValue);
         if ((0 == strcmp(g_reportedObjectValue, g_failValue)) || (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue))))
         {
             reasonPhrase = DuplicateString(auditFailed);
@@ -927,15 +964,10 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     if (NULL == g_mpiHandle)
     {
-        if (!RefreshMpiClientSession())
-        {
-            miResult = MI_RESULT_FAILED;
-            mpiResult = ESRCH;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Failed starting the MPI server (%d)", mpiResult);
-        }
+        RefreshMpiClientSession();
     }
 
-    if (g_mpiHandle)
+    if (NULL != g_mpiHandle)
     {
         payloadSize = (int)strlen(g_desiredObjectValue) + 2;
         if (NULL != (payloadString = malloc(payloadSize + 1)))
@@ -966,6 +998,20 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
         if (MPI_OK != mpiResult)
         {
+            g_reportedMpiResult = mpiResult;
+        }
+    }
+    else
+    {
+        // Fallback for SSH policy
+        if (0 == (mpiResult = ProcessSshAuditCheck(g_desiredObjectName, g_desiredObjectValue, NULL, GetLog())))
+        {
+            LogInfo(context, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') ok", g_desiredObjectName, g_desiredObjectValue);
+        }
+        else
+        {
+            miResult = MI_RESULT_FAILED;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] ProcessSshAuditCheck(%s, '%s') failed with %d", g_desiredObjectName, g_desiredObjectValue, mpiResult);
             g_reportedMpiResult = mpiResult;
         }
     }

@@ -25,6 +25,7 @@ class CommonUtilsTest : public ::testing::Test
         const char* m_path = "~test.test";
         const char* m_data = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM";
         const char* m_dataWithEol = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 QWERTYUIOPASDFGHJKLZXCVBNM\n";
+        const char* m_dataLowercase = "`-=~!@#$%^&*()_+,./<>?'[]\\{}| qwertyuiopasdfghjklzxcvbnm 1234567890 qwertyuiopasdfghjklzxcvbnm";
 
         bool CreateTestFile(const char* path, const char* data)
         {
@@ -1041,6 +1042,15 @@ TEST_F(CommonUtilsTest, DuplicateString)
     FREE_MEMORY(duplicate);
 }
 
+TEST_F(CommonUtilsTest, DuplicateStringToLowercase)
+{
+    char* duplicate = nullptr;
+    EXPECT_EQ(nullptr, duplicate = DuplicateStringToLowercase(nullptr));
+    EXPECT_NE(nullptr, duplicate = DuplicateStringToLowercase(m_data));
+    EXPECT_STREQ(m_dataLowercase, duplicate);
+    FREE_MEMORY(duplicate);
+}
+
 TEST_F(CommonUtilsTest, FormatAllocateString)
 {
     char* formattted = nullptr;
@@ -1736,26 +1746,18 @@ TEST_F(CommonUtilsTest, GetOptionFromFile)
 TEST_F(CommonUtilsTest, CheckLockoutForFailedPasswordAttempts)
 {
     const char* goodTestFileContents[] = {
-        "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=1000",
-        "auth required pam_tally2.so file=/var/log/tallylog unlock_time=2000 deny=2",
-        "auth required pam_tally2.so file=/var/log/tallylog deny=3 even_deny_root unlock_time=1000",
-        "auth required pam_tally2.so   file=/var/log/tallylog test deny=3 even_deny_root 123 unlock_time=1000 456",
-        "auth        required      pam_tally2.so  file=/var/log/tallylog deny=3  unlock_time=100",
-        "auth required      pam_tally2.so  file=/var/log/tallylog deny=1 unlock_time=10",
-        "auth                   required pam_tally2.so       file=/var/log/tallylog    deny=5  unlock_time=2000",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=1 unlock_time=2000",
+        "auth      required pam_tally2.so file=/var/log/tallylog deny=1 even_deny_root unlock_time=2000",
+        "auth required      pam_tally2.so file=/var/log/tallylog deny=2 unlock_time=210",
+        "auth required pam_tally2.so     file=/var/log/tallylog deny=2 even_deny_root unlock_time=345",
+        "auth required pam_tally2.so file=/var/log/tallylog     deny=3 unlock_time=555",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=3     even_deny_root unlock_time=12",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=4    unlock_time=3000",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=4 even_deny_root     unlock_time=1",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=5 unlock_time=203",
+        "auth required pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=5001",
         "This is a positive test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
-        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123",
-        "auth	[success=1 default=ignore]	pam_unix.so nullok\n"
-        "# here's the fallback if no module succeeds\n"
-        "auth	requisite			pam_deny.so\n"
-        "# prime the stack with a positive return value if there isn't one already;\n"
-        "# this avoids us returning an error just because nothing sets a success code\n"
-        "# since the modules above will each just jump around\n"
-        "auth	required			pam_permit.so\n"
-        "auth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=888\n"
-        "# and here are more per-package modules (the Additional block)\n"
-        "auth	optional			pam_cap.so\n" 
-        "# end of pam-auth-update config"
+        "This is a positive test\nAnother one with auth test\nauth required pam_tally2.so file=/var/log/tallylog deny=3 unlock_time=123"
     };
 
     const char* badTestFileContents[] = {

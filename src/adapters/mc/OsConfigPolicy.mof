@@ -6,7 +6,7 @@ instance of OsConfigResource as $OsConfigResource0ref
     ReportedObjectName = "auditEnsurePermissionsOnEtcSshSshdConfig";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsurePermissionsOnEtcSshSshdConfig";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -21,7 +21,7 @@ instance of OsConfigResource as $OsConfigResource1ref
     ReportedObjectName = "auditEnsureSshBestPracticeProtocol";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshBestPracticeProtocol";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "2";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -36,7 +36,7 @@ instance of OsConfigResource as $OsConfigResource2ref
     ReportedObjectName = "auditEnsureSshBestPracticeIgnoreRhosts";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshBestPracticeIgnoreRhosts";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "yes";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -51,7 +51,7 @@ instance of OsConfigResource as $OsConfigResource3ref
     ReportedObjectName = "auditEnsureSshLogLevelIsSet";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshLogLevelIsSet";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "INFO";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -66,7 +66,7 @@ instance of OsConfigResource as $OsConfigResource4ref
     ReportedObjectName = "auditEnsureSshMaxAuthTriesIsSet";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshMaxAuthTriesIsSet";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "6";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -81,7 +81,7 @@ instance of OsConfigResource as $OsConfigResource5ref
     ReportedObjectName = "auditEnsureAllowUsersIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllowUsersIsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "*@*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -96,7 +96,7 @@ instance of OsConfigResource as $OsConfigResource6ref
     ReportedObjectName = "auditEnsureDenyUsersIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureDenyUsersIsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -111,7 +111,7 @@ instance of OsConfigResource as $OsConfigResource7ref
     ReportedObjectName = "auditEnsureAllowGroupsIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAllowGroupsIsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "*";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -126,7 +126,7 @@ instance of OsConfigResource as $OsConfigResource8ref
     ExpectedObjectValue = "PASS";
     ReportedObjectName = "auditEnsureDenyGroupsConfigured";
     DesiredObjectName = "remediateEnsureDenyGroupsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "root";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -141,7 +141,7 @@ instance of OsConfigResource as $OsConfigResource9ref
     ReportedObjectName = "auditEnsureSshHostbasedAuthenticationIsDisabled";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshHostbasedAuthenticationIsDisabled";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -156,7 +156,7 @@ instance of OsConfigResource as $OsConfigResource10ref
     ReportedObjectName = "auditEnsureSshPermitRootLoginIsDisabled";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshPermitRootLoginIsDisabled";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -171,7 +171,7 @@ instance of OsConfigResource as $OsConfigResource11ref
     ReportedObjectName = "auditEnsureSshPermitEmptyPasswordsIsDisabled";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshPermitEmptyPasswordsIsDisabled";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -186,7 +186,7 @@ instance of OsConfigResource as $OsConfigResource12ref
     ReportedObjectName = "auditEnsureSshClientIntervalCountMaxIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshClientIntervalCountMaxIsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "0";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -201,7 +201,7 @@ instance of OsConfigResource as $OsConfigResource13ref
     ReportedObjectName = "auditEnsureSshClientAliveIntervalIsConfigured";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshClientAliveIntervalIsConfigured";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "3600";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -216,7 +216,7 @@ instance of OsConfigResource as $OsConfigResource14ref
     ReportedObjectName = "auditEnsureSshLoginGraceTimeIsSet";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshLoginGraceTimeIsSet";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "60";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -231,7 +231,7 @@ instance of OsConfigResource as $OsConfigResource15ref
     ReportedObjectName = "auditEnsureOnlyApprovedMacAlgorithmsAreUsed";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureOnlyApprovedMacAlgorithmsAreUsed";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -246,7 +246,7 @@ instance of OsConfigResource as $OsConfigResource16ref
     ReportedObjectName = "auditEnsureSshWarningBannerIsEnabled";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureSshWarningBannerIsEnabled";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "#######################################################################\n\nAuthorized access only!\n\nIf you are not authorized to access or use this system, disconnect now!\n\n#######################################################################\n";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -261,7 +261,7 @@ instance of OsConfigResource as $OsConfigResource17ref
     ReportedObjectName = "auditEnsureUsersCannotSetSshEnvironmentOptions";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureUsersCannotSetSshEnvironmentOptions";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "no";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -276,7 +276,7 @@ instance of OsConfigResource as $OsConfigResource118ref
     ReportedObjectName = "auditEnsureAppropriateCiphersForSsh";
     ExpectedObjectValue = "PASS";
     DesiredObjectName = "remediateEnsureAppropriateCiphersForSsh";
-    DesiredObjectValue = "PASS";
+    DesiredObjectValue = "aes128-ctr,aes192-ctr,aes256-ctr";
     ModuleName = "GuestConfiguration";
     ModuleVersion = "1.0.0";
     ConfigurationName = "OsConfigSecurityBaseline";
@@ -285,9 +285,9 @@ instance of OsConfigResource as $OsConfigResource118ref
 
 instance of OMI_ConfigurationDocument
 {
-    Version="3.0.0";
+    Version="1.0.0";
     CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
     Author="Microsoft";
-    GenerationDate="11/13/2023 01:26:00 AM PST";
+    GenerationDate="11/17/2023 12:17:00 PM PST";
     Name="OsConfigSshServerSecurity";
 };
