@@ -511,7 +511,7 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     return status;
 }
 
-int CheckShhProtocol(char** reason, void* log)
+int CheckSshProtocol(char** reason, void* log)
 {
     const char* protocolTemplate = "%s %s";
     char* protocol = NULL;
@@ -524,17 +524,17 @@ int CheckShhProtocol(char** reason, void* log)
 
     if (NULL == (protocol = FormatAllocateString(protocolTemplate, g_sshProtocol, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol)))
     {
-        OsConfigLogError(log, "CheckShhProtocol: FormatAllocateString failed");
+        OsConfigLogError(log, "CheckSshProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
     else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
     {
-        OsConfigLogInfo(log, "CheckShhProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+        OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
     }
     else
     {
-        OsConfigLogError(log, "CheckShhProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
             "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
@@ -702,7 +702,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeProtocolObject))
     {
-        status = CheckShhProtocol(reason, log);
+        status = CheckSshProtocol(reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureSshBestPracticeIgnoreRhostsObject))
     {
