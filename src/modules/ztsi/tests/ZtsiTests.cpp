@@ -80,6 +80,30 @@ namespace OSConfig::Platform::Tests
     Ztsi* ZtsiTests::ztsi;
     std::string ZtsiTests::filename = "./ztsi/config.temp.json";
 
+    TEST_F(ZtsiTests, ValidClientName)
+    {
+        std::list<std::string> validClientNames = {
+            "Azure OSConfig 5;0.0.0.20210927",
+            "Azure OSConfig 5;1.1.1.20210927",
+            "Azure OSConfig 5;11.11.11.20210927",
+            "Azure OSConfig 6;0.0.0.20210927",
+            "Azure OSConfig 5;0.0.0.20210927abc123"
+            "Azure OSConfig 10;0.0.0.20210927abc123"
+        };
+
+        for (const auto& validClientName : validClientNames)
+        {
+            ASSERT_TRUE(IsValidClientName(validClientName.c_str()));
+        }
+
+        time_t t = time(0);
+        char dateNow[DATE_FORMAT_LENGTH] = { 0 };
+        strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
+
+        std::string clientNameWithCurrentDate = "Azure OSConfig 5;0.0.0." + std::string(dateNow);
+        ASSERT_TRUE(IsValidClientName(clientNameWithCurrentDate.c_str()));
+    }
+
     TEST_F(ZtsiTests, GetSetMaxScheduledAttestationsPerDay)
     {
         char maxScheduledAttestationsPerDay[] = "24";

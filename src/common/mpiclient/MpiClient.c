@@ -307,13 +307,6 @@ int CallMpiSet(const char* componentName, const char* propertyName, const MPI_JS
         return status;
     }
 
-    if (!IsValidMimObjectPayload(payload, payloadSizeBytes, log))
-    {
-        status = EINVAL;
-        OsConfigLogError(log, "CallMpiSet(%s, %s): invalid payload (%d)", componentName, propertyName, status);
-        return status;
-    }
-
     requestSize = strlen(requestBodyFormat) + strlen((char*)g_mpiHandle) + strlen(componentName) + strlen(propertyName) + payloadSizeBytes + 1;
 
     request = (char*)malloc(requestSize);
@@ -409,7 +402,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
             status = EINVAL;
         }
     }
-    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload)) || (!IsValidMimObjectPayload(*payload, *payloadSizeBytes, log))))
+    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload))))
     {
         status = EINVAL;
         OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);

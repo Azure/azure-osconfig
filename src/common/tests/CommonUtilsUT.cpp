@@ -514,30 +514,6 @@ TEST_F(CommonUtilsTest, DirectoryExists)
     EXPECT_TRUE(DirectoryExists("/etc"));
 }
 
-TEST_F(CommonUtilsTest, ValidClientName)
-{
-    std::list<std::string> validClientNames = {
-        "Azure OSConfig 5;0.0.0.20210927",
-        "Azure OSConfig 5;1.1.1.20210927",
-        "Azure OSConfig 5;11.11.11.20210927",
-        "Azure OSConfig 6;0.0.0.20210927",
-        "Azure OSConfig 5;0.0.0.20210927abc123"
-        "Azure OSConfig 10;0.0.0.20210927abc123"
-    };
-
-    for (const auto& validClientName : validClientNames)
-    {
-        ASSERT_TRUE(IsValidClientName(validClientName.c_str()));
-    }
-
-    time_t t = time(0);
-    char dateNow[DATE_FORMAT_LENGTH] = {0};
-    strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
-
-    std::string clientNameWithCurrentDate = "Azure OSConfig 5;0.0.0." + std::string(dateNow);
-    ASSERT_TRUE(IsValidClientName(clientNameWithCurrentDate.c_str()));
-}
-
 TEST_F(CommonUtilsTest, InvalidClientName)
 {
     const char* sscanfDateFormat = "%4d%2d%2d";
@@ -582,74 +558,6 @@ TEST_F(CommonUtilsTest, InvalidClientName)
     ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate.c_str()));
     ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate.c_str()));
     ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate.c_str()));
-}
-
-TEST_F(CommonUtilsTest, ValidateMimObjectPayload)
-{
-    // Valid payloads
-    const char stringPayload[] = R"""("string")""";
-    const char integerPayload[] = R"""(1)""";
-    const char booleanPayload[] = R"""(true)""";
-    const char objectPayload[] = R"""({
-            "string": "value",
-            "integer": 1,
-            "boolean": true,
-            "integerEnum": 1,
-            "stringArray": ["value1", "value2"],
-            "integerArray": [1, 2],
-            "stringMap": {"key1": "value1", "key2": "value2"},
-            "integerMap": {"key1": 1, "key2": 2}
-        })""";
-    const char arrayObjectPayload[] = R"""([
-        {
-            "string": "value",
-            "integer": 1,
-            "boolean": true,
-            "integerEnum": 1,
-            "stringArray": ["value1", "value2"],
-            "integerArray": [1, 2],
-            "stringMap": {"key1": "value1", "key2": "value2"},
-            "integerMap": {"key1": 1, "key2": 2}
-        },
-        {
-            "string": "value",
-            "integer": 1,
-            "boolean": true,
-            "integerEnum": 1,
-            "stringArray": ["value1", "value2"],
-            "integerArray": [1, 2],
-            "stringMap": {"key1": "value1", "key2": "value2"},
-            "integerMap": {"key1": 1, "key2": 2}
-        }
-    ])""";
-    const char stringArrayPayload[] = R"""(["value1", "value2"])""";
-    const char integerArrayPayload[] = R"""([1, 2])""";
-    const char stringMap[] = R"""({"key1": "value1", "key2" : "value2", "key3": null})""";
-    const char integerMap[] = R"""({"key1": 1, "key2" : 2, "key3": null})""";
-
-    ASSERT_TRUE(IsValidMimObjectPayload(stringPayload, sizeof(stringPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(integerPayload, sizeof(integerPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(booleanPayload, sizeof(booleanPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(objectPayload, sizeof(objectPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(arrayObjectPayload, sizeof(arrayObjectPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(stringArrayPayload, sizeof(stringArrayPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(integerArrayPayload, sizeof(integerArrayPayload), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(stringMap, sizeof(stringMap), nullptr));
-    ASSERT_TRUE(IsValidMimObjectPayload(integerMap, sizeof(integerMap), nullptr));
-
-    // Invalid payloads
-    const char invalidJson[] = R"""(invalid)""";
-    const char invalidstringArrayPayload[] = R"""({"stringArray": ["value1", 1]})""";
-    const char invalidIntegerArrayPayload[] = R"""({"integerArray": [1, "value1"]})""";
-    const char invalidStringMapPayload[] = R"""({"stringMap": {"key1": "value1", "key2": 1}})""";
-    const char invalidIntegerMapPayload[] = R"""({"integerMap": {"key1": 1, "key2": "value1"}})""";
-
-    ASSERT_FALSE(IsValidMimObjectPayload(nullptr, 0, nullptr));
-    ASSERT_FALSE(IsValidMimObjectPayload(invalidJson, sizeof(invalidJson), nullptr));
-    ASSERT_FALSE(IsValidMimObjectPayload(invalidstringArrayPayload, sizeof(invalidstringArrayPayload), nullptr));
-    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerArrayPayload, sizeof(invalidIntegerArrayPayload), nullptr));
-    ASSERT_FALSE(IsValidMimObjectPayload(invalidStringMapPayload, sizeof(invalidStringMapPayload), nullptr));
-    ASSERT_FALSE(IsValidMimObjectPayload(invalidIntegerMapPayload, sizeof(invalidIntegerMapPayload), nullptr));
 }
 
 struct HttpProxyOptions
