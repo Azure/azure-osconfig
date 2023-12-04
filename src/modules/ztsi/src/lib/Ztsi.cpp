@@ -91,6 +91,84 @@ int SerializeJsonObject(MMI_JSON_STRING* payload, int* payloadSizeBytes, unsigne
     return status;
 }
 
+bool IsValidClientName(const char* name)
+{
+    // "Azure OSConfig <model version>;<major>.<minor>.<patch>.<yyyymmdd><build>"
+    const std::string productInfoTemplate = "^((Azure OSConfig )([0-9]+);(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.([0-9]{8})).*$";
+    const std::string clientNamePrefix = "Azure OSConfig ";
+    const std::string modelVersionDelimiter = ";";
+    const std::string semanticVersionDelimeter = ".";
+
+    // OSConfig model version 5 published on September 27, 2021
+    const int referenceModelVersion = 5;
+    const int referenceReleaseDay = 27;
+    const int referenceReleaseMonth = 9;
+    const int referenceReleaseYear = 2021;
+
+    // String length of date string yyyymmmdd
+    const int dateLength = 9;
+
+    bool isValid = true;
+
+    const std::string clientName = name;
+
+    // Regex for validating the client name against the OSConfig product info
+    std::regex pattern(productInfoTemplate);
+
+    if (!clientName.empty() && std::regex_match(clientName, pattern))
+    {
+        std::string versionInfo = clientName.substr(clientNamePrefix.length());
+        std::string modelVersion = versionInfo.substr(0, versionInfo.find(modelVersionDelimiter));
+
+        int modelVersionNumber = std::stoi(modelVersion);
+        if (modelVersionNumber < referenceModelVersion)
+        {
+            isValid = false;
+        }
+
+        // Get build date from versionInfo
+        int position = 0;
+        for (int i = 0; i < 3; i++)
+        {
+            position = versionInfo.find(semanticVersionDelimeter, position + 1);
+        }
+
+        std::string buildDate = versionInfo.substr(position + 1, position + dateLength);
+        int year = std::stoi(buildDate.substr(0, 4));
+        int month = std::stoi(buildDate.substr(4, 2));
+        int day = std::stoi(buildDate.substr(6, 2));
+
+        if ((month < 1) || (month > 12) || (day < 1) || (day > 31))
+        {
+            isValid = false;
+        }
+
+        char dateNow[dateLength] = { 0 };
+        int monthNow = 0, dayNow = 0, yearNow = 0;
+        time_t t = time(0);
+        strftime(dateNow, dateLength, "%Y%m%d", localtime(&t));
+        sscanf(dateNow, "%4d%2d%2d", &yearNow, &monthNow, &dayNow);
+
+        // Check if the build date is in the future
+        if ((yearNow < year) || ((yearNow == year) && ((monthNow < month) || ((monthNow == month) && (dayNow < day)))))
+        {
+            isValid = false;
+        }
+
+        // Check if the build date is from the past - before the reference release date
+        if ((year < referenceReleaseYear) || ((year == referenceReleaseYear) && ((month < referenceReleaseMonth) || ((month == referenceReleaseMonth) && (day < referenceReleaseDay)))))
+        {
+            isValid = false;
+        }
+    }
+    else
+    {
+        isValid = false;
+    }
+
+    return isValid;
+}
+
 OSCONFIG_LOG_HANDLE ZtsiLog::m_log = nullptr;
 
 Ztsi::Ztsi(std::string filePath, unsigned int maxPayloadSizeBytes)
