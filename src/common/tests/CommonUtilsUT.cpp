@@ -16,9 +16,6 @@
 
 using namespace std;
 
-#define STRFTIME_DATE_FORMAT "%Y%m%d"
-#define DATE_FORMAT_LENGTH 9
-
 class CommonUtilsTest : public ::testing::Test
 {
     protected:
