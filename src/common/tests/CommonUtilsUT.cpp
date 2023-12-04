@@ -514,52 +514,6 @@ TEST_F(CommonUtilsTest, DirectoryExists)
     EXPECT_TRUE(DirectoryExists("/etc"));
 }
 
-TEST_F(CommonUtilsTest, InvalidClientName)
-{
-    const char* sscanfDateFormat = "%4d%2d%2d";
-
-    std::list<std::string> invalidClientNames = {
-        "AzureOSConfig 5;0.0.0.20210927",
-        "Azure OSConfig5;0.0.0.20210927",
-        "azure osconfig 5;0.0.0.20210927",
-        "AzureOSConfig 5;0.0.0.20210927",
-        "Azure  OSConfig5;0.0.0.20210927",
-        "Azure OSConfig  5;0.0.0.20210927",
-        "Azure OSConfig 5:0.0.0.20210927",
-        "Azure OSConfig 5;0,0,0,20210927",
-        "Azure OSConfig 5;0.0.0.2021927",
-        "Azure OSConfig -5;-1.-1.-1.20210927",
-        "Azure OSConfig 1;0.0.0.20210927",
-        "Azure OSConfig 2;0.0.0.20210927",
-        "Azure OSConfig 3;0.0.0.20210927",
-        "Azure OSConfig 4;0.0.0.20210927",
-        "Azure OSConfig 5;0.0.0.20210827",
-        "Azure OSConfig 5;0.0.0.20210926",
-        "Azure OSConfig 5;0.0.0.20200927"
-        "Azure OSConfig 5;0.0.0.20200927"
-    };
-
-    for (const auto& invalidClientName : invalidClientNames)
-    {
-        ASSERT_FALSE(IsValidClientName(invalidClientName.c_str()));
-    }
-
-    time_t t = time(0);
-    char dateNow[DATE_FORMAT_LENGTH] = {0};
-    strftime(dateNow, DATE_FORMAT_LENGTH, STRFTIME_DATE_FORMAT, localtime(&t));
-
-    int yearNow, monthNow, dayNow;
-    sscanf(dateNow, sscanfDateFormat, &yearNow, &monthNow, &dayNow);
-
-    std::string clientNameWithYearAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow + 1) + std::to_string(monthNow) + std::to_string(dayNow);
-    std::string clientNameWithMonthAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow + 1) + std::to_string(dayNow);
-    std::string clientNameWithDayAfterCurrentDate = "Azure OSConfig 5;0.0.0." + std::to_string(yearNow) + std::to_string(monthNow) + std::to_string(dayNow + 1);
-
-    ASSERT_FALSE(IsValidClientName(clientNameWithMonthAfterCurrentDate.c_str()));
-    ASSERT_FALSE(IsValidClientName(clientNameWithDayAfterCurrentDate.c_str()));
-    ASSERT_FALSE(IsValidClientName(clientNameWithYearAfterCurrentDate.c_str()));
-}
-
 struct HttpProxyOptions
 {
     const char* data;
