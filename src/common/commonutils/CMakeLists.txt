@@ -3,8 +3,6 @@
 
 project(commonutils)
 
-find_package(RapidJSON REQUIRED)
-
 add_library(commonutils STATIC 
     CommandUtils.c
     ConfigUtils.c
@@ -28,4 +26,5 @@ target_include_directories(commonutils
 
 target_link_libraries(commonutils PRIVATE 
     logging 
-    parsonlib)
+    parsonlib
+    m)
