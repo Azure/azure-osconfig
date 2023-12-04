@@ -13,9 +13,9 @@ set(MINOR_VERSION "0" CACHE STRING "Minor version")
 set(PATCH_VERSION "5" CACHE STRING "Patch version")
 
 option(BUILD_ADAPTERS "Build OSConfig Adapters" ON)
-option(BUILD_MODULES "Build OSConfig Modules" ON)
-option(BUILD_PLATFORM "Build OSConfig Platform" ON)
-option(BUILD_TESTS "Build test collateral" ON)
+option(BUILD_MODULES "Build OSConfig Modules" OFF)
+option(BUILD_PLATFORM "Build OSConfig Platform" OFF)
+option(BUILD_TESTS "Build test collateral" OFF)
 option(BUILD_MODULETEST "Build the moduletest tool" ON)
 option(BUILD_SAMPLES "Build samples" OFF)
 option(COVERAGE "Enable code coverage" OFF)
@@ -103,3 +103,63 @@ add_subdirectory(common)
 if (BUILD_ADAPTERS)
     add_subdirectory(adapters)
 endif()
+if (BUILD_PLATFORM)
+    add_subdirectory(platform)
+endif()
+if (BUILD_MODULES)
+    add_subdirectory(modules)
+endif()
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(CPACK_GENERATOR "DEB")
+
+set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
+
+# Common packaging
+set(CPACK_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${OsConfigProjectLongName})
+set(CPACK_PACKAGE_VERSION ${OsConfigVersionString})
+set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
+set(CPACK_PACKAGE_CONTACT ${OsConfigProjectEmail})
+set(CPACK_PACKAGE_CHECKSUM ${OsConfigHashAlgorithm})
+
+set(CPACK_EXCLUDES
+    "${CMAKE_SOURCE_DIR}/adapters/pnp/azure-iot-sdk-c/"
+    "${CMAKE_SOURCE_DIR}/reference/"
+    "${CMAKE_SOURCE_DIR}/build/"
+)
+
+# Source packaging
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES ${CPACK_EXCLUDES})
+set(CPACK_VERBATIM_VARIABLES YES)
+
+# RPM packaging
+set(CPACK_RPM_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_RPM_PACKAGE_VERSION ${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH})
+set(CPACK_RPM_PACKAGE_REQUIRES "")
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST ${CPACK_EXCLUDES})
+
+# Debian packaging - see /debian for postinst/prerm scripts
+# https://www.debian.org/doc/manuals/maint-guide/
+set(CPACK_DEBIAN_PACKAGE_NAME ${OsConfigProjectName})
+set(CPACK_DEBIAN_PACKAGE_VERSION ${OsConfigVersionString})
+set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS ON)
+set(CPACK_DEBIAN_PACKAGE_SUGGESTS "aziot-identity-service (>= 1.2.0)")
+set(CPACK_DEBIAN_PACKAGE_PREDEPENDS "")
+set(CPACK_DEBIAN_FILE_NAME ${OsConfigProjectName}_${OsConfigVersionString}_${LSB_RELEASE_CODENAME_SHORT}_${CMAKE_SYSTEM_PROCESSOR}.deb)
+set(CPACK_DEBIAN_EXCLUDE_FROM_AUTO_FILELIST ${CPACK_EXCLUDES})
+set(CPACK_PACKAGE_VENDOR ${OsConfigProjectVendor})
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${OsConfigProjectEmail})
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/../devops/debian/postinst;${CMAKE_SOURCE_DIR}/../devops/debian/prerm;${CMAKE_SOURCE_DIR}/../devops/debian/postrm;")
+
+include(CPack)
+include(GenerateSourceDistribution)
+
+generate_source_distribution(
+    NAME ${OsConfigProjectName}
+    LONG_NAME ${OsConfigProjectLongName}
+    OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/dist
+    SOURCES
+        "${OsConfigProjectSourceArchiveFile}")
