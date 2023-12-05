@@ -610,6 +610,7 @@ static int SetSshOption(const char* option, const char* value, void* log)
 static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
 {
     const char* etcAzSec = "/etc/azsec/";
+    int status = 0;
        
     if (NULL == bannerText)
     {
@@ -619,12 +620,26 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     
     if (false == DirectoryExists(etcAzSec))
     {
-        mkdir(etcAzSec, desiredBannerFileAccess);
+        if (0 == mkdir(etcAzSec, desiredBannerFileAccess))
+        {
+            if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
+            {
+                status = SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+            }
+            else
+            {
+                status = errno ? errno : ENOENT;
+                OsConfigLogError(log, "SetSshWarningBanner: failed to save banner text '%s' to file '%s' with %d", bannerText, etcAzSec, status);
+            }
+        }
+        else
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %d) failed with %d", etcAzSec, desiredBannerFileAccess);
+        }
     }
 
-    SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log);
-
-    return SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+    return status;
 }
 
 int InitializeSshAudit(void* log)
