@@ -402,7 +402,7 @@ int CallMpiGet(const char* componentName, const char* propertyName, MPI_JSON_STR
             status = EINVAL;
         }
     }
-    else if ((NULL != *payload) && ((*payloadSizeBytes != (int)strlen(*payload))))
+    else if ((NULL != *payload) && (*payloadSizeBytes != (int)strlen(*payload)))
     {
         status = EINVAL;
         OsConfigLogError(log, "CallMpiGet(%s, %s): invalid response (%d)", componentName, propertyName, status);
