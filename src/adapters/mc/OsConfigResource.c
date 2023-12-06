@@ -856,7 +856,6 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    const char payloadTemplate[] = "\"%s\"";
     char* payloadString = NULL;
     int payloadSize = 0;
     JSON_Value* jsonValue = NULL;
@@ -985,11 +984,11 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
         }
         else
         {
-            payloadSize = (int)strlen(serializedValue) + 2;
+            payloadSize = (int)strlen(serializedValue);
             if (NULL != (payloadString = malloc(payloadSize + 1)))
             {
                 memset(payloadString, 0, payloadSize + 1);
-                snprintf(payloadString, payloadSize + 1, payloadTemplate, serializedValue);
+                memcpy(payloadString, serializedValue, payloadSize);
 
                 if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
                 {
