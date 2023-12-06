@@ -858,10 +858,11 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
-
     const char payloadTemplate[] = "\"%s\"";
     char* payloadString = NULL;
     int payloadSize = 0;
+    char* serializedValue = NULL;
+    int serializedValueLength = 0;
 
     OsConfigResource_SetTargetResource set_result_object = {0};
 
@@ -975,16 +976,29 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
             memset(payloadString, 0, payloadSize + 1);
             snprintf(payloadString, payloadSize + 1, payloadTemplate, g_desiredObjectValue);
 
-            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
+            if (NULL == (serializedValue = json_serialize_to_string(payloadString)))
             {
-                LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) ok",
-                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
+                miResult = MI_RESULT_FAILED;
+                mpiResult = ENOMEM;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] json_serialize_to_string('%s') failed", payloadString);
             }
             else
             {
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) failed with %d, miResult %d",
-                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
+                serializedValueLength = strlen(serializedValue);
+
+                if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
+                {
+                    LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) ok",
+                        g_componentName, g_desiredObjectName, serializedValueLength, serializedValue, serializedValueLength);
+                }
+                else
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
+                        g_componentName, g_desiredObjectName, serializedValueLength, serializedValue, serializedValueLength, mpiResult, miResult);
+                }
+
+                json_free_serialized_string(serializedValue);
             }
 
             FREE_MEMORY(payloadString);

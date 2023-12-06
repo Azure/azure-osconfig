@@ -3912,6 +3912,10 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
                     status = EINVAL;
                     OsConfigLogError(SecurityBaselineGetLog(), "MmiSet: json_value_get_string(%s) failed", payloadString);
                 }
+                else
+                {
+                    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet parsed desired JSON payload string: '%s'", jsonString);
+                }
             }
             else
             {
