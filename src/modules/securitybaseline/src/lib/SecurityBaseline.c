@@ -3912,10 +3912,6 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
                     status = EINVAL;
                     OsConfigLogError(SecurityBaselineGetLog(), "MmiSet: json_value_get_string(%s) failed", payloadString);
                 }
-                else
-                {
-                    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet parsed desired JSON payload string: '%s'", jsonString);
-                }
             }
             else
             {
@@ -3925,8 +3921,8 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         }
         else
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "Failed to allocate %d bytes of memory, MmiSet failed", payloadSizeBytes + 1);
             status = ENOMEM;
+            OsConfigLogError(SecurityBaselineGetLog(), "MmiSet: failed to allocate %d bytes of memory", payloadSizeBytes + 1);
         }
     }
     
@@ -4615,7 +4611,7 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         }
     }
     
-    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, '%s', %d) returning %d", clientSession, componentName, objectName, jsonString, payloadSizeBytes, status);
+    OsConfigLogInfo(SecurityBaselineGetLog(), "MmiSet(%p, %s, %s, %.*s, %d) returning %d", clientSession, componentName, objectName, *payloadSizeBytes, *payload, *payloadSizeBytes, status);
 
     if (NULL != jsonValue)
     {
