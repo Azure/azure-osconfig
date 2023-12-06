@@ -1,6 +1,6 @@
 {
   "CommandLogging": 0,
-  "FullLogging": 1,
+  "FullLogging": 0,
   "GitManagement": 0,
   "GitRepositoryUrl": " ",
   "GitBranch": " ",
