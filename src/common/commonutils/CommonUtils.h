@@ -41,6 +41,12 @@
     }\
 }\
 
+#define OsConfigResetReason(reason) {\
+    if (NULL != reason) {\
+        FREE_MEMORY(*reason);\
+    }\
+}\
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10

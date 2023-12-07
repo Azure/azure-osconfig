@@ -413,6 +413,8 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
     
     if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
     {
+        OsConfigResetReason(reason);
+
         if (actualValue > 0)
         {
             OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
@@ -442,6 +444,8 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
 
     if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
     {
+        OsConfigResetReason(reason);
+
         if (actualValue > targetValue)
         {
             OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
@@ -476,6 +480,8 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     } 
     else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
     {
+        OsConfigResetReason(reason);
+
         if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
         {
             OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
