@@ -34,6 +34,13 @@
     }\
 }\
 
+#define OsConfigCaptureSuccessReason(reason, FORMAT, ...) {\
+    if (NULL != reason) {\
+        FREE_MEMORY(*reason);\
+        *reason = FormatAllocateString(FORMAT, temp, SECURITY_AUDIT_PASS, ##__VA_ARGS__); \
+    }\
+}\
+
 // Linefeed (LF) ASCII character
 #ifndef EOL
 #define EOL 10
