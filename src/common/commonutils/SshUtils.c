@@ -227,11 +227,9 @@ static int CheckOnlyApprovedMacAlgorithmsAreUsed(const char* macs, char** reason
         }
     }
 
-    if ((0 == status) && reason)
+    if (0 == status)
     {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (all approved MAC algorithms)", 
-            SECURITY_AUDIT_PASS, g_sshServerService, sshMacs, macsValue);
+        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s' (all approved MAC algorithms)", g_sshServerService, sshMacs, macsValue);
     }
 
     FREE_MEMORY(macsValue);
@@ -326,11 +324,9 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
         }
     }
 
-    if ((0 == status) && reason)
+    if (0 == status)
     {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s' (only approved ciphers)",
-            SECURITY_AUDIT_PASS, g_sshServerService, sshCiphers, ciphersValue);
+        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s' (only approved ciphers)", g_sshServerService, sshCiphers, ciphersValue);
     }
 
     FREE_MEMORY(ciphersValue);
@@ -368,16 +364,14 @@ static int CheckSshOptionIsSet(const char* option, const char* expectedValue, ch
                 "%s, also '%s' is not set to '%s' in SSH Server response (but to '%s')", option, expectedValue, value);
             status = ENOENT;
         }
+        else
+        {
+            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s'", g_sshServerService, option, value);
+        }
 
         if (NULL != actualValue)
         {
             *actualValue = DuplicateString(value);
-        }
-
-        if ((0 == status) && reason)
-        {
-            FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%s'", SECURITY_AUDIT_PASS, g_sshServerService, option, value);
         }
 
         FREE_MEMORY(value);
@@ -417,18 +411,21 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
     
-    if ((0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) && (actualValue <= 0))
+    if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
     {
-        OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
-        OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
-            "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
-        status = ENOENT;
-    }
-    else if (reason)
-    {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", 
-            SECURITY_AUDIT_PASS, g_sshServerService, clientAliveInterval, actualValue);
+        OsConfigResetReason(reason);
+
+        if (actualValue > 0)
+        {
+            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+            OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
+                "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+            status = ENOENT;
+        }
     }
 
     FREE_MEMORY(clientAliveInterval);
@@ -445,18 +442,21 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
 
-    if ((0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log))) && (actualValue > 60))
+    if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
     {
-        OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-        OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
-            "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", targetValue, actualValue);
-        status = ENOENT;
-    }
-    else if (reason)
-    {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", 
-            SECURITY_AUDIT_PASS, g_sshServerService, loginGraceTime, targetValue, actualValue);
+        OsConfigResetReason(reason);
+
+        if (actualValue <= targetValue)
+        {
+            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
+        }
+        else
+        {
+            OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
+            OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
+                "%s, also 'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
+            status = ENOENT;
+        }
     }
 
     FREE_MEMORY(loginGraceTime);
@@ -476,11 +476,12 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     if ((NULL == bannerFile) || (NULL == bannerText))
     {
         OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
-        return EINVAL;
-    }
-
-    if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
+        status = EINVAL;
+    } 
+    else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
     {
+        OsConfigResetReason(reason);
+
         if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
         {
             OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
@@ -495,13 +496,10 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
                 "%s, also the banner text from '%s' is different from the expected text", bannerFile);
             status = ENOENT;
         }
-    }
-
-    if ((0 == status) && reason)
-    {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", 
-            SECURITY_AUDIT_PASS, banner, actualValue);
+        else
+        {
+            OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", banner, actualValue);
+        }
     }
 
     FREE_MEMORY(contents);
@@ -530,6 +528,7 @@ int CheckSshProtocol(char** reason, void* log)
     else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+        OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         status = 0;
     }
     else
@@ -538,12 +537,6 @@ int CheckSshProtocol(char** reason, void* log)
         OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
             "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
         status = ENOENT;
-    }
-
-    if ((0 == status) && reason)
-    {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%s'%s' is found uncommented in %s", SECURITY_AUDIT_PASS, protocol, g_sshServerConfiguration);
     }
 
     FREE_MEMORY(protocol);
@@ -610,6 +603,7 @@ static int SetSshOption(const char* option, const char* value, void* log)
 static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
 {
     const char* etcAzSec = "/etc/azsec/";
+    int status = 0;
        
     if (NULL == bannerText)
     {
@@ -619,12 +613,27 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     
     if (false == DirectoryExists(etcAzSec))
     {
-        mkdir(etcAzSec, desiredBannerFileAccess);
+        if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %d) failed with %d", etcAzSec, desiredBannerFileAccess, status);
+        }
     }
 
-    SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log);
+    if (true == DirectoryExists(etcAzSec))
+    {
+        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
+        {
+            status = SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+        }
+        else
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: failed to save banner text '%s' to file '%s' with %d", bannerText, etcAzSec, status);
+        }
+    }
 
-    return SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+    return status;
 }
 
 int InitializeSshAudit(void* log)
@@ -693,6 +702,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         OsConfigLogError(log, "ProcessSshAuditCheck: invalid check name argument");
         return EINVAL;
+    }
+
+    if (NULL != reason)
+    {
+        FREE_MEMORY(*reason);
     }
 
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
@@ -867,16 +881,15 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject))
     {
-        FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
-        status = (NULL != (g_desiredSshLoginGraceTimeIsSet = DuplicateString(value ? value : g_sshDefaultSshLoginGraceTime))) ?
-            SetSshOption(g_sshLoginGraceTime, g_desiredSshLoginGraceTimeIsSet, log) : ENOMEM;
-    }
-    else if (0 == strcmp(name, g_remediateEnsureSshLoginGraceTimeIsSetObject))
-    {
         FREE_MEMORY(g_desiredSshClientAliveIntervalIsConfigured);
         status = (NULL != (g_desiredSshClientAliveIntervalIsConfigured = DuplicateString(value ? value : g_sshDefaultSshClientAliveInterval))) ?
             SetSshOption(g_sshClientAliveInterval, g_desiredSshClientAliveIntervalIsConfigured, log) : ENOMEM;
-
+    }
+    else if (0 == strcmp(name, g_remediateEnsureSshLoginGraceTimeIsSetObject))
+    {
+        FREE_MEMORY(g_desiredSshLoginGraceTimeIsSet);
+        status = (NULL != (g_desiredSshLoginGraceTimeIsSet = DuplicateString(value ? value : g_sshDefaultSshLoginGraceTime))) ?
+            SetSshOption(g_sshLoginGraceTime, g_desiredSshLoginGraceTimeIsSet, log) : ENOMEM;
     }
     else if (0 == strcmp(name, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
     {
@@ -912,7 +925,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     FREE_MEMORY(lowercase);
 
-    OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", reason ? *reason : "", status);
+    OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
 
     return status;
 }
