@@ -476,10 +476,9 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     if ((NULL == bannerFile) || (NULL == bannerText))
     {
         OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
-        return EINVAL;
-    }
-
-    if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
+        status = EINVAL;
+    } 
+    else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
     {
         if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
         {
@@ -495,13 +494,12 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
                 "%s, also the banner text from '%s' is different from the expected text", bannerFile);
             status = ENOENT;
         }
-    }
-
-    if ((0 == status) && reason)
-    {
-        FREE_MEMORY(*reason);
-        *reason = FormatAllocateString("%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", 
-            SECURITY_AUDIT_PASS, banner, actualValue);
+        else if (NULL != reason)
+        {
+            FREE_MEMORY(*reason);
+            *reason = FormatAllocateString("%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text",
+                SECURITY_AUDIT_PASS, banner, actualValue);
+        }
     }
 
     FREE_MEMORY(contents);
@@ -610,6 +608,7 @@ static int SetSshOption(const char* option, const char* value, void* log)
 static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
 {
     const char* etcAzSec = "/etc/azsec/";
+    int status = 0;
        
     if (NULL == bannerText)
     {
@@ -619,12 +618,27 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     
     if (false == DirectoryExists(etcAzSec))
     {
-        mkdir(etcAzSec, desiredBannerFileAccess);
+        if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %d) failed with %d", etcAzSec, desiredBannerFileAccess, status);
+        }
     }
 
-    SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log);
+    if (true == DirectoryExists(etcAzSec))
+    {
+        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
+        {
+            status = SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+        }
+        else
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: failed to save banner text '%s' to file '%s' with %d", bannerText, etcAzSec, status);
+        }
+    }
 
-    return SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+    return status;
 }
 
 int InitializeSshAudit(void* log)
@@ -693,6 +707,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     {
         OsConfigLogError(log, "ProcessSshAuditCheck: invalid check name argument");
         return EINVAL;
+    }
+
+    if (NULL != reason)
+    {
+        FREE_MEMORY(*reason);
     }
 
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))

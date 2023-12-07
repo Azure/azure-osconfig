@@ -856,13 +856,15 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    MI_Result miResult = MI_RESULT_OK;
-    int mpiResult = MPI_OK;
-
-    const char payloadTemplate[] = "\"%s\"";
     char* payloadString = NULL;
     int payloadSize = 0;
-
+    
+    JSON_Value* jsonValue = NULL;
+    char* serializedValue = NULL;
+    
+    MI_Result miResult = MI_RESULT_OK;
+    int mpiResult = MPI_OK;
+    
     OsConfigResource_SetTargetResource set_result_object = {0};
 
     if ((NULL == in) || (MI_FALSE == in->InputResource.exists) || (NULL == in->InputResource.value))
@@ -969,31 +971,56 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     if (NULL != g_mpiHandle)
     {
-        payloadSize = (int)strlen(g_desiredObjectValue) + 2;
-        if (NULL != (payloadString = malloc(payloadSize + 1)))
+        if (NULL == (jsonValue = json_value_init_string(g_desiredObjectValue)))
         {
-            memset(payloadString, 0, payloadSize + 1);
-            snprintf(payloadString, payloadSize + 1, payloadTemplate, g_desiredObjectValue);
-
-            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
+            miResult = MI_RESULT_FAILED;
+            mpiResult = ENOMEM;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] json_value_init_string('%s') failed", g_desiredObjectValue);
+        }
+        else if (NULL == (serializedValue = json_serialize_to_string(jsonValue)))
+        {
+            miResult = MI_RESULT_FAILED;
+            mpiResult = ENOMEM;
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] json_serialize_to_string('%s') failed", g_desiredObjectValue);
+        }
+        else
+        {
+            payloadSize = (int)strlen(serializedValue);
+            if (NULL != (payloadString = malloc(payloadSize + 1)))
             {
-                LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) ok",
-                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
+                memset(payloadString, 0, payloadSize + 1);
+                memcpy(payloadString, serializedValue, payloadSize);
+
+                if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, g_desiredObjectName, payloadString, payloadSize, GetLog())))
+                {
+                    LogInfo(context, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) ok",
+                        g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
+                }
+                else
+                {
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
+                        g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
+                }
+
+                FREE_MEMORY(payloadString);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] CallMpiSet(%s, %s, %.*s, %d) failed with %d, miResult %d",
-                    g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
+                mpiResult = ENOMEM;
+                LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Failed to allocate %d bytes", payloadSize);
             }
-
-            FREE_MEMORY(payloadString);
         }
-        else
+
+        if (NULL != serializedValue)
         {
-            miResult = MI_RESULT_FAILED;
-            mpiResult = ENOMEM;
-            LogError(context, miResult, GetLog(), "[OsConfigResource.Set] Failed to allocate %d bytes", payloadSize);
+            json_free_serialized_string(serializedValue);
+        }
+
+        if (NULL != jsonValue)
+        {
+            json_value_free(jsonValue);
         }
 
         if (MPI_OK != mpiResult)
