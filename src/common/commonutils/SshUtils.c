@@ -446,7 +446,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     {
         OsConfigResetReason(reason);
 
-        if (actualValue > targetValue)
+        if (actualValue <= targetValue)
         {
             OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
         }
