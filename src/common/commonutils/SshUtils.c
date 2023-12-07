@@ -413,7 +413,7 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
     
     if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
     {
-        if (actualValue <= 0)
+        if (actualValue > 0)
         {
             OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
         }
@@ -442,7 +442,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
 
     if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
     {
-        if (actualValue > 60)
+        if (actualValue > targetValue)
         {
             OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
         }
@@ -450,7 +450,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
         {
             OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
             OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
-                "%s, also 'logingracetime' is not set to a value of 60 or less in SSH Server response (but to %d)", targetValue, actualValue);
+                "%s, also 'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
             status = ENOENT;
         }
     }
