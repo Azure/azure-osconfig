@@ -282,14 +282,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
                         OsConfigLogInfo(log, "CheckAccess: access to '%s' (%d) matches expected (%d)", name, currentMode, desiredMode);
                     }
                     
+                    OsConfigCaptureSuccessReason(reason, "%sAccess to '%s' matches required access (%d) and ownership (UID: %d, GID: %u)", name, desiredMode, desiredOwnerId, desiredGroupId);
                     result = 0;
-
-                    if (reason)
-                    {
-                        FREE_MEMORY(*reason);
-                        *reason = FormatAllocateString("%sAccess to '%s' matches required access (%d) and ownership (UID: %d, GID: %u)", 
-                            SECURITY_AUDIT_PASS, name, desiredMode, desiredOwnerId, desiredGroupId);
-                    }
                 }
             }
         }
@@ -301,13 +295,8 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     else
     {
         OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
+        OsConfigCaptureSuccessReason(reason, "%s'%s' not found, nothing to check", name);
         result = 0;
-
-        if (reason)
-        {
-            FREE_MEMORY(*reason);
-            *reason = FormatAllocateString("%s'%s' not found, nothing to check", SECURITY_AUDIT_PASS, name);
-        }
     }
 
     return result;

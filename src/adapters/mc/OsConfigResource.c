@@ -601,9 +601,9 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
 
     if (MI_TRUE == isCompliant)
     {
-        reasonCode = DuplicateString(g_passValue);
-        if ((0 == strcmp(g_reportedObjectValue, g_passValue)) || 
-            ((strlen(g_reportedObjectValue) > strlen(g_passValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_passValue))))))
+        reasonCode = DuplicateString(g_expectedObjectValue);
+        if ((0 == strcmp(g_reportedObjectValue, g_expectedObjectValue)) ||
+            ((strlen(g_reportedObjectValue) > strlen(g_expectedObjectValue)) && (NULL == (reasonPhrase = DuplicateString(g_reportedObjectValue + strlen(g_expectedObjectValue))))))
         {
             reasonPhrase = DuplicateString(auditPassed);
         }
