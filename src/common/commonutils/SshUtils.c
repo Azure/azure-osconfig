@@ -616,7 +616,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         return EINVAL;
     }
     
-    if (false == DirectoryExists(etcAzSec)) 
+    if (false == DirectoryExists(etcAzSec))
     {
         if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
         {
@@ -709,7 +709,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         return EINVAL;
     }
 
-    if (reason)
+    if (NULL != reason)
     {
         FREE_MEMORY(*reason);
     }

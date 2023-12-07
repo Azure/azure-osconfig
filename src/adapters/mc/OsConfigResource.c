@@ -858,9 +858,10 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
 
     char* payloadString = NULL;
     int payloadSize = 0;
+    
     JSON_Value* jsonValue = NULL;
     char* serializedValue = NULL;
-    int serializedValueLength = 0;
+    
     MI_Result miResult = MI_RESULT_OK;
     int mpiResult = MPI_OK;
     
