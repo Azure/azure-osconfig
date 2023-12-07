@@ -37,7 +37,7 @@
 #define OsConfigCaptureSuccessReason(reason, FORMAT, ...) {\
     if (NULL != reason) {\
         FREE_MEMORY(*reason);\
-        *reason = FormatAllocateString(FORMAT, temp, SECURITY_AUDIT_PASS, ##__VA_ARGS__); \
+        *reason = FormatAllocateString(FORMAT, SECURITY_AUDIT_PASS, ##__VA_ARGS__); \
     }\
 }\
 
