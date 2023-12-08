@@ -19,13 +19,40 @@ The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of
 
 The OSConfig Universal NRP binary is built on Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
 
-This can be done installing Ubuntu 14.04 LTS from one of the archived locations (at [Ubuntu]('https://www.releases.ubuntu.com/14.04/'), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)), installing a miminal set of dependencies (git, gcc and cmake), cloning the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and building OSConfig there. 
+Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)). 
 
-When building, use for '--target' 'all' instead of 'install'. This will build the libOsConfigResource.so binary and the OsConfigPolicy.zip package: 
+Install the miminal set of dependencies necessary:
 
 ```bash
+sudo apt-get install -y gcc git cmake build-essential
+```
+Clone the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and build ther using the following simplified commands:
+
+```bash
+$ cmake ../src -DCMAKE_BUILD_TYPE=Release
+$ cmake --build . --config Release  --target all
+```
+
+This will build the libOsConfigResource.so binary and the OsConfigPolicy.zip package, for example: 
+
+```bash
+$ cmake ../src -DCMAKE_BUILD_TYPE=Release
+-- The C compiler identification is GNU 4.8.4
+...
+-- Distro: Linux Ubuntu 14.04 trusty
+-- osconfig v1.0.5.20231208
+...
+-- Generating done
+-- Build files have been written to: /home/mn/azure-osconfig/build
+
 $ sudo cmake --build . --config Release  --target all
+Scanning dependencies of target logging
+[  4%] Building C object common/logging/CMakeFiles/logging.dir/Logging.c.o
+[  9%] Linking C static library liblogging.a
 [  9%] Built target logging
+Scanning dependencies of target parsonlib
+[ 13%] Building C object common/parson/CMakeFiles/parsonlib.dir/parson.c.o
+[ 18%] Linking C static library libparsonlib.a
 [ 18%] Built target parsonlib
 Scanning dependencies of target commonutils
 [ 22%] Building C object common/commonutils/CMakeFiles/commonutils.dir/CommandUtils.c.o
@@ -51,7 +78,9 @@ Scanning dependencies of target OsConfigResource
 [ 95%] Building C object adapters/mc/CMakeFiles/OsConfigResource.dir/OsConfigResource.c.o
 [100%] Linking C shared library libOsConfigResource.so
 [100%] Built target OsConfigResource
+Scanning dependencies of target stage_create_zip
 [100%] Built target stage_create_zip
+Scanning dependencies of target create_zip
 .
 ./OsConfigPolicy.mof
 ./Modules
