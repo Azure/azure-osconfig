@@ -925,6 +925,11 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     FREE_MEMORY(lowercase);
 
+    if ((NULL != reason) && (NULL == *reason) && (0 != IsSshServerActive(log)))
+    {
+        OsConfigCaptureSuccessReason(reason, "%sThe SSH server is not found on this device, nothing to check");
+    }
+
     OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
 
     return status;
