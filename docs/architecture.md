@@ -325,6 +325,6 @@ The Universal NRP is currently used with the SecurityBaseline module to audit an
 
 For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.md) and [src/modules/securitybaseline/README.md](../src/modules/securitybaseline/README.md).
 
-A fallback execution exists for policies that apply to more distros than OSConfig supports. Per each check, if OSConfig is present, the NRP invokes it over the MPI REST API (A) and if is not, the NRP executes the fallback case B where the NRP istelf executes the respective audit and remediation checks:
+A fallback execution exists for policies that apply to more distros than OSConfig supports. Per each check, if OSConfig is present, the NRP invokes it over the MPI REST API (case A) and if OSConfig is not present, the NRP executes the fallback case B where the NRP executes itself the respective audit and remediation checks:
 
 <img src="assets/6_fallback.png" alt="OSConfig NRP with fallback" width=70%/>
