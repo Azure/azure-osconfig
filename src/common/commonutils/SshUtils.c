@@ -411,25 +411,23 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
     
-    if (0 != IsSshServerActive(log))
+    if (0 == IsSshServerActive(log))
     {
-        return status;
-    }
-
-    if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
-    {
-        OsConfigResetReason(reason);
-
-        if (actualValue > 0)
+        if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
         {
-            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
-            OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
-                "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
-            status = ENOENT;
+            OsConfigResetReason(reason);
+
+            if (actualValue > 0)
+            {
+                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is greater than zero)", g_sshServerService, clientAliveInterval, actualValue);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckSshClientAliveInterval: 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+                OsConfigCaptureReason(reason, "'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)",
+                    "%s, also 'clientaliveinterval' is not set to a greater than zero value in SSH Server response (but to %d)", actualValue);
+                status = ENOENT;
+            }
         }
     }
 
@@ -447,25 +445,23 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
 
-    if (0 != IsSshServerActive(log))
+    if (0 == IsSshServerActive(log))
     {
-        return status;
-    }
-
-    if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
-    {
-        OsConfigResetReason(reason);
-
-        if (actualValue <= targetValue)
+        if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
         {
-            OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
-        }
-        else
-        {
-            OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-            OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
-                "%s, also 'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
-            status = ENOENT;
+            OsConfigResetReason(reason);
+
+            if (actualValue <= targetValue)
+            {
+                OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%d' (that is %d or less)", g_sshServerService, loginGraceTime, targetValue, actualValue);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckSshLoginGraceTime: 'logingracetime' is not set to %d or less in SSH Server response (but to %d)", targetValue, actualValue);
+                OsConfigCaptureReason(reason, "'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)",
+                    "%s, also 'logingracetime' is not set to a value of %d or less in SSH Server response (but to %d)", targetValue, actualValue);
+                status = ENOENT;
+            }
         }
     }
 
@@ -483,42 +479,41 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     char* contents = NULL;
     int status = 0;
 
-    if (0 != IsSshServerActive(log))
+    if (0 == IsSshServerActive(log))
     {
-        return status;
+        if ((NULL == bannerFile) || (NULL == bannerText))
+        {
+            OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
+            status = EINVAL;
+        } 
+        else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
+        {
+            OsConfigResetReason(reason);
+
+            if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
+            {
+                OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
+                OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read",
+                    "%s, also '%s' is set to '%s' but the file cannot be read", banner, actualValue);
+                status = ENOENT;
+            }
+            else  if (0 != strcmp(contents, bannerText))
+            {
+                OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
+                OsConfigCaptureReason(reason, "Banner text from file '%s'is different from not the expected text",
+                    "%s, also the banner text from '%s' is different from the expected text", bannerFile);
+                status = ENOENT;
+            }
+            else
+            {
+                OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", banner, actualValue);
+            }
+        }
+
+        FREE_MEMORY(contents);
+        FREE_MEMORY(actualValue);
     }
 
-    if ((NULL == bannerFile) || (NULL == bannerText))
-    {
-        OsConfigLogError(log, "CheckSshWarningBanner: invalid arguments");
-        status = EINVAL;
-    } 
-    else if (0 == (status = CheckSshOptionIsSet(banner, bannerFile, &actualValue, reason, log)))
-    {
-        OsConfigResetReason(reason);
-
-        if (NULL == (contents = LoadStringFromFile(bannerFile, false, log)))
-        {
-            OsConfigLogError(log, "CheckSshWarningBanner: cannot read from '%s'", bannerFile);
-            OsConfigCaptureReason(reason, "'%s' is set to '%s' but the file cannot be read",
-                "%s, also '%s' is set to '%s' but the file cannot be read", banner, actualValue);
-            status = ENOENT;
-        }
-        else  if (0 != strcmp(contents, bannerText))
-        {
-            OsConfigLogError(log, "CheckSshWarningBanner: banner text is:\n%s instead of:\n%s", contents, bannerText);
-            OsConfigCaptureReason(reason, "Banner text from file '%s'is different from not the expected text",
-                "%s, also the banner text from '%s' is different from the expected text", bannerFile);
-            status = ENOENT;
-        }
-        else
-        {
-            OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", banner, actualValue);
-        }
-    }
-
-    FREE_MEMORY(contents);
-    FREE_MEMORY(actualValue);
     FREE_MEMORY(banner);
 
     return status;
