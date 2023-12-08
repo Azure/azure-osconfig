@@ -22,7 +22,7 @@ The implementation of the checks follows a rule where there are general utility 
 For example there are functions in [commonutils](../../common/commonutils/) that check and set file access:
 
 ```C
-int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, void* log);
+int CheckFileAccess(const char* fileName, int desiredOwnerId, int desiredGroupId, unsigned int desiredAccess, char** reason, void* log);
 int SetFileAccess(const char* fileName, unsigned int desiredOwnerId, unsigned int desiredGroupId, unsigned int desiredAccess, void* log);
 ```
 
@@ -79,38 +79,25 @@ The remediation checks that remain to be fully implemented can be found in [src/
 There the MIM object names constants are listed:
 
 ```C
+static const char* g_remediateEnsureAllAccountsHavePasswordsObject = "remediateEnsureAllAccountsHavePasswords";
 ...
-static const char* g_remediateEnsureKernelSupportForCpuNxObject = "remediateEnsureKernelSupportForCpuNx";
-static const char* g_remediateEnsureAllTelnetdPackagesUninstalledObject = "remediateEnsureAllTelnetdPackagesUninstalled";
-static const char* g_remediateEnsureNodevOptionOnHomePartitionObject = "remediateEnsureNodevOptionOnHomePartition";
-static const char* g_remediateEnsureNodevOptionOnTmpPartitionObject = "remediateEnsureNodevOptionOnTmpPartition";
-static const char* g_remediateEnsureNodevOptionOnVarTmpPartitionObject = "remediateEnsureNodevOptionOnVarTmpPartition";
-...
+static const char* g_remediateEnsureUsersOwnTheirHomeDirectoriesObject = "remediateEnsureUsersOwnTheirHomeDirectories";
 ```
 
 And then later the placeholder check functions that need to be completed:
 
 ```C
-static int RemediateEnsureKernelSupportForCpuNx(void)
+static int RemediateEnsureAllAccountsHavePasswords(char* value)
 {
-    return 0; //TODO: add remediation respecting all existing patterns
-}
-
-static int RemediateEnsureNodevOptionOnHomePartition(void)
-{
-    return 0; //TODO: add remediation respecting all existing patterns
-}
-
-static int RemediateEnsureNodevOptionOnTmpPartition(void)
-{
-    return 0; //TODO: add remediation respecting all existing patterns
-}
-
-static int RemediateEnsureNodevOptionOnVarTmpPartition(void)
-{
+    UNUSED(value);
     return 0; //TODO: add remediation respecting all existing patterns
 }
 ...
+static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value)
+{
+    UNUSED(value);
+    return 0; //TODO: add remediation respecting all existing patterns
+}
 ```
 
 By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test recipe check will fail, etc. 
@@ -120,15 +107,17 @@ By returning 0 (success) these empty placeholder checks do not flag any error in
 An example of a completed check, `auditEnsureAuditdServiceIsRunning` and `remediateEnsureAuditdServiceIsRunning` in [src/lib/SecurityBaseline.c](src/lib/SecurityBaseline.c):
 
 ```C
-static int AuditEnsureAuditdServiceIsRunning(void)
+static char* AuditEnsureAuditdServiceIsRunning(void)
 {
-    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 0 : ENOENT;
+    return CheckIfDaemonActive(g_auditd, SecurityBaselineGetLog()) ? 
+        DuplicateString(g_pass) : FormatAllocateString("Service '%s' is not running", g_auditd);
 }
 ```
 
 ```C
-static int RemediateEnsureAuditdServiceIsRunning(void)
+static int RemediateEnsureAuditdServiceIsRunning(char* value)
 {
+    UNUSED(value);
     return (0 == InstallPackage(g_auditd, SecurityBaselineGetLog()) &&
         EnableAndStartDaemon(g_auditd, SecurityBaselineGetLog())) ? 0 : ENOENT;
 }

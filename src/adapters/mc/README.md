@@ -15,6 +15,87 @@ To regenerate code, see [codegen.cmd](codegen.cmd).
 
 The OSConfig Universal NRP binary (libOsConfigResource.so) is built with rest of OSConfig.
 
+### 3.1. Buidling the universal NRP binary on Ubuntu 14
+
+The OSConfig Universal NRP binary is built on Ubuntu 14 with gcc 4.8 in order for this same binary to run as-is on all newer Linux distros.
+
+Install Ubuntu 14.04 LTS from one of the archived locations such as at [Ubuntu](https://www.releases.ubuntu.com/14.04/), or [Ubuntu MATE](https://releases.ubuntu-mate.org/archived/14.04/amd64/)). 
+
+Install the miminal set of dependencies necessary:
+
+```bash
+sudo apt-get install -y gcc git cmake build-essential
+```
+Clone OSConfig, checkout the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and refresh it with latest source code from main:
+
+```bash
+git checkout MariusNi/OsConfig_Ubuntu14_NrpBuild
+git pull origin main
+```
+
+Build using the following simplified commands:
+
+```bash
+$ cmake ../src -DCMAKE_BUILD_TYPE=Release
+$ cmake --build . --config Release  --target all
+```
+
+This builds the libOsConfigResource.so binary and the OsConfigPolicy.zip package, for example: 
+
+```bash
+$ cmake ../src -DCMAKE_BUILD_TYPE=Release
+-- The C compiler identification is GNU 4.8.4
+...
+-- Distro: Linux Ubuntu 14.04 trusty
+-- osconfig v1.0.5.20231208
+...
+
+$ sudo cmake --build . --config Release  --target all
+Scanning dependencies of target logging
+[  4%] Building C object common/logging/CMakeFiles/logging.dir/Logging.c.o
+[  9%] Linking C static library liblogging.a
+[  9%] Built target logging
+Scanning dependencies of target parsonlib
+[ 13%] Building C object common/parson/CMakeFiles/parsonlib.dir/parson.c.o
+[ 18%] Linking C static library libparsonlib.a
+[ 18%] Built target parsonlib
+Scanning dependencies of target commonutils
+[ 22%] Building C object common/commonutils/CMakeFiles/commonutils.dir/CommandUtils.c.o
+[ 27%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ConfigUtils.c.o
+[ 31%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DaemonUtils.c.o
+[ 36%] Building C object common/commonutils/CMakeFiles/commonutils.dir/DeviceInfoUtils.c.o
+[ 40%] Building C object common/commonutils/CMakeFiles/commonutils.dir/FileUtils.c.o
+[ 45%] Building C object common/commonutils/CMakeFiles/commonutils.dir/OtherUtils.c.o
+[ 50%] Building C object common/commonutils/CMakeFiles/commonutils.dir/ProxyUtils.c.o
+[ 54%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SocketUtils.c.o
+[ 59%] Building C object common/commonutils/CMakeFiles/commonutils.dir/SshUtils.c.o
+[ 63%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UrlUtils.c.o
+[ 68%] Building C object common/commonutils/CMakeFiles/commonutils.dir/UserUtils.c.o
+[ 72%] Linking C static library libcommonutils.a
+[ 72%] Built target commonutils
+Scanning dependencies of target mpiclient
+[ 77%] Building C object common/mpiclient/CMakeFiles/mpiclient.dir/MpiClient.c.o
+[ 81%] Linking C static library libmpiclient.a
+[ 81%] Built target mpiclient
+Scanning dependencies of target OsConfigResource
+[ 86%] Building C object adapters/mc/CMakeFiles/OsConfigResource.dir/module.c.o
+[ 90%] Building C object adapters/mc/CMakeFiles/OsConfigResource.dir/schema.c.o
+[ 95%] Building C object adapters/mc/CMakeFiles/OsConfigResource.dir/OsConfigResource.c.o
+[100%] Linking C shared library libOsConfigResource.so
+[100%] Built target OsConfigResource
+Scanning dependencies of target stage_create_zip
+[100%] Built target stage_create_zip
+Scanning dependencies of target create_zip
+.
+./OsConfigPolicy.mof
+./Modules
+./Modules/DscNativeResources
+./Modules/DscNativeResources/OsConfigResource
+./Modules/DscNativeResources/OsConfigResource/libOsConfigResource.so
+./OsConfigPolicy.metaconfig.json
+[100%] Built target create_zip
+```
+
 ## 4. Validating the OSConfig Universal NRP locally with PowerShell and the MC Agent
 
 Follow the instructions at [How to set up a machine configuration authoring environment](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-create-setup). 
