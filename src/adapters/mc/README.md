@@ -26,12 +26,14 @@ Install the miminal set of dependencies necessary:
 ```bash
 sudo apt-get install -y gcc git cmake build-essential
 ```
-Clone the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and refresh it to latest from main:
+Clone OSConfig, checkout the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and refresh it with latest source code from main:
 
 ```bash
+git checkout MariusNi/OsConfig_Ubuntu14_NrpBuild
 git pull origin main
 ```
-Build ther using the following simplified commands:
+
+Build using the following simplified commands:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
