@@ -26,14 +26,19 @@ Install the miminal set of dependencies necessary:
 ```bash
 sudo apt-get install -y gcc git cmake build-essential
 ```
-Clone the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and build ther using the following simplified commands:
+Clone the 'MariusNi/OsConfig_Ubuntu14_NrpBuild' branch and refresh it to latest from main:
+
+```bash
+git pull origin main
+```
+Build ther using the following simplified commands:
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
 $ cmake --build . --config Release  --target all
 ```
 
-This will build the libOsConfigResource.so binary and the OsConfigPolicy.zip package, for example: 
+This builds the libOsConfigResource.so binary and the OsConfigPolicy.zip package, for example: 
 
 ```bash
 $ cmake ../src -DCMAKE_BUILD_TYPE=Release
@@ -42,8 +47,6 @@ $ cmake ../src -DCMAKE_BUILD_TYPE=Release
 -- Distro: Linux Ubuntu 14.04 trusty
 -- osconfig v1.0.5.20231208
 ...
--- Generating done
--- Build files have been written to: /home/mn/azure-osconfig/build
 
 $ sudo cmake --build . --config Release  --target all
 Scanning dependencies of target logging
