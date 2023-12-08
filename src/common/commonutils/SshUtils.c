@@ -411,6 +411,11 @@ static int CheckSshClientAliveInterval(char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
     
+    if (0 != IsSshServerActive(log))
+    {
+        return status;
+    }
+
     if (0 == (status = CheckSshOptionIsSetToInteger(clientAliveInterval, NULL, &actualValue, reason, log))) 
     {
         OsConfigResetReason(reason);
@@ -442,6 +447,11 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     int actualValue = 0;
     int status = 0; 
 
+    if (0 != IsSshServerActive(log))
+    {
+        return status;
+    }
+
     if (0 == (status = CheckSshOptionIsSetToInteger(loginGraceTime, NULL, &actualValue, reason, log)))
     {
         OsConfigResetReason(reason);
@@ -472,6 +482,11 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
     char* actualValue = NULL;
     char* contents = NULL;
     int status = 0;
+
+    if (0 != IsSshServerActive(log))
+    {
+        return status;
+    }
 
     if ((NULL == bannerFile) || (NULL == bannerText))
     {
