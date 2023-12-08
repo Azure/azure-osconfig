@@ -79,11 +79,9 @@ The remediation checks that remain to be fully implemented can be found in [src/
 There the MIM object names constants are listed:
 
 ```C
-...
 static const char* g_remediateEnsureAllAccountsHavePasswordsObject = "remediateEnsureAllAccountsHavePasswords";
 ...
 static const char* g_remediateEnsureUsersOwnTheirHomeDirectoriesObject = "remediateEnsureUsersOwnTheirHomeDirectories";
-...
 ```
 
 And then later the placeholder check functions that need to be completed:
@@ -100,7 +98,6 @@ static int RemediateEnsureUsersOwnTheirHomeDirectories(char* value)
     UNUSED(value);
     return 0; //TODO: add remediation respecting all existing patterns
 }
-...
 ```
 
 By returning 0 (success) these empty placeholder checks do not flag any error in the functional recipe tests. Try turning one to a non-zero value (error) and the respective functional test recipe check will fail, etc. 

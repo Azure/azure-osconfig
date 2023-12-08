@@ -327,4 +327,4 @@ For more information see [src/adapters/mc/README.md](../src/adapters/mc/README.m
 
 A fallback execution exists for policies that apply to more distros than OSConfig supports. Per each check, if OSConfig is present, the NRP invokes it over the MPI REST API (A) and if is not, the NRP executes the fallback case B where the NRP istelf executes the respective audit and remediation checks:
 
-<img src="assets/6_guestconfig.png" alt="OSConfig NRP with fallback" width=70%/>
+<img src="assets/6_fallback.png" alt="OSConfig NRP with fallback" width=70%/>
