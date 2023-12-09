@@ -295,7 +295,7 @@ static int CheckAccess(bool directory, const char* name, int desiredOwnerId, int
     else
     {
         OsConfigLogInfo(log, "CheckAccess: '%s' not found, nothing to check", name);
-        OsConfigCaptureSuccessReason(reason, "%s'%s' not found, nothing to check", name);
+        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", name);
         result = 0;
     }
 
