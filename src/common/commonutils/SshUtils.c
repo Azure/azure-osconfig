@@ -938,6 +938,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", g_sshServerService);
     }
 
+    if ((NULL != reason) && (NULL != *reason) && (ENOENT == status))
+    {
+        // Successful check, option not found is returned via reason
+        status = 0;
+    }
+
     OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
 
     return status;
