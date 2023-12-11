@@ -516,6 +516,8 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
 
     FREE_MEMORY(banner);
 
+    OsConfigLogInfo(log, "CheckSshWarningBanner: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+
     return status;
 }
 
@@ -550,6 +552,8 @@ int CheckSshProtocol(char** reason, void* log)
     }
 
     FREE_MEMORY(protocol);
+
+    OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -643,6 +647,8 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         }
     }
 
+    OsConfigLogInfo(log, "SetSshWarningBanner('%d' and '%s'): %s (%d)", desiredBannerFileAccess, bannerText, PLAIN_STATUS_FROM_ERRNO(status), status);
+
     return status;
 }
 
@@ -714,10 +720,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         return EINVAL;
     }
 
-    if (NULL != reason)
-    {
-        FREE_MEMORY(*reason);
-    }
+    OsConfigResetReason(reason);
 
     if (0 == strcmp(name, g_auditEnsurePermissionsOnEtcSshSshdConfigObject))
     {
@@ -843,14 +846,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         FREE_MEMORY(g_desiredAllowUsersIsConfigured);
         status = (NULL != (g_desiredAllowUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshAllowUsers))) ?
             SetSshOption(g_sshAllowUsers, g_desiredAllowUsersIsConfigured, log) : ENOMEM;
-
     }
     else if (0 == strcmp(name, g_remediateEnsureDenyUsersIsConfiguredObject))
     {
         FREE_MEMORY(g_desiredDenyUsersIsConfigured);
         status = (NULL != (g_desiredDenyUsersIsConfigured = DuplicateString(value ? value : g_sshDefaultSshDenyUsers))) ?
             SetSshOption(g_sshDenyUsers, g_desiredDenyUsersIsConfigured, log) : ENOMEM;
-
     }
     else if (0 == strcmp(name, g_remediateEnsureAllowGroupsIsConfiguredObject))
     {
@@ -875,7 +876,6 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         FREE_MEMORY(g_desiredSshPermitRootLoginIsDisabled);
         status = (NULL != (g_desiredSshPermitRootLoginIsDisabled = DuplicateString(value ? value : g_sshDefaultSshNo))) ?
             SetSshOption(g_sshPermitRootLogin, g_desiredSshPermitRootLoginIsDisabled, log) : ENOMEM;
-
     }
     else if (0 == strcmp(name, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject))
     {
@@ -906,14 +906,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         FREE_MEMORY(g_desiredOnlyApprovedMacAlgorithmsAreUsed);
         status = (NULL != (g_desiredOnlyApprovedMacAlgorithmsAreUsed = DuplicateString(value ? value : g_sshDefaultSshMacs))) ?
             SetSshOption(g_sshMacs, g_desiredOnlyApprovedMacAlgorithmsAreUsed, log) : ENOMEM;
-
     }
     else if (0 == strcmp(name, g_remediateEnsureSshWarningBannerIsEnabledObject))
     {
         FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
         status = (NULL != (g_desiredSshWarningBannerIsEnabled = DuplicateString(value ? value : g_sshDefaultSshBannerText))) ?
             SetSshWarningBanner(atoi(g_desiredPermissionsOnEtcSshSshdConfig), g_desiredSshWarningBannerIsEnabled, log) : ENOMEM;
-
     }
     else if (0 == strcmp(name, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
@@ -937,7 +935,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     if ((NULL != reason) && (NULL == *reason) && (0 != IsSshServerActive(log)))
     {
-        OsConfigCaptureSuccessReason(reason, "%sThe SSH Server service %s is not found on this device, nothing to check", g_sshServerService);
+        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", g_sshServerService);
     }
 
     OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
