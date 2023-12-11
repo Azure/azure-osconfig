@@ -941,12 +941,12 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         }
         else
         {
-            OsConfigLogError(SecurityBaselineGetLog(), "ProcessSshAuditCheck(%s): audit failure without a reason", name);
+            OsConfigLogError(log, "ProcessSshAuditCheck(%s): audit failure without a reason", name);
             result = DuplicateString(SECURITY_AUDIT_FAIL);
 
             if (NULL == result)
             {
-                OsConfigLogError(SecurityBaselineGetLog(), "ProcessSshAuditCheck: DuplicateString failed");
+                OsConfigLogError(log, "ProcessSshAuditCheck: DuplicateString failed");
                 status = ENOMEM;
             }
         }
