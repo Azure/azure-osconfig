@@ -527,7 +527,7 @@ int CheckSshProtocol(char** reason, void* log)
     char* protocol = NULL;
     int status = 0;
 
-    if (0 == IsSshServerActive(log))
+    if (0 != IsSshServerActive(log))
     {
         return status;
     }
