@@ -942,11 +942,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
         else
         {
             OsConfigLogError(log, "ProcessSshAuditCheck(%s): audit failure without a reason", name);
-            if (NULL == (*reason = DuplicateString(SECURITY_AUDIT_FAIL)))
-            {
-                OsConfigLogError(log, "ProcessSshAuditCheck: DuplicateString failed");
-                status = ENOMEM;
-            }
+            OsConfigCaptureReason(reason, "Audit failure without a reason, see /var/log/osconfig*", "%s, audit failure without a reason, see /var/log/osconfig*");
         }
     }
 
