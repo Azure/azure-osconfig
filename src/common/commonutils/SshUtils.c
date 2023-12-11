@@ -933,15 +933,23 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
 
     FREE_MEMORY(lowercase);
 
-    if ((NULL != reason) && (NULL == *reason) && (0 != IsSshServerActive(log)))
+    if ((NULL != reason) && (NULL == *reason))
     {
-        OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", g_sshServerService);
-    }
+        if (0 != IsSshServerActive(log))
+        {
+            OsConfigCaptureSuccessReason(reason, "%s%s not found, nothing to check", g_sshServerService);
+        }
+        else
+        {
+            OsConfigLogError(SecurityBaselineGetLog(), "ProcessSshAuditCheck(%s): audit failure without a reason", name);
+            result = DuplicateString(SECURITY_AUDIT_FAIL);
 
-    if ((NULL != reason) && (NULL != *reason) && (ENOENT == status))
-    {
-        // Successful check, option not found is returned via reason
-        status = 0;
+            if (NULL == result)
+            {
+                OsConfigLogError(SecurityBaselineGetLog(), "ProcessSshAuditCheck: DuplicateString failed");
+                status = ENOMEM;
+            }
+        }
     }
 
     OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
