@@ -809,7 +809,7 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
         CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, 
-            atoi(g_desiredPermissionsOnEtcSshSshdConfig, reason, log);
+            atoi(g_desiredPermissionsOnEtcSshSshdConfig), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
