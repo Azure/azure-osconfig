@@ -472,7 +472,7 @@ static int CheckSshLoginGraceTime(const char* value, char** reason, void* log)
     return status;
 }
 
-static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, char** reason, void* log)
+static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText, unsigned int desiredAccess, char** reason, void* log)
 {
     char* banner = DuplicateStringToLowercase(g_sshBanner);
     char* actualValue = NULL;
@@ -504,9 +504,10 @@ static int CheckSshWarningBanner(const char* bannerFile, const char* bannerText,
                     "%s, also the banner text from '%s' is different from the expected text", bannerFile);
                 status = ENOENT;
             }
-            else
+            else if (0 == (status = CheckFileAccess(bannerFile, 0, 0, desiredAccess, reason, log)))
             {
-                OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s' and this file contains the expected banner text", banner, actualValue);
+                OsConfigCaptureSuccessReason(reason, "%sThe sshd service reports that '%s' is set to '%s', this file has access '%u' and contains the expected banner text", 
+                    banner, actualValue, desiredAccess);
             }
         }
 
@@ -630,7 +631,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
         {
             status = errno ? errno : ENOENT;
-            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %d) failed with %d", etcAzSec, desiredBannerFileAccess, status);
+            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d", etcAzSec, desiredBannerFileAccess, status);
         }
     }
 
@@ -638,7 +639,14 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     {
         if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
         {
-            status = SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+            if (0 == (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log)))
+            {
+                status = SetSshOption(g_sshBanner, g_sshEscapedBannerFilePath, log);
+            }
+            else
+            {
+                OsConfigLogError(log, "SetSshWarningBanner: failed to set desired access %u on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
+            }
         }
         else
         {
@@ -647,7 +655,7 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         }
     }
 
-    OsConfigLogInfo(log, "SetSshWarningBanner('%d' and '%s'): %s (%d)", desiredBannerFileAccess, bannerText, PLAIN_STATUS_FROM_ERRNO(status), status);
+    OsConfigLogInfo(log, "SetSshWarningBanner('%u' and '%s'): %s (%d)", desiredBannerFileAccess, bannerText, PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
@@ -800,7 +808,8 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
     }
     else if (0 == strcmp(name, g_auditEnsureSshWarningBannerIsEnabledObject))
     {
-        CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, reason, log);
+        CheckSshWarningBanner(g_sshBannerFile, g_desiredSshWarningBannerIsEnabled ? g_desiredSshWarningBannerIsEnabled : g_sshDefaultSshBannerText, 
+            atoi(g_desiredPermissionsOnEtcSshSshdConfig), reason, log);
     }
     else if (0 == strcmp(name, g_auditEnsureUsersCannotSetSshEnvironmentOptionsObject))
     {
