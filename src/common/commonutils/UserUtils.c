@@ -396,15 +396,13 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     *groupList = NULL;
     *size = 0;
 
-    getgrouplist(user->username, user->groupId, NULL, &numberOfGroups);
-    OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups ############################", user->username, user->groupId, numberOfGroups);
-
-    if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
+    if (0 >= (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
     {
-        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
-        status = ENOENT;
+        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(%s, %u) failed returning %d and errno %d", user->username, user->groupId, numberOfGroups, errno);
+        numberOfGroups = 1;
     }
-    else if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
+    
+    if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory");
         status = ENOMEM;
@@ -413,9 +411,9 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     {
         *size = numberOfGroups;
 
-        if (IsFullLoggingEnabled())
+        //if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups", user->username, user->groupId, numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d group(s)", user->username, user->groupId, numberOfGroups);
         }
 
         for (i = 0; i < numberOfGroups; i++)
