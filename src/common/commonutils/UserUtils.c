@@ -413,7 +413,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
 
         //if (IsFullLoggingEnabled())
         {
-            OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d group(s)", user->username, user->groupId, numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
         }
 
         for (i = 0; i < numberOfGroups; i++)
