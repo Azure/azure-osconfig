@@ -6,7 +6,7 @@
 
 #include <shadow.h>
 
-#define MAX_GROUPS_USER_CAN_BE_IN 1//32
+#define MAX_GROUPS_USER_CAN_BE_IN 32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
 static const char* g_root = "root";
