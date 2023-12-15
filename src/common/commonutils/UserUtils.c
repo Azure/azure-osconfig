@@ -410,8 +410,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
         {
             getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
-            OsConfigLogInfo(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d groups", 
-                user->username, user->groupId, getGroupListResult, numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d", user->username, user->groupId, numberOfGroups);
         }
         else
         {
