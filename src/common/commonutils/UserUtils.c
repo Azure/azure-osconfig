@@ -375,7 +375,7 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
 
 int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
-    gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN] = {0};
+    gid_t* groupIds = NULL;
     int numberOfGroups = ARRAY_SIZE(groupIds);
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
@@ -396,14 +396,27 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     *groupList = NULL;
     *size = 0;
 
-    if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
+    getgrouplist(user->username, user->groupId, NULL, &numberOfGroups);
+    OsConfigLogInfo(log, "EnumerateUserGroups(user '%s' (%u)) is in %d groups (max: %d)", user->username, user->groupId, numberOfGroups, MAX_GROUPS_USER_CAN_BE_IN);//////////////////
+   
+    if (0 >= numberOfGroups)
     {
-        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist failed");
+        numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
+    }
+    
+    if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of group ids");
+        status = ENOMEM;
+    }
+    else if (-1 == (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
+    {
+        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(%s, %u) failed returning %d", user->username, user->groupId, numberOfGroups);
         status = ENOENT;
     }
     else if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
     {
-        OsConfigLogError(log, "EnumerateUserGroups: out of memory");
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of groups");
         status = ENOMEM;
     }
     else
@@ -450,6 +463,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             }
         }
     }
+
+    FREE_MEMORY(groupIds);
 
     return status;
 }
