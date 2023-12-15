@@ -376,7 +376,7 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
 int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
     gid_t* groupIds = NULL;
-    int numberOfGroups = ARRAY_SIZE(groupIds);
+    int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
     int i = 0;
