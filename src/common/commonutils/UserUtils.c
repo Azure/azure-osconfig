@@ -404,7 +404,7 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
         numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
     }
     
-    if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t)))
+    if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of group ids");
         status = ENOMEM;
