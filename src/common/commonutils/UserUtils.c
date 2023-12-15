@@ -6,7 +6,7 @@
 
 #include <shadow.h>
 
-#define MAX_GROUPS_USER_CAN_BE_IN 16
+#define MAX_GROUPS_USER_CAN_BE_IN 1//32
 #define NUMBER_OF_SECONDS_IN_A_DAY 86400
 
 static const char* g_root = "root";
@@ -375,11 +375,14 @@ void FreeGroupList(SIMPLIFIED_GROUP** groupList, unsigned int size)
 
 int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, unsigned int* size, void* log)
 {
-    gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN] = {0};
-    int numberOfGroups = ARRAY_SIZE(groupIds);
+    //gid_t groupIds[MAX_GROUPS_USER_CAN_BE_IN + 1] = {0};
+    gid_t* groupIds = NULL;
+    int numberOfGroups = MAX_GROUPS_USER_CAN_BE_IN;
+    int numberOfGroups = 0;
     struct group* groupEntry = NULL;
     size_t groupNameLength = 0;
     int i = 0;
+    int getGroupListResult = 0;
     int status = 0;
 
     if ((NULL == user) || (NULL == groupList) || (NULL == size))
@@ -396,12 +399,34 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     *groupList = NULL;
     *size = 0;
 
-    if (0 >= (numberOfGroups = getgrouplist(user->username, user->groupId, &groupIds[0], &numberOfGroups)))
+    if (NULL == (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
     {
-        OsConfigLogError(log, "EnumerateUserGroups: getgrouplist(%s, %u) failed returning %d and errno %d", user->username, user->groupId, numberOfGroups, errno);
-        numberOfGroups = 1;
+        OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
+        status = ENOMEM;
+    }
+    else if (-1 == (getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups)))
+    {
+        OsConfigLogInfo(log, "EnumerateUserGroups: first call to getgrouplist for user '%s' (%u) returned %d", user->username, user->groupId, numberOfGroups);
+
+        FREE_MEMORY(groupIds);
+        if (NULL != (groupIds = malloc(numberOfGroups * sizeof(gid_t))))
+        {
+            getGroupListResult = getgrouplist(user->username, user->groupId, groupIds, &numberOfGroups);
+            OsConfigLogInfo(log, "EnumerateUserGroups: second call to getgrouplist for user '%s' (%u) returned %d and %d groups", 
+                user->username, user->groupId, getGroupListResult, numberOfGroups);
+        }
+        else
+        {
+            OsConfigLogError(log, "EnumerateUserGroups: out of memory allocating list of %d group identifiers", numberOfGroups);
+            status = ENOMEM;
+        }
     }
     
+    //if (IsFullLoggingEnabled())
+    {
+        OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
+    }
+
     if (NULL == (*groupList = malloc(sizeof(SIMPLIFIED_GROUP) * numberOfGroups)))
     {
         OsConfigLogError(log, "EnumerateUserGroups: out of memory");
@@ -410,11 +435,6 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
     else
     {
         *size = numberOfGroups;
-
-        //if (IsFullLoggingEnabled())
-        {
-            OsConfigLogInfo(log, "EnumerateUserGroups: user '%s' (%u) is in %d group%s", user->username, user->groupId, numberOfGroups, (1 == numberOfGroups) ? "" : "s");
-        }
 
         for (i = 0; i < numberOfGroups; i++)
         {
@@ -451,6 +471,8 @@ int EnumerateUserGroups(SIMPLIFIED_USER* user, SIMPLIFIED_GROUP** groupList, uns
             }
         }
     }
+
+    FREE_MEMORY(groupIds);
 
     return status;
 }
