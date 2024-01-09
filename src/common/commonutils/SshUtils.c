@@ -697,6 +697,8 @@ int InitializeSshAudit(void* log)
 
 void SshAuditCleanup(void* log)
 {
+    OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
+    
     if (false == g_auditOnlySession)
     {
         // Signal to the SSH Server service to reload configuration
