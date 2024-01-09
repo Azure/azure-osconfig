@@ -110,6 +110,8 @@ static char* g_desiredSshWarningBannerIsEnabled = NULL;
 static char* g_desiredUsersCannotSetSshEnvironmentOptions = NULL;
 static char* g_desiredAppropriateCiphersForSsh = NULL;
 
+static bool g_auditOnlySession = true;
+
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* sshdDashTCommand = "sshd -T";
@@ -693,8 +695,11 @@ int InitializeSshAudit(void* log)
 
 void SshAuditCleanup(void* log)
 {
-    // Signal to the SSH Server service to reload configuration
-    RestartDaemon(g_sshServerService, log);
+    if (false == g_auditOnlySession)
+    {
+        // Signal to the SSH Server service to reload configuration
+        RestartDaemon(g_sshServerService, log);
+    }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
     FREE_MEMORY(g_desiredSshBestPracticeProtocol);
@@ -957,6 +962,10 @@ int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log
                 status = ENOMEM;
             }
         }
+    }
+    else if ((NULL != value) && (NULL == reason))
+    {
+        g_auditOnlySession = false;
     }
 
     OsConfigLogInfo(log, "ProcessSshAuditCheck(%s, '%s'): '%s' and %d", name, value ? value : "", (NULL != reason) ? *reason : "", status);
