@@ -666,6 +666,8 @@ int InitializeSshAudit(void* log)
 {
     int status = 0;
 
+    g_auditOnlySession = true;
+
     if ((NULL == (g_desiredPermissionsOnEtcSshSshdConfig = DuplicateString(g_sshDefaultSshSshdConfigAccess))) ||
         (NULL == (g_desiredSshBestPracticeProtocol = DuplicateString(g_sshDefaultSshProtocol))) ||
         (NULL == (g_desiredSshBestPracticeIgnoreRhosts = DuplicateString(g_sshDefaultSshYes))) ||
@@ -720,6 +722,8 @@ void SshAuditCleanup(void* log)
     FREE_MEMORY(g_desiredSshWarningBannerIsEnabled);
     FREE_MEMORY(g_desiredUsersCannotSetSshEnvironmentOptions);
     FREE_MEMORY(g_desiredAppropriateCiphersForSsh);
+
+    g_auditOnlySession = true;
 }
 
 int ProcessSshAuditCheck(const char* name, char* value, char** reason, void* log)
