@@ -43,14 +43,12 @@ static const char* g_sshDefaultSshClientAliveInterval = "3600";
 static const char* g_sshDefaultSshLoginGraceTime = "60";
 static const char* g_sshDefaultSshMacs = "hmac-sha2-256,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-512-etm@openssh.com";
 static const char* g_sshDefaultSshCiphers = "aes128-ctr,aes192-ctr,aes256-ctr";
+static const char* g_sshBannerFile = "/etc/azsec/banner.txt";
 static const char* g_sshDefaultSshBannerText =
     "#######################################################################\n\n"
     "Authorized access only!\n\n"
     "If you are not authorized to access or use this system, disconnect now!\n\n"
     "#######################################################################\n";
-
-static const char* g_sshBannerFile = "/etc/azsec/banner.txt";
-static const char* g_sshEscapedBannerFilePath = "\\/etc\\/azsec\\/banner.txt";
 
 static const char* g_auditEnsurePermissionsOnEtcSshSshdConfigObject = "auditEnsurePermissionsOnEtcSshSshdConfig";
 static const char* g_auditEnsureSshBestPracticeProtocolObject = "auditEnsureSshBestPracticeProtocol";
