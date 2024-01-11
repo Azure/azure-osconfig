@@ -564,12 +564,15 @@ int CheckSshProtocol(char** reason, void* log)
 
 static int IncludeRemediationConfFile(void* log)
 {
-    const char configurationTemplate = "# Azure OSConfig Remediation:\nInclude %s\n\n%s";
+    const char* configurationTemplate = "# Azure OSConfig Remediation:\nInclude %s\n\n%s";
+    const char* confFolder = "/etc/ssh/sshd_config.d";
 
+    int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     char* originalConfiguration = NULL;
     char* newConfiguration = NULL;
     size_t length = 0;
     int size = 0;
+    int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
     {
@@ -577,35 +580,47 @@ static int IncludeRemediationConfFile(void* log)
         return EEXIST;
     }
 
-    if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))
+    if (false == DirectoryExists(confFolder))
     {
-        size = strlen(configurationTemplate) + strlen(g_remediationConf) + strlen(originalConfiguration);
-
-        if (NULL != (newConfiguration = malloc(size)))
+        if (0 != mkdir(confFolder, desiredAccess))
         {
-            memset(newConfiguration, 0, size);
-            snprintf(newConfiguration, size, configurationTemplate, g_remediationConf, originalConfiguration);
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "IncludeRemediationConfFile: mkdir(%s, %u) failed with %d", confFolder, desiredAccess, status);
+        }
+    }
 
-            if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
+    if (true == DirectoryExists(etcAzSec))
+    {
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))
+        {
+            size = strlen(configurationTemplate) + strlen(g_remediationConf) + strlen(originalConfiguration);
+
+            if (NULL != (newConfiguration = malloc(size)))
             {
-                status = ENOENT;
-                OsConfigLogError(log, "IncludeRemediationConfFile: failed to add as an include '%s' to '%s'", g_remediationConf, g_sshServerConfiguration);
+                memset(newConfiguration, 0, size);
+                snprintf(newConfiguration, size, configurationTemplate, g_remediationConf, originalConfiguration);
+
+                if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
+                {
+                    status = ENOENT;
+                    OsConfigLogError(log, "IncludeRemediationConfFile: failed to add as an include '%s' to '%s'", g_remediationConf, g_sshServerConfiguration);
+                }
+
+                FREE_MEMORY(newConfiguration);
+            }
+            else
+            {
+                OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                status = ENOMEM;
             }
 
-            FREE_MEMORY(newConfiguration);
+            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
         else
         {
-            OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
-            status = ENOMEM;
+            OsConfigLogError(log, "IncludeRemediationConfFile: failed to read from '%s'", g_sshServerConfiguration);
+            status = EEXIST;
         }
-
-        SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
-    }
-    else
-    {
-        OsConfigLogError(log, "IncludeRemediationConfFile: failed to read from '%s'", g_sshServerConfiguration);
-        status = EEXIST;
     }
 
     return status;
