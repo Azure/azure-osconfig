@@ -615,8 +615,6 @@ static int IncludeRemediationConfFile(void* log)
                     OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
                     status = ENOMEM;
                 }
-
-                SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
             }
             else
             {
@@ -624,6 +622,8 @@ static int IncludeRemediationConfFile(void* log)
                 OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
                 status = 0;
             }
+
+            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
         else
         {
@@ -862,10 +862,16 @@ void SshAuditCleanup(void* log)
 {
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
-    if (/*(false == g_auditOnlySession) &&*/ (0 == IncludeRemediationConfFile(log)) && (0 == SaveToRemediationConfFile(log)))
+    if (1/*(false == g_auditOnlySession) &&*/)
     {
-        // Signal to the SSH Server service to reload configuration
-        RestartDaemon(g_sshServerService, log);
+        if (0 == IncludeRemediationConfFile(log))
+        {
+            if (0 == SaveToRemediationConfFile(log))
+            {
+                // Signal to the SSH Server service to reload configuration
+                RestartDaemon(g_sshServerService, log);
+            }
+        }
     }
     
     FREE_MEMORY(g_desiredPermissionsOnEtcSshSshdConfig);
