@@ -540,17 +540,29 @@ int CheckSshProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckSshProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_sshServerConfiguration, '#', protocol, log)))
+    else if (false == FileExists(g_remediationConf))
     {
-        OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
-        OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
+        OsConfigLogInfo(log, "CheckSshProtocol: the OSConfig Remediation file '%s' is not present on this device", g_remediationConf);
+        result = EEXIST;
+    }
+    else if (0 != FindTextInFile(g_sshServerConfiguration, g_remediationConf, log))
+    {
+        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_remediationConf, g_sshServerConfiguration);
+        OsConfigCaptureReason(reason, "'%s' is not found included in %s",
+            "%s, also '%s' is not found included in %s", g_remediationConf, g_sshServerConfiguration);
+        status = ENOENT;
+    }
+    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_remediationConf, '#', protocol, log)))
+    {
+        OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_remediationConf);
+        OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_remediationConf);
         status = 0;
     }
     else
     {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found uncommented with '#' in %s", protocol, g_remediationConf);
         OsConfigCaptureReason(reason, "'%s' is not found uncommented with '#' in %s",  
-            "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_sshServerConfiguration);
+            "%s, also '%s' is not found uncommented with '#' in %s", protocol, g_remediationConf);
         status = ENOENT;
     }
 
