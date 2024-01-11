@@ -694,17 +694,19 @@ static int SaveToRemediationConfFile(void* log)
         if ((NULL != (currentRemediation = LoadStringFromFile(g_remediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
         {
             OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' already contains the correct remediation values:\n'%s'", g_remediationConf, newRemediation);
+            status = 0;
         }
         else
         {
             if (true == SavePayloadToFile(g_remediationConf, newRemediation, newRemediationSize, log))
             {
                 OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' is now updated to the following remediation values:\n'%s'", g_remediationConf, newRemediation);
+                status = 0;
             }
             else
             {
-                status = ENOENT;
                 OsConfigLogError(log, "SaveToRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
+                status = ENOENT;
             }
         }
 
