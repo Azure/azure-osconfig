@@ -570,8 +570,7 @@ static int IncludeRemediationConfFile(void* log)
     int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     char* originalConfiguration = NULL;
     char* newConfiguration = NULL;
-    size_t length = 0;
-    int size = 0;
+    size_t size = 0;
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -628,8 +627,6 @@ static int IncludeRemediationConfFile(void* log)
 
 static int SaveToRemediationConfFile(void* log)
 {
-    //static const char* g_remediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
-
     const char* confFileTemplate =
         "Protocol %s\n"
         "IgnoreRhosts %s\n"
@@ -651,7 +648,7 @@ static int SaveToRemediationConfFile(void* log)
         "Ciphers  %s\n"
         "UsePAM no\n";
 
-    char buffer = NULL;
+    char* buffer = NULL;
     size_t size = 0;
     int status = 0;
 
