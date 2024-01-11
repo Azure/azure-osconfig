@@ -561,7 +561,46 @@ int CheckSshProtocol(char** reason, void* log)
     return status;
 }
 
-static int IncludeRemediationConfFile(void* log)
+static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
+{
+    const char* etcAzSec = "/etc/azsec/";
+    int status = 0;
+
+    if (NULL == bannerText)
+    {
+        OsConfigLogError(log, "SetSshWarningBanner: invalid argument");
+        return EINVAL;
+    }
+
+    if (false == DirectoryExists(etcAzSec))
+    {
+        if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d", etcAzSec, desiredBannerFileAccess, status);
+        }
+    }
+
+    if (true == DirectoryExists(etcAzSec))
+    {
+        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
+        {
+            if (0 != (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log)))
+            {
+                OsConfigLogError(log, "SetSshWarningBanner: failed to set desired access %u on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
+            }
+        }
+        else
+        {
+            status = errno ? errno : ENOENT;
+            OsConfigLogError(log, "SetSshWarningBanner: failed to save banner text '%s' to file '%s' with %d", bannerText, etcAzSec, status);
+        }
+    }
+
+    return status;
+}
+
+static int IncludeSshRemediationConfFile(void* log)
 {
     const char* confFolder = "/etc/ssh/sshd_config.d";
     const char* configurationTemplate = "%s%s";
@@ -574,7 +613,7 @@ static int IncludeRemediationConfFile(void* log)
 
     if (false == FileExists(g_sshServerConfiguration))
     {
-        OsConfigLogInfo(log, "IncludeRemediationConfFile: the OpenSSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
+        OsConfigLogInfo(log, "IncludeSshRemediationConfFile: the OpenSSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
         return EEXIST;
     }
 
@@ -583,7 +622,7 @@ static int IncludeRemediationConfFile(void* log)
         if (0 != mkdir(confFolder, desiredAccess))
         {
             status = errno ? errno : ENOENT;
-            OsConfigLogError(log, "IncludeRemediationConfFile: mkdir(%s, %u) failed with %d", confFolder, desiredAccess, status);
+            OsConfigLogError(log, "IncludeSshRemediationConfFile: mkdir(%s, %u) failed with %d", confFolder, desiredAccess, status);
         }
     }
 
@@ -602,12 +641,12 @@ static int IncludeRemediationConfFile(void* log)
 
                     if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                     {
-                        OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is now included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                        OsConfigLogInfo(log, "IncludeSshRemediationConfFile: '%s' is now included by '%s'", g_remediationConf, g_sshServerConfiguration);
                         status = 0;
                     }
                     else
                     {
-                        OsConfigLogError(log, "IncludeRemediationConfFile: failed to include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                        OsConfigLogError(log, "IncludeSshRemediationConfFile: failed to include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
                         status = ENOENT;
                     }
 
@@ -615,13 +654,13 @@ static int IncludeRemediationConfFile(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                    OsConfigLogError(log, "IncludeSshRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
                     status = ENOMEM;
                 }
             }
             else
             {
-                OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                OsConfigLogInfo(log, "IncludeSshRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
                 status = 0;
             }
 
@@ -631,7 +670,7 @@ static int IncludeRemediationConfFile(void* log)
         }
         else
         {
-            OsConfigLogError(log, "IncludeRemediationConfFile: failed to read from '%s'", g_sshServerConfiguration);
+            OsConfigLogError(log, "IncludeSshRemediationConfFile: failed to read from '%s'", g_sshServerConfiguration);
             status = EEXIST;
         }
     }
@@ -639,7 +678,7 @@ static int IncludeRemediationConfFile(void* log)
     return status;
 }
 
-static int SaveToRemediationConfFile(void* log)
+static int SaveSshRemediationConfFile(void* log)
 {
     const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s  %s\nUsePAM no";
 
@@ -693,19 +732,19 @@ static int SaveToRemediationConfFile(void* log)
 
         if ((NULL != (currentRemediation = LoadStringFromFile(g_remediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
         {
-            OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' already contains the correct remediation values:\n'%s'", g_remediationConf, newRemediation);
+            OsConfigLogInfo(log, "SaveSshRemediationConfFile: '%s' already contains the correct remediation values:\n'%s'", g_remediationConf, newRemediation);
             status = 0;
         }
         else
         {
             if (true == SavePayloadToFile(g_remediationConf, newRemediation, newRemediationSize, log))
             {
-                OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' is now updated to the following remediation values:\n'%s'", g_remediationConf, newRemediation);
+                OsConfigLogInfo(log, "SaveSshRemediationConfFile: '%s' is now updated to the following remediation values:\n'%s'", g_remediationConf, newRemediation);
                 status = 0;
             }
             else
             {
-                OsConfigLogError(log, "SaveToRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
+                OsConfigLogError(log, "SaveSshRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
                 status = ENOENT;
             }
         }
@@ -715,50 +754,11 @@ static int SaveToRemediationConfFile(void* log)
     }
     else
     {
-        OsConfigLogError(log, "SaveToRemediationConfFile: out of memory, cannot save remediation values to '%s'", g_remediationConf);
+        OsConfigLogError(log, "SaveSshRemediationConfFile: out of memory, cannot save remediation values to '%s'", g_remediationConf);
         status = ENOMEM;
     }
 
     SetFileAccess(g_remediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
-
-    return status;
-}
-
-static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char* bannerText, void* log)
-{
-    const char* etcAzSec = "/etc/azsec/";
-    int status = 0;
-       
-    if (NULL == bannerText)
-    {
-        OsConfigLogError(log, "SetSshWarningBanner: invalid argument");
-        return EINVAL;
-    }
-    
-    if (false == DirectoryExists(etcAzSec))
-    {
-        if (0 != mkdir(etcAzSec, desiredBannerFileAccess))
-        {
-            status = errno ? errno : ENOENT;
-            OsConfigLogError(log, "SetSshWarningBanner: mkdir(%s, %u) failed with %d", etcAzSec, desiredBannerFileAccess, status);
-        }
-    }
-
-    if (true == DirectoryExists(etcAzSec))
-    {
-        if (SavePayloadToFile(g_sshBannerFile, bannerText, strlen(bannerText), log))
-        {
-            if (0 != (status = SetFileAccess(g_sshBannerFile, 0, 0, desiredBannerFileAccess, log)))
-            {
-                OsConfigLogError(log, "SetSshWarningBanner: failed to set desired access %u on banner file %s (%d)", desiredBannerFileAccess, g_sshBannerFile, status);
-            }
-        }
-        else
-        {
-            status = errno ? errno : ENOENT;
-            OsConfigLogError(log, "SetSshWarningBanner: failed to save banner text '%s' to file '%s' with %d", bannerText, etcAzSec, status);
-        }
-    }
 
     return status;
 }
@@ -803,9 +803,9 @@ void SshAuditCleanup(void* log)
     if (false == g_auditOnlySession)
     {
         // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
-        IncludeRemediationConfFile(log);
+        IncludeSshRemediationConfFile(log);
 
-        if (0 == SaveToRemediationConfFile(log))
+        if (0 == SaveSshRemediationConfFile(log))
         {
             // Signal to the SSH Server service to reload configuration
             RestartDaemon(g_sshServerService, log);
