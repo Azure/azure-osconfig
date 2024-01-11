@@ -7,6 +7,7 @@
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_remediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
+static const char* g_remediationConfHeader = "# Azure OSConfig Remediation:\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n\n";
 
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
@@ -564,7 +565,7 @@ int CheckSshProtocol(char** reason, void* log)
 
 static int IncludeRemediationConfFile(void* log)
 {
-    const char* configurationTemplate = "# Azure OSConfig Remediation:\nInclude %s\n\n%s";
+    const char* configurationTemplate = "%s%s";
     const char* confFolder = "/etc/ssh/sshd_config.d";
 
     int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
@@ -590,14 +591,15 @@ static int IncludeRemediationConfFile(void* log)
 
     if (true == DirectoryExists(confFolder))
     {
-        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
+        if ((NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))) && 
+            (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader))))
         {
-            size = strlen(configurationTemplate) + strlen(g_remediationConf) + strlen(originalConfiguration);
+            size = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
 
             if (NULL != (newConfiguration = malloc(size)))
             {
                 memset(newConfiguration, 0, size);
-                snprintf(newConfiguration, size, configurationTemplate, g_remediationConf, originalConfiguration);
+                snprintf(newConfiguration, size, configurationTemplate, g_remediationConfHeader, originalConfiguration);
 
                 if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
                 {
