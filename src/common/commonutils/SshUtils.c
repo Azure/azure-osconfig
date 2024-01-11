@@ -563,13 +563,13 @@ int CheckSshProtocol(char** reason, void* log)
 
 static int IncludeRemediationConfFile(void* log)
 {
-    const char* configurationTemplate = "%s%s";
     const char* confFolder = "/etc/ssh/sshd_config.d";
-
+    const char* configurationTemplate = "%s%s";
+    
     int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
     char* originalConfiguration = NULL;
     char* newConfiguration = NULL;
-    size_t size = 0;
+    size_t newConfigurationSize = 0;
     int status = 0;
 
     if (false == FileExists(g_sshServerConfiguration))
@@ -593,14 +593,19 @@ static int IncludeRemediationConfFile(void* log)
         {
             if (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader)))
             {
-                size = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
+                newConfigurationSize = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
 
-                if (NULL != (newConfiguration = malloc(size)))
+                if (NULL != (newConfiguration = malloc(newConfigurationSize)))
                 {
-                    memset(newConfiguration, 0, size);
-                    snprintf(newConfiguration, size, configurationTemplate, g_remediationConfHeader, originalConfiguration);
+                    memset(newConfiguration, 0, newConfigurationSize);
+                    snprintf(newConfiguration, newConfigurationSize, configurationTemplate, g_remediationConfHeader, originalConfiguration);
 
-                    if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
+                    if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
+                    {
+                        OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is now included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                        status = 0;
+                    }
+                    else
                     {
                         OsConfigLogError(log, "IncludeRemediationConfFile: failed to include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
                         status = ENOENT;
@@ -616,12 +621,13 @@ static int IncludeRemediationConfFile(void* log)
             }
             else
             {
-                // Already included
                 OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
                 status = 0;
             }
 
             SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+
+            FREE_MEMORY(originalConfiguration);
         }
         else
         {
@@ -637,11 +643,12 @@ static int SaveToRemediationConfFile(void* log)
 {
     const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s  %s\nUsePAM no\n";
 
-    char* buffer = NULL;
-    size_t size = 0;
+    char* newRemediation = NULL;
+    char* currentRemediation = NULL;
+    size_t newRemediationSize = 0;
     int status = 0;
 
-    size = strlen(confFileTemplate) +
+    newRemediationSize = strlen(confFileTemplate) +
         strlen(g_sshProtocol) + strlen(g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol) +
         strlen(g_sshIgnoreHosts) + strlen(g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes) +
         strlen(g_sshLogLevel) + strlen(g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel) +
@@ -661,10 +668,10 @@ static int SaveToRemediationConfFile(void* log)
         strlen(g_sshMacs) + strlen(g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs) +
         strlen(g_sshCiphers) + strlen(g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers) + 1;
 
-    if (NULL != (buffer = malloc(size)))
+    if (NULL != (newRemediation = malloc(newRemediationSize)))
     {
-        memset(buffer, 0, size);
-        snprintf(buffer, size, confFileTemplate,
+        memset(newRemediation, 0, newRemediationSize);
+        snprintf(newRemediation, newRemediationSize, confFileTemplate,
             g_sshProtocol, g_desiredSshBestPracticeProtocol ? g_desiredSshBestPracticeProtocol : g_sshDefaultSshProtocol,
             g_sshIgnoreHosts, g_desiredSshBestPracticeIgnoreRhosts ? g_desiredSshBestPracticeIgnoreRhosts : g_sshDefaultSshYes,
             g_sshLogLevel, g_desiredSshLogLevelIsSet ? g_desiredSshLogLevelIsSet : g_sshDefaultSshLogLevel,
@@ -684,17 +691,25 @@ static int SaveToRemediationConfFile(void* log)
             g_sshMacs, g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs,
             g_sshCiphers, g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers);
 
-        if (true == SavePayloadToFile(g_remediationConf, buffer, size, log))
+        if ((NULL != (currentRemediation = LoadStringFromFile(g_remediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
         {
-            OsConfigLogInfo(log, "SaveToRemediationConfFile: saved to '%s' the following content:\n'%s'", g_remediationConf, buffer);
+            OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' already contains the correct remediation values:\n'%s'", g_remediationConf, newRemediation);
         }
         else
         {
-            status = ENOENT;
-            OsConfigLogError(log, "SaveToRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
+            if (true == SavePayloadToFile(g_remediationConf, newRemediation, newRemediationSize, log))
+            {
+                OsConfigLogInfo(log, "SaveToRemediationConfFile: '%s' is now updated to the following remediation values:\n'%s'", g_remediationConf, newRemediation);
+            }
+            else
+            {
+                status = ENOENT;
+                OsConfigLogError(log, "SaveToRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
+            }
         }
 
-        FREE_MEMORY(buffer);
+        FREE_MEMORY(newRemediation);
+        FREE_MEMORY(currentRemediation);
     }
     else
     {
@@ -785,15 +800,15 @@ void SshAuditCleanup(void* log)
 {
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
-    if (1/*(false == g_auditOnlySession) &&*/)
+    if (false == g_auditOnlySession)
     {
-        if (0 == IncludeRemediationConfFile(log))
+        // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
+        IncludeRemediationConfFile(log);
+
+        if (0 == SaveToRemediationConfFile(log))
         {
-            if (0 == SaveToRemediationConfFile(log))
-            {
-                // Signal to the SSH Server service to reload configuration
-                RestartDaemon(g_sshServerService, log);
-            }
+            // Signal to the SSH Server service to reload configuration
+            RestartDaemon(g_sshServerService, log);
         }
     }
     
