@@ -115,7 +115,7 @@ static bool g_auditOnlySession = true;
 static char* GetSshServerState(const char* name, void* log)
 {
     const char* sshdDashTCommand = "sshd -T";
-    const char* commandTemplateForOne = "%s | grep %s";
+    const char* commandTemplateForOne = "%s | grep  -m 1 %s";
     char* command = NULL;
     char* textResult = NULL;
     int status = 0;
