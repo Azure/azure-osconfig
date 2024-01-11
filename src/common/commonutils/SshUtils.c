@@ -7,7 +7,7 @@
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
 static const char* g_remediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
-static const char* g_remediationConfHeader = "# Azure OSConfig Remediation:\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n\n";
+static const char* g_remediationConfHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
 
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
