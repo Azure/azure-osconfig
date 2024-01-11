@@ -644,7 +644,7 @@ static int IncludeSshRemediationConfFile(void* log)
         {
             if (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader)))
             {
-                newConfigurationSize = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
+                newConfigurationSize = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration) + 1;
 
                 if (NULL != (newConfiguration = malloc(newConfigurationSize)))
                 {
