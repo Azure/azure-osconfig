@@ -589,9 +589,9 @@ static int IncludeRemediationConfFile(void* log)
         }
     }
 
-    if (true == DirectoryExists(etcAzSec))
+    if (true == DirectoryExists(confFolder))
     {
-        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
         {
             size = strlen(configurationTemplate) + strlen(g_remediationConf) + strlen(originalConfiguration);
 
