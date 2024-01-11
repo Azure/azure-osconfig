@@ -591,31 +591,39 @@ static int IncludeRemediationConfFile(void* log)
 
     if (true == DirectoryExists(confFolder))
     {
-        if ((NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log))) && 
-            (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader))))
+        if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
         {
-            size = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
-
-            if (NULL != (newConfiguration = malloc(size)))
+            if (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader)))
             {
-                memset(newConfiguration, 0, size);
-                snprintf(newConfiguration, size, configurationTemplate, g_remediationConfHeader, originalConfiguration);
+                size = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration);
 
-                if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
+                if (NULL != (newConfiguration = malloc(size)))
                 {
-                    status = ENOENT;
-                    OsConfigLogError(log, "IncludeRemediationConfFile: failed to add as an include '%s' to '%s'", g_remediationConf, g_sshServerConfiguration);
+                    memset(newConfiguration, 0, size);
+                    snprintf(newConfiguration, size, configurationTemplate, g_remediationConfHeader, originalConfiguration);
+
+                    if (false == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, size, log))
+                    {
+                        OsConfigLogError(log, "IncludeRemediationConfFile: failed to include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                        status = ENOENT;
+                    }
+
+                    FREE_MEMORY(newConfiguration);
+                }
+                else
+                {
+                    OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                    status = ENOMEM;
                 }
 
-                FREE_MEMORY(newConfiguration);
+                SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
             }
             else
             {
-                OsConfigLogError(log, "IncludeRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
-                status = ENOMEM;
+                // Already included
+                OsConfigLogInfo(log, "IncludeRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                status = 0;
             }
-
-            SetFileAccess(g_sshServerConfiguration, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
         }
         else
         {
@@ -854,7 +862,7 @@ void SshAuditCleanup(void* log)
 {
     OsConfigLogInfo(log, "SshAuditCleanup: %s", g_auditOnlySession ? "audit only" : "audit and remediate");
     
-    if ((false == g_auditOnlySession) && (0 == IncludeRemediationConfFile(log)) && (0 == SaveToRemediationConfFile(log)))
+    if (/*(false == g_auditOnlySession) &&*/ (0 == IncludeRemediationConfFile(log)) && (0 == SaveToRemediationConfFile(log)))
     {
         // Signal to the SSH Server service to reload configuration
         RestartDaemon(g_sshServerService, log);
