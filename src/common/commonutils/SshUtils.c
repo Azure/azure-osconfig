@@ -760,8 +760,6 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
         }
     }
 
-    OsConfigLogInfo(log, "SetSshWarningBanner('%u' and '%s'): %s (%d)", desiredBannerFileAccess, bannerText, PLAIN_STATUS_FROM_ERRNO(status), status);
-
     return status;
 }
 
