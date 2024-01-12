@@ -752,14 +752,14 @@ static int SaveRemediationSshConfFile(void* log)
 
         if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
         {
-            OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' already contains the correct remediation values:\n---%s\n---", g_osconfigRemediationConf, newRemediation);
+            OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' already contains the correct remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
             status = 0;
         }
         else
         {
             if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
             {
-                OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' is now updated to the following remediation values:\n---%s\n---", g_osconfigRemediationConf, newRemediation);
+                OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' is now updated to the following remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
                 status = 0;
             }
             else
