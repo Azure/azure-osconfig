@@ -542,7 +542,9 @@ int CheckSshProtocol(char** reason, void* log)
     }
     else if (false == FileExists(g_osconfigRemediationConf))
     {
-        OsConfigLogInfo(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
+        OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
+        OsConfigCaptureReason(reason, "the OSConfig remediation file '%s' is not present on this device",
+            "%s, also the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
         status = EEXIST;
     }
     else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
