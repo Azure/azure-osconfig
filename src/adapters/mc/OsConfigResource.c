@@ -34,6 +34,8 @@ MPI_HANDLE g_mpiHandle = NULL;
 
 static OSCONFIG_LOG_HANDLE g_log = NULL;
 
+const char* g_mpiServer = "osconfig-platform";
+
 OSCONFIG_LOG_HANDLE GetLog(void)
 {
     if (NULL == g_log)
@@ -46,15 +48,14 @@ OSCONFIG_LOG_HANDLE GetLog(void)
 
 static bool RefreshMpiClientSession(void)
 {
-    const char* mpiServer = "osconfig-platform";
     bool status = true;
 
-    if (g_mpiHandle && IsDaemonActive(mpiServer, GetLog()))
+    if (g_mpiHandle && IsDaemonActive(g_mpiServer, GetLog()))
     {
         return status;
     }
 
-    if (true == (status = EnableAndStartDaemon(mpiServer, GetLog())))
+    if (true == (status = EnableAndStartDaemon(g_mpiServer, GetLog())))
     {
         sleep(1);
 
@@ -66,7 +67,7 @@ static bool RefreshMpiClientSession(void)
     }
     else
     {
-        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", mpiServer);
+        OsConfigLogError(GetLog(), "[OsConfigResource] The OSConfig Platform service '%s' is not active on this device", g_mpiServer);
     }
 
     return status;
@@ -101,6 +102,7 @@ void __attribute__((destructor)) Destroy()
 
     // Fallback for SSH policy
     SshAuditCleanup(GetLog());
+    RestartDaemon(g_mpiServer, NULL);
 
     CloseLog(&g_log);
 

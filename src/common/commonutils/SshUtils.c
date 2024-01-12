@@ -6,8 +6,8 @@
 
 static const char* g_sshServerService = "sshd";
 static const char* g_sshServerConfiguration = "/etc/ssh/sshd_config";
-static const char* g_remediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
-static const char* g_remediationConfHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
+static const char* g_osconfigRemediationConf = "/etc/ssh/sshd_config.d/osconfig_remediation.conf";
+static const char* g_sshdConfigRemediationHeader = "# Azure OSConfig Remediation\nInclude /etc/ssh/sshd_config.d/osconfig_remediation.conf\n";
 
 static const char* g_sshProtocol = "Protocol";
 static const char* g_sshIgnoreHosts = "IgnoreRhosts";
@@ -540,19 +540,26 @@ int CheckSshProtocol(char** reason, void* log)
         OsConfigLogError(log, "CheckSshProtocol: FormatAllocateString failed");
         status = ENOMEM;
     }
-    else if (false == FileExists(g_remediationConf))
+    else if (false == FileExists(g_osconfigRemediationConf))
     {
-        OsConfigLogInfo(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_remediationConf);
+        OsConfigLogError(log, "CheckSshProtocol: the OSConfig remediation file '%s' is not present on this device", g_osconfigRemediationConf);
+        OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_osconfigRemediationConf);
         status = EEXIST;
     }
-    else if (0 != FindTextInFile(g_sshServerConfiguration, g_remediationConfHeader, log))
+    else if (false == FileExists(g_sshServerConfiguration))
     {
-        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_remediationConf, g_sshServerConfiguration);
+        OsConfigLogError(log, "CheckSshProtocol: the SSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
+        OsConfigCaptureReason(reason, "'%s' is not present on this device", "%s, also '%s' is not present on this device", g_sshServerConfiguration);
+        status = EEXIST;
+    }
+    else if (0 != FindTextInFile(g_sshServerConfiguration, g_sshdConfigRemediationHeader, log))
+    {
+        OsConfigLogError(log, "CheckSshProtocol: '%s' is not found included in '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
         OsConfigCaptureReason(reason, "'%s' is not found included in %s",
-            "%s, also '%s' is not found included in %s", g_remediationConf, g_sshServerConfiguration);
+            "%s, also '%s' is not found included in %s", g_osconfigRemediationConf, g_sshServerConfiguration);
         status = ENOENT;
     }
-    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_remediationConf, '#', protocol, log)))
+    else if (EEXIST == (status = CheckLineNotFoundOrCommentedOut(g_osconfigRemediationConf, '#', protocol, log)))
     {
         OsConfigLogInfo(log, "CheckSshProtocol: '%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
         OsConfigCaptureSuccessReason(reason, "%s'%s' is found uncommented in %s", protocol, g_sshServerConfiguration);
@@ -612,9 +619,9 @@ static int SetSshWarningBanner(unsigned int desiredBannerFileAccess, const char*
     return status;
 }
 
-static int IncludeSshRemediationConfFile(void* log)
+static int IncludeRemediationSshConfFile(void* log)
 {
-    const char* confFolder = "/etc/ssh/sshd_config.d";
+    const char* etcSshSshdConfigD = "/etc/ssh/sshd_config.d";
     const char* configurationTemplate = "%s%s";
     
     int desiredAccess = atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess);
@@ -625,40 +632,40 @@ static int IncludeSshRemediationConfFile(void* log)
 
     if (false == FileExists(g_sshServerConfiguration))
     {
-        OsConfigLogInfo(log, "IncludeSshRemediationConfFile: the OpenSSH Server configuration file '%s' is not present on this device", g_sshServerConfiguration);
+        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is not present on this device", g_sshServerConfiguration);
         return EEXIST;
     }
 
-    if (false == DirectoryExists(confFolder))
+    if (false == DirectoryExists(etcSshSshdConfigD))
     {
-        if (0 != mkdir(confFolder, desiredAccess))
+        if (0 != mkdir(etcSshSshdConfigD, desiredAccess))
         {
             status = errno ? errno : ENOENT;
-            OsConfigLogError(log, "IncludeSshRemediationConfFile: mkdir(%s, %u) failed with %d", confFolder, desiredAccess, status);
+            OsConfigLogError(log, "IncludeRemediationSshConfFile: mkdir(%s, %u) failed with %d", etcSshSshdConfigD, desiredAccess, status);
         }
     }
 
-    if (true == DirectoryExists(confFolder))
+    if (true == DirectoryExists(etcSshSshdConfigD))
     {
         if (NULL != (originalConfiguration = LoadStringFromFile(g_sshServerConfiguration, false, log)))
         {
-            if (0 != strncmp(originalConfiguration, g_remediationConfHeader, strlen(g_remediationConfHeader)))
+            if (0 != strncmp(originalConfiguration, g_sshdConfigRemediationHeader, strlen(g_sshdConfigRemediationHeader)))
             {
-                newConfigurationSize = strlen(configurationTemplate) + strlen(g_remediationConfHeader) + strlen(originalConfiguration) + 1;
+                newConfigurationSize = strlen(configurationTemplate) + strlen(g_sshdConfigRemediationHeader) + strlen(originalConfiguration) + 1;
 
                 if (NULL != (newConfiguration = malloc(newConfigurationSize)))
                 {
                     memset(newConfiguration, 0, newConfigurationSize);
-                    snprintf(newConfiguration, newConfigurationSize, configurationTemplate, g_remediationConfHeader, originalConfiguration);
+                    snprintf(newConfiguration, newConfigurationSize, configurationTemplate, g_sshdConfigRemediationHeader, originalConfiguration);
 
                     if (true == SavePayloadToFile(g_sshServerConfiguration, newConfiguration, newConfigurationSize, log))
                     {
-                        OsConfigLogInfo(log, "IncludeSshRemediationConfFile: '%s' is now included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                        OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is now included by '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                         status = 0;
                     }
                     else
                     {
-                        OsConfigLogError(log, "IncludeSshRemediationConfFile: failed to include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                        OsConfigLogError(log, "IncludeRemediationSshConfFile: failed to include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                         status = ENOENT;
                     }
 
@@ -666,13 +673,13 @@ static int IncludeSshRemediationConfFile(void* log)
                 }
                 else
                 {
-                    OsConfigLogError(log, "IncludeSshRemediationConfFile: out of memory, cannot include '%s' into '%s'", g_remediationConf, g_sshServerConfiguration);
+                    OsConfigLogError(log, "IncludeRemediationSshConfFile: out of memory, cannot include '%s' into '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                     status = ENOMEM;
                 }
             }
             else
             {
-                OsConfigLogInfo(log, "IncludeSshRemediationConfFile: '%s' is already included by '%s'", g_remediationConf, g_sshServerConfiguration);
+                OsConfigLogInfo(log, "IncludeRemediationSshConfFile: '%s' is already included by '%s'", g_osconfigRemediationConf, g_sshServerConfiguration);
                 status = 0;
             }
 
@@ -682,7 +689,7 @@ static int IncludeSshRemediationConfFile(void* log)
         }
         else
         {
-            OsConfigLogError(log, "IncludeSshRemediationConfFile: failed to read from '%s'", g_sshServerConfiguration);
+            OsConfigLogError(log, "IncludeRemediationSshConfFile: failed to read from '%s'", g_sshServerConfiguration);
             status = EEXIST;
         }
     }
@@ -690,9 +697,10 @@ static int IncludeSshRemediationConfFile(void* log)
     return status;
 }
 
-static int SaveSshRemediationConfFile(void* log)
+static int SaveRemediationSshConfFile(void* log)
 {
-    const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s  %s\nUsePAM no";
+    // 'UsePAM yes' blocks Ciphers and MACs so we need also to set this to 'no' here as other .conf files can set it
+    const char* confFileTemplate = "%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\n%s %s\nUsePAM no";
 
     char* newRemediation = NULL;
     char* currentRemediation = NULL;
@@ -742,21 +750,21 @@ static int SaveSshRemediationConfFile(void* log)
             g_sshMacs, g_desiredOnlyApprovedMacAlgorithmsAreUsed ? g_desiredOnlyApprovedMacAlgorithmsAreUsed : g_sshDefaultSshMacs,
             g_sshCiphers, g_desiredAppropriateCiphersForSsh ? g_desiredAppropriateCiphersForSsh : g_sshDefaultSshCiphers);
 
-        if ((NULL != (currentRemediation = LoadStringFromFile(g_remediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
+        if ((NULL != (currentRemediation = LoadStringFromFile(g_osconfigRemediationConf, false, log))) && (0 == strncmp(currentRemediation, newRemediation, strlen(newRemediation))))
         {
-            OsConfigLogInfo(log, "SaveSshRemediationConfFile: '%s' already contains the correct remediation values:\n'%s'", g_remediationConf, newRemediation);
+            OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' already contains the correct remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
             status = 0;
         }
         else
         {
-            if (true == SavePayloadToFile(g_remediationConf, newRemediation, newRemediationSize, log))
+            if (true == SavePayloadToFile(g_osconfigRemediationConf, newRemediation, newRemediationSize, log))
             {
-                OsConfigLogInfo(log, "SaveSshRemediationConfFile: '%s' is now updated to the following remediation values:\n'%s'", g_remediationConf, newRemediation);
+                OsConfigLogInfo(log, "SaveRemediationSshConfFile: '%s' is now updated to the following remediation values:\n---\n%s\n---\n", g_osconfigRemediationConf, newRemediation);
                 status = 0;
             }
             else
             {
-                OsConfigLogError(log, "SaveSshRemediationConfFile: failed to save remediation values to '%s'", g_remediationConf);
+                OsConfigLogError(log, "SaveRemediationSshConfFile: failed to save remediation values to '%s'", g_osconfigRemediationConf);
                 status = ENOENT;
             }
         }
@@ -766,11 +774,11 @@ static int SaveSshRemediationConfFile(void* log)
     }
     else
     {
-        OsConfigLogError(log, "SaveSshRemediationConfFile: out of memory, cannot save remediation values to '%s'", g_remediationConf);
+        OsConfigLogError(log, "SaveRemediationSshConfFile: out of memory, cannot save remediation values to '%s'", g_osconfigRemediationConf);
         status = ENOMEM;
     }
 
-    SetFileAccess(g_remediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
+    SetFileAccess(g_osconfigRemediationConf, 0, 0, atoi(g_desiredPermissionsOnEtcSshSshdConfig ? g_desiredPermissionsOnEtcSshSshdConfig : g_sshDefaultSshSshdConfigAccess), log);
 
     return status;
 }
@@ -815,9 +823,9 @@ void SshAuditCleanup(void* log)
     if (false == g_auditOnlySession)
     {
         // Even if we cannot include the remediation .conf file, we still want to go ahead and create/update it
-        IncludeSshRemediationConfFile(log);
+        IncludeRemediationSshConfFile(log);
 
-        if (0 == SaveSshRemediationConfFile(log))
+        if (0 == SaveRemediationSshConfFile(log))
         {
             // Signal to the SSH Server service to reload configuration
             RestartDaemon(g_sshServerService, log);
