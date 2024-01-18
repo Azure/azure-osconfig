@@ -46,6 +46,11 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
+          name: ubuntu-22.04-signed
+          path: packages
+
+      - uses: actions/download-artifact@v3
+        with:
           name: debian-10-signed
           path: packages
 
