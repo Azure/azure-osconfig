@@ -40,6 +40,11 @@ jobs:
             { os: debian, version: 11, dist: bullseye },
           ]
         arch: [arm, arm64, amd64]
+        exclude:
+          - target: { os: ubuntu, version: 22.04, dist: jammy }
+            arch: arm
+          - target: { os: ubuntu, version: 22.04, dist: jammy }
+            arch: arm64
     with:
       target: ${{ matrix.target.os }}-${{ matrix.target.version }}
       arch: ${{ matrix.arch }}
