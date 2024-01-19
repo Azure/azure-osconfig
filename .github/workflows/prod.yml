@@ -15,6 +15,7 @@ jobs:
           [
             { os: ubuntu, version: 18.04, dist: bionic },
             { os: ubuntu, version: 20.04, dist: focal },
+            { os: ubuntu, version: 22.04, dist: jammy },
             { os: debian, version: 10, dist: buster },
             { os: debian, version: 11, dist: bullseye },
           ]
