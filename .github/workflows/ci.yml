@@ -16,6 +16,11 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, debian-10, debian-11]
         arch: [arm, arm64, amd64]
+        exclude:
+          - target: { os: ubuntu, version: 22.04, dist: jammy }
+            arch: arm
+          - target: { os: ubuntu, version: 22.04, dist: jammy }
+            arch: arm64
 
     steps:
       - uses: actions/checkout@v3
