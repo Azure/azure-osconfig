@@ -802,6 +802,17 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         goto Exit;
     }
 
+    // Read the desired MIM object value from the input resource values
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        FREE_MEMORY(g_desiredObjectValue);
+        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+            g_desiredObjectValue = DuplicateString(g_failValue);
+        }
+    }
+
     // Read the reported MIM object value from the local device
     if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Test", context)))
     {
