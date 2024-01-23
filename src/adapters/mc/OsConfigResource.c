@@ -318,34 +318,42 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     else
     {
         // Fallback for SSH policy
-        if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
+        if (0 == (mpiResult = InitializeSshAuditCheck(g_reportedObjectName, g_desiredObjectValue, GetLog())))
         {
-            if (NULL == objectValue)
+            if (0 == (mpiResult = ProcessSshAuditCheck(g_reportedObjectName, NULL, &objectValue, GetLog())))
             {
-                mpiResult = ENODATA;
-                miResult = MI_RESULT_FAILED;
-                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
-                    who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
+                if (NULL == objectValue)
+                {
+                    mpiResult = ENODATA;
+                    miResult = MI_RESULT_FAILED;
+                    LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s): no payload (%s, %d) (%d)",
+                        who, g_reportedObjectName, objectValue, objectValueLength, mpiResult);
+                }
+                else
+                {
+                    LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
+
+                    FREE_MEMORY(g_reportedObjectValue);
+                    if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
+                    {
+                        mpiResult = ENOMEM;
+                        miResult = MI_RESULT_FAILED;
+                        LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
+                    }
+
+                    FREE_MEMORY(objectValue);
+                }
             }
             else
             {
-                LogInfo(context, GetLog(), "[%s] ProcessSshAuditCheck(%s): '%s'", who, g_reportedObjectName, objectValue);
-
-                FREE_MEMORY(g_reportedObjectValue);
-                if (NULL == (g_reportedObjectValue = DuplicateString(objectValue)))
-                {
-                    mpiResult = ENOMEM;
-                    miResult = MI_RESULT_FAILED;
-                    LogError(context, miResult, GetLog(), "[%s] DuplicateString(%s) failed", who, objectValue);
-                }
-
-                FREE_MEMORY(objectValue);
+                miResult = MI_RESULT_FAILED;
+                LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
             }
         }
         else
         {
             miResult = MI_RESULT_FAILED;
-            LogError(context, miResult, GetLog(), "[%s] ProcessSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
+            LogError(context, miResult, GetLog(), "[%s] InitializeSshAuditCheck(%s) failed with %d", who, g_reportedObjectName, mpiResult);
         }
     }
 
@@ -462,12 +470,6 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Get] No DesiredObjectName");
     }
 
-    // Read the reported MIM object value from the local device
-    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
-    {
-        goto Exit;
-    }
-
     // Read the desired MIM object value from the input resource values
     if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
     {
@@ -477,6 +479,12 @@ void MI_CALL OsConfigResource_Invoke_GetTargetResource(
             LogError(context, miResult, GetLog(), "[OsConfigResource.Get] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
             g_desiredObjectValue = DuplicateString(g_failValue);
         }
+    }
+
+    // Read the reported MIM object value from the local device
+    if (MI_RESULT_OK != (miResult = GetReportedObjectValueFromDevice("OsConfigResource.Get", context)))
+    {
+        goto Exit;
     }
 
     // Read the expected MIM object value from the input resource values, we'll use this to determine compliance
@@ -792,6 +800,17 @@ void MI_CALL OsConfigResource_Invoke_TestTargetResource(
         LogError(context, miResult, GetLog(), "[OsConfigResource.Test] No ReportedObjectName");
         miResult = MI_RESULT_FAILED;
         goto Exit;
+    }
+
+    // Read the desired MIM object value from the input resource values
+    if ((in->InputResource.value->DesiredObjectValue.exists == MI_TRUE) && (in->InputResource.value->DesiredObjectValue.value != NULL))
+    {
+        FREE_MEMORY(g_desiredObjectValue);
+        if (NULL == (g_desiredObjectValue = DuplicateString(in->InputResource.value->DesiredObjectValue.value)))
+        {
+            LogError(context, miResult, GetLog(), "[OsConfigResource.Test] DuplicateString(%s) failed", in->InputResource.value->DesiredObjectValue.value);
+            g_desiredObjectValue = DuplicateString(g_failValue);
+        }
     }
 
     // Read the reported MIM object value from the local device
