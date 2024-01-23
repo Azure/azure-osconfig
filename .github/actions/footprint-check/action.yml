@@ -28,6 +28,7 @@ runs:
         case $distroName in
           ("ubuntu18.04") distroName="ubuntu-18.04";;
           ("ubuntu20.04") distroName="ubuntu-20.04";;
+          ("ubuntu22.04") distroName="ubuntu-22.04";;
           ("debian9")     distroName="debian-9";;
         esac
 
