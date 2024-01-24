@@ -234,7 +234,7 @@ void MI_CALL OsConfigResource_DeleteInstance(
 }
 
 // Converts from "remediateFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
-static char* GetInitObjectNameFromDesiredObjectName(MI_Context* context)
+static char* GetInitObjectNameFromDesiredObjectName(const char* who, MI_Context* context)
 {
     const char* remediate = "remediate";
     const char* init = "init";
@@ -251,7 +251,7 @@ static char* GetInitObjectNameFromDesiredObjectName(MI_Context* context)
         }
         else
         {
-            LogError(context, MI_RESULT_FAILED, GetLog(), "GetInitObjectNameFromDesiredObjectName failed to allocate memory");
+            LogError(context, MI_RESULT_FAILED, GetLog(), "[%s] GetInitObjectNameFromDesiredObjectName failed to allocate memory", who);
         }
     }
 
@@ -274,7 +274,7 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
         LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice(%s, %s) called outside of a valid MPI session", who, g_componentName, g_desiredObjectName);
         return ENOENT;
     }
-    else if ((NULL == objectName) || (NULL == g_desiredObjectValue)))
+    else if ((NULL == objectName) || (NULL == g_desiredObjectValue))
     {
         LogError(context, miResult, GetLog(), "[%s] SetDesiredObjectValueToDevice called with an invalid object name and/or desired object value", who);
         return EINVAL;
@@ -359,7 +359,7 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
     if (NULL != g_mpiHandle)
     {
         // If this reported object has a corresponding init object, initalize it with the desired object value
-        if (NULL != (initObjectName = GetInitObjectNameFromDesiredObjectName()))
+        if (NULL != (initObjectName = GetInitObjectNameFromDesiredObjectName(who, context)))
         {
             SetDesiredObjectValueToDevice(who, initObjectName, context);
         }
