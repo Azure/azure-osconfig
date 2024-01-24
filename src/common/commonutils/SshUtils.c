@@ -580,7 +580,7 @@ int CheckSshProtocol(char** reason, void* log)
     return status;
 }
 
-static int CheckAllowDenyUsersGroups(const char* lowercase, char* expectedValue, char** reason, void* log)
+static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expectedValue, char** reason, void* log)
 {
     const char* commandTemplate = "% | grep \"%s %s\"";
     char* command = NULL;
