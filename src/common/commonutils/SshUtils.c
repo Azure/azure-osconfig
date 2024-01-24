@@ -35,9 +35,9 @@ static const char* g_sshDefaultSshNo = "no";
 static const char* g_sshDefaultSshLogLevel = "INFO";
 static const char* g_sshDefaultSshMaxAuthTries = "6";
 static const char* g_sshDefaultSshAllowUsers = "*@*";
-static const char* g_sshDefaultSshDenyUsers = "root Test foo"; /////////////////clean this
+static const char* g_sshDefaultSshDenyUsers = "root";
 static const char* g_sshDefaultSshAllowGroups = "*";
-static const char* g_sshDefaultSshDenyGroups = "root Test foo"; /////////////////clean this
+static const char* g_sshDefaultSshDenyGroups = "root";
 static const char* g_sshDefaultSshClientIntervalCountMax = "0";
 static const char* g_sshDefaultSshClientAliveInterval = "3600";
 static const char* g_sshDefaultSshLoginGraceTime = "60";
@@ -627,7 +627,6 @@ static int CheckAllowDenyUsersGroups(const char* lowercase, const char* expected
                 snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
 
                 status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
-                OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: '%s' returned %d", command, status);
 
                 FREE_MEMORY(textResult);
                 FREE_MEMORY(command);
