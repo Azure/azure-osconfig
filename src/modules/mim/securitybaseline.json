@@ -2015,6 +2015,120 @@
           "type": "mimObject",
           "desired": true,
           "schema": "string"
+        },
+        {
+          "name": "initEnsurePermissionsOnEtcSshSshdConfig",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshBestPracticeProtocol",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshBestPracticeIgnoreRhosts",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshLogLevelIsSet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshMaxAuthTriesIsSet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureAllowUsersIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureDenyUsersIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureAllowGroupsIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureDenyGroupsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshHostbasedAuthenticationIsDisabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshPermitRootLoginIsDisabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshPermitEmptyPasswordsIsDisabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshClientIntervalCountMaxIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshClientAliveIntervalIsConfigured",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshLoginGraceTimeIsSet",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureOnlyApprovedMacAlgorithmsAreUsed",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureSshWarningBannerIsEnabled",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureUsersCannotSetSshEnvironmentOptions",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
+        },
+        {
+          "name": "initEnsureAppropriateCiphersForSsh",
+          "type": "mimObject",
+          "desired": true,
+          "schema": "string"
         }
       ]
     }

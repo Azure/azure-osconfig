@@ -362,6 +362,27 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
         const char* m_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
+        // Initialization for audit before remediation
+        const char* m_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+        const char* m_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
+        const char* m_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
+        const char* m_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
+        const char* m_initEnsureSshMaxAuthTriesIsSetObject = "initEnsureSshMaxAuthTriesIsSet";
+        const char* m_initEnsureAllowUsersIsConfiguredObject = "initEnsureAllowUsersIsConfigured";
+        const char* m_initEnsureDenyUsersIsConfiguredObject = "initEnsureDenyUsersIsConfigured";
+        const char* m_initEnsureAllowGroupsIsConfiguredObject = "initEnsureAllowGroupsIsConfigured";
+        const char* m_initEnsureDenyGroupsConfiguredObject = "initEnsureDenyGroupsConfigured";
+        const char* m_initEnsureSshHostbasedAuthenticationIsDisabledObject = "initEnsureSshHostbasedAuthenticationIsDisabled";
+        const char* m_initEnsureSshPermitRootLoginIsDisabledObject = "initEnsureSshPermitRootLoginIsDisabled";
+        const char* m_initEnsureSshPermitEmptyPasswordsIsDisabledObject = "initEnsureSshPermitEmptyPasswordsIsDisabled";
+        const char* m_initEnsureSshClientIntervalCountMaxIsConfiguredObject = "initEnsureSshClientIntervalCountMaxIsConfigured";
+        const char* m_initEnsureSshClientAliveIntervalIsConfiguredObject = "initEnsureSshClientAliveIntervalIsConfigured";
+        const char* m_initEnsureSshLoginGraceTimeIsSetObject = "initEnsureSshLoginGraceTimeIsSet";
+        const char* m_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
+        const char* m_initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
+        const char* m_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
+        const char* m_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
+
         const char* m_pass = "\"PASS\"";
 
         const char* m_clientName = "SecurityBaselineTest";
@@ -429,6 +450,27 @@ TEST_F(SecurityBaselineTest, MmiSet)
     const char* payload = "PASS";
 
     const char* mimObjects[] = {
+        // Initialization
+        m_initEnsurePermissionsOnEtcSshSshdConfigObject,
+        m_initEnsureSshBestPracticeProtocolObject,
+        m_initEnsureSshBestPracticeIgnoreRhostsObject,
+        m_initEnsureSshLogLevelIsSetObject,
+        m_initEnsureSshMaxAuthTriesIsSetObject,
+        m_initEnsureAllowUsersIsConfiguredObject,
+        m_initEnsureDenyUsersIsConfiguredObject,
+        m_initEnsureAllowGroupsIsConfiguredObject,
+        m_initEnsureDenyGroupsConfiguredObject,
+        m_initEnsureSshHostbasedAuthenticationIsDisabledObject,
+        m_initEnsureSshPermitRootLoginIsDisabledObject,
+        m_initEnsureSshPermitEmptyPasswordsIsDisabledObject,
+        m_initEnsureSshClientIntervalCountMaxIsConfiguredObject,
+        m_initEnsureSshClientAliveIntervalIsConfiguredObject,
+        m_initEnsureSshLoginGraceTimeIsSetObject,
+        m_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject,
+        m_initEnsureSshWarningBannerIsEnabledObject,
+        m_initEnsureUsersCannotSetSshEnvironmentOptionsObject,
+        m_initEnsureAppropriateCiphersForSshObject,
+        // Actual remediation
         m_remediateSecurityBaselineObject,
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
