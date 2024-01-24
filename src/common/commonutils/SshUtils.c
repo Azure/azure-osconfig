@@ -339,84 +339,6 @@ static int CheckAppropriateCiphersForSsh(const char* ciphers, char** reason, voi
     return status;
 }
 
-static int CheckAllowDenyUsersGroups(const char* lowercase, char* expectedValue, char** reason, void* log)
-{
-    const char* commandTemplate = "% | grep \"%s %s\"";
-    char* command = NULL;
-    char* textResult = NULL;
-    size_t commandLength = 0;
-    size_t valueLength = 0;
-    size_t i = 0;
-    char* value = NULL;
-    int status = 0;
-
-    if ((NULL == lowercase) || (NULL == expectedValue))
-    {
-        OsConfigLogError(log, "CheckAllowDenyUsersGroups: invalid arguments");
-        return EINVAL;
-    }
-    else if (0 != IsSshServerActive(log))
-    {
-        return status;
-    }
-    else if (NULL == strchr(expectedValue, " "))
-    {
-        // If the expected value is not a list of users or groups separated by space, but a single user or group, then:
-        return CheckSshOptionIsSet(lowercase, expectedValue, NULL, reason, log);
-    }
-
-    valueLength = strlen(expectedValue);
-
-    for (i = 0; i < valueLength; i++)
-    {
-        if (NULL == (value = DuplicateString(&(expectedValue[i]))))
-        {
-            OsConfigLogError(log, "CheckAllowDenyUsersGroups: failed to duplicate string");
-            status = ENOMEM;
-            break;
-        }
-        else
-        {
-            TruncateAtFirst(value, ' ');
-
-            commandLength = strlen(commandTemplate) + strlen(g_sshServerService) + strlen(lowercase) + strlen(value) + 1;
-            if (NULL != (command = malloc(commandLength)))
-            {
-                memset(command, 0, commandLength);
-                snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
-
-                status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
-                
-                FREE_MEMORY(textResult);
-                FREE_MEMORY(command);
-            }
-            else
-            {
-                OsConfigLogError(log, "CheckAllowDenyUsersGroups: failed to allocate memory");
-                status = ENOMEM;
-                FREE_MEMORY(value);
-                break;
-            }
-
-            i += strlen(value);
-            FREE_MEMORY(value);
-        }
-    }
-
-    if (0 == status)
-    {
-        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s'", g_sshServerService, lowercase, expectedValue);
-    }
-    else
-    {
-        OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response", "%s, also '%s' is not set to '%s' in SSH Server response", lowercase, expectedValue);
-    }
-
-    OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
-
-    return status;
-}
-
 static int CheckSshOptionIsSet(const char* option, const char* expectedValue, char** actualValue, char** reason, void* log)
 {
     char* value = NULL;
@@ -654,6 +576,84 @@ int CheckSshProtocol(char** reason, void* log)
     FREE_MEMORY(protocol);
 
     OsConfigLogInfo(log, "CheckSshProtocol: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
+
+    return status;
+}
+
+static int CheckAllowDenyUsersGroups(const char* lowercase, char* expectedValue, char** reason, void* log)
+{
+    const char* commandTemplate = "% | grep \"%s %s\"";
+    char* command = NULL;
+    char* textResult = NULL;
+    size_t commandLength = 0;
+    size_t valueLength = 0;
+    size_t i = 0;
+    char* value = NULL;
+    int status = 0;
+
+    if ((NULL == lowercase) || (NULL == expectedValue))
+    {
+        OsConfigLogError(log, "CheckAllowDenyUsersGroups: invalid arguments");
+        return EINVAL;
+    }
+    else if (0 != IsSshServerActive(log))
+    {
+        return status;
+    }
+    else if (NULL == strchr(expectedValue, ' '))
+    {
+        // If the expected value is not a list of users or groups separated by space, but a single user or group, then:
+        return CheckSshOptionIsSet(lowercase, expectedValue, NULL, reason, log);
+    }
+
+    valueLength = strlen(expectedValue);
+
+    for (i = 0; i < valueLength; i++)
+    {
+        if (NULL == (value = DuplicateString(&(expectedValue[i]))))
+        {
+            OsConfigLogError(log, "CheckAllowDenyUsersGroups: failed to duplicate string");
+            status = ENOMEM;
+            break;
+        }
+        else
+        {
+            TruncateAtFirst(value, ' ');
+
+            commandLength = strlen(commandTemplate) + strlen(g_sshServerService) + strlen(lowercase) + strlen(value) + 1;
+            if (NULL != (command = malloc(commandLength)))
+            {
+                memset(command, 0, commandLength);
+                snprintf(command, commandLength, commandTemplate, g_sshServerService, lowercase, value);
+
+                status = ExecuteCommand(NULL, command, true, false, 0, 0, &textResult, NULL, NULL);
+
+                FREE_MEMORY(textResult);
+                FREE_MEMORY(command);
+            }
+            else
+            {
+                OsConfigLogError(log, "CheckAllowDenyUsersGroups: failed to allocate memory");
+                status = ENOMEM;
+                FREE_MEMORY(value);
+                break;
+            }
+
+            i += strlen(value);
+            FREE_MEMORY(value);
+        }
+    }
+
+    if (0 == status)
+    {
+        OsConfigCaptureSuccessReason(reason, "%sThe %s service reports that '%s' is set to '%s'", g_sshServerService, lowercase, expectedValue);
+    }
+    else
+    {
+        OsConfigCaptureReason(reason, "'%s' is not set to '%s' in SSH Server response", "%s, also '%s' is not set to '%s' in SSH Server response", lowercase, expectedValue);
+    }
+
+    OsConfigLogInfo(log, "CheckAllowDenyUsersGroups: %s (%d)", PLAIN_STATUS_FROM_ERRNO(status), status);
 
     return status;
 }
