@@ -2955,11 +2955,6 @@ static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value)
     return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, SecurityBaselineGetLog());
 }
 
-static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value)
-{
-    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, SecurityBaselineGetLog());
-}
-
 static int InitEnsureSshClientAliveIntervalIsConfigured(char* value)
 {
     return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, SecurityBaselineGetLog());
