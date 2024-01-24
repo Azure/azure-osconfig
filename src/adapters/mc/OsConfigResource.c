@@ -233,111 +233,26 @@ void MI_CALL OsConfigResource_DeleteInstance(
     MI_Context_PostResult(context, MI_RESULT_NOT_SUPPORTED);
 }
 
-// Later we need to add a new member to the resource class, a string called InitObjectName. For now we'll deduct this here for just the SSH policy objects:
-static char* GetInitObjectNameFromDesiredObjectName(void)
+// Converts from "remediateFoo" to "initFoo" (there may or may be not such an initFoo object, depends on the MIM)
+static char* GetInitObjectNameFromDesiredObjectName(MI_Context* context)
 {
-    const char* initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
-    const char* initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
-    const char* initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
-    const char* initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
-    const char* initEnsureSshMaxAuthTriesIsSetObject = "initEnsureSshMaxAuthTriesIsSet";
-    const char* initEnsureAllowUsersIsConfiguredObject = "initEnsureAllowUsersIsConfigured";
-    const char* initEnsureDenyUsersIsConfiguredObject = "initEnsureDenyUsersIsConfigured";
-    const char* initEnsureAllowGroupsIsConfiguredObject = "initEnsureAllowGroupsIsConfigured";
-    const char* initEnsureDenyGroupsConfiguredObject = "initEnsureDenyGroupsConfigured";
-    const char* initEnsureSshHostbasedAuthenticationIsDisabledObject = "initEnsureSshHostbasedAuthenticationIsDisabled";
-    const char* initEnsureSshPermitRootLoginIsDisabledObject = "initEnsureSshPermitRootLoginIsDisabled";
-    const char* initEnsureSshPermitEmptyPasswordsIsDisabledObject = "initEnsureSshPermitEmptyPasswordsIsDisabled";
-    const char* initEnsureSshClientIntervalCountMaxIsConfiguredObject = "initEnsureSshClientIntervalCountMaxIsConfigured";
-    const char* initEnsureSshClientAliveIntervalIsConfiguredObject = "initEnsureSshClientAliveIntervalIsConfigured";
-    const char* initEnsureSshLoginGraceTimeIsSetObject = "initEnsureSshLoginGraceTimeIsSet";
-    const char* initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
-    const char* initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
-    const char* initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
-    const char* initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
-    
+    const char* remediate = "remediate";
+    const char* init = "init";
     char* result = NULL;
+    size_t resultLength = 0;
 
-    if (NULL == g_desiredObjectName)
+    if (NULL != g_desiredObjectName)
     {
-        return result;
-    }
-
-    if (0 == strcmp(g_desiredObjectName, g_remediateEnsurePermissionsOnEtcSshSshdConfigObject))
-    {
-        result = DuplicateString(initEnsurePermissionsOnEtcSshSshdConfigObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshBestPracticeProtocolObject))
-    {
-        result = DuplicateString(initEnsureSshBestPracticeProtocolObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshBestPracticeIgnoreRhostsObject))
-    {
-        result = DuplicateString(initEnsureSshBestPracticeIgnoreRhostsObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshLogLevelIsSetObject))
-    {
-        result = DuplicateString(g_initEnsureSshLogLevelIsSetObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshMaxAuthTriesIsSetObject))
-    {
-        result = DuplicateString(g_initEnsureSshMaxAuthTriesIsSetObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureAllowUsersIsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureAllowUsersIsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureAllowUsersIsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureAllowUsersIsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureAllowGroupsIsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureAllowGroupsIsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureDenyGroupsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureDenyGroupsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshHostbasedAuthenticationIsDisabledObject))
-    {
-        result = DuplicateString(g_initEnsureSshHostbasedAuthenticationIsDisabledObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshPermitRootLoginIsDisabledObject))
-    {
-        result = DuplicateString(g_initEnsureSshPermitRootLoginIsDisabledObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshPermitEmptyPasswordsIsDisabledObject))
-    {
-        result = DuplicateString(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshClientIntervalCountMaxIsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshClientAliveIntervalIsConfiguredObject))
-    {
-        result = DuplicateString(g_initEnsureSshClientAliveIntervalIsConfiguredObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshLoginGraceTimeIsSetObject))
-    {
-        result = DuplicateString(g_initEnsureSshLoginGraceTimeIsSetObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
-    {
-        result = DuplicateString(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureSshWarningBannerIsEnabledObject))
-    {
-        result = DuplicateString(g_initEnsureSshWarningBannerIsEnabledObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureUsersCannotSetSshEnvironmentOptionsObject))
-    {
-        result = DuplicateString(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject);
-    }
-    else if (0 == strcmp(g_desiredObjectName, g_remediateEnsureAppropriateCiphersForSshObject))
-    {
-        result = DuplicateString(g_initEnsureAppropriateCiphersForSshObject);
+        resultLength = strlen(g_desiredObjectName) + strlen(init) - strlen(remediate) + 1;
+        if (NULL != (result = malloc(resultLength)))
+        {
+            memset(result, 0, resultLength);
+            snprintf(result, resultLength, "%s%s", init, (char*)(g_desiredObjectName - strlen(remediate)));
+        }
+        else
+        {
+            LogError(context, miResult, GetLog(), "GetInitObjectNameFromDesiredObjectName failed to allocate memory");
+        }
     }
 
     return result;
@@ -385,16 +300,16 @@ static MI_Result SetDesiredObjectValueToDevice(const char* who, char* objectName
             memset(payloadString, 0, payloadSize + 1);
             memcpy(payloadString, serializedValue, payloadSize);
 
-            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, initObjectName, payloadString, payloadSize, GetLog())))
+            if (MPI_OK == (mpiResult = CallMpiSet(g_componentName, objectName, payloadString, payloadSize, GetLog())))
             {
                 LogInfo(context, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) ok",
-                    who, g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize);
+                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize);
             }
             else
             {
                 miResult = MI_RESULT_FAILED;
                 LogError(context, miResult, GetLog(), "[%s] CallMpiSet(%s, %s, '%.*s', %d) failed with %d, miResult %d",
-                    who, g_componentName, g_desiredObjectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
+                    who, g_componentName, objectName, payloadSize, payloadString, payloadSize, mpiResult, miResult);
             }
 
             FREE_MEMORY(payloadString);
@@ -443,18 +358,13 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
 
     if (NULL != g_mpiHandle)
     {
-        if (NULL == (initObjectName = GetInitObjectNameFromDesiredObjectName()))
+        // If this reported object has a corresponding init object, initalize it with the desired object value
+        if (NULL != (initObjectName = GetInitObjectNameFromDesiredObjectName()))
         {
-            miResult = MI_RESULT_FAILED;
-            mpiResult = ENOMEM;
-            LogError(context, miResult, GetLog(), "[%s] Unsupported desired object name (%s)", who, g_desiredObjectName);
+            SetDesiredObjectValueToDevice(who, initObjectName, context);
         }
-        else if (MI_RESULT_OK != (miResult = SetDesiredObjectValueToDevice(who, initObjectName, context)))
-        {
-            mpiResult = ENOENT;
-            LogError(context, miResult, GetLog(), "[%s] Failed to initialize object (%s, %s) to '%s'", who, g_componentName, initObjectName, g_desiredObjectValue);
-        }
-        else if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
+        
+        if (MPI_OK == (mpiResult = CallMpiGet(g_componentName, g_reportedObjectName, &objectValue, &objectValueLength, GetLog())))
         {
             if (NULL == objectValue)
             {
@@ -518,6 +428,8 @@ static MI_Result GetReportedObjectValueFromDevice(const char* who, MI_Context* c
             miResult = MI_RESULT_FAILED;
             LogError(context, miResult, GetLog(), "[%s] CallMpiGet(%s, %s) failed with %d", who, g_componentName, g_reportedObjectName, mpiResult);
         }
+
+        FREE_MEMORY(initObjectName);
     }
     else
     {
@@ -1081,14 +993,7 @@ void MI_CALL OsConfigResource_Invoke_SetTargetResource(
     MI_UNREFERENCED_PARAMETER(self);
     MI_UNREFERENCED_PARAMETER(instanceName);
 
-    char* payloadString = NULL;
-    int payloadSize = 0;
-    
-    JSON_Value* jsonValue = NULL;
-    char* serializedValue = NULL;
-    
     MI_Result miResult = MI_RESULT_OK;
-    int mpiResult = MPI_OK;
     
     OsConfigResource_SetTargetResource set_result_object = {0};
 
