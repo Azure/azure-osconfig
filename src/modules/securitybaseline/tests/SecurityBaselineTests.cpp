@@ -637,7 +637,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureNoUsersHaveDotNetrcFilesObject,
         m_remediateEnsureNoUsersHaveDotRhostsFilesObject,
         m_remediateEnsureRloginServiceIsDisabledObject,
-        m_remediateEnsureUnnecessaryAccountsAreRemovedObject,
+        m_remediateEnsureUnnecessaryAccountsAreRemovedObject
     };
 
     int mimObjectsNumber = ARRAY_SIZE(mimObjects);
