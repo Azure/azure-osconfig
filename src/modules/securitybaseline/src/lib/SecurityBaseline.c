@@ -361,6 +361,27 @@ static const char* g_remediateEnsureNoUsersHaveDotRhostsFilesObject = "remediate
 static const char* g_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
 static const char* g_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
+// Initialization for audit before remediation
+static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
+static const char* g_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
+static const char* g_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
+static const char* g_initEnsureSshMaxAuthTriesIsSetObject = "initEnsureSshMaxAuthTriesIsSet";
+static const char* g_initEnsureAllowUsersIsConfiguredObject = "initEnsureAllowUsersIsConfigured";
+static const char* g_initEnsureDenyUsersIsConfiguredObject = "initEnsureDenyUsersIsConfigured";
+static const char* g_initEnsureAllowGroupsIsConfiguredObject = "initEnsureAllowGroupsIsConfigured";
+static const char* g_initEnsureDenyGroupsConfiguredObject = "initEnsureDenyGroupsConfigured";
+static const char* g_initEnsureSshHostbasedAuthenticationIsDisabledObject = "initEnsureSshHostbasedAuthenticationIsDisabled";
+static const char* g_initEnsureSshPermitRootLoginIsDisabledObject = "initEnsureSshPermitRootLoginIsDisabled";
+static const char* g_initEnsureSshPermitEmptyPasswordsIsDisabledObject = "initEnsureSshPermitEmptyPasswordsIsDisabled";
+static const char* g_initEnsureSshClientIntervalCountMaxIsConfiguredObject = "initEnsureSshClientIntervalCountMaxIsConfigured";
+static const char* g_initEnsureSshClientAliveIntervalIsConfiguredObject = "initEnsureSshClientAliveIntervalIsConfigured";
+static const char* g_initEnsureSshLoginGraceTimeIsSetObject = "initEnsureSshLoginGraceTimeIsSet";
+static const char* g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
+static const char* g_initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
+static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
+static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
+
 static const char* g_securityBaselineLogFile = "/var/log/osconfig_securitybaseline.log";
 static const char* g_securityBaselineRolledLogFile = "/var/log/osconfig_securitybaseline.bak";
 
@@ -2869,6 +2890,106 @@ static int RemediateEnsureUnnecessaryAccountsAreRemoved(char* value)
     return RemoveUserAccounts(names, ARRAY_SIZE(names), SecurityBaselineGetLog());
 }
 
+static int InitEnsurePermissionsOnEtcSshSshdConfig(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshBestPracticeProtocol(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeProtocolObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshBestPracticeIgnoreRhosts(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshBestPracticeIgnoreRhostsObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshLogLevelIsSet(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshLogLevelIsSetObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshMaxAuthTriesIsSet(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshMaxAuthTriesIsSetObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureAllowUsersIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureAllowUsersIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureDenyUsersIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureDenyUsersIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureAllowGroupsIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureAllowGroupsIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureDenyGroupsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureDenyGroupsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshHostbasedAuthenticationIsDisabled(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsurePermissionsOnEtcSshSshdConfigObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshPermitRootLoginIsDisabled(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPermitRootLoginIsDisabledObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshPermitEmptyPasswordsIsDisabled(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshPermitEmptyPasswordsIsDisabledObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshClientIntervalCountMaxIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshClientIntervalCountMaxIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshClientAliveIntervalIsConfigured(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshClientAliveIntervalIsConfiguredObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshLoginGraceTimeIsSet(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshLoginGraceTimeIsSetObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureOnlyApprovedMacAlgorithmsAreUsed(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureSshWarningBannerIsEnabled(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureSshWarningBannerIsEnabledObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureUsersCannotSetSshEnvironmentOptions(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureUsersCannotSetSshEnvironmentOptionsObject, value, SecurityBaselineGetLog());
+}
+
+static int InitEnsureAppropriateCiphersForSsh(char* value)
+{
+    return InitializeSshAuditCheck(g_initEnsureAppropriateCiphersForSshObject, value, SecurityBaselineGetLog());
+}
+
 RemediationCall g_remediateChecks[] =
 {
     &RemediateEnsurePermissionsOnEtcIssue,
@@ -4603,6 +4724,83 @@ int SecurityBaselineMmiSet(MMI_HANDLE clientSession, const char* componentName, 
         else if (0 == strcmp(objectName, g_remediateEnsureUnnecessaryAccountsAreRemovedObject))
         {
             status = RemediateEnsureUnnecessaryAccountsAreRemoved(jsonString);
+        }
+        // Initialization for audit before remediation
+        else if (0 == strcmp(objectName, g_initEnsurePermissionsOnEtcSshSshdConfigObject))
+        {
+            status = InitEnsurePermissionsOnEtcSshSshdConfig(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshBestPracticeProtocolObject))
+        {
+            status = InitEnsureSshBestPracticeProtocol(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshBestPracticeIgnoreRhostsObject))
+        {
+            status = InitEnsureSshBestPracticeIgnoreRhosts(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshLogLevelIsSetObject))
+        {
+            status = InitEnsureSshLogLevelIsSet(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshMaxAuthTriesIsSetObject))
+        {
+            status = InitEnsureSshMaxAuthTriesIsSet(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureAllowUsersIsConfiguredObject))
+        {
+            status = InitEnsureAllowUsersIsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureDenyUsersIsConfiguredObject))
+        {
+            status = InitEnsureDenyUsersIsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureAllowGroupsIsConfiguredObject))
+        {
+            status = InitEnsureAllowGroupsIsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureDenyGroupsConfiguredObject))
+        {
+            status = InitEnsureDenyGroupsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshHostbasedAuthenticationIsDisabledObject))
+        {
+            status = InitEnsureSshHostbasedAuthenticationIsDisabled(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshPermitRootLoginIsDisabledObject))
+        {
+            status = InitEnsureSshPermitRootLoginIsDisabled(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshPermitEmptyPasswordsIsDisabledObject))
+        {
+            status = InitEnsureSshPermitEmptyPasswordsIsDisabled(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshClientIntervalCountMaxIsConfiguredObject))
+        {
+            status = InitEnsureSshClientIntervalCountMaxIsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshClientAliveIntervalIsConfiguredObject))
+        {
+            status = InitEnsureSshClientAliveIntervalIsConfigured(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshLoginGraceTimeIsSetObject))
+        {
+            status = InitEnsureSshLoginGraceTimeIsSet(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject))
+        {
+            status = InitEnsureOnlyApprovedMacAlgorithmsAreUsed(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureSshWarningBannerIsEnabledObject))
+        {
+            status = InitEnsureSshWarningBannerIsEnabled(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureUsersCannotSetSshEnvironmentOptionsObject))
+        {
+            status = InitEnsureUsersCannotSetSshEnvironmentOptions(jsonString);
+        }
+        else if (0 == strcmp(objectName, g_initEnsureAppropriateCiphersForSshObject))
+        {
+            status = InitEnsureAppropriateCiphersForSsh(jsonString);
         }
         else
         {

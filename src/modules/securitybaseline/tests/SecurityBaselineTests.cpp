@@ -362,6 +362,27 @@ class SecurityBaselineTest : public ::testing::Test
         const char* m_remediateEnsureRloginServiceIsDisabledObject = "remediateEnsureRloginServiceIsDisabled";
         const char* m_remediateEnsureUnnecessaryAccountsAreRemovedObject = "remediateEnsureUnnecessaryAccountsAreRemoved";
 
+        // Initialization for audit before remediation
+        static const char* g_initEnsurePermissionsOnEtcSshSshdConfigObject = "initEnsurePermissionsOnEtcSshSshdConfig";
+        static const char* g_initEnsureSshBestPracticeProtocolObject = "initEnsureSshBestPracticeProtocol";
+        static const char* g_initEnsureSshBestPracticeIgnoreRhostsObject = "initEnsureSshBestPracticeIgnoreRhosts";
+        static const char* g_initEnsureSshLogLevelIsSetObject = "initEnsureSshLogLevelIsSet";
+        static const char* g_initEnsureSshMaxAuthTriesIsSetObject = "initEnsureSshMaxAuthTriesIsSet";
+        static const char* g_initEnsureAllowUsersIsConfiguredObject = "initEnsureAllowUsersIsConfigured";
+        static const char* g_initEnsureDenyUsersIsConfiguredObject = "initEnsureDenyUsersIsConfigured";
+        static const char* g_initEnsureAllowGroupsIsConfiguredObject = "initEnsureAllowGroupsIsConfigured";
+        static const char* g_initEnsureDenyGroupsConfiguredObject = "initEnsureDenyGroupsConfigured";
+        static const char* g_initEnsureSshHostbasedAuthenticationIsDisabledObject = "initEnsureSshHostbasedAuthenticationIsDisabled";
+        static const char* g_initEnsureSshPermitRootLoginIsDisabledObject = "initEnsureSshPermitRootLoginIsDisabled";
+        static const char* g_initEnsureSshPermitEmptyPasswordsIsDisabledObject = "initEnsureSshPermitEmptyPasswordsIsDisabled";
+        static const char* g_initEnsureSshClientIntervalCountMaxIsConfiguredObject = "initEnsureSshClientIntervalCountMaxIsConfigured";
+        static const char* g_initEnsureSshClientAliveIntervalIsConfiguredObject = "initEnsureSshClientAliveIntervalIsConfigured";
+        static const char* g_initEnsureSshLoginGraceTimeIsSetObject = "initEnsureSshLoginGraceTimeIsSet";
+        static const char* g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject = "initEnsureOnlyApprovedMacAlgorithmsAreUsed";
+        static const char* g_initEnsureSshWarningBannerIsEnabledObject = "initEnsureSshWarningBannerIsEnabled";
+        static const char* g_initEnsureUsersCannotSetSshEnvironmentOptionsObject = "initEnsureUsersCannotSetSshEnvironmentOptions";
+        static const char* g_initEnsureAppropriateCiphersForSshObject = "initEnsureAppropriateCiphersForSsh";
+
         const char* m_pass = "\"PASS\"";
 
         const char* m_clientName = "SecurityBaselineTest";
@@ -429,6 +450,27 @@ TEST_F(SecurityBaselineTest, MmiSet)
     const char* payload = "PASS";
 
     const char* mimObjects[] = {
+        // Initialziation
+        g_initEnsurePermissionsOnEtcSshSshdConfigObject,
+        g_initEnsureSshBestPracticeProtocolObject,
+        g_initEnsureSshBestPracticeIgnoreRhostsObject,
+        g_initEnsureSshLogLevelIsSetObject,
+        g_initEnsureSshMaxAuthTriesIsSetObject,
+        g_initEnsureAllowUsersIsConfiguredObject,
+        g_initEnsureDenyUsersIsConfiguredObject,
+        g_initEnsureAllowGroupsIsConfiguredObject,
+        g_initEnsureDenyGroupsConfiguredObject,
+        g_initEnsureSshHostbasedAuthenticationIsDisabledObject,
+        g_initEnsureSshPermitRootLoginIsDisabledObject,
+        g_initEnsureSshPermitEmptyPasswordsIsDisabledObject,
+        g_initEnsureSshClientIntervalCountMaxIsConfiguredObject,
+        g_initEnsureSshClientAliveIntervalIsConfiguredObject,
+        g_initEnsureSshLoginGraceTimeIsSetObject,
+        g_initEnsureOnlyApprovedMacAlgorithmsAreUsedObject,
+        g_initEnsureSshWarningBannerIsEnabledObject,
+        g_initEnsureUsersCannotSetSshEnvironmentOptionsObject,
+        g_initEnsureAppropriateCiphersForSshObject
+        // Actual remediation
         m_remediateSecurityBaselineObject,
         m_remediateEnsurePermissionsOnEtcIssueObject,
         m_remediateEnsurePermissionsOnEtcIssueNetObject,
@@ -595,7 +637,7 @@ TEST_F(SecurityBaselineTest, MmiSet)
         m_remediateEnsureNoUsersHaveDotNetrcFilesObject,
         m_remediateEnsureNoUsersHaveDotRhostsFilesObject,
         m_remediateEnsureRloginServiceIsDisabledObject,
-        m_remediateEnsureUnnecessaryAccountsAreRemovedObject
+        m_remediateEnsureUnnecessaryAccountsAreRemovedObject,
     };
 
     int mimObjectsNumber = ARRAY_SIZE(mimObjects);
